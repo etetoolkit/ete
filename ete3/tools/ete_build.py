@@ -42,6 +42,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import re
+import itertools
 import errno
 import six.moves.builtins
 import six
@@ -61,7 +62,7 @@ import tempfile
 log = None
 from time import ctime, time
 
-# This avoids installing phylobuild_lib module. npr script will find it in the
+# This avoids installing ete_build_lib module. npr script will find it in the
 # same directory in which it is
 BASEPATH = os.path.split(os.path.realpath(__file__))[0]
 APPSPATH = None
@@ -72,25 +73,25 @@ sys.path.insert(0, BASEPATH)
 import argparse
 from ..citation import Citator
 
-from .phylobuild_lib.utils import (SeqGroup, generate_runid, AA, NT, GLOBALS,
+from .ete_build_lib.utils import (SeqGroup, generate_runid, AA, NT, GLOBALS,
                                    encode_seqname, pjoin, pexist, hascontent,
                                    clear_tempdir, colorify, GENCODE,
                                    silent_remove, _max, _min, _std, _mean,
                                    _median, iter_cog_seqs)
-from .phylobuild_lib.errors import ConfigError, DataError
-from .phylobuild_lib.master_task import Task
-from .phylobuild_lib.interface import app_wrapper
-from .phylobuild_lib.scheduler import schedule
-from .phylobuild_lib import db
-from .phylobuild_lib import apps
-from .phylobuild_lib.logger import logindent
+from .ete_build_lib.errors import ConfigError, DataError
+from .ete_build_lib.master_task import Task
+from .ete_build_lib.interface import app_wrapper
+from .ete_build_lib.scheduler import schedule
+from .ete_build_lib import db
+from .ete_build_lib import apps
+from .ete_build_lib.logger import logindent
 
-from .phylobuild_lib.configcheck import (is_file, is_dir, check_config,
+from .ete_build_lib.configcheck import (is_file, is_dir, check_config,
                                          build_genetree_workflow,
                                          build_supermatrix_workflow,
                                          parse_block, list_workflows,
                                          block_detail, list_apps)
-from .phylobuild_lib import seqio
+from .ete_build_lib import seqio
 
 
 try:
@@ -216,8 +217,18 @@ def main(args):
             elif target_wtype == "supermatrix" and wkname in base_config.get('supermatrix_meta_workflow', {}):
                 temp_workflows = [x.lstrip('@') for x in base_config['supermatrix_meta_workflow'][wkname]]
             else:
-                temp_workflows = [wkname]
-
+                temp_workflows = [wkname]                
+                
+            for index, _w in enumerate(list(temp_workflows)):
+                if ',' in _w:
+                    words = [elem.split(',') for elem in _w.split('-')]
+                    for comb in itertools.product(*words):
+                        real_wname = '-'.join(comb)
+                        temp_workflows.append(real_wname)
+                    temp_workflows.pop(index)
+            print(temp_workflows)
+                    
+                
             # if wkname not in base_config and wkname in base_config.get('meta_workflow', {}):
             #     temp_workflows = [x.lstrip('@') for x in base_config['meta_workflow'][wkname]]
             # else:
@@ -296,6 +307,9 @@ def main(args):
         # Copy config file
         config["_outpath"] = pjoin(base_dir, wkname)
         config["_nodeinfo"] = defaultdict(dict)
+        if pexist(config["_outpath"]) and args.clearall:
+            log.log(20, "Cleaning result directory %s" %config["_outpath"])
+            shutil.rmtree(config["_outpath"])
         try:
             os.makedirs(config["_outpath"])
         except OSError:
@@ -344,9 +358,9 @@ def main(args):
     TARGET_CLADES.discard('')
 
     if WORKFLOW_TYPE == 'genetree':
-        from .phylobuild_lib.workflow.genetree import pipeline
+        from .ete_build_lib.workflow.genetree import pipeline
     elif WORKFLOW_TYPE == 'supermatrix':
-        from .phylobuild_lib.workflow.supermatrix import pipeline
+        from .ete_build_lib.workflow.supermatrix import pipeline
 
     #if args.arch == "auto":
     #    arch = "64 " if sys.maxsize > 2**32 else "32"
@@ -401,10 +415,11 @@ def main(args):
             silent_remove(GLOBALS["seqdb_file"])
 
         silent_remove(GLOBALS["datadb_file"])
-        silent_remove(pjoin(base_dir, "nprdata.tar"))
-        silent_remove(pjoin(base_dir, "nprdata.tar.gz"))
-        #silent_remove(pjoin(base_dir, "npr.log"))
-        silent_remove(pjoin(base_dir, "npr.log.gz"))
+        silent_remove(pjoin(base_dir, "etebuild_data.tar"))
+        silent_remove(pjoin(base_dir, "etebuild_data.tar.gz"))
+        silent_remove(pjoin(base_dir, "etebuild.log"))        
+        silent_remove(pjoin(base_dir, "etebuild.log.gz"))        
+
     else:
         if args.softclear:
             log.log(28, "Erasing precomputed data (reusing task directory)")
@@ -427,7 +442,7 @@ def main(args):
             shutil.copytree(pjoin(GLOBALS["output_dir"], "tasks/"), pjoin(base_dir, "tasks/"))
         except IOError as e:
             try:
-                shutil.copy(pjoin(GLOBALS["output_dir"], "nprdata.tar.gz"), base_dir)
+                shutil.copy(pjoin(GLOBALS["output_dir"], "etebuild_data.tar.gz"), base_dir)
             except IOError as e:
                 pass
 
@@ -436,9 +451,9 @@ def main(args):
 
 
     # UnCompress packed execution data
-    if pexist(os.path.join(base_dir,"nprdata.tar.gz")):
+    if pexist(os.path.join(base_dir,"etebuild_data.tar.gz")):
         log.warning("Compressed data found. Extracting content to start execution...")
-        cmd = "cd %s && gunzip -f nprdata.tar.gz && tar -xf nprdata.tar && rm nprdata.tar" % base_dir
+        cmd = "cd %s && gunzip -f etebuild_data.tar.gz && tar -xf etebuild_data.tar && rm etebuild_data.tar" % base_dir
         os.system(cmd)
 
     # Create dir structure
@@ -621,7 +636,7 @@ def main(args):
 
         if args.compress:
             log.log(28, "Compressing intermediate data...")
-            cmd = "cd %s && tar --remove-files -cf nprdata.tar tasks/ && gzip -f nprdata.tar; if [ -e npr.log ]; then gzip -f npr.log; fi;" %\
+            cmd = "cd %s && tar --remove-files -cf etebuild_data.tar tasks/ && gzip -f etebuild_data.tar; if [ -e etebuild.log ]; then gzip -f etebuild.log; fi;" %\
               GLOBALS["basedir"]
             os.system(cmd)
         log.log(28, "Deleting temporal data...")
@@ -656,7 +671,7 @@ def _main(arguments, builtin_apps_path=None):
 
 
     if len(arguments) > 1:
-        _config_path = pjoin(BASEPATH, 'phylobuild.cfg')
+        _config_path = pjoin(BASEPATH, 'ete_build.cfg')
 
 
         if arguments[1] == "check":
@@ -740,7 +755,7 @@ def _main(arguments, builtin_apps_path=None):
     # Input data related flags
     input_group = parser.add_argument_group('==== Input Options ====')
 
-    input_group.add_argument('[check | workflows | apps | show | dump | validate | version | install_tools]',
+    input_group.add_argument('[check | workflows | apps | show | dump | validate]',
                              nargs='?',
                              help=("Utility commands:\n"
                                    "check: check that external applications are executable.\n"
@@ -756,7 +771,7 @@ def _main(arguments, builtin_apps_path=None):
                              help="Custom configuration file.")
 
     input_group.add_argument("--base-config", dest="base_config",
-                             type=is_file, default=BASEPATH+'/phylobuild.cfg',
+                             type=is_file, default=BASEPATH+'/ete_build.cfg',
                              help="Base configuration file.")
 
     input_group.add_argument("--tools-dir", dest="tools_dir",
@@ -915,7 +930,7 @@ def _main(arguments, builtin_apps_path=None):
                               " a workflow is finished.")
 
     output_group.add_argument("--logfile", action="store_true",
-                              help="Log messages will be saved into a file named npr.log within the output directory.")
+                              help="Log messages will be saved into a file named 'etebuild.log' a the root of the output directory.")
 
     output_group.add_argument("--noimg", action="store_true",
                               help="Tree images will not be generated when a workflow is finished.")
@@ -956,11 +971,6 @@ def _main(arguments, builtin_apps_path=None):
                                        " Tasks will be processed and intermediate steps will"
                                        " run, but no real computation will be performed."))
 
-    # exec_type_group.add_argument("--sge", dest="sge_execute",
-    #                              action="store_true", help="EXPERIMENTAL!: Jobs will be"
-    #                              " launched using the Sun Grid Engine"
-    #                              " queue system.")
-
     exec_group.add_argument("--monitor", dest="monitor",
                             action="store_true",
                             help="Monitor mode: pipeline jobs will be"
@@ -987,12 +997,6 @@ def _main(arguments, builtin_apps_path=None):
     exec_group.add_argument("--clear-seqdb", dest="clearseqs",
                             action="store_true",
                             help="Reload sequences deleting previous database if necessary.")
-
-    # exec_group.add_argument("--arch", dest="arch",
-    #                         choices=["auto", "32", "64"],
-    #                         default="auto", help="Set the architecture of"
-    #                         " execution hosts (needed only when using"
-    #                         " built-in applications.)")
 
     exec_group.add_argument("--nochecks", dest="nochecks",
                             action="store_true",

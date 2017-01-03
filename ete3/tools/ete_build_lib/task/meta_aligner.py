@@ -152,7 +152,7 @@ class MetaAligner(AlgTask):
             aligner_name = aligner_name[1:]
             _classname = APP2CLASS[self.conf[aligner_name]["_app"]]
 
-            _module = importlib.import_module("ete3.tools.phylobuild_lib.task", "ete3")
+            _module = importlib.import_module("ete3.tools.ete_build_lib.task", "ete3")
             #_module = __import__(CLASS2MODULE[_classname], globals(), locals(), [], 0)
             _aligner = getattr(_module, _classname)
 
