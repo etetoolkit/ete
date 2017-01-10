@@ -69,8 +69,8 @@ builtin_apps = {
     'tcoffee'            : "export HOME=/tmp MAFFT_BINARIES=%BIN% TMP_4_TCOFFEE=%TMP% LOCKDIR_4_TCOFFEE=%TMP% PLUGINS_4_TCOFFEE=%BIN%/ && %BIN%/t_coffee",
     'phyml'              : "%BIN%/phyml",
     'iqtree'             : "%BIN%/iqtree-omp -nt %CORES%",
-    'raxml-pthreads'     : "%BIN%/raxmlHPC-PTHREADS-SSE3 -T%CORES%", 
-    'raxml'              : "%BIN%/raxmlHPC-SSE3",                    
+    'raxml-pthreads'     : "%BIN%/raxmlHPC-PTHREADS-SSE3 -T%CORES%",
+    'raxml'              : "%BIN%/raxmlHPC-SSE3",
     'pmodeltest'         : "python %BIN%/pmodeltest.py --nprocs %CORES% --phyml %BIN%/phyml",
     'dialigntx'          : "%BIN%/dialign-tx %BIN%/dialigntx_conf",
     'fasttree'           : "export OMP_NUM_THREADS=%CORES%; %BIN%/FastTree",
@@ -98,12 +98,12 @@ app2version = {
     'fasttree'            : "2>&1 | grep -i version",
     'statal'              : "--version| grep -i statal",
     'pmodeltest'          : "--version 2>&1|grep 'pmodeltest.py v'",
-    'prank'               : "|grep 'prank v'", 
+    'prank'               : "|grep 'prank v'",
     'probcons'            : "2>&1 |grep -i version",
-    'kalign'              : "2>&1 |grep -i version",   
+    'kalign'              : "2>&1 |grep -i version",
     'codeml'              : " /dev/null 2>&1 |grep -i version",
     'slr'                 : " 2>&1 |grep -i version",
-    'iqtree'              : " -h |grep -i version|grep IQ",   
+    'iqtree'              : " -h |grep -i version|grep IQ",
 }
 
 # REGISTER New application in the above global dictionries
@@ -117,16 +117,16 @@ OPTION2APPTYPE = {
 
     "_aa_alg_cleaner": APPTYPES["alg cleaners"],
     "_nt_alg_cleaner": APPTYPES["alg cleaners"],
-    
+
     "_aa_tree_builder": APPTYPES["tree builders"],
-    "_nt_tree_builder": APPTYPES["tree builders"], 
-    
+    "_nt_tree_builder": APPTYPES["tree builders"],
+
     "_aa_model_tester": APPTYPES["model testers"],
     "_nt_model_tester": APPTYPES["model testers"],
 
     "_cog_selector": APPTYPES["COG selectors"],
-    "_alg_concatenator": APPTYPES["alg concatenators"], 
-    
+    "_alg_concatenator": APPTYPES["alg concatenators"],
+
 }
 
 def get_call(appname, apps_path, exec_path, cores):
@@ -134,7 +134,7 @@ def get_call(appname, apps_path, exec_path, cores):
         cmd = builtin_apps[appname]
     except KeyError:
         return None
-    
+
     bin_path = os.path.join(apps_path, "bin")
     tmp_path = os.path.join(exec_path, "tmp")
     #apps_base = apps_path.rstrip("/x86-64").rstrip("/x86-32")

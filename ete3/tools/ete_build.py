@@ -102,9 +102,9 @@ except ImportError:
 __DESCRIPTION__ = (
 """
       --------------------------------------------------------------------------------
-                  ETE build (%s) - reproducible phylogenetic workflows 
+                  ETE build (%s) - reproducible phylogenetic workflows
 
-      Citation: 
+      Citation:
 
        Huerta-Cepas J, Serra F and Bork P. ETE 3: Reconstruction, analysis and
        visualization of phylogenomic data. Mol Biol Evol (2016)
@@ -143,7 +143,7 @@ def main(args):
         base_config = check_config(concat_config)
     else:
         base_config = check_config(args.base_config)
-        
+
     # Check for config file overwriting
     clearname = os.path.basename(args.base_config)
     local_conf_file = pjoin(base_dir, "ete_build.cfg")
@@ -217,8 +217,8 @@ def main(args):
             elif target_wtype == "supermatrix" and wkname in base_config.get('supermatrix_meta_workflow', {}):
                 temp_workflows = [x.lstrip('@') for x in base_config['supermatrix_meta_workflow'][wkname]]
             else:
-                temp_workflows = [wkname]                
-                
+                temp_workflows = [wkname]
+
             for index, _w in enumerate(list(temp_workflows)):
                 if ',' in _w:
                     words = [elem.split(',') for elem in _w.split('-')]
@@ -227,8 +227,8 @@ def main(args):
                         temp_workflows.append(real_wname)
                     temp_workflows.pop(index)
             print(temp_workflows)
-                    
-                
+
+
             # if wkname not in base_config and wkname in base_config.get('meta_workflow', {}):
             #     temp_workflows = [x.lstrip('@') for x in base_config['meta_workflow'][wkname]]
             # else:
@@ -240,7 +240,7 @@ def main(args):
                 elif target_wtype == "supermatrix":
                     base_config.update(build_supermatrix_workflow(_w))
                 parse_block(_w, base_config)
-                
+
                 if _w not in base_config:
                     list_workflows(base_config)
                     raise ConfigError('[%s] workflow or meta-workflow name is not found in the config file.' %_w)
@@ -401,7 +401,7 @@ def main(args):
 
     GLOBALS["nprdb_file"]  = pjoin(db_dir, "npr.db")
     GLOBALS["datadb_file"]  = pjoin(db_dir, "data.db")
-    
+
     GLOBALS["seqdb_file"]  = pjoin(db_dir, "seq.db") if not args.seqdb else args.seqdb
 
     # Clear databases if necessary
@@ -417,8 +417,8 @@ def main(args):
         silent_remove(GLOBALS["datadb_file"])
         silent_remove(pjoin(base_dir, "etebuild_data.tar"))
         silent_remove(pjoin(base_dir, "etebuild_data.tar.gz"))
-        silent_remove(pjoin(base_dir, "etebuild.log"))        
-        silent_remove(pjoin(base_dir, "etebuild.log.gz"))        
+        silent_remove(pjoin(base_dir, "etebuild.log"))
+        silent_remove(pjoin(base_dir, "etebuild.log.gz"))
 
     else:
         if args.softclear:
@@ -497,7 +497,7 @@ def main(args):
         log.log(28, "Enabling %d species", len(target_species))
     else:
         target_species = None
-    
+
     # Load supermatrix data
     if WORKFLOW_TYPE == "supermatrix":
         observed_species= set()
@@ -506,8 +506,8 @@ def main(args):
             for seqname, spcode, seqcode in seq_cogs:
                 if target_species is None or spcode in target_species:
                     observed_species.add(spcode)
-                    target_seqs.add(seqname)            
-                
+                    target_seqs.add(seqname)
+
         if target_species is not None:
             if target_species - observed_species:
                 raise DataError("The following target_species could not be found in COGs file: %s" %(','.join(target_species-observed_species)))
@@ -518,7 +518,7 @@ def main(args):
         target_seqs = None
 
     GLOBALS["target_species"] = target_species
-    
+
     # Check and load data
     ERROR = ""
     if not pexist(GLOBALS["seqdb_file"]):
@@ -528,12 +528,12 @@ def main(args):
             seqname2seqid = seqio.load_sequences(args, "aa", target_seqs, target_species, seqname2seqid)
             if not target_seqs:
                 target_seqs = list(seqname2seqid.keys())
-                
+
         if args.nt_seed_file:
             seqname2seqid = seqio.load_sequences(args, "nt", target_seqs, target_species, seqname2seqid)
         # Integrity checks?
         pass
-            
+
     else:
         db.init_seqdb(GLOBALS["seqdb_file"])
         log.warning("Reusing sequences from existing database!")
@@ -545,10 +545,10 @@ def main(args):
                 raise DataError("The following sequence names in COGs file"
                                 " are not found in current database: %s" %(
                                     ','.join(target_seqs - db_seqs)))
-                      
+
     log.warning("%d target sequences" %len(seqname2seqid))
     GLOBALS["target_sequences"] = seqname2seqid.values()
-        
+
     if ERROR:
         with open(pjoin(base_dir, "error.log"), "w") as OUTPUT:
             OUTPUT.write(' '.join(arguments) + "\n\n" + ERROR)
@@ -579,7 +579,7 @@ def main(args):
         log.log(26, "Available levels for NPR optimization:\n%s", '\n'.join(["% 30s (%d spcs)"%x for x in avail_levels]))
         avail_levels = set([lv[0] for lv in avail_levels])
         GLOBALS["lineages"] = (sp2lin, lin2sp)
-        
+
     # if no lineages file, raise an error
     elif WORKFLOW_TYPE == "supermatrix" and TARGET_CLADES:
         raise ConfigError("The use of target_levels requires a species lineage file provided through the --lineages option")
@@ -651,13 +651,13 @@ def main(args):
 
 def _main(arguments, builtin_apps_path=None):
     global BASEPATH, APPSPATH, args
-    
+
     if builtin_apps_path:
         APPSPATH = builtin_apps_path
-        
+
     if not pexist(pjoin(APPSPATH, "bin")):
         APPSPATH = os.path.expanduser("~/.etetoolkit/ext_apps-latest/")
-        
+
     ETEHOMEDIR = os.path.expanduser("~/.etetoolkit/")
 
     if len(arguments) == 1:
@@ -682,7 +682,7 @@ def _main(arguments, builtin_apps_path=None):
                 print(colorify('or manually compile by running:', "lgreen"), file=sys.stderr)
                 print(colorify(' ete3 upgrade-external-tools', "white"), file=sys.stderr)
                 sys.exit(0)
-            
+
             try:
                 toolchain_version = open(pjoin(APPSPATH, "__version__")).readline()
             except IOError:
@@ -690,7 +690,7 @@ def _main(arguments, builtin_apps_path=None):
 
             print("Current Toolchain path: %s " %APPSPATH)
             print("Current Toolchain version: %s" %toolchain_version)
-                
+
             # setup portable apps
             config = {}
             for k in apps.builtin_apps:
@@ -715,7 +715,7 @@ def _main(arguments, builtin_apps_path=None):
             base_config = check_config(_config_path)
             list_apps(base_config, set(arguments[2:]))
             sys.exit(0)
-            
+
         elif arguments[1] == "show":
             base_config = check_config(_config_path)
             try:
@@ -767,7 +767,7 @@ def _main(arguments, builtin_apps_path=None):
                                    ))
 
     input_group.add_argument("-c", "--custom-config", dest="custom_config",
-                             type=is_file, 
+                             type=is_file,
                              help="Custom configuration file.")
 
     input_group.add_argument("--base-config", dest="base_config",
@@ -810,7 +810,7 @@ def _main(arguments, builtin_apps_path=None):
                              " be removed, thus allowing to use alignment files as input.")
 
     input_group.add_argument("--seq-name-parser", dest="seq_name_parser",
-                             type=str, 
+                             type=str,
                              help=("A Perl regular expression containing a matching group, which is"
                                    " used to parse sequence names from the input files. Use this option to"
                                    " customize the names that should be shown in the output files."
@@ -819,7 +819,7 @@ def _main(arguments, builtin_apps_path=None):
                                    " characthers until the first blank space or tab delimiter are "
                                    " used as the sequence names."),
                              default='^([^\s]+)')
-                                 
+
     input_group.add_argument("--no-seq-rename", dest="seq_rename",
                              action="store_false",
                              help="If used, sequence names will NOT be"
@@ -989,7 +989,7 @@ def _main(arguments, builtin_apps_path=None):
                             action="store_true",
                             help="If output directory exists, erase all previous data and start a clean execution.")
 
-    
+
     exec_group.add_argument("--softclear", dest="softclear",
                             action="store_true",
                             help="Clear all precomputed data (data.db), but keeps task raw data in the directory, so they can be re-processed.")
@@ -1030,10 +1030,10 @@ def _main(arguments, builtin_apps_path=None):
     try:
         toolchain_version = open(pjoin(APPSPATH, "__version__")).readline()
     except IOError:
-        toolchain_version = "unknown"       
+        toolchain_version = "unknown"
     print("Toolchain path: %s " %APPSPATH)
     print("Toolchain version: %s" %toolchain_version)
-        
+
     if not pexist(APPSPATH):
         print(colorify('\nWARNING: external applications directory are not found at %s' %APPSPATH, "yellow"), file=sys.stderr)
         print(colorify('Use "ete build install_tools" to install or upgrade tools', "orange"), file=sys.stderr)
@@ -1043,8 +1043,8 @@ def _main(arguments, builtin_apps_path=None):
         try:
             from .. import Tree
             Tree().render('/tmp/etenpr_img_test.png')
-        except:            
-            print('X11 DISPLAY = %s' %colorify(os.environ.get('DISPLAY', 'not detected!'), 'yellow'))            
+        except:
+            print('X11 DISPLAY = %s' %colorify(os.environ.get('DISPLAY', 'not detected!'), 'yellow'))
             print('(You can use --noimg to disable graphical capabilities)')
             raise ConfigError('img generation not supported')
 
