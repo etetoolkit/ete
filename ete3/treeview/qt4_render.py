@@ -125,6 +125,44 @@ class _EmptyItem(QtGui.QGraphicsItem):
     def paint(self, *args, **kargs):
         return
 
+class _TextLabel(QtGui.QGraphicsItem):
+    def __init__(self, frame, path, text, text_opacity, font, fcolor, fsize):
+        QtGui.QGraphicsItem.__init__(self)
+        self.path = path
+        self.text = text
+        self.font = font
+        self.fcolor = fcolor
+        self.fsize = fsize
+        self.setParentItem(frame)
+        self.setOpacity(text_opacity)
+
+    def boundingRect(self):
+        return QtCore.QRectF(0, 0, 0, 0)
+
+    def paint(self, painter, option, widget):
+        length = self.path.length()
+	pen = QtGui.QPen(QtGui.QColor(self.fcolor))
+        painter.setPen(pen)
+        font = QtGui.QFont(self.font, self.fsize)
+        painter.setFont(font)
+        fm = QtGui.QFontMetrics(font)
+        text_width = fm.width(self.text)
+
+        # approx center text in path
+        current_length = (length / 2) - (text_width / 2)
+        for letter in self.text:
+            perc = self.path.percentAtLength(current_length)
+            point = QtCore.QPointF(self.path.pointAtPercent(perc))
+            angle = self.path.angleAtPercent(perc)
+
+            current_length += fm.width(letter)
+
+            painter.save()
+            painter.translate(point)
+            painter.rotate(-angle)
+            painter.drawText(QtCore.QPoint(0, 0), letter)
+            painter.restore()
+
 class _TreeItem(QtGui.QGraphicsRectItem):
     def __init__(self, parent=None):
         QtGui.QGraphicsRectItem.__init__(self)
@@ -378,7 +416,7 @@ def render_links(n2i, img, tree_radius, frame):
         node_coords[k]['cartesian_coords'] = rect.x(), rect.y()
         node_coords[k]['polar_coords'] = cartesian_to_polar(rect.x(), rect.y(), cx, cy)
 
-    for a, b, a_mode, b_mode, bg, lw, opacity, text_size, fsize, fcolor, ftype in img.hgt_links:
+    for a, b, a_mode, b_mode, bg, lw, opacity, text, text_opacity, fsize, fcolor, ftype in img.hgt_links:
         if node_coords[a]['polar_coords'][0] > node_coords[b]['polar_coords'][0]:
             a, b = b, a
 
@@ -446,14 +484,14 @@ def render_links(n2i, img, tree_radius, frame):
 
         link.setParentItem(frame)
 
-        # if bcx < acx:
-        #     acx, acy, bcx, bcy = bcx, bcy, acx, acy
-        #
-        # txtpath = QtGui.QPainterPath()
-        # txtpath.moveTo(acx, acy)
-        # txtpath.quadTo(cx, cy, bcx, bcy)
-        # draw_text_in_path(frame, "Esto es una prueba muy muy larga para ver que pasa con las curvas",
-        #                   txtpath, ftype, fcolor, fsize)
+        if bcx < acx:
+            acx, acy, bcx, bcy = bcx, bcy, acx, acy
+        
+        if text:
+            textpath = QtGui.QPainterPath()
+            textpath.moveTo(acx, acy)
+            textpath.quadTo(cx, cy, bcx, bcy)
+            link_text_label = _TextLabel(frame, textpath, text, text_opacity, ftype, fcolor, fsize)
 
 def cartesian_to_polar(x, y, cx, cy):
     x -= cx
