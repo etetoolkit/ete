@@ -1,6 +1,3 @@
-README
-=======
-
 .. image:: https://travis-ci.org/etetoolkit/ete.svg?branch=master
    :target: https://travis-ci.org/etetoolkit/ete
 
@@ -41,12 +38,6 @@ Gallery of examples
 .. image:: https://raw.githubusercontent.com/jhcepas/ete/master/sdoc/gallery.png
    :width: 600
   
-
-Contributing and BUG reporting
----------------------------------
-https://github.com/jhcepas/ete/blob/master/CONTRIBUTING.rst
-
-
 Getting Support
 ------------------
 
@@ -72,6 +63,9 @@ Getting Support
   *huerta /at/ embl.de*
    
 
+Contributing and BUG reporting
+---------------------------------
+https://github.com/etetoolkit/ete/wiki/Contributing
   
 
 
