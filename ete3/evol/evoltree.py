@@ -239,11 +239,11 @@ class EvolNode(PhyloNode):
         bin = os.path.join(self.execpath, model_obj.properties['exec'])
         try:
             proc = Popen([bin, 'tmp.ctl'], stdout=PIPE, stdin=PIPE)
-            proc.stdin.write('\n') # in case codeml/slr asks something
         except OSError:
             raise Exception(('ERROR: {} not installed, ' +
                              'or wrong path to binary\n').format(bin))
-        run, err = proc.communicate()
+        run, err = proc.communicate(b'\n') # send \n via stdin in case codeml/slr asks something (note on py3, stdin needs bytes)
+
         if err is not None:
             warn("ERROR: codeml not found!!!\n" +
                  "       define your variable EvolTree.execpath")
