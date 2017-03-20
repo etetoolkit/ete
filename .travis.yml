@@ -29,10 +29,6 @@ script:
 after_success:
   - coveralls
   
-#The email defaults are too talkative while we're getting Travis working nicely.
-notifications:
-  email: false
-  
 branches:
   only:
     - master
