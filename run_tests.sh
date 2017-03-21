@@ -154,8 +154,9 @@ start_xvfb() {
 
 shutdown_xvfb() {
     # Don't trap exit codes any longer
-    trap - EXIT HUP INT QUIT TERM KILL
+    trap - EXIT HUP INT QUIT TERM
 
+    # If xvfb was started (Xvfb is the only background job)
     if [ "$!" != "0" ] && [ "x$!" != "x" ]; then
         echo -n ">>> Stopping Xvfb... "
 
@@ -274,7 +275,7 @@ echo -n > ${LOG}
 
 # At any of these signals shutdown xvfb first and conditionally show the
 # contents of the logfile
-trap 'exitcode=$? ; shutdown_xvfb ; showlog ; exit $exitcode' EXIT HUP INT QUIT TERM KILL
+trap 'exitcode=$? ; shutdown_xvfb ; showlog ; exit $exitcode' EXIT HUP INT QUIT TERM
 
 if [ "${SETUP}" == "1" ]; then
     setup_miniconda
