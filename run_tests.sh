@@ -46,7 +46,12 @@ handle_error() {
     if [ "$1" != "0" ]; then
         echo >&2 -e "\n$2"
         echo >&2 "$3"
-        kill -s TERM $TOP_PID
+        # NOTE Not sure why this isn't working anymore.
+        # It should send a non-zero exit code but it always reports 0
+        # which is super bad because it silences errors in the testsuite
+        #kill -s TERM $TOP_PID
+        # We workaround using exit and the exitcode seen by handle_error
+        exit "$1"
     fi
 }
 
