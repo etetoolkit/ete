@@ -1,12 +1,21 @@
 #!/bin/bash
 # run_tests.sh -- created 2016-04-28, Renato Alves
-
+source bash_colors.sh
 export TOP_PID=$$
 
 # If a command in a pipe fails, the whole command fails
 set -o pipefail
 
-usage() {
+REAL=true
+
+function run {
+    clr_bold "   $@"
+    if [ $REAL == true ]; then
+        eval $@ || (clr_red "ERRORS FOUND!" && exit 1)
+    fi
+    }
+
+sage() {
     echo >&2 ""
     echo >&2 "This script runs the test suite provided with ete3."
     echo >&2 "Without any optional parameters it defaults to running the api tests"
@@ -102,7 +111,7 @@ create_env() {
     fi
 
     echo -n ">>> Creating test environment for version ${VERSION}... "
-    create_output=$("${CONDA}/bin/conda" create -q -y -n "test_${VERSION}" python="${VERSION}" pip pyqt=4 numpy six lxml coverage scikit-bio biopython scipy 2>&1 | tee -a "${LOG}")
+    create_output=$("${CONDA}/bin/conda" create -q -y -n "test_${VERSION}" python="${VERSION}" pip pyqt=4 setuptools numpy six lxml coverage scikit-bio biopython scipy 2>&1 | tee -a "${LOG}")
     handle_error "$?" "ERROR: Failed to create a new conda environment for python ${VERSION}" "$create_output"
     echo "DONE"
 }
@@ -117,15 +126,15 @@ install_external_apps() {
 }
 
 update_env() {
-    echo -n ">>> Updating conda packages in environment test_${VERSION}... "
-    update_conda_output=$(source "${CONDA}/bin/activate" "test_${VERSION}" 2>&1 && "${CONDA}/bin/conda" update -y --all 2>&1 | tee -a "${LOG}")
+    clr_green ">>> Updating conda packages in environment test_${VERSION}... "
+    run "source ${CONDA}/bin/activate test_${VERSION} 2>&1 && ${CONDA}/bin/conda update -y --all 2>&1 | tee -a ${LOG}"
     handle_error "$?" "ERROR: Failed to update packages in the conda environment" "$update_conda_output"
-    echo "DONE"
+    clr_green "DONE"
 
-    echo -n ">>> Installing latest ete in test environment... "
-    update_output=$(source "${CONDA}/bin/activate" "test_${VERSION}" 2>&1 && python setup.py install --donottrackinstall 2>&1 | tee -a "${LOG}")
+    clr_green ">>> Installing latest ete in test environment... "
+    run "source ${CONDA}/bin/activate test_${VERSION} 2>&1 && python setup.py install --donottrackinstall 2>&1 | tee -a ${LOG}"
     handle_error "$?" "ERROR: Failed to install/update ete to the latest commit on test_${VERSION}" "$update_output"
-    echo "DONE"
+    clr_green "DONE"
 }
 
 # Find a free X server number by looking at .X*-lock files in /tmp.
@@ -142,7 +151,7 @@ start_xvfb() {
     echo -n ">>> Starting Xvfb on display ${DISPLAY}... "
     # NOTE -noreset is needed in some versions of Xvfb.
     # The default is -reset but this causes the server to crash when the last client disconnects
-    Xvfb "${DISPLAY}" -noreset -screen 0 1280x800x16 &>> "${LOG}" &
+    Xvfb "${DISPLAY}" -noreset -screen 0 1280x800x16 & >> "${LOG}" &
     # Giving xvfb some time to start
     sleep "$SLEEP"
 
@@ -175,17 +184,17 @@ showlog() {
 }
 
 run_tests() {
-    echo -n ">>> Obtaining deployed python version... "
+    clr_green ">>> Obtaining deployed python version... "
     py_version_output=$(source "${CONDA}/bin/activate" "test_${VERSION}" &>/dev/null && python --version 2>&1 | tee -a "${LOG}")
     handle_error "$?" "ERROR: couldn't obtain python version" "$py_version_output"
     echo "DONE"
 
-    echo -n ">>> Obtaining ete3 version... "
+    clr_green ">>> Obtaining ete3 version... "
     ete_version_output=$(source "${CONDA}/bin/activate" "test_${VERSION}" &>/dev/null && ete3 version 2>&1 | tee -a "${LOG}")
     handle_error "$?" "ERROR: couldn't obtain ete3 version" "$ete_version_output"
     echo "DONE"
 
-    echo -n ">>> Running tests on ete ${ete_version_output} using ${py_version_output}... "
+    clr_green ">>> Running tests on ete ${ete_version_output} using ${py_version_output}... "
     tests_output=$(source "${CONDA}/bin/activate" "test_${VERSION}" 2>&1 && coverage run -m "ete3.test.test_${TESTSET}" 2>&1 | tee -a "${LOG}")
     handle_error "$?" "ERROR: One or more tests failed on test_${VERSION}" "$tests_output"
     echo "DONE"
@@ -292,4 +301,4 @@ if [ "${TEST}" == "1" ]; then
 fi
 showlog
 
-# vi: 
+
