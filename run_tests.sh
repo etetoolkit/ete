@@ -112,8 +112,8 @@ create_env() {
     
     clr_green ">>> Creating test environment for version ${VERSION}... "
 
-    run "${CONDA}/bin/conda env remove -y -n test_${VERSION} ; ${CONDA}/bin/conda create -f -q -y -n test_${VERSION} python=${VERSION} pip pyqt=4 setuptools numpy six lxml coverage scikit-bio biopython scipy 2>&1 | tee -a ${LOG}"
-    handle_error "$?" "ERROR: Failed to create a new conda environment for python ${VERSION}" "$create_output"
+    run "${CONDA}/bin/conda env remove -y -n test_${VERSION} || true"
+    run "${CONDA}/bin/conda create -q -y -n test_${VERSION} python=${VERSION} pip pyqt=4 setuptools numpy six lxml coverage scikit-bio biopython scipy"
     clr_green "DONE"
 }
 
