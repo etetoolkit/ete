@@ -9,13 +9,13 @@ set -o pipefail
 REAL=true
 
 function run {
-    clr_bold "   $@"
+    clr_bold " $@"
     if [ $REAL == true ]; then
         eval $@ || (clr_red "ERRORS FOUND!" && exit 1)
     fi
     }
 
-sage() {
+usage() {
     echo >&2 ""
     echo >&2 "This script runs the test suite provided with ete3."
     echo >&2 "Without any optional parameters it defaults to running the api tests"
@@ -74,32 +74,32 @@ optional() {
 
 setup_miniconda() {
     if ! [ -f "${CONDA}/bin/conda" ]; then
-        echo -n ">>> Downloading miniconda... "
-        wget_output=$(wget -nv https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh 2>&1 | tee -a "${LOG}")
+        clr_green ">>> Downloading miniconda... "
+        run "wget -nv https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh 2>&1 | tee -a ${LOG}"
         handle_error "$?" "ERROR: Failed to download miniconda installation script" "$wget_output"
-        echo "DONE"
+        clr_green "DONE"
 
-        echo -n ">>> Installing miniconda... "
-        install_output=$(bash miniconda.sh -b -p "${CONDA}" 2>&1 | tee -a "${LOG}")
+        clr_green ">>> Installing miniconda... "
+        run "bash miniconda.sh -b -p "${CONDA}" 2>&1 | tee -a ${LOG}"
         handle_error "$?" "ERROR: Failed to install miniconda" "$install_output"
-        echo "DONE"
+        clr_green "DONE"
 
-        echo -n ">>> Updating miniconda packages and package information... "
-        conda_update_output=$("${CONDA}/bin/conda" update -q -y conda 2>&1 | tee -a "${LOG}")
+        clr_green ">>> Updating miniconda packages and package information... "
+        run "${CONDA}/bin/conda update -q -y conda 2>&1 | tee -a ${LOG}"
         handle_error "$?" "ERROR: Failed to update conda packages" "$conda_update_output"
-        echo "DONE"
+        clr_green "DONE"
 
-        echo -n ">>> Cleaning up miniconda installation files... "
-        clean_output=$(rm -f miniconda.sh 2>&1 | tee -a "${LOG}")
+        clr_green ">>> Cleaning up miniconda installation files... "
+        run "rm -f miniconda.sh 2>&1 | tee -a ${LOG}"
         handle_error "$?" "ERROR: Failed to remove miniconda.sh" "$clean_output"
-        echo "DONE"
+        clr_green "DONE"
 
     fi
 
-    echo -n ">>> Collecting information about conda... "
+    clr_green ">>> Collecting information about conda... "
     info_output=$("${CONDA}/bin/conda" info -a 2>&1 | tee -a "${LOG}")
     handle_error "$?" "ERROR: Failed to collect information about conda" "$info_output"
-    echo "DONE"
+    clr_green "DONE"
 }
 
 create_env() {
@@ -109,27 +109,29 @@ create_env() {
         echo >&2 "### Using existing conda environment test_${VERSION}."
         return 0
     fi
-
-    echo -n ">>> Creating test environment for version ${VERSION}... "
-    create_output=$("${CONDA}/bin/conda" create -q -y -n "test_${VERSION}" python="${VERSION}" pip pyqt=4 setuptools numpy six lxml coverage scikit-bio biopython scipy 2>&1 | tee -a "${LOG}")
+    
+    clr_green ">>> Creating test environment for version ${VERSION}... "
+    run "${CONDA}/bin/conda create -q -y -n test_${VERSION} python=${VERSION} pip pyqt=4 setuptools numpy six lxml coverage scikit-bio biopython scipy 2>&1 | tee -a ${LOG}"
     handle_error "$?" "ERROR: Failed to create a new conda environment for python ${VERSION}" "$create_output"
-    echo "DONE"
+    clr_green "DONE"
 }
 
 install_external_apps() {
     if [ "$EXTERNAL_APPS" == "1" ]; then
-        echo -n ">>> Installing external packages in environment test_${VERSION}... "
-        external_apps_output=$(source "${CONDA}/bin/activate" "test_${VERSION}" 2>&1 && "${CONDA}/bin/conda" install -c etetoolkit ete3_external_apps -y 2>&1 | tee -a "${LOG}")
+        clear_green ">>> Installing external packages in environment test_${VERSION}... "
+        run "${CONDA}/bin/activate test_${VERSION} 2>&1 && ${CONDA}/bin/conda install -c etetoolkit ete3_external_apps -y 2>&1 | tee -a ${LOG}"
         handle_error "$?" "ERROR: Failed to install ete3 external apps in the conda environment" "$external_apps_output"
-        echo "DONE"
+        clear_green "DONE"
     fi
 }
 
 update_env() {
-    clr_green ">>> Updating conda packages in environment test_${VERSION}... "
-    run "source ${CONDA}/bin/activate test_${VERSION} 2>&1 && ${CONDA}/bin/conda update -y --all 2>&1 | tee -a ${LOG}"
-    handle_error "$?" "ERROR: Failed to update packages in the conda environment" "$update_conda_output"
-    clr_green "DONE"
+    ## conda update installs latest version of qt5, so tests are not passing
+ 
+    #clr_green ">>> Updating conda packages in environment test_${VERSION}... "
+    #run "source ${CONDA}/bin/activate test_${VERSION} 2>&1 && ${CONDA}/bin/conda update -y --all 2>&1 | tee -a ${LOG}"
+    #handle_error "$?" "ERROR: Failed to update packages in the conda environment" "$update_conda_output"
+    #clr_green "DONE"
 
     clr_green ">>> Installing latest ete in test environment... "
     run "source ${CONDA}/bin/activate test_${VERSION} 2>&1 && python setup.py install --donottrackinstall 2>&1 | tee -a ${LOG}"
@@ -140,7 +142,7 @@ update_env() {
 # Find a free X server number by looking at .X*-lock files in /tmp.
 find_free_servernum() {
     # Start on display 99
-    i=99
+    i=979
     while [ -f /tmp/.X$i-lock ]; do
         i=$(("$i" + 1))
     done
@@ -148,15 +150,19 @@ find_free_servernum() {
 }
 
 start_xvfb() {
-    echo -n ">>> Starting Xvfb on display ${DISPLAY}... "
+    clr_green ">>> Starting Xvfb on display ${DISPLAY}... "
     # NOTE -noreset is needed in some versions of Xvfb.
     # The default is -reset but this causes the server to crash when the last client disconnects
+
+    echo Xvfb "${DISPLAY}" -noreset -screen 0 1280x800x16 & >> "${LOG}" 
+
     Xvfb "${DISPLAY}" -noreset -screen 0 1280x800x16 & >> "${LOG}" &
+    XVFB_PID=`ps -C Xvfb -o pid,cmd | grep Xvfb  | grep 979| awk {'print $1 '}`
     # Giving xvfb some time to start
     sleep "$SLEEP"
 
     # Checking if Xvfb is still running
-    kill -0 $!
+    kill -0 $XVFB_PID
     handle_error "$?" "ERROR: Xvfb didn't start properly" "Please re-run the test script with option -l and check the log file"
     echo "DONE"
 }
@@ -165,15 +171,11 @@ shutdown_xvfb() {
     # Don't trap exit codes any longer
     trap - EXIT HUP INT QUIT TERM
 
+    clr_green ">>> Stopping Xvfb... "
+    PID=`ps -ef|grep Xvfb|grep -w :979|awk '{print $2}'`
+    run "kill $XVFB_PID"
+    clr_green "DONE"
 
-    # If xvfb was started (Xvfb is the only background job)
-    if [ "$!" != "0" ] && [ "x$!" != "x" ]; then
-        echo -n ">>> Stopping Xvfb... "
-
-        xvfb_stop_output=$(kill $! 2>&1 | tee -a "${LOG}")
-        handle_error "$?" "ERROR: Failed to stop Xvfb" "$xvfb_stop_output"
-        echo "DONE"
-    fi
 }
 
 showlog() {
@@ -184,18 +186,18 @@ showlog() {
 }
 
 run_tests() {
-    clr_green ">>> Obtaining deployed python version... "
-    py_version_output=$(source "${CONDA}/bin/activate" "test_${VERSION}" &>/dev/null && python --version 2>&1 | tee -a "${LOG}")
-    handle_error "$?" "ERROR: couldn't obtain python version" "$py_version_output"
-    echo "DONE"
+    #clr_green ">>> Obtaining deployed python version... "
+    #run "${CONDA}/bin/activate test_${VERSION} &>/dev/null && python --version 2>&1"
+    #handle_error "$?" "ERROR: couldn't obtain python version" "$py_version_output"
+    #echo "DONE"
 
     clr_green ">>> Obtaining ete3 version... "
-    ete_version_output=$(source "${CONDA}/bin/activate" "test_${VERSION}" &>/dev/null && ete3 version 2>&1 | tee -a "${LOG}")
+    run "source ${CONDA}/bin/activate test_${VERSION} &>/dev/null && ete3 version 2>&1"
     handle_error "$?" "ERROR: couldn't obtain ete3 version" "$ete_version_output"
     echo "DONE"
 
     clr_green ">>> Running tests on ete ${ete_version_output} using ${py_version_output}... "
-    tests_output=$(source "${CONDA}/bin/activate" "test_${VERSION}" 2>&1 && coverage run -m "ete3.test.test_${TESTSET}" 2>&1 | tee -a "${LOG}")
+    run "source ${CONDA}/bin/activate test_${VERSION} 2>&1 && coverage run -m ete3.test.test_${TESTSET}"
     handle_error "$?" "ERROR: One or more tests failed on test_${VERSION}" "$tests_output"
     echo "DONE"
 
