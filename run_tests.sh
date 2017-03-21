@@ -103,12 +103,12 @@ setup_miniconda() {
 }
 
 create_env() {
-    env_output=$("${CONDA}/bin/conda" env list | grep "test_${VERSION}")
-    if [ $? == 0 ]; then
-        # Env already created. Nothing to do
-        echo >&2 "### Using existing conda environment test_${VERSION}."
-        return 0
-    fi
+    # env_output=$("${CONDA}/bin/conda" env list | grep "test_${VERSION}")
+    # if [ $? == 0 ]; then
+    #     # Env already created. Nothing to do
+    #     echo >&2 "### Using existing conda environment test_${VERSION}."
+    #     return 0
+    # fi
     
     clr_green ">>> Creating test environment for version ${VERSION}... "
     run "${CONDA}/bin/conda create -q -y -n test_${VERSION} python=${VERSION} pip pyqt=4 setuptools numpy six lxml coverage scikit-bio biopython scipy 2>&1 | tee -a ${LOG}"
@@ -233,8 +233,7 @@ done
 
 VERSION="$(valid_version "${VERSION}" 3.5)"
 TESTSET="$(optional "$1" api)"
-DISPLAY=":$(find_free_servernum)"
-export DISPLAY
+
 SLEEP=2  # Time to wait for xvfb to start and be functional
 
 [ ! -f "ete3/test/test_${TESTSET}.py" ] && usage && handle_error "1" "ERROR: Invalid testset selected ${TESTSET}"
