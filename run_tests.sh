@@ -97,7 +97,7 @@ setup_miniconda() {
     fi
 
     clr_green ">>> Collecting information about conda... "
-    info_output=$("${CONDA}/bin/conda" info -a 2>&1 | tee -a "${LOG}")
+    run "${CONDA}/bin/conda info -a 2>&1 | tee -a ${LOG}"
     handle_error "$?" "ERROR: Failed to collect information about conda" "$info_output"
     clr_green "DONE"
 }
@@ -139,44 +139,6 @@ update_env() {
     clr_green "DONE"
 }
 
-# Find a free X server number by looking at .X*-lock files in /tmp.
-find_free_servernum() {
-    # Start on display 99
-    i=979
-    while [ -f /tmp/.X$i-lock ]; do
-        i=$(("$i" + 1))
-    done
-    echo $i
-}
-
-start_xvfb() {
-    clr_green ">>> Starting Xvfb on display ${DISPLAY}... "
-    # NOTE -noreset is needed in some versions of Xvfb.
-    # The default is -reset but this causes the server to crash when the last client disconnects
-
-    echo Xvfb "${DISPLAY}" -noreset -screen 0 1280x800x16 & >> "${LOG}" 
-
-    Xvfb "${DISPLAY}" -noreset -screen 0 1280x800x16 & >> "${LOG}" &
-    XVFB_PID=`ps -C Xvfb -o pid,cmd | grep Xvfb  | grep 979| awk {'print $1 '}`
-    # Giving xvfb some time to start
-    sleep "$SLEEP"
-
-    # Checking if Xvfb is still running
-    kill -0 $XVFB_PID
-    handle_error "$?" "ERROR: Xvfb didn't start properly" "Please re-run the test script with option -l and check the log file"
-    echo "DONE"
-}
-
-shutdown_xvfb() {
-    # Don't trap exit codes any longer
-    trap - EXIT HUP INT QUIT TERM
-
-    clr_green ">>> Stopping Xvfb... "
-    PID=`ps -ef|grep Xvfb|grep -w :979|awk '{print $2}'`
-    run "kill $XVFB_PID"
-    clr_green "DONE"
-
-}
 
 showlog() {
     if [ "$SHOWLOG" == "1" ]; then
@@ -286,9 +248,8 @@ fi
 # Empty logfile
 echo -n > "${LOG}"
 
-# At any of these signals shutdown xvfb first and conditionally show the
-# contents of the logfile
-trap 'exitcode=$? ; shutdown_xvfb ; showlog ; exit $exitcode' EXIT HUP INT QUIT TERM
+# At any of these signals conditionally show the contents of the logfile
+trap 'exitcode=$? ; showlog ; exit $exitcode' EXIT HUP INT QUIT TERM
 
 if [ "${SETUP}" == "1" ]; then
     setup_miniconda
@@ -297,9 +258,7 @@ if [ "${SETUP}" == "1" ]; then
     update_env
 fi
 if [ "${TEST}" == "1" ]; then
-    start_xvfb
     run_tests
-    shutdown_xvfb
 fi
 showlog
 
