@@ -235,14 +235,12 @@ class Test_Coretype_Tree(unittest.TestCase):
             self.assertRaises(NewickError, Tree, newick=nw, quoted_node_names=True, format=0)
             t = Tree(newick=nw, format=1, quoted_node_names=True)
             self.assertTrue(any(n for n in t if n.name == '%s'%complex_name))
-            # test writing
+            # test writing and reloading tree
             nw_back = t.write(quoted_node_names=True, format=1)
-            # print()
-            # print(nw)
-            # print(nw_back)
-            # print()
-            # print (nw == nw_back)
+            t2 = Tree(newick=nw, format=1, quoted_node_names=True)
+            nw_back2 = t2.write(quoted_node_names=True, format=1)
             self.assertEqual(nw, nw_back)
+            self.assertEqual(nw, nw_back2)
 
     def test_custom_formatting_formats(self):
         """ test to change dist, name and support formatters """

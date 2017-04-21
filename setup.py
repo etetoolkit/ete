@@ -133,7 +133,7 @@ try:
 
         name = MOD_NAME,
         version = ETE_VERSION,
-        packages = find_packages(),
+        packages = ["ete3"],
 
         entry_points = {"console_scripts":
                         ["ete3 = %s.tools.ete:main" %MOD_NAME]},
