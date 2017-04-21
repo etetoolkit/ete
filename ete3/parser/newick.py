@@ -169,7 +169,7 @@ def format_node(node, node_type, format, dist_formatter=None,
         FIRST_PART = name_formatter %FIRST_PART
         if quoted_names:
             #FIRST_PART = '"%s"' %FIRST_PART.decode('string_escape').replace('"', '\\"')
-            FIRST_PART = '"%s"' %FIRST_PART.replace('"', '\\"')
+            FIRST_PART = '"%s"' %FIRST_PART
 
     elif converterFn1 is None:
         FIRST_PART = ""
