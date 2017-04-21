@@ -41,10 +41,12 @@ Gallery of examples
   
 Getting Support
 ------------------
+**Whenerver possible, please avoid sending support related emails directly to
+the developers. Keep communication public:**
 
-- For any type of question on how to use ETE in bioinformatics, the BioStars
-  community (http://biostars.org) provides an excellent help desk. ETE
-  developers contribute there with answers, but will also get feedback from
+- For any type of question on how to use ETE in a bioinformatics context, the
+  BioStars community (http://biostars.org) provides an excellent help desk. ETE
+  developers contribute there with answers, but you will also get feedback from
   other users. It is recommended to tag your questions with the "etetoolkit"
   label.
 
@@ -53,15 +55,10 @@ Getting Support
   avoid spam, messages from new users are moderated. Expect some delay until
   your first message and account is validated.
 
-  *As this mailing list is regularly checked for pending messages by the ETE developers,
-  messages are more likely to be addressed than direct support questions sent to
-  the developers' emails.*
-
-- Bug reports and feature requests are usually discussed at
+- Bug reports and feature requests and discussion should be posted into github:
   https://github.com/etetoolkit/ete/issues
 
-- For any other inquire, preferably non-support questions, please contact
-  *huerta /at/ embl.de*
+- For any other inquire please contact *huerta /at/ embl.de*
    
 
 Contributing and BUG reporting
