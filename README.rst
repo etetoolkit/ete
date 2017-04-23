@@ -55,7 +55,7 @@ the developers. Keep communication public:**
   avoid spam, messages from new users are moderated. Expect some delay until
   your first message and account is validated.
 
-- Bug reports and feature requests and discussion should be posted into github:
+- Bug reports, feature requests and general discussion should be posted into github:
   https://github.com/etetoolkit/ete/issues
 
 - For any other inquire please contact *huerta /at/ embl.de*
