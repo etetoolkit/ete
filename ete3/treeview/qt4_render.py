@@ -435,7 +435,15 @@ def add_legend(img, mainRect, parent):
 
 def add_scale(img, mainRect, parent):
     if img.show_scale:
-        length=50
+        if img.scale_length is None:
+            length = 50.0
+        else:
+            length = img.scale_length * img._scale
+            if length > mainRect.width():
+                max_value = mainRect.width() / img._scale
+                raise ValueError('Custom scale bar length (TreeStyle.scale_length) is larger than the tree image'
+                                 'Use values between 0 and %g' %max_value)
+
         scaleItem = _EmptyItem()
         customPen = QtGui.QPen(QtGui.QColor("black"), 1)
 
@@ -458,16 +466,16 @@ def add_scale(img, mainRect, parent):
             line2.setLine(0, 0, 0, 10)
             line3.setLine(length, 0, length, 10)
             length_text = float(length) / img._scale if img._scale else 0.0
-            scale_text = "%0.2f" % (length_text)
+            scale_text = "%g" %(length_text)
             scale = QtGui.QGraphicsSimpleTextItem(scale_text)
             scale.setParentItem(scaleItem)
             scale.setPos(0, 10)
 
         scaleItem.setParentItem(parent)
-        dw = max(0, length-mainRect.width())
+        dw = max(0, length - mainRect.width())
         scaleItem.setPos(mainRect.bottomLeft())
         scaleItem.moveBy(img.margin_left, 0)
-        mainRect.adjust(0, 0, dw, length)
+        mainRect.adjust(0, 0, 0, length)
 
 def rotate_inverted_faces(n2i, n2f, img):
     for node, faceblock in six.iteritems(n2f):

@@ -250,8 +250,7 @@ class NodeStyle(dict):
     #    super(NodeStyle, self).__setitem__("_faces", {})
 
 class TreeStyle(object):
-    """
-    .. versionadded:: 2.1
+    """.. versionadded:: 2.1
 
     .. currentmodule:: ete3
 
@@ -363,6 +362,9 @@ class TreeStyle(object):
 
     :param True show_scale: Include the scale legend in the tree
       image
+
+    :param None scale_length: Scale length to be used as reference scale bar
+    when visualizing tree. None = automatically adjusted.
 
     :param False show_leaf_name: Automatically adds a text Face to
       leaf nodes showing their names
@@ -525,6 +527,7 @@ class TreeStyle(object):
 
         # Draw the scale
         self.show_scale = True
+        self.scale_length = None
 
         # Initialize aligned face headers
         self.aligned_header = FaceContainer()
@@ -713,7 +716,7 @@ def save(scene, imgName, w=None, h=None, dpi=90,\
         if ipython_inline:
             from IPython.core.display import SVG
             return SVG(compatible_code)
-        
+
         elif imgName == '%%return':
             return x_scale, y_scale, compatible_code
         else:
@@ -763,7 +766,7 @@ def save(scene, imgName, w=None, h=None, dpi=90,\
             ba = QtCore.QByteArray()
             buf = QtCore.QBuffer(ba)
             buf.open(QtCore.QIODevice.WriteOnly)
-            ii.save(buf, "PNG")            
+            ii.save(buf, "PNG")
             from IPython.core.display import Image
             return Image(ba.data())
         elif imgName == '%%return':
