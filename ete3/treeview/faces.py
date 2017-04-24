@@ -296,9 +296,9 @@ class TextFace(Face):
             self._bounding_rect = QRectF(0, asc - up, tx_w, textr.height())
             self._real_rect = QRectF(0, 0, tx_w, textr.height())
         else:
-            textr = fm.boundingRect(txt)
-            self._bounding_rect = QRectF(0, 0, tx_w, textr.height())
-            self._real_rect = QRectF(0, 0, tx_w, textr.height())
+            textr = fm.boundingRect(QRect(0, 0, 0, 0), 0, txt) # see issue 241
+            self._bounding_rect = QRectF(0, 0, textr.width(), textr.height())
+            self._real_rect = QRectF(0, 0, textr.width(), textr.height())
 
     def _get_text(self):
         return self._text
