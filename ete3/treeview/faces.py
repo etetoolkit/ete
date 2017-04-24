@@ -155,7 +155,7 @@ __all__ = ["Face", "TextFace", "AttrFace", "ImgFace",
            "ProfileFace", "SequenceFace", "TreeFace",
            "RandomFace", "DynamicItemFace", "StaticItemFace",
            "CircleFace", "PieChartFace", "BarChartFace", "SeqMotifFace",
-           "RectFace", "StackedBarFace", "SVGFace"]
+           "RectFace", "StackedBarFace", "SVGFace", "DiamondFace"]
 
 class Face(object):
     """Base Face object. All Face types (i.e. TextFace, SeqMotifFace,
@@ -1049,6 +1049,57 @@ class _RectItem(QGraphicsRectItem):
     def paint(self, p, option, widget):
         super(_RectItem, self).paint(p, option, widget)
         _label_painter(self, p, option, widget)
+
+
+class _DiamondItem(QGraphicsPolygonItem):
+    def __init__(self, width, height, label, color='#0000FF'):
+
+        self.pol = QPolygonF()
+
+        self.pol = QPolygonF()
+        self.pol.append(QPointF(width / 2.0, 0))
+        self.pol.append(QPointF(width, height / 2.0))
+        self.pol.append(QPointF(width / 2.0, height))
+        self.pol.append(QPointF(0, height / 2.0))
+        self.pol.append(QPointF(width / 2.0, 0))
+
+        self.label = label
+        QGraphicsPolygonItem.__init__(self, self.pol)
+
+        self.setBrush(QBrush(QColor(color)))
+        self.setPen(QPen(QColor(color)))
+
+    def paint(self, p, option, widget):
+        super(_DiamondItem, self).paint(p, option, widget)
+        _label_painter(self, p, option, widget)
+
+
+class DiamondFace(StaticItemFace, Face):
+    """
+    Creates a collapsed node face object.
+    """
+    def __init__(self, width, height, label='', color='#0000FF'):
+        # TODO: It would be great if this object could be automatically
+        # resized to approximate the dimensions of the subtree.
+        # One way around this is to scale the height by the number of tips
+        # in the subtree (i.e. `len(node)`) and the width by the
+        # maximum height of the subtree (i.e. node.get_farthest_node()).
+        Face.__init__(self)
+        self.height = height
+        self.width = width
+        self.type = 'item'
+        self.label = label
+        self.color = color
+
+    def update_items(self):
+        self.item = _DiamondItem(width=self.width, height=self.height,
+                                 label=self.label, color=self.color)
+
+    def _width(self):
+        return self.width
+
+    def _height(self):
+        return self.height
 
 
 class RectFace(Face):
