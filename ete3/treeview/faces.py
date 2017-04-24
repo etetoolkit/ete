@@ -151,7 +151,7 @@ __all__ = ["Face", "TextFace", "AttrFace", "ImgFace",
            "ProfileFace", "SequenceFace", "TreeFace",
            "RandomFace", "DynamicItemFace", "StaticItemFace",
            "CircleFace", "PieChartFace", "BarChartFace", "SeqMotifFace",
-           "RectFace", "StackedBarFace"]
+           "RectFace", "StackedBarFace", "DiamondFace"]
 
 class Face(object):
     """Base Face object. All Face types (i.e. TextFace, SeqMotifFace,
