@@ -21,7 +21,7 @@
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
 #
-# ETE is distributed under the GPL copyleft license (2008-2016).
+# ETE is distributed under the GPL copyleft license (2008-2017)
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -29,8 +29,8 @@
 #  analysis and visualization of phylogenomic data. Mol Biol Evol (2016) doi:
 #  10.1093/molbev/msw046
 #
-# Note that extra references to the specific methods implemented in
-# the toolkit may be available in the documentation.
+# Additional references to third-party methods and software used by ETE can be
+# found in the documentation.
 #
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #

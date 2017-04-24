@@ -10,10 +10,11 @@
 
 Overview
 -----------
-ETE (Environment for Tree Exploration is a Python programming
-toolkit that assists in the automated manipulation, analysis and
-visualization of phylogenetic trees. Clustering trees or any
-other tree-like data structure are also supported. 
+
+ETE (Environment for Tree Exploration is a Python programming toolkit that
+assists in the automated manipulation, analysis and visualization of
+phylogenetic trees. Clustering trees or any other tree-like data structure are
+also supported.
 
 ETE is currently developed as a tool for researchers working in phylogenetics
 and genomics. ETE provides specialized tools to reconstruct, compare and visualize
@@ -31,7 +32,8 @@ Install and Documentation
 - The official web site of ETE is http://etetoolkit.org. Downloading
   instructions and further documentation can be found there.
 
-- News and announcements are usually posted on twitter: http://twitter.com/etetoolkit
+- News and announcements are usually posted on twitter:
+  http://twitter.com/etetoolkit
 
 Gallery of examples
 --------------------
