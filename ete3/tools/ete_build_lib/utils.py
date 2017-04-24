@@ -529,7 +529,7 @@ def get_latest_nprdp(basedir):
             return last_db
     else:
         #tries compressed data
-        compressed_path = pjoin(basedir, "nprdata.tar.gz")
+        compressed_path = pjoin(basedir, "etebuild_data.tar.gz")
         if pexist(compressed_path):
             import tarfile
             tar = tarfile.open(compressed_path)

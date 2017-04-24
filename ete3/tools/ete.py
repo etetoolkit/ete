@@ -134,14 +134,14 @@ def _main(arguments):
             sys.exit(status)
             
         elif subcommand == "build":
-            from . import phylobuild
+            from . import ete_build
             del arguments[1]
 
             builtin_apps_path = None
             ete3_path = which("ete3")
             if ete3_path: 
                 builtin_apps_path = os.path.join(os.path.split(ete3_path)[0], "ete3_apps")
-            phylobuild._main(arguments, builtin_apps_path)
+            ete_build._main(arguments, builtin_apps_path)
             
             return
 
@@ -237,7 +237,6 @@ def _main(arguments):
     maptrees_args_p.set_defaults(func=ete_maptrees.run)
     ete_maptrees.populate_args(maptrees_args_p)
 
-    
     # - build -
     generate_args_p = subparser.add_parser("build")
 

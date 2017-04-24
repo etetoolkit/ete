@@ -721,8 +721,10 @@ class PhyloNode(TreeNode):
            within the tree will be processed.
 
         """
-        if species and type(species) not in set(["set", "frozenset"]):
-            raise ValueError("species argument should be a set, frozenset")
+        if species and isinstance(species, (list, tuple)):
+            species = set(species)
+        elif species and (not isinstance(species, (set, frozenset))):
+            raise TypeError("species argument should be a set (preferred), list or tuple")
 
         prunned = self.copy("deepcopy") if return_copy else self
         n2sp = prunned.get_cached_content(store_attr="species")

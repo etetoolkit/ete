@@ -99,7 +99,20 @@ class Citator(object):
 
         'treeko': u"""Marcet-Houben M, Gabaldón T. TreeKO: a duplication-aware algorithm for the
         comparison of phylogenetic trees. Nucleic Acids Res. 2011 May;39(10):e66. doi:
-        10.1093/nar/gkr087."""        
+        10.1093/nar/gkr087.""",
+
+        'iqtree': u"""LT Nguyen, H.A. Schmidt, A. von Haeseler, and BQ Minh (2015) IQ-TREE: A
+        fast and effective stochastic algorithm for estimating maximum likelihood
+        phylogenies. Mol. Biol. Evol., 32, 268-274.""",
+
+        'pll': u"""T Flouri, F Izquierdo-Carrasco, D. Darriba, AJ Aberer, LT Nguyen,
+        B.Q. Minh, A. von Haeseler, and A. Stamatakis (2015) The phylogenetic likelihood
+        library. Syst. Biol., 64:356-362.""",
+
+        'ufboot': u"""BQ Minh, MAT Nguyen, and A. von Haeseler (2013) Ultrafast approximation
+        for phylogenetic bootstrap. Mol. Biol. Evol., 30:1188-1195.""", 
+        
+        
         }
     
     def __init__(self):

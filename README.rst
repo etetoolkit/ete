@@ -1,6 +1,3 @@
-README
-=======
-
 .. image:: https://travis-ci.org/etetoolkit/ete.svg?branch=master
    :target: https://travis-ci.org/etetoolkit/ete
 
@@ -11,11 +8,13 @@ README
 ..
    .. image:: https://coveralls.io/repos/jhcepas/ete/badge.png
 
+Overview
+-----------
 
-ETE (Environment for Tree Exploration is a Python programming
-toolkit that assists in the automated manipulation, analysis and
-visualization of phylogenetic trees. Clustering trees or any
-other tree-like data structure are also supported. 
+ETE (Environment for Tree Exploration is a Python programming toolkit that
+assists in the automated manipulation, analysis and visualization of
+phylogenetic trees. Clustering trees or any other tree-like data structure are
+also supported.
 
 ETE is currently developed as a tool for researchers working in phylogenetics
 and genomics. ETE provides specialized tools to reconstruct, compare and visualize
@@ -27,13 +26,14 @@ phylogenetic trees. If you use ETE for a published work, please cite:
    analysis and visualization of phylogenomic data."  Mol Biol Evol (2016) doi:
    10.1093/molbev/msw046
 
-Install/Documentation
+Install and Documentation
 -----------------------------
 
 - The official web site of ETE is http://etetoolkit.org. Downloading
   instructions and further documentation can be found there.
 
-- News and announcements are usually posted on twitter: http://twitter.com/etetoolkit
+- News and announcements are usually posted on twitter:
+  http://twitter.com/etetoolkit
 
 Gallery of examples
 --------------------
@@ -41,23 +41,31 @@ Gallery of examples
 .. image:: https://raw.githubusercontent.com/jhcepas/ete/master/sdoc/gallery.png
    :width: 600
   
+Getting Support
+------------------
+**Whenerver possible, please avoid sending support related emails directly to
+the developers. Keep communication public:**
+
+- For any type of question on how to use ETE in a bioinformatics context, the
+  BioStars community (http://biostars.org) provides an excellent help desk. ETE
+  developers contribute there with answers, but you will also get feedback from
+  other users. It is recommended to tag your questions with the "etetoolkit"
+  label.
+
+- For technical problems or more ETE specific questions, you can also use the
+  official ETE mailing list at https://groups.google.com/d/forum/etetoolkit. To
+  avoid spam, messages from new users are moderated. Expect some delay until
+  your first message and account is validated.
+
+- Bug reports, feature requests and general discussion should be posted into github:
+  https://github.com/etetoolkit/ete/issues
+
+- For any other inquire please contact *huerta /at/ embl.de*
+   
 
 Contributing and BUG reporting
 ---------------------------------
-https://github.com/jhcepas/ete/blob/master/CONTRIBUTING.rst
-
-
-Getting support
-------------------
-
-- There is a mailing list providing user support at
-  https://groups.google.com/d/forum/etetoolkit. In order to avoid spam,
-  messages from new users are moderated. Expect some delay until your first
-  message and account is validated.
-
-- For general questions on how to use ETE in bioinformatic projects, the
-  BioStars community (http://biostars.org) provides an excellent and broader
-  help desk. Please feel free to raise any question there and tag it with the
-  "etetoolkit" label.
+https://github.com/etetoolkit/ete/wiki/Contributing
+  
 
 

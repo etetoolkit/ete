@@ -184,12 +184,12 @@ class Test_phylo_module(unittest.TestCase):
 
         # Check that duplications are detected
         dup1 = t.get_common_ancestor("Hsa_001", "Hsa_004")
-        print(dup1)
+        #print(dup1)
         self.assertEqual(dup1.evoltype, "D")
 
         # This duplication is not in the seed path
         dup2 = t.get_common_ancestor("Dme_001", "Dme_002")
-        self.assert_(not hasattr(dup2, "evoltype"))
+        self.assertTrue(not hasattr(dup2, "evoltype"))
 
         dup3 = t.get_common_ancestor("Hsa_001", "Hsa_002")
         self.assertEqual(dup3.evoltype, "D")
@@ -313,6 +313,15 @@ class Test_phylo_module(unittest.TestCase):
         # Check get species functions
         self.assertEqual(t.get_species(), set(sp2age.keys()))
         self.assertEqual(set([sp for sp in t.iter_species()]), set(sp2age.keys()))
+
+    def test_colappse(self):
+        t = PhyloTree('((Dme_001,Dme_002),(((Cfa_001,Mms_001),((((Hsa_001,Hsa_001),Ptr_001),Mmu_001),((Hsa_004,Ptr_004),Mmu_004))),(Ptr_002,(Hsa_002,Mmu_002))));')
+        collapsed_hsa = '((Dme_001:1,Dme_002:1)1:1,(((Cfa_001:1,Mms_001:1)1:1,(((Ptr_001:1,Hsa_001:1)1:1,Mmu_001:1)1:1,((Hsa_004:1,Ptr_004:1)1:1,Mmu_004:1)1:1)1:1)1:1,(Ptr_002:1,(Hsa_002:1,Mmu_002:1)1:1)1:1)1:1);'
+        t2 = t.collapse_lineage_specific_expansions(['Hsa'])
+        self.assertEqual(str(collapsed_hsa), str(t2.write()))
+        with self.assertRaises(TypeError):
+            print(t.collapse_lineage_specific_expansions('Hsa'))
+
 
 if __name__ == '__main__':
     unittest.main()

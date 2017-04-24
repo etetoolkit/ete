@@ -133,7 +133,7 @@ try:
 
         name = MOD_NAME,
         version = ETE_VERSION,
-        packages = find_packages(),
+        packages = ["ete3"],
 
         entry_points = {"console_scripts":
                         ["ete3 = %s.tools.ete:main" %MOD_NAME]},
@@ -146,7 +146,7 @@ try:
         package_data = {
 
         },
-        data_files = [("%s/tools" %MOD_NAME, ["%s/tools/phylobuild.cfg" %MOD_NAME])],
+        data_files = [("%s/tools" %MOD_NAME, ["%s/tools/ete_build.cfg" %MOD_NAME])],
 
         # metadata for upload to PyPI
         author = "Jaime Huerta-Cepas",

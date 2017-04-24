@@ -415,7 +415,7 @@ def main(main_screen, func, args):
     # prints are handled by my Screen object
     screen.stdout = sys.stdout    
     if args.logfile:
-        screen.logfile = open(os.path.join(GLOBALS["basedir"], "npr.log"), "w")
+        screen.logfile = open(os.path.join(GLOBALS["basedir"], "etebuild.log"), "w")
     sys.stdout = screen
     sys.stderr = screen
 

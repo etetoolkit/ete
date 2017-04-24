@@ -51,10 +51,6 @@ class Test_Coretype_Tree(unittest.TestCase):
         t.del_feature('testf4')
         self.assertTrue('testf4' not in t.features)
 
-
-
-
-
     def test_tree_read_and_write(self):
         """ Tests newick support """
         # Read and write newick tree from file (and support for NHX
@@ -228,8 +224,23 @@ class Test_Coretype_Tree(unittest.TestCase):
         # unsupported newick stream
         self.assertRaises(NewickError, Tree, [1,2,3])
 
-
-
+    def test_quoted_names(self):
+        complex_name = "((A:0.0001[&&NHX:hello=true],B:0.011)90:0.01[&&NHX:hello=true],(C:0.01, D:0.001)hello:0.01);"
+        # A quoted tree within a tree
+        nw1 = '(("A:0.1":1,"%s":2)"C:0.00":3,"D":4);' %complex_name
+        #escaped quotes
+        nw2 = '''(("A:\\"0.1\\"":1,"%s":2)"C:'0.00'":3,"D'sd''\'":4);''' %complex_name
+        for nw in [nw1, nw2]:
+            self.assertRaises(NewickError, Tree, newick=nw)
+            self.assertRaises(NewickError, Tree, newick=nw, quoted_node_names=True, format=0)
+            t = Tree(newick=nw, format=1, quoted_node_names=True)
+            self.assertTrue(any(n for n in t if n.name == '%s'%complex_name))
+            # test writing and reloading tree
+            nw_back = t.write(quoted_node_names=True, format=1)
+            t2 = Tree(newick=nw, format=1, quoted_node_names=True)
+            nw_back2 = t2.write(quoted_node_names=True, format=1)
+            self.assertEqual(nw, nw_back)
+            self.assertEqual(nw, nw_back2)
 
     def test_custom_formatting_formats(self):
         """ test to change dist, name and support formatters """
@@ -655,10 +666,25 @@ class Test_Coretype_Tree(unittest.TestCase):
         # Test cached content
         t = Tree()
         t.populate(20)
-        cache_name = t.get_cached_content(store_attr="name")
+
         cache_node = t.get_cached_content()
-        self.assertEqual(cache_name[t], set(t.get_leaf_names()))
+        cache_node_leaves_only_false = t.get_cached_content(leaves_only=False)
         self.assertEqual(cache_node[t], set(t.get_leaves()))
+        self.assertEqual(cache_node_leaves_only_false[t], t)
+
+        cache_name = t.get_cached_content(store_attr="name")
+        cache_name_leaves_only_false = t.get_cached_content(store_attr="name", leaves_only=False)
+        self.assertEqual(cache_name[t], set(t.get_leaf_names()))
+        self.assertEqual(cache_name_leaves_only_false[t], [t.name])
+
+        cache_many = t.get_cached_content(store_attr=["name", "dist", "support"])
+        cache_many_lof = t.get_cached_content(store_attr=["name", "dist", "support"], leaves_only=False)
+        self.assertEqual(cache_many[t], set([(leaf.name, leaf.dist, leaf.support) for leaf in t.get_leaves()]))
+        self.assertEqual(cache_many_lof[t], [(t.name, t.dist, t.support)])
+
+
+        #self.assertEqual(cache_name_lof[t], [t.name])
+
 
     def test_rooting(self):
         """ Check branch support and distances after rooting """

@@ -1,41 +1,3 @@
-# #START_LICENSE###########################################################
-#
-#
-# This file is part of the Environment for Tree Exploration program
-# (ETE).  http://etetoolkit.org
-#
-# ETE is free software: you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# ETE is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
-# License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with ETE.  If not, see <http://www.gnu.org/licenses/>.
-#
-#
-#                     ABOUT THE ETE PACKAGE
-#                     =====================
-#
-# ETE is distributed under the GPL copyleft license (2008-2015).
-#
-# If you make use of ETE in published work, please cite:
-#
-# Jaime Huerta-Cepas, Joaquin Dopazo and Toni Gabaldon.
-# ETE: a python Environment for Tree Exploration. Jaime BMC
-# Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
-#
-# Note that extra references to the specific methods implemented in
-# the toolkit may be available in the documentation.
-#
-# More info at http://etetoolkit.org. Contact: huerta@embl.de
-#
-#
-# #END_LICENSE#############################################################
 from __future__ import absolute_import
 from __future__ import print_function
 import sys
@@ -49,34 +11,19 @@ from .utils import colorify
 
 log = logging.getLogger("main")
 
+# ####################################################################
+# REGISTER New application in the following global dictionries:
+
 APPTYPES = {
     "aligners": set(["muscle", "mafft", "clustalo", "metaligner", "dialingtx", "tcoffee"]),
     "model testers": set(["prottest", "pmodeltest"]),
     "alg cleaners": set(["trimal"]),
-    "tree builders": set(["fasttree", "phyml", "raxml"]),
+    "tree builders": set(["fasttree", "phyml", "raxml", "iqtree"]),
     "COG selectors": set(["cogselector"]),
     "alg concatenators": set(["concatalg"]),
     }
-  
 
-OPTION2APPTYPE = {
-    "_aa_aligner": APPTYPES["aligners"],
-    "_nt_aligner": APPTYPES["aligners"],
-
-    "_aa_alg_cleaner": APPTYPES["alg cleaners"],
-    "_nt_alg_cleaner": APPTYPES["alg cleaners"],
-    
-    "_aa_tree_builder": APPTYPES["tree builders"],
-    "_nt_tree_builder": APPTYPES["tree builders"], 
-    
-    "_aa_model_tester": APPTYPES["model testers"],
-    "_nt_model_tester": APPTYPES["model testers"],
-
-    "_cog_selector": APPTYPES["COG selectors"],
-    "_alg_concatenator": APPTYPES["alg concatenators"], 
-    
-}
-
+# App name (as referred in config files) to Class name
 APP2CLASS = {
     "tcoffee"             : "TCoffee",
     "muscle"              : "Muscle",
@@ -84,26 +31,20 @@ APP2CLASS = {
     "clustalo"            : "Clustalo",
     "metaligner"          : "MetaAligner",
     "phyml"               : "Phyml",
+    "iqtree"              : "IQTree",
     "raxml-pthreads"      : "Raxml",
     "raxml"               : "Raxml",
-    # "raxml-pthreads-sse3" : "Raxml",
-    # "raxml-sse3"          : "Raxml",
-    # "raxml-pthreads-avx"  : "Raxml",
-    # "raxml-avx"           : "Raxml",
-    # "raxml-pthreads-avx2" : "Raxml",
-    # "raxml-avx2"          : "Raxml",
-    "jmodeltest"          : "JModeltest",
     "dialigntx"           : "Dialigntx",
     "fasttree"            : "FastTree",
     "trimal"              : "Trimal",
     "prottest"            : "Prottest",
     "pmodeltest"          : "PModelTest",
-#    "jmodeltest"          : "JModeltest",
     "treesplitter"        : "TreeMerger",
     "concatalg"           : "ConcatAlg",
     "cogselector"         : "CogSelector",
     }
 
+# Class name converted into source module name
 CLASS2MODULE = {
     "Muscle"        : "muscle",
     "Trimal"        : "trimal",
@@ -112,12 +53,13 @@ CLASS2MODULE = {
     "MetaAligner"   : "meta_aligner",
     "TCoffee"       : "tcoffee",
     "Phyml"         : "phyml",
-#    "JModeltest"    : "jmodeltest",
+    "IQTree"        : "iqtree",
     "Dialigntx"     : "dialigntx",
     "FastTree"      : "fasttree",
     "PModelTest"    : "pmodeltest",
     }
 
+# How to call applications
 builtin_apps = {
     'muscle'             : "%BIN%/muscle",
     'mafft'              : "MAFFT_BINARIES=%BIN%  %BIN%/mafft --thread %CORES%",
@@ -126,14 +68,9 @@ builtin_apps = {
     'readal'             : "%BIN%/readal",
     'tcoffee'            : "export HOME=/tmp MAFFT_BINARIES=%BIN% TMP_4_TCOFFEE=%TMP% LOCKDIR_4_TCOFFEE=%TMP% PLUGINS_4_TCOFFEE=%BIN%/ && %BIN%/t_coffee",
     'phyml'              : "%BIN%/phyml",
-    'raxml-pthreads'     : "%BIN%/raxmlHPC-PTHREADS-SSE3 -T%CORES%", # defaults to SSE3
-    'raxml'              : "%BIN%/raxmlHPC-SSE3",                    # defaults to SSE3
-    #'raxml-pthreads-sse3': "%BIN%/raxmlHPC-PTHREADS-SSE3 -T%CORES%",
-    #'raxml-sse3'         : "%BIN%/raxmlHPC-SSE3",
-    #'raxml-pthreads-avx' : "%BIN%/raxmlHPC-PTHREADS-AVX -T%CORES%",
-    #'raxml-avx'          : "%BIN%/raxmlHPC-AVX",
-    #'raxml-pthreads-avx2': "%BIN%/raxmlHPC-PTHREADS-AVX2 -T%CORES%",
-    #'raxml-avx2'         : "%BIN%/raxmlHPC-AVX2",
+    'iqtree'             : "%BIN%/iqtree-omp -nt %CORES%",
+    'raxml-pthreads'     : "%BIN%/raxmlHPC-PTHREADS-SSE3 -T%CORES%",
+    'raxml'              : "%BIN%/raxmlHPC-SSE3",
     'pmodeltest'         : "python %BIN%/pmodeltest.py --nprocs %CORES% --phyml %BIN%/phyml",
     'dialigntx'          : "%BIN%/dialign-tx %BIN%/dialigntx_conf",
     'fasttree'           : "export OMP_NUM_THREADS=%CORES%; %BIN%/FastTree",
@@ -145,34 +82,8 @@ builtin_apps = {
     'slr'                : "%BIN%/Slr",
     }
 
-app2check = {
-    'muscle'              : "| grep -i Edgar|wc -l",
-    'mafft'               : "--help | grep -i bioinformatics |wc -l",
-    'clustalo'            : "--help | grep -i omega|wc -l",
-    'trimal'              : "-h | grep -i capella |wc -l",
-    'readal'              : "-h | grep -i capella |wc -l",
-    'tcoffee'             : "| grep -i notredame |wc -l",
-    'phyml'               : "--help |grep -i Guindon|wc -l",
-    'raxml-pthreads'      : "-help |grep -i stamatakis|wc -l",
-    'raxml'               : "-help |grep -i stamatakis|wc -l",
-    #'raxml-pthreads-sse3' : "-help |grep -i stamatakis|wc -l",
-    #'raxml-sse3'          : "-help |grep -i stamatakis|wc -l",
-    #'raxml-pthreads-avx'  : "-help |grep -i stamatakis|wc -l",
-    #'raxml-avx'           : "-help |grep -i stamatakis|wc -l",
-    #'raxml-pthreads-avx2' : "-help |grep -i stamatakis|wc -l",
-    #'raxml-avx2'          : "-help |grep -i stamatakis|wc -l",
-    #'jmodeltest'          : "--help | grep -i posada |wc -l",
-    'dialigntx'           : "| grep alignment |wc -l",
-    'fasttree'            : "| grep -i 'FastTree ver'|wc -l",
-    'statal'              : "-h | grep -i capella |wc -l ",
-    'pmodeltest'          : "--version 2>&1|grep 'pmodeltest.py v'",
-    'prank'              : "|grep 'prank v'", 
-    'probcons'           : " 2>&1 |grep -i version",
-    'kalign'             : " 2>&1 |grep -i version",
-    'codeml'             : " /dev/null 2>&1 |grep -i version",
-    'slr'                : " 2>&1 |grep -i version",   
-    }
-
+# options and arguments necessary to run each program and return one line
+# containing information about its version
 app2version = {
     'muscle'              : "-version|grep MUSCLE",
     'mafft'               : "--noflagavailable 2>&1 |grep MAFFT",
@@ -183,30 +94,47 @@ app2version = {
     'phyml'               : "--version | grep -i version",
     'raxml-pthreads'      : "-version| grep -i version",
     'raxml'               : "-version| grep -i version",
-    #'raxml-pthreads-sse3' : "-version| grep -i version",
-    #'raxml-sse3'          : "-version| grep -i version",
-    #'raxml-pthreads-avx'  : "-version| grep -i version",
-    #'raxml-avx'           : "-version| grep -i version",
-    #'raxml-pthreads-avx2' : "-version| grep -i version",
-    #'raxml-avx2'          : "-version| grep -i version",
     'dialigntx'           : "/bin/sh |grep -i version",
     'fasttree'            : "2>&1 | grep -i version",
     'statal'              : "--version| grep -i statal",
     'pmodeltest'          : "--version 2>&1|grep 'pmodeltest.py v'",
-    'prank'              : "|grep 'prank v'", 
-    'probcons'           : "2>&1 |grep -i version",
-    'kalign'             : "2>&1 |grep -i version",   
-    'codeml'             : " /dev/null 2>&1 |grep -i version",
-    'slr'                : " 2>&1 |grep -i version",   
+    'prank'               : "|grep 'prank v'",
+    'probcons'            : "2>&1 |grep -i version",
+    'kalign'              : "2>&1 |grep -i version",
+    'codeml'              : " /dev/null 2>&1 |grep -i version",
+    'slr'                 : " 2>&1 |grep -i version",
+    'iqtree'              : " -h |grep -i version|grep IQ",
 }
 
+# REGISTER New application in the above global dictionries
+# ####################################################################
+
+
+
+OPTION2APPTYPE = {
+    "_aa_aligner": APPTYPES["aligners"],
+    "_nt_aligner": APPTYPES["aligners"],
+
+    "_aa_alg_cleaner": APPTYPES["alg cleaners"],
+    "_nt_alg_cleaner": APPTYPES["alg cleaners"],
+
+    "_aa_tree_builder": APPTYPES["tree builders"],
+    "_nt_tree_builder": APPTYPES["tree builders"],
+
+    "_aa_model_tester": APPTYPES["model testers"],
+    "_nt_model_tester": APPTYPES["model testers"],
+
+    "_cog_selector": APPTYPES["COG selectors"],
+    "_alg_concatenator": APPTYPES["alg concatenators"],
+
+}
 
 def get_call(appname, apps_path, exec_path, cores):
     try:
         cmd = builtin_apps[appname]
     except KeyError:
         return None
-    
+
     bin_path = os.path.join(apps_path, "bin")
     tmp_path = os.path.join(exec_path, "tmp")
     #apps_base = apps_path.rstrip("/x86-64").rstrip("/x86-32")
