@@ -471,7 +471,7 @@ def _get_features_string(self, features=None):
     if features is None:
         features = []
     elif features == []:
-        features = self.features
+        features = sorted(self.features)
 
     for pr in features:
         if hasattr(self, pr):
