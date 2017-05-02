@@ -298,7 +298,7 @@ class TreeNode(object):
         :argument None child: the node instance to be added as a child.
         :argument None name: the name that will be given to the child.
         :argument None dist: the distance from the node to the child.
-        :argument None support': the support value of child partition.
+        :argument None support: the support value of child partition.
 
         :returns: The child node instance
 
@@ -586,7 +586,7 @@ class TreeNode(object):
 
     def get_sisters(self):
         """
-        Returns an indepent list of sister nodes.
+        Returns an independent list of sister nodes.
         """
         if self.up is not None:
             return [ch for ch in self.up.children if ch!=self]
@@ -921,8 +921,8 @@ class TreeNode(object):
 
     def iter_search_nodes(self, **conditions):
         """
-        Search nodes in an interative way. Matches are being yield as
-        they are being found. This avoids to scan the full tree
+        Search nodes in an iterative way. Matches are yielded as they
+        are being found. This avoids needing to scan the full tree
         topology before returning the first matches. Useful when
         dealing with huge trees.
         """
@@ -978,7 +978,7 @@ class TreeNode(object):
     def get_distance(self, target, target2=None, topology_only=False):
         """
         Returns the distance between two nodes. If only one target is
-        specified, it returns the distance bewtween the target and the
+        specified, it returns the distance between the target and the
         current node.
 
         :argument target: a node within the same tree structure.
@@ -1031,7 +1031,7 @@ class TreeNode(object):
           current node and the distance to it.
 
         """
-        # Init fasthest node to current farthest leaf
+        # Init farthest node to current farthest leaf
         farthest_node, farthest_dist = self.get_farthest_leaf(topology_only=topology_only)
 
         prev = self
@@ -1324,7 +1324,7 @@ class TreeNode(object):
 
     def show(self, layout=None, tree_style=None, name="ETE"):
         """
-        Starts an interative session to visualize current node
+        Starts an interactive session to visualize current node
         structure using provided layout and TreeStyle.
 
         """
@@ -1535,12 +1535,12 @@ class TreeNode(object):
         """
         .. versionadded: 2.1
 
-        This function sort the branches of a given tree by
-        considerening node names. After the tree is sorted, nodes are
-        labeled using ascendent numbers.  This can be used to ensure
-        that nodes in a tree with the same node names are always
-        labeled in the same way. Note that if duplicated names are
-        present, extra criteria should be added to sort nodes.
+        Sort the branches of a given tree by node names. After the
+        tree is sorted, nodes are labeled in ascending order. This
+        can be used to ensure that nodes in a tree with the same node
+        names are always labeled in the same way. Note that if
+        duplicated names are present, extra criteria should be added
+        to sort nodes.
 
         Unique id is stored as a node._nid attribute
 
@@ -2124,7 +2124,7 @@ class TreeNode(object):
         .. versionchanged: 2.3
 
         :param False unrooted: If True, tree will be treated as unrooted, thus
-          allowing to find monophyly even when current outgroup is spliting a
+          allowing to find monophyly even when current outgroup is splitting a
           monophyletic group.
 
         :returns: the following tuple
@@ -2372,7 +2372,7 @@ class TreeNode(object):
         """Converts a parent-child table into an ETE Tree instance. 
         
         :argument parent_child_table: a list of tuples containing parent-child
-           relationsships. For example: [("A", "B", 0.1), ("A", "C", 0.2), ("C",
+           relationships. For example: [("A", "B", 0.1), ("A", "C", 0.2), ("C",
            "D", 1), ("C", "E", 1.5)]. Where each tuple represents: [parent, child,
            child-parent-dist]
         
