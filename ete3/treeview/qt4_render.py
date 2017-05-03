@@ -37,19 +37,18 @@
 #
 # #END_LICENSE#############################################################
 import math
-import re # Used to fix SVG exporting
+import re
+import six
 
-from PyQt4 import QtCore, QtGui, QtSvg
-
+from .qt import *
 from . import qt4_circular_render as crender
 from . import qt4_rect_render as rrender
-
 from .main import _leaf, NodeStyle, _FaceAreas, tracktime, TreeStyle
 from .node_gui_actions import _NodeActions as _ActionDelegator
 from .qt4_face_render import update_node_faces, _FaceGroupItem, _TextFaceItem
 from .templates import _DEFAULT_STYLE, apply_template
 from . import faces
-import six
+
 
 ## | General scheme of node content
 ## |==========================================================================================================================|
@@ -74,60 +73,60 @@ import six
 ## |                                         |=======================================|                                        |
 ## |==========================================================================================================================|
 
-class _CircleItem(QtGui.QGraphicsEllipseItem, _ActionDelegator):
+class _CircleItem(QGraphicsEllipseItem, _ActionDelegator):
     def __init__(self, node):
         self.node = node
         d = node.img_style["size"]
-        QtGui.QGraphicsEllipseItem.__init__(self, 0, 0, d, d)
+        QGraphicsEllipseItem.__init__(self, 0, 0, d, d)
         _ActionDelegator.__init__(self)
 
-        self.setBrush(QtGui.QBrush(QtGui.QColor(self.node.img_style["fgcolor"])))
-        self.setPen(QtGui.QPen(QtGui.QColor(self.node.img_style["fgcolor"])))
+        self.setBrush(QBrush(QColor(self.node.img_style["fgcolor"])))
+        self.setPen(QPen(QColor(self.node.img_style["fgcolor"])))
 
-class _RectItem(QtGui.QGraphicsRectItem, _ActionDelegator):
+class _RectItem(QGraphicsRectItem, _ActionDelegator):
     def __init__(self, node):
         self.node = node
         d = node.img_style["size"]
-        QtGui.QGraphicsRectItem.__init__(self, 0, 0, d, d)
+        QGraphicsRectItem.__init__(self, 0, 0, d, d)
         _ActionDelegator.__init__(self)
-        self.setBrush(QtGui.QBrush(QtGui.QColor(self.node.img_style["fgcolor"])))
-        self.setPen(QtGui.QPen(QtGui.QColor(self.node.img_style["fgcolor"])))
+        self.setBrush(QBrush(QColor(self.node.img_style["fgcolor"])))
+        self.setPen(QPen(QColor(self.node.img_style["fgcolor"])))
 
-class _SphereItem(QtGui.QGraphicsEllipseItem, _ActionDelegator):
+class _SphereItem(QGraphicsEllipseItem, _ActionDelegator):
     def __init__(self, node):
         self.node = node
         d = node.img_style["size"]
         r = d/2.0
-        QtGui.QGraphicsEllipseItem.__init__(self, 0, 0, d, d)
+        QGraphicsEllipseItem.__init__(self, 0, 0, d, d)
         _ActionDelegator.__init__(self)
-        #self.setBrush(QtGui.QBrush(QtGui.QColor(self.node.img_style["fgcolor"])))
-        self.setPen(QtGui.QPen(QtGui.QColor(self.node.img_style["fgcolor"])))
-        gradient = QtGui.QRadialGradient(r, r, r,(d)/3,(d)/3)
-        gradient.setColorAt(0.05, QtCore.Qt.white);
-        gradient.setColorAt(1, QtGui.QColor(self.node.img_style["fgcolor"]));
-        self.setBrush(QtGui.QBrush(gradient))
-        # self.setPen(QtCore.Qt.NoPen)
+        #self.setBrush(QBrush(QColor(self.node.img_style["fgcolor"])))
+        self.setPen(QPen(QColor(self.node.img_style["fgcolor"])))
+        gradient = QRadialGradient(r, r, r,(d)/3,(d)/3)
+        gradient.setColorAt(0.05, Qt.white);
+        gradient.setColorAt(1, QColor(self.node.img_style["fgcolor"]));
+        self.setBrush(QBrush(gradient))
+        # self.setPen(Qt.NoPen)
 
-class _EmptyItem(QtGui.QGraphicsItem):
+class _EmptyItem(QGraphicsItem):
     def __init__(self, parent=None):
-        QtGui.QGraphicsItem.__init__(self)
+        QGraphicsItem.__init__(self)
         self.setParentItem(parent)
 
         # qt4.6+ Only
         try:
-            self.setFlags(QtGui.QGraphicsItem.ItemHasNoContents)
+            self.setFlags(QGraphicsItem.ItemHasNoContents)
         except:
             pass
 
     def boundingRect(self):
-        return QtCore.QRectF(0,0,0,0)
+        return QRectF(0,0,0,0)
 
     def paint(self, *args, **kargs):
         return
 
-class _TreeItem(QtGui.QGraphicsRectItem):
+class _TreeItem(QGraphicsRectItem):
     def __init__(self, parent=None):
-        QtGui.QGraphicsRectItem.__init__(self)
+        QGraphicsRectItem.__init__(self)
         self.setParentItem(parent)
         self.n2i = {}
         self.n2f = {}
@@ -136,46 +135,46 @@ class _NodeItem(_EmptyItem):
     def __init__(self, node, parent):
         _EmptyItem.__init__(self, parent)
         self.node = node
-        self.nodeRegion = QtCore.QRectF()
-        self.facesRegion = QtCore.QRectF()
-        self.fullRegion = QtCore.QRectF()
+        self.nodeRegion = QRectF()
+        self.facesRegion = QRectF()
+        self.fullRegion = QRectF()
         self.highlighted = False
 
-class _NodeLineItem(QtGui.QGraphicsLineItem, _ActionDelegator):
+class _NodeLineItem(QGraphicsLineItem, _ActionDelegator):
     def __init__(self, node, *args, **kargs):
         self.node = node
-        QtGui.QGraphicsLineItem.__init__(self, *args, **kargs)
+        QGraphicsLineItem.__init__(self, *args, **kargs)
         _ActionDelegator.__init__(self)
     def paint(self, painter, option, widget):
-        QtGui.QGraphicsLineItem.paint(self, painter, option, widget)
+        QGraphicsLineItem.paint(self, painter, option, widget)
 
-class _LineItem(QtGui.QGraphicsLineItem):
+class _LineItem(QGraphicsLineItem):
     def paint(self, painter, option, widget):
-        QtGui.QGraphicsLineItem.paint(self, painter, option, widget)
+        QGraphicsLineItem.paint(self, painter, option, widget)
 
-class _PointerItem(QtGui.QGraphicsRectItem):
+class _PointerItem(QGraphicsRectItem):
     def __init__(self, parent=None):
-        QtGui.QGraphicsRectItem.__init__(self,0,0,0,0, parent)
-        self.color = QtGui.QColor("blue")
+        QGraphicsRectItem.__init__(self,0,0,0,0, parent)
+        self.color = QColor("blue")
         self._active = False
-        self.setBrush(QtGui.QBrush(QtCore.Qt.NoBrush))
+        self.setBrush(QBrush(Qt.NoBrush))
 
     def paint(self, p, option, widget):
         p.setPen(self.color)
         p.drawRect(self.rect())
         return
         # Draw info text
-        font = QtGui.QFont("Arial",13)
+        font = QFont("Arial",13)
         text = "%d selected."  % len(self.get_selected_nodes())
-        textR = QtGui.QFontMetrics(font).boundingRect(text)
+        textR = QFontMetrics(font).boundingRect(text)
         if  self.rect().width() > textR.width() and \
                 self.rect().height() > textR.height()/2.0 and 0: # OJO !!!!
-            p.setPen(QtGui.QPen(self.color))
-            p.setFont(QtGui.QFont("Arial",13))
+            p.setPen(QPen(self.color))
+            p.setFont(QFont("Arial",13))
             p.drawText(self.rect().bottomLeft().x(),self.rect().bottomLeft().y(),text)
 
     def get_selected_nodes(self):
-        selPath = QtGui.QPainterPath()
+        selPath = QPainterPath()
         selPath.addRect(self.rect())
         self.scene().setSelectionArea(selPath)
         return [i.node for i in self.scene().selectedItems()]
@@ -186,9 +185,9 @@ class _PointerItem(QtGui.QGraphicsRectItem):
     def isActive(self):
         return self._active
 
-class _TreeScene(QtGui.QGraphicsScene):
+class _TreeScene(QGraphicsScene):
     def __init__(self):
-        QtGui.QGraphicsScene.__init__(self)
+        QGraphicsScene.__init__(self)
         self.view = None
 
     def init_values(self, tree, img, n2i, n2f):
@@ -327,16 +326,16 @@ def render(root_node, img, hide_root=False):
 
     # Rotate main image if necessary
     parent.setRect(mainRect)
-    parent.setPen(QtGui.QPen(QtCore.Qt.NoPen))
+    parent.setPen(QPen(Qt.NoPen))
 
     if img.rotation:
         rect = parent.boundingRect()
         x =  rect.x() + (rect.width()/2.0)
         y =  rect.y() +  (rect.height()/2.0)
-        parent.setTransform(QtGui.QTransform().translate(x, y).rotate(img.rotation).translate(-x, -y))
+        parent.setTransform(QTransform().translate(x, y).rotate(img.rotation).translate(-x, -y))
 
     # Creates the main tree item that will act as frame for the whole image
-    frame = QtGui.QGraphicsRectItem()
+    frame = QGraphicsRectItem()
     parent.setParentItem(frame)
     mainRect = parent.mapToScene(mainRect).boundingRect()
 
@@ -359,9 +358,9 @@ def render(root_node, img, hide_root=False):
 
     # Draws a border around the tree
     if not img.show_border:
-        frame.setPen(QtGui.QPen(QtCore.Qt.NoPen))
+        frame.setPen(QPen(Qt.NoPen))
     else:
-        frame.setPen(QtGui.QPen(QtGui.QColor("black")))
+        frame.setPen(QPen(QColor("black")))
 
     return frame, n2i, n2f
 
@@ -370,7 +369,7 @@ def adjust_faces_to_tranformations(img, mainRect, n2i, n2f, tree_layers):
         rotate_inverted_faces(n2i, n2f, img)
     elif img.mode == "r" and img.orientation == 1:
         for layer in tree_layers:
-            layer.setTransform(QtGui.QTransform().translate(0, 0).scale(-1,1).translate(0, 0))
+            layer.setTransform(QTransform().translate(0, 0).scale(-1,1).translate(0, 0))
             layer.moveBy(mainRect.width(),0)
         for faceblock in six.itervalues(n2f):
             for pos, fb in six.iteritems(faceblock):
@@ -445,19 +444,19 @@ def add_scale(img, mainRect, parent):
                                  'Use values between 0 and %g' %max_value)
 
         scaleItem = _EmptyItem()
-        customPen = QtGui.QPen(QtGui.QColor("black"), 1)
+        customPen = QPen(QColor("black"), 1)
 
         if img.force_topology:
             wtext = "Force topology is enabled!\nBranch lengths do not represent real values."
-            warning_text = QtGui.QGraphicsSimpleTextItem(wtext)
-            warning_text.setFont(QtGui.QFont("Arial", 8))
-            warning_text.setBrush( QtGui.QBrush(QtGui.QColor("darkred")))
+            warning_text = QGraphicsSimpleTextItem(wtext)
+            warning_text.setFont(QFont("Arial", 8))
+            warning_text.setBrush( QBrush(QColor("darkred")))
             warning_text.setPos(0, 32)
             warning_text.setParentItem(scaleItem)
         else:
-            line = QtGui.QGraphicsLineItem(scaleItem)
-            line2 = QtGui.QGraphicsLineItem(scaleItem)
-            line3 = QtGui.QGraphicsLineItem(scaleItem)
+            line = QGraphicsLineItem(scaleItem)
+            line2 = QGraphicsLineItem(scaleItem)
+            line3 = QGraphicsLineItem(scaleItem)
             line.setPen(customPen)
             line2.setPen(customPen)
             line3.setPen(customPen)
@@ -467,7 +466,7 @@ def add_scale(img, mainRect, parent):
             line3.setLine(length, 0, length, 10)
             length_text = float(length) / img._scale if img._scale else 0.0
             scale_text = "%g" %(length_text)
-            scale = QtGui.QGraphicsSimpleTextItem(scale_text)
+            scale = QGraphicsSimpleTextItem(scale_text)
             scale.setParentItem(scaleItem)
             scale.setPos(0, 10)
 
@@ -511,33 +510,33 @@ def render_backgrounds(img, mainRect, bg_layer, n2i, n2f):
                 r = math.sqrt(base**2 + h**2)
                 bg1.set_arc(0, 0, parent_radius, r, angle_start, angle_end)
                 bg1.setParentItem(item.content.bg)
-                bg1.setPen(QtGui.QPen(QtGui.QColor(node.img_style["node_bgcolor"])))
-                bg1.setBrush(QtGui.QBrush(QtGui.QColor(node.img_style["node_bgcolor"])))
+                bg1.setPen(QPen(QColor(node.img_style["node_bgcolor"])))
+                bg1.setBrush(QBrush(QColor(node.img_style["node_bgcolor"])))
 
             if node.img_style["faces_bgcolor"].upper() != "#FFFFFF":
                 bg2 = crender._ArcItem()
                 r = math.sqrt(base**2 + h**2)
                 bg2.set_arc(0, 0, parent_radius, item.radius, angle_start, angle_end)
                 bg2.setParentItem(item.content)
-                bg2.setPen(QtGui.QPen(QtGui.QColor(node.img_style["faces_bgcolor"])))
-                bg2.setBrush(QtGui.QBrush(QtGui.QColor(node.img_style["faces_bgcolor"])))
+                bg2.setPen(QPen(QColor(node.img_style["faces_bgcolor"])))
+                bg2.setBrush(QBrush(QColor(node.img_style["faces_bgcolor"])))
 
             if node.img_style["bgcolor"].upper() != "#FFFFFF":
                 bg = crender._ArcItem()
                 bg.set_arc(0, 0, parent_radius, max_r, angle_start, angle_end)
-                bg.setPen(QtGui.QPen(QtGui.QColor(node.img_style["bgcolor"])))
-                bg.setBrush(QtGui.QBrush(QtGui.QColor(node.img_style["bgcolor"])))
+                bg.setPen(QPen(QColor(node.img_style["bgcolor"])))
+                bg.setBrush(QBrush(QColor(node.img_style["bgcolor"])))
                 bg.setParentItem(bg_layer)
                 bg.setZValue(item.zValue())
 
         if img.mode == "r":
             if node.img_style["bgcolor"].upper() != "#FFFFFF":
-                bg = QtGui.QGraphicsRectItem()
+                bg = QGraphicsRectItem()
                 pos = item.content.mapToScene(0, 0)
                 bg.setPos(pos.x(), pos.y())
                 bg.setRect(0, 0, max_r-pos.x(),  item.fullRegion.height())
-                bg.setPen(QtGui.QPen(QtGui.QColor(node.img_style["bgcolor"])))
-                bg.setBrush(QtGui.QBrush(QtGui.QColor(node.img_style["bgcolor"])))
+                bg.setPen(QPen(QColor(node.img_style["bgcolor"])))
+                bg.setBrush(QBrush(QColor(node.img_style["bgcolor"])))
                 bg.setParentItem(bg_layer)
                 bg.setZValue(item.zValue())
 
@@ -642,20 +641,20 @@ def render_node_content(node, n2i, n2f, img):
         #from qt4_gui import _BasicNodeActions
         #node_ball.delegate = _BasicNodeActions()
         #node_ball.setAcceptsHoverEvents(True)
-        #node_ball.setCursor(QtCore.Qt.PointingHandCursor)
+        #node_ball.setCursor(Qt.PointingHandCursor)
 
     else:
         node_ball = None
 
     # Branch line to parent
-    pen = QtGui.QPen()
+    pen = QPen()
     set_pen_style(pen, style["hz_line_type"])
-    pen.setColor(QtGui.QColor(style["hz_line_color"]))
+    pen.setColor(QColor(style["hz_line_color"]))
     pen.setWidth(style["hz_line_width"])
-    pen.setCapStyle(QtCore.Qt.FlatCap)
-    #pen.setCapStyle(QtCore.Qt.RoundCap)
-    #pen.setCapStyle(QtCore.Qt.SquareCap)
-    #pen.setJoinStyle(QtCore.Qt.RoundJoin)
+    pen.setCapStyle(Qt.FlatCap)
+    #pen.setCapStyle(Qt.RoundCap)
+    #pen.setCapStyle(Qt.SquareCap)
+    #pen.setJoinStyle(Qt.RoundJoin)
     hz_line = _LineItem()
     hz_line = _NodeLineItem(node)
     hz_line.setPen(pen)
@@ -666,10 +665,10 @@ def render_node_content(node, n2i, n2f, img):
         # fix_join_line = _LineItem()
         # fix_join_line = _NodeLineItem(node)
         # parent_style = node.up.img_style
-        # pen = QtGui.QPen()
-        # pen.setColor(QtGui.QColor(parent_style["vt_line_color"]))
+        # pen = QPen()
+        # pen.setColor(QColor(parent_style["vt_line_color"]))
         # pen.setWidth(parent_style["hz_line_width"])
-        # pen.setCapStyle(QtCore.Qt.FlatCap)
+        # pen.setCapStyle(Qt.FlatCap)
         # fix_join_line.setPen(pen)
         # fix_join_line.setLine(-join_fix, center, join_fix, center)
         # fix_join_line.setParentItem(item.content)
@@ -678,11 +677,11 @@ def render_node_content(node, n2i, n2f, img):
 
     if img.complete_branch_lines_when_necessary:
         extra_line = _LineItem(branch_length, center, ball_start_x, center)
-        pen = QtGui.QPen()
+        pen = QPen()
         item.extra_branch_line = extra_line
         set_pen_style(pen, img.extra_branch_line_type)
-        pen.setColor(QtGui.QColor(img.extra_branch_line_color))
-        pen.setCapStyle(QtCore.Qt.FlatCap)
+        pen.setColor(QColor(img.extra_branch_line_color))
+        pen.setCapStyle(Qt.FlatCap)
         pen.setWidth(style["hz_line_width"])
         extra_line.setPen(pen)
     else:
@@ -706,7 +705,7 @@ def render_node_content(node, n2i, n2f, img):
     # Vertical line
     if not _leaf(node):
         if img.mode == "c":
-            vt_line = QtGui.QGraphicsPathItem()
+            vt_line = QGraphicsPathItem()
 
         elif img.mode == "r":
             vt_line = _LineItem(item)
@@ -723,21 +722,21 @@ def render_node_content(node, n2i, n2f, img):
                 c2 += (last_child.img_style["hz_line_width"] / 2.0)
             vt_line.setLine(fx, c1, fx, c2)
 
-        pen = QtGui.QPen()
+        pen = QPen()
         set_pen_style(pen, style["vt_line_type"])
-        pen.setColor(QtGui.QColor(style["vt_line_color"]))
+        pen.setColor(QColor(style["vt_line_color"]))
         pen.setWidth(style["vt_line_width"])
-        pen.setCapStyle(QtCore.Qt.FlatCap)
-        #pen.setCapStyle(QtCore.Qt.RoundCap)
-        #pen.setCapStyle(QtCore.Qt.SquareCap)
+        pen.setCapStyle(Qt.FlatCap)
+        #pen.setCapStyle(Qt.RoundCap)
+        #pen.setCapStyle(Qt.SquareCap)
         vt_line.setPen(pen)
         item.vt_line = vt_line
     else:
         vt_line = None
 
-    item.bg = QtGui.QGraphicsItemGroup()
-    item.movable_items = [] #QtGui.QGraphicsItemGroup()
-    item.static_items = [] #QtGui.QGraphicsItemGroup()
+    item.bg = QGraphicsItemGroup()
+    item.movable_items = [] #QGraphicsItemGroup()
+    item.static_items = [] #QGraphicsItemGroup()
 
     # Items fow which coordinates are exported in the image map
     item.mapped_items = [node_ball, fblock_r, fblock_b, fblock_t]
@@ -760,11 +759,11 @@ def render_node_content(node, n2i, n2f, img):
 
 def set_pen_style(pen, line_style):
     if line_style == 0:
-        pen.setStyle(QtCore.Qt.SolidLine)
+        pen.setStyle(Qt.SolidLine)
     elif line_style == 1:
-        pen.setStyle(QtCore.Qt.DashLine)
+        pen.setStyle(Qt.DashLine)
     elif line_style == 2:
-        pen.setStyle(QtCore.Qt.DotLine)
+        pen.setStyle(Qt.DotLine)
 
 def set_style(n, layout_func):
     #if not isinstance(getattr(n, "img_style", None), NodeStyle):
@@ -900,10 +899,10 @@ def render_aligned_faces(img, mainRect, parent, n2i, n2f):
         if img.draw_guiding_lines and _leaf(node):
             # -1 is to connect the two lines, otherwise there is a pixel in between
             guide_line = _LineItem(item.nodeRegion.width()-1, item.center, x, item.center)
-            pen = QtGui.QPen()
+            pen = QPen()
             set_pen_style(pen, img.guiding_lines_type)
-            pen.setColor(QtGui.QColor(img.guiding_lines_color))
-            pen.setCapStyle(QtCore.Qt.FlatCap)
+            pen.setColor(QColor(img.guiding_lines_color))
+            pen.setCapStyle(Qt.FlatCap)
             pen.setWidth(node.img_style["hz_line_width"])
             guide_line.setPen(pen)
             guide_line.setParentItem(item.content)

@@ -37,18 +37,17 @@
 #
 # #END_LICENSE#############################################################
 from __future__ import absolute_import
-
-from .svg_colors import random_color
-from PyQt4  import QtCore, QtGui
-from six.moves import range
 from functools import partial
+from six.moves import range
 
+from .qt import Qt, QDialog, QMenu, QCursor, QInputDialog
+from .svg_colors import random_color
 from . import  _show_newick
 from ..evol import EvolTree
 
-class NewickDialog(QtGui.QDialog):
+class NewickDialog(QDialog):
     def __init__(self, node, *args):
-        QtGui.QDialog.__init__(self, *args)
+        QDialog.__init__(self, *args)
         self.node = node
 
     def update_newick(self):
@@ -87,16 +86,16 @@ class NewickDialog(QtGui.QDialog):
 class _NodeActions(object):
     """ Used to extend QGraphicsItem features """
     def __init__(self):
-        self.setCursor(QtCore.Qt.PointingHandCursor)
+        self.setCursor(Qt.PointingHandCursor)
         self.setAcceptsHoverEvents(True)
 
     def mouseReleaseEvent(self, e):
         if not self.node:
             return
      
-        if e.button() == QtCore.Qt.RightButton:
+        if e.button() == Qt.RightButton:
             self.showActionPopup()
-        elif e.button() == QtCore.Qt.LeftButton:
+        elif e.button() == Qt.LeftButton:
             self.scene().view.set_focus(self.node)
             
             if isinstance(self.node, EvolTree) and self.node.get_tree_root()._is_mark_mode():
@@ -149,7 +148,7 @@ class _NodeActions(object):
                     
 
     def showActionPopup(self):
-        contextMenu = QtGui.QMenu()
+        contextMenu = QMenu()
         contextMenu.addAction( "Set as outgroup", self.set_as_outgroup)
         contextMenu.addAction( "Copy partition", self.copy_partition)
         contextMenu.addAction( "Cut partition", self.cut_partition)
@@ -197,7 +196,7 @@ class _NodeActions(object):
         
 
         contextMenu.addAction( "Show newick", self.show_newick)
-        contextMenu.exec_(QtGui.QCursor.pos())
+        contextMenu.exec_(QCursor.pos())
 
     def _gui_mark_node(self, mark=None):
         if not mark:
@@ -246,7 +245,7 @@ class _NodeActions(object):
         self.scene().GUI.redraw()
 
     def add_children(self):
-        n,ok = QtGui.QInputDialog.getInteger(None,"Add childs","Number of childs to add:",1,1)
+        n,ok = QInputDialog.getInteger(None,"Add childs","Number of childs to add:",1,1)
         if ok:
             for i in range(n):
                 ch = self.node.add_child()
@@ -278,7 +277,7 @@ class _NodeActions(object):
             self.scene().GUI.redraw()
 
     def populate_partition(self):
-        n, ok = QtGui.QInputDialog.getInteger(None,"Populate partition","Number of nodes to add:",2,1)
+        n, ok = QInputDialog.getInteger(None,"Populate partition","Number of nodes to add:",2,1)
         if ok:
             self.node.populate(n)
             #self.scene().set_style_from(self.scene().tree,self.scene().layout_func)

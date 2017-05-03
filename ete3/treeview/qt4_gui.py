@@ -38,21 +38,17 @@
 # #END_LICENSE#############################################################
 from __future__ import absolute_import
 from __future__ import print_function
-
 import re
-from sys import stderr
-from PyQt4  import QtCore, QtGui
-from PyQt4.QtGui import QBrush, QPen, QGraphicsRectItem
-from PyQt4.QtGui import QPrinter
-from PyQt4.QtCore import QThread, SIGNAL
 import six
-try:
-    from PyQt4 import QtOpenGL
-    USE_GL = True
-    USE_GL = False # Temporarily disabled
-except ImportError:
-    USE_GL = False
 
+# try:
+#     from PyQt4 import QtOpenGL
+#     USE_GL = True
+# except ImportError:
+#     USE_GL = False
+USE_GL = False # Temporarily disabled 
+
+from .qt import *
 from . import _mainwindow, _search_dialog, _show_newick, _open_newick, _about
 from .main import save, _leaf
 from .svg_colors import random_color
@@ -65,31 +61,31 @@ except Exception:
 from .. import Tree, TreeStyle
 import time
 
-class _SelectorItem(QtGui.QGraphicsRectItem):
+class _SelectorItem(QGraphicsRectItem):
     def __init__(self, parent=None):
-        self.Color = QtGui.QColor("blue")
+        self.Color = QColor("blue")
         self._active = False
-        QtGui.QGraphicsRectItem.__init__(self, 0, 0, 0, 0)
+        QGraphicsRectItem.__init__(self, 0, 0, 0, 0)
         if parent:
             self.setParentItem(parent)
 
     def paint(self, p, option, widget):
         p.setPen(self.Color)
-        p.setBrush(QtGui.QBrush(QtCore.Qt.NoBrush))
+        p.setBrush(QBrush(Qt.NoBrush))
         p.drawRect(self.rect().x(),self.rect().y(),self.rect().width(),self.rect().height())
         return
         # Draw info text
-        font = QtGui.QFont("Arial",13)
+        font = QFont("Arial",13)
         text = "%d selected."  % len(self.get_selected_nodes())
-        textR = QtGui.QFontMetrics(font).boundingRect(text)
+        textR = QFontMetrics(font).boundingRect(text)
         if  self.rect().width() > textR.width() and \
                 self.rect().height() > textR.height()/2 and 0: # OJO !!!!
-            p.setPen(QtGui.QPen(self.Color))
-            p.setFont(QtGui.QFont("Arial",13))
+            p.setPen(QPen(self.Color))
+            p.setFont(QFont("Arial",13))
             p.drawText(self.rect().bottomLeft().x(),self.rect().bottomLeft().y(),text)
 
     def get_selected_nodes(self):
-        selPath = QtGui.QPainterPath()
+        selPath = QPainterPath()
         selPath.addRect(self.rect())
         self.scene().setSelectionArea(selPath)
         return [i.node for i in self.scene().selectedItems()]
@@ -125,7 +121,7 @@ class CheckUpdates(QThread):
         except Exception:
             pass
 
-class _GUI(QtGui.QMainWindow):
+class _GUI(QMainWindow):
     def _updatestatus(self, msg):
         self.main.statusbar.showMessage(msg)
 
@@ -134,7 +130,7 @@ class _GUI(QtGui.QMainWindow):
         self.view.init_values()
 
     def __init__(self, scene, *args):
-        QtGui.QMainWindow.__init__(self, *args)
+        QMainWindow.__init__(self, *args)
         self.main = _mainwindow.Ui_MainWindow()
         self.main.setupUi(self)
         self.setWindowTitle("ETE Tree Browser")
@@ -156,25 +152,25 @@ class _GUI(QtGui.QMainWindow):
         if scene.img.force_topology:
             self.main.actionForceTopology.setChecked(True)
 
-        splitter = QtGui.QSplitter()
+        splitter = QSplitter()
         splitter.addWidget(self.view)
         splitter.addWidget(self.node_properties)
         self.setCentralWidget(splitter)
         # I create a single dialog to keep the last search options
-        self.searchDialog =  QtGui.QDialog()
+        self.searchDialog =  QDialog()
         # Don't know if this is the best way to set up the dialog and
         # its variables
         self.searchDialog._conf = _search_dialog.Ui_Dialog()
         self.searchDialog._conf.setupUi(self.searchDialog)
 
-        self.scene.setItemIndexMethod(QtGui.QGraphicsScene.NoIndex)
+        self.scene.setItemIndexMethod(QGraphicsScene.NoIndex)
 
         # Shows the whole tree by default
-        #self.view.fitInView(self.scene.sceneRect(), QtCore.Qt.KeepAspectRatio)
+        #self.view.fitInView(self.scene.sceneRect(), Qt.KeepAspectRatio)
         splitter.setCollapsible(1, True)
         splitter.setSizes([self.scene.sceneRect().width(), 10])
 
-        self.view.fitInView(0, 0, self.scene.sceneRect().width(), 200, QtCore.Qt.KeepAspectRatio)
+        self.view.fitInView(0, 0, self.scene.sceneRect().width(), 200, Qt.KeepAspectRatio)
 
         # Check for updates
         self.check = CheckUpdates()
@@ -188,11 +184,11 @@ class _GUI(QtGui.QMainWindow):
         except:
             __version__= "development branch"
 
-        d = QtGui.QDialog()
+        d = QDialog()
         d._conf = _about.Ui_About()
         d._conf.setupUi(d)
         d._conf.version.setText("Version: %s" %__version__)
-        d._conf.version.setAlignment(QtCore.Qt.AlignHCenter)
+        d._conf.version.setAlignment(Qt.AlignHCenter)
         d.exec_()
 
     @QtCore.pyqtSignature("")
@@ -232,14 +228,14 @@ class _GUI(QtGui.QMainWindow):
 
     @QtCore.pyqtSignature("")
     def on_actionFit2tree_triggered(self):
-        self.view.fitInView(self.scene.sceneRect(), QtCore.Qt.KeepAspectRatio)
+        self.view.fitInView(self.scene.sceneRect(), Qt.KeepAspectRatio)
 
     @QtCore.pyqtSignature("")
     def on_actionFit2region_triggered(self):
         R = self.view.selector.rect()
         if R.width()>0 and R.height()>0:
             self.view.fitInView(R.x(), R.y(), R.width(),\
-                                    R.height(), QtCore.Qt.KeepAspectRatio)
+                                    R.height(), Qt.KeepAspectRatio)
 
     @QtCore.pyqtSignature("")
     def on_actionSearchNode_triggered(self):
@@ -253,7 +249,7 @@ class _GUI(QtGui.QMainWindow):
                 try:
                     aValue =  float(setup.attrValue.text())
                 except ValueError:
-                    QtGui.QMessageBox.information(self, "!",\
+                    QMessageBox.information(self, "!",\
                                               "A numeric value is expected")
                     return
             elif mType == 7:
@@ -291,7 +287,7 @@ class _GUI(QtGui.QMainWindow):
                 R = item.mapToScene(item.fullRegion).boundingRect()
                 R.adjust(-60, -60, 60, 60)
                 self.view.fitInView(R.x(), R.y(), R.width(),\
-                                    R.height(), QtCore.Qt.KeepAspectRatio)
+                                    R.height(), Qt.KeepAspectRatio)
 
 
     @QtCore.pyqtSignature("")
@@ -353,12 +349,12 @@ class _GUI(QtGui.QMainWindow):
 
     @QtCore.pyqtSignature("")
     def on_actionOpen_triggered(self):
-        d = QtGui.QFileDialog()
+        d = QFileDialog()
         d._conf = _open_newick.Ui_OpenNewick()
         d._conf.setupUi(d)
         d.exec_()
         return
-        fname = QtGui.QFileDialog.getOpenFileName(self ,"Open File",
+        fname = QFileDialog.getOpenFileName(self ,"Open File",
                                                  "/home",
                                                  )
         try:
@@ -372,7 +368,7 @@ class _GUI(QtGui.QMainWindow):
 
     @QtCore.pyqtSignature("")
     def on_actionSave_newick_triggered(self):
-        fname = QtGui.QFileDialog.getSaveFileName(self ,"Save File",
+        fname = QFileDialog.getSaveFileName(self ,"Save File",
                                                  "/home",
                                                  "Newick (*.nh *.nhx *.nw )")
         nw = self.scene.tree.write()
@@ -386,7 +382,7 @@ class _GUI(QtGui.QMainWindow):
 
     @QtCore.pyqtSignature("")
     def on_actionRenderPDF_triggered(self):
-        F = QtGui.QFileDialog(self)
+        F = QFileDialog(self)
         if F.exec_():
             imgName = str(F.selectedFiles()[0])
             if not imgName.endswith(".pdf"):
@@ -397,10 +393,10 @@ class _GUI(QtGui.QMainWindow):
     @QtCore.pyqtSignature("")
     def on_actionRender_selected_region_triggered(self):
         if not self.scene.selector.isVisible():
-            return QtGui.QMessageBox.information(self, "!",\
+            return QMessageBox.information(self, "!",\
                                               "You must select a region first")
 
-        F = QtGui.QFileDialog(self)
+        F = QFileDialog(self)
         if F.exec_():
             imgName = str(F.selectedFiles()[0])
             if not imgName.endswith(".pdf"):
@@ -410,7 +406,7 @@ class _GUI(QtGui.QMainWindow):
 
     @QtCore.pyqtSignature("")
     def on_actionPaste_newick_triggered(self):
-        text,ok = QtGui.QInputDialog.getText(self,\
+        text,ok = QInputDialog.getText(self,\
                                                  "Paste Newick",\
                                                  "Newick:")
         if ok:
@@ -425,7 +421,7 @@ class _GUI(QtGui.QMainWindow):
 
     def keyPressEvent(self,e):
         key = e.key()
-        control = e.modifiers() & QtCore.Qt.ControlModifier
+        control = e.modifiers() & Qt.ControlModifier
         if key == 77:
             if self.isMaximized():
                 self.showNormal()
@@ -442,17 +438,17 @@ class _GUI(QtGui.QMainWindow):
 # This function should be reviewed. Probably there are better ways to
 # do de same, or at least less messy ways... So far this is what I
 # have
-class _TableItem(QtGui.QItemDelegate):
+class _TableItem(QItemDelegate):
     def __init__(self, parent=None):
-        QtGui.QItemDelegate.__init__(self, parent)
+        QItemDelegate.__init__(self, parent)
         self.propdialog = parent
 
     def paint(self, painter, style, index):
         self.propdialog.tableView.setRowHeight(index.row(), 18)
         val = index.data()
         if getattr(val, "background", None):
-            painter.fillRect(style.rect, QtGui.QColor(val.background))
-        QtGui.QItemDelegate.paint(self, painter, style, index)
+            painter.fillRect(style.rect, QColor(val.background))
+        QItemDelegate.paint(self, painter, style, index)
 
     def createEditor(self, parent, option, index):
         # Edit only values, not property names
@@ -464,23 +460,23 @@ class _TableItem(QtGui.QItemDelegate):
             return None
 
         if re.search("^#[0-9ABCDEFabcdef]{6}$",str(originalValue.toString())):
-            origc = QtGui.QColor(str(originalValue.toString()))
-            color = QtGui.QColorDialog.getColor(origc)
+            origc = QColor(str(originalValue.toString()))
+            color = QColorDialog.getColor(origc)
             if color.isValid():
                 self.propdialog._edited_indexes.add( (index.row(), index.column()) )
-                #index.model().setData(index, QtCore.QVariant(color.name()))
+                #index.model().setData(index, QVariant(color.name()))
                 index.model().setData(index, color.name)
                 self.propdialog.apply_changes()
 
             return None
         else:
-            editField = QtGui.QLineEdit(parent)
+            editField = QLineEdit(parent)
             editField.setFrame(False)
-            validator = QtGui.QRegExpValidator(QtCore.QRegExp(".+"), editField)
+            validator = QRegExpValidator(QRegExp(".+"), editField)
             editField.setValidator(validator)
-            self.connect(editField, QtCore.SIGNAL("returnPressed()"),
+            self.connect(editField, SIGNAL("returnPressed()"),
                          self.commitAndCloseEditor)
-            self.connect(editField, QtCore.SIGNAL("returnPressed()"),
+            self.connect(editField, SIGNAL("returnPressed()"),
                          self.propdialog.apply_changes)
             self.propdialog._edited_indexes.add( (index.row(), index.column()) )
             return editField
@@ -499,28 +495,28 @@ class _TableItem(QtGui.QItemDelegate):
 
     def commitAndCloseEditor(self):
         editor = self.sender()
-        self.emit(QtCore.SIGNAL("commitData(QWidget *)"), editor)
-        self.emit(QtCore.SIGNAL("closeEditor(QWidget *)"), editor)
+        self.emit(SIGNAL("commitData(QWidget *)"), editor)
+        self.emit(SIGNAL("closeEditor(QWidget *)"), editor)
 
-class _PropModeChooser(QtGui.QWidget):
+class _PropModeChooser(QWidget):
     def __init__(self,scene, *args):
-        QtGui.QWidget.__init__(self,*args)
+        QWidget.__init__(self,*args)
 
-class _PropertiesDialog(QtGui.QWidget):
+class _PropertiesDialog(QWidget):
     def __init__(self, scene, *args):
-        QtGui.QWidget.__init__(self,*args)
+        QWidget.__init__(self,*args)
         self.scene = scene
         self._mode = 0
-        self.layout =  QtGui.QVBoxLayout()
+        self.layout =  QVBoxLayout()
 
         # Display an estimated bL, w, dN and dS for a given evolutionary model
         if hasattr(self.scene.tree, '_models'):
             from ..evol.control import AVAIL
             global AVAIL
             
-            self.model_lbl = QtGui.QLabel('Showing model: ', self)
+            self.model_lbl = QLabel('Showing model: ', self)
             self.layout.addWidget(self.model_lbl)
-            self.combo = QtGui.QComboBox()
+            self.combo = QComboBox()
             self.layout.addWidget(self.combo)
             try:
                 models = sorted(list(self.scene.tree._models.keys()))
@@ -534,23 +530,23 @@ class _PropertiesDialog(QtGui.QWidget):
                 self.combo.addItems(models)
             else:
                 self.combo.addItems([self.tr('None')])
-            self.connect(self.combo, QtCore.SIGNAL(
+            self.connect(self.combo, SIGNAL(
                 "currentIndexChanged(const QString&)"), self.handleModelButton)
-            self.model_lbl = QtGui.QLabel('Available models: ', self)
+            self.model_lbl = QLabel('Available models: ', self)
             self.layout.addWidget(self.model_lbl)
             
             if hasattr(self.scene.tree.get_leaves()[0], 'nt_sequence'):
-                self.combo_run = QtGui.QComboBox()
+                self.combo_run = QComboBox()
                 self.layout.addWidget(self.combo_run)
                 avail_models = sorted(list(AVAIL.keys()))
                 self.combo_run.clear()
                 self.combo_run.addItems(['%s (%s)' % (m, AVAIL[m]['typ'])
                                          for m in avail_models])
-                self.modelButton = QtGui.QPushButton('Run', self)
+                self.modelButton = QPushButton('Run', self)
                 self.modelButton.clicked.connect(self.runModelButton)
                 self.layout.addWidget(self.modelButton)
 
-        self.tableView = QtGui.QTableView()
+        self.tableView = QTableView()
         self.tableView.move(5,60)
         self.tableView.verticalHeader().setVisible(False)
         #self.tableView.horizontalHeader().setVisible(True)
@@ -573,7 +569,7 @@ class _PropertiesDialog(QtGui.QWidget):
             marks = [str(n.node_id) for n in self.scene.tree.iter_descendants()
                      if n.mark]
             if not marks:
-                QtGui.QMessageBox.information(
+                QMessageBox.information(
                     self, "ERROR",
                     "This model requires tree to be marked\nUse right click on "
                     "nodes to mark branches")
@@ -634,9 +630,9 @@ class _PropertiesDialog(QtGui.QWidget):
             self.get_props_in_nodes([node]+node.get_descendants())
 
         total_props = len(self.prop2nodes) + len(list(self.style2nodes.keys()))
-        self.model = QtGui.QStandardItemModel(total_props, 2)
-        self.model.setHeaderData(0, QtCore.Qt.Horizontal, "Feature")
-        self.model.setHeaderData(1, QtCore.Qt.Horizontal, "Value")
+        self.model = QStandardItemModel(total_props, 2)
+        self.model.setHeaderData(0, Qt.Horizontal, "Feature")
+        self.model.setHeaderData(1, Qt.Horizontal, "Value")
         self.tableView.setModel(self.model)
         self.delegate = _TableItem(self)
         self.tableView.setItemDelegate(self.delegate)
@@ -646,10 +642,10 @@ class _PropertiesDialog(QtGui.QWidget):
         for name, nodes in sorted(items):
             value= getattr(nodes[0],name)
 
-            index1 = self.model.index(row, 0, QtCore.QModelIndex())
-            index2 = self.model.index(row, 1, QtCore.QModelIndex())
-            f = name#QtCore.QVariant(str(name))
-            v = value#QtCore.QVariant(value)
+            index1 = self.model.index(row, 0, QModelIndex())
+            index2 = self.model.index(row, 1, QModelIndex())
+            f = name#QVariant(str(name))
+            v = value#QVariant(value)
             self.model.setData(index1, f)
             self.model.setData(index2, v)
             self._prop_indexes.add( (index1, index2) )
@@ -658,12 +654,12 @@ class _PropertiesDialog(QtGui.QWidget):
         keys = list(self.style2nodes.keys())
         for name in sorted(keys):
             value= self.style2values[name][0]
-            index1 = self.model.index(row, 0, QtCore.QModelIndex())
-            index2 = self.model.index(row, 1, QtCore.QModelIndex())
+            index1 = self.model.index(row, 0, QModelIndex())
+            index2 = self.model.index(row, 1, QModelIndex())
 
-            #self.model.setData(index1, QtCore.QVariant(name))
+            #self.model.setData(index1, QVariant(name))
             self.model.setData(index1, name)
-            v = value #QtCore.QVariant(value)
+            v = value #QVariant(value)
             self.model.setData(index2, v)
             # Creates a variant element
             self._style_indexes.add( (index1, index2) )
@@ -703,9 +699,9 @@ class _PropertiesDialog(QtGui.QWidget):
         self.scene.GUI.redraw()
         return
 
-class _TreeView(QtGui.QGraphicsView):
+class _TreeView(QGraphicsView):
     def __init__(self,*args):
-        QtGui.QGraphicsView.__init__(self,*args)
+        QGraphicsView.__init__(self,*args)
         self.buffer_node = None
         self.init_values()
 
@@ -715,31 +711,31 @@ class _TreeView(QtGui.QGraphicsView):
             F.setSampleBuffers(True)
             print(F.sampleBuffers())
             self.setViewport(QtOpenGL.QGLWidget(F))
-            self.setRenderHints(QtGui.QPainter.Antialiasing)
+            self.setRenderHints(QPainter.Antialiasing)
         else:
-            self.setRenderHints(QtGui.QPainter.Antialiasing or QtGui.QPainter.SmoothPixmapTransform )
+            self.setRenderHints(QPainter.Antialiasing or QPainter.SmoothPixmapTransform )
 
-        self.setViewportUpdateMode(QtGui.QGraphicsView.BoundingRectViewportUpdate)
-        self.setRenderHints(QtGui.QPainter.Antialiasing or QtGui.QPainter.SmoothPixmapTransform )
-        #self.setViewportUpdateMode(QtGui.QGraphicsView.NoViewportUpdate)
-        self.setCacheMode(QtGui.QGraphicsView.CacheBackground)
-        self.setResizeAnchor(QtGui.QGraphicsView.AnchorUnderMouse)
-        #self.setOptimizationFlag (QtGui.QGraphicsView.DontAdjustForAntialiasing)
-        self.setOptimizationFlag (QtGui.QGraphicsView.DontSavePainterState)
-        #self.setOptimizationFlag (QtGui.QGraphicsView.DontClipPainter)
-        #self.scene().setItemIndexMethod(QtGui.QGraphicsScene.NoIndex)
+        self.setViewportUpdateMode(QGraphicsView.BoundingRectViewportUpdate)
+        self.setRenderHints(QPainter.Antialiasing or QPainter.SmoothPixmapTransform )
+        #self.setViewportUpdateMode(QGraphicsView.NoViewportUpdate)
+        self.setCacheMode(QGraphicsView.CacheBackground)
+        self.setResizeAnchor(QGraphicsView.AnchorUnderMouse)
+        #self.setOptimizationFlag (QGraphicsView.DontAdjustForAntialiasing)
+        self.setOptimizationFlag (QGraphicsView.DontSavePainterState)
+        #self.setOptimizationFlag (QGraphicsView.DontClipPainter)
+        #self.scene().setItemIndexMethod(QGraphicsScene.NoIndex)
         #self.scene().setBspTreeDepth(24)
 
     def init_values(self):
         master_item = self.scene().master_item
         self.n2hl = {}
-        self.focus_highlight = QtGui.QGraphicsRectItem(master_item)
+        self.focus_highlight = QGraphicsRectItem(master_item)
         #self.buffer_node = None
         self.focus_node = None
         self.selector = _SelectorItem(master_item)
 
     def resizeEvent(self, e):
-        QtGui.QGraphicsView.resizeEvent(self, e)
+        QGraphicsView.resizeEvent(self, e)
 
     def safe_scale(self, xfactor, yfactor):
         self.setTransformationAnchor(self.AnchorUnderMouse)
@@ -750,7 +746,7 @@ class _TreeView(QtGui.QGraphicsView):
 
         if (xfactor>1 and xscale>200000) or \
                 (yfactor>1 and yscale>200000):
-            QtGui.QMessageBox.information(self, "!",\
+            QMessageBox.information(self, "!",\
                                               "I will take the microscope!")
             return
 
@@ -766,13 +762,13 @@ class _TreeView(QtGui.QGraphicsView):
     def highlight_node(self, n, fullRegion=False, fg="red", bg="gray", permanent=False):
         self.unhighlight_node(n)
         item = self.scene().n2i[n]
-        hl = QtGui.QGraphicsRectItem(item.content)
+        hl = QGraphicsRectItem(item.content)
         if fullRegion:
             hl.setRect(item.fullRegion)
         else:
             hl.setRect(item.nodeRegion)
-        hl.setPen(QtGui.QColor(fg))
-        hl.setBrush(QtGui.QColor(bg))
+        hl.setPen(QColor(fg))
+        hl.setBrush(QColor(bg))
         hl.setOpacity(0.2)
         # save info in Scene
         self.n2hl[n] = hl
@@ -798,19 +794,19 @@ class _TreeView(QtGui.QGraphicsView):
             factor = 0.0
 
         # Ctrl+Shift -> Zoom in X
-        if  (e.modifiers() & QtCore.Qt.ControlModifier) and (e.modifiers() & QtCore.Qt.ShiftModifier):
+        if  (e.modifiers() & Qt.ControlModifier) and (e.modifiers() & Qt.ShiftModifier):
             self.safe_scale(1+factor, 1)
 
         # Ctrl+Alt -> Zomm in Y
-        elif  (e.modifiers() & QtCore.Qt.ControlModifier) and (e.modifiers() & QtCore.Qt.AltModifier):
+        elif  (e.modifiers() & Qt.ControlModifier) and (e.modifiers() & Qt.AltModifier):
             self.safe_scale(1,1+factor)
 
         # Ctrl -> Zoom X,Y
-        elif e.modifiers() & QtCore.Qt.ControlModifier:
+        elif e.modifiers() & Qt.ControlModifier:
             self.safe_scale(1-factor, 1-factor)
 
         # Shift -> Horizontal scroll
-        elif e.modifiers() &  QtCore.Qt.ShiftModifier:
+        elif e.modifiers() &  Qt.ShiftModifier:
             if e.delta()>0:
                 self.horizontalScrollBar().setValue(self.horizontalScrollBar().value()-20 )
             else:
@@ -824,8 +820,8 @@ class _TreeView(QtGui.QGraphicsView):
 
     def set_focus(self, node):
         i = self.scene().n2i[node]
-        self.focus_highlight.setPen(QtGui.QColor("red"))
-        self.focus_highlight.setBrush(QtGui.QColor("SteelBlue"))
+        self.focus_highlight.setPen(QColor("red"))
+        self.focus_highlight.setBrush(QColor("SteelBlue"))
         self.focus_highlight.setOpacity(0.2)
         self.focus_highlight.setParentItem(i.content)
         self.focus_highlight.setRect(i.fullRegion)
@@ -841,34 +837,33 @@ class _TreeView(QtGui.QGraphicsView):
 
     def keyPressEvent(self,e):
         key = e.key()
-        control = e.modifiers() & QtCore.Qt.ControlModifier
-        #print >>sys.stderr, "****** Pressed key: ", key, QtCore.Qt.LeftArrow
+        control = e.modifiers() & Qt.ControlModifier
         if control:
-            if key  == QtCore.Qt.Key_Left:
+            if key  == Qt.Key_Left:
                 self.horizontalScrollBar().setValue(self.horizontalScrollBar().value()-20 )
                 self.update()
-            elif key  == QtCore.Qt.Key_Right:
+            elif key  == Qt.Key_Right:
                 self.horizontalScrollBar().setValue(self.horizontalScrollBar().value()+20 )
                 self.update()
-            elif key  == QtCore.Qt.Key_Up:
+            elif key  == Qt.Key_Up:
                 self.verticalScrollBar().setValue(self.verticalScrollBar().value()-20 )
                 self.update()
-            elif key  == QtCore.Qt.Key_Down:
+            elif key  == Qt.Key_Down:
                 self.verticalScrollBar().setValue(self.verticalScrollBar().value()+20 )
                 self.update()
         else:
             if not self.focus_node:
                 self.focus_node = self.scene().tree
 
-            if key == QtCore.Qt.Key_Left:
+            if key == Qt.Key_Left:
                 if self.focus_node.up:
                     new_focus_node = self.focus_node.up
                     self.set_focus(new_focus_node)
-            elif key == QtCore.Qt.Key_Right:
+            elif key == Qt.Key_Right:
                 if self.focus_node.children:
                     new_focus_node = self.focus_node.children[0]
                     self.set_focus(new_focus_node)
-            elif key == QtCore.Qt.Key_Up:
+            elif key == Qt.Key_Up:
                 if self.focus_node.up:
                     i = self.focus_node.up.children.index(self.focus_node)
                     if i>0:
@@ -877,7 +872,7 @@ class _TreeView(QtGui.QGraphicsView):
                     elif self.focus_node.up:
                         self.set_focus(self.focus_node.up)
 
-            elif key == QtCore.Qt.Key_Down:
+            elif key == Qt.Key_Down:
                 if self.focus_node.up:
                     i = self.focus_node.up.children.index(self.focus_node)
                     if i < len(self.focus_node.up.children)-1:
@@ -886,16 +881,16 @@ class _TreeView(QtGui.QGraphicsView):
                     elif self.focus_node.up:
                         self.set_focus(self.focus_node.up)
 
-            elif key == QtCore.Qt.Key_Escape:
+            elif key == Qt.Key_Escape:
                 self.hide_focus()
-            elif key == QtCore.Qt.Key_Enter or\
-                    key == QtCore.Qt.Key_Return:
+            elif key == Qt.Key_Enter or\
+                    key == Qt.Key_Return:
                 self.prop_table.tableView.setFocus()
-            elif key == QtCore.Qt.Key_Space:
+            elif key == Qt.Key_Space:
                 self.highlight_node(self.focus_node, fullRegion=True,
                                     bg=random_color(l=0.5, s=0.5),
                                     permanent=True)
-        QtGui.QGraphicsView.keyPressEvent(self,e)
+        QGraphicsView.keyPressEvent(self,e)
 
     def mouseReleaseEvent(self, e):
         self.scene().view.hide_focus()
@@ -908,16 +903,16 @@ class _TreeView(QtGui.QGraphicsView):
             if self.selector.startPoint == curr_pos:
                 self.selector.setVisible(False)
             self.selector.setActive(False)
-        QtGui.QGraphicsView.mouseReleaseEvent(self,e)
+        QGraphicsView.mouseReleaseEvent(self,e)
 
     def mousePressEvent(self,e):
         pos = self.mapToScene(e.pos())
         x, y = pos.x(), pos.y()
         self.selector.setRect(x, y, 0,0)
-        self.selector.startPoint = QtCore.QPointF(x, y)
+        self.selector.startPoint = QPointF(x, y)
         self.selector.setActive(True)
         self.selector.setVisible(True)
-        QtGui.QGraphicsView.mousePressEvent(self,e)
+        QGraphicsView.mousePressEvent(self,e)
 
     def mouseMoveEvent(self,e):
         curr_pos = self.mapToScene(e.pos())
@@ -927,7 +922,7 @@ class _TreeView(QtGui.QGraphicsView):
             w = max(self.selector.startPoint.x(),curr_pos.x()) - x
             h = max(self.selector.startPoint.y(),curr_pos.y()) - y
             self.selector.setRect(x,y,w,h)
-        QtGui.QGraphicsView.mouseMoveEvent(self, e)
+        QGraphicsView.mouseMoveEvent(self, e)
 
 
 class _BasicNodeActions(object):
@@ -935,7 +930,7 @@ class _BasicNodeActions(object):
 
     @staticmethod
     def init(obj):
-        obj.setCursor(QtCore.Qt.PointingHandCursor)
+        obj.setCursor(Qt.PointingHandCursor)
         obj.setAcceptsHoverEvents(True)
 
     @staticmethod
@@ -952,9 +947,9 @@ class _BasicNodeActions(object):
 
     @staticmethod
     def mouseReleaseEvent(obj, e):
-        if e.button() == QtCore.Qt.RightButton:
+        if e.button() == Qt.RightButton:
             obj.showActionPopup()
-        elif e.button() == QtCore.Qt.LeftButton:
+        elif e.button() == Qt.LeftButton:
             obj.scene().view.set_focus(obj.node)
             #obj.scene().view.prop_table.update_properties(obj.node)
 

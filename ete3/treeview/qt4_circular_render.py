@@ -39,21 +39,22 @@
 from __future__ import absolute_import
 import math
 import colorsys
-from PyQt4 import QtCore, QtGui
+
+from .qt import *
 from .main import _leaf, tracktime
 from .node_gui_actions import _NodeActions
 
-class _LineItem(QtGui.QGraphicsLineItem):
+class _LineItem(QGraphicsLineItem):
     def paint(self, painter, option, widget):
         #painter.setClipRect( option.exposedRect )
-        QtGui.QGraphicsLineItem.paint(self, painter, option, widget)
+        QGraphicsLineItem.paint(self, painter, option, widget)
 
 
-class ArcPartition(QtGui.QGraphicsPathItem):
+class ArcPartition(QGraphicsPathItem):
     def __init__(self, parent=None):
-        QtGui.QGraphicsPathItem.__init__(self, parent)
-        self.setCacheMode(QtGui.QGraphicsItem.DeviceCoordinateCache)
-        #self.setCacheMode(QtGui.QGraphicsItem.ItemCoordinateCache)
+        QGraphicsPathItem.__init__(self, parent)
+        self.setCacheMode(QGraphicsItem.DeviceCoordinateCache)
+        #self.setCacheMode(QGraphicsItem.ItemCoordinateCache)
 
     def set_arc(self, cxdist, cydist, r1, r2, angle_start, angle_end):
         """ Draws a 2D arc with two arc lines of length r1 (inner) and
@@ -72,7 +73,7 @@ class ArcPartition(QtGui.QGraphicsPathItem):
         angle_end = angle_end
         angle_span = angle_end + angle_start
 
-        path = QtGui.QPainterPath()
+        path = QPainterPath()
         # Calculate start and end points of inner arc
         path.arcMoveTo(r1_xstart, r1_ystart, d1, d1, -angle_start)
         i1 = path.currentPosition()
@@ -93,12 +94,12 @@ class ArcPartition(QtGui.QGraphicsPathItem):
         self.setPath(path)
 
     def paint(self, painter, option, index):
-        return QtGui.QGraphicsPathItem.paint(self, painter, option, index)
+        return QGraphicsPathItem.paint(self, painter, option, index)
 
 
-class _ArcItem(QtGui.QGraphicsPathItem):
+class _ArcItem(QGraphicsPathItem):
     def __init__(self):
-        QtGui.QGraphicsPathItem.__init__(self)
+        QGraphicsPathItem.__init__(self)
 
     def set_arc(self, cxdist, cydist, r1, r2, angle_start, angle_end):
         """ Draws a 2D arc with two arc lines of length r1 (inner) and
@@ -126,7 +127,7 @@ class _ArcItem(QtGui.QGraphicsPathItem):
         angle_end = clockwise(angle_end)
         angle_span = angle_end - angle_start
 
-        path = QtGui.QPainterPath()
+        path = QPainterPath()
         # Calculate start and end points of inner arc
         path.arcMoveTo(r1_xstart, r1_ystart, d1, d1, angle_start)
         i1 = path.currentPosition()
@@ -147,12 +148,12 @@ class _ArcItem(QtGui.QGraphicsPathItem):
         self.setPath(path)
 
     def paint(self, painter, option, index):
-        return QtGui.QGraphicsPathItem.paint(self, painter, option, index)
+        return QGraphicsPathItem.paint(self, painter, option, index)
 
 def rotate_and_displace(item, rotation, height, offset):
     """ Rotates an item of a given height over its own left most edis and moves
     the item offset units in the rotated x axis """
-    t = QtGui.QTransform()
+    t = QTransform()
     t.rotate(rotation)
     t.translate(0, - (height / 2))
     t.translate(offset, 0)
@@ -224,7 +225,7 @@ def render_circular(root_node, n2i, rot_step):
             rot_span = abs(rot_end - rot_start)
             C = item.vt_line
             C.setParentItem(item)
-            path = QtGui.QPainterPath()
+            path = QPainterPath()
             # Counter clock wise
             start = r - node.img_style["vt_line_width"]/2
             path.arcMoveTo(-start, -start, start * 2, start * 2, 360 - rot_start - rot_span)

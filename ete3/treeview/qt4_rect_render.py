@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -37,21 +36,22 @@ from __future__ import absolute_import
 #
 #
 # #END_LICENSE#############################################################
-from PyQt4 import QtCore, QtGui
+from __future__ import absolute_import
+from .qt import *
 from .main import _leaf
 
-class RectPartition(QtGui.QGraphicsRectItem):
+class RectPartition(QGraphicsRectItem):
     def __init__(self, *args):
-        QtGui.QGraphicsRectItem.__init__(self, *args)
+        QGraphicsRectItem.__init__(self, *args)
         self.drawbg = False
-        self.nodeRegion = QtCore.QRectF()
-        self.facesRegion = QtCore.QRectF()
-        self.fullRegion = QtCore.QRectF()
+        self.nodeRegion = QRectF()
+        self.facesRegion = QRectF()
+        self.fullRegion = QRectF()
 
     def paint(self, painter, option, index):
         if self.drawbg:
             painter.setClipRect( option.exposedRect )
-            return QtGui.QGraphicsRectItem.paint(self, painter, option, index)
+            return QGraphicsRectItem.paint(self, painter, option, index)
 
 def get_partition_center(n, n2i, n2f):
         down_h = n2f[n]["branch-bottom"].h
