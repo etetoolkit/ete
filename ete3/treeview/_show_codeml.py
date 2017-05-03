@@ -45,12 +45,8 @@ from __future__ import absolute_import
 #      by: PyQt4 UI code generator 4.5.4
 #
 # WARNING! All changes made in this file will be lost!
-
-try:
-    from PyQt4 import QtCore, QtGui
-except ImportError:
-    import QtCore, QtGui
-
+from __future__ import absolute_import
+from .qt import QtCore, QtGui
 
 class Ui_Codeml(object):
     def setupUi(self, Codeml):

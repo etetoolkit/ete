@@ -42,7 +42,7 @@ import re
 import six
 
 # try:
-#     from PyQt4 import QtOpenGL
+#     from .qt import QtOpenGL
 #     USE_GL = True
 # except ImportError:
 #     USE_GL = False

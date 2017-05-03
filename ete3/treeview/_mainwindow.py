@@ -45,8 +45,8 @@ from __future__ import absolute_import
 #      by: PyQt4 UI code generator 4.7.2
 #
 # WARNING! All changes made in this file will be lost!
-
-from PyQt4 import QtCore, QtGui
+from __future__ import absolute_import
+from .qt import QtCore, QtGui
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):

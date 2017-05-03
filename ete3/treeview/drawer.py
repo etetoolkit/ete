@@ -40,7 +40,7 @@ from __future__ import absolute_import
 import types
 import signal
 
-from .qt import * 
+from .qt import *
 
 from .qt4_gui import _GUI, _PropertiesDialog, _BasicNodeActions
 
