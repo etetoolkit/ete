@@ -251,9 +251,9 @@ class TextFace(Face):
     :param fstyle: "normal" or "italic"
 
     :param False tight_text: When False, boundaries of the text are
-    approximated according to general font metrics, producing slightly
-    worse aligned text faces but improving the performance of tree
-    visualization in scenes with a lot of text faces.
+        approximated according to general font metrics, producing slightly
+        worse aligned text faces but improving the performance of tree
+        visualization in scenes with a lot of text faces.
     """
     __slots__ = ["fgcolor", "fstyle", "fsize", "ftype", "penwidth",
                  "tight_text", "bold", "_text", "_bounding_rect", "_real_rect"]
@@ -1057,9 +1057,10 @@ class RectFace(Face):
 
     Creates a Rectangular solid face.
 
-    :param label: optional text string to annotate the face: Default value is None;
-    label can also be a dict with attributes text, font, color, and fontsize
-    color defaults to background color, font to Verdana, fontsize to 12
+    :param label: optional text string to annotate the face: Default
+        value is None; label can also be a dict with attributes text,
+        font, color, and fontsize color defaults to background color,
+        font to Verdana, fontsize to 12
     """
     def __init__(self, width, height, fgcolor, bgcolor, label=None):
         Face.__init__(self)
@@ -1095,10 +1096,11 @@ class CircleFace(Face):
     :param radius: integer number defining the radius of the face
     :param color: Color used to fill the circle. RGB code or name in :data:`SVG_COLORS`
     :param "circle" style: Valid values are "circle" or "sphere"
-    :param label: optional text string to annotate the face: Default value is None;
-    label can also be a dict with attributes text, font, color, and fontsize
-    color defaults to circle color (because it looks nice with "sphere"),
-    font to Verdana, fontsize to 12
+    :param label: optional text string to annotate the face: Default
+        value is None; label can also be a dict with attributes text,
+        font, color, and fontsize color defaults to circle color
+        (because it looks nice with "sphere"), font to Verdana,
+        fontsize to 12
     """
 
     def __init__(self, radius, color, style="circle", label=None):
