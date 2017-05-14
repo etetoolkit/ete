@@ -367,12 +367,13 @@ class TreeNode(object):
         next available parent.
 
         :param True prevent_nondicotomic: When True (default), delete
-        function will be execute recursively to prevent single-child
-        nodes.
+            function will be execute recursively to prevent
+            single-child nodes.
 
         :param False preserve_branch_length: If True, branch lengths
-        of the deleted nodes are transferred (summed up) to its
-        parent's branch, thus keeping original distances among nodes.
+            of the deleted nodes are transferred (summed up) to its
+            parent's branch, thus keeping original distances among
+            nodes.
 
         **Example:**
 
@@ -438,8 +439,9 @@ class TreeNode(object):
         :var nodes: a list of node names or node objects that should be retained
 
         :param False preserve_branch_length: If True, branch lengths
-        of the deleted nodes are transferred (summed up) to its
-        parent's branch, thus keeping original distances among nodes.
+            of the deleted nodes are transferred (summed up) to its
+            parent's branch, thus keeping original distances among
+            nodes.
 
         **Examples:**
 
@@ -1562,8 +1564,8 @@ class TreeNode(object):
         operations.
 
         :param None store_attr: Specifies the node attribute that
-        should be cached (i.e. name, distance, etc.). When none, the
-        whole node instance is cached.
+            should be cached (i.e. name, distance, etc.). When none,
+            the whole node instance is cached.
 
         :param _store: (internal use)
 

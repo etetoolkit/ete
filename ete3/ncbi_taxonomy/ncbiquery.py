@@ -362,15 +362,18 @@ class NCBITaxa(object):
         containing all of them.
 
         :param False intermediate_nodes: If True, single child nodes
-        representing the complete lineage of leaf nodes are kept. Otherwise, the
-        tree is pruned to contain the first common ancestor of each group.
+            representing the complete lineage of leaf nodes are kept.
+            Otherwise, the tree is pruned to contain the first common
+            ancestor of each group.
 
-        :param None rank_limit: If valid NCBI rank name is provided, the tree is
-        pruned at that given level. For instance, use rank="species" to get rid
-        of sub-species or strain leaf nodes.
+        :param None rank_limit: If valid NCBI rank name is provided,
+            the tree is pruned at that given level. For instance, use
+            rank="species" to get rid of sub-species or strain leaf
+            nodes.
 
-        :param False collapse_subspecies: If True, any item under the species
-        rank will be collapsed into the species upper node.
+        :param False collapse_subspecies: If True, any item under the
+            species rank will be collapsed into the species upper
+            node.
 
         """
         from .. import PhyloTree
@@ -469,12 +472,13 @@ class NCBITaxa(object):
 
         :param t: a Tree (or Tree derived) instance.
 
-        :param name taxid_attr: Allows to set a custom node attribute containing
-        the taxid number associated to each node (i.e. species in PhyloTree instances).
+        :param name taxid_attr: Allows to set a custom node attribute 
+            containing the taxid number associated to each node (i.e.
+            species in PhyloTree instances).
 
-        :param tax2name,tax2track,tax2rank: Use these arguments to provide
-        pre-calculated dictionaries providing translation from taxid number and
-        names,track lineages and ranks.
+        :param tax2name,tax2track,tax2rank: Use these arguments to
+            provide pre-calculated dictionaries providing translation
+            from taxid number and names,track lineages and ranks.
         """
 
         taxids = set()
