@@ -46,7 +46,7 @@ from __future__ import absolute_import
 #
 # WARNING! All changes made in this file will be lost!
 
-from .common import QtCore
+from .qt import QtCore
 
 qt_resource_data = b"\
 \x00\x00\x03\x46\
