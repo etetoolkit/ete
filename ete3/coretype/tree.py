@@ -1960,7 +1960,7 @@ class TreeNode(object):
         '''
         .. versionadded:: 2.3
 
-        Iterate over the list of edges of a tree. Each egde is represented as a
+        Iterate over the list of edges of a tree. Each edge is represented as a
         tuple of two elements, each containing the list of nodes separated by
         the edge.
         '''
@@ -1975,7 +1975,7 @@ class TreeNode(object):
         '''
         .. versionadded:: 2.3
 
-        Returns the list of edges of a tree. Each egde is represented as a
+        Returns the list of edges of a tree. Each edge is represented as a
         tuple of two elements, each containing the list of nodes separated by
         the edge.
         '''
