@@ -664,7 +664,8 @@ def load_ncbi_tree_from_dump(tar):
         if name_type == "genbank common name":
             node2common[nodename] = taxname
         elif name_type in set(["synonym", "equivalent name", "genbank equivalent name",
-                               "anamorph", "genbank synonym", "genbank anamorph", "teleomorph"]):
+                               "anamorph", "genbank synonym", "genbank anamorph", "teleomorph",
+                               "common name"]):
             synonyms.add( (nodename, taxname) )
     print(len(node2taxname), "names loaded.")
     print(len(synonyms), "synonyms loaded.")
