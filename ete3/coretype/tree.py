@@ -110,7 +110,7 @@ class TreeNode(object):
 
     :returns: a tree node object which represents the base of the tree.
 
-    ** Examples: **
+    **Examples:**
 
     ::
 
@@ -439,9 +439,9 @@ class TreeNode(object):
         :var nodes: a list of node names or node objects that should be retained
 
         :param False preserve_branch_length: If True, branch lengths
-            of the deleted nodes are transferred (summed up) to its
-            parent's branch, thus keeping original distances among
-            nodes.
+          of the deleted nodes are transferred (summed up) to its
+          parent's branch, thus keeping original distances among
+          nodes.
 
         **Examples:**
 
@@ -1166,11 +1166,11 @@ class TreeNode(object):
           values will be randomized.
 
         :argument (0,1) branch_range: If random_branches is True, this
-        range of values will be used to generate random distances.
+          range of values will be used to generate random distances.
 
         :argument (0,1) support_range: If random_branches is True,
-        this range of values will be used to generate random branch
-        support values.
+          this range of values will be used to generate random branch
+          support values.
 
         """
         NewNode = self.__class__
