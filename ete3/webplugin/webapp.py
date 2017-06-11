@@ -194,7 +194,7 @@ class WebTreeApplication(object):
 
     def _dump_tree_to_file(self, t, treeid):
         tree_path = os.path.join(self.CONFIG["temp_dir"], treeid+".pkl")
-        six.moves.cPickle.dump(t, open(tree_path, "w"))
+        six.moves.cPickle.dump(t, open(tree_path, "wb"))
         #open(tree_path, "w").write(t.write(features=[]))
 
     def _get_tree_img(self, treeid, pre_drawing_action=None):
