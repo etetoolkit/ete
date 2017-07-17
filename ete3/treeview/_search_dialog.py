@@ -89,9 +89,9 @@ class Ui_Dialog(object):
         self.label_2.setObjectName("label_2")
 
         self.retranslateUi(Dialog)
-        QObject.connect(self.buttonBox, SIGNAL("accepted()"), Dialog.accept)
-        QObject.connect(self.buttonBox, SIGNAL("rejected()"), Dialog.reject)
-        QMetaObject.connectSlotsByName(Dialog)
+        self.buttonBox.accepted.connect(Dialog.accept)
+        self.buttonBox.rejected.connect(Dialog.reject)
+
         Dialog.setTabOrder(self.attrName, self.attrType)
         Dialog.setTabOrder(self.attrType, self.attrValue)
         Dialog.setTabOrder(self.attrValue, self.leaves_only)
