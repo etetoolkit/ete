@@ -2346,7 +2346,7 @@ class SequenceFace(StaticItemFace, Face):
             QGraphicsRectItem.__init__(self, *arg, **karg)
             self.codon = None
             self.label = None
-            self.setAcceptsHoverEvents(True)
+            self.setAcceptHoverEvents(True)
 
         def hoverEnterEvent (self, e):
             """ when mouse is over"""

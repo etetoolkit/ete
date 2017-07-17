@@ -640,7 +640,7 @@ def render_node_content(node, n2i, n2f, img):
 
         #from qt4_gui import _BasicNodeActions
         #node_ball.delegate = _BasicNodeActions()
-        #node_ball.setAcceptsHoverEvents(True)
+        #node_ball.setAcceptHoverEvents(True)
         #node_ball.setCursor(Qt.PointingHandCursor)
 
     else:

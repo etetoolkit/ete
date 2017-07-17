@@ -87,37 +87,37 @@ class _NodeActions(object):
     """ Used to extend QGraphicsItem features """
     def __init__(self):
         self.setCursor(Qt.PointingHandCursor)
-        self.setAcceptsHoverEvents(True)
+        self.setAcceptHoverEvents(True)
 
     def mouseReleaseEvent(self, e):
         if not self.node:
             return
-     
+
         if e.button() == Qt.RightButton:
             self.showActionPopup()
         elif e.button() == Qt.LeftButton:
             self.scene().view.set_focus(self.node)
-            
+
             if isinstance(self.node, EvolTree) and self.node.get_tree_root()._is_mark_mode():
                 root = self.node.get_tree_root()
                 all_marks = set([getattr(n, "mark", '').replace('#', '').strip()
-                                 for n in root.traverse() if n is not self.node])                
+                                 for n in root.traverse() if n is not self.node])
                 all_marks.discard('')
-                
+
                 max_value = max(map(int, all_marks)) if all_marks else 0
-               
+
                 current_mark = getattr(self.node, "mark", "")
                 try:
                     current_mark = int(current_mark.replace('#', ''))
                 except:
                     current_mark = 0
-                    
+
                 if current_mark > max_value:
                     self._gui_unmark_node()
                 else:
                     self._gui_mark_node('#%d'% (current_mark + 1))
-                    
-            
+
+
             #self.scene().view.prop_table.update_properties(self.node)
 
 
@@ -145,7 +145,7 @@ class _NodeActions(object):
                 self.scene().view.highlight_node(self.node, fullRegion=True,
                                                  bg=random_color(l=0.5, s=0.5), permanent=True)
 
-                    
+
 
     def showActionPopup(self):
         contextMenu = QMenu()
@@ -177,23 +177,23 @@ class _NodeActions(object):
                              for n in root.traverse() if n is not self.node])
             all_marks.discard('')
             max_value = max(map(int, all_marks)) if all_marks else 1
-            
+
             current_mark = getattr(self.node, "mark", '').replace('#', '').strip()
             current_mark = int(current_mark) if current_mark != '' else 0
-            
+
             if current_mark <= max_value:
                 mark = "#%d" %(current_mark + 1)
                 contextMenu.addAction("ETE-evol: mark node as " + mark, partial(
                     self._gui_mark_node, mark))
                 contextMenu.addAction("ETE-evol: mark group as " + mark, partial(
                     self._gui_mark_group, mark))
-                
+
             if getattr(self.node, "mark", None):
                 contextMenu.addAction("ETE-evol: clear mark in node", partial(
                     self._gui_unmark_node))
                 contextMenu.addAction("ETE-evol: clear mark in group", partial(
                     self._gui_unmark_group))
-        
+
 
         contextMenu.addAction( "Show newick", self.show_newick)
         contextMenu.exec_(QCursor.pos())
@@ -206,7 +206,7 @@ class _NodeActions(object):
                 mark = '#1'
         self.node.mark_tree([self.node.node_id], marks=[mark])
         self.scene().GUI.redraw()
-            
+
 
     def _gui_unmark_node(self):
         self.node.mark = ""

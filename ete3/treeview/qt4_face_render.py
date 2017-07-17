@@ -225,7 +225,7 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
                     # Loads the pre-generated pixmap
                     obj = _ImgFaceItem(f, self.node, f.pixmap)
 
-                obj.setAcceptsHoverEvents(True)
+                obj.setAcceptHoverEvents(True)
                 obj.setParentItem(self)
 
                 x_offset, y_offset = 0, 0
