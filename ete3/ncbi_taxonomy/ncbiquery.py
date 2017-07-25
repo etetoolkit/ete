@@ -66,6 +66,29 @@ c = None
 __all__ = ["NCBITaxa"]
 
 DB_VERSION = 2
+DEFAULT_TAXADB = os.path.join(os.environ.get('HOME', '/'), '.etetoolkit', 'taxa.sqlite')
+
+
+def is_taxadb_up_to_date(dbfile=DEFAULT_TAXADB):
+    """Check if a valid and up-to-date taxa.sqlite database exists
+
+    If dbfile= is not specified, DEFAULT_TAXADB is assumed
+    """
+    db = sqlite3.connect(dbfile)
+
+    try:
+        r = db.execute('SELECT version FROM stats;')
+        version = r.fetchone()[0]
+    except (sqlite3.OperationalError, ValueError, IndexError, TypeError):
+        version = None
+
+    db.close()
+
+    if version != DB_VERSION:
+        return False
+
+    return True
+
 
 class NCBITaxa(object):
     """
@@ -77,7 +100,7 @@ class NCBITaxa(object):
     def __init__(self, dbfile=None, taxdump_file=None):
 
         if not dbfile:
-            self.dbfile = os.path.join(os.environ.get('HOME', '/'), '.etetoolkit', 'taxa.sqlite')
+            self.dbfile = DEFAULT_TAXADB
         else:
             self.dbfile = dbfile
 
@@ -88,23 +111,15 @@ class NCBITaxa(object):
             print('NCBI database not present yet (first time used?)', file=sys.stderr)
             self.update_taxonomy_database(taxdump_file)
 
-        if not os.path.exists(self.dbfile): 
-            raise ValueError("Cannot open taxonomy database: %s" %self.dbfile)
+        if not os.path.exists(self.dbfile):
+            raise ValueError("Cannot open taxonomy database: %s" % self.dbfile)
 
         self.db = None
         self._connect()
 
-        if self.__get_db_version() != DB_VERSION:
+        if is_taxadb_up_to_date(self.dbfile):
             print('NCBI database format is outdated. Upgrading', file=sys.stderr)
             self.update_taxonomy_database(taxdump_file)
-
-    def __get_db_version(self):
-        try:
-            r = self.db.execute('select version from stats;')
-        except Exception:
-            return None
-        else:
-            return r.fetchone()[0]
 
     def update_taxonomy_database(self, taxdump_file=None):
         """Updates the ncbi taxonomy database by downloading and parsing the latest
