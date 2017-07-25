@@ -61,9 +61,7 @@ from six.moves import map
 import warnings
 
 
-c = None
-
-__all__ = ["NCBITaxa"]
+__all__ = ["NCBITaxa", "is_taxadb_up_to_date"]
 
 DB_VERSION = 2
 DEFAULT_TAXADB = os.path.join(os.environ.get('HOME', '/'), '.etetoolkit', 'taxa.sqlite')
