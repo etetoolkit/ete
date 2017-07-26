@@ -115,7 +115,7 @@ class NCBITaxa(object):
         self.db = None
         self._connect()
 
-        if is_taxadb_up_to_date(self.dbfile):
+        if not is_taxadb_up_to_date(self.dbfile):
             print('NCBI database format is outdated. Upgrading', file=sys.stderr)
             self.update_taxonomy_database(taxdump_file)
 
