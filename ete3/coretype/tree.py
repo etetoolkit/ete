@@ -1574,39 +1574,44 @@ class TreeNode(object):
         if _store is None:
             _store = {}
 
+        def get_value(_n):
+            if store_attr is None:
+                _val = [_n]
+            else:
+                if not isinstance(store_attr, six.string_types):
+                    _val = [tuple(getattr(_n, attr, None) for attr in store_attr)]
+
+                else:
+                    _val = [getattr(_n, store_attr, None)]
+
+            return _val
+
         for ch in self.children:
             ch.get_cached_content(store_attr=store_attr,
                                   container_type=container_type,
                                   leaves_only=leaves_only,
                                   _store=_store)
-        if leaves_only:
-            if self.children:
-                val = container_type()
-                for ch in self.children:
-                    if type(val) == list:
-                        val.extend(_store[ch])
-                    if type(val) == set:
-                        val.update(_store[ch])
-                _store[self] = val
-            else:
-                if store_attr is None:
-                    val = [self]
-                else:
-                    if not isinstance(store_attr, six.string_types):
-                        val = [tuple(getattr(self, attr, None) for attr in store_attr)]
 
-                    else:
-                        val = [getattr(self, store_attr, None)]
-                _store[self] = container_type(val)
-        else:
-            if store_attr is None:
-                val = self
+        if self.children:
+            if leaves_only:
+                val = container_type()
             else:
-                if not isinstance(store_attr, six.string_types):
-                    val = [tuple(getattr(self, attr, None) for attr in store_attr)]
-                else:
-                    val = [getattr(self, store_attr, None)]
+                val = container_type(get_value(self))
+
+            for ch in self.children:
+                if type(val) == list:
+                    val.extend(_store[ch])
+                if type(val) == set:
+                    val.update(_store[ch])
+
+            if not leaves_only:
+                if type(val) == list:
+                    val.append(self)
+                if type(val) == set:
+                    val.update(self)
             _store[self] = val
+        else:
+            _store[self] = container_type(get_value(self))
 
         return _store
 
