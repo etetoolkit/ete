@@ -1290,9 +1290,8 @@ class _StackedBarItem(QGraphicsRectItem):
         x = 0
         for i, p in enumerate(self.percents):
             col = self.colors[i]
-            w = round((p * total_w) / 100.) # assuming p is between 0 and 100
-            painter.fillRect(x, 0, w, total_h, QColor(col))
-            painter.drawRect(x, 0, w, total_h)
+            w = (p * total_w) / 100. # assuming p is between 0 and 100
+            painter.fillRect(QRectF(x, 0, w, total_h), QColor(col))
             x += w
 
 class StackedBarFace(StaticItemFace):
@@ -1309,7 +1308,7 @@ class StackedBarFace(StaticItemFace):
         Face.__init__(self)
 
         if round(sum(percents)) > 100:
-            raise ValueError("BarItem: percentage values > 100")
+            raise ValueError("percentage values > 100")
 
         self.type = "item"
         self.item = None
