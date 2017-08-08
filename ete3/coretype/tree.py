@@ -1593,7 +1593,10 @@ class TreeNode(object):
                                   _store=_store)
 
         if self.children:
-            val = container_type()
+            if not leaves_only:
+                val = container_type(get_value(self))
+            else:
+                val = container_type()
             for ch in self.children:
                 if type(val) == list:
                     val.extend(_store[ch])
@@ -1605,7 +1608,7 @@ class TreeNode(object):
                         val.extend(get_value(ch))
                     if type(val) == set:
                         val.update(get_value(ch))
-                        
+
             _store[self] = val
         else:
             _store[self] = container_type(get_value(self))
