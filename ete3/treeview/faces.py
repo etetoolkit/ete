@@ -829,7 +829,7 @@ class ProfileFace(Face):
         x_alpha = float( profile_width / (len(vector)) )
 
         # Creates a pixmap
-        self.pixmap = QPixmap(self.width,img_height)
+        self.pixmap = QPixmap(self.width, img_height)
         self.pixmap.fill(QColor("white"))
         p = QPainter(self.pixmap)
 
@@ -844,8 +844,8 @@ class ProfileFace(Face):
                 # first and second X pixel positions
                 x1 = x2
                 x2 = x1 + x_alpha
-                dev1 =  self.fit_to_scale( deviation_vector[pos]   )
-                mean1 = self.fit_to_scale( mean_vector[pos]        )
+                dev1 = self.fit_to_scale(deviation_vector[pos])
+                mean1 = self.fit_to_scale(mean_vector[pos])
                 # Set heatmap color
                 if not isfinite(mean1):
                     customColor = QColor("black")
@@ -862,7 +862,8 @@ class ProfileFace(Face):
                 p.fillRect(x1, y, x_alpha, y_step, QBrush(customColor))
             y+= y_step
             x2 = 0
-
+        p.end()
+        
     def fit_to_scale(self,v):
         if v<self.min_value:
             return float(self.min_value)
