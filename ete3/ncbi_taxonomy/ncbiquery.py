@@ -142,15 +142,17 @@ class NCBITaxa(object):
         :return: taxid, species-name-match, match-score
         '''
 
-
-        import sqlite3.dbapi2 as dbapi2
+        try:
+	    import pysqlite2.dbapi2 as dbapi2
+	except:
+            import sqlite3.dbapi2 as dbapi2
         _db = dbapi2.connect(self.dbfile)
         _db.enable_load_extension(True)
         module_path = os.path.split(os.path.realpath(__file__))[0]
         _db.execute("select load_extension('%s')" % os.path.join(module_path,
                                                                  "SQLite-Levenshtein/levenshtein.sqlext"))
 
-        print("Trying fuzzy search for %s" % name)
+#         print("Trying fuzzy search for %s" % name)
         maxdiffs = math.ceil(len(name) * (1-sim))
         cmd = 'SELECT taxid, spname, LEVENSHTEIN(spname, "%s") AS sim  FROM species WHERE sim<=%s ORDER BY sim LIMIT 1;' % (name, maxdiffs)
         taxid, spname, score = None, None, len(name)
@@ -170,8 +172,8 @@ class NCBITaxa(object):
             taxid = int(taxid)
 
         norm_score = 1 - (float(score)/len(name))
-        if taxid:
-            print("FOUND!    %s taxid:%s score:%s (%s)" %(spname, taxid, score, norm_score))
+#         if taxid:
+#             print("FOUND!    %s taxid:%s score:%s (%s)" %(spname, taxid, score, norm_score))
 
         return taxid, spname, norm_score
 
