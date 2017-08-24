@@ -143,8 +143,8 @@ class NCBITaxa(object):
         '''
 
         try:
-	    import pysqlite2.dbapi2 as dbapi2
-	except:
+            import pysqlite2.dbapi2 as dbapi2
+        except:
             import sqlite3.dbapi2 as dbapi2
         _db = dbapi2.connect(self.dbfile)
         _db.enable_load_extension(True)
