@@ -46,7 +46,7 @@ import six
 #     USE_GL = True
 # except ImportError:
 #     USE_GL = False
-USE_GL = False # Temporarily disabled 
+USE_GL = False # Temporarily disabled
 
 from .qt import *
 from . import _mainwindow, _search_dialog, _show_newick, _open_newick, _about
@@ -117,6 +117,7 @@ class CheckUpdates(QThread):
                         (latest, tag)
                 elif current == latest:
                     msg = "Up to date"
+
             self.emit(SIGNAL("output(QString)"), msg)
         except Exception:
             pass
@@ -429,9 +430,9 @@ class _GUI(QMainWindow):
                 self.showMaximized()
         elif key >= 49 and key <= 58:
             key = key - 48
-            m = self.view.matrix()
+            m = self.view.transform()
             m.reset()
-            self.view.setMatrix(m)
+            self.view.setTransform(m)
             self.view.scale(key, key)
 
 
@@ -456,16 +457,19 @@ class _TableItem(QItemDelegate):
             return None
 
         originalValue = index.model().data(index)
-        if not self.isSupportedType(originalValue.type()):
-            return None
 
-        if re.search("^#[0-9ABCDEFabcdef]{6}$",str(originalValue.toString())):
-            origc = QColor(str(originalValue.toString()))
+        # Needed for qt4/qt5 compatibility
+        if isinstance(originalValue, QVariant):
+            value = str(originalValue.toString())
+        else:
+            value = str(originalValue)
+
+        if re.search("^#[0-9ABCDEFabcdef]{6}$", value):
+            origc = QColor(value)
             color = QColorDialog.getColor(origc)
             if color.isValid():
                 self.propdialog._edited_indexes.add( (index.row(), index.column()) )
-                #index.model().setData(index, QVariant(color.name()))
-                index.model().setData(index, color.name)
+                index.model().setData(index, color.name())
                 self.propdialog.apply_changes()
 
             return None
@@ -474,10 +478,8 @@ class _TableItem(QItemDelegate):
             editField.setFrame(False)
             validator = QRegExpValidator(QRegExp(".+"), editField)
             editField.setValidator(validator)
-            self.connect(editField, SIGNAL("returnPressed()"),
-                         self.commitAndCloseEditor)
-            self.connect(editField, SIGNAL("returnPressed()"),
-                         self.propdialog.apply_changes)
+            editField.returnPressed.connect(self.commitAndCloseEditor)
+            editField.returnPressed.connect(self.propdialog.apply_changes)
             self.propdialog._edited_indexes.add( (index.row(), index.column()) )
             return editField
 
@@ -491,12 +493,16 @@ class _TableItem(QItemDelegate):
 
     isSupportedType = staticmethod(isSupportedType)
     def displayText(self,value):
-        return value.toString()
+        # Needed for qt4/qt5 compatibility
+        if isinstance(value, QVariant):
+            value = str(value.toString())
+        else:
+            value = str(value)
+        return value
 
     def commitAndCloseEditor(self):
         editor = self.sender()
-        self.emit(SIGNAL("commitData(QWidget *)"), editor)
-        self.emit(SIGNAL("closeEditor(QWidget *)"), editor)
+        self.commitData.emit(editor)
 
 class _PropModeChooser(QWidget):
     def __init__(self,scene, *args):
@@ -513,7 +519,7 @@ class _PropertiesDialog(QWidget):
         if hasattr(self.scene.tree, '_models'):
             from ..evol.control import AVAIL
             global AVAIL
-            
+
             self.model_lbl = QLabel('Showing model: ', self)
             self.layout.addWidget(self.model_lbl)
             self.combo = QComboBox()
@@ -530,11 +536,16 @@ class _PropertiesDialog(QWidget):
                 self.combo.addItems(models)
             else:
                 self.combo.addItems([self.tr('None')])
-            self.connect(self.combo, SIGNAL(
-                "currentIndexChanged(const QString&)"), self.handleModelButton)
+
+
+            #self.connect(self.combo, SIGNAL(
+            #    "currentIndexChanged(const QString&)"), self.handleModelButton)
+
+            self.combo.currentIndexChanged.connect(self.handleModelButton)
+            
             self.model_lbl = QLabel('Available models: ', self)
             self.layout.addWidget(self.model_lbl)
-            
+
             if hasattr(self.scene.tree.get_leaves()[0], 'nt_sequence'):
                 self.combo_run = QComboBox()
                 self.layout.addWidget(self.combo_run)
@@ -671,8 +682,16 @@ class _PropertiesDialog(QWidget):
         for i1, i2 in self._style_indexes:
             if (i2.row(), i2.column()) not in self._edited_indexes:
                 continue
-            name = str(self.model.data(i1).toString())
-            value = str(self.model.data(i2).toString())
+
+            name = self.model.data(i1)
+            value = self.model.data(i2)
+            if isinstance(name, QVariant):
+                name = str(name.toString())
+                value = str(value.toString())
+            else:
+                name = str(name)
+                value = str(value)
+
             for n in self.style2nodes[name]:
                 typedvalue = type(n.img_style[name])(value)
                 try:
@@ -685,8 +704,17 @@ class _PropertiesDialog(QWidget):
         for i1, i2 in self._prop_indexes:
             if (i2.row(), i2.column()) not in self._edited_indexes:
                 continue
-            name = str(self.model.data(i1).toString())
-            value = str(self.model.data(i2).toString())
+
+            name = self.model.data(i1)
+            value = self.model.data(i2)
+            if isinstance(name, QVariant):
+                name = str(name.toString())
+                value = str(value.toString())
+            else:
+                name = str(name)
+                value = str(value)
+
+
             for n in self.prop2nodes[name]:
                 try:
                     setattr(n, name, type(getattr(n,name))(value))
@@ -739,9 +767,8 @@ class _TreeView(QGraphicsView):
 
     def safe_scale(self, xfactor, yfactor):
         self.setTransformationAnchor(self.AnchorUnderMouse)
-
-        xscale = self.matrix().m11()
-        yscale = self.matrix().m22()
+        xscale = self.transform().m11()
+        yscale = self.transform().m22()
         srect = self.sceneRect()
 
         if (xfactor>1 and xscale>200000) or \
@@ -789,8 +816,15 @@ class _TreeView(QGraphicsView):
                 pass
 
     def wheelEvent(self,e):
-        factor =  (-e.delta() / 360.0)
-        if abs(factor)>=1:
+        # qt4/5
+        try:
+            delta = e.delta()
+        except AttributeError:
+            delta = float(e.angleDelta().y())
+
+        factor =  (-delta / 360.0)
+
+        if abs(factor) >= 1:
             factor = 0.0
 
         # Ctrl+Shift -> Zoom in X
@@ -807,13 +841,13 @@ class _TreeView(QGraphicsView):
 
         # Shift -> Horizontal scroll
         elif e.modifiers() &  Qt.ShiftModifier:
-            if e.delta()>0:
+            if delta > 0:
                 self.horizontalScrollBar().setValue(self.horizontalScrollBar().value()-20 )
             else:
                 self.horizontalScrollBar().setValue(self.horizontalScrollBar().value()+20 )
         # No modifiers ->  Vertival scroll
         else:
-            if e.delta()>0:
+            if delta > 0:
                 self.verticalScrollBar().setValue(self.verticalScrollBar().value()-20 )
             else:
                 self.verticalScrollBar().setValue(self.verticalScrollBar().value()+20 )
@@ -895,7 +929,7 @@ class _TreeView(QGraphicsView):
     def mouseReleaseEvent(self, e):
         self.scene().view.hide_focus()
         curr_pos = self.mapToScene(e.pos())
-        if hasattr(self.selector, "startPoint"): 
+        if hasattr(self.selector, "startPoint"):
             x = min(self.selector.startPoint.x(),curr_pos.x())
             y = min(self.selector.startPoint.y(),curr_pos.y())
             w = max(self.selector.startPoint.x(),curr_pos.x()) - x
@@ -960,9 +994,3 @@ class _BasicNodeActions(object):
     @staticmethod
     def hoverLeaveEvent(self,e):
         self.scene().view.unhighlight_node(self.node)
-
-
-
-
-
-

@@ -105,8 +105,11 @@ class Ui_Codeml(object):
         self.pushButton.setObjectName("pushButton")
         self.retranslateUi(Codeml)
         QtCore.QMetaObject.connectSlotsByName(Codeml)
-        QtCore.QObject.connect(self.model, QtCore.SIGNAL("activated(QString)"), Codeml.update_model)
-        QtCore.QObject.connect(self.pushButton, QtCore.SIGNAL("released()"), Codeml.run)
+        self.model.activate.connect(Codeml.update_model)
+        self.pushButton.released.connect(Codeml.run)
+
+        #QtCore.QObject.connect(self.model, QtCore.SIGNAL("activated(QString)"), Codeml.update_model)
+        #QtCore.QObject.connect(self.pushButton, QtCore.SIGNAL("released()"), Codeml.run)
 
     def retranslateUi(self, Codeml):
         Codeml.setWindowTitle(QtGui.QApplication.translate("Codeml", "Dialog", None, QtGui.QApplication.UnicodeUTF8))

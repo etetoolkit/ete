@@ -505,21 +505,21 @@ def render_backgrounds(img, mainRect, bg_layer, n2i, n2f):
             parent_radius = getattr(n2i.get(node.up, None), "radius", 0)
             base = parent_radius + item.nodeRegion.width()
 
-            if node.img_style["node_bgcolor"].upper() != "#FFFFFF":
-                bg1 = crender._ArcItem()
-                r = math.sqrt(base**2 + h**2)
-                bg1.set_arc(0, 0, parent_radius, r, angle_start, angle_end)
-                bg1.setParentItem(item.content.bg)
-                bg1.setPen(QPen(QColor(node.img_style["node_bgcolor"])))
-                bg1.setBrush(QBrush(QColor(node.img_style["node_bgcolor"])))
+            # if node.img_style["node_bgcolor"].upper() != "#FFFFFF":
+            #     bg1 = crender._ArcItem()
+            #     r = math.sqrt(base**2 + h**2)
+            #     bg1.set_arc(0, 0, parent_radius, r, angle_start, angle_end)
+            #     bg1.setParentItem(item.content.bg)
+            #     bg1.setPen(QPen(QColor(node.img_style["node_bgcolor"])))
+            #     bg1.setBrush(QBrush(QColor(node.img_style["node_bgcolor"])))
 
-            if node.img_style["faces_bgcolor"].upper() != "#FFFFFF":
-                bg2 = crender._ArcItem()
-                r = math.sqrt(base**2 + h**2)
-                bg2.set_arc(0, 0, parent_radius, item.radius, angle_start, angle_end)
-                bg2.setParentItem(item.content)
-                bg2.setPen(QPen(QColor(node.img_style["faces_bgcolor"])))
-                bg2.setBrush(QBrush(QColor(node.img_style["faces_bgcolor"])))
+            # if node.img_style["faces_bgcolor"].upper() != "#FFFFFF":
+            #     bg2 = crender._ArcItem()
+            #     r = math.sqrt(base**2 + h**2)
+            #     bg2.set_arc(0, 0, parent_radius, item.radius, angle_start, angle_end)
+            #     bg2.setParentItem(item.content)
+            #     bg2.setPen(QPen(QColor(node.img_style["faces_bgcolor"])))
+            #     bg2.setBrush(QBrush(QColor(node.img_style["faces_bgcolor"])))
 
             if node.img_style["bgcolor"].upper() != "#FFFFFF":
                 bg = crender._ArcItem()
