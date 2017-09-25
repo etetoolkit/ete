@@ -1,13 +1,13 @@
-# We will need to create Qt4 items
-from PyQt4 import QtCore
-from PyQt4.QtGui import QGraphicsRectItem, QGraphicsSimpleTextItem, \
-    QGraphicsEllipseItem, QColor, QPen, QBrush
-
-from ... import Tree, faces, TreeStyle, NodeStyle
-
 # To play with random colors
 import colorsys
 import random
+
+from ... import Tree, faces, TreeStyle, NodeStyle, Face
+
+# We will need to create Qt4 items
+from ...treeview.qt import QtCore, Qt
+from ...treeview.qt import QGraphicsRectItem, QGraphicsSimpleTextItem, \
+    QGraphicsEllipseItem, QColor, QPen, QBrush
 
 class InteractiveItem(QGraphicsRectItem):
     def __init__(self, *arg, **karg):
@@ -15,7 +15,6 @@ class InteractiveItem(QGraphicsRectItem):
         self.node = None
         self.label = None
         self.setCursor(QtCore.Qt.PointingHandCursor)
-        self.setAcceptsHoverEvents(True)
 
     def hoverEnterEvent (self, e):
         # There are many ways of adding interactive elements. With the
@@ -39,6 +38,7 @@ class InteractiveItem(QGraphicsRectItem):
         if self.label:
             self.label.setVisible(False)
 
+
 def random_color(h=None):
     """Generates a random color in RGB format."""
     if not h:
@@ -58,8 +58,8 @@ def ugly_name_face(node, *args, **kargs):
 
     # receive an arbitrary number of arguments, in this case width and
     # height of the faces
-    width = args[0][0]
-    height = args[0][1]
+    width = args[0]
+    height = args[1]
 
     ## Creates a main master Item that will contain all other elements
     ## Items can be standard QGraphicsItem
@@ -67,8 +67,10 @@ def ugly_name_face(node, *args, **kargs):
 
     # Or your custom Items, in which you can re-implement interactive
     # functions, etc. Check QGraphicsItem doc for details.
-    masterItem = InteractiveItem(0, 0, width, height)
 
+    masterItem = InteractiveItem(0, 0, width, height)
+    masterItem.setAcceptHoverEvents(True)
+    
     # Keep a link within the item to access node info
     masterItem.node = node
 

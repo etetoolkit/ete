@@ -1124,7 +1124,8 @@ def update_branch_lengths(tree, n2i, n2f, img):
             for ch in node.children:
                 child_width = max(child_width, n2i[ch].fullRegion.width())
                 if w0 and img.mode == "r":
-                    n2i[ch].translate(w0, 0)
+                    #n2i[ch].translate(w0, 0) # deprecated in qt4.8
+                    n2i[ch].moveBy(w0, 0)
         item.fullRegion.setWidth(item.nodeRegion.width() + child_width)
 
 def init_tree_style(t, ts):

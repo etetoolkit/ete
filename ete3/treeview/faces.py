@@ -1177,14 +1177,13 @@ class DynamicItemFace(Face):
         self.kargs = kargs
 
     def update_items(self):
-        self.item = self.constructor(self.node, self.args, self.kargs)
+        self.item = self.constructor(self.node, *self.args, **self.kargs)
 
     def _width(self):
         return self.item.rect().width()
 
     def _height(self):
         return self.item.rect().height()
-
 
 class RandomFace(Face):
     def __init__(self):
@@ -2351,7 +2350,6 @@ class SequenceFace(StaticItemFace, Face):
             self.setAcceptHoverEvents(True)
 
         def hoverEnterEvent (self, e):
-            """ when mouse is over"""
             if not self.label:
                 self.label = QGraphicsRectItem(parent=self)
                 #self.label.setY(-18)

@@ -8,6 +8,14 @@ set -o pipefail
 
 REAL=true
 
+PLATFORM='unknown'
+unamestr=`uname`
+if [[ "$unamestr" == 'Linux' ]]; then
+    PLATFORM='Linux'
+elif [[ "$unamestr" == 'Darwin' ]]; then
+    PLATFORM='Darwin'
+fi
+
 function run {
     clr_bold " $@"
     if [ $REAL == true ]; then
@@ -25,13 +33,14 @@ usage() {
     echo >&2 "    $0 [option] [-v version] [testset]"
     echo >&2 ""
     echo >&2 "Optional parameters:"
-    echo >&2 "       -h --help    = shows the current information"
-    echo >&2 "       --setup-only = configures and updates the testing environment but skips tests"
-    echo >&2 "       --test-only  = skips configuration of environment and runs tests"
+    echo >&2 "       -h           = help: shows the current information"
+    echo >&2 "       -s           = setup-only: configures and updates the testing environment but skips tests"
+    echo >&2 "       -t           = test-only: skips configuration of environment and runs tests"
     echo >&2 "       -l           = enable logging to tests.log"
     echo >&2 "       -s           = show the content of tests.log at the end of execution (implies -l)"
     echo >&2 "       -x           = install ete3 external apps in the test environment"
     echo >&2 "       -v           = python version to use for running tests. (default: 3.5)"
+    echo >&2 "       -q           = qt4 is used for running tests. (default: qt5)"
     echo >&2 "       testset      = set of tests to run. (default: api) (for full testsuite use all)"
     echo >&2 ""
 }
@@ -74,10 +83,19 @@ optional() {
 
 setup_miniconda() {
     if ! [ -f "${CONDA}/bin/conda" ]; then
-        clr_green ">>> Downloading miniconda... "
-        run "wget -nv https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh 2>&1 | tee -a ${LOG}"
-        handle_error "$?" "ERROR: Failed to download miniconda installation script" "$wget_output"
-        clr_green "DONE"
+        clr_green ">>> Downloading miniconda for $PLATFORM... "
+        echo "${CONDA}/bin/conda"
+        if [[ $PLATFORM == 'Linux' ]]; then
+            run "wget -nv https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh 2>&1 | tee -a ${LOG}"
+            handle_error "$?" "ERROR: Failed to download miniconda installation script" "$wget_output"
+            clr_green "DONE"
+        elif [[ $PLATFORM == 'Darwin' ]]; then
+            run "wget -nv https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh 2>&1 | tee -a ${LOG}"
+            handle_error "$?" "ERROR: Failed to download miniconda installation script" "$wget_output"
+            clr_green "DONE"
+        else
+            handle_error "1" "OS not supported"
+        fi
 
         clr_green ">>> Installing miniconda... "
         run "bash miniconda.sh -b -p "${CONDA}" 2>&1 | tee -a ${LOG}"
@@ -102,7 +120,7 @@ setup_miniconda() {
     clr_green "DONE"
 }
 
-create_env() {
+create_env_qt4() {
     # env_output=$("${CONDA}/bin/conda" env list | grep "test_${VERSION}")
     # if [ $? == 0 ]; then
     #     # Env already created. Nothing to do
@@ -117,6 +135,28 @@ create_env() {
     clr_green "DONE"
 }
 
+create_env() {
+    # env_output=$("${CONDA}/bin/conda" env list | grep "test_${VERSION}")
+    # if [ $? == 0 ]; then
+    #     # Env already created. Nothing to do
+    #     echo >&2 "### Using existing conda environment test_${VERSION}."
+    #     return 0
+    # fi
+    
+    clr_green ">>> Creating test environment for version ${VERSION}... "
+    run "${CONDA}/bin/conda env remove -y -n test_${VERSION} || true"
+    run "${CONDA}/bin/conda create -q -y -n test_${VERSION} python=${VERSION} pip setuptools numpy six lxml coverage scikit-bio biopython scipy"
+    clr_green "DONE"
+
+    clr_green ">>> Updating conda packages in environment test_${VERSION}... "
+    run "source ${CONDA}/bin/activate test_${VERSION} 2>&1 && ${CONDA}/bin/conda update -y --all 2>&1 | tee -a ${LOG}"
+    handle_error "$?" "ERROR: Failed to update packages in the conda environment" "$update_conda_output"
+    clr_green "DONE"
+}
+
+
+
+
 install_external_apps() {
     if [ "$EXTERNAL_APPS" == "1" ]; then
         clear_green ">>> Installing external packages in environment test_${VERSION}... "
@@ -126,14 +166,7 @@ install_external_apps() {
     fi
 }
 
-update_env() {
-    ## conda update installs latest version of qt5, so tests are not passing
- 
-    #clr_green ">>> Updating conda packages in environment test_${VERSION}... "
-    #run "source ${CONDA}/bin/activate test_${VERSION} 2>&1 && ${CONDA}/bin/conda update -y --all 2>&1 | tee -a ${LOG}"
-    #handle_error "$?" "ERROR: Failed to update packages in the conda environment" "$update_conda_output"
-    #clr_green "DONE"
-
+install_ete() {
     clr_green ">>> Installing latest ete in test environment... "
     run "source ${CONDA}/bin/activate test_${VERSION} 2>&1 && python setup.py install --donottrackinstall 2>&1 | tee -a ${LOG}"
     handle_error "$?" "ERROR: Failed to install/update ete to the latest commit on test_${VERSION}" "$update_output"
@@ -173,6 +206,7 @@ CONDA="${FILEDIR}/test_tmp/miniconda"
 EXTERNAL_APPS=0
 SETUP=1
 TEST=1
+QT4=0
 
 # Logfile
 NULL_LOG="/dev/null"
@@ -181,7 +215,14 @@ DEFAULT_LOG="${FILEDIR}/tests.log"
 SHOWLOG=0
 
 # Parse args using getopt (instead of getopts) to allow arguments before options
-ARGS="$(getopt -o v:lshx -l help,test-only,setup-only -n "$0" -- "$@" 2>/dev/null)"
+if [[ $PLATFORM == 'Linux' ]]; then
+    ARGS="$(getopt lshxq: -- "$@" 2>/dev/null)"
+elif [[ $PLATFORM == 'Darwin' ]]; then
+    ARGS=`getopt lshxq: $* 2>/dev/null`
+else
+    handle_error "1" "OS not supported"
+fi
+
 if [ "$?" != "0" ]; then
     usage
     handle_error "1" "ERROR: Check the arguments passed. At least one was not valid."
@@ -189,6 +230,8 @@ fi
 
 # reorganize arguments as returned by getopt
 eval set -- "$ARGS"
+echo OPTIONS:$ARGS
+
 
 while true; do
     case "$1" in
@@ -213,15 +256,19 @@ while true; do
             shift
             EXTERNAL_APPS=1
             ;;
-        --setup-only)
+        -s) # setup only 
             shift
             TEST=0
             ;;
-        --test-only)
+        -t) # test only
             shift
             SETUP=0
             ;;
-        -h|--help)
+        -q) # qt4 
+            shift
+            QT4=1
+            ;;
+        -h)
             usage
             exit
             ;;
@@ -253,10 +300,15 @@ trap 'exitcode=$? ; showlog ; exit $exitcode' EXIT HUP INT QUIT TERM
 
 if [ "${SETUP}" == "1" ]; then
     setup_miniconda
-    create_env
+    if [ "$QT4" == "1" ]; then
+        create_env_qt4
+    else
+        create_env
+    fi
     install_external_apps
-    update_env
+    install_ete
 fi
+
 if [ "${TEST}" == "1" ]; then
     run_tests
 fi

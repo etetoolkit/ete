@@ -56,7 +56,7 @@ except ImportError:
 
 PYTHON_DEPENDENCIES = [
     ["numpy", "Numpy is required for the ArrayTable and ClusterTree classes.", 0],
-    ["PyQt4", "PyQt4 is required for tree visualization and image rendering.", 0],
+    ["PyQt", "PyQt4/5 is required for tree visualization and image rendering.", 0],
     ["lxml", "lxml is required from Nexml and Phyloxml support.", 0]
 ]
 
@@ -80,12 +80,18 @@ CLASSIFIERS= [
 
 def can_import(mname):
     'Test if a module can be imported '
-    if mname == "PyQt4":
+    if mname == "PyQt":
         try:
             __import__("PyQt4.QtCore")
             __import__("PyQt4.QtGui")
         except ImportError:
-            return False
+            try:
+                __import__("PyQt5.QtCore")
+                __import__("PyQt5.QtGui")
+            except ImportError:
+                return False
+            else:
+                return True
         else:
             return True
     else:
