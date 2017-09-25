@@ -31,8 +31,8 @@ script:
 after_success:
   - coveralls
   
-branches:
-  only:
-    - master
-    - "3.0"
-    - "2.3"
+# branches:
+#   only:
+#     - master
+#     - "3.0"
+#     - "2.3"
