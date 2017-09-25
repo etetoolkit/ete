@@ -678,17 +678,17 @@ class Test_Coretype_Tree(unittest.TestCase):
         cache_node = t.get_cached_content()
         cache_node_leaves_only_false = t.get_cached_content(leaves_only=False)
         self.assertEqual(cache_node[t], set(t.get_leaves()))
-        self.assertEqual(cache_node_leaves_only_false[t], t)
+        self.assertEqual(cache_node_leaves_only_false[t], set(t.traverse()))
 
         cache_name = t.get_cached_content(store_attr="name")
         cache_name_leaves_only_false = t.get_cached_content(store_attr="name", leaves_only=False)
         self.assertEqual(cache_name[t], set(t.get_leaf_names()))
-        self.assertEqual(cache_name_leaves_only_false[t], [t.name])
+        self.assertEqual(cache_name_leaves_only_false[t], set([n.name for n in t.traverse()]))
 
         cache_many = t.get_cached_content(store_attr=["name", "dist", "support"])
         cache_many_lof = t.get_cached_content(store_attr=["name", "dist", "support"], leaves_only=False)
         self.assertEqual(cache_many[t], set([(leaf.name, leaf.dist, leaf.support) for leaf in t.get_leaves()]))
-        self.assertEqual(cache_many_lof[t], [(t.name, t.dist, t.support)])
+        self.assertEqual(cache_many_lof[t], set([(n.name, n.dist, n.support) for n in t.traverse()]))
 
 
         #self.assertEqual(cache_name_lof[t], [t.name])

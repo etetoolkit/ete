@@ -247,9 +247,9 @@ class TextFace(Face):
     :param fstyle: "normal" or "italic"
 
     :param False tight_text: When False, boundaries of the text are
-    approximated according to general font metrics, producing slightly
-    worse aligned text faces but improving the performance of tree
-    visualization in scenes with a lot of text faces.
+        approximated according to general font metrics, producing slightly
+        worse aligned text faces but improving the performance of tree
+        visualization in scenes with a lot of text faces.
     """
     __slots__ = ["fgcolor", "fstyle", "fsize", "ftype", "penwidth",
                  "tight_text", "bold", "_text", "_bounding_rect", "_real_rect"]
@@ -825,7 +825,7 @@ class ProfileFace(Face):
         x_alpha = float( profile_width / (len(vector)) )
 
         # Creates a pixmap
-        self.pixmap = QPixmap(self.width,img_height)
+        self.pixmap = QPixmap(self.width, img_height)
         self.pixmap.fill(QColor("white"))
         p = QPainter(self.pixmap)
 
@@ -840,8 +840,8 @@ class ProfileFace(Face):
                 # first and second X pixel positions
                 x1 = x2
                 x2 = x1 + x_alpha
-                dev1 =  self.fit_to_scale( deviation_vector[pos]   )
-                mean1 = self.fit_to_scale( mean_vector[pos]        )
+                dev1 = self.fit_to_scale(deviation_vector[pos])
+                mean1 = self.fit_to_scale(mean_vector[pos])
                 # Set heatmap color
                 if not isfinite(mean1):
                     customColor = QColor("black")
@@ -858,7 +858,8 @@ class ProfileFace(Face):
                 p.fillRect(x1, y, x_alpha, y_step, QBrush(customColor))
             y+= y_step
             x2 = 0
-
+        p.end()
+        
     def fit_to_scale(self,v):
         if v<self.min_value:
             return float(self.min_value)
@@ -1053,9 +1054,10 @@ class RectFace(Face):
 
     Creates a Rectangular solid face.
 
-    :param label: optional text string to annotate the face: Default value is None;
-    label can also be a dict with attributes text, font, color, and fontsize
-    color defaults to background color, font to Verdana, fontsize to 12
+    :param label: optional text string to annotate the face: Default
+        value is None; label can also be a dict with attributes text,
+        font, color, and fontsize color defaults to background color,
+        font to Verdana, fontsize to 12
     """
     def __init__(self, width, height, fgcolor, bgcolor, label=None):
         Face.__init__(self)
@@ -1091,10 +1093,11 @@ class CircleFace(Face):
     :param radius: integer number defining the radius of the face
     :param color: Color used to fill the circle. RGB code or name in :data:`SVG_COLORS`
     :param "circle" style: Valid values are "circle" or "sphere"
-    :param label: optional text string to annotate the face: Default value is None;
-    label can also be a dict with attributes text, font, color, and fontsize
-    color defaults to circle color (because it looks nice with "sphere"),
-    font to Verdana, fontsize to 12
+    :param label: optional text string to annotate the face: Default
+        value is None; label can also be a dict with attributes text,
+        font, color, and fontsize color defaults to circle color
+        (because it looks nice with "sphere"), font to Verdana,
+        fontsize to 12
     """
 
     def __init__(self, radius, color, style="circle", label=None):
@@ -1283,9 +1286,8 @@ class _StackedBarItem(QGraphicsRectItem):
         x = 0
         for i, p in enumerate(self.percents):
             col = self.colors[i]
-            w = round((p * total_w) / 100.) # assuming p is between 0 and 100
-            painter.fillRect(x, 0, w, total_h, QColor(col))
-            painter.drawRect(x, 0, w, total_h)
+            w = (p * total_w) / 100. # assuming p is between 0 and 100
+            painter.fillRect(QRectF(x, 0, w, total_h), QColor(col))
             x += w
 
 class StackedBarFace(StaticItemFace):
@@ -1302,7 +1304,7 @@ class StackedBarFace(StaticItemFace):
         Face.__init__(self)
 
         if round(sum(percents)) > 100:
-            raise ValueError("BarItem: percentage values > 100")
+            raise ValueError("percentage values > 100")
 
         self.type = "item"
         self.item = None

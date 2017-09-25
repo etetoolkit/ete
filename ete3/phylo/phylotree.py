@@ -765,28 +765,32 @@ class PhyloNode(TreeNode):
 
         :param name taxid_attr: the name of the feature that should be used to access the taxid number associated to each node.
 
-        :param None tax2name: A dictionary where keys are taxid numbers and
-        values are their translation into NCBI scientific name. Its use is
-        optional and allows to avoid database queries when annotating many trees
-        containing the same set of taxids.
+        :param None tax2name: A dictionary where keys are taxid
+            numbers and values are their translation into NCBI
+            scientific name. Its use is optional and allows to avoid
+            database queries when annotating many trees containing the
+            same set of taxids.
 
-        :param None tax2track: A dictionary where keys are taxid numbers and
-        values are their translation into NCBI lineage tracks (taxids). Its use is
-        optional and allows to avoid database queries when annotating many trees
-        containing the same set of taxids.
+        :param None tax2track: A dictionary where keys are taxid
+            numbers and values are their translation into NCBI lineage
+            tracks (taxids). Its use is optional and allows to avoid
+            database queries when annotating many trees containing the
+            same set of taxids.
 
-        :param None tax2rank: A dictionary where keys are taxid numbers and
-        values are their translation into NCBI rank name. Its use is optional
-        and allows to avoid database queries when annotating many trees
-        containing the same set of taxids.
+        :param None tax2rank: A dictionary where keys are taxid
+            numbers and values are their translation into NCBI rank
+            name. Its use is optional and allows to avoid database
+            queries when annotating many trees containing the same set
+            of taxids.
 
-        :param None dbfile : If provided, the provided file will be used as a
-        local copy of the NCBI taxonomy database.
+        :param None dbfile : If provided, the provided file will be
+            used as a local copy of the NCBI taxonomy database.
 
-        :returns: tax2name (a dictionary translating taxid numbers into
-        scientific name), tax2lineage (a dictionary translating taxid numbers
-        into their corresponding NCBI lineage track) and tax2rank (a dictionary translating taxid numbers into
-        rank names).
+        :returns: tax2name (a dictionary translating taxid numbers
+            into scientific name), tax2lineage (a dictionary
+            translating taxid numbers into their corresponding NCBI
+            lineage track) and tax2rank (a dictionary translating
+            taxid numbers into rank names).
 
         """
 

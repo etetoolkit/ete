@@ -110,7 +110,7 @@ class TreeNode(object):
 
     :returns: a tree node object which represents the base of the tree.
 
-    ** Examples: **
+    **Examples:**
 
     ::
 
@@ -367,12 +367,13 @@ class TreeNode(object):
         next available parent.
 
         :param True prevent_nondicotomic: When True (default), delete
-        function will be execute recursively to prevent single-child
-        nodes.
+            function will be execute recursively to prevent
+            single-child nodes.
 
         :param False preserve_branch_length: If True, branch lengths
-        of the deleted nodes are transferred (summed up) to its
-        parent's branch, thus keeping original distances among nodes.
+            of the deleted nodes are transferred (summed up) to its
+            parent's branch, thus keeping original distances among
+            nodes.
 
         **Example:**
 
@@ -438,8 +439,9 @@ class TreeNode(object):
         :var nodes: a list of node names or node objects that should be retained
 
         :param False preserve_branch_length: If True, branch lengths
-        of the deleted nodes are transferred (summed up) to its
-        parent's branch, thus keeping original distances among nodes.
+          of the deleted nodes are transferred (summed up) to its
+          parent's branch, thus keeping original distances among
+          nodes.
 
         **Examples:**
 
@@ -1164,11 +1166,11 @@ class TreeNode(object):
           values will be randomized.
 
         :argument (0,1) branch_range: If random_branches is True, this
-        range of values will be used to generate random distances.
+          range of values will be used to generate random distances.
 
         :argument (0,1) support_range: If random_branches is True,
-        this range of values will be used to generate random branch
-        support values.
+          this range of values will be used to generate random branch
+          support values.
 
         """
         NewNode = self.__class__
@@ -1562,8 +1564,8 @@ class TreeNode(object):
         operations.
 
         :param None store_attr: Specifies the node attribute that
-        should be cached (i.e. name, distance, etc.). When none, the
-        whole node instance is cached.
+            should be cached (i.e. name, distance, etc.). When none,
+            the whole node instance is cached.
 
         :param _store: (internal use)
 
@@ -1572,39 +1574,44 @@ class TreeNode(object):
         if _store is None:
             _store = {}
 
+        def get_value(_n):
+            if store_attr is None:
+                _val = [_n]
+            else:
+                if not isinstance(store_attr, six.string_types):
+                    _val = [tuple(getattr(_n, attr, None) for attr in store_attr)]
+
+                else:
+                    _val = [getattr(_n, store_attr, None)]
+
+            return _val
+
         for ch in self.children:
             ch.get_cached_content(store_attr=store_attr,
                                   container_type=container_type,
                                   leaves_only=leaves_only,
                                   _store=_store)
-        if leaves_only:
-            if self.children:
-                val = container_type()
-                for ch in self.children:
-                    if type(val) == list:
-                        val.extend(_store[ch])
-                    if type(val) == set:
-                        val.update(_store[ch])
-                _store[self] = val
-            else:
-                if store_attr is None:
-                    val = [self]
-                else:
-                    if not isinstance(store_attr, six.string_types):
-                        val = [tuple(getattr(self, attr, None) for attr in store_attr)]
 
-                    else:
-                        val = [getattr(self, store_attr, None)]
-                _store[self] = container_type(val)
-        else:
-            if store_attr is None:
-                val = self
+        if self.children:
+            if not leaves_only:
+                val = container_type(get_value(self))
             else:
-                if not isinstance(store_attr, six.string_types):
-                    val = [tuple(getattr(self, attr, None) for attr in store_attr)]
-                else:
-                    val = [getattr(self, store_attr, None)]
+                val = container_type()
+            for ch in self.children:
+                if type(val) == list:
+                    val.extend(_store[ch])
+                if type(val) == set:
+                    val.update(_store[ch])
+
+                if not leaves_only:
+                    if type(val) == list:
+                        val.extend(get_value(ch))
+                    if type(val) == set:
+                        val.update(get_value(ch))
+
             _store[self] = val
+        else:
+            _store[self] = container_type(get_value(self))
 
         return _store
 
@@ -1958,7 +1965,7 @@ class TreeNode(object):
         '''
         .. versionadded:: 2.3
 
-        Iterate over the list of edges of a tree. Each egde is represented as a
+        Iterate over the list of edges of a tree. Each edge is represented as a
         tuple of two elements, each containing the list of nodes separated by
         the edge.
         '''
@@ -1973,7 +1980,7 @@ class TreeNode(object):
         '''
         .. versionadded:: 2.3
 
-        Returns the list of edges of a tree. Each egde is represented as a
+        Returns the list of edges of a tree. Each edge is represented as a
         tuple of two elements, each containing the list of nodes separated by
         the edge.
         '''

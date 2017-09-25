@@ -21,12 +21,13 @@ matrix_avg = matrix_min+((matrix_max-matrix_min)/2)
 
 # Creates a profile face that will represent node's profile as a
 # heatmap
-profileFace  = ProfileFace(matrix_max, matrix_min, matrix_avg, \
-                                         200, 14, "heatmap")
-cbarsFace = ProfileFace(matrix_max,matrix_min,matrix_avg,200,70,"cbars")
 nameFace = AttrFace("name", fsize=8)
 # Creates my own layout function that uses previous faces
 def mylayout(node):
+    profileFace  = ProfileFace(matrix_max, matrix_min, matrix_avg, \
+                                         200, 14, "heatmap")
+    cbarsFace = ProfileFace(matrix_max,matrix_min,matrix_avg,200,70,"cbars")
+
     # If node is a leaf
     if node.is_leaf():
         # And a line profile
@@ -61,4 +62,5 @@ def mylayout(node):
 # Use my layout to visualize the tree
 ts = TreeStyle()
 ts.layout_fn = mylayout
-t.show(tree_style=ts)
+t.children[0].show(tree_style=ts)
+

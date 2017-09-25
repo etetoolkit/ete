@@ -61,11 +61,32 @@ from six.moves import map
 import warnings
 
 
-c = None
-
-__all__ = ["NCBITaxa"]
+__all__ = ["NCBITaxa", "is_taxadb_up_to_date"]
 
 DB_VERSION = 2
+DEFAULT_TAXADB = os.path.join(os.environ.get('HOME', '/'), '.etetoolkit', 'taxa.sqlite')
+
+
+def is_taxadb_up_to_date(dbfile=DEFAULT_TAXADB):
+    """Check if a valid and up-to-date taxa.sqlite database exists
+
+    If dbfile= is not specified, DEFAULT_TAXADB is assumed
+    """
+    db = sqlite3.connect(dbfile)
+
+    try:
+        r = db.execute('SELECT version FROM stats;')
+        version = r.fetchone()[0]
+    except (sqlite3.OperationalError, ValueError, IndexError, TypeError):
+        version = None
+
+    db.close()
+
+    if version != DB_VERSION:
+        return False
+
+    return True
+
 
 class NCBITaxa(object):
     """
@@ -77,7 +98,7 @@ class NCBITaxa(object):
     def __init__(self, dbfile=None, taxdump_file=None):
 
         if not dbfile:
-            self.dbfile = os.path.join(os.environ.get('HOME', '/'), '.etetoolkit', 'taxa.sqlite')
+            self.dbfile = DEFAULT_TAXADB
         else:
             self.dbfile = dbfile
 
@@ -88,23 +109,15 @@ class NCBITaxa(object):
             print('NCBI database not present yet (first time used?)', file=sys.stderr)
             self.update_taxonomy_database(taxdump_file)
 
-        if not os.path.exists(self.dbfile): 
-            raise ValueError("Cannot open taxonomy database: %s" %self.dbfile)
+        if not os.path.exists(self.dbfile):
+            raise ValueError("Cannot open taxonomy database: %s" % self.dbfile)
 
         self.db = None
         self._connect()
 
-        if self.__get_db_version() != DB_VERSION:
+        if not is_taxadb_up_to_date(self.dbfile):
             print('NCBI database format is outdated. Upgrading', file=sys.stderr)
             self.update_taxonomy_database(taxdump_file)
-
-    def __get_db_version(self):
-        try:
-            r = self.db.execute('select version from stats;')
-        except Exception:
-            return None
-        else:
-            return r.fetchone()[0]
 
     def update_taxonomy_database(self, taxdump_file=None):
         """Updates the ncbi taxonomy database by downloading and parsing the latest
@@ -362,15 +375,18 @@ class NCBITaxa(object):
         containing all of them.
 
         :param False intermediate_nodes: If True, single child nodes
-        representing the complete lineage of leaf nodes are kept. Otherwise, the
-        tree is pruned to contain the first common ancestor of each group.
+            representing the complete lineage of leaf nodes are kept.
+            Otherwise, the tree is pruned to contain the first common
+            ancestor of each group.
 
-        :param None rank_limit: If valid NCBI rank name is provided, the tree is
-        pruned at that given level. For instance, use rank="species" to get rid
-        of sub-species or strain leaf nodes.
+        :param None rank_limit: If valid NCBI rank name is provided,
+            the tree is pruned at that given level. For instance, use
+            rank="species" to get rid of sub-species or strain leaf
+            nodes.
 
-        :param False collapse_subspecies: If True, any item under the species
-        rank will be collapsed into the species upper node.
+        :param False collapse_subspecies: If True, any item under the
+            species rank will be collapsed into the species upper
+            node.
 
         """
         from .. import PhyloTree
@@ -469,12 +485,13 @@ class NCBITaxa(object):
 
         :param t: a Tree (or Tree derived) instance.
 
-        :param name taxid_attr: Allows to set a custom node attribute containing
-        the taxid number associated to each node (i.e. species in PhyloTree instances).
+        :param name taxid_attr: Allows to set a custom node attribute 
+            containing the taxid number associated to each node (i.e.
+            species in PhyloTree instances).
 
-        :param tax2name,tax2track,tax2rank: Use these arguments to provide
-        pre-calculated dictionaries providing translation from taxid number and
-        names,track lineages and ranks.
+        :param tax2name,tax2track,tax2rank: Use these arguments to
+            provide pre-calculated dictionaries providing translation
+            from taxid number and names,track lineages and ranks.
         """
 
         taxids = set()

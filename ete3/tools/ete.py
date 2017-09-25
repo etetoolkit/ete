@@ -93,8 +93,9 @@ def tree_iterator(args):
 
 def main():
     _main(sys.argv)
-        
+
 def _main(arguments):
+
     if len(arguments) > 1:
         subcommand = arguments[1]
         if subcommand == "version":
@@ -125,6 +126,7 @@ def _main(arguments):
                     if p.returncode == 0:
                         _version += " (git-{})".format(bytes.decode(out).rstrip())
 
+            _version += " Tools path: %s" %(TOOLSPATH)
             print(_version)
             return
         elif subcommand == "upgrade-external-tools":
