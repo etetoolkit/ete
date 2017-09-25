@@ -12,7 +12,7 @@ cache:
   - test_tmp
 
 install:
-  - ./run_tests.sh --setup-only -sv "$TRAVIS_PYTHON_VERSION"
+  - ./run_tests.sh -s --setup-only -v "$TRAVIS_PYTHON_VERSION"
         
 before_script:
   # Ensure tags are available on the cloned repository

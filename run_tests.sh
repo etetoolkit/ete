@@ -33,14 +33,14 @@ usage() {
     echo >&2 "    $0 [option] [-v version] [testset]"
     echo >&2 ""
     echo >&2 "Optional parameters:"
-    echo >&2 "       -h           = help: shows the current information"
-    echo >&2 "       -s           = setup-only: configures and updates the testing environment but skips tests"
-    echo >&2 "       -t           = test-only: skips configuration of environment and runs tests"
+    echo >&2 "       -h|--help    = help: shows the current information"
+    echo >&2 "       --setup-only = setup-only: configures and updates the testing environment but skips tests"
+    echo >&2 "       --test-only  = test-only: skips configuration of environment and runs tests"
     echo >&2 "       -l           = enable logging to tests.log"
     echo >&2 "       -s           = show the content of tests.log at the end of execution (implies -l)"
     echo >&2 "       -x           = install ete3 external apps in the test environment"
     echo >&2 "       -v           = python version to use for running tests. (default: 3.5)"
-    echo >&2 "       -q           = qt4 is used for running tests. (default: qt5)"
+    echo >&2 "       --qt4        = qt4 is used for running tests. (default: qt5)"
     echo >&2 "       testset      = set of tests to run. (default: api) (for full testsuite use all)"
     echo >&2 ""
 }
@@ -216,9 +216,9 @@ SHOWLOG=0
 
 # Parse args using getopt (instead of getopts) to allow arguments before options
 if [[ $PLATFORM == 'Linux' ]]; then
-    ARGS="$(getopt lshxq: -- "$@" 2>/dev/null)"
+    ARGS="$(getopt -o v:lshx -l help,test-only,setup-only,qt4 -n "$0" -- "$@" 2>/dev/null)"
 elif [[ $PLATFORM == 'Darwin' ]]; then
-    ARGS=`getopt lshxq: $* 2>/dev/null`
+    ARGS="$(/usr/local/opt/gnu-getopt/bin/getopt -o v:lshx -l help,test-only,setup-only,qt4 -n "$0" -- "$@" 2>/dev/null)"
 else
     handle_error "1" "OS not supported"
 fi
@@ -231,7 +231,6 @@ fi
 # reorganize arguments as returned by getopt
 eval set -- "$ARGS"
 echo OPTIONS:$ARGS
-
 
 while true; do
     case "$1" in
@@ -256,19 +255,19 @@ while true; do
             shift
             EXTERNAL_APPS=1
             ;;
-        -s) # setup only 
+        --setup-only) # setup/install only 
             shift
             TEST=0
             ;;
-        -t) # test only
+        --test-only) # test only
             shift
             SETUP=0
             ;;
-        -q) # qt4 
+        --qt4) # qt4 
             shift
             QT4=1
             ;;
-        -h)
+        -h|--help)
             usage
             exit
             ;;
@@ -278,6 +277,7 @@ while true; do
             ;;
     esac
 done
+
 
 VERSION="$(valid_version "${VERSION}" 3.5)"
 TESTSET="$(optional "$1" api)"
