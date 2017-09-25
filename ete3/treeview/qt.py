@@ -2,7 +2,7 @@ try:
     from PyQt4 import QtGui, QtCore
     from PyQt4.QtCore import (Qt, QPointF, QRect, QRectF, QBuffer, QByteArray,
                               QThread, QIODevice, QMetaObject, QModelIndex, QObject, QRegExp, QSize,
-                              QSizeF, QString, QVariant )
+                              QSizeF,QVariant )
     from PyQt4.QtGui import (QAction, QApplication, QBrush, QCheckBox, QColor,
                              QColorDialog, QComboBox, QCursor, QDialog,
                              QDialogButtonBox, QFileDialog, QFont,

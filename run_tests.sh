@@ -131,7 +131,7 @@ create_env_qt4() {
     clr_green ">>> Creating test environment for version ${VERSION}... "
 
     run "${CONDA}/bin/conda env remove -y -n test_${VERSION} || true"
-    run "${CONDA}/bin/conda create -q -y -n test_${VERSION} python=${VERSION} pip pyqt=4 setuptools numpy six lxml coverage scikit-bio biopython scipy"
+    run "${CONDA}/bin/conda create -q -y -n test_${VERSION} python=${VERSION} pip pyqt=4 qt=4 setuptools numpy six lxml coverage scikit-bio biopython scipy"
     clr_green "DONE"
 }
 
@@ -145,13 +145,13 @@ create_env() {
     
     clr_green ">>> Creating test environment for version ${VERSION}... "
     run "${CONDA}/bin/conda env remove -y -n test_${VERSION} || true"
-    run "${CONDA}/bin/conda create -q -y -n test_${VERSION} python=${VERSION} pip setuptools numpy six lxml coverage scikit-bio biopython scipy"
+    run "${CONDA}/bin/conda create -q -y -n test_${VERSION} python=${VERSION} pip setuptools pyqt numpy six lxml coverage scikit-bio biopython scipy"
     clr_green "DONE"
 
-    clr_green ">>> Updating conda packages in environment test_${VERSION}... "
-    run "source ${CONDA}/bin/activate test_${VERSION} 2>&1 && ${CONDA}/bin/conda update -y --all 2>&1 | tee -a ${LOG}"
-    handle_error "$?" "ERROR: Failed to update packages in the conda environment" "$update_conda_output"
-    clr_green "DONE"
+    # clr_green ">>> Updating conda packages in environment test_${VERSION}... "
+    # run "source ${CONDA}/bin/activate test_${VERSION} 2>&1 && ${CONDA}/bin/conda update -y --all 2>&1 | tee -a ${LOG}"
+    # handle_error "$?" "ERROR: Failed to update packages in the conda environment" "$update_conda_output"
+    # clr_green "DONE"
 }
 
 
