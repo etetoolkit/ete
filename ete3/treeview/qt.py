@@ -19,7 +19,7 @@ try:
                              QRadialGradient, QRegExpValidator, QSplitter,
                              QStandardItemModel, QStatusBar, QTableView,
                              QTextEdit, QToolBar, QTransform, QVBoxLayout,
-                             QWidget, )
+                             QWidget)
     from PyQt4.QtSvg import QGraphicsSvgItem, QSvgGenerator
     from PyQt4.QtOpenGL import QGLFormat, QGLWidget
 
