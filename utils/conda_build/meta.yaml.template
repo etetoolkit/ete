@@ -17,8 +17,8 @@ requirements:
     - lxml
     - numpy
     - scipy
-    - pyqt 4.*
-    - qt4
+    - pyqt 
+
 
   run:
     - python
@@ -26,8 +26,8 @@ requirements:
     - lxml
     - numpy
     - scipy
-    - pyqt 4.*
-    - qt4
+    - pyqt
+
 
 test:
   requires:
@@ -36,8 +36,7 @@ test:
     - lxml
     - numpy
     - scipy
-    - pyqt 4.*
-    - qt4
+    - pyqt
     - scikit-bio
     - biopython
     - ete3_external_apps

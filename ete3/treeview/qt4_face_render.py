@@ -38,8 +38,7 @@ from __future__ import absolute_import
 #
 # #END_LICENSE#############################################################
 import random
-from PyQt4 import QtCore, QtGui
-from PyQt4.QtGui import QGraphicsSimpleTextItem, QGraphicsPixmapItem, \
+from .qt import QRectF, QGraphicsSimpleTextItem, QGraphicsPixmapItem, \
     QGraphicsRectItem, QTransform, QBrush, QPen, QColor, QGraphicsItem
 
 from .main import FACE_POSITIONS, _leaf
@@ -79,9 +78,7 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
         return
 
     def __init__(self, faces, node, as_grid=False):
-
         # This caused seg. faults. in some computers. No idea why.
-        # QtGui.QGraphicsItem.__init__(self, *args, **kargs)
         QGraphicsRectItem.__init__(self, 0, 0, 0, 0)
 
         self.as_grid = as_grid
@@ -118,10 +115,10 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
     #    return
 
     def boundingRect(self):
-        return QtCore.QRectF(0,0, self.w, self.h)
+        return QRectF(0,0, self.w, self.h)
 
     def rect(self):
-        return QtCore.QRectF(0,0, self.w, self.h)
+        return QRectF(0,0, self.w, self.h)
 
     def get_size(self):
         return self.w, self.h
@@ -178,8 +175,8 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
 
         self.w = sum(self.c2max_w.values())
         #self.setRect(0, 0, self.w+random.randint(1,5), self.h)
-        #pen = QtGui.QPen()
-        #pen.setColor(QtGui.QColor("red"))
+        #pen = QPen()
+        #pen.setColor(QColor("red"))
         #self.setPen(pen)
 
     def setup_grid(self, c2max_w=None, r2max_h=None, as_grid=True):
@@ -228,7 +225,7 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
                     # Loads the pre-generated pixmap
                     obj = _ImgFaceItem(f, self.node, f.pixmap)
 
-                obj.setAcceptsHoverEvents(True)
+                obj.setAcceptHoverEvents(True)
                 obj.setParentItem(self)
 
                 x_offset, y_offset = 0, 0

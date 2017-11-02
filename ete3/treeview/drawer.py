@@ -40,8 +40,8 @@ from __future__ import absolute_import
 import types
 import signal
 
-from PyQt4  import QtGui
-from PyQt4  import QtCore
+from .qt import *
+
 from .qt4_gui import _GUI, _PropertiesDialog, _BasicNodeActions
 
 from . import layouts
@@ -64,7 +64,7 @@ def init_scene(t, layout, ts):
         ts.layout_fn  = layout
 
     if not _QApp:
-        _QApp = QtGui.QApplication(["ETE"])
+        _QApp = QApplication(["ETE"])
 
     scene  = _TreeScene()
 	#ts._scale = None
@@ -115,7 +115,7 @@ def render_tree(t, imgName, w=None, h=None, layout=None,
     return imgmap
 
 
-class RenderThread(QtCore.QThread):
+class RenderThread(QThread):
     def __init__(self, tree, layout, tree_style, w, h, dpi, units, rformat):
         self.tree = tree
         self.layout = layout
@@ -127,7 +127,7 @@ class RenderThread(QtCore.QThread):
         self.return_format = rformat
         self.result = None
 
-        QtCore.QThread.__init__(self)
+        QThread.__init__(self)
 
     def run(self):
         scene, img = init_scene(self.tree, self.layout, self.tree_style)
@@ -152,7 +152,7 @@ def get_img(t, w=None, h=None, layout=None, tree_style = None,
             header=None, units="px", dpi=90, return_format="%%return"):
     global _QApp
     if not _QApp:
-        _QApp = QtGui.QApplication(["ETE"])
+        _QApp = QApplication(["ETE"])
 
     r = RenderThread(t, layout, tree_style, w, h, dpi, units, return_format)
     r.start()

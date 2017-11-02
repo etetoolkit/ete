@@ -45,8 +45,7 @@ import re
 import types
 from sys import stderr
 
-from PyQt4.QtGui import *
-from PyQt4 import QtCore
+from .qt import *
 
 from .svg_colors import SVG_COLORS, COLOR_SCHEMES
 
@@ -74,9 +73,9 @@ __all__  = ["NodeStyle", "TreeStyle", "FaceContainer", "_leaf", "add_face_to_nod
 NODE_STYLE_DEFAULT = [
     ["fgcolor",          "#0030c1",    _COLOR_CHECKER                           ],
     ["bgcolor",          "#FFFFFF",    _COLOR_CHECKER                           ],
-    ["node_bgcolor",     "#FFFFFF",    _COLOR_CHECKER                           ],
+    #["node_bgcolor",     "#FFFFFF",    _COLOR_CHECKER                           ],
     #["partition_bgcolor","#FFFFFF",    _COLOR_CHECKER                           ],
-    ["faces_bgcolor",    "#FFFFFF",    _COLOR_CHECKER                           ],
+    #["faces_bgcolor",    "#FFFFFF",    _COLOR_CHECKER                           ],
     ["vt_line_color",    "#000000",    _COLOR_CHECKER                           ],
     ["hz_line_color",    "#000000",    _COLOR_CHECKER                           ],
     ["hz_line_type",     0,            _LINE_TYPE_CHECKER                       ], # 0 solid, 1 dashed, 2 dotted
@@ -109,10 +108,10 @@ class _Border(object):
             if self.color:
                 pen = QPen(QColor(self.color))
             else:
-                pen = QPen(QtCore.Qt.NoPen)
+                pen = QPen(Qt.NoPen)
             set_pen_style(pen, self.type)
             pen.setWidth(self.width)
-            pen.setCapStyle(QtCore.Qt.FlatCap)
+            pen.setCapStyle(Qt.FlatCap)
             border.setPen(pen)
             return border
         else:
@@ -619,11 +618,11 @@ def add_face_to_node(face, node, column, aligned=False, position="branch-right")
 
 def set_pen_style(pen, line_style):
     if line_style == 0:
-        pen.setStyle(QtCore.Qt.SolidLine)
+        pen.setStyle(Qt.SolidLine)
     elif line_style == 1:
-        pen.setStyle(QtCore.Qt.DashLine)
+        pen.setStyle(Qt.DashLine)
     elif line_style == 2:
-        pen.setStyle(QtCore.Qt.DotLine)
+        pen.setStyle(Qt.DotLine)
 
 
 def save(scene, imgName, w=None, h=None, dpi=90,\
@@ -652,15 +651,15 @@ def save(scene, imgName, w=None, h=None, dpi=90,\
         units = "px"
         w = main_rect.width()
         h = main_rect.height()
-        ratio_mode = QtCore.Qt.KeepAspectRatio
+        ratio_mode = Qt.KeepAspectRatio
     elif w and h:
-        ratio_mode = QtCore.Qt.IgnoreAspectRatio
+        ratio_mode = Qt.IgnoreAspectRatio
     elif h is None :
         h = w * aspect_ratio
-        ratio_mode = QtCore.Qt.KeepAspectRatio
+        ratio_mode = Qt.KeepAspectRatio
     elif w is None:
         w = h / aspect_ratio
-        ratio_mode = QtCore.Qt.KeepAspectRatio
+        ratio_mode = Qt.KeepAspectRatio
 
     # Adjust to resolution
     if units == "mm":
@@ -681,18 +680,17 @@ def save(scene, imgName, w=None, h=None, dpi=90,\
     x_scale, y_scale = w/main_rect.width(), h/main_rect.height()
 
     if ext == "SVG":
-        from PyQt4 import QtSvg
-        svg = QtSvg.QSvgGenerator()
-        targetRect = QtCore.QRectF(0, 0, w, h)
-        svg.setSize(QtCore.QSize(w, h))
+        svg = QSvgGenerator()
+        targetRect = QRectF(0, 0, w, h)
+        svg.setSize(QSize(w, h))
         svg.setViewBox(targetRect)
         svg.setTitle("Generated with ETE http://etetoolkit.org")
         svg.setDescription("Generated with ETE http://etetoolkit.org")
 
         if imgName == '%%return':
-            ba = QtCore.QByteArray()
-            buf = QtCore.QBuffer(ba)
-            buf.open(QtCore.QIODevice.WriteOnly)
+            ba = QByteArray()
+            buf = QBuffer(ba)
+            buf.open(QIODevice.WriteOnly)
             svg.setOutputDevice(buf)
         else:
             svg.setFileName(imgName)
@@ -733,7 +731,7 @@ def save(scene, imgName, w=None, h=None, dpi=90,\
         printer.setResolution(dpi)
         printer.setOutputFormat(format)
         printer.setPageSize(QPrinter.A4)
-        printer.setPaperSize(QtCore.QSizeF(w, h), QPrinter.DevicePixel)
+        printer.setPaperSize(QSizeF(w, h), QPrinter.DevicePixel)
         printer.setPageMargins(0, 0, 0, 0, QPrinter.DevicePixel)
 
         #pageTopLeft = printer.pageRect().topLeft()
@@ -747,12 +745,12 @@ def save(scene, imgName, w=None, h=None, dpi=90,\
         printer.setFullPage(True);
         printer.setOutputFileName(imgName);
         pp = QPainter(printer)
-        targetRect =  QtCore.QRectF(0, 0 , w, h)
+        targetRect =  QRectF(0, 0 , w, h)
         scene.render(pp, targetRect, scene.sceneRect(), ratio_mode)
     else:
-        targetRect = QtCore.QRectF(0, 0, w, h)
+        targetRect = QRectF(0, 0, w, h)
         ii= QImage(w, h, QImage.Format_ARGB32)
-        ii.fill(QColor(QtCore.Qt.white).rgb())
+        ii.fill(QColor(Qt.white).rgb())
         ii.setDotsPerMeterX(dpi / 0.0254) # Convert inches to meters
         ii.setDotsPerMeterY(dpi / 0.0254)
         pp = QPainter(ii)
@@ -763,16 +761,16 @@ def save(scene, imgName, w=None, h=None, dpi=90,\
         scene.render(pp, targetRect, scene.sceneRect(), ratio_mode)
         pp.end()
         if ipython_inline:
-            ba = QtCore.QByteArray()
-            buf = QtCore.QBuffer(ba)
-            buf.open(QtCore.QIODevice.WriteOnly)
+            ba = QByteArray()
+            buf = QBuffer(ba)
+            buf.open(QIODevice.WriteOnly)
             ii.save(buf, "PNG")
             from IPython.core.display import Image
             return Image(ba.data())
         elif imgName == '%%return':
-            ba = QtCore.QByteArray()
-            buf = QtCore.QBuffer(ba)
-            buf.open(QtCore.QIODevice.WriteOnly)
+            ba = QByteArray()
+            buf = QBuffer(ba)
+            buf.open(QIODevice.WriteOnly)
             ii.save(buf, "PNG")
             return x_scale, y_scale, ba.toBase64()
         else:

@@ -39,30 +39,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 import re
-
-try:
-    from urllib2 import urlopen
-except ImportError:
-    from urllib.request import urlopen
-
-from PyQt4.QtGui import (QGraphicsRectItem, QGraphicsLineItem,
-                         QGraphicsPolygonItem, QGraphicsEllipseItem,
-                         QPen, QColor, QBrush, QPolygonF, QFont,
-                         QPixmap, QFontMetrics, QPainter,
-                         QRadialGradient, QGraphicsSimpleTextItem, QGraphicsTextItem,
-                         QGraphicsItem)
-from PyQt4.QtCore import Qt,  QPointF, QRect, QRectF
-try:
-    from PyQt4.QtSvg import QGraphicsSvgItem
-except ImportError:
-    warning('QtSvg support not found')
-
 import math
-from .main import add_face_to_node, _Background, _Border, COLOR_SCHEMES
-import six
-from six.moves import map
-from six.moves import range
-from six.moves import zip
 
 try:
     from numpy import isfinite as _isfinite, ceil
@@ -70,6 +47,25 @@ except ImportError:
     pass
 else:
     isfinite = lambda n: n and _isfinite(n)
+
+try:
+    from urllib2 import urlopen
+except ImportError:
+    from urllib.request import urlopen
+
+import six
+from six.moves import map
+from six.moves import range
+from six.moves import zip
+
+from .qt import (QGraphicsRectItem, QGraphicsLineItem,
+                 QGraphicsPolygonItem, QGraphicsEllipseItem,
+                 QPen, QColor, QBrush, QPolygonF, QFont,
+                 QPixmap, QFontMetrics, QPainter,
+                 QRadialGradient, QGraphicsSimpleTextItem, QGraphicsTextItem,
+                 QGraphicsItem, Qt,  QPointF, QRect, QRectF, QGraphicsSvgItem)
+
+from .main import add_face_to_node, _Background, _Border, COLOR_SCHEMES
 
 _aafgcolors = {
     'A':"#000000" ,
@@ -1181,14 +1177,13 @@ class DynamicItemFace(Face):
         self.kargs = kargs
 
     def update_items(self):
-        self.item = self.constructor(self.node, self.args, self.kargs)
+        self.item = self.constructor(self.node, *self.args, **self.kargs)
 
     def _width(self):
         return self.item.rect().width()
 
     def _height(self):
         return self.item.rect().height()
-
 
 class RandomFace(Face):
     def __init__(self):
@@ -2352,10 +2347,9 @@ class SequenceFace(StaticItemFace, Face):
             QGraphicsRectItem.__init__(self, *arg, **karg)
             self.codon = None
             self.label = None
-            self.setAcceptsHoverEvents(True)
+            self.setAcceptHoverEvents(True)
 
         def hoverEnterEvent (self, e):
-            """ when mouse is over"""
             if not self.label:
                 self.label = QGraphicsRectItem(parent=self)
                 #self.label.setY(-18)
