@@ -664,7 +664,7 @@ def _main(arguments, builtin_apps_path=None):
         if not pexist(APPSPATH):
             print(colorify('\nWARNING: external applications not found', "yellow"), file=sys.stderr)
             print(colorify('Install using conda (recomended):', "lgreen"), file=sys.stderr)
-            print(colorify(' conda install -c etetoolkit ete3_external_tools', "white"), file=sys.stderr)
+            print(colorify(' conda install -c etetoolkit ete3_external_apps', "white"), file=sys.stderr)
             print(colorify('or manually compile by running:', "lgreen"), file=sys.stderr)
             print(colorify(' ete3 upgrade-external-tools', "white"), file=sys.stderr)
             print()
@@ -678,7 +678,7 @@ def _main(arguments, builtin_apps_path=None):
             if not pexist(APPSPATH):
                 print(colorify('\nWARNING: external applications not found', "yellow"), file=sys.stderr)
                 print(colorify('Install using conda (recomended):', "lgreen"), file=sys.stderr)
-                print(colorify(' conda install -c etetoolkit ete3_external_tools', "white"), file=sys.stderr)
+                print(colorify(' conda install -c etetoolkit ete3_external_apps', "white"), file=sys.stderr)
                 print(colorify('or manually compile by running:', "lgreen"), file=sys.stderr)
                 print(colorify(' ete3 upgrade-external-tools', "white"), file=sys.stderr)
                 sys.exit(0)
