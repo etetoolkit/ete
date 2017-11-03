@@ -655,32 +655,29 @@ def _main(arguments, builtin_apps_path=None):
     if builtin_apps_path:
         APPSPATH = builtin_apps_path
 
-    if not pexist(pjoin(APPSPATH, "bin")):
-        APPSPATH = os.path.expanduser("~/.etetoolkit/ext_apps-latest/")
-
     ETEHOMEDIR = os.path.expanduser("~/.etetoolkit/")
 
     if len(arguments) == 1:
         if not pexist(APPSPATH):
             print(colorify('\nWARNING: external applications not found', "yellow"), file=sys.stderr)
             print(colorify('Install using conda (recomended):', "lgreen"), file=sys.stderr)
-            print(colorify(' conda install -c etetoolkit ete3_external_apps', "white"), file=sys.stderr)
-            print(colorify('or manually compile by running:', "lgreen"), file=sys.stderr)
-            print(colorify(' ete3 upgrade-external-tools', "white"), file=sys.stderr)
+            print(colorify(' conda install -c etetoolkit ete_toolchain', "white"), file=sys.stderr)
+            print(colorify('or manually compile from:', "lgreen"), file=sys.stderr)
+            print(colorify(' https://github.com/etetoolkit/ete_toolchain', "white"), file=sys.stderr)
             print()
 
 
     if len(arguments) > 1:
         _config_path = pjoin(BASEPATH, 'ete_build.cfg')
 
-
         if arguments[1] == "check":
             if not pexist(APPSPATH):
                 print(colorify('\nWARNING: external applications not found', "yellow"), file=sys.stderr)
                 print(colorify('Install using conda (recomended):', "lgreen"), file=sys.stderr)
-                print(colorify(' conda install -c etetoolkit ete3_external_apps', "white"), file=sys.stderr)
-                print(colorify('or manually compile by running:', "lgreen"), file=sys.stderr)
-                print(colorify(' ete3 upgrade-external-tools', "white"), file=sys.stderr)
+                print(colorify(' conda install -c etetoolkit ete_toolchain', "white"), file=sys.stderr)
+                print(colorify('or manually compile from:', "lgreen"), file=sys.stderr)
+                print(colorify(' https://github.com/etetoolkit/ete_toolchain', "white"), file=sys.stderr)
+                print()
                 sys.exit(0)
 
             try:

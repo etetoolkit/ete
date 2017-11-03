@@ -68,7 +68,7 @@ builtin_apps = {
     'readal'             : "%BIN%/readal",
     'tcoffee'            : "export HOME=/tmp MAFFT_BINARIES=%BIN% TMP_4_TCOFFEE=%TMP% LOCKDIR_4_TCOFFEE=%TMP% PLUGINS_4_TCOFFEE=%BIN%/ && %BIN%/t_coffee",
     'phyml'              : "%BIN%/phyml",
-    'iqtree'             : "%BIN%/iqtree-omp -nt %CORES%",
+    'iqtree'             : "%BIN%/iqtree -nt %CORES%",
     'raxml-pthreads'     : "%BIN%/raxmlHPC-PTHREADS-SSE3 -T%CORES%",
     'raxml'              : "%BIN%/raxmlHPC-SSE3",
     'pmodeltest'         : "python %BIN%/pmodeltest.py --nprocs %CORES% --phyml %BIN%/phyml",
@@ -98,10 +98,10 @@ app2version = {
     'fasttree'            : "2>&1 | grep -i version",
     'statal'              : "--version| grep -i statal",
     'pmodeltest'          : "--version 2>&1|grep 'pmodeltest.py v'",
-    'prank'               : "|grep 'prank v'",
-    'probcons'            : "2>&1 |grep -i version",
+#    'prank'               : "|grep 'prank v'",
+#    'probcons'            : "2>&1 |grep -i version",
     'kalign'              : "2>&1 |grep -i version",
-    'codeml'              : " /dev/null 2>&1 |grep -i version",
+    'codeml'              : " /dev/null 2>&1|grep -i version && rm rub rst rst1",
     'slr'                 : " 2>&1 |grep -i version",
     'iqtree'              : " -h |grep -i version|grep IQ",
 }
@@ -158,14 +158,17 @@ def test_apps(apps):
             process = subprocess.Popen(test_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             out, err = process.communicate()
             out = bytes.decode(out)
-            #print (process.returncode)
-            #print (test_cmd)
             if out:
                 print("%s - %s" %(colorify("OK", "green"), str(out).strip()))
             else:
-                print(colorify("ERROR", "red"))
+                print(colorify("MISSING", "red"))
+                # print("** ", test_cmd)
+                # print (process.returncode)
+                # print (test_cmd)
+                # print (out)
+                # print (err)
                 errors += 1
-                #print("** ", test_cmd)
+                
                 #log.debug(test_cmd)
                 #log.debug(subprocess.check_output(test_cmd.rstrip("wc -l")), shell=True)
     if errors:
