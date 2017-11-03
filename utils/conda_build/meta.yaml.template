@@ -42,11 +42,11 @@ test:
     - qt
     - scikit-bio
     - biopython
-    - ete3_external_apps
+    - ete_toolchain
 
   commands:
     - ete3 version
-    - ete3 build check
+    #- ete3 build check
     #- python -m 'ete3.test.test_all'
 
 about:
