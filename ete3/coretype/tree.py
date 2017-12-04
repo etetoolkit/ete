@@ -831,7 +831,7 @@ class TreeNode(object):
 
         ::
 
-             t.get_newick(features=["species","name"], format=1)
+             t.write(features=["species","name"], format=1)
 
         """
 
