@@ -248,6 +248,7 @@ class NodeStyle(dict):
     #def clear(self):
     #    super(NodeStyle, self).__setitem__("_faces", {})
 
+
 class TreeStyle(object):
     """.. versionadded:: 2.1
 
@@ -361,6 +362,14 @@ class TreeStyle(object):
 
     :param True show_scale: Include the scale legend in the tree
       image
+
+    :param False y_axis['show']: Include calculated y scale legend in the tree
+      image (relative branch length)
+
+    :param linear y_axis['scale_type']: Defined the type of the y_axis scale log/linear
+
+    :param 1 y_axis['scale_length']: Sets the length of the y_axis scale
+       (recomended to set to: root.get_farthest_leaf()[1], the depth of the farthest leaf)
 
     :param None scale_length: Scale length to be used as reference scale bar
     when visualizing tree. None = automatically adjusted.
@@ -527,6 +536,12 @@ class TreeStyle(object):
         # Draw the scale
         self.show_scale = True
         self.scale_length = None
+
+        # Draw Y_axis scale
+        self.y_axis = dict()
+        self.y_axis['show'] = False
+        self.y_axis['scale_type'] = 'linear'
+        self.y_axis['scale_length'] = 1
 
         # Initialize aligned face headers
         self.aligned_header = FaceContainer()
