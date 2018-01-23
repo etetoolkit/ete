@@ -22,3 +22,9 @@ test_tmp/
 # Coverage files
 .coverage
 htmlcov/
+.idea/workspace.xml
+bash_colors.sh
+.idea/ete.iml
+.idea/misc.xml
+.idea/modules.xml
+.idea/vcs.xml
