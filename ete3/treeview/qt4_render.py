@@ -45,7 +45,7 @@ from .qt import *
 from . import qt4_circular_render as crender
 from . import qt4_rect_render as rrender
 from .main import _leaf, NodeStyle, _FaceAreas, tracktime, TreeStyle
-from ..treeview.faces import CircleFace
+from ..treeview.faces import CircleFace, RectFace
 from .node_gui_actions import _NodeActions as _ActionDelegator
 from .qt4_face_render import update_node_faces, _FaceGroupItem, _TextFaceItem
 from .templates import _DEFAULT_STYLE, apply_template
@@ -607,6 +607,25 @@ def add_y_scale(img, mainRect, parent, root):
         mainRect.adjust(0, -20, 0, 0)
         scale_item.setPos(x_pos-10, y_pos+root_pos)
     alter_internal_nodes(root)
+
+
+def alter_internal_nodes(t):
+    """
+    The function changes the internal nodes of the tree to zero size, to make sure that the y scale is correct.
+    Making sure not to lose information the internal nodes are added as half opaque faces on top of the tree.
+    :param t: root node
+    :return:
+    """
+    for node in t.traverse():
+        if not node.is_leaf():
+            if node.img_style['shape'] == 'square':
+                C = RectFace(width=node.img_style['size'], height=node.img_style['size'],
+                             fgcolor=node.img_style['fgcolor'], bgcolor=node.img_style['fgcolor'])
+            else:
+                C = CircleFace(radius=node.img_style['size'], color=node.img_style['fgcolor'], style="sphere")
+            C.opacity = 0.6
+            node.add_face(C, 0, position="float-behind")
+            node.img_style['size'] = 0
 
 
 def rotate_inverted_faces(n2i, n2f, img):
