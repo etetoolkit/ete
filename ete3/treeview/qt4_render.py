@@ -39,11 +39,13 @@
 import math
 import re
 import six
+import warnings
 
 from .qt import *
 from . import qt4_circular_render as crender
 from . import qt4_rect_render as rrender
 from .main import _leaf, NodeStyle, _FaceAreas, tracktime, TreeStyle
+from ..treeview.faces import CircleFace
 from .node_gui_actions import _NodeActions as _ActionDelegator
 from .qt4_face_render import update_node_faces, _FaceGroupItem, _TextFaceItem
 from .templates import _DEFAULT_STYLE, apply_template
@@ -362,9 +364,12 @@ def render(root_node, img, hide_root=False):
         mainRect.adjust(_x, _y, _x, _y)
 
     # Add extra components and adjust mainRect to them
-    add_legend(img, mainRect, frame)
     add_title(img, mainRect, frame)
+    add_legend(img, mainRect, frame)
     add_scale(img, mainRect, frame)
+    add_y_scale(img, mainRect, frame, root_node)
+
+
     frame.setRect(mainRect)
 
     # Draws a border around the tree
@@ -467,6 +472,142 @@ def add_scale(img, mainRect, parent):
         scaleItem.setPos(mainRect.bottomLeft())
         scaleItem.moveBy(img.margin_left, 0)
         mainRect.adjust(0, 0, 0, length)
+
+
+def add_y_scale(img, mainRect, parent, root):
+
+    if img.y_axis['show']:
+
+        if img.scale is None:
+            scale_length = root.get_farthest_leaf()[1] * img._scale + \
+                           int((root.get_farthest_leaf(topology_only=True)[1]+1)/img._scale)
+            # scale_length = img.y_axis['scale_length'] * img._scale + \
+            #                int((root.get_farthest_leaf(topology_only=True)[1] + 1) / img._scale)
+        else:
+            scale_length = root.get_farthest_leaf()[1] * img.scale + \
+                           int((root.get_farthest_leaf(topology_only=True)[1]+1)/img.scale)
+            # scale_length = img.y_axis['scale_length'] * img.scale + \
+            #                int((root.get_farthest_leaf(topology_only=True)[1] + 1) / img.scale)
+
+        scale_item = _EmptyItem()
+        custom_pen = QtGui.QPen(QtGui.QColor("black"), 1)
+
+        line = QtGui.QGraphicsLineItem(scale_item)
+        line.setPen(custom_pen)
+
+        mark = {}
+        if img.y_axis['scale_type'] == 'log':
+            calculate_marks = int(math.ceil(math.log(root.get_farthest_leaf()[1], 10)))
+
+            for x in range(10*calculate_marks+1):
+                mark[x] = QtGui.QGraphicsLineItem(scale_item)
+                mark[x].setPen(custom_pen)
+
+        elif img.y_axis['scale_type'] == 'linear':
+            calculate_marks = int(root.get_farthest_leaf(topology_only=True)[1]+1)
+
+            for x in range(calculate_marks + 1):
+                mark[x] = QtGui.QGraphicsLineItem(scale_item)
+                mark[x].setPen(custom_pen)
+        else:
+            raise ValueError('The scale {} does not exist'.format(img.y_axis['scale_type']))
+
+        # scale line
+        if img.rotation == 0 or img.rotation == 180:
+            line.setLine(0, -10, scale_length, -10)
+        elif img.rotation == 90 or img.rotation == 270:
+            line.setLine(-10, 0, -10, scale_length)
+        else:
+            warnings.warn('The scale can\'t be rotated with the angle of the tree.'
+                          'Setting the scale in upright position')
+            line.setLine(0, -10, scale_length, -10)
+
+        # Adding markers
+        if img.y_axis['scale_type'] == 'log':
+            marker = scale_length/(math.log(root.get_farthest_leaf()[1], 10))
+
+            for x in range(10*calculate_marks):
+                if x % 10:
+                    log_step = math.log(math.pow(10, int(x / 10)) * (x % 10), 10)
+                else:
+                    log_step = math.log(math.pow(10, int(x / 10)), 10)
+
+                if (marker*log_step) > scale_length:
+                    continue
+                if img.rotation == 0 or img.rotation == 180:
+                    mark[x].setLine(marker*log_step, -15, marker*log_step, -10)
+                elif img.rotation == 90 or img.rotation == 270:
+                    mark[x].setLine(-15, marker*log_step, -10, marker*log_step)
+                else:
+                    mark[x].setLine(marker*log_step, -15, marker*log_step, -10)
+
+        elif img.y_axis['scale_type'] == 'linear':
+            marker = int(scale_length / (root.get_farthest_leaf(topology_only=True)[1]+1))
+            for x in range(calculate_marks):
+                if img.rotation == 0 or img.rotation == 180:
+                    mark[x].setLine(x*marker, -15, x*marker, -10)
+                elif img.rotation == 90 or img.rotation == 270:
+                    mark[x].setLine(-15, x*marker, -10, x*marker)
+                else:
+                    mark[x].setLine(x * marker, -15, x * marker, -10)
+
+        if img.rotation == 0 or img.rotation == 180:
+            mark[calculate_marks].setLine(scale_length, -15, scale_length, -10)
+        elif img.rotation == 90 or img.rotation == 270:
+            mark[calculate_marks].setLine(-15, scale_length, -10, scale_length)
+        else:
+            mark[calculate_marks].setLine(scale_length, -15, scale_length, -10)
+
+        # adding text to scale
+        if img.y_axis['scale_type'] == 'linear':
+            if img.y_axis['scale_length'] != 1:
+                scale_mesure = img.y_axis['scale_length'] / calculate_marks
+            else:
+                scale_mesure = (root.get_farthest_leaf()[1] - root.dist)/calculate_marks
+
+        for x in range(calculate_marks+1):
+            if (x*marker) > scale_length:
+                break
+
+            if img.y_axis['scale_type'] == 'log':
+                scale_text = '10<sup>'+str(x)+'</sup>'
+
+            elif img.y_axis['scale_type'] == 'linear':
+                length_text = scale_mesure * x
+                if length_text < 1 and length_text != 0:
+                    scale_text = "%0.4f" % length_text
+                else:
+                    scale_text = "%0.1f" % length_text
+
+            font = QtGui.QFont('White Rabbit')
+            font.setPointSize(8)
+            scale = QtGui.QGraphicsTextItem()
+            scale.setHtml(scale_text)
+            scale.setFont(font)
+            # scale.setFlag(scale.ItemIgnoresTransformations, True)
+            scale.setParentItem(scale_item)
+
+            if img.rotation == 0 or img.rotation == 180:
+                scale.setPos(x*marker-5, -13)
+            elif img.rotation == 90 or img.rotation == 270:
+                scale.setPos(-13, x*marker-5)
+            else:
+                scale.setPos(x*marker-5, -13)
+
+        scale_item.setParentItem(parent)
+
+        x_pos = mainRect.topLeft().x()
+        y_pos = mainRect.topLeft().y()
+        if img.title:
+            title = _FaceGroupItem(img.title, None)
+            lg_w, lg_h = title.get_size()
+            root_pos = img.margin_top + lg_h + 15
+        else:
+            root_pos = img.margin_top
+        mainRect.adjust(0, -20, 0, 0)
+        scale_item.setPos(x_pos-10, y_pos+root_pos)
+    alter_internal_nodes(root)
+
 
 def rotate_inverted_faces(n2i, n2f, img):
     for node, faceblock in six.iteritems(n2f):
