@@ -831,7 +831,7 @@ class TreeNode(object):
 
         ::
 
-             t.get_newick(features=["species","name"], format=1)
+             t.write(features=["species","name"], format=1)
 
         """
 
@@ -1350,7 +1350,7 @@ class TreeNode(object):
         :var px units: "px": pixels, "mm": millimeters, "in": inches
         :var None h: height of the image in :attr:`units`
         :var None w: width of the image in :attr:`units`
-        :var 300 dpi: dots per inches.
+        :var 90 dpi: dots per inches.
 
         """
 
