@@ -1392,8 +1392,9 @@ class Taxonomy(GeneratedsSuper):
             self.authority = authority_
         elif nodeName_ == 'common_name':
             common_name_ = child_.text
-            common_name_ = re_.sub(STRING_CLEANUP_PAT, " ", common_name_).strip()
-            common_name_ = self.gds_validate_string(common_name_, node, 'common_name')
+            if common_name_:
+                common_name_ = re_.sub(STRING_CLEANUP_PAT, " ", common_name_).strip()
+                common_name_ = self.gds_validate_string(common_name_, node, 'common_name')
             self.common_name.append(common_name_)
         elif nodeName_ == 'synonym':
             synonym_ = child_.text
