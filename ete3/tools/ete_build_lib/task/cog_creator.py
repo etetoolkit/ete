@@ -51,7 +51,7 @@ log = logging.getLogger("main")
 
 from ..master_task import CogSelectorTask
 from ..errors import DataError
-from ..utils import (GLOBALS, print_as_table, generate_node_ids,
+from ..utils import (GLOBALS, print_as_table, generate_node_ids, cmp,
                      encode_seqname, md5, pjoin, _mean, _median, _max, _min, _std)
 from .. import db
 

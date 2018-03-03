@@ -645,3 +645,10 @@ def iter_cog_seqs(cogs_file, spname_delimiter):
             else:
                 seq_cogs.append((seqname, spcode, seqcode))
         yield cog_id, seq_cogs
+
+# Added due to https://github.com/etetoolkit/ete/issues/335
+def cmp(x, y):
+    """cmp() exists in Python 2 but was removed in Python 3.
+    This implements the same behavior on both versions.
+    """
+    return (x > y) - (x < y)

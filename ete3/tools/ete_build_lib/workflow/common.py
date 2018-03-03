@@ -43,7 +43,7 @@ from collections import defaultdict
 import logging
 
 from ..utils import (DEBUG, GLOBALS, SeqGroup, tobool, sec2time, read_time_file,
-                                  _max, _min, _mean, _std, _median)
+                     _max, _min, _mean, _std, _median, cmp)
 from ..apps import APP2CLASS
 from .. import task as all_tasks
 from .. import db

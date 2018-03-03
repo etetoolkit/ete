@@ -59,7 +59,7 @@ from .errors import ConfigError, TaskError
 from .logger import set_logindent, logindent, get_logindent
 from .utils import (generate_id, PhyloTree, NodeStyle, Tree,
                     DEBUG, NPR_TREE_STYLE, faces, GLOBALS,
-                    basename, pjoin, ask, send_mail, pid_up, SeqGroup)
+                    basename, pjoin, ask, send_mail, pid_up, SeqGroup, cmp)
 from .master_task import (isjob, update_task_states_recursively,
                           store_task_data_recursively,
                           remove_task_dir_recursively,
