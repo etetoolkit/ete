@@ -1309,17 +1309,30 @@ class TreeNode(object):
         outgroup2.dist = middist
         outgroup2.support = outgroup.support
 
-    def unroot(self):
+    def unroot(self, mode='legacy'):
         """
         Unroots current node. This function is expected to be used on
         the absolute tree root node, but it can be also be applied to
         any other internal node. It will convert a split into a
         multifurcation.
+
+        :argument "legacy" mode: The value can be "legacy" or "keep".
+        If value is "keep", then function keeps the distance between
+        the leaves by adding the distance associated to the deleted
+        edge to the remaining edge. In the other case the distance
+        value of the deleted edge is dropped
+
         """
+        if not (mode == 'legacy' or mode == 'keep'):
+            raise ValueError("The value of the mode parameter must be 'legacy' or 'keep'")
         if len(self.children)==2:
             if not self.children[0].is_leaf():
+                if mode == "keep":
+                    self.children[1].dist+=self.children[0].dist
                 self.children[0].delete()
             elif not self.children[1].is_leaf():
+                if mode == "keep":
+                    self.children[0].dist+=self.children[1].dist
                 self.children[1].delete()
             else:
                 raise TreeError("Cannot unroot a tree with only two leaves")
