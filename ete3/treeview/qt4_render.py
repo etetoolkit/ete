@@ -490,9 +490,11 @@ def add_y_scale(img, mainRect, parent, root):
             #                int((root.get_farthest_leaf(topology_only=True)[1] + 1) / img.scale)
 
         scale_item = _EmptyItem()
+
         custom_pen = QPen(QColor("black"), 1)
 
         line = QGraphicsLineItem(scale_item)
+
         line.setPen(custom_pen)
 
         mark = {}
@@ -500,14 +502,18 @@ def add_y_scale(img, mainRect, parent, root):
             calculate_marks = int(math.ceil(math.log(root.get_farthest_leaf()[1], 10)))
 
             for x in range(10*calculate_marks+1):
+
                 mark[x] = QGraphicsLineItem(scale_item)
+
                 mark[x].setPen(custom_pen)
 
         elif img.y_axis['scale_type'] == 'linear':
             calculate_marks = int(root.get_farthest_leaf(topology_only=True)[1]+1)
 
             for x in range(calculate_marks + 1):
+
                 mark[x] = QGraphicsLineItem(scale_item)
+
                 mark[x].setPen(custom_pen)
         else:
             raise ValueError('The scale {} does not exist'.format(img.y_axis['scale_type']))
@@ -579,9 +585,11 @@ def add_y_scale(img, mainRect, parent, root):
                 else:
                     scale_text = "%0.1f" % length_text
 
+
             font = QFont('White Rabbit')
             font.setPointSize(8)
             scale = QGraphicsTextItem()
+
             scale.setHtml(scale_text)
             scale.setFont(font)
             # scale.setFlag(scale.ItemIgnoresTransformations, True)
