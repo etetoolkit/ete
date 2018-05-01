@@ -47,7 +47,7 @@ log = logging.getLogger("main")
 from . import Msf
 from ..master_task import ConcatAlgTask
 from ..master_job import Job
-from ..utils import SeqGroup, GLOBALS, generate_runid, pexist, md5
+from ..utils import SeqGroup, GLOBALS, generate_runid, pexist, md5, cmp
 from .. import db
 from ..errors import TaskError
 

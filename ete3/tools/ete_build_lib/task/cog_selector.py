@@ -51,7 +51,7 @@ log = logging.getLogger("main")
 from ..master_task import CogSelectorTask
 from ..errors import DataError, TaskError
 from ..utils import (GLOBALS, print_as_table, generate_node_ids, encode_seqname,
-                     md5, pjoin, _min, _max, _mean, _median, _std, iter_cog_seqs)
+                     md5, pjoin, _min, _max, _mean, _median, _std, iter_cog_seqs, cmp)
 from .. import db
 
 __all__ = ["CogSelector"]

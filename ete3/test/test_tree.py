@@ -653,6 +653,16 @@ class Test_Coretype_Tree(unittest.TestCase):
         self.assertEqual(t.children[1].dist, 5.0)
 
 
+    def test_unroot(self):
+        t = Tree("(('a':0.5, 'b':0.5):0.5, ('c':0.2, 'd':0.2):0.8):1;" )
+        t2 = Tree("(('a':0.5, 'b':0.5):0.5, ('c':0.2, 'd':0.2):0.8):1;" )
+        t.unroot(mode="keep")
+        with self.assertRaises(ValueError):
+            t.unroot(mode="new")
+        t2.unroot(mode="legacy")
+        self.assertEqual("(('c':0.2,'d':0.2)1:1.3,'a':0.5,'b':0.5);", t.write())
+        self.assertEqual("(('c':0.2,'d':0.2)1:0.8,'a':0.5,'b':0.5);", t2.write())
+
     def test_tree_navigation(self):
         t = Tree("(((A, B)H, C)I, (D, F)J)root;", format=1)
         postorder = [n.name for n in t.traverse("postorder")]
