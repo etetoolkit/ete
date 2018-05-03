@@ -372,11 +372,12 @@ def update_marks_from_args(nodes, marks, tree, args):
     if args.mark_internals:
         if args.mark:
             exit('ERROR: incompatible marking options')
-        marks.extend([['#1' for s in n.iter_descendants()]
-                      for n in tree.iter_descendants() if not n.is_leaf()])
-        nodes.extend([[n.node_id for s in n.iter_descendants()]
-                      for n in tree.iter_descendants() if not n.is_leaf()])
-        print (marks, nodes)
+        marks.extend(['#1' for s in tree.iter_leaves() if not s.is_leaf()
+                      for n in s.iter_descendants()])
+        nodes.extend([n.node_id for s in tree.iter_leaves() if not s.is_leaf()
+                      for n in s.iter_descendants()])
+        marks.extend(['#1' for s in tree.iter_leaves() if not s.is_leaf()])
+        nodes.extend([s.node_id for s in tree.iter_leaves() if not s.is_leaf()])
     # remove duplicated marks
     remove_duplicated_marks(nodes, marks, tree)
     # use the GUI
@@ -452,8 +453,8 @@ def name_model(tree, base_name):
     transform the name string into summary of its name and a digestion of the
     full name
     """
-    return base_name[:12] + '~' + md5(tree.get_topology_id(attr="name") +
-                                      base_name).hexdigest()
+
+    return base_name[:12] + md5(tree.get_topology_id(attr="name").encode()).hexdigest() + base_name
 
 
 def local_run_model(tree, model_name, binary, ctrl_string='', **kwargs):
@@ -488,30 +489,30 @@ def local_run_model(tree, model_name, binary, ctrl_string='', **kwargs):
     hlddir = os.getcwd()
     os.chdir(fullpath)
 
-    proc = Popen("%s tmp.ctl" %binary, stdout=PIPE, stdin=PIPE, shell=True)
-    proc.stdin.write('\n') # in case codeml/slr asks something
+    proc = Popen("%s tmp.ctl" %binary, stdout=PIPE, shell=True)
+    #proc.stdin.write('\n') # in case codeml/slr asks something
     job, err = proc.communicate()
     if err is not None or b'error' in job or b'Error' in job:
         print("ERROR: inside CodeML!!\n" + job)
         return (None, None)
     os.chdir(hlddir)
-    return os.path.join(fullpath,'out'), model_obj.name
+    return os.path.join(fullpath, 'out').encode(), model_obj.name.encode()
 
 
 def check_done(tree, modmodel, results):
     dir_name = name_model(tree, modmodel)
     if os.path.exists(os.path.join(tree.workdir, dir_name, 'out')):
         if modmodel != "SLR":
-            fhandler = open(os.path.join(tree.workdir, dir_name, 'out'))
-            fhandler.seek(-50, 2)
-            if 'Time used' in fhandler.read():
-                results.append((os.path.join(tree.workdir, dir_name, "out"),
-                                modmodel))
-                return True
+            path_model = os.path.join(tree.workdir, dir_name, 'out')
+            with open(path_model, "r") as fhandler:
+                for line in fhandler:
+                    if 'Time used' in line:
+                        results.append((path_model.encode('utf-8'), modmodel.encode('utf-8')))
+                        return True
         else:
-            if os.path.getsize(os.path.join(tree.workdir, dir_name, 'out')) > 0:
-                results.append((os.path.join(tree.workdir, dir_name, "out"),
-                                modmodel))
+            path_model = os.path.join(tree.workdir, dir_name, 'out')
+            if os.path.getsize(path_model) > 0:
+                results.append((path_model.encode('utf-8'), modmodel.encode('utf-8')))
                 return True
     return False
 
@@ -688,10 +689,10 @@ def local_run_model_new(arguments,  ctrl_string=''):
 
 
 def load_model(model_name, tree, path, **kwargs):
-    model_obj = Model(model_name, tree, **kwargs)
+    model_obj = Model(model_name.decode('utf-8'), tree, **kwargs)
     setattr(model_obj, 'run', run)
     try:
-        tree.link_to_evol_model(path, model_obj)
+        tree.link_to_evol_model(path.decode('utf-8'), model_obj)
     except KeyError:
         raise(Exception('ERROR: model %s failed, problem with outfile:\n%s' % (
             model_obj.name, path)))
@@ -748,7 +749,7 @@ def write_results(tree, args):
 
 def mark_tree_as_in(path_tree, tree):
     clean_tree(tree)
-    other_tree = EvolTree(reformat_nw(path_tree[:-3] + 'tree'))
+    other_tree = EvolTree(reformat_nw((path_tree[:-3] + b'tree')))
     for other_n in other_tree.traverse():
         if other_n.mark:
             n = tree.get_descendant_by_node_id(other_n.node_id)
