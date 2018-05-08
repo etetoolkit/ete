@@ -79,10 +79,10 @@ def load_sequences(args, seqtype, target_seqs, target_species, cached_seqs):
     start_time = time.time()
     dupnames = defaultdict(int)
     for c1, (raw_seqname, seq) in enumerate(iter_fasta_seqs(seqfile)):
-        if c1 and c1 % 10000 == 0:
-            if loaded_seqs:
-                estimated_time = ((len(target_seqs)-len(loaded_seqs)) * (time.time()-start_time)) / float(c1)
-                percent = (len(loaded_seqs)/float(len(target_seqs))) * 100.0
+        if c1 % 10000 == 0 and c1:
+            if loaded_seqs and target_seqs:  # only works when workflow is supermatrix
+                estimated_time = ((len(target_seqs) - len(loaded_seqs)) * (time.time() - start_time)) / float(c1)
+                percent = (len(loaded_seqs) / float(len(target_seqs))) * 100.0
             else:
                 percent = 0
                 estimated_time = -1            
