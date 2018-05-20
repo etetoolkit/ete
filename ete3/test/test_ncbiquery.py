@@ -95,6 +95,12 @@ class Test_ncbiquery(unittest.TestCase):
       self.assertEqual(diffs2["rf"], 0.0)
       self.assertEqual(diffs3["rf"], 0.0)
 
+  def test_merged_id(self):
+    ncbi = NCBITaxa(dbfile=DATABASE_PATH)
+    t1 = ncbi.get_lineage(245018)
+    self.assertEqual(t1, [1, 131567, 2, 1783272, 1239, 186801, 186802, 186803, 207244, 649756])
+    t2 = ncbi.get_lineage("245018")
+    self.assertEqual(t2, [1, 131567, 2, 1783272, 1239, 186801, 186802, 186803, 207244, 649756])
 
 if __name__ == '__main__':
   unittest.main()

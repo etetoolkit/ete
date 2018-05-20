@@ -224,6 +224,7 @@ class NCBITaxa(object):
         """
         if not taxid:
             return None
+        taxid = int(taxid)
         result = self.db.execute('SELECT track FROM species WHERE taxid=%s' %taxid)
         raw_track = result.fetchone()
         if not raw_track:
