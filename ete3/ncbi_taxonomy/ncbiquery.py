@@ -53,6 +53,8 @@ except ImportError:
 
 from collections import defaultdict, Counter
 
+from hashlib import md5
+
 import sqlite3
 import math
 import tarfile
@@ -737,10 +739,22 @@ def update_db(dbfile, targz_file=None):
         except ImportError:
             from urllib.request import urlretrieve
 
-        print('Downloading taxdump.tar.gz from NCBI FTP site (via HTTP)...', file=sys.stderr)
-        urlretrieve("http://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz", "taxdump.tar.gz")
-        print('Done. Parsing...', file=sys.stderr)
+        (md5_filename, _) = urlretrieve("https://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz.md5")
+        with open(md5_filename, "r") as md5_file:
+            md5_check = md5_file.readline().split()[0]
         targz_file = "taxdump.tar.gz"
+        do_download = False
+        try:
+            local_md5 = md5(open("taxdump.tar.gz", "rb").read()).hexdigest()
+            if local_md5 != md5_check:
+                do_download = True
+            else:
+                print('Local taxdump.tar.gz seems up-to-date', file=sys.stderr)
+        except FileNotFoundError:
+            do_download = True
+            print('Downloading taxdump.tar.gz from NCBI FTP site (via HTTP)...', file=sys.stderr)
+            urlretrieve("http://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz", targz_file)
+            print('Done. Parsing...', file=sys.stderr)
 
     tar = tarfile.open(targz_file, 'r')
     t, synonyms = load_ncbi_tree_from_dump(tar)
