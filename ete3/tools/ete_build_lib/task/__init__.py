@@ -13,6 +13,7 @@ from .dialigntx import *
 
 # trimmers
 from .trimal import *
+from .pytrimal import *
 
 # model testers
 from .prottest import *

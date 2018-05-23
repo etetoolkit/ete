@@ -23,15 +23,15 @@ class IQTree(TreeTask):
 
         if constrain_id:
             raise ConfigError("IQTree does not support topology constraints")
-        
+
         base_args = {}
         if "-st" not in conf[confname]:
-            base_args["-st"] = "AA" if seqtype == "aa" else "DNA"            
+            base_args["-st"] = "AA" if seqtype == "aa" else "DNA"
         else:
             if conf[confname]["-st"].startswith("CODON"):
                 if seqtype == "aa" or "aa" not in GLOBALS["seqtypes"]:
-                    raise ConfigError("IQTREE CODON models require a codon alignmen.\nProvide nucleotide sequences with '-n' and set '--nt-switch-thr 0.0' to ensure codon alignments.")
-            
+                    raise ConfigError("IQTREE CODON models require a codon alignment.\nProvide nucleotide sequences with '-n' and set '--nt-switch-thr 0.0' to ensure codon alignments.")
+
         if model:
             raise TaskError('External model selection not yet supported for IQTree')
         else:
@@ -40,10 +40,10 @@ class IQTree(TreeTask):
             elif conf[confname].get("-st", "").startswith("CODON"):
                 model = "defaultCODON"
             elif seqtype == "aa":
-                model = "WAG"
+                model = "LG"
             elif seqtype == "nt":
                 model = "HKY"
-                
+
         self.model = model
         self.confname = confname
         self.conf = conf
@@ -51,18 +51,18 @@ class IQTree(TreeTask):
         self.alg_phylip_file = alg_phylip_file
         self.seqtype = seqtype
         self.lk = None
-        
+
         TreeTask.__init__(self, nodeid, "tree", "IQTree",
-                          base_args, conf[confname])            
+                          base_args, conf[confname])
         self.init()
 
     def load_jobs(self):
         appname = self.conf[self.confname]["_app"]
         args = OrderedDict(self.args)
-        args['-s'] = self.alg_phylip_file            
+        args['-s'] = self.alg_phylip_file
         job = Job(self.conf["app"][appname], args, parent_ids=[self.nodeid])
         job.add_input_file(self.alg_phylip_file, job.jobdir)
-        
+
         job.jobname += "-"+self.model.replace(' ', '')
         self.jobs.append(job)
 
@@ -79,4 +79,3 @@ class IQTree(TreeTask):
         stats = {"lk": lk}
         tree = PhyloTree(tree_file)
         self.store_data(tree.write(), stats)
-
