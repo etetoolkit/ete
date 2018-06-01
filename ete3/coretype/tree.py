@@ -2469,15 +2469,15 @@ class TreeNode(object):
         from .. import _ph
         _ph.call()
 
-
 def _translate_nodes(root, *nodes):
     name2node = dict([ [n, None] for n in nodes if type(n) is str])
-    for n in root.traverse():
-        if n.name in name2node:
-            if name2node[n.name] is not None:
-                raise TreeError("Ambiguous node name: "+str(n.name))
-            else:
-                name2node[n.name] = n
+    if name2node:
+        for n in root.traverse():
+            if n.name in name2node:
+                if name2node[n.name] is not None:
+                    raise TreeError("Ambiguous node name: "+str(n.name))
+                else:
+                    name2node[n.name] = n
 
     if None in list(name2node.values()):
         notfound = [key for key, value in six.iteritems(name2node) if value is None]
