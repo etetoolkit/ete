@@ -1512,7 +1512,7 @@ class _BarChartItem(QGraphicsRectItem):
             if self.labels:
                 p.save()
                 p.translate(x1, plot_height+2)
-                p.rotate(90)
+                p.setRotation(90)
                 p.drawText(0, -x_alpha, label_height, x_alpha, Qt.AlignVCenter, str(self.labels[pos]))
                 #p.drawRect(0, -x_alpha, label_height, x_alpha)
                 p.restore()
@@ -2072,7 +2072,7 @@ class SequencePlotFace(StaticItemFace):
             text = QGraphicsSimpleTextItem(self.ylabel)
             text.setFont(QFont("Arial", self.fsize-1))
             text.setParentItem(self.item)
-            text.rotate(-90)
+            text.setRotation(-90)
             tw = text.boundingRect().width()
             th = text.boundingRect().height()
             # Center text according to masterItem size
