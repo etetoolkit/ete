@@ -1335,7 +1335,7 @@ class BarChartFace(Face):
     :param 200 width: width of the bar chart.
     :param 100 height: height of the bar chart
     :param None colors: a list of colors, one per bar value
-    :param None label: a list of labels, one per bar
+    :param None labels: a list of labels, one per bar
     :param 0 min_value: min value to set the scale of the chart.
     :param None max_value: max value to set the scale of the chart.
 

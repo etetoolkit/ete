@@ -1551,13 +1551,8 @@ class TreeNode(object):
         .. versionadded: 2.1
 
         Sort the branches of a given tree by node names. After the
-        tree is sorted, nodes are labeled in ascending order. This
-        can be used to ensure that nodes in a tree with the same node
-        names are always labeled in the same way. Note that if
-        duplicated names are present, extra criteria should be added
-        to sort nodes.
-
-        Unique id is stored as a node._nid attribute
+        tree is sorted. Note that if duplicated names are present,
+        extra criteria should be added to sort nodes.
 
         """
 
