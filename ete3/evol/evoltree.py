@@ -74,6 +74,7 @@ Yang, Z. 2007.
 '''
 
 import os
+import sys
 from warnings import warn
 
 from .. import PhyloNode, SeqGroup
@@ -243,6 +244,7 @@ class EvolNode(PhyloNode):
             raise Exception(('ERROR: {} not installed, ' +
                              'or wrong path to binary\n').format(bin))
         run, err = proc.communicate(b'\n') # send \n via stdin in case codeml/slr asks something (note on py3, stdin needs bytes)
+        run = run.decode(sys.stdout.encoding)
 
         if err is not None:
             warn("ERROR: codeml not found!!!\n" +
@@ -406,7 +408,7 @@ class EvolNode(PhyloNode):
                 node.add_feature('mark', ' '+marks[node_ids.index(node.node_id)])
             elif not 'mark' in node.features:
                 node.add_feature('mark', '')
-                
+
 
     def link_to_evol_model(self, path, model):
         '''
@@ -426,8 +428,8 @@ class EvolNode(PhyloNode):
         # new entry in _models dict
         while model.name in self._models:
             model.name = model.name.split('__')[0] + str(
-                (int(model.name.split('__')[1])
-                 +1)  if '__' in model.name else 0)
+                (int(model.name.split('__')[1]) + 1)
+                if '__' in model.name else 0)
         self._models[model.name] = model
         if not os.path.isfile(path):
             warn("ERROR: not a file: " + path)
@@ -557,4 +559,3 @@ class EvolNode(PhyloNode):
 
 # cosmetic alias
 EvolTree = EvolNode
-
