@@ -1512,7 +1512,7 @@ class _BarChartItem(QGraphicsRectItem):
             if self.labels:
                 p.save()
                 p.translate(x1, plot_height+2)
-                p.setRotation(90)
+                p.rotate(90)
                 p.drawText(0, -x_alpha, label_height, x_alpha, Qt.AlignVCenter, str(self.labels[pos]))
                 #p.drawRect(0, -x_alpha, label_height, x_alpha)
                 p.restore()
