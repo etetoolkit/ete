@@ -80,7 +80,12 @@ from warnings import warn
 from .. import PhyloNode, SeqGroup
 from ..parser.newick import write_newick
 from .model import Model, PARAMS, AVAIL
-from .utils import translate, chi_high
+from .utils import translate
+try:
+    from scipy.stats import chi2
+    chi_high = lambda x, y: 1 - chi2.cdf(x, y)
+except ImportError:
+    from .utils import chi_high
 
 try:
     from ..treeview import TreeStyle
