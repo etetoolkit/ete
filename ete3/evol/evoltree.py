@@ -255,7 +255,7 @@ class EvolNode(PhyloNode):
             warn("ERROR: codeml not found!!!\n" +
                  "       define your variable EvolTree.execpath")
             return 1
-        if b'error' in run or b'Error' in run:
+        if 'error' in run or 'Error' in run:
             warn("ERROR: inside codeml!!\n" + run)
             return 1
         os.chdir(hlddir)
@@ -528,7 +528,7 @@ class EvolNode(PhyloNode):
             if hasattr(altn, 'lnL') and hasattr(null, 'lnL'):
                 if  null.lnL - altn.lnL < 0:
                     return chi_high(2 * abs(altn.lnL - null.lnL),
-                                    df=float(altn.np - null.np))
+                                    float(altn.np - null.np))
                 else:
                     warn("\nWARNING: Likelihood of the alternative model is "
                          "smaller than null's (%f - %f = %f)" % (
