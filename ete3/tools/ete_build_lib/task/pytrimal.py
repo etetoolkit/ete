@@ -65,8 +65,8 @@ class PyTrimal(AlgCleanerTask):
         base_args = {
             '-in': None,
             '-out': None,
-            '-fasta': "",
-            '-colnumbering': "",
+          #  '-fasta': "",
+          #  '-colnumbering': "",
             }
         # Initialize task
         AlgCleanerTask.__init__(self, nodeid, "acleaner", "PyTrimal",
