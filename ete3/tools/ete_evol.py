@@ -39,11 +39,6 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from .utils import which, colorify
-from ..evol.control import PARAMS, AVAIL, PARAMS_DESCRIPTION
-from .. import EvolTree, random_color, add_face_to_node, TextFace, TreeStyle
-from ..treeview.layouts import evol_clean_layout
-from ..evol import Model
 from argparse import RawTextHelpFormatter
 from multiprocessing import Pool, Queue
 from subprocess import Popen, PIPE
@@ -54,6 +49,12 @@ from hashlib import md5
 from signal import signal, SIGINT, SIG_IGN
 
 from warnings import warn
+
+from .utils import which, colorify
+from ..evol.control import PARAMS, AVAIL, PARAMS_DESCRIPTION
+from .. import EvolTree, random_color, add_face_to_node, TextFace, TreeStyle
+from ..treeview.layouts import evol_clean_layout
+from ..evol import Model
 
 DESC = ("Run/Load evolutionary tests, store results in a given oputput folder\n"
         "********************************************************************")
@@ -167,7 +168,7 @@ Model name  Description                   Model kind
 
     params = "".join('[%4s] %-13s' % (PARAMS[p], p) + ('' if i % 4 else '\n')
                      for i, p in enumerate(sorted(PARAMS, key=lambda x: x.lower()), 1))
-    
+
     codeml_gr.add_argument('--codeml_config_file', dest="config_file", metavar="",
                            default=None,
                            help=("CodeML configuration file to be used instead"
@@ -187,32 +188,32 @@ Model name  Description                   Model kind
                                  "and exit."))
 
     img_gr = evol_args_p.add_argument_group("TREE IMAGE GENERAL OPTIONS")
-    
+
     img_gr.add_argument("--view", dest="show", action='store_true',
                         help=("Opens ETE interactive GUI to visualize tree and "
                               "select model(s) to render."))
 
     img_gr.add_argument("-i", "--image", dest="image",
-                           type=str,
-                           help="Render tree image instead of showing it. A filename "
-                           " should be provided. PDF, SVG and PNG file extensions are"
-                           " supported (i.e. -i tree.svg)")
-    
+                        type=str,
+                        help="Render tree image instead of showing it. A filename "
+                        " should be provided. PDF, SVG and PNG file extensions are"
+                        " supported (i.e. -i tree.svg)")
+
     img_gr.add_argument("--noimg", dest="noimg", action='store_true',
-                           help=("Do not generate images."))
-    
+                        help=("Do not generate images."))
+
     img_gr.add_argument("--clean_layout", dest="clean_layout",
-                           action='store_true',
-                           help=("Other visualization option, with omega values "
-                                 "written on branches"))
+                        action='store_true',
+                        help=("Other visualization option, with omega values "
+                              "written on branches"))
 
     img_gr.add_argument("--histface", dest="histface",
-                           type=str, nargs='+',
-                           choices=['bar', 'stick', 'curve',
-                                    '+-bar', '+-stick', '+-curve'],
-                           help=("Type of histogram face to be used for site "
-                                 "models. If preceded by '+-' error bars are "
-                                 "also drawn."))
+                        type=str, nargs='+',
+                        choices=['bar', 'stick', 'curve',
+                                 '+-bar', '+-stick', '+-curve'],
+                        help=("Type of histogram face to be used for site "
+                              "models. If preceded by '+-' error bars are "
+                              "also drawn."))
 
     exec_group = evol_args_p.add_argument_group('EXECUTION MODE OPTIONS')
     exec_group.add_argument("-C", "--cpu", dest="maxcores", type=int,
@@ -229,13 +230,13 @@ Model name  Description                   Model kind
                             help="[%(default)s] path to Slr binary")
 
     exec_group.add_argument("--clear_all", dest="clear_all",
-                           action='store_true',
-                           help=("Clear any data present in the output directory."))
+                            action='store_true',
+                            help=("Clear any data present in the output directory."))
 
     exec_group.add_argument("--resume", dest="resume",
-                           action='store_true',
-                           help=("Skip model if previous results are found in "
-                                 "the output directory."))
+                            action='store_true',
+                            help=("Skip model if previous results are found in "
+                                  "the output directory."))
 
 
 def parse_config_file(fpath):
@@ -372,9 +373,9 @@ def update_marks_from_args(nodes, marks, tree, args):
     if args.mark_internals:
         if args.mark:
             exit('ERROR: incompatible marking options')
-        marks.extend([['#1' for s in n.iter_descendants()]
+        marks.extend([['#1' for _ in n.iter_descendants()]
                       for n in tree.iter_descendants() if not n.is_leaf()])
-        nodes.extend([[n.node_id for s in n.iter_descendants()]
+        nodes.extend([[n.node_id for _ in n.iter_descendants()]
                       for n in tree.iter_descendants() if not n.is_leaf()])
         print (marks, nodes)
     # remove duplicated marks
@@ -452,8 +453,8 @@ def name_model(tree, base_name):
     transform the name string into summary of its name and a digestion of the
     full name
     """
-    return base_name[:12] + '~' + md5(tree.get_topology_id(attr="name") +
-                                      base_name).hexdigest()
+    return base_name[:12] + '~' + md5((tree.get_topology_id(attr="name") +
+                                       base_name).encode('utf8')).hexdigest()
 
 
 def local_run_model(tree, model_name, binary, ctrl_string='', **kwargs):
@@ -489,13 +490,13 @@ def local_run_model(tree, model_name, binary, ctrl_string='', **kwargs):
     os.chdir(fullpath)
 
     proc = Popen("%s tmp.ctl" %binary, stdout=PIPE, stdin=PIPE, shell=True)
-    proc.stdin.write('\n') # in case codeml/slr asks something
+    proc.stdin.write(b'\n') # in case codeml/slr asks something
     job, err = proc.communicate()
     if err is not None or b'error' in job or b'Error' in job:
-        print("ERROR: inside CodeML!!\n" + job)
+        print((b"ERROR: inside CodeML!!\n" + job).decode())
         return (None, None)
     os.chdir(hlddir)
-    return os.path.join(fullpath,'out'), model_obj.name
+    return os.path.join(fullpath, 'out').encode(), model_obj.name.encode()
 
 
 def check_done(tree, modmodel, results):
@@ -647,7 +648,7 @@ def local_run_model_new(arguments,  ctrl_string=''):
     def clean_exit(a, b):
         print(a, b)
         if proc:
-            print("Killing %s" %proc)
+            print("Killing %s" % proc)
             proc.kill(-9)
         exit(a, b)
     proc = None
@@ -674,7 +675,6 @@ def local_run_model_new(arguments,  ctrl_string=''):
         ctrl_string = model_obj.get_ctrl_string(fullpath+'/tmp.ctl')
     else:
         open(fullpath + '/tmp.ctl', 'w').write(ctrl_string)
-    hlddir = os.getcwd()
     os.chdir(fullpath)
 
     proc = Popen("%s tmp.ctl" % binary, stdout=PIPE, shell=True)
@@ -688,10 +688,10 @@ def local_run_model_new(arguments,  ctrl_string=''):
 
 
 def load_model(model_name, tree, path, **kwargs):
-    model_obj = Model(model_name, tree, **kwargs)
+    model_obj = Model(model_name.decode('utf-8'), tree, **kwargs)
     setattr(model_obj, 'run', run)
     try:
-        tree.link_to_evol_model(path, model_obj)
+        tree.link_to_evol_model(path.decode('utf-8'), model_obj)
     except KeyError:
         raise(Exception('ERROR: model %s failed, problem with outfile:\n%s' % (
             model_obj.name, path)))
@@ -729,8 +729,8 @@ def write_results(tree, args):
                 continue
             if args.tests != 'auto':
                 if not any((null.split('.')[0] in test and
-                             altn.split('.')[0] in test)
-                            for test in wanted):
+                            altn.split('.')[0] in test)
+                           for test in wanted):
                     continue
             results[(null, altn)] = tree.get_most_likely(altn, null)
             bests.append(null if results[(null, altn)] > 0.05 else altn)
@@ -748,7 +748,7 @@ def write_results(tree, args):
 
 def mark_tree_as_in(path_tree, tree):
     clean_tree(tree)
-    other_tree = EvolTree(reformat_nw(path_tree[:-3] + 'tree'))
+    other_tree = EvolTree(reformat_nw((path_tree[:-3] + b'tree')))
     for other_n in other_tree.traverse():
         if other_n.mark:
             n = tree.get_descendant_by_node_id(other_n.node_id)
@@ -818,7 +818,7 @@ def run(args):
     if args.config_file:
         if args.params:
             print('WARNING: input CodeML parameters from configuration file will'
-                 ' be overridden by the ones in the command line')
+                  ' be overridden by the ones in the command line')
         params = parse_config_file(args.config_file)
         if 'seqfile' in params:
             args.alg = os.path.join(os.path.split(args.config_file)[0],
@@ -830,7 +830,7 @@ def run(args):
                                            params['outfile'])
             else:
                 print('WARNING: input CodeML output file from configuration file'
-                     ' will be overridden by the one in the command line')
+                      ' will be overridden by the one in the command line')
             del(params['outfile'])
         if 'treefile' in params:
             if not args.src_trees:
@@ -840,7 +840,7 @@ def run(args):
             else:
                 args.src_tree_iterator = list(args.src_tree_iterator)
                 print('WARNING: input CodeML tree file from configuration file'
-                     ' will be overridden by the one in the command line')
+                      ' will be overridden by the one in the command line')
             del(params['treefile'])
         try:
             if len(args.models) > 1 or not args.models[0].startswith('XX.'):
@@ -883,7 +883,7 @@ def run(args):
         models = {}
         if args.prev_models:
             models = {m.split(',')[1]: m.split(',')[0] + '/out'
-                           for m in args.prev_models}
+                      for m in args.prev_models}
         # run models
         if args.models:
             for p in args.params:
@@ -921,7 +921,7 @@ def run(args):
                        if ('site' in AVAIL[m.split('.')[0]]['typ']
                            and not
                            AVAIL[m.split('.')[0]]['evol'] == 'different-ratios')
-                       ]
+                      ]
 
         # print summary by models
         print('SUMMARY BY MODEL')
@@ -935,13 +935,13 @@ def run(args):
                 print('   * Marked branches')
                 print('      ' + tree.write().replace(' #0', ''))
                 omega_mark = [(model.branches[b]['w'], model.branches[b]['mark'].strip())
-                               for b in model.branches
-                               if model.branches[b]['mark'] and 'w' in model.branches[b]]
+                              for b in model.branches
+                              if model.branches[b]['mark'] and 'w' in model.branches[b]]
                 if omega_mark:
                     print('\n        Branches  =>   omega')
                     for omega, mark in set(omega_mark):
                         print('      %10s  => %7.3f' % (mark.replace('#0', 'background'),
-                                                         omega))
+                                                        omega))
                 clean_tree(tree)
             elif 'w' in model.branches[1]:
                 print('   * Average omega for all tree: %.3f' % model.branches[1]['w'])
@@ -951,7 +951,7 @@ def run(args):
                 except KeyError:
                     try:
                         categories = model.significance_by_site('NEB')
-                    except KeyError:    
+                    except KeyError:
                         categories = model.significance_by_site('SLR')
                 sign_sites = [(i, CATEGORIES[cat]) for i, cat in
                               enumerate(categories, 1) if cat != 'NS']
@@ -991,7 +991,7 @@ def run(args):
                     print('WARNING: not using last histfaces, not enough models')
                     args.histface = args.histface[:len(site_models)]
             for num, (hist, model) in enumerate(
-                zip(args.histface, site_models)):
+                    zip(args.histface, site_models)):
                 model = tree.get_evol_model(model)
                 model.set_histface(up=not bool(num),
                                    kind=hist.replace('+-', ''),
@@ -1002,4 +1002,3 @@ def run(args):
         if args.image:
             tree.render(args.image, histfaces=site_models,
                         layout=evol_clean_layout if args.clean_layout else None)
-

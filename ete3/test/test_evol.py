@@ -173,10 +173,10 @@ class TestEvolEvolTree(unittest.TestCase):
             tree = EvolTree('((seq1,seq2),seq3);')
             tree.link_to_alignment('>seq1\nATGCTG\n>seq2\nATGCTG\n>seq3\nTTGATG\n')
             tree.run_model('fb')
-            self.assert_(b'CODONML' in tree.get_evol_model('fb').run)
-            self.assert_(b'Time used:' in tree.get_evol_model('fb').run)
-            self.assert_(b'end of tree file' in tree.get_evol_model('fb').run)
-            self.assert_(b'lnL' in tree.get_evol_model('fb').run)
+            self.assert_('CODONML' in tree.get_evol_model('fb').run)
+            self.assert_('Time used:' in tree.get_evol_model('fb').run)
+            self.assert_('end of tree file' in tree.get_evol_model('fb').run)
+            self.assert_('lnL' in tree.get_evol_model('fb').run)
             self.assert_(tree.get_descendants()[0].w > 0)
 
     def test_run_slr(self):
@@ -185,10 +185,10 @@ class TestEvolEvolTree(unittest.TestCase):
             tree.link_to_alignment('>seq1\nCTGATTCTT\n>seq2\nCTGATTCTT\n>seq3\nATGATTCTT\n')
             tree.run_model('SLR')
             print(tree.get_evol_model('SLR').run)
-            self.assert_(b'Sitewise Likelihood R' in tree.get_evol_model('SLR').run)
-            self.assert_(b'Positively selected s' in tree.get_evol_model('SLR').run)
-            self.assert_(b'Conserved sites' in tree.get_evol_model('SLR').run)
-            self.assert_(b'lnL' in tree.get_evol_model('SLR').run)
+            self.assert_('Sitewise Likelihood R' in tree.get_evol_model('SLR').run)
+            self.assert_('Positively selected s' in tree.get_evol_model('SLR').run)
+            self.assert_('Conserved sites' in tree.get_evol_model('SLR').run)
+            self.assert_('lnL' in tree.get_evol_model('SLR').run)
 
     def test_marking_trees(self):
         TREE_PATH = DATAPATH + '/S_example/'

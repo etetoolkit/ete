@@ -1551,13 +1551,8 @@ class TreeNode(object):
         .. versionadded: 2.1
 
         Sort the branches of a given tree by node names. After the
-        tree is sorted, nodes are labeled in ascending order. This
-        can be used to ensure that nodes in a tree with the same node
-        names are always labeled in the same way. Note that if
-        duplicated names are present, extra criteria should be added
-        to sort nodes.
-
-        Unique id is stored as a node._nid attribute
+        tree is sorted. Note that if duplicated names are present,
+        extra criteria should be added to sort nodes.
 
         """
 
@@ -2474,15 +2469,15 @@ class TreeNode(object):
         from .. import _ph
         _ph.call()
 
-
 def _translate_nodes(root, *nodes):
     name2node = dict([ [n, None] for n in nodes if type(n) is str])
-    for n in root.traverse():
-        if n.name in name2node:
-            if name2node[n.name] is not None:
-                raise TreeError("Ambiguous node name: "+str(n.name))
-            else:
-                name2node[n.name] = n
+    if name2node:
+        for n in root.traverse():
+            if n.name in name2node:
+                if name2node[n.name] is not None:
+                    raise TreeError("Ambiguous node name: "+str(n.name))
+                else:
+                    name2node[n.name] = n
 
     if None in list(name2node.values()):
         notfound = [key for key, value in six.iteritems(name2node) if value is None]

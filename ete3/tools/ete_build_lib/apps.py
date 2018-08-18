@@ -174,7 +174,7 @@ def test_apps(apps):
     if errors:
         print(colorify('\nWARNING: %d external tools seem to be missing or unfunctional' %errors, "yellow"), file=sys.stderr)
         print(colorify('Install using conda (recomended):', "lgreen"), file=sys.stderr)
-        print(colorify(' conda install -c etetoolkit ete3_external_tools', "white"), file=sys.stderr)
+        print(colorify(' conda install -c etetoolkit ete3_external_apps', "white"), file=sys.stderr)
         print(colorify('or manually compile by running:', "lgreen"), file=sys.stderr)
         print(colorify(' ete3 upgrade-external-tools', "white"), file=sys.stderr)
         print()
