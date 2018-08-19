@@ -744,13 +744,14 @@ def update_db(dbfile, targz_file=None):
             md5_check = md5_file.readline().split()[0]
         targz_file = "taxdump.tar.gz"
         do_download = False
-        try:
+        
+        if os.path.exists("taxdump.tar.gz"):
             local_md5 = md5(open("taxdump.tar.gz", "rb").read()).hexdigest()
             if local_md5 != md5_check:
                 do_download = True
             else:
                 print('Local taxdump.tar.gz seems up-to-date', file=sys.stderr)
-        except FileNotFoundError:
+        else:
             do_download = True
             print('Downloading taxdump.tar.gz from NCBI FTP site (via HTTP)...', file=sys.stderr)
             urlretrieve("http://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz", targz_file)
