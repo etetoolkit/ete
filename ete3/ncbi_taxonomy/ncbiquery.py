@@ -219,7 +219,7 @@ class NCBITaxa(object):
 
         return id2lineages
 
-    
+
     def get_lineage(self, taxid):
         """Given a valid taxid number, return its corresponding lineage track as a
         hierarchically sorted list of parent taxids.
@@ -241,7 +241,7 @@ class NCBITaxa(object):
                 raise ValueError("%s taxid not found" %taxid)
             else:
                 warnings.warn("taxid %s was translated into %s" %(taxid, merged_conversion[taxid]))
-                
+
         track = list(map(int, raw_track[0].split(",")))
         return list(reversed(track))
 
@@ -254,6 +254,25 @@ class NCBITaxa(object):
             if common_name:
                 id2name[tax] = common_name
         return id2name
+
+    def get_synonyms(self, taxids):
+        """
+        Given a list of taxids, returns a dictionary with their corresponding
+        synonyms.
+        """
+        id2syn = {}
+        # since they could be more than one synonym
+        # we first create a dictionary filled with taxonID
+        # and have an array of values/synonyms
+        for tax in taxids:
+            id2syn[tax] = []
+        query = ','.join(['"%s"' %v for v in taxids])
+        cmd = "select taxid, spname FROM synonym WHERE taxid IN (%s);" %query
+        result = self.db.execute(cmd)
+        for tax, synonym in result.fetchall():
+            if synonym:
+                id2syn[tax].append(synonym)
+        return id2syn
 
     def get_taxid_translator(self, taxids, try_synonyms=True):
         """Given a list of taxids, returns a dictionary with their corresponding
@@ -326,7 +345,7 @@ class NCBITaxa(object):
         for sp in taxids:
             names.append(id2name.get(sp, sp))
         return names
-                                
+
 
     def get_descendant_taxa(self, parent, intermediate_nodes=False, rank_limit=None, collapse_subspecies=False, return_tree=False):
         """
@@ -353,12 +372,12 @@ class NCBITaxa(object):
                 descendants[tid] = descendants.get(tid, 0) + 1
             elif found == 2:
                 break
-            
+
         if not found:
             raise ValueError("taxid not found:%s" %taxid)
         elif found == 1:
-            return [taxid]        
-            
+            return [taxid]
+
         if rank_limit or collapse_subspecies or return_tree:
             tree = self.get_topology(list(descendants.keys()), intermediate_nodes=intermediate_nodes, collapse_subspecies=collapse_subspecies, rank_limit=rank_limit)
             if return_tree:
@@ -367,7 +386,7 @@ class NCBITaxa(object):
                 return list(map(int, [n.name for n in tree.get_descendants()]))
             else:
                 return map(int, [n.name for n in tree])
-                
+
         elif intermediate_nodes:
             return [tid for tid, count in six.iteritems(descendants)]
         else:
@@ -393,7 +412,7 @@ class NCBITaxa(object):
 
         """
         from .. import PhyloTree
-        taxids, merged_conversion = self._translate_merged(taxids)        
+        taxids, merged_conversion = self._translate_merged(taxids)
         if len(taxids) == 1:
             root_taxid = int(list(taxids)[0])
             with open(self.dbfile+".traverse.pkl", "rb") as CACHED_TRAVERSE:
@@ -402,14 +421,14 @@ class NCBITaxa(object):
             found = 0
             nodes = {}
             hit = 0
-            visited = set()            
+            visited = set()
             start = prepostorder.index(root_taxid)
             try:
-            	end = prepostorder.index(root_taxid, start+1)
-            	subtree = prepostorder[start:end+1]
+                end = prepostorder.index(root_taxid, start+1)
+                subtree = prepostorder[start:end+1]
             except ValueError:
                 # If root taxid is not found in postorder, must be a tip node
-            	subtree = [root_taxid]
+                subtree = [root_taxid]
             leaves = set([v for v, count in Counter(subtree).items() if count == 1])
             nodes[root_taxid] = PhyloTree(name=str(root_taxid))
             current_parent = nodes[root_taxid]
@@ -430,7 +449,7 @@ class NCBITaxa(object):
             id2lineage = self.get_lineage_translator(taxids)
             all_taxids = set()
             for lineage in id2lineage.values():
-                all_taxids.update(lineage)                
+                all_taxids.update(lineage)
             id2rank = self.get_rank(all_taxids)
             for sp in taxids:
                 track = []
@@ -488,7 +507,7 @@ class NCBITaxa(object):
 
         :param t: a Tree (or Tree derived) instance.
 
-        :param name taxid_attr: Allows to set a custom node attribute 
+        :param name taxid_attr: Allows to set a custom node attribute
             containing the taxid number associated to each node (i.e.
             species in PhyloTree instances).
 
@@ -508,7 +527,7 @@ class NCBITaxa(object):
         merged_conversion = {}
 
         taxids, merged_conversion = self._translate_merged(taxids)
-        
+
         if not tax2name or taxids - set(map(int, list(tax2name.keys()))):
             tax2name = self.get_taxid_translator(taxids)
         if not tax2track or taxids - set(map(int, list(tax2track.keys()))):
@@ -538,7 +557,7 @@ class NCBITaxa(object):
                 n.add_features(sci_name = tax2name.get(node_taxid, getattr(n, taxid_attr, '')),
                                common_name = tax2common_name.get(node_taxid, ''),
                                lineage = tax2track[node_taxid],
-                               rank = tax2rank.get(node_taxid, 'Unknown'),                               
+                               rank = tax2rank.get(node_taxid, 'Unknown'),
                                named_lineage = [tax2name.get(tax, str(tax)) for tax in tax2track[node_taxid]])
             elif n.is_leaf():
                 n.add_features(sci_name = getattr(n, taxid_attr, 'NA'),
@@ -680,7 +699,8 @@ def load_ncbi_tree_from_dump(tar):
         if name_type == "genbank common name":
             node2common[nodename] = taxname
         elif name_type in set(["synonym", "equivalent name", "genbank equivalent name",
-                               "anamorph", "genbank synonym", "genbank anamorph", "teleomorph"]):
+                               "anamorph", "genbank synonym", "genbank anamorph", "teleomorph",
+                               "common name", "authority"]):
             synonyms.add( (nodename, taxname) )
     print(len(node2taxname), "names loaded.")
     print(len(synonyms), "synonyms loaded.")
@@ -744,7 +764,7 @@ def update_db(dbfile, targz_file=None):
             md5_check = md5_file.readline().split()[0]
         targz_file = "taxdump.tar.gz"
         do_download = False
-        
+
         if os.path.exists("taxdump.tar.gz"):
             local_md5 = md5(open("taxdump.tar.gz", "rb").read()).hexdigest()
             if local_md5 != md5_check:
@@ -778,7 +798,7 @@ def update_db(dbfile, targz_file=None):
         raise
     else:
         os.system("rm syn.tab merged.tab taxa.tab")
-        # remove only downloaded taxdump file 
+        # remove only downloaded taxdump file
         if not targz_file:
             os.system("rm taxdump.tar.gz")
 
@@ -847,4 +867,3 @@ if __name__ == "__main__":
 
     print(ncbi.get_common_names(b))
     #ncbi.update_taxonomy_database()
-
