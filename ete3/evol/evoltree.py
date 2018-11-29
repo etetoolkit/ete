@@ -414,7 +414,6 @@ class EvolNode(PhyloNode):
             elif not 'mark' in node.features:
                 node.add_feature('mark', '')
 
-
     def link_to_evol_model(self, path, model):
         '''
         link EvolTree to evolutionary model

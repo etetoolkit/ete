@@ -377,7 +377,6 @@ def update_marks_from_args(nodes, marks, tree, args):
                       for n in tree.iter_descendants() if not n.is_leaf()])
         nodes.extend([[n2.node_id for n2 in n.iter_descendants()]
                       for n in tree.iter_descendants() if not n.is_leaf()])
-        print (marks, nodes)
     # remove duplicated marks
     remove_duplicated_marks(nodes, marks, tree)
     # use the GUI
@@ -996,6 +995,10 @@ def run(args):
                 model.set_histface(up=not bool(num),
                                    kind=hist.replace('+-', ''),
                                    errors='+-' in hist)
+
+        if 'fb' in tree._models:
+            tree.change_dist_to_evol('bL', tree._models['fb'], fill=True)
+
         if args.show:
             tree.show(histfaces=site_models,
                       layout=evol_clean_layout if args.clean_layout else None)
