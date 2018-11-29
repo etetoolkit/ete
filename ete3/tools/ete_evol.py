@@ -375,7 +375,7 @@ def update_marks_from_args(nodes, marks, tree, args):
             exit('ERROR: incompatible marking options')
         marks.extend([['#1' for _ in n.iter_descendants()]
                       for n in tree.iter_descendants() if not n.is_leaf()])
-        nodes.extend([[n.node_id for _ in n.iter_descendants()]
+        nodes.extend([[n2.node_id for n2 in n.iter_descendants()]
                       for n in tree.iter_descendants() if not n.is_leaf()])
         print (marks, nodes)
     # remove duplicated marks
