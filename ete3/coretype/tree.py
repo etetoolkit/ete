@@ -1135,7 +1135,7 @@ class TreeNode(object):
         # Gets the farthest node to the current root
         root = self.get_tree_root()
         nA, r2A_dist = root.get_farthest_leaf()
-        nB, A2B_dist = nA.get_farthest_node()
+        nB, A2B_dist = nA.get_farthest_leaf()
 
         outgroup = nA
         middist  = A2B_dist / 2.0
