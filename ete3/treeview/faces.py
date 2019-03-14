@@ -250,6 +250,7 @@ class TextFace(Face):
         approximated according to general font metrics, producing slightly
         worse aligned text faces but improving the performance of tree
         visualization in scenes with a lot of text faces.
+    :param False bold: False or True
     """
     __slots__ = ["fgcolor", "fstyle", "fsize", "ftype", "penwidth",
                  "tight_text", "bold", "_text", "_bounding_rect", "_real_rect"]
@@ -348,6 +349,7 @@ class AttrFace(TextFace):
     :param formatter: a text string defining a python formater to
       process the attribute value before renderer. e.g. "%0.2f"
     :param fstyle: "normal" or "italic"
+    :param bold: False or True
     """
 
     __slots__ = ["attr", "text_suffix", "text_prefix", "attr_formatter", "_bounding_rect_text"]
@@ -382,11 +384,11 @@ class AttrFace(TextFace):
     def __init__(self, attr, ftype="Verdana", fsize=10,
                  fgcolor="black", penwidth=0, text_prefix="",
                  text_suffix="", formatter=None, fstyle="normal",
-                 tight_text=False):
+                 tight_text=False, bold=False):
 
         Face.__init__(self)
         TextFace.__init__(self, None, ftype, fsize, fgcolor, penwidth,
-                          fstyle, tight_text)
+                          fstyle, tight_text, bold)
         self.attr = attr
         self.type  = "text"
         self.text_prefix = text_prefix
