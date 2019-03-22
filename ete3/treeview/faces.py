@@ -391,7 +391,7 @@ class AttrFace(TextFace):
         return self._real_rect
 
     def __init__(self, attr, text_prefix="", text_suffix="", formatter=None,
-                 tight_text=False, **kwargs):
+                 **kwargs):
 
         super(AttrFace, self).__init__(text=None, **kwargs)
         # Face.__init__(self)
