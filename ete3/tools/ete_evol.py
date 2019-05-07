@@ -789,7 +789,7 @@ def run(args):
         print("         provide another route with --slr_binary, or install "
               "it by executing 'ete3 install-external-tools paml'",
               file=stderr)
-        if any(AVAIL[m.split('.')[0]]['exec']=='Slr' for m in args.models):
+        if args.models and any(AVAIL[m.split('.')[0]]['exec']=='Slr' for m in args.models):
             return
     binary  = os.path.expanduser(args.codeml_binary)
     if not os.path.exists(binary):
