@@ -254,15 +254,15 @@ def find_binary(binary):
     bin_path = os.path.join(os.path.split(which("ete3"))[0], "ete3_apps", "bin", binary)
 
     if not os.path.exists(bin_path):
-        bin_path = os.path.expanduser("~/.etetoolkit/ext_apps-latest/bin/"+binary)
+        bin_path = os.path.expanduser("~/.etetoolkit/ext_apps-latest/bin/" + binary)
 
     if not os.path.exists(bin_path):
         bin_path = which(binary)
 
     if not os.path.exists(bin_path):
-        print(colorify("%s binary not found!" %binary, "lred"))
+        print(colorify("%s binary not found!" % binary, "lred"))
         bin_path = binary
-    print("Using: %s" %bin_path)
+    print("Using: %s" % bin_path)
     return bin_path
 
 
@@ -495,7 +495,7 @@ def local_run_model(tree, model_name, binary, ctrl_string='', **kwargs):
         print((b"ERROR: inside CodeML!!\n" + job).decode())
         return (None, None)
     os.chdir(hlddir)
-    return os.path.join(fullpath, 'out').encode(), model_obj.name.encode()
+    return os.path.join(fullpath, 'out'), model_obj.name
 
 
 def check_done(tree, modmodel, results):
@@ -503,7 +503,8 @@ def check_done(tree, modmodel, results):
     if os.path.exists(os.path.join(tree.workdir, dir_name, 'out')):
         if modmodel != "SLR":
             fhandler = open(os.path.join(tree.workdir, dir_name, 'out'))
-            fhandler.seek(-50, 2)
+            fhandler.seek(0, os.SEEK_END)
+            fhandler.seek(fhandler.tell() - 50, os.SEEK_SET)
             if 'Time used' in fhandler.read():
                 results.append((os.path.join(tree.workdir, dir_name, "out"),
                                 modmodel))
@@ -682,15 +683,15 @@ def local_run_model_new(arguments,  ctrl_string=''):
     if err is not None or b'error' in job or b'Error' in job:
         raise ValueError("ERROR: inside codeml!!\n" + job)
 
-    results_queue.put((os.path.join(fullpath,'out'), model_obj.name))
+    results_queue.put((os.path.join(fullpath, 'out'), model_obj.name))
 #############
 
 
 def load_model(model_name, tree, path, **kwargs):
-    model_obj = Model(model_name.decode('utf-8'), tree, **kwargs)
+    model_obj = Model(model_name, tree, **kwargs)
     setattr(model_obj, 'run', run)
     try:
-        tree.link_to_evol_model(path.decode('utf-8'), model_obj)
+        tree.link_to_evol_model(path, model_obj)
     except KeyError:
         raise(Exception('ERROR: model %s failed, problem with outfile:\n%s' % (
             model_obj.name, path)))
@@ -747,7 +748,7 @@ def write_results(tree, args):
 
 def mark_tree_as_in(path_tree, tree):
     clean_tree(tree)
-    other_tree = EvolTree(reformat_nw((path_tree[:-3] + b'tree')))
+    other_tree = EvolTree(reformat_nw((path_tree[:-3] + 'tree')))
     for other_n in other_tree.traverse():
         if other_n.mark:
             n = tree.get_descendant_by_node_id(other_n.node_id)
