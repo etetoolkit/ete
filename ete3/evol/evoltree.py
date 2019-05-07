@@ -81,6 +81,7 @@ from .. import PhyloNode, SeqGroup
 from ..parser.newick import write_newick
 from .model import Model, PARAMS, AVAIL
 from .utils import translate
+from ..tools.utils import which
 try:
     from scipy.stats import chi2
     chi_high = lambda x, y: 1 - chi2.cdf(x, y)
@@ -123,6 +124,10 @@ class EvolNode(PhyloNode):
         '''
         # _update names?
         self.workdir = '/tmp/ete3-tmp/'
+        if not binpath:
+            ete3_path = which("ete3")
+            binpath = os.path.join(os.path.split(ete3_path)[0], "ete3_apps", "bin")
+
         self.execpath = binpath
         self._models = {}
         self.__gui_mark_mode = False
@@ -242,12 +247,12 @@ class EvolNode(PhyloNode):
             open(fullpath+'/tmp.ctl', 'w').write(ctrl_string)
         hlddir = os.getcwd()
         os.chdir(fullpath)
-        bin = os.path.join(self.execpath, model_obj.properties['exec'])
+        bin_ = os.path.join(self.execpath, model_obj.properties['exec'])
         try:
-            proc = Popen([bin, 'tmp.ctl'], stdout=PIPE, stdin=PIPE)
+            proc = Popen([bin_, 'tmp.ctl'], stdout=PIPE, stdin=PIPE)
         except OSError:
             raise Exception(('ERROR: {} not installed, ' +
-                             'or wrong path to binary\n').format(bin))
+                             'or wrong path to binary\n').format(bin_))
         run, err = proc.communicate(b'\n') # send \n via stdin in case codeml/slr asks something (note on py3, stdin needs bytes)
         run = run.decode(sys.stdout.encoding)
 
