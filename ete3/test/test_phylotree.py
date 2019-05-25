@@ -172,6 +172,25 @@ class Test_phylo_module(unittest.TestCase):
         # Are all orthologies as expected
         self.assertEqual(expected_orthologs, orthologs)
 
+        # Test different sos_thr
+        t = PhyloTree('(((SP1_a, SP2_a), (SP3_a, SP1_b)), (SP1_c, SP2_c));')
+        seed = (t & 'SP1_a')
+        events = t.get_descendant_evol_events(0.1)
+        self.assertEqual(t.get_common_ancestor(seed, 'SP3_a').evoltype, 'D')
+        self.assertEqual(t.get_common_ancestor(seed, 'SP1_c').evoltype, 'D')
+
+        t = PhyloTree('(((SP1_a, SP2_a), (SP3_a, SP1_b)), (SP1_c, SP2_c));')
+        seed = (t & 'SP1_a')
+        events = t.get_descendant_evol_events(0.5)
+        self.assertEqual(t.get_common_ancestor(seed, 'SP3_a').evoltype, 'S')
+        self.assertEqual(t.get_common_ancestor(seed, 'SP1_c').evoltype, 'D')
+
+        t = PhyloTree('(((SP1_a, SP2_a), (SP3_a, SP1_b)), (SP1_c, SP2_c));')
+        seed = (t & 'SP1_a')
+        events = seed.get_my_evol_events(0.75)
+        self.assertEqual(t.get_common_ancestor(seed, 'SP3_a').evoltype, 'S')
+        self.assertEqual(t.get_common_ancestor(seed, 'SP1_c').evoltype, 'S')
+
     def test_get_sp_overlap_on_a_seed(self):
         """ Tests ortholgy prediction using sp overlap"""
         # Creates a gene phylogeny with several duplication events at
@@ -255,6 +274,25 @@ class Test_phylo_module(unittest.TestCase):
 
         # Are all orthologies as expected
         self.assertEqual(expected_orthologs, orthologs)
+
+        # Test different sos_thr
+        t = PhyloTree('(((SP1_a, SP2_a), (SP3_a, SP1_b)), (SP1_c, SP2_c));')
+        seed = (t & 'SP1_a')
+        events = seed.get_my_evol_events(0.1)
+        self.assertEqual(t.get_common_ancestor(seed, 'SP3_a').evoltype, 'D')
+        self.assertEqual(t.get_common_ancestor(seed, 'SP1_c').evoltype, 'D')
+
+        t = PhyloTree('(((SP1_a, SP2_a), (SP3_a, SP1_b)), (SP1_c, SP2_c));')
+        seed = (t & 'SP1_a')
+        events = seed.get_my_evol_events(0.50)
+        self.assertEqual(t.get_common_ancestor(seed, 'SP3_a').evoltype, 'S')
+        self.assertEqual(t.get_common_ancestor(seed, 'SP1_c').evoltype, 'D')
+
+        t = PhyloTree('(((SP1_a, SP2_a), (SP3_a, SP1_b)), (SP1_c, SP2_c));')
+        seed = (t & 'SP1_a')
+        events = seed.get_my_evol_events(0.75)
+        self.assertEqual(t.get_common_ancestor(seed, 'SP3_a').evoltype, 'S')
+        self.assertEqual(t.get_common_ancestor(seed, 'SP1_c').evoltype, 'S')
 
     def test_reconciliation(self):
         """ Tests ortholgy prediction based on the species reconciliation method"""
