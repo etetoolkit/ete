@@ -3,7 +3,9 @@
 
 import time
 
-import munkres as mun
+import numpy as np
+import lap
+#import munkres as mun
 import random
 import time
 import sys
@@ -44,23 +46,24 @@ def test():
     print("RUNNING UNITEST...")
 
     # Test code
-    for x in range(100):
+    for x in range(250):
         t1 = Tree()
         t2 = Tree()
-        t1.populate(20, names_library="abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-        t2.populate(20, names_library="abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+        t1.populate(35, names_library="abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+        t2.populate(35, names_library="abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ")
         #t2 = t1.copy()
         t1.set_outgroup("Z")
         t2.set_outgroup("Z")
 
-        show_difftable_summary(treediff(t1, t2, "name", "name", EUCL_DIST))
-        show_difftable_summary(treediff(t1, t2, "name", "name", EUCL_DIST, True))
+        
+        #show_difftable_summary(treediff(t1, t2, "name", "name", EUCL_DIST, True))
+        treediff(t1, t2, "name", "name", EUCL_DIST, True)
         
         #show_difftable(treediff(t1, t2, "name", "name", RF_DIST), "name", "name")
 
     t1 = Tree("(((a, b), (c,d))j, (e, (f, g)h )i );", format=1)
     t2 = Tree("(((a, c), (b,d))j, (e, (f, g)h )i );", format=1)
-    show_difftable_topo(treediff(t1, t2, "name", "name", EUCL_DIST), "name", "name")
+    #show_difftable_topo(treediff(t1, t2, "name", "name", EUCL_DIST), "name", "name")
     
     print("\n\n")
     
@@ -106,9 +109,12 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False):
         matrix = new_matrix
     
     log.info("Comparing trees...")
-    m = mun.Munkres()
-    indexes = m.compute(matrix)
-  
+    #m = mun.Munkres()
+    #indexes = m.compute(matrix)
+    matrix = np.asarray(matrix, dtype=np.float32)
+    _ , row, col = lap.lapjv(matrix)
+    indexes= zip(row,col)
+
     difftable = []
     for r, c in indexes:
         if matrix[r][c] != 0:
