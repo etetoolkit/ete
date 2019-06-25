@@ -1,6 +1,8 @@
 #!/usr/bin/python
 
 
+import time
+
 import munkres as mun
 import random
 import time
@@ -86,19 +88,13 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False):
 
     matrix = [[dist_fn((n1,a), (n2,b)) for n2,b in parts2] for n1,a in parts1]
 
+
     # Reduce matrix to avoid useless comparisons
     if reduce_matrix:
         log.info( "Reducing distance matrix...")
         cols_to_include = set(range(len(matrix[0])))
         rows_to_include = []
-        for i, row in enumerate(matrix):
-            #print row
-            try:
-                index = row.index(0)
-            except ValueError:
-                rows_to_include.append(i)
-            else:
-                cols_to_include.remove(index)
+        [cols_to_include.remove(row.index(0)) if 0 in row else rows_to_include.append(i) for i, row in enumerate(matrix)]
         cols_to_include = sorted(cols_to_include)
         new_matrix = []
         parts1 = [parts1[row] for row in rows_to_include]
@@ -197,7 +193,12 @@ def show_difftable_topo(difftable, attr1, attr2, usecolor=False):
        
 def main(argv):
     global args
+
+    start_time = time.time()
     test()
+    elapsed_time = time.time() - start_time
+    print(elapsed_time)
+
     parser = argparse.ArgumentParser(description=__DESCRIPTION__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
 
