@@ -47,6 +47,8 @@ def test():
 
     # Test code
     for x in range(250):
+       
+
         t1 = Tree()
         t2 = Tree()
         t1.populate(35, names_library="abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ")
@@ -61,11 +63,11 @@ def test():
         
         #show_difftable(treediff(t1, t2, "name", "name", RF_DIST), "name", "name")
 
-    t1 = Tree("(((a, b), (c,d))j, (e, (f, g)h )i );", format=1)
-    t2 = Tree("(((a, c), (b,d))j, (e, (f, g)h )i );", format=1)
+    #t1 = Tree("(((a, b), (c,d))j, (e, (f, g)h )i );", format=1)
+    #t2 = Tree("(((a, c), (b,d))j, (e, (f, g)h )i );", format=1)
     #show_difftable_topo(treediff(t1, t2, "name", "name", EUCL_DIST), "name", "name")
     
-    print("\n\n")
+    #print("\n\n")
     
 def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False):
     log.info("Computing distance matrix...")
@@ -97,8 +99,13 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False):
         log.info( "Reducing distance matrix...")
         cols_to_include = set(range(len(matrix[0])))
         rows_to_include = []
-        [cols_to_include.remove(row.index(0)) if 0 in row else rows_to_include.append(i) for i, row in enumerate(matrix)]
-        cols_to_include = sorted(cols_to_include)
+        for i, row in enumerate(matrix):
+            #print row
+            try:
+                cols_to_include.remove(row.index(0))
+            except ValueError:
+                rows_to_include.append(i)
+        #cols_to_include = sorted(cols_to_include)
         new_matrix = []
         parts1 = [parts1[row] for row in rows_to_include]
         parts2 = [parts2[col] for col in cols_to_include]
