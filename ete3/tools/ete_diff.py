@@ -24,58 +24,20 @@ __DESCRIPTION__ = ""
 
 EUCL_DIST = lambda a,b: 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) # 24
 
-
-
 def RF_DIST(a, b):
     if len(a[1] & b[1]) < 2:
         return 1
     (a, b) = (b, a) if len(b[1]) > len(a[1]) else (a,b)
     rf, rfmax, names, side1, side2, d1, d2 = a[0].robinson_foulds(b[0])
     return rf/rfmax
-#EUCL_DIST = RF_DIST
 
 def sepstring(items, sep=", "):
     return sep.join(sorted(map(str, items)))
 
-
-def test():
-    #print_table([[3,2, {"whatever":1, "bla":[1,2]}], [5,"this is a test of wrapping text with the new function",777], [88, 9, 00]],
-    #            header=[ "hola", "otor que no veas", "blas"], wrap=True, max_col_width=10, wrap_style='wrap',
-    #            row_line=True, fix_col_width=True)
-                
-    print("RUNNING UNITEST...")
-
-    # Test code
-    for x in range(250):
-       
-
-        t1 = Tree()
-        t2 = Tree()
-        t1.populate(35, names_library="abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-        t2.populate(35, names_library="abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-        #t2 = t1.copy()
-        t1.set_outgroup("Z")
-        t2.set_outgroup("Z")
-
-        
-        #show_difftable_summary(treediff(t1, t2, "name", "name", EUCL_DIST, True))
-        treediff(t1, t2, "name", "name", EUCL_DIST, True)
-        
-        #show_difftable(treediff(t1, t2, "name", "name", RF_DIST), "name", "name")
-
-    #t1 = Tree("(((a, b), (c,d))j, (e, (f, g)h )i );", format=1)
-    #t2 = Tree("(((a, c), (b,d))j, (e, (f, g)h )i );", format=1)
-    #show_difftable_topo(treediff(t1, t2, "name", "name", EUCL_DIST), "name", "name")
-    
-    #print("\n\n")
-    
 def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False):
     log.info("Computing distance matrix...")
     t1_cached_content = t1.get_cached_content(store_attr=attr1)
     t2_cached_content = t2.get_cached_content(store_attr=attr2)
-    #common_attrs = t1_cached_content[t1] & t2_cached_content[t2]
-    #parts1 = [(k, v.intersection(common_attrs)) for k, v in t1_cached_content.iteritems() if v & common_attrs]
-    #parts2 = [(k, v.intersection(common_attrs)) for k, v in t2_cached_content.iteritems() if v & common_attrs]
 
     parts1 = [(k, v) for k, v in t1_cached_content.items() if k.children]
     parts2 = [(k, v) for k, v in t2_cached_content.items() if k.children]
@@ -100,12 +62,12 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False):
         cols_to_include = set(range(len(matrix[0])))
         rows_to_include = []
         for i, row in enumerate(matrix):
-            #print row
             try:
                 cols_to_include.remove(row.index(0))
             except ValueError:
                 rows_to_include.append(i)
-        #cols_to_include = sorted(cols_to_include)
+        
+        cols_to_include = sorted(cols_to_include)
         new_matrix = []
         parts1 = [parts1[row] for row in rows_to_include]
         parts2 = [parts2[col] for col in cols_to_include]
@@ -116,8 +78,7 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False):
         matrix = new_matrix
     
     log.info("Comparing trees...")
-    #m = mun.Munkres()
-    #indexes = m.compute(matrix)
+    
     matrix = np.asarray(matrix, dtype=np.float32)
     _ , row, col = lap.lapjv(matrix)
     indexes= zip(row,col)
@@ -207,11 +168,6 @@ def show_difftable_topo(difftable, attr1, attr2, usecolor=False):
 def main(argv):
     global args
 
-    start_time = time.time()
-    test()
-    elapsed_time = time.time() - start_time
-    print(elapsed_time)
-
     parser = argparse.ArgumentParser(description=__DESCRIPTION__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
 
@@ -295,4 +251,3 @@ def main(argv):
 
 if __name__ == '__main__':
     main(sys.argv[1:])
-
