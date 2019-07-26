@@ -32,27 +32,6 @@ def RF_DIST(a, b):
     return rf/rfmax
 
 
-def test():
-    times=[]
-    for i in range(100,100000,100):
-        t1 = Tree()
-        t2 = Tree()
-        t1.populate(i)
-        t2.populate(i)
-        #t2 = t1.copy()
-        #t1.set_outgroup("Z")
-        #t2.set_outgroup("Z")
-
-        st=time.time()
-        #show_difftable_summary(treediff(t1, t2, "name", "name", EUCL_DIST, True))
-        treediff(t1, t2, "name", "name", EUCL_DIST, False)
-        et=time.time()-st
-        times.append(et)
-        print(times,'\n\n')
-
-
-
-
 def sepstring(items, sep=", "):
     return sep.join(sorted(map(str, items)))
 
