@@ -168,12 +168,7 @@ def show_difftable_topo(difftable, attr1, attr2, usecolor=False):
        
 def populate_args(diff_args_p):
 
-    diff_args = diff_args_p.add_argument_group("COMPARE GENERAL OPTIONS")
-
-
-    diff_args.add_argument("target_trees",
-                        type=str, nargs="+",
-                        help='a list of target tree files')
+    diff_args = diff_args_p.add_argument_group("DIFF GENERAL OPTIONS")
         
     diff_args.add_argument("--ref_attr", dest="ref_attr",
                         default = "name", 
@@ -207,9 +202,13 @@ def populate_args(diff_args_p):
                         action="store_true",
                         help="If enabled, it will use colors in some of the report")
     
+    diff_args.add_argument("--demo", dest="demo",
+                        action="store_true",
+                        help="runs test")
+    
 
 def run(args):
-    
+        
     if args.quiet:
         logging.basicConfig(format='%(message)s', level=logging.WARNING)
     else:
@@ -223,9 +222,9 @@ def run(args):
     for rtree in args.ref_trees:
         t1 = Tree(rtree)
     
-        for ttree in args.target_trees:
+        for ttree in args.src_trees:
             t2 = Tree(ttree)
-
+            
             if args.ncbi:
 
                 taxids = set([getattr(leaf, args.ref_attr) for leaf in t1.iter_leaves()])

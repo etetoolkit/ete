@@ -171,7 +171,7 @@ def _main(arguments):
     split_args_p = argparse.ArgumentParser(add_help=False)
     ete_split.populate_args(split_args_p)
     
-    # split
+    # diff
     diff_args_p = argparse.ArgumentParser(add_help=False)
     ete_diff.populate_args(diff_args_p)
 
