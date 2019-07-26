@@ -20,7 +20,7 @@ import logging
 log = logging.Logger("main")
 args = None
 
-__DESCRIPTION__ = ""
+DESC = ""
 
 EUCL_DIST = lambda a,b: 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) # 24
 
@@ -30,6 +30,28 @@ def RF_DIST(a, b):
     (a, b) = (b, a) if len(b[1]) > len(a[1]) else (a,b)
     rf, rfmax, names, side1, side2, d1, d2 = a[0].robinson_foulds(b[0])
     return rf/rfmax
+
+
+def test():
+    times=[]
+    for i in range(100,100000,100):
+        t1 = Tree()
+        t2 = Tree()
+        t1.populate(i)
+        t2.populate(i)
+        #t2 = t1.copy()
+        #t1.set_outgroup("Z")
+        #t2.set_outgroup("Z")
+
+        st=time.time()
+        #show_difftable_summary(treediff(t1, t2, "name", "name", EUCL_DIST, True))
+        treediff(t1, t2, "name", "name", EUCL_DIST, False)
+        et=time.time()-st
+        times.append(et)
+        print(times,'\n\n')
+
+
+
 
 def sepstring(items, sep=", "):
     return sep.join(sorted(map(str, items)))
@@ -165,55 +187,55 @@ def show_difftable_topo(difftable, attr1, attr2, usecolor=False):
     
     log.info("Total euclidean distance:\t%0.4f\tMismatching nodes:\t%d" %(total_dist, len(difftable)))
        
-def main(argv):
-    global args
+def populate_args(diff_args_p):
 
-    parser = argparse.ArgumentParser(description=__DESCRIPTION__,
-                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+    diff_args = diff_args_p.add_argument_group("COMPARE GENERAL OPTIONS")
 
-    parser.add_argument("target_trees",
+
+    diff_args.add_argument("target_trees",
                         type=str, nargs="+",
                         help='a list of target tree files')
     
-    parser.add_argument("-r", dest='reftree',
+    diff_args.add_argument("-ref", dest='reftree',
                         type=str, 
                         help='The reference tree to compare with')
         
-    parser.add_argument("--ref_attr", dest="ref_attr",
+    diff_args.add_argument("--ref_attr", dest="ref_attr",
                         default = "name", 
                         help=("Defines the attribute in REFERENCE tree that will be used"
                               " to perform the comparison"))
     
-    parser.add_argument("--target_attr", dest="target_attr",
+    diff_args.add_argument("--target_attr", dest="target_attr",
                         default = "name",
                         help=("Defines the attribute in TARGET tree that will be used"
                               " to perform the comparison"))
     
-    parser.add_argument("--fullsearch", dest="fullsearch",
+    diff_args.add_argument("--fullsearch", dest="fullsearch",
                         action="store_false",
                         help=("Enable this option if duplicated attributes (i.e. name)"
                               "exist in reference or target trees."))
     
-    parser.add_argument("--quite", dest="quite",
+    diff_args.add_argument("--quiet", dest="quiet",
                         action="store_true",
                         help="Do not show process information")
     
-    parser.add_argument("--report", dest="report",
+    diff_args.add_argument("--report", dest="report",
                         choices=["topology", "diffs", "diffs_tab", "summary"],
                         default = "topology",
                         help="Different format for the comparison results")
 
-    parser.add_argument("--ncbi", dest="ncbi",
+    diff_args.add_argument("--ncbi", dest="ncbi",
                         action="store_true",
                         help="If enabled, it will use the ETE ncbi_taxonomy module to for ncbi taxid translation")
 
-    parser.add_argument("--color", dest="color",
+    diff_args.add_argument("--color", dest="color",
                         action="store_true",
                         help="If enabled, it will use colors in some of the report")
     
-    args = parser.parse_args(argv)
+
+def run(args):
     
-    if args.quite:
+    if args.quiet:
         logging.basicConfig(format='%(message)s', level=logging.WARNING)
     else:
         logging.basicConfig(format='%(message)s', level=logging.INFO)
@@ -249,5 +271,5 @@ def main(argv):
             rf, rf_max, _, _, _, _, _ = t1.robinson_foulds(t2, attr_t1=args.ref_attr, attr_t2=args.target_attr)[:2]
             show_difftable_summary(difftable, rf, rf_max)
 
-if __name__ == '__main__':
-    main(sys.argv[1:])
+# if __name__ == '__main__':
+#     main(sys.argv[1:])
