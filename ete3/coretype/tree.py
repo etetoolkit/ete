@@ -2264,20 +2264,20 @@ class TreeNode(object):
             pass
 
         def add_leaf(tree, label):
-          yield (label, tree)
-          if not isinstance(tree, TipTuple) and isinstance(tree, tuple):
-            for left in add_leaf(tree[0], label):
-              yield (left, tree[1])
-            for right in add_leaf(tree[1], label):
-              yield (tree[0], right)
+            yield (label, tree)
+            if not isinstance(tree, TipTuple) and isinstance(tree, tuple):
+                for left in add_leaf(tree[0], label):
+                    yield (left, tree[1])
+                for right in add_leaf(tree[1], label):
+                    yield (tree[0], right)
 
         def enum_unordered(labels):
-          if len(labels) == 1:
-            yield labels[0]
-          else:
-            for tree in enum_unordered(labels[1:]):
-              for new_tree in add_leaf(tree, labels[0]):
-                yield new_tree
+            if len(labels) == 1:
+                yield labels[0]
+            else:
+                for tree in enum_unordered(labels[1:]):
+                    for new_tree in add_leaf(tree, labels[0]):
+                        yield new_tree
 
         n2subtrees = {}
         for n in self.traverse("postorder"):

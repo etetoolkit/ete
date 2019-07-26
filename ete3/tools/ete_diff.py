@@ -18,7 +18,7 @@ import textwrap
 import argparse
 import logging
 log = logging.Logger("main")
-args = None
+
 
 DESC = ""
 
@@ -30,7 +30,6 @@ def RF_DIST(a, b):
     (a, b) = (b, a) if len(b[1]) > len(a[1]) else (a,b)
     rf, rfmax, names, side1, side2, d1, d2 = a[0].robinson_foulds(b[0])
     return rf/rfmax
-
 
 def sepstring(items, sep=", "):
     return sep.join(sorted(map(str, items)))
@@ -72,10 +71,16 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False):
         new_matrix = []
         parts1 = [parts1[row] for row in rows_to_include]
         parts2 = [parts2[col] for col in cols_to_include]
+        
+        if len(new_matrix) < 1:
+            return new_matrix
+        
         for row in rows_to_include:
             new_matrix.append([matrix[row][col] for col in cols_to_include])
+            
         log.info("Distance matrix reduced from %dx%d to %dx%d" %\
-                 (len(matrix), len(matrix[0]), len(new_matrix), len(new_matrix[0])))
+                (len(matrix), len(matrix[0]), len(new_matrix), len(new_matrix[0])))
+            
         matrix = new_matrix
     
     log.info("Comparing trees...")
@@ -181,7 +186,7 @@ def populate_args(diff_args_p):
                               " to perform the comparison"))
     
     diff_args.add_argument("--fullsearch", dest="fullsearch",
-                        action="store_false",
+                        action="store_true",
                         help=("Enable this option if duplicated attributes (i.e. name)"
                               "exist in reference or target trees."))
     
@@ -202,50 +207,53 @@ def populate_args(diff_args_p):
                         action="store_true",
                         help="If enabled, it will use colors in some of the report")
     
-    diff_args.add_argument("--demo", dest="demo",
-                        action="store_true",
-                        help="runs test")
-    
 
 def run(args):
         
-    if args.quiet:
-        logging.basicConfig(format='%(message)s', level=logging.WARNING)
+    if not args.ref_trees or not args.src_trees:
+        logging.warning("Target tree (-t argument) or source tree (-s argument) were not specified")
+        
     else:
-        logging.basicConfig(format='%(message)s', level=logging.INFO)
-    log = logging
-    
-    if args.ncbi:
-        from common import ncbi
-        ncbi.connect_database()
-    
-    for rtree in args.ref_trees:
-        t1 = Tree(rtree)
-    
-        for ttree in args.src_trees:
-            t2 = Tree(ttree)
-            
-            if args.ncbi:
+        if args.quiet:
+            logging.basicConfig(format='%(message)s', level=logging.WARNING)
+        else:
+            logging.basicConfig(format='%(message)s', level=logging.INFO)
+        log = logging
 
-                taxids = set([getattr(leaf, args.ref_attr) for leaf in t1.iter_leaves()])
-                taxids.update([getattr(leaf, args.target_attr) for leaf in t2.iter_leaves()])
-                taxid2name = ncbi.get_taxid_translator(taxids)
-                for leaf in  t1.get_leaves()+t2.get_leaves():
-                    try:
-                        leaf.name=taxid2name.get(int(leaf.name), leaf.name)
-                    except ValueError:
-                        pass
+        if args.ncbi:
+            from common import ncbi
+            ncbi.connect_database()
 
-            difftable = treediff(t1, t2, args.ref_attr, args.target_attr, reduce_matrix=args.fullsearch)
-            if args.report == "topology":
-                show_difftable_topo(difftable, args.ref_attr, args.target_attr, usecolor=args.color)
-            elif args.report == "diffs":
-                show_difftable(difftable)
-            elif args.report == "diffs_tab":
-                show_difftable_tab(difftable)
-            elif args.report == 'table':
-                rf, rf_max, _, _, _, _, _ = t1.robinson_foulds(t2, attr_t1=args.ref_attr, attr_t2=args.target_attr)[:2]
-                show_difftable_summary(difftable, rf, rf_max)
 
-# if __name__ == '__main__':
-#     main(sys.argv[1:])
+
+        for rtree in args.ref_trees:
+            t1 = Tree(rtree)
+
+            for ttree in args.src_trees:
+                t2 = Tree(ttree)
+
+                if args.ncbi:
+
+                    taxids = set([getattr(leaf, args.ref_attr) for leaf in t1.iter_leaves()])
+                    taxids.update([getattr(leaf, args.target_attr) for leaf in t2.iter_leaves()])
+                    taxid2name = ncbi.get_taxid_translator(taxids)
+                    for leaf in  t1.get_leaves()+t2.get_leaves():
+                        try:
+                            leaf.name=taxid2name.get(int(leaf.name), leaf.name)
+                        except ValueError:
+                            pass
+
+                difftable = treediff(t1, t2, args.ref_attr, args.target_attr, reduce_matrix=args.fullsearch)
+
+                if len(difftable) != 0:
+                    if args.report == "topology":
+                        show_difftable_topo(difftable, args.ref_attr, args.target_attr, usecolor=args.color)
+                    elif args.report == "diffs":
+                        show_difftable(difftable)
+                    elif args.report == "diffs_tab":
+                        show_difftable_tab(difftable)
+                    elif args.report == 'table':
+                        rf, rf_max, _, _, _, _, _ = t1.robinson_foulds(t2, attr_t1=args.ref_attr, attr_t2=args.target_attr)[:2]
+                        show_difftable_summary(difftable, rf, rf_max)
+                else:
+                    log.info("Difference between (Reference) %s and (Target) %s returned no results" % (rtree, ttree))
