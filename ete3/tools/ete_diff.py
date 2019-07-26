@@ -174,10 +174,6 @@ def populate_args(diff_args_p):
     diff_args.add_argument("target_trees",
                         type=str, nargs="+",
                         help='a list of target tree files')
-    
-    diff_args.add_argument("-ref", dest='reftree',
-                        type=str, 
-                        help='The reference tree to compare with')
         
     diff_args.add_argument("--ref_attr", dest="ref_attr",
                         default = "name", 
@@ -220,35 +216,37 @@ def run(args):
         logging.basicConfig(format='%(message)s', level=logging.INFO)
     log = logging
     
-    t1 = Tree(args.reftree)
     if args.ncbi:
         from common import ncbi
         ncbi.connect_database()
     
-    for ttree in args.target_trees:
-        t2 = Tree(ttree)
-       
-        if args.ncbi:
-                        
-            taxids = set([getattr(leaf, args.ref_attr) for leaf in t1.iter_leaves()])
-            taxids.update([getattr(leaf, args.target_attr) for leaf in t2.iter_leaves()])
-            taxid2name = ncbi.get_taxid_translator(taxids)
-            for leaf in  t1.get_leaves()+t2.get_leaves():
-                try:
-                    leaf.name=taxid2name.get(int(leaf.name), leaf.name)
-                except ValueError:
-                    pass
+    for rtree in args.ref_trees:
+        t1 = Tree(rtree)
+    
+        for ttree in args.target_trees:
+            t2 = Tree(ttree)
 
-        difftable = treediff(t1, t2, args.ref_attr, args.target_attr, reduce_matrix=args.fullsearch)
-        if args.report == "topology":
-            show_difftable_topo(difftable, args.ref_attr, args.target_attr, usecolor=args.color)
-        elif args.report == "diffs":
-            show_difftable(difftable)
-        elif args.report == "diffs_tab":
-            show_difftable_tab(difftable)
-        elif args.report == 'table':
-            rf, rf_max, _, _, _, _, _ = t1.robinson_foulds(t2, attr_t1=args.ref_attr, attr_t2=args.target_attr)[:2]
-            show_difftable_summary(difftable, rf, rf_max)
+            if args.ncbi:
+
+                taxids = set([getattr(leaf, args.ref_attr) for leaf in t1.iter_leaves()])
+                taxids.update([getattr(leaf, args.target_attr) for leaf in t2.iter_leaves()])
+                taxid2name = ncbi.get_taxid_translator(taxids)
+                for leaf in  t1.get_leaves()+t2.get_leaves():
+                    try:
+                        leaf.name=taxid2name.get(int(leaf.name), leaf.name)
+                    except ValueError:
+                        pass
+
+            difftable = treediff(t1, t2, args.ref_attr, args.target_attr, reduce_matrix=args.fullsearch)
+            if args.report == "topology":
+                show_difftable_topo(difftable, args.ref_attr, args.target_attr, usecolor=args.color)
+            elif args.report == "diffs":
+                show_difftable(difftable)
+            elif args.report == "diffs_tab":
+                show_difftable_tab(difftable)
+            elif args.report == 'table':
+                rf, rf_max, _, _, _, _, _ = t1.robinson_foulds(t2, attr_t1=args.ref_attr, attr_t2=args.target_attr)[:2]
+                show_difftable_summary(difftable, rf, rf_max)
 
 # if __name__ == '__main__':
 #     main(sys.argv[1:])
