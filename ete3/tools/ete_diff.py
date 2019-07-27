@@ -5,7 +5,6 @@ import time
 
 import numpy as np
 import lap
-#import munkres as mun
 import random
 import time
 import sys
@@ -24,12 +23,24 @@ DESC = ""
 
 EUCL_DIST = lambda a,b: 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) # 24
 
+def EUCL_DIST_B(a,b):    
+    dist_a = 0
+    dist_b = 0
+    
+    for diff_a in (a[1] ^ b[1] & a[1]):
+        dist_a +=[i for i in a[0].iter_search_nodes(name=diff_a)][0].dist
+    
+    for diff_b in (b[1] ^ a[1] & b[1]):
+        dist_b +=[i for i in b[0].iter_search_nodes(name=diff_b)][0].dist     
+    
+    return 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)
+
 def RF_DIST(a, b):
     if len(a[1] & b[1]) < 2:
         return 1
     (a, b) = (b, a) if len(b[1]) > len(a[1]) else (a,b)
     rf, rfmax, names, side1, side2, d1, d2 = a[0].robinson_foulds(b[0])
-    return rf/rfmax
+    return (rf/rfmax if rfmax else 0)
 
 def sepstring(items, sep=", "):
     return sep.join(sorted(map(str, items)))
@@ -43,14 +54,15 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False):
     parts2 = [(k, v) for k, v in t2_cached_content.items() if k.children]
 
     # Should I include tips?
-    parts1.extend([(leaf, set([getattr(leaf, attr1)])) for leaf in t1.iter_leaves()])
-    parts2.extend([(leaf, set([getattr(leaf, attr2)])) for leaf in t2.iter_leaves()])
+    # parts1.extend([(leaf, set([getattr(leaf, attr1)])) for leaf in t1.iter_leaves()])
+    # parts2.extend([(leaf, set([getattr(leaf, attr2)])) for leaf in t2.iter_leaves()])
 
     def sortSecond(val):
         return len(val[1])
 
     parts1 = sorted(parts1, key = sortSecond)#, reverse=True)
     parts2 = sorted(parts2, key = sortSecond)#, reverse=True)
+    
     log.info( "Calculating distance matrix...")
 
     matrix = [[dist_fn((n1,a), (n2,b)) for n2,b in parts2] for n1,a in parts1]
@@ -207,7 +219,11 @@ def populate_args(diff_args_p):
                         action="store_true",
                         help="If enabled, it will use colors in some of the report")
     
-
+    diff_args.add_argument("--dist", dest="distance",
+                           type=str, choices= ['e', 'rf', 'eb'], default='e',
+                           help=('Distance measure: e = Euclidean distance, rf = Robinson-Foulds symetric distance'
+                                 ' eb = Euclidean distance + branch length difference between disjoint leaves'))
+    
 def run(args):
         
     if not args.ref_trees or not args.src_trees:
@@ -243,7 +259,14 @@ def run(args):
                         except ValueError:
                             pass
 
-                difftable = treediff(t1, t2, args.ref_attr, args.target_attr, reduce_matrix=args.fullsearch)
+                if args.distance == 'e':
+                    dist_fn = EUCL_DIST
+                elif args.distance == 'rf':
+                    dist_fn = RF_DIST
+                elif args.distance == 'eb':
+                    dist_fn = EUCL_DIST_B
+                
+                difftable = treediff(t1, t2, args.ref_attr, args.target_attr, dist_fn, args.fullsearch)
 
                 if len(difftable) != 0:
                     if args.report == "topology":
