@@ -101,8 +101,6 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False):
 
     _ , col, row = lap.lapjv(matrix,extend_cost=True)
     indexes= zip(row,col)
-    print(matrix)
-    print(row,col)
 
     difftable = []
     for r, c in indexes:
@@ -228,7 +226,7 @@ def populate_args(diff_args_p):
                                  ' eb = Euclidean distance + branch length difference between disjoint leaves'))  
     
 def run(args):
-
+        
     if not args.ref_trees or not args.src_trees:
         logging.warning("Target tree (-t argument) or source tree (-s argument) were not specified")
         
