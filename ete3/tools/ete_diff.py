@@ -24,8 +24,8 @@ DESC = ""
 EUCL_DIST = lambda a,b: 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) # 24
 
 def EUCL_DIST_B(a,b):    
-    dist_a = 0
-    dist_b = 0
+    dist_a = 0.0
+    dist_b = 0.0
     
     for diff_a in (a[1] ^ b[1] & a[1]):
         dist_a +=[i for i in a[0].iter_search_nodes(name=diff_a)][0].dist
@@ -33,14 +33,14 @@ def EUCL_DIST_B(a,b):
     for diff_b in (b[1] ^ a[1] & b[1]):
         dist_b +=[i for i in b[0].iter_search_nodes(name=diff_b)][0].dist     
     
-    return 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)
+    return float(1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b))
 
 def RF_DIST(a, b):
     if len(a[1] & b[1]) < 2:
-        return 1
+        return 1.0
     (a, b) = (b, a) if len(b[1]) > len(a[1]) else (a,b)
     rf, rfmax, names, side1, side2, d1, d2 = a[0].robinson_foulds(b[0])
-    return (rf/rfmax if rfmax else 0)
+    return (rf/rfmax if rfmax else 0.0)
 
 def sepstring(items, sep=", "):
     return sep.join(sorted(map(str, items)))
@@ -67,7 +67,6 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False):
 
     matrix = [[dist_fn((n1,a), (n2,b)) for n2,b in parts2] for n1,a in parts1]
 
-
     # Reduce matrix to avoid useless comparisons
     if reduce_matrix:
         log.info( "Reducing distance matrix...")
@@ -75,9 +74,11 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False):
         rows_to_include = []
         for i, row in enumerate(matrix):
             try:
-                cols_to_include.remove(row.index(0))
+                cols_to_include.remove(row.index(0.0))
             except ValueError:
                 rows_to_include.append(i)
+            except KeyError:
+                pass
         
         cols_to_include = sorted(cols_to_include)
         new_matrix = []
@@ -109,8 +110,7 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False):
                                                 parts1[r][1].symmetric_difference(parts2[c][1]),
                                                 parts1[r][0], parts2[c][0])
             difftable.append([dist, side1, side2, diff, n1, n2])
-            
-            
+                 
     return difftable
 
 def show_difftable_summary(difftable, rf=-1, rf_max=-1):
@@ -223,7 +223,7 @@ def populate_args(diff_args_p):
     diff_args.add_argument("--dist", dest="distance",
                            type=str, choices= ['e', 'rf', 'eb'], default='e',
                            help=('Distance measure: e = Euclidean distance, rf = Robinson-Foulds symetric distance'
-                                 ' eb = Euclidean distance + branch length difference between disjoint leaves'))  
+                                 ' eb = Euclidean distance + branch length difference between disjoint leaves'))
     
 def run(args):
         
