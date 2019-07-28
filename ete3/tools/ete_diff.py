@@ -1,8 +1,45 @@
-#!/usr/bin/python
-
+# #START_LICENSE###########################################################
+#
+#
+# This file is part of the Environment for Tree Exploration program
+# (ETE).  http://etetoolkit.org
+#
+# ETE is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# ETE is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with ETE.  If not, see <http://www.gnu.org/licenses/>.
+#
+#
+#                     ABOUT THE ETE PACKAGE
+#                     =====================
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
+#
+# If you make use of ETE in published work, please cite:
+#
+# Jaime Huerta-Cepas, Joaquin Dopazo and Toni Gabaldon.
+# ETE: a python Environment for Tree Exploration. Jaime BMC
+# Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
+#
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
+# More info at http://etetoolkit.org. Contact: huerta@embl.de
+#
+#
+# #END_LICENSE#############################################################
+from __future__ import absolute_import
+from __future__ import print_function
 
 import time
-
 import numpy as np
 import lap
 import random
@@ -24,16 +61,11 @@ DESC = ""
 EUCL_DIST = lambda a,b: 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) # 24
 
 def EUCL_DIST_B(a,b):    
-    dist_a = 0.0
-    dist_b = 0.0
+        
+    dist_a = sum([descendant.dist for descendant in a[0].iter_leaves() if descendant.name in(a[1] ^ b[1] & a[1])])
+    dist_b = sum([descendant.dist for descendant in b[0].iter_leaves() if descendant.name in(b[1] ^ a[1] & b[1])])
     
-    for diff_a in (a[1] ^ b[1] & a[1]):
-        dist_a +=[i for i in a[0].iter_search_nodes(name=diff_a)][0].dist
-    
-    for diff_b in (b[1] ^ a[1] & b[1]):
-        dist_b +=[i for i in b[0].iter_search_nodes(name=diff_b)][0].dist     
-    
-    return float(1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b))
+    return 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)
 
 def RF_DIST(a, b):
     if len(a[1] & b[1]) < 2:
@@ -53,15 +85,11 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False):
     parts1 = [(k, v) for k, v in t1_cached_content.items() if k.children]
     parts2 = [(k, v) for k, v in t2_cached_content.items() if k.children]
 
-    # Should I include tips?
-    # parts1.extend([(leaf, set([getattr(leaf, attr1)])) for leaf in t1.iter_leaves()])
-    # parts2.extend([(leaf, set([getattr(leaf, attr2)])) for leaf in t2.iter_leaves()])
-
     def sortSecond(val):
         return len(val[1])
 
-    parts1 = sorted(parts1, key = sortSecond)#, reverse=True)
-    parts2 = sorted(parts2, key = sortSecond)#, reverse=True)
+    parts1 = sorted(parts1, key = sortSecond)
+    parts2 = sorted(parts2, key = sortSecond)
     
     log.info( "Calculating distance matrix...")
 
