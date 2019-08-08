@@ -28,7 +28,8 @@ before_script:
 
 script:
   - ./run_tests.sh --test-only -sv "$TRAVIS_PYTHON_VERSION"
-  - if [[ $TRAVIS_PYTHON_VERSION == 2.7 ]]; then ./run_tests.sh --qt4 -sv "$TRAVIS_PYTHON_VERSION" ; fi
+  # - if [[ $TRAVIS_PYTHON_VERSION == 2.7 ]]; then ./run_tests.sh --qt4 -sv "$TRAVIS_PYTHON_VERSION" ; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == 2.7 ]]; then ./run_tests.sh -sv "$TRAVIS_PYTHON_VERSION" ; fi
   #- coverage run -m ete3.test.test_api
   #- coverage run -a -m ete3.test.test_ete_evol   # too heavy for travis
   #- coverage run -a -m ete3.test.test_ete_build  # too heavy for travis

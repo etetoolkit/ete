@@ -352,9 +352,8 @@ if [ "${SETUP}" == "1" ]; then
     if [ "$QT4" == "1" ]; then
         setup_miniconda3
         create_env_qt4
-    elif [ "${VERSION}" == "2.7" ]; then
+    elif [ "$VERSION" == "2.7" ]; then
         CONDA="${FILEDIR}/test_tmp/miniconda2"
-
         setup_miniconda2
         create_env_27
     else
