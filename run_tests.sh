@@ -154,8 +154,14 @@ create_env() {
     # clr_green "DONE"
 }
 
+create_env_27() {
+    
+    clr_green ">>> Creating test environment for version ${VERSION}... "
+    run "${CONDA}/bin/conda env remove -y -n test_${VERSION} || true"
 
-
+    run "${CONDA}/bin/conda create -q -y -n test_${VERSION} python=${VERSION} pip=10 pyqt qt numpy six lxml coverage scikit-bio biopython scipy"
+    clr_green "DONE"
+}
 
 install_external_apps() {
     if [ "$EXTERNAL_APPS" == "1" ]; then
@@ -302,6 +308,8 @@ if [ "${SETUP}" == "1" ]; then
     setup_miniconda
     if [ "$QT4" == "1" ]; then
         create_env_qt4
+    elif [ "${VERSION}" == "2.7" ]; then
+        create_env_27
     else
         create_env
     fi
