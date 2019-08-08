@@ -131,7 +131,7 @@ create_env_qt4() {
     clr_green ">>> Creating test environment for version ${VERSION}... "
 
     run "${CONDA}/bin/conda env remove -y -n test_${VERSION} || true"
-    run "${CONDA}/bin/conda create -q -y -n test_${VERSION} python=${VERSION} pyqt=4 qt=4 numpy=1.16.4 six lxml coverage scikit-bio biopython=1.74 scipy=1.2.1"
+    run "${CONDA}/bin/conda create -q -y -n test_${VERSION} python=${VERSION} pip=10 pyqt=4 qt=4 numpy=1.16.4 six lxml coverage scikit-bio biopython=1.74 scipy=1.2.1"
     clr_green "DONE"
 }
 
