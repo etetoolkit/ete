@@ -8,6 +8,9 @@
 ..
    .. image:: https://coveralls.io/repos/jhcepas/ete/badge.png
 
+.. image:: http://img.shields.io/badge/stackoverflow-etetoolkit-blue.svg
+   :target: http://stackoverflow.com/questions/tagged/etetoolkit
+
 Overview
 -----------
 
