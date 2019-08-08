@@ -250,7 +250,6 @@ run_tests() {
 
 # Location of current script
 FILEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-CONDA="${FILEDIR}/test_tmp/miniconda"
 EXTERNAL_APPS=0
 SETUP=1
 TEST=1
@@ -346,12 +345,16 @@ echo -n > "${LOG}"
 # At any of these signals conditionally show the contents of the logfile
 trap 'exitcode=$? ; showlog ; exit $exitcode' EXIT HUP INT QUIT TERM
 
+CONDA="${FILEDIR}/test_tmp/miniconda3"
+
 if [ "${SETUP}" == "1" ]; then
     
     if [ "$QT4" == "1" ]; then
         setup_miniconda3
         create_env_qt4
     elif [ "${VERSION}" == "2.7" ]; then
+        CONDA="${FILEDIR}/test_tmp/miniconda2"
+
         setup_miniconda2
         create_env_27
     else
