@@ -201,7 +201,7 @@ create_env_27() {
     clr_green ">>> Creating test environment for version ${VERSION}... "
     run "${CONDA}/bin/conda env remove -y -n test_${VERSION} || true"
 
-    run "${CONDA}/bin/conda create -q -y -n test_${VERSION} pyqt qt numpy six lxml coverage scikit-bio biopython scipy"
+    run "${CONDA}/bin/conda create -q -y -n test_${VERSION} python=${VERSION} pyqt qt numpy six lxml coverage scikit-bio biopython scipy -c conda-forge"
     clr_green "DONE"
 }
 
