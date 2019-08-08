@@ -8,10 +8,10 @@
    .. image:: https://coveralls.io/repos/jhcepas/ete/badge.png
 
 .. image:: http://img.shields.io/badge/stackoverflow-etetoolkit-blue.svg
-   :target: http://stackoverflow.com/questions/tagged/etetoolkit
+   :target: https://stackoverflow.com/questions/tagged/etetoolkit+or+ete3
 
 .. image:: http://img.shields.io/badge/biostars-etetoolkit-purple.svg
-   :target: https://www.biostars.org/t/etetoolkit/
+   :target: https://www.biostars.org/t/etetoolkit,ete3,ete,ete2/
 
 
 Overview
@@ -52,15 +52,15 @@ Getting Support
 **Whenerver possible, please avoid sending support related emails directly to
 the developers. Keep communication public:**
 
-- For any type of question on how to use ETE in the bioinformatics context, BioStars (http://biostars.org) or even StackOverflow provides excellent help desks and keep discussion open.  
+- For any type of question on how to use ETE in the bioinformatics context, use BioStars (http://biostars.org) or even StackOverflow forums. 
 
-  Please use the *"etetoolkit"* tag for your questions: 
+  Please use the **"etetoolkit"** tag for your questions: 
 
 .. image:: http://img.shields.io/badge/stackoverflow-etetoolkit-blue.svg
-   :target: http://stackoverflow.com/questions/tagged/etetoolkit
+   :target: https://stackoverflow.com/questions/tagged/etetoolkit+or+ete3
 
 .. image:: http://img.shields.io/badge/biostars-etetoolkit-purple.svg
-   :target: https://www.biostars.org/t/etetoolkit/
+   :target: https://www.biostars.org/t/etetoolkit,ete3,ete,ete2/
 
 - Bug reports, feature requests and general discussion should be posted into github:
   https://github.com/etetoolkit/ete/issues

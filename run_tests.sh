@@ -81,7 +81,7 @@ optional() {
     fi
 }
 
-setup_miniconda() {
+setup_miniconda3() {
     if ! [ -f "${CONDA}/bin/conda" ]; then
         clr_green ">>> Downloading miniconda for $PLATFORM... "
         echo "${CONDA}/bin/conda"
@@ -119,6 +119,48 @@ setup_miniconda() {
     handle_error "$?" "ERROR: Failed to collect information about conda" "$info_output"
     clr_green "DONE"
 }
+
+setup_miniconda2() {
+    if ! [ -f "${CONDA}/bin/conda" ]; then
+        clr_green ">>> Downloading miniconda for $PLATFORM... "
+        echo "${CONDA}/bin/conda"
+        if [[ $PLATFORM == 'Linux' ]]; then
+            run "wget -nv https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh 2>&1 | tee -a ${LOG}"
+            handle_error "$?" "ERROR: Failed to download miniconda installation script" "$wget_output"
+            clr_green "DONE"
+        elif [[ $PLATFORM == 'Darwin' ]]; then
+            run "wget -nv https://repo.continuum.io/miniconda/Miniconda2-latest-MacOSX-x86_64.sh -O miniconda.sh 2>&1 | tee -a ${LOG}"
+            handle_error "$?" "ERROR: Failed to download miniconda installation script" "$wget_output"
+            clr_green "DONE"
+        else
+            handle_error "1" "OS not supported"
+        fi
+
+        clr_green ">>> Installing miniconda... "
+        run "bash miniconda.sh -b -p "${CONDA}" 2>&1 | tee -a ${LOG}"
+        handle_error "$?" "ERROR: Failed to install miniconda" "$install_output"
+        clr_green "DONE"
+
+        clr_green ">>> Updating miniconda packages and package information... "
+        run "${CONDA}/bin/conda update -q -y conda 2>&1 | tee -a ${LOG}"
+        handle_error "$?" "ERROR: Failed to update conda packages" "$conda_update_output"
+        clr_green "DONE"
+
+        clr_green ">>> Cleaning up miniconda installation files... "
+        run "rm -f miniconda.sh 2>&1 | tee -a ${LOG}"
+        handle_error "$?" "ERROR: Failed to remove miniconda.sh" "$clean_output"
+        clr_green "DONE"
+
+    fi
+
+    clr_green ">>> Collecting information about conda... "
+    run "${CONDA}/bin/conda info -a 2>&1 | tee -a ${LOG}"
+    handle_error "$?" "ERROR: Failed to collect information about conda" "$info_output"
+    clr_green "DONE"
+}
+
+
+
 
 create_env_qt4() {
     # env_output=$("${CONDA}/bin/conda" env list | grep "test_${VERSION}")
@@ -159,7 +201,7 @@ create_env_27() {
     clr_green ">>> Creating test environment for version ${VERSION}... "
     run "${CONDA}/bin/conda env remove -y -n test_${VERSION} || true"
 
-    run "${CONDA}/bin/conda create -q -y -n test_${VERSION} python=${VERSION} pip=10 pyqt qt numpy six lxml coverage scikit-bio biopython scipy"
+    run "${CONDA}/bin/conda create -q -y -n test_${VERSION} python=${VERSION} pyqt qt numpy six lxml coverage scikit-bio biopython scipy"
     clr_green "DONE"
 }
 
@@ -305,12 +347,15 @@ echo -n > "${LOG}"
 trap 'exitcode=$? ; showlog ; exit $exitcode' EXIT HUP INT QUIT TERM
 
 if [ "${SETUP}" == "1" ]; then
-    setup_miniconda
+    
     if [ "$QT4" == "1" ]; then
+        setup_miniconda3
         create_env_qt4
     elif [ "${VERSION}" == "2.7" ]; then
+        setup_miniconda2
         create_env_27
     else
+        setup_miniconda3
         create_env
     fi
     install_external_apps
