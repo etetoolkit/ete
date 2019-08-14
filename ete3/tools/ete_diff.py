@@ -306,7 +306,7 @@ def populate_args(diff_args_p):
 def run(args):
         
     if not args.ref_trees or not args.src_trees:
-        logging.warning("Target tree (-t argument) or source tree (-s argument) were not specified")
+        logging.warning("Target tree (-t argument) or reference tree (-r argument) were not specified")
         
     else:
         if args.quiet:
