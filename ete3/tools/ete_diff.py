@@ -41,6 +41,7 @@ from __future__ import print_function
 
 import time
 import numpy as np
+import numpy.linalg as la
 import lap
 import random
 import time
@@ -62,8 +63,8 @@ EUCL_DIST = lambda a,b: 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))
 
 def EUCL_DIST_B(a,b):    
         
-    dist_a = sum([descendant.dist for descendant in a[0].iter_leaves() if descendant.name in(a[1] ^ b[1] & a[1])])
-    dist_b = sum([descendant.dist for descendant in b[0].iter_leaves() if descendant.name in(b[1] ^ a[1] & b[1])])
+    dist_a = sum([descendant.dist for descendant in a[0].iter_leaves() if descendant.name in(a[1] - b[1])])
+    dist_b = sum([descendant.dist for descendant in b[0].iter_leaves() if descendant.name in(b[1] - a[1])])
     
     return 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)
 
@@ -73,6 +74,54 @@ def RF_DIST(a, b):
     (a, b) = (b, a) if len(b[1]) > len(a[1]) else (a,b)
     rf, rfmax, names, side1, side2, d1, d2 = a[0].robinson_foulds(b[0])
     return (rf/rfmax if rfmax else 0.0)
+
+def bl(difftable):
+    nodes = np.array(difftable)[:,-2:]
+    #print(nodes[0,0].cophenetic_matrix())
+    for i, n in enumerate(nodes[:]):
+        cm1, _ = n[0].cophenetic_matrix()
+        cm2, _ = n[1].cophenetic_matrix()
+        branch_dist=0
+        print(cm1,cm2)
+        for j1, j2 in itertools.combinations([np.array(cm1),np.array(cm2)],2):
+            print(j1,j2,'\n')
+            branch_dist+=la.norm(j1-j2)
+        difftable[i][0]+=branch_dist
+        
+def get_distances(t1,t2):
+    
+    def _get_leaves_path(t):
+        leaves = t.get_leaves()
+        leave_branches = set()
+
+        for n in leaves:
+            if n.is_root():
+                continue
+            movingnode = n
+            length = 0
+            while not movingnode.is_root():
+                length += movingnode.dist
+                movingnode = movingnode.up
+            leave_branches.add((n.name,length))
+
+        return leave_branches
+
+    def _get_distances(leave_distances1,leave_distances2):
+
+        
+        all_leaves = leave_distances1 | leave_distances2
+        shared_leaves = leave_distances1 & leave_distances2
+        unique_leaves1 = leave_distances1 - leave_distances2
+        unique_leaves2 = leave_distances2 - leave_distances1
+
+        distance = 0
+        distance = sum([abs(leaf[1]-leaf[1]) for leaf in shared_leaves])
+        distance += sum([leaf[1] for leaf in unique_leaves1])
+        distance += sum([leaf[1] for leaf in unique_leaves2])
+        
+        return distance
+
+    return _get_distances(_get_leaves_path(t1),_get_leaves_path(t2))    
 
 def sepstring(items, sep=", "):
     return sep.join(sorted(map(str, items)))
@@ -134,30 +183,31 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False):
     difftable = []
     for r, c in indexes:
         if matrix[r][c] != 0:
-            dist, side1, side2, diff, n1, n2 = (matrix[r][c], parts1[r][1], parts2[c][1],
-                                                parts1[r][1].symmetric_difference(parts2[c][1]),
-                                                parts1[r][0], parts2[c][0])
-            difftable.append([dist, side1, side2, diff, n1, n2])
-                 
+            dist,b_dist, side1, side2, diff, n1, n2 = (matrix[r][c],get_distances(parts1[r][0],parts2[c][0]),
+                                                       parts1[r][1], parts2[c][1],
+                                                       parts1[r][1].symmetric_difference(parts2[c][1]),
+                                                       parts1[r][0], parts2[c][0])
+            difftable.append([dist, b_dist, side1, side2, diff, n1, n2])
+          
     return difftable
 
 def show_difftable_summary(difftable, rf=-1, rf_max=-1):
     total_dist = 0
-    for dist, side1, side2, diff, n1, n2 in difftable:
+    for dist, b_dist, side1, side2, diff, n1, n2 in difftable:
         total_dist += dist
     log.info("\n"+"\t".join(["Distance", "mismatches", "RF", "maxRF"]))
     print("%0.6f\t% 10d\t%d\t%d" %(total_dist, len(difftable), rf, rf_max))
 
 def show_difftable(difftable):
     showtable = []
-    for dist, side1, side2, diff, n1, n2 in difftable:
-        showtable.append([dist, len(side1), len(side2), len(diff), sepstring(diff)])
+    for dist, b_dist, side1, side2, diff, n1, n2 in difftable:
+        showtable.append([dist, b_dist, len(side1), len(side2), len(diff), sepstring(diff)])
     print_table(showtable, header=["distance", "size1", "size2", "ndiffs", "diff"],
                 max_col_width=80, wrap_style="wrap", row_line=True)
 
 def show_difftable_tab(difftable):
     showtable = []
-    for dist, side1, side2, diff, n1, n2 in difftable:
+    for dist, b_dist, side1, side2, diff, n1, n2 in difftable:
         showtable.append([dist, len(side1), len(side2), len(diff),
                           sepstring(side1, "|"), sepstring(side2, "|"),
                           sepstring(diff, "|")])
@@ -170,7 +220,7 @@ def show_difftable_topo(difftable, attr1, attr2, usecolor=False):
     showtable = []
     maxcolwidth = 80
     total_dist = 0
-    for dist, side1, side2, diff, n1, n2 in sorted(difftable, reverse=True):
+    for dist, b_dist, side1, side2, diff, n1, n2 in sorted(difftable, reverse=True):
         total_dist += dist
         n1 = Tree(n1.write(features=[attr1]))
         n2 = Tree(n2.write(features=[attr2]))
@@ -206,8 +256,8 @@ def show_difftable_topo(difftable, attr1, attr2, usecolor=False):
             start = topowidth2 - maxcolwidth
             topo2 = '\n'.join([line[start+1:] for line in topo2_lines])
                 
-        showtable.append([dist, "%d/%d (%d)" %(len(side1), len(side2),len(diff)), topo1, topo2])
-    print_table(showtable, header=["Dist", "#diffs", "Tree1", "Tree2"],
+        showtable.append([dist, b_dist, "%d/%d (%d)" %(len(side1), len(side2),len(diff)), topo1, topo2])
+    print_table(showtable, header=["Dist", "Branch Dist", "#diffs", "Tree1", "Tree2"],
                 max_col_width=maxcolwidth, wrap_style="wrap", row_line=True)
     
     log.info("Total euclidean distance:\t%0.4f\tMismatching nodes:\t%d" %(total_dist, len(difftable)))
@@ -309,3 +359,5 @@ def run(args):
                         show_difftable_summary(difftable, rf, rf_max)
                 else:
                     log.info("Difference between (Reference) %s and (Target) %s returned no results" % (rtree, ttree))
+
+                    
