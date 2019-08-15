@@ -115,7 +115,7 @@ def get_distances(t1,t2):
         unique_leaves2 = leave_distances2 - leave_distances1
 
         distance = 0
-        distance = sum([abs(leaf[1]-leaf[1]) for leaf in shared_leaves])
+        distance += sum([abs(leaf[1]-leaf[1]) for leaf in shared_leaves])
         distance += sum([leaf[1] for leaf in unique_leaves1])
         distance += sum([leaf[1] for leaf in unique_leaves2])
         
@@ -126,7 +126,7 @@ def get_distances(t1,t2):
 def sepstring(items, sep=", "):
     return sep.join(sorted(map(str, items)))
 
-def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False):
+def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extended=False):
     log.info("Computing distance matrix...")
     t1_cached_content = t1.get_cached_content(store_attr=attr1)
     t2_cached_content = t2.get_cached_content(store_attr=attr2)
@@ -181,40 +181,73 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False):
     indexes= zip(row,col)
 
     difftable = []
+    b_dist = -1
     for r, c in indexes:
         if matrix[r][c] != 0:
-            dist,b_dist, side1, side2, diff, n1, n2 = (matrix[r][c],get_distances(parts1[r][0],parts2[c][0]),
+            if extended:
+                b_dist = get_distances(parts1[r][0], parts2[c][0])
+            else:
+                pass
+                
+            dist, side1, side2, diff, n1, n2 = (matrix[r][c], 
                                                        parts1[r][1], parts2[c][1],
                                                        parts1[r][1].symmetric_difference(parts2[c][1]),
                                                        parts1[r][0], parts2[c][0])
             difftable.append([dist, b_dist, side1, side2, diff, n1, n2])
-          
+ 
     return difftable
 
-def show_difftable_summary(difftable, rf=-1, rf_max=-1):
+
+
+### REPORTS ###
+
+def show_difftable_summary(difftable, rf=-1, rf_max=-1, extended=False):
     total_dist = 0
+    total_bdist = 0
     for dist, b_dist, side1, side2, diff, n1, n2 in difftable:
         total_dist += dist
-    log.info("\n"+"\t".join(["Distance", "mismatches", "RF", "maxRF"]))
-    print("%0.6f\t% 10d\t%d\t%d" %(total_dist, len(difftable), rf, rf_max))
+        total_bdist += b_dist
+        
+    if extended:
+        log.info("\n"+"\t".join(["Dist", "Branch Dist", "Mismatches", "RF", "maxRF"]))
+        print("%0.6f\t%0.6f\t%10d\t%d\t%d" %(total_dist,total_bdist, len(difftable), rf, rf_max))
+    else:
+        log.info("\n"+"\t".join(["Dist", "Mismatches", "RF", "maxRF"]))
+        print("%0.6f\t%10d\t%d\t%d" %(total_dist, len(difftable), rf, rf_max))
 
-def show_difftable(difftable):
+def show_difftable(difftable, extended=False):
     showtable = []
-    for dist, b_dist, side1, side2, diff, n1, n2 in difftable:
-        showtable.append([dist, b_dist, len(side1), len(side2), len(diff), sepstring(diff)])
-    print_table(showtable, header=["distance", "size1", "size2", "ndiffs", "diff"],
-                max_col_width=80, wrap_style="wrap", row_line=True)
+    
+    if extended:
+        for dist, b_dist, side1, side2, diff, n1, n2 in difftable:
+            showtable.append([dist, b_dist, len(side1), len(side2), len(diff), sepstring(diff)])
+        print_table(showtable, header=["Dist", "Branch Dist", "Size1", "Size2", "ndiffs", "Diff"],
+                    max_col_width=80, wrap_style="wrap", row_line=True)
+    else:
+        for dist, b_dist, side1, side2, diff, n1, n2 in difftable:
+            showtable.append([dist, len(side1), len(side2), len(diff), sepstring(diff)])
+        print_table(showtable, header=["Dist", "Size1", "Size2", "ndiffs", "Diff"],
+                    max_col_width=80, wrap_style="wrap", row_line=True)
 
-def show_difftable_tab(difftable):
+def show_difftable_tab(difftable, extended=False):
     showtable = []
-    for dist, b_dist, side1, side2, diff, n1, n2 in difftable:
-        showtable.append([dist, len(side1), len(side2), len(diff),
-                          sepstring(side1, "|"), sepstring(side2, "|"),
-                          sepstring(diff, "|")])
-    print('#' + '\t'.join(["distance", "size1", "size2", "ndiffs", "diff", "refTree", "targetTree"]))
+    
+    if extended:
+        for dist, b_dist, side1, side2, diff, n1, n2 in difftable:
+            showtable.append([dist, b_dist, len(side1), len(side2), len(diff),
+                              sepstring(side1, "|"), sepstring(side2, "|"),
+                              sepstring(diff, "|")])
+        print('#' + '\t'.join(["Dist", "Branch Dist", "Size1", "Size2", "ndiffs", "Diff", "refTree", "targetTree"]))
+    else:
+        for dist, b_dist, side1, side2, diff, n1, n2 in difftable:
+            showtable.append([dist, len(side1), len(side2), len(diff),
+                              sepstring(side1, "|"), sepstring(side2, "|"),
+                              sepstring(diff, "|")])
+        print('#' + '\t'.join(["Dist", "Size1", "Size2", "ndiffs", "Diff", "refTree", "targetTree"]))
+        
     print('\n'.join(['\t'.join(map(str, items)) for items in showtable]))
     
-def show_difftable_topo(difftable, attr1, attr2, usecolor=False):
+def show_difftable_topo(difftable, attr1, attr2, usecolor=False, extended=False):
     if not difftable:
         return
     showtable = []
@@ -255,11 +288,19 @@ def show_difftable_topo(difftable, attr1, attr2, usecolor=False):
         if topowidth2 > maxcolwidth:
             start = topowidth2 - maxcolwidth
             topo2 = '\n'.join([line[start+1:] for line in topo2_lines])
-                
-        showtable.append([dist, b_dist, "%d/%d (%d)" %(len(side1), len(side2),len(diff)), topo1, topo2])
-    print_table(showtable, header=["Dist", "Branch Dist", "#diffs", "Tree1", "Tree2"],
-                max_col_width=maxcolwidth, wrap_style="wrap", row_line=True)
+        
+        if extended:
+            showtable.append([dist, b_dist, "%d/%d (%d)" %(len(side1), len(side2),len(diff)), topo1, topo2])
+        else:
+            showtable.append([dist, "%d/%d (%d)" %(len(side1), len(side2),len(diff)), topo1, topo2])
     
+    if extended:
+        print_table(showtable, header=["Dist", "Branch Dist", "#Diffs", "Tree1", "Tree2"],
+                    max_col_width=maxcolwidth, wrap_style="wrap", row_line=True)
+    else:
+        print_table(showtable, header=["Dist", "#Diffs", "Tree1", "Tree2"],
+                    max_col_width=maxcolwidth, wrap_style="wrap", row_line=True)    
+        
     log.info("Total euclidean distance:\t%0.4f\tMismatching nodes:\t%d" %(total_dist, len(difftable)))
        
 def populate_args(diff_args_p):
@@ -286,7 +327,7 @@ def populate_args(diff_args_p):
                         help="Do not show process information")
     
     diff_args.add_argument("--report", dest="report",
-                        choices=["topology", "diffs", "diffs_tab", "summary"],
+                        choices=["topology", "diffs", "diffs_tab", "summary","table"],
                         default = "topology",
                         help="Different format for the comparison results")
 
@@ -303,8 +344,25 @@ def populate_args(diff_args_p):
                            help=('Distance measure: e = Euclidean distance, rf = Robinson-Foulds symetric distance'
                                  ' eb = Euclidean distance + branch length difference between disjoint leaves'))
     
+    diff_args.add_argument("--extended", dest="extended",
+                           action="store_true",
+                           help=('Extend with branch distance after node comparison'))
+    
 def run(args):
-        
+    
+    for i in range(3):
+        for i in [10000]:
+            t1=Tree()
+            t1.populate(i)
+            t2=Tree()
+            t2.populate(i)
+
+            st=time.time()
+            difftable = treediff(t1, t2, 'name', 'name', EUCL_DIST, False, extended=True)
+            print(time.time()-st)
+    
+    quit()
+    
     if not args.ref_trees or not args.src_trees:
         logging.warning("Target tree (-t argument) or reference tree (-r argument) were not specified")
         
@@ -337,7 +395,14 @@ def run(args):
                             leaf.name=taxid2name.get(int(leaf.name), leaf.name)
                         except ValueError:
                             pass
-
+                        
+                # Report extension
+                if args.extended == 1:
+                    extend = True
+                else:
+                    extend = False
+                    
+                # Distance selection
                 if args.distance == 'e':
                     dist_fn = EUCL_DIST
                 elif args.distance == 'rf':
@@ -345,18 +410,18 @@ def run(args):
                 elif args.distance == 'eb':
                     dist_fn = EUCL_DIST_B
                 
-                difftable = treediff(t1, t2, args.ref_attr, args.target_attr, dist_fn, args.fullsearch)
+                difftable = treediff(t1, t2, args.ref_attr, args.target_attr, dist_fn, args.fullsearch, extended=extend)
 
                 if len(difftable) != 0:
                     if args.report == "topology":
-                        show_difftable_topo(difftable, args.ref_attr, args.target_attr, usecolor=args.color)
+                        show_difftable_topo(difftable, args.ref_attr, args.target_attr, usecolor=args.color,extended=extend)
                     elif args.report == "diffs":
-                        show_difftable(difftable)
+                        show_difftable(difftable, extended=extend)
                     elif args.report == "diffs_tab":
-                        show_difftable_tab(difftable)
+                        show_difftable_tab(difftable, extended=extend)
                     elif args.report == 'table':
-                        rf, rf_max, _, _, _, _, _ = t1.robinson_foulds(t2, attr_t1=args.ref_attr, attr_t2=args.target_attr)[:2]
-                        show_difftable_summary(difftable, rf, rf_max)
+                        rf, rf_max, _, _, _, _, _ = t1.robinson_foulds(t2, attr_t1=args.ref_attr, attr_t2=args.target_attr)
+                        show_difftable_summary(difftable, rf, rf_max, extended=extend)
                 else:
                     log.info("Difference between (Reference) %s and (Target) %s returned no results" % (rtree, ttree))
 
