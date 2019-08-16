@@ -47,6 +47,7 @@ import random
 import time
 import sys
 import itertools
+import multiprocessing as mp
 
 from ..coretype.tree import Tree
 from ..utils import print_table, color
@@ -59,10 +60,13 @@ log = logging.Logger("main")
 
 DESC = ""
 
-EUCL_DIST = lambda a,b: 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) # 24
+# EUCL_DIST = lambda a,b: 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) # 24
 
-def EUCL_DIST_B(a,b):    
-        
+def EUCL_DIST(a,b):  
+    return 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1])))
+
+def EUCL_DIST_B(a,b): 
+
     dist_a = sum([descendant.dist for descendant in a[0].iter_leaves() if descendant.name in(a[1] - b[1])])
     dist_b = sum([descendant.dist for descendant in b[0].iter_leaves() if descendant.name in(b[1] - a[1])])
     
@@ -75,18 +79,18 @@ def RF_DIST(a, b):
     rf, rfmax, names, side1, side2, d1, d2 = a[0].robinson_foulds(b[0])
     return (rf/rfmax if rfmax else 0.0)
 
-def bl(difftable):
-    nodes = np.array(difftable)[:,-2:]
-    #print(nodes[0,0].cophenetic_matrix())
-    for i, n in enumerate(nodes[:]):
-        cm1, _ = n[0].cophenetic_matrix()
-        cm2, _ = n[1].cophenetic_matrix()
-        branch_dist=0
-        print(cm1,cm2)
-        for j1, j2 in itertools.combinations([np.array(cm1),np.array(cm2)],2):
-            print(j1,j2,'\n')
-            branch_dist+=la.norm(j1-j2)
-        difftable[i][0]+=branch_dist
+# def bl(difftable):
+#     nodes = np.array(difftable)[:,-2:]
+
+#     for i, n in enumerate(nodes[:]):
+#         cm1, _ = n[0].cophenetic_matrix()
+#         cm2, _ = n[1].cophenetic_matrix()
+#         branch_dist=0
+#         print(cm1,cm2)
+#         for j1, j2 in itertools.combinations([np.array(cm1),np.array(cm2)],2):
+#             print(j1,j2,'\n')
+#             branch_dist+=la.norm(j1-j2)
+#         difftable[i][0]+=branch_dist
         
 def get_distances(t1,t2):
     
@@ -126,7 +130,11 @@ def get_distances(t1,t2):
 def sepstring(items, sep=", "):
     return sep.join(sorted(map(str, items)))
 
-def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extended=False):
+
+
+### Treediff ###
+
+def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extended=False, cores=1):
     log.info("Computing distance matrix...")
     t1_cached_content = t1.get_cached_content(store_attr=attr1)
     t2_cached_content = t2.get_cached_content(store_attr=attr2)
@@ -141,8 +149,12 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extend
     parts2 = sorted(parts2, key = sortSecond)
     
     log.info( "Calculating distance matrix...")
-
+    
     matrix = [[dist_fn((n1,a), (n2,b)) for n2,b in parts2] for n1,a in parts1]
+
+#     pool = mp.Pool(cores)
+#     matrix = [[pool.apply(dist_fn,args=((n1,x),(n2,y))) for n2,y in parts2] for n1,x in parts1]
+#     pool.close()
 
     # Reduce matrix to avoid useless comparisons
     if reduce_matrix:
@@ -348,20 +360,15 @@ def populate_args(diff_args_p):
                            action="store_true",
                            help=('Extend with branch distance after node comparison'))
     
+    diff_args.add_argument("-C", "--cpu", dest="maxcores", type=int,
+                            default=1, help="Maximum number of CPU cores"
+                            " available in the execution host. If higher"
+                            " than 1, tasks with multi-threading"
+                            " capabilities will enabled. Note that this"
+                            " number will work as a hard limit for all applications,"
+                            "regardless of their specific configuration.")
+    
 def run(args):
-    
-    for i in range(3):
-        for i in [10000]:
-            t1=Tree()
-            t1.populate(i)
-            t2=Tree()
-            t2.populate(i)
-
-            st=time.time()
-            difftable = treediff(t1, t2, 'name', 'name', EUCL_DIST, False, extended=True)
-            print(time.time()-st)
-    
-    quit()
     
     if not args.ref_trees or not args.src_trees:
         logging.warning("Target tree (-t argument) or reference tree (-r argument) were not specified")
@@ -409,8 +416,13 @@ def run(args):
                     dist_fn = RF_DIST
                 elif args.distance == 'eb':
                     dist_fn = EUCL_DIST_B
+                    
+                if args.maxcores == -1:
+                    maxcores = mp.cpu_count()
+                else:
+                    maxcores = args.maxcores
                 
-                difftable = treediff(t1, t2, args.ref_attr, args.target_attr, dist_fn, args.fullsearch, extended=extend)
+                difftable = treediff(t1, t2, args.ref_attr, args.target_attr, dist_fn, args.fullsearch, extended=extend,cores=maxcores)
 
                 if len(difftable) != 0:
                     if args.report == "topology":
