@@ -41,7 +41,7 @@ from __future__ import print_function
 
 import time
 import numpy as np
-import numpy.linalg as la
+import numpy.linalg as LA
 import lap
 import random
 import time
@@ -88,7 +88,7 @@ def bl(difftable):
             branch_dist+=la.norm(j1-j2)
         difftable[i][0]+=branch_dist
         
-def get_distances(t1,t2):
+def get_distances1(t1,t2):
     
     def _get_leaves_path(t):
         leaves = t.get_leaves()
@@ -122,6 +122,61 @@ def get_distances(t1,t2):
         return distance
 
     return _get_distances(_get_leaves_path(t1),_get_leaves_path(t2))    
+
+
+def get_distances2(t1,t2):
+    def cophenetic_compared_matrix(t_source,t_compare):
+
+        leaves = t_source.get_leaves()
+        paths = {x.name: set() for x in leaves}
+
+        # get the paths going up the tree
+        # we get all the nodes up to the last one and store them in a set
+
+        for n in leaves:
+            if n.is_root():
+                continue
+            movingnode = n
+            while not movingnode.is_root():
+                paths[n.name].add(movingnode)
+                movingnode = movingnode.up
+
+        # We set the paths for leaves not in the source tree as empty to indicate they are non-existent
+
+        for i in (set(x.name for x in t_compare.get_leaves()) - set(x.name for x in t_source.get_leaves())):
+            paths[i] = set()
+
+        # now we want to get all pairs of nodes using itertools combinations. We need AB AC etc but don't need BA CA
+
+        leaf_distances = {x: {} for x in paths.keys()}
+
+        for (leaf1, leaf2) in itertools.combinations(paths.keys(), 2):
+            # figure out the unique nodes in the path
+            if len(paths[leaf1]) > 0 and len(paths[leaf2]) > 0:
+                uniquenodes = paths[leaf1] ^ paths[leaf2]
+                distance = sum(x.dist for x in uniquenodes)
+            else:
+                distance = 0
+            leaf_distances[leaf1][leaf2] = leaf_distances[leaf2][leaf1] = distance
+
+        allleaves = sorted(leaf_distances.keys()) # the leaves in order that we will return
+
+        output = [] # the two dimensional array that we will return
+
+        for i, n in enumerate(allleaves):
+            output.append([])
+            for m in allleaves:
+                if m == n:
+                    output[i].append(0) # distance to ourself = 0
+                else:
+                    output[i].append(leaf_distances[n][m])
+        return np.asarray(output)
+
+    ccm1 = cophenetic_compared_matrix(t1,t2)
+    ccm2 = cophenetic_compared_matrix(t2,t1)
+    
+    return LA.norm(ccm1-ccm2)
+
 
 def sepstring(items, sep=", "):
     return sep.join(sorted(map(str, items)))
@@ -183,7 +238,7 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False):
     difftable = []
     for r, c in indexes:
         if matrix[r][c] != 0:
-            dist,b_dist, side1, side2, diff, n1, n2 = (matrix[r][c],get_distances(parts1[r][0],parts2[c][0]),
+            dist,b_dist, side1, side2, diff, n1, n2 = (matrix[r][c],get_distances2(parts1[r][0],parts2[c][0]),
                                                        parts1[r][1], parts2[c][1],
                                                        parts1[r][1].symmetric_difference(parts2[c][1]),
                                                        parts1[r][0], parts2[c][0])
