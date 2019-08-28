@@ -251,16 +251,12 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extend
     b_dist = -1
     for r, c in indexes:
         if matrix[r][c] != 0:
-<<<<<<< HEAD
-            dist,b_dist, side1, side2, diff, n1, n2 = (matrix[r][c],get_distances2(parts1[r][0],parts2[c][0]),
-=======
             if extended:
                 b_dist = get_distances(parts1[r][0], parts2[c][0])
             else:
                 pass
                 
             dist, side1, side2, diff, n1, n2 = (matrix[r][c], 
->>>>>>> 7a56d928957310fc9261dced4c6170d41309e6fb
                                                        parts1[r][1], parts2[c][1],
                                                        parts1[r][1].symmetric_difference(parts2[c][1]),
                                                        parts1[r][0], parts2[c][0])
