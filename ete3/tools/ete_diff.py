@@ -79,7 +79,7 @@ def RF_DIST(a, b):
     rf, rfmax, names, side1, side2, d1, d2 = a[0].robinson_foulds(b[0])
     return (rf/rfmax if rfmax else 0.0)
 
-# def bl(difftable):
+# def bl(difftable): #This won't work always
 #     nodes = np.array(difftable)[:,-2:]
 
 #     for i, n in enumerate(nodes[:]):
@@ -119,7 +119,6 @@ def get_distances1(t1,t2):
         unique_leaves2 = leave_distances2 - leave_distances1
 
         distance = 0
-        distance += sum([abs(leaf[1]-leaf[1]) for leaf in shared_leaves])
         distance += sum([leaf[1] for leaf in unique_leaves1])
         distance += sum([leaf[1] for leaf in unique_leaves2])
         
@@ -252,14 +251,14 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extend
     for r, c in indexes:
         if matrix[r][c] != 0:
             if extended:
-                b_dist = get_distances(parts1[r][0], parts2[c][0])
+                b_dist = get_distances2(parts1[r][0], parts2[c][0])
             else:
                 pass
                 
             dist, side1, side2, diff, n1, n2 = (matrix[r][c], 
-                                                       parts1[r][1], parts2[c][1],
-                                                       parts1[r][1].symmetric_difference(parts2[c][1]),
-                                                       parts1[r][0], parts2[c][0])
+                                                parts1[r][1], parts2[c][1],
+                                                parts1[r][1].symmetric_difference(parts2[c][1]),
+                                                parts1[r][0], parts2[c][0])
             difftable.append([dist, b_dist, side1, side2, diff, n1, n2])
  
     return difftable
