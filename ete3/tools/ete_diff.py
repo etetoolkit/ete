@@ -48,7 +48,6 @@ import time
 import sys
 import itertools
 import multiprocessing as mp
-import munkres as mk
 
 from ..coretype.tree import Tree
 from ..utils import print_table, color
@@ -201,10 +200,11 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extend
                 pass
         
         cols_to_include = sorted(cols_to_include)
-        new_matrix = []
+
         parts1 = [parts1[row] for row in rows_to_include]
         parts2 = [parts2[col] for col in cols_to_include]
         
+        new_matrix = []
         for row in rows_to_include:
             new_matrix.append([matrix[row][col] for col in cols_to_include])
  
