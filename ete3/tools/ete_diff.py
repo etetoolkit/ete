@@ -99,14 +99,10 @@ def get_distances1(t1,t2):
 
     def _get_distances(leaf_distances1,leaf_distances2):
 
-        unique_leaves1 = leave_distances1 - leave_distances2
-        unique_leaves2 = leave_distances2 - leave_distances1
-
-        distance = 0
-        distance += sum([leaf[1] for leaf in unique_leaves1])
-        distance += sum([leaf[1] for leaf in unique_leaves2])
+        unique_leaves1 = leaf_distances1 - leaf_distances2
+        unique_leaves2 = leaf_distances2 - leaf_distances1
         
-        return distance
+        return abs(sum([leaf[1] for leaf in unique_leaves1]) - sum([leaf[1] for leaf in unique_leaves2]))
 
     return _get_distances(_get_leaves_paths(t1),_get_leaves_paths(t2))    
 
@@ -232,7 +228,7 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extend
         r = rows[c]
         if matrix[r][c] != 0:
             if extended:
-                b_dist = get_distances2(parts1[r][0], parts2[c][0])
+                b_dist = get_distances1(parts1[r][0], parts2[c][0])
             else:
                 pass
                 
