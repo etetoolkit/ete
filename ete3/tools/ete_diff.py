@@ -220,18 +220,16 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extend
             
         matrix = new_matrix
 
-
     log.info("Comparing trees...")
     
     matrix = np.asarray(matrix, dtype=np.float32)
 
-    _ , col, row = lap.lapjv(matrix,extend_cost=True)
-    indexes= zip(row,col)
-
+    _ , _ , rows = lap.lapjv(matrix,extend_cost=True)
 
     difftable = []
     b_dist = -1
-    for r, c in indexes:
+    for c in range(len(matrix)):
+        r = rows[c]
         if matrix[r][c] != 0:
             if extended:
                 b_dist = get_distances2(parts1[r][0], parts2[c][0])
