@@ -48,6 +48,7 @@ import time
 import sys
 import itertools
 import multiprocessing as mp
+import munkres as mk
 
 from ..coretype.tree import Tree
 from ..utils import print_table, color
@@ -78,23 +79,9 @@ def RF_DIST(a, b):
     (a, b) = (b, a) if len(b[1]) > len(a[1]) else (a,b)
     rf, rfmax, names, side1, side2, d1, d2 = a[0].robinson_foulds(b[0])
     return (rf/rfmax if rfmax else 0.0)
-
-# def bl(difftable): #This won't work always
-#     nodes = np.array(difftable)[:,-2:]
-
-#     for i, n in enumerate(nodes[:]):
-#         cm1, _ = n[0].cophenetic_matrix()
-#         cm2, _ = n[1].cophenetic_matrix()
-#         branch_dist=0
-#         print(cm1,cm2)
-#         for j1, j2 in itertools.combinations([np.array(cm1),np.array(cm2)],2):
-#             print(j1,j2,'\n')
-#             branch_dist+=la.norm(j1-j2)
-#         difftable[i][0]+=branch_dist
         
 def get_distances1(t1,t2):
-    
-    def _get_leaves_path(t):
+    def _get_leaves_paths(t):
         leaves = t.get_leaves()
         leave_branches = set()
 
@@ -110,11 +97,8 @@ def get_distances1(t1,t2):
 
         return leave_branches
 
-    def _get_distances(leave_distances1,leave_distances2):
+    def _get_distances(leaf_distances1,leaf_distances2):
 
-        
-        all_leaves = leave_distances1 | leave_distances2
-        shared_leaves = leave_distances1 & leave_distances2
         unique_leaves1 = leave_distances1 - leave_distances2
         unique_leaves2 = leave_distances2 - leave_distances1
 
@@ -124,7 +108,7 @@ def get_distances1(t1,t2):
         
         return distance
 
-    return _get_distances(_get_leaves_path(t1),_get_leaves_path(t2))    
+    return _get_distances(_get_leaves_paths(t1),_get_leaves_paths(t2))    
 
 
 def get_distances2(t1,t2):
@@ -196,11 +180,8 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extend
     parts1 = [(k, v) for k, v in t1_cached_content.items() if k.children]
     parts2 = [(k, v) for k, v in t2_cached_content.items() if k.children]
 
-    def sortSecond(val):
-        return len(val[1])
-
-    parts1 = sorted(parts1, key = sortSecond)
-    parts2 = sorted(parts2, key = sortSecond)
+    parts1 = sorted(parts1, key = lambda x : len(x[1]))
+    parts2 = sorted(parts2, key = lambda x : len(x[1]))
     
     log.info( "Calculating distance matrix...")
     
@@ -228,23 +209,25 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extend
         parts1 = [parts1[row] for row in rows_to_include]
         parts2 = [parts2[col] for col in cols_to_include]
         
+        for row in rows_to_include:
+            new_matrix.append([matrix[row][col] for col in cols_to_include])
+ 
         if len(new_matrix) < 1:
             return new_matrix
         
-        for row in rows_to_include:
-            new_matrix.append([matrix[row][col] for col in cols_to_include])
-            
         log.info("Distance matrix reduced from %dx%d to %dx%d" %\
                 (len(matrix), len(matrix[0]), len(new_matrix), len(new_matrix[0])))
             
         matrix = new_matrix
-    
+
+
     log.info("Comparing trees...")
     
     matrix = np.asarray(matrix, dtype=np.float32)
 
     _ , col, row = lap.lapjv(matrix,extend_cost=True)
     indexes= zip(row,col)
+
 
     difftable = []
     b_dist = -1
@@ -475,7 +458,7 @@ def run(args):
                     maxcores = mp.cpu_count()
                 else:
                     maxcores = args.maxcores
-                
+
                 difftable = treediff(t1, t2, args.ref_attr, args.target_attr, dist_fn, args.fullsearch, extended=extend,cores=maxcores)
 
                 if len(difftable) != 0:
