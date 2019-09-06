@@ -228,7 +228,7 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extend
         r = rows[c]
         if matrix[r][c] != 0:
             if extended:
-                b_dist = get_distances1(parts1[r][0], parts2[c][0])
+                b_dist = get_distances2(parts1[r][0], parts2[c][0])
             else:
                 pass
                 
