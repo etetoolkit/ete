@@ -217,11 +217,11 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extend
         matrix = new_matrix
 
     log.info("Comparing trees...")
-    [print(list(map(lambda x: round(x,2),i))) for i in matrix]
+
     matrix = np.asarray(matrix, dtype=np.float32)
 
     _ , cols , _ = lap.lapjv(matrix,extend_cost=True)
-    print(cols)
+
     difftable = []
     b_dist = -1
     for r in range(len(matrix)):
