@@ -39,11 +39,13 @@
 import math
 import re
 import six
+import warnings
 
 from .qt import *
 from . import qt4_circular_render as crender
 from . import qt4_rect_render as rrender
 from .main import _leaf, NodeStyle, _FaceAreas, tracktime, TreeStyle
+from ..treeview.faces import CircleFace, RectFace
 from .node_gui_actions import _NodeActions as _ActionDelegator
 from .qt4_face_render import update_node_faces, _FaceGroupItem, _TextFaceItem
 from .templates import _DEFAULT_STYLE, apply_template
@@ -83,6 +85,7 @@ class _CircleItem(QGraphicsEllipseItem, _ActionDelegator):
         self.setBrush(QBrush(QColor(self.node.img_style["fgcolor"])))
         self.setPen(QPen(QColor(self.node.img_style["fgcolor"])))
 
+
 class _RectItem(QGraphicsRectItem, _ActionDelegator):
     def __init__(self, node):
         self.node = node
@@ -91,6 +94,7 @@ class _RectItem(QGraphicsRectItem, _ActionDelegator):
         _ActionDelegator.__init__(self)
         self.setBrush(QBrush(QColor(self.node.img_style["fgcolor"])))
         self.setPen(QPen(QColor(self.node.img_style["fgcolor"])))
+
 
 class _SphereItem(QGraphicsEllipseItem, _ActionDelegator):
     def __init__(self, node):
@@ -106,6 +110,7 @@ class _SphereItem(QGraphicsEllipseItem, _ActionDelegator):
         gradient.setColorAt(1, QColor(self.node.img_style["fgcolor"]));
         self.setBrush(QBrush(gradient))
         # self.setPen(Qt.NoPen)
+
 
 class _EmptyItem(QGraphicsItem):
     def __init__(self, parent=None):
@@ -124,12 +129,14 @@ class _EmptyItem(QGraphicsItem):
     def paint(self, *args, **kargs):
         return
 
+
 class _TreeItem(QGraphicsRectItem):
     def __init__(self, parent=None):
         QGraphicsRectItem.__init__(self)
         self.setParentItem(parent)
         self.n2i = {}
         self.n2f = {}
+
 
 class _NodeItem(_EmptyItem):
     def __init__(self, node, parent):
@@ -140,17 +147,21 @@ class _NodeItem(_EmptyItem):
         self.fullRegion = QRectF()
         self.highlighted = False
 
+
 class _NodeLineItem(QGraphicsLineItem, _ActionDelegator):
     def __init__(self, node, *args, **kargs):
         self.node = node
         QGraphicsLineItem.__init__(self, *args, **kargs)
         _ActionDelegator.__init__(self)
+
     def paint(self, painter, option, widget):
         QGraphicsLineItem.paint(self, painter, option, widget)
+
 
 class _LineItem(QGraphicsLineItem):
     def paint(self, painter, option, widget):
         QGraphicsLineItem.paint(self, painter, option, widget)
+
 
 class _PointerItem(QGraphicsRectItem):
     def __init__(self, parent=None):
@@ -164,14 +175,14 @@ class _PointerItem(QGraphicsRectItem):
         p.drawRect(self.rect())
         return
         # Draw info text
-        font = QFont("Arial",13)
-        text = "%d selected."  % len(self.get_selected_nodes())
+        font = QFont("Arial", 13)
+        text = "%d selected." % len(self.get_selected_nodes())
         textR = QFontMetrics(font).boundingRect(text)
         if  self.rect().width() > textR.width() and \
-                self.rect().height() > textR.height()/2.0 and 0: # OJO !!!!
+                self.rect().height() > textR.height()/2.0 and 0:  # OJO !!!!
             p.setPen(QPen(self.color))
-            p.setFont(QFont("Arial",13))
-            p.drawText(self.rect().bottomLeft().x(),self.rect().bottomLeft().y(),text)
+            p.setFont(QFont("Arial", 13))
+            p.drawText(self.rect().bottomLeft().x(), self.rect().bottomLeft().y(),text)
 
     def get_selected_nodes(self):
         selPath = QPainterPath()
@@ -184,6 +195,7 @@ class _PointerItem(QGraphicsRectItem):
 
     def isActive(self):
         return self._active
+
 
 class _TreeScene(QGraphicsScene):
     def __init__(self):
@@ -208,12 +220,13 @@ class _TreeScene(QGraphicsScene):
         tree_item.setParentItem(self.master_item)
         self.setSceneRect(tree_item.rect())
 
-#@tracktime
+
+# @tracktime
 def render(root_node, img, hide_root=False):
-    '''main render function. hide_root option is used when render
+    """main render function. hide_root option is used when render
     trees as Faces
 
-    '''
+    """
     mode = img.mode
     orientation = img.orientation
 
@@ -222,10 +235,10 @@ def render(root_node, img, hide_root=False):
     layout_fn = img._layout_handler
 
     parent = _TreeItem()
-    n2i = parent.n2i # node to items
-    n2f = parent.n2f # node to faces
+    n2i = parent.n2i  # node to items
+    n2f = parent.n2f  # node to faces
 
-    parent.bg_layer =  _EmptyItem(parent)
+    parent.bg_layer = _EmptyItem(parent)
     parent.tree_layer = _EmptyItem(parent)
     parent.float_layer = _EmptyItem(parent)
     parent.float_behind_layer = _EmptyItem(parent)
@@ -262,13 +275,13 @@ def render(root_node, img, hide_root=False):
         if _leaf(n) and n.name and img.show_leaf_name:
             faces.add_face_to_node(na_face, n, 0, position="branch-right")
 
-        if _leaf(n):# or len(n.img_style["_faces"]["aligned"]):
+        if _leaf(n):  # or len(n.img_style["_faces"]["aligned"]):
             virtual_leaves += 1
 
         update_node_faces(n, n2f, img)
 
     rot_step = float(arc_span) / virtual_leaves
-    #rot_step = float(arc_span) / len([n for n in root_node.traverse() if _leaf(n)])
+    # rot_step = float(arc_span) / len([n for n in root_node.traverse() if _leaf(n)])
 
     # Calculate optimal branch length
     if img._scale is not None:
@@ -286,7 +299,7 @@ def render(root_node, img, hide_root=False):
             update_branch_lengths(root_node, n2i, n2f, img)
         else:
             img._scale = crender.calculate_optimal_scale(root_node, n2i, rot_step, img)
-            #print "OPTIMAL circular scale", img._scale
+            # print "OPTIMAL circular scale", img._scale
             update_branch_lengths(root_node, n2i, n2f, img)
             init_items(root_node, parent, n2i, n2f, img, rot_step, hide_root)
     else:
@@ -294,7 +307,7 @@ def render(root_node, img, hide_root=False):
         img._scale = img.scale
         init_items(root_node, parent, n2i, n2f, img, rot_step, hide_root)
 
-    #print "USING scale", img._scale
+    # print "USING scale", img._scale
     # Draw node content
     for node in root_node.traverse(is_leaf_fn=_leaf):
         if node is not root_node or not hide_root:
@@ -330,8 +343,8 @@ def render(root_node, img, hide_root=False):
 
     if img.rotation:
         rect = parent.boundingRect()
-        x =  rect.x() + (rect.width()/2.0)
-        y =  rect.y() +  (rect.height()/2.0)
+        x = rect.x() + (rect.width()/2.0)
+        y = rect.y() + (rect.height()/2.0)
         parent.setTransform(QTransform().translate(x, y).rotate(img.rotation).translate(-x, -y))
 
     # Creates the main tree item that will act as frame for the whole image
@@ -351,9 +364,12 @@ def render(root_node, img, hide_root=False):
         mainRect.adjust(_x, _y, _x, _y)
 
     # Add extra components and adjust mainRect to them
-    add_legend(img, mainRect, frame)
     add_title(img, mainRect, frame)
+    add_legend(img, mainRect, frame)
     add_scale(img, mainRect, frame)
+    add_y_scale(img, mainRect, frame, root_node)
+
+
     frame.setRect(mainRect)
 
     # Draws a border around the tree
@@ -363,6 +379,7 @@ def render(root_node, img, hide_root=False):
         frame.setPen(QPen(QColor("black")))
 
     return frame, n2i, n2f
+
 
 def adjust_faces_to_tranformations(img, mainRect, n2i, n2f, tree_layers):
     if img.mode == "c":
@@ -375,6 +392,7 @@ def adjust_faces_to_tranformations(img, mainRect, n2i, n2f, tree_layers):
             for pos, fb in six.iteritems(faceblock):
                 fb.flip_hz()
 
+
 def add_legend(img, mainRect, parent):
     if img.legend:
         legend = _FaceGroupItem(img.legend, None)
@@ -397,6 +415,7 @@ def add_legend(img, mainRect, parent):
             pos = mainRect.bottomRight()
             legend.setPos(pos.x()-lg_w, pos.y())
             mainRect.adjust(0, 0, dw, lg_h)
+
 
 def add_title(img, mainRect, parent):
     if img.title:
@@ -406,31 +425,9 @@ def add_title(img, mainRect, parent):
         lg_w, lg_h = title.get_size()
         dw = max(0, lg_w-mainRect.width())
         title.setParentItem(parent)
-        mainRect.adjust(0, -lg_h, dw, 0)
+        mainRect.adjust(0, -(lg_h+20), dw, 0)
         title.setPos(mainRect.topLeft())
 
-def add_legend(img, mainRect, parent):
-    if img.legend:
-        legend = _FaceGroupItem(img.legend, None)
-        legend.setup_grid()
-        legend.render()
-        lg_w, lg_h = legend.get_size()
-        dw = max(0, lg_w-mainRect.width())
-        legend.setParentItem(parent)
-        if img.legend_position == 1:
-            mainRect.adjust(0, -lg_h, dw, 0)
-            legend.setPos(mainRect.topLeft())
-        elif img.legend_position == 2:
-            mainRect.adjust(0, -lg_h, dw, 0)
-            pos = mainRect.topRight()
-            legend.setPos(pos.x()-lg_w, pos.y())
-        elif img.legend_position == 3:
-            legend.setPos(mainRect.bottomLeft())
-            mainRect.adjust(0, 0, dw, lg_h)
-        elif img.legend_position == 4:
-            pos = mainRect.bottomRight()
-            legend.setPos(pos.x()-lg_w, pos.y())
-            mainRect.adjust(0, 0, dw, lg_h)
 
 def add_scale(img, mainRect, parent):
     if img.show_scale:
@@ -476,12 +473,176 @@ def add_scale(img, mainRect, parent):
         scaleItem.moveBy(img.margin_left, 0)
         mainRect.adjust(0, 0, 0, length)
 
+
+def add_y_scale(img, mainRect, parent, root):
+
+    if img.y_axis['show']:
+
+        if img.scale is None:
+            scale_length = root.get_farthest_leaf()[1] * img._scale + \
+                           int((root.get_farthest_leaf(topology_only=True)[1]+1)/img._scale)
+            # scale_length = img.y_axis['scale_length'] * img._scale + \
+            #                int((root.get_farthest_leaf(topology_only=True)[1] + 1) / img._scale)
+        else:
+            scale_length = root.get_farthest_leaf()[1] * img.scale + \
+                           int((root.get_farthest_leaf(topology_only=True)[1]+1)/img.scale)
+            # scale_length = img.y_axis['scale_length'] * img.scale + \
+            #                int((root.get_farthest_leaf(topology_only=True)[1] + 1) / img.scale)
+
+        scale_item = _EmptyItem()
+
+        custom_pen = QPen(QColor("black"), 1)
+
+        line = QGraphicsLineItem(scale_item)
+
+        line.setPen(custom_pen)
+
+        mark = {}
+        if img.y_axis['scale_type'] == 'log':
+            calculate_marks = int(math.ceil(math.log(root.get_farthest_leaf()[1], 10)))
+
+            for x in range(10*calculate_marks+1):
+
+                mark[x] = QGraphicsLineItem(scale_item)
+
+                mark[x].setPen(custom_pen)
+
+        elif img.y_axis['scale_type'] == 'linear':
+            calculate_marks = int(root.get_farthest_leaf(topology_only=True)[1]+1)
+
+            for x in range(calculate_marks + 1):
+
+                mark[x] = QGraphicsLineItem(scale_item)
+
+                mark[x].setPen(custom_pen)
+        else:
+            raise ValueError('The scale {} does not exist'.format(img.y_axis['scale_type']))
+
+        # scale line
+        if img.rotation == 0 or img.rotation == 180:
+            line.setLine(0, -10, scale_length, -10)
+        elif img.rotation == 90 or img.rotation == 270:
+            line.setLine(-10, 0, -10, scale_length)
+        else:
+            warnings.warn('The scale can\'t be rotated with the angle of the tree.'
+                          'Setting the scale in upright position')
+            line.setLine(0, -10, scale_length, -10)
+
+        # Adding markers
+        if img.y_axis['scale_type'] == 'log':
+            marker = scale_length/(math.log(root.get_farthest_leaf()[1], 10))
+
+            for x in range(10*calculate_marks):
+                if x % 10:
+                    log_step = math.log(math.pow(10, int(x / 10)) * (x % 10), 10)
+                else:
+                    log_step = math.log(math.pow(10, int(x / 10)), 10)
+
+                if (marker*log_step) > scale_length:
+                    continue
+                if img.rotation == 0 or img.rotation == 180:
+                    mark[x].setLine(marker*log_step, -15, marker*log_step, -10)
+                elif img.rotation == 90 or img.rotation == 270:
+                    mark[x].setLine(-15, marker*log_step, -10, marker*log_step)
+                else:
+                    mark[x].setLine(marker*log_step, -15, marker*log_step, -10)
+
+        elif img.y_axis['scale_type'] == 'linear':
+            marker = int(scale_length / (root.get_farthest_leaf(topology_only=True)[1]+1))
+            for x in range(calculate_marks):
+                if img.rotation == 0 or img.rotation == 180:
+                    mark[x].setLine(x*marker, -15, x*marker, -10)
+                elif img.rotation == 90 or img.rotation == 270:
+                    mark[x].setLine(-15, x*marker, -10, x*marker)
+                else:
+                    mark[x].setLine(x * marker, -15, x * marker, -10)
+
+        if img.rotation == 0 or img.rotation == 180:
+            mark[calculate_marks].setLine(scale_length, -15, scale_length, -10)
+        elif img.rotation == 90 or img.rotation == 270:
+            mark[calculate_marks].setLine(-15, scale_length, -10, scale_length)
+        else:
+            mark[calculate_marks].setLine(scale_length, -15, scale_length, -10)
+
+        # adding text to scale
+        if img.y_axis['scale_type'] == 'linear':
+            if img.y_axis['scale_length'] != 1:
+                scale_mesure = img.y_axis['scale_length'] / calculate_marks
+            else:
+                scale_mesure = (root.get_farthest_leaf()[1] - root.dist)/calculate_marks
+
+        for x in range(calculate_marks+1):
+            if (x*marker) > scale_length:
+                break
+
+            if img.y_axis['scale_type'] == 'log':
+                scale_text = '10<sup>'+str(x)+'</sup>'
+
+            elif img.y_axis['scale_type'] == 'linear':
+                length_text = scale_mesure * x
+                if length_text < 1 and length_text != 0:
+                    scale_text = "%0.4f" % length_text
+                else:
+                    scale_text = "%0.1f" % length_text
+
+
+            font = QFont('White Rabbit')
+            font.setPointSize(8)
+            scale = QGraphicsTextItem()
+
+            scale.setHtml(scale_text)
+            scale.setFont(font)
+            # scale.setFlag(scale.ItemIgnoresTransformations, True)
+            scale.setParentItem(scale_item)
+
+            if img.rotation == 0 or img.rotation == 180:
+                scale.setPos(x*marker-5, -13)
+            elif img.rotation == 90 or img.rotation == 270:
+                scale.setPos(-13, x*marker-5)
+            else:
+                scale.setPos(x*marker-5, -13)
+
+        scale_item.setParentItem(parent)
+
+        x_pos = mainRect.topLeft().x()
+        y_pos = mainRect.topLeft().y()
+        if img.title:
+            title = _FaceGroupItem(img.title, None)
+            lg_w, lg_h = title.get_size()
+            root_pos = img.margin_top + lg_h + 15
+        else:
+            root_pos = img.margin_top
+        mainRect.adjust(0, -20, 0, 0)
+        scale_item.setPos(x_pos-10, y_pos+root_pos)
+    alter_internal_nodes(root)
+
+
+def alter_internal_nodes(t):
+    """
+    The function changes the internal nodes of the tree to zero size, to make sure that the y scale is correct.
+    Making sure not to lose information the internal nodes are added as half opaque faces on top of the tree.
+    :param t: root node
+    :return:
+    """
+    for node in t.traverse():
+        if not node.is_leaf():
+            if node.img_style['shape'] == 'square':
+                C = RectFace(width=node.img_style['size'], height=node.img_style['size'],
+                             fgcolor=node.img_style['fgcolor'], bgcolor=node.img_style['fgcolor'])
+            else:
+                C = CircleFace(radius=node.img_style['size'], color=node.img_style['fgcolor'], style="sphere")
+            C.opacity = 0.6
+            node.add_face(C, 0, position="float-behind")
+            node.img_style['size'] = 0
+
+
 def rotate_inverted_faces(n2i, n2f, img):
     for node, faceblock in six.iteritems(n2f):
         item = n2i[node]
-        if item.rotation > 90 and item.rotation < 270:
+        if 90 < item.rotation < 270:
             for pos, fb in six.iteritems(faceblock):
                 fb.rotate(181)
+
 
 def render_backgrounds(img, mainRect, bg_layer, n2i, n2f):
 
@@ -540,6 +701,7 @@ def render_backgrounds(img, mainRect, bg_layer, n2i, n2f):
                 bg.setParentItem(bg_layer)
                 bg.setZValue(item.zValue())
 
+
 def set_node_size(node, n2i, n2f, img):
     scale = img._scale
     min_separation = img.min_leaf_separation
@@ -551,7 +713,7 @@ def set_node_size(node, n2i, n2f, img):
         branch_length = item.branch_length = float(node.dist * scale)
 
     # Organize faces by groups
-    #faceblock = update_node_faces(node, n2f, img)
+    # faceblock = update_node_faces(node, n2f, img)
     faceblock = n2f[node]
     aligned_height = 0
     if _leaf(node):
@@ -578,8 +740,8 @@ def set_node_size(node, n2i, n2f, img):
 
     h1 = top_half_h + bottom_half_h
     h2 = max(faceblock["branch-right"].h, \
-                 aligned_height, \
-                min_separation )
+             aligned_height, \
+             min_separation )
     h = max(h1, h2)
     imbalance = abs(top_half_h - bottom_half_h)
     if imbalance > h2/2.0:
@@ -597,7 +759,7 @@ def set_node_size(node, n2i, n2f, img):
             )
 
     # This breaks ultrametric tree visualization
-    #w += node.img_style["vt_line_width"]
+    # w += node.img_style["vt_line_width"]
 
     # rightside faces region
     item.facesRegion.setRect(0, 0, faceblock["branch-right"].w, h)
@@ -607,6 +769,7 @@ def set_node_size(node, n2i, n2f, img):
 
     # This is the node total region covered by the node
     item.fullRegion.setRect(0, 0, w, h)
+
 
 def render_node_content(node, n2i, n2f, img):
     style = node.img_style
@@ -620,7 +783,6 @@ def render_node_content(node, n2i, n2f, img):
 
     # Node points
     ball_size = style["size"]
-
 
     vlw = style["vt_line_width"] if not _leaf(node) and len(node.children) > 1 else 0.0
 
@@ -638,10 +800,10 @@ def render_node_content(node, n2i, n2f, img):
 
         node_ball.setPos(ball_start_x, center-(ball_size/2.0))
 
-        #from qt4_gui import _BasicNodeActions
-        #node_ball.delegate = _BasicNodeActions()
-        #node_ball.setAcceptHoverEvents(True)
-        #node_ball.setCursor(Qt.PointingHandCursor)
+        # from qt4_gui import _BasicNodeActions
+        # node_ball.delegate = _BasicNodeActions()
+        # node_ball.setAcceptHoverEvents(True)
+        # node_ball.setCursor(Qt.PointingHandCursor)
 
     else:
         node_ball = None
@@ -652,9 +814,9 @@ def render_node_content(node, n2i, n2f, img):
     pen.setColor(QColor(style["hz_line_color"]))
     pen.setWidth(style["hz_line_width"])
     pen.setCapStyle(Qt.FlatCap)
-    #pen.setCapStyle(Qt.RoundCap)
-    #pen.setCapStyle(Qt.SquareCap)
-    #pen.setJoinStyle(Qt.RoundJoin)
+    # pen.setCapStyle(Qt.RoundCap)
+    # pen.setCapStyle(Qt.SquareCap)
+    # pen.setJoinStyle(Qt.RoundJoin)
     hz_line = _LineItem()
     hz_line = _NodeLineItem(node)
     hz_line.setPen(pen)
@@ -727,35 +889,34 @@ def render_node_content(node, n2i, n2f, img):
         pen.setColor(QColor(style["vt_line_color"]))
         pen.setWidth(style["vt_line_width"])
         pen.setCapStyle(Qt.FlatCap)
-        #pen.setCapStyle(Qt.RoundCap)
-        #pen.setCapStyle(Qt.SquareCap)
+        # pen.setCapStyle(Qt.RoundCap)
+        # pen.setCapStyle(Qt.SquareCap)
         vt_line.setPen(pen)
         item.vt_line = vt_line
     else:
         vt_line = None
 
     item.bg = QGraphicsItemGroup()
-    item.movable_items = [] #QGraphicsItemGroup()
-    item.static_items = [] #QGraphicsItemGroup()
+    item.movable_items = []  # QGraphicsItemGroup()
+    item.static_items = []  # QGraphicsItemGroup()
 
     # Items fow which coordinates are exported in the image map
     item.mapped_items = [node_ball, fblock_r, fblock_b, fblock_t]
 
-
     for i in [vt_line, extra_line, hz_line]:
         if i:
-            #item.static_items.addToGroup(i)
+            # item.static_items.addToGroup(i)
             item.static_items.append(i)
             i.setParentItem(item.content)
     for i in [node_ball, fblock_r, fblock_b, fblock_t]:
         if i:
-            #item.movable_items.addToGroup(i)
+            # item.movable_items.addToGroup(i)
             item.movable_items.append(i)
             i.setParentItem(item.content)
 
+    # item.movable_items.setParentItem(item.content)
+    # item.static_items.setParentItem(item.content)
 
-    #item.movable_items.setParentItem(item.content)
-    #item.static_items.setParentItem(item.content)
 
 def set_pen_style(pen, line_style):
     if line_style == 0:
@@ -765,8 +926,9 @@ def set_pen_style(pen, line_style):
     elif line_style == 2:
         pen.setStyle(Qt.DotLine)
 
+
 def set_style(n, layout_func):
-    #if not isinstance(getattr(n, "img_style", None), NodeStyle):
+    # if not isinstance(getattr(n, "img_style", None), NodeStyle):
     #    print "Style of", n.name ,"is None"
     #    n.set_style()
     #    n.img_style = NodeStyle()
@@ -776,8 +938,9 @@ def set_style(n, layout_func):
     for func in layout_func:
         func(n)
 
+
 def render_floatings(n2i, n2f, img, float_layer, float_behind_layer):
-    #floating_faces = [ [node, fb["float"]] for node, fb in n2f.iteritems() if "float" in fb]
+    # floating_faces = [ [node, fb["float"]] for node, fb in n2f.iteritems() if "float" in fb]
 
     for node, faces in six.iteritems(n2f):
         face_set = [ [float_layer, faces.get("float", None)],
@@ -799,10 +962,10 @@ def render_floatings(n2i, n2f, img, float_layer, float_behind_layer):
                 # Floatings are positioned over branches
                 crender.rotate_and_displace(fb, item.rotation, fb.h, item.radius - item.nodeRegion.width() + xtra)
                 # Floatings are positioned starting from the node circle
-                #crender.rotate_and_displace(fb, item.rotation, fb.h, item.radius - item.nodeRegion.width())
+                # crender.rotate_and_displace(fb, item.rotation, fb.h, item.radius - item.nodeRegion.width())
 
             elif img.mode == "r":
-                start = item.branch_length + xtra - fb.w #if fb.w < item.branch_length else 0.0
+                start = item.branch_length + xtra - fb.w  # if fb.w < item.branch_length else 0.0
                 fb.setPos(item.content.mapToScene(start, item.center - (fb.h/2.0)))
 
             z = item.zValue()
@@ -812,6 +975,7 @@ def render_floatings(n2i, n2f, img, float_layer, float_behind_layer):
             fb.setZValue(z)
             fb.update_columns_size()
             fb.render()
+
 
 def render_aligned_faces(img, mainRect, parent, n2i, n2f):
     # Prepares and renders aligned face headers. Used to later
@@ -913,6 +1077,7 @@ def render_aligned_faces(img, mainRect, parent, n2i, n2f):
         mainRect.adjust(0, 0, extra_width, 0)
     return extra_width
 
+
 def get_tree_img_map(n2i, x_scale=1, y_scale=1):
     MOTIF_ITEMS = set([faces.QGraphicsTriangleItem,
                        faces.QGraphicsEllipseItem,
@@ -922,9 +1087,9 @@ def get_tree_img_map(n2i, x_scale=1, y_scale=1):
     node_list = []
     face_list = []
     node_areas = {}
-    #nid = 0
+    # nid = 0
     for n, main_item in six.iteritems(n2i):
-        #n.add_feature("_nid", str(nid))
+        # n.add_feature("_nid", str(nid))
         nid = n._nid
 
         rect = main_item.mapToScene(main_item.fullRegion).boundingRect()
@@ -957,7 +1122,7 @@ def get_tree_img_map(n2i, x_scale=1, y_scale=1):
                         if isinstance(f, _TextFaceItem):
                             face_list.append([x1, y1, x2, y2, nid, str(getattr(f, "face_label", f.text()))])
                         elif isinstance(f, faces.SeqMotifRectItem):
-                            #face_list.append([x1, y1, x2, y2, nid, str(getattr(f, "face_label", None))])
+                            # face_list.append([x1, y1, x2, y2, nid, str(getattr(f, "face_label", None))])
                             for mf in f.childItems():
                                 r = mf.boundingRect()
                                 rect = mf.mapToScene(r).boundingRect()
@@ -976,7 +1141,8 @@ def get_tree_img_map(n2i, x_scale=1, y_scale=1):
 
     return {"nodes": node_list, "faces": face_list, "node_areas": node_areas}
 
-#@tracktime
+
+# @tracktime
 def init_items(root_node, parent, n2i, n2f, img, rot_step, hide_root):
     # ::: Precalculate values :::
     visited = set()
@@ -1091,7 +1257,7 @@ def init_node_dimensions(node, item, faceblock, img):
 
     # Calculate total node size
     total_w = sum([w0, w1, w2, w3, w4, item.xoff]) # do not count aligned faces
-	
+
     if img.mode == "c":
         max_h = max(item.heights[:4] + [min_separation])
     elif img.mode == "r":
@@ -1107,6 +1273,7 @@ def init_node_dimensions(node, item, faceblock, img):
     item.facesRegion.setRect(0, 0, w3, max_h)
     item.nodeRegion.setRect(0, 0, total_w, max_h)
     item.fullRegion.setRect(0, 0, total_w, max_h)
+
 
 def update_branch_lengths(tree, n2i, n2f, img):
     for node in tree.traverse("postorder", is_leaf_fn=_leaf):
@@ -1127,6 +1294,7 @@ def update_branch_lengths(tree, n2i, n2f, img):
                     #n2i[ch].translate(w0, 0) # deprecated in qt4.8
                     n2i[ch].moveBy(w0, 0)
         item.fullRegion.setWidth(item.nodeRegion.width() + child_width)
+
 
 def init_tree_style(t, ts):
     custom_ts = True
