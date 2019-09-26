@@ -39,19 +39,29 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-import time
+
+import sys
+
+try:
+    __LAP_SETUP__
+except NameError:
+    __LAP_SETUP__ = False
+if __LAP_SETUP__:
+    sys.stderr.write('Partial import of lap during the build process.\n')
+else:
+    from ._lapjv import (
+            lapjv,
+            LARGE_ as LARGE,
+            FP_1_ as FP_1, FP_2_ as FP_2, FP_DYNAMIC_ as FP_DYNAMIC)
+    __all__ = ['lapjv', 'FP_1', 'FP_2', 'FP_DYNAMIC', 'LARGE']
+
 import numpy as np
 import numpy.linalg as LA
-import lap
 import random
-import time
-import sys
 import itertools
 import multiprocessing as mp
-
 from ..coretype.tree import Tree
 from ..utils import print_table, color
-
 import textwrap
 import argparse
 import logging
@@ -220,7 +230,7 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extend
 
     matrix = np.asarray(matrix, dtype=np.float32)
 
-    _ , cols , _ = lap.lapjv(matrix,extend_cost=True)
+    cols , _ = lapjv(matrix,extend_cost=True)
 
     difftable = []
     b_dist = -1
