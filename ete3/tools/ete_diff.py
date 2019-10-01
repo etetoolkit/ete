@@ -41,20 +41,6 @@ from __future__ import print_function
 
 
 import sys
-
-try:
-    __LAP_SETUP__
-except NameError:
-    __LAP_SETUP__ = False
-if __LAP_SETUP__:
-    sys.stderr.write('Partial import of lap during the build process.\n')
-else:
-    from ._lapjv import (
-            lapjv,
-            LARGE_ as LARGE,
-            FP_1_ as FP_1, FP_2_ as FP_2, FP_DYNAMIC_ as FP_DYNAMIC)
-    __all__ = ['lapjv', 'FP_1', 'FP_2', 'FP_DYNAMIC', 'LARGE']
-
 import numpy as np
 import numpy.linalg as LA
 import random
@@ -62,10 +48,12 @@ import itertools
 import multiprocessing as mp
 from ..coretype.tree import Tree
 from ..utils import print_table, color
+from .ete_diff_lib._lapjv import lapjv
 import textwrap
 import argparse
 import logging
 log = logging.Logger("main")
+
 
 
 DESC = ""
