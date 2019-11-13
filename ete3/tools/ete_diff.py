@@ -60,6 +60,10 @@ DESC = ""
 
 # EUCL_DIST = lambda a,b: 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) # 24
 
+def SINGLECELL(a,b):
+    print(a[1].symmetric_difference(b[1]))
+    quit()
+
 def EUCL_DIST(a,b):  
     return 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1])))
 
@@ -175,7 +179,7 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extend
 
     parts1 = sorted(parts1, key = lambda x : len(x[1]))
     parts2 = sorted(parts2, key = lambda x : len(x[1]))
-    
+    print(parts2[0][1].symmetric_difference(parts1[0][1]))
     log.info( "Calculating distance matrix...")
     
     matrix = [[dist_fn((n1,a), (n2,b)) for n2,b in parts2] for n1,a in parts1]
@@ -385,6 +389,16 @@ def populate_args(diff_args_p):
                            help=('Distance measure: e = Euclidean distance, rf = Robinson-Foulds symetric distance'
                                  ' eb = Euclidean distance + branch length difference between disjoint leaves'))
     
+    diff_args.add_argument("--ref-matrix", dest="rmatrix",
+                           type=str,
+                           help=('For Single Cell Analysis, csv with cell IDs as columns headers and their '
+                                 'expresion values below. If given, --dist will be ignored'))
+    
+    diff_args.add_argument("--target-matrix", dest="tmatrix",
+                           type=str,
+                           help=('For Single Cell Analysis, csv with cell IDs as columns headers and their '
+                                 'expresion values below. If given, --dist will be ignored'))
+    
     diff_args.add_argument("--extended", dest="extended",
                            action="store_true",
                            help=('Extend with branch distance after node comparison'))
@@ -416,10 +430,11 @@ def run(args):
 
 
         for rtree in args.ref_trees:
-            t1 = Tree(rtree)
+
+            t1 = Tree(rtree,format=args.ref_newick_format)
 
             for ttree in args.src_trees:
-                t2 = Tree(ttree)
+                t2 = Tree(ttree,format=args.src_newick_format)
 
                 if args.ncbi:
 
@@ -439,12 +454,30 @@ def run(args):
                     extend = False
                     
                 # Distance selection
-                if args.distance == 'e':
-                    dist_fn = EUCL_DIST
-                elif args.distance == 'rf':
-                    dist_fn = RF_DIST
-                elif args.distance == 'eb':
-                    dist_fn = EUCL_DIST_B
+                if args.rmatrix and args.tmatrix:
+                    dist_fn = SINGLECELL
+                    
+                    rvalues = np.genfromtxt(fname=args.rmatrix, delimiter=',', skip_header=1).T
+                    rIDs = np.genfromtxt(fname=args.rmatrix, delimiter=',',max_rows=1,dtype=str).T
+                    rmap = {k : rvalues[i] for i,k in enumerate(rIDs)}
+                    
+                    for leaf in t1.iter_leaves():
+                        leaf.add_features(complex=rmap[leaf.name])
+                    
+                    tvalues = np.genfromtxt(fname=args.tmatrix, delimiter=',', skip_header=1).T
+                    tIDs = np.genfromtxt(fname=args.tmatrix, delimiter=',',max_rows=1,dtype=str).T
+                    tmap = {k : tvalues[i] for i,k in enumerate(tIDs)}
+                    
+                    for leaf in t2.iter_leaves():
+                        leaf.add_features(complex=tmap[leaf.name])                    
+                    
+                else:
+                    if args.distance == 'e':
+                        dist_fn = EUCL_DIST
+                    elif args.distance == 'rf':
+                        dist_fn = RF_DIST
+                    elif args.distance == 'eb':
+                        dist_fn = EUCL_DIST_B
                     
                 if args.maxcores == -1:
                     maxcores = mp.cpu_count()
