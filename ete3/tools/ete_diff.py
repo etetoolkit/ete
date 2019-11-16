@@ -52,6 +52,7 @@ from .ete_diff_lib._lapjv import lapjv
 import textwrap
 import argparse
 import logging
+from tqdm import tqdm
 log = logging.Logger("main")
 
 
@@ -61,8 +62,16 @@ DESC = ""
 # EUCL_DIST = lambda a,b: 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) # 24
 
 def SINGLECELL(a,b):
-    print(a[1].symmetric_difference(b[1]))
-    quit()
+
+    dist = 0
+    for al in a[1]:
+        al = [float(v) for v in al.split(', ')]
+        
+        for bl in b[1]:
+            bl = [float(v) for v in bl.split(', ')]
+            dist += 1 - np.corrcoef(al,bl)[0][1]
+            
+    return dist
 
 def EUCL_DIST(a,b):  
     return 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1])))
@@ -179,15 +188,18 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extend
 
     parts1 = sorted(parts1, key = lambda x : len(x[1]))
     parts2 = sorted(parts2, key = lambda x : len(x[1]))
-    print(parts2[0][1].symmetric_difference(parts1[0][1]))
-    log.info( "Calculating distance matrix...")
+
+    log.info( "Calculating distance matrix...") 
+#     matrix = [[dist_fn((n1,a), (n2,b)) for n2,b in parts2] for n1,a in tqdm(parts1)]
+
     
-    matrix = [[dist_fn((n1,a), (n2,b)) for n2,b in parts2] for n1,a in parts1]
-
-#     pool = mp.Pool(cores)
-#     matrix = [[pool.apply(dist_fn,args=((n1,x),(n2,y))) for n2,y in parts2] for n1,x in parts1]
-#     pool.close()
-
+    pool = mp.Pool(cores)
+    matrix = [[pool.apply_async(dist_fn,args=((n1,x),(n2,y))) for n2,y in parts2] for n1,x in parts1]
+    pool.close()
+    pool.join()
+    
+    matrix = [[matrix[i][j].get() for j in range(len(matrix[0]))] for i in range(len(matrix))]
+    
     # Reduce matrix to avoid useless comparisons
     if reduce_matrix:
         log.info( "Reducing distance matrix...")
@@ -239,7 +251,7 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extend
                                                 parts1[r][1].symmetric_difference(parts2[c][1]),
                                                 parts1[r][0], parts2[c][0])
             difftable.append([dist, b_dist, side1, side2, diff, n1, n2])
- 
+
     return difftable
 
 
@@ -289,6 +301,20 @@ def show_difftable_tab(difftable, extended=False):
                               sepstring(side1, "|"), sepstring(side2, "|"),
                               sepstring(diff, "|")])
         print('#' + '\t'.join(["Dist", "Size1", "Size2", "ndiffs", "Diff", "refTree", "targetTree"]))
+        
+    print('\n'.join(['\t'.join(map(str, items)) for items in showtable]))
+    
+def show_difftable_tabnodes(difftable, extended=False):
+    showtable = []
+    
+    if extended:
+        for dist, b_dist, side1, side2, diff, n1, n2 in difftable:
+            showtable.append([dist, n1, n2])
+        print('#' + '\t'.join(["Dist", "refTree", "targetTree"]))
+    else:
+        for dist, b_dist, side1, side2, diff, n1, n2 in difftable:
+            showtable.append([dist, n1, n2])
+        print('#' + '\t'.join(["Dist", "refTree", "targetTree"]))
         
     print('\n'.join(['\t'.join(map(str, items)) for items in showtable]))
     
@@ -372,7 +398,7 @@ def populate_args(diff_args_p):
                         help="Do not show process information")
     
     diff_args.add_argument("--report", dest="report",
-                        choices=["topology", "diffs", "diffs_tab", "summary","table"],
+                        choices=["topology", "diffs", "diffs_tab", "summary","table","nodetab"],
                         default = "topology",
                         help="Different format for the comparison results")
 
@@ -427,7 +453,7 @@ def run(args):
             from common import ncbi
             ncbi.connect_database()
 
-
+        rattr, tattr = args.ref_attr, args.target_attr
 
         for rtree in args.ref_trees:
 
@@ -438,8 +464,8 @@ def run(args):
 
                 if args.ncbi:
 
-                    taxids = set([getattr(leaf, args.ref_attr) for leaf in t1.iter_leaves()])
-                    taxids.update([getattr(leaf, args.target_attr) for leaf in t2.iter_leaves()])
+                    taxids = set([getattr(leaf, rattr) for leaf in t1.iter_leaves()])
+                    taxids.update([getattr(leaf, tattr) for leaf in t2.iter_leaves()])
                     taxid2name = ncbi.get_taxid_translator(taxids)
                     for leaf in  t1.get_leaves()+t2.get_leaves():
                         try:
@@ -453,23 +479,27 @@ def run(args):
                 else:
                     extend = False
                     
-                # Distance selection
+                # Single cell
                 if args.rmatrix and args.tmatrix:
-                    dist_fn = SINGLECELL
                     
                     rvalues = np.genfromtxt(fname=args.rmatrix, delimiter=',', skip_header=1).T
                     rIDs = np.genfromtxt(fname=args.rmatrix, delimiter=',',max_rows=1,dtype=str).T
                     rmap = {k : rvalues[i] for i,k in enumerate(rIDs)}
                     
                     for leaf in t1.iter_leaves():
-                        leaf.add_features(complex=rmap[leaf.name])
+                        # we can't pass lists so we give a string and then parse it
+                        leaf.add_features(complex=str(list(rmap[leaf.name]))[1:-2]) 
                     
                     tvalues = np.genfromtxt(fname=args.tmatrix, delimiter=',', skip_header=1).T
                     tIDs = np.genfromtxt(fname=args.tmatrix, delimiter=',',max_rows=1,dtype=str).T
                     tmap = {k : tvalues[i] for i,k in enumerate(tIDs)}
                     
                     for leaf in t2.iter_leaves():
-                        leaf.add_features(complex=tmap[leaf.name])                    
+                        # we can't pass lists so we give a string and then parse it
+                        leaf.add_features(complex=str(list(tmap[leaf.name]))[1:-2])
+                
+                    rattr, tattr = 'complex', 'complex'
+                    dist_fn = SINGLECELL
                     
                 else:
                     if args.distance == 'e':
@@ -484,17 +514,19 @@ def run(args):
                 else:
                     maxcores = args.maxcores
 
-                difftable = treediff(t1, t2, args.ref_attr, args.target_attr, dist_fn, args.fullsearch, extended=extend,cores=maxcores)
+                difftable = treediff(t1, t2, rattr, tattr, dist_fn, args.fullsearch, extended=extend,cores=maxcores)
 
                 if len(difftable) != 0:
                     if args.report == "topology":
-                        show_difftable_topo(difftable, args.ref_attr, args.target_attr, usecolor=args.color,extended=extend)
+                        show_difftable_topo(difftable, rattr, tattr, usecolor=args.color,extended=extend)
                     elif args.report == "diffs":
                         show_difftable(difftable, extended=extend)
                     elif args.report == "diffs_tab":
                         show_difftable_tab(difftable, extended=extend)
+                    elif args.report == "nodetab":
+                        show_difftable_tabnodes(difftable, extended=extend)
                     elif args.report == 'table':
-                        rf, rf_max, _, _, _, _, _ = t1.robinson_foulds(t2, attr_t1=args.ref_attr, attr_t2=args.target_attr)
+                        rf, rf_max, _, _, _, _, _ = t1.robinson_foulds(t2, attr_t1=rattr, attr_t2=tattr)
                         show_difftable_summary(difftable, rf, rf_max, extended=extend)
                 else:
                     log.info("Difference between (Reference) %s and (Target) %s returned no results" % (rtree, ttree))
