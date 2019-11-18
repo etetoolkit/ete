@@ -69,8 +69,11 @@ def SINGLECELL(a,b):
         
         for bl in b[1]:
             bl = [float(v) for v in bl.split(', ')]
-            dist += 1 - np.corrcoef(al,bl)[0][1]
-            
+            dist += np.corrcoef(al,bl)[0][1]
+    
+    len_axb = (len(a[1]) * len(b[1]))
+    dist = (len_axb - dist) / len_axb
+    
     return dist
 
 def EUCL_DIST(a,b):  
@@ -183,8 +186,11 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extend
     t1_cached_content = t1.get_cached_content(store_attr=attr1)
     t2_cached_content = t2.get_cached_content(store_attr=attr2)
 
-    parts1 = [(k, v) for k, v in t1_cached_content.items() if k.children]
-    parts2 = [(k, v) for k, v in t2_cached_content.items() if k.children]
+    #parts1 = [(k, v) for k, v in t1_cached_content.items() if k.children]
+    #parts2 = [(k, v) for k, v in t2_cached_content.items() if k.children]
+
+    parts1 = [(k, v) for k, v in t1_cached_content.items()]
+    parts2 = [(k, v) for k, v in t2_cached_content.items()]
 
     parts1 = sorted(parts1, key = lambda x : len(x[1]))
     parts2 = sorted(parts2, key = lambda x : len(x[1]))
@@ -240,7 +246,8 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extend
     b_dist = -1
     for r in range(len(matrix)):
         c = cols[r]
-        if matrix[r][c] != 0:
+#         if matrix[r][c] != 0:
+        if True:
             if extended:
                 b_dist = get_distances2(parts1[r][0], parts2[c][0])
             else:
@@ -373,6 +380,62 @@ def show_difftable_topo(difftable, attr1, attr2, usecolor=False, extended=False)
                     max_col_width=maxcolwidth, wrap_style="wrap", row_line=True)    
         
     log.info("Total euclidean distance:\t%0.4f\tMismatching nodes:\t%d" %(total_dist, len(difftable)))
+    
+def show_difftable_toponodes(difftable, attr1, attr2, usecolor=False, extended=False):
+    if not difftable:
+        return
+    showtable = []
+    maxcolwidth = 80
+    total_dist = 0
+    for dist, b_dist, side1, side2, diff, n1, n2 in sorted(difftable, reverse=True):
+        total_dist += dist
+        n1 = Tree(n1.write())
+        n2 = Tree(n2.write())
+        n1.ladderize()
+        n2.ladderize()
+#         for leaf in n1.iter_leaves():
+#             leaf.name = getattr(leaf, attr1)
+#             if leaf.name in diff:
+#                 leaf.name += " ***"
+#                 if usecolor:
+#                     leaf.name = color(leaf.name, "red")
+#         for leaf in n2.iter_leaves():
+#             leaf.name = getattr(leaf, attr2)
+#             if leaf.name in diff:
+#                 leaf.name += " ***"
+#                 if usecolor:
+#                     leaf.name = color(leaf.name, "red")
+
+        topo1 = n1.get_ascii(show_internal=False, compact=False)
+        topo2 = n2.get_ascii(show_internal=False, compact=False)
+
+        # This truncates too large topology strings pretending to be
+        # scrolled to the right margin
+        topo1_lines = topo1.split("\n")
+        topowidth1 = max([len(l) for l in topo1_lines])
+        if topowidth1 > maxcolwidth:
+            start = topowidth1 - maxcolwidth
+            topo1 = '\n'.join([line[start+1:] for line in topo1_lines])
+        
+        topo2_lines = topo2.split("\n")
+        topowidth2 = max([len(l) for l in topo2_lines])
+        if topowidth2 > maxcolwidth:
+            start = topowidth2 - maxcolwidth
+            topo2 = '\n'.join([line[start+1:] for line in topo2_lines])
+        
+        if extended:
+            showtable.append([dist, b_dist, "%d/%d (%d)" %(len(side1), len(side2),len(diff)), topo1, topo2])
+        else:
+            showtable.append([dist, "%d/%d (%d)" %(len(side1), len(side2),len(diff)), topo1, topo2])
+    
+    if extended:
+        print_table(showtable, header=["Dist", "Branch Dist", "#Diffs", "Tree1", "Tree2"],
+                    max_col_width=maxcolwidth, wrap_style="wrap", row_line=True)
+    else:
+        print_table(showtable, header=["Dist", "#Diffs", "Tree1", "Tree2"],
+                    max_col_width=maxcolwidth, wrap_style="wrap", row_line=True)    
+        
+    log.info("Total euclidean distance:\t%0.4f\tMismatching nodes:\t%d" %(total_dist, len(difftable)))
        
 def populate_args(diff_args_p):
 
@@ -398,7 +461,7 @@ def populate_args(diff_args_p):
                         help="Do not show process information")
     
     diff_args.add_argument("--report", dest="report",
-                        choices=["topology", "diffs", "diffs_tab", "summary","table","nodetab"],
+                        choices=["topology", "diffs", "diffs_tab", "summary","table","nodetab","nodetopo"],
                         default = "topology",
                         help="Different format for the comparison results")
 
@@ -519,6 +582,8 @@ def run(args):
                 if len(difftable) != 0:
                     if args.report == "topology":
                         show_difftable_topo(difftable, rattr, tattr, usecolor=args.color,extended=extend)
+                    if args.report == "nodetopo":
+                        show_difftable_toponodes(difftable, rattr, tattr, usecolor=args.color,extended=extend)
                     elif args.report == "diffs":
                         show_difftable(difftable, extended=extend)
                     elif args.report == "diffs_tab":
