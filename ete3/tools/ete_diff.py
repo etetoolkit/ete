@@ -196,15 +196,17 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extend
     parts2 = sorted(parts2, key = lambda x : len(x[1]))
 
     log.info( "Calculating distance matrix...") 
-#     matrix = [[dist_fn((n1,a), (n2,b)) for n2,b in parts2] for n1,a in tqdm(parts1)]
-
-    
     pool = mp.Pool(cores)
     matrix = [[pool.apply_async(dist_fn,args=((n1,x),(n2,y))) for n2,y in parts2] for n1,x in parts1]
     pool.close()
-    pool.join()
     
-    matrix = [[matrix[i][j].get() for j in range(len(matrix[0]))] for i in range(len(matrix))]
+    with tqdm(total=len(matrix[0])*len(matrix[0])) as pbar:
+        for i in range(len(matrix)):
+            for j in range(len(matrix[0])):
+                matrix[i][j] = matrix[i][j].get()
+                pbar.update(1)
+
+#     matrix = [[matrix[i][j].get() for j in range(len(matrix[0]))] for i in range(len(matrix))]
     
     # Reduce matrix to avoid useless comparisons
     if reduce_matrix:
