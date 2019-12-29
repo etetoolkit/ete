@@ -15,7 +15,7 @@
 # License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with ETE.  If not, see <http://www.gnu.org/licenses/>.
+# along with ETE.  If not, see <http://www.gnu.org/licenses/>
 #
 #
 #                     ABOUT THE ETE PACKAGE
@@ -61,6 +61,35 @@ DESC = ""
 
 # EUCL_DIST = lambda a,b: 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) # 24
 
+def get_dist_top25_genes(a,b):
+
+    a = np.array([np.sqrt(x) for x in a])
+    b = np.array([np.sqrt(x) for x in b])
+
+    #not include cases where gene a or gene b have expression level = 0
+    indexes = np.array([max(a[i],b[i])/min(a[i],b[i]) if (a[i] != 0 and b[i] != 0) else 0 for i in range(len(a))]).argsort()[-25:]
+    
+    a = a.take(indexes)
+    b = b.take(indexes)
+
+    
+    threshold = 0
+
+    # check if all selected genes have FC >= 2 or else select less than 25
+    for i in range(len(a)):
+        if min(a[i],b[i]) == 0:
+            threshold = i+1
+        elif max(a[i],b[i])/min(a[i],b[i]) >= 2:
+            threshold = i+1
+        else:
+            break
+
+    a = a[:threshold]
+    b = b[:threshold]
+    
+    return (1 + np.corrcoef(a,b)[0][1]) / 2
+
+
 def SINGLECELL(a,b):
 
     dist = 0
@@ -69,10 +98,12 @@ def SINGLECELL(a,b):
         
         for bl in b[1]:
             bl = [float(v) for v in bl.split(', ')]
-            dist += np.corrcoef(al,bl)[0][1]
+            dist += get_dist_top25_genes(al,bl)
+#             dist += (1 + np.corrcoef(al,bl)[0][1]) / 2
     
     len_axb = (len(a[1]) * len(b[1]))
-    dist = (len_axb - dist) / len_axb
+#     dist = (len_axb - dist) / len_axb
+    dist = dist / len_axb
     
     return dist
 
@@ -200,13 +231,14 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extend
     matrix = [[pool.apply_async(dist_fn,args=((n1,x),(n2,y))) for n2,y in parts2] for n1,x in parts1]
     pool.close()
     
-    with tqdm(total=len(matrix[0])*len(matrix[0])) as pbar:
+    with tqdm(total=len(matrix[0])*len(matrix)) as pbar:
         for i in range(len(matrix)):
             for j in range(len(matrix[0])):
                 matrix[i][j] = matrix[i][j].get()
                 pbar.update(1)
 
-#     matrix = [[matrix[i][j].get() for j in range(len(matrix[0]))] for i in range(len(matrix))]
+    # debug
+#     matrix = [[dist_fn((n1,x),(n2,y)) for n2,y in parts2] for n1,x in parts1]
     
     # Reduce matrix to avoid useless comparisons
     if reduce_matrix:
