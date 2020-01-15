@@ -41,6 +41,7 @@ from __future__ import print_function
 
 
 import sys
+import json
 import numpy as np
 import numpy.linalg as LA
 import random
@@ -61,48 +62,23 @@ DESC = ""
 
 # EUCL_DIST = lambda a,b: 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) # 24
 
-def get_dist_top25_genes(a,b):
-
-    a = np.array([np.sqrt(x) for x in a])
-    b = np.array([np.sqrt(x) for x in b])
-
-    #not include cases where gene a or gene b have expression level = 0
-    indexes = np.array([max(a[i],b[i])/min(a[i],b[i]) if (a[i] != 0 and b[i] != 0) else 0 for i in range(len(a))]).argsort()[-25:]
-    
-    a = a.take(indexes)
-    b = b.take(indexes)
-
-    
-    threshold = 0
-
-    # check if all selected genes have FC >= 2 or else select less than 25
-    for i in range(len(a)):
-        if min(a[i],b[i]) == 0:
-            threshold = i+1
-        elif max(a[i],b[i])/min(a[i],b[i]) >= 2:
-            threshold = i+1
-        else:
-            break
-
-    a = a[:threshold]
-    b = b[:threshold]
-    
-    return (1 + np.corrcoef(a,b)[0][1]) / 2
-
 
 def SINGLECELL(a,b):
 
     dist = 0
-    for al in a[1]:
-        al = [float(v) for v in al.split(', ')]
-        
-        for bl in b[1]:
-            bl = [float(v) for v in bl.split(', ')]
-            dist += get_dist_top25_genes(al,bl)
-#             dist += (1 + np.corrcoef(al,bl)[0][1]) / 2
-    
-    len_axb = (len(a[1]) * len(b[1]))
-#     dist = (len_axb - dist) / len_axb
+    for p in a[1]:
+        pearson = json.loads(p)
+        break
+    len_axb = 0
+#     print(a[0])
+#     print(b[0])
+
+    for leaf_a in a[0].iter_leaves():
+        for leaf_b in b[0].iter_leaves():
+#             print(leaf_a.name,leaf_b.name)
+            len_axb += 1
+            dist += pearson[leaf_a.name][leaf_b.name]
+            
     dist = dist / len_axb
     
     return dist
@@ -223,6 +199,7 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extend
     parts1 = [(k, v) for k, v in t1_cached_content.items()]
     parts2 = [(k, v) for k, v in t2_cached_content.items()]
 
+
     parts1 = sorted(parts1, key = lambda x : len(x[1]))
     parts2 = sorted(parts2, key = lambda x : len(x[1]))
 
@@ -237,8 +214,11 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extend
                 matrix[i][j] = matrix[i][j].get()
                 pbar.update(1)
 
+
     # debug
 #     matrix = [[dist_fn((n1,x),(n2,y)) for n2,y in parts2] for n1,x in parts1]
+    
+    print(len(matrix),len(matrix[1]))
     
     # Reduce matrix to avoid useless comparisons
     if reduce_matrix:
@@ -581,19 +561,27 @@ def run(args):
                     
                     rvalues = np.genfromtxt(fname=args.rmatrix, delimiter=',', skip_header=1).T
                     rIDs = np.genfromtxt(fname=args.rmatrix, delimiter=',',max_rows=1,dtype=str).T
-                    rmap = {k : rvalues[i] for i,k in enumerate(rIDs)}
-                    
-                    for leaf in t1.iter_leaves():
-                        # we can't pass lists so we give a string and then parse it
-                        leaf.add_features(complex=str(list(rmap[leaf.name]))[1:-2]) 
+                    rmap = {k : rvalues[i] for i,k in enumerate(rIDs)} 
                     
                     tvalues = np.genfromtxt(fname=args.tmatrix, delimiter=',', skip_header=1).T
                     tIDs = np.genfromtxt(fname=args.tmatrix, delimiter=',',max_rows=1,dtype=str).T
                     tmap = {k : tvalues[i] for i,k in enumerate(tIDs)}
                     
+
+                    
+                    leaves = np.concatenate((rIDs,tIDs))
+                    pearson = {x: {} for x in leaves}
+                    for a in rIDs:
+                        for b in tIDs:
+                            pearson[a][b] = pearson[b][a] = 1 - np.corrcoef(rmap[a],tmap[b])[0][1]
+
+                    for leaf in t1.iter_leaves():
+                        # we can't pass lists so we give a string and then parse it
+                        leaf.add_features(complex=json.dumps(pearson))
+                    
                     for leaf in t2.iter_leaves():
                         # we can't pass lists so we give a string and then parse it
-                        leaf.add_features(complex=str(list(tmap[leaf.name]))[1:-2])
+                        leaf.add_features(complex=json.dumps(pearson)) 
                 
                     rattr, tattr = 'complex', 'complex'
                     dist_fn = SINGLECELL
