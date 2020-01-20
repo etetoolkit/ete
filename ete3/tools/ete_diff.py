@@ -44,6 +44,7 @@ import sys
 import json
 import numpy as np
 import numpy.linalg as LA
+from scipy.cluster import hierarchy as hcluster
 import random
 import itertools
 import multiprocessing as mp
@@ -70,12 +71,9 @@ def SINGLECELL(a,b):
         pearson = json.loads(p)
         break
     len_axb = 0
-#     print(a[0])
-#     print(b[0])
 
     for leaf_a in a[0].iter_leaves():
         for leaf_b in b[0].iter_leaves():
-#             print(leaf_a.name,leaf_b.name)
             len_axb += 1
             dist += pearson[leaf_a.name][leaf_b.name]
             
@@ -99,7 +97,70 @@ def RF_DIST(a, b):
     (a, b) = (b, a) if len(b[1]) > len(a[1]) else (a,b)
     rf, rfmax, names, side1, side2, d1, d2 = a[0].robinson_foulds(b[0])
     return (rf/rfmax if rfmax else 0.0)
+
+def matrix2tree(file):
+    def load_csv_matrix(file):
+        idx = []
+        with open(file, "r") as f:
+            headers = f.readline().split(',')[1:] # exclude empty space at the begining
+            col2v = { h :[] for h in headers}
+            for line in f:
+                elements = line.strip().split(',')
+                idx.append(elements.pop(0))
+                for i,h in enumerate(headers):
+                    col2v[h].append(float(elements[i]))
+
+        return header,idx,col2v 
+
+
+    headers, idx, col2v = load_csv_matrix(file)
+
+
+    matrix = np.zeros((len(headers), len(headers)))
+    dm = {h : {} for h in headers}
+    for i1, col1 in enumerate(headers):
+        v1 = col2v[col1]
+        for i2, col2 in enumerate(headers):
+            v2 = col2v[col2]
+            if col1 != col2:
+                v1 = np.array([np.sqrt(x*10000) for x in v1])
+                v2 = np.array([np.sqrt(x*10000) for x in v2])
+
+                corr = np.corrcoef(v1,v2)[0][1]
+                dm[col1][col2] = corr
+                matrix[i1, i2] = corr
+
+    Z = hcluster.linkage(matrix, "single")
+    T = hcluster.to_tree(Z)
+
+
+    root = Tree()
+    root.dist = 0
+    root.name = "root"
+    item2node = {T.get_id(): [T, root]}
+
+    to_visit = [T]
+    while to_visit:
+        node = to_visit.pop()
+        cl_dist = node.dist /2.0
+        for ch_node in [node.left, node.right]:
+            if ch_node:
+                ch = Tree()
+                ch.dist = cl_dist
+                ch.name = str(ch_node.get_id())
+                item2node[node.get_id()][1].add_child(ch)
+                item2node[ch_node.get_id()] = [ch_node, ch]
+                to_visit.append(ch_node)
+
+
+    # This is your ETE tree structure
+    tree = root
+
+    for leaf in tree:
+        leaf.name = header[int(leaf.name)]
         
+    return tree
+
 def get_distances1(t1,t2):
     def _get_leaves_paths(t):
         leaves = t.get_leaves()
@@ -217,8 +278,6 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extend
 
     # debug
 #     matrix = [[dist_fn((n1,x),(n2,y)) for n2,y in parts2] for n1,x in parts1]
-    
-    print(len(matrix),len(matrix[1]))
     
     # Reduce matrix to avoid useless comparisons
     if reduce_matrix:
