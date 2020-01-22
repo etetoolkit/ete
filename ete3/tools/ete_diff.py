@@ -98,37 +98,61 @@ def RF_DIST(a, b):
     rf, rfmax, names, side1, side2, d1, d2 = a[0].robinson_foulds(b[0])
     return (rf/rfmax if rfmax else 0.0)
 
-def matrix2tree(file):
-    def load_csv_matrix(file):
-        idx = []
-        with open(file, "r") as f:
-            headers = f.readline().split(',')[1:] # exclude empty space at the begining
-            col2v = { h :[] for h in headers}
-            for line in f:
-                elements = line.strip().split(',')
-                idx.append(elements.pop(0))
-                for i,h in enumerate(headers):
-                    col2v[h].append(float(elements[i]))
+def load_csv_matrix(file):
+    idx = []
+    with open(file, "r") as f:
+        headers = f.readline().split(',')[1:] # exclude empty space at the begining
+        col2v = { h :[] for h in headers}
+        for line in f:
+            elements = line.strip().split(',')
+            idx.append(elements.pop(0))
+            for i,h in enumerate(headers):
+                col2v[h].append(float(elements[i]))
+    treedict = {}
+    treedict['idx'] = idx
+    treedict['headers'] = headers
+    treedict['dict'] = col2v
+    
+    return treedict
 
-        return header,idx,col2v 
-
-
-    headers, idx, col2v = load_csv_matrix(file)
-
+def dict2tree(treedict):
+    
+    idx = treedict['idx']
+    headers = treedict['headers']
+    col2v = treedict['dict']
 
     matrix = np.zeros((len(headers), len(headers)))
     dm = {h : {} for h in headers}
-    for i1, col1 in enumerate(headers):
-        v1 = col2v[col1]
-        for i2, col2 in enumerate(headers):
-            v2 = col2v[col2]
-            if col1 != col2:
-                v1 = np.array([np.sqrt(x*10000) for x in v1])
-                v2 = np.array([np.sqrt(x*10000) for x in v2])
+    
+#        for i1, col1 in enumerate(treedict['headers']):
+#         v1 = treedict['dict'][col1]
+#         for i2, col2 in enumerate(treedict['headers']):
+#             v2 = treedict['dict'][col2]
+#             if col1 != col2:
+#                 def get_matrix((i1, col1),(i2, col2))
+#                     v1 = np.array([np.sqrt(x*10000) for x in v1])
+#                     v2 = np.array([np.sqrt(x*10000) for x in v2])
 
-                corr = np.corrcoef(v1,v2)[0][1]
-                dm[col1][col2] = corr
-                matrix[i1, i2] = corr
+#                     corr = np.corrcoef(v1,v2)[0][1]
+#                     dm[col1][col2] = corr
+#                     matrix[i1, i2] = corr
+            
+    def get_matrix(v1,v2):
+
+        corr = np.corrcoef(v1,v2)[0][1]
+        return corr
+
+    matrix = [[get_matrix(treedict['dict'][col1],treedict['dict'][col2]) for col2 in treedict['headers']] for col1 in treedict['headers']]
+
+    
+#     pool = mp.Pool(1)
+#     matrix = [[pool.apply_async(get_matrix,args=(map(float,treedict['dict'][col1]),map(float,treedict['dict'][col2]))) for col2 in treedict['headers']] for col1 in treedict['headers']]
+#     pool.close()
+#     with tqdm(total=len(matrix[0])*len(matrix)) as pbar:
+#         for i in range(len(matrix)):
+#             for j in range(len(matrix[0])):
+#                 matrix[i][j] = matrix[i][j].get()
+#                 pbar.update(1)
 
     Z = hcluster.linkage(matrix, "single")
     T = hcluster.to_tree(Z)
@@ -157,7 +181,7 @@ def matrix2tree(file):
     tree = root
 
     for leaf in tree:
-        leaf.name = header[int(leaf.name)]
+        leaf.name = headers[int(leaf.name)]
         
     return tree
 
@@ -264,7 +288,7 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extend
     parts1 = sorted(parts1, key = lambda x : len(x[1]))
     parts2 = sorted(parts2, key = lambda x : len(x[1]))
 
-    log.info( "Calculating distance matrix...") 
+    log.info("Calculating distance matrix...");
     pool = mp.Pool(cores)
     matrix = [[pool.apply_async(dist_fn,args=((n1,x),(n2,y))) for n2,y in parts2] for n1,x in parts1]
     pool.close()
@@ -575,8 +599,8 @@ def populate_args(diff_args_p):
     
 def run(args):
     
-    if not args.ref_trees or not args.src_trees:
-        logging.warning("Target tree (-t argument) or reference tree (-r argument) were not specified")
+    if (not args.ref_trees or not args.src_trees) and (not args.rmatrix or not args.tmatrix):
+        logging.warning("Target tree/matrix or reference tree/matrix weren't introduced. You can find the arguments in the help command (-h)")
         
     else:
         if args.quiet:
@@ -591,90 +615,96 @@ def run(args):
 
         rattr, tattr = args.ref_attr, args.target_attr
 
-        for rtree in args.ref_trees:
-
+        if args.ref_trees and args.src_trees:
+            rtree = args.ref_trees
+            ttree = args.src_trees
             t1 = Tree(rtree,format=args.ref_newick_format)
+            t2 = Tree(ttree,format=args.src_newick_format)
+            
+        elif args.rmatrix and args.tmatrix:
+            rdict = load_csv_matrix(args.rmatrix)
+            tdict = load_csv_matrix(args.tmatrix)
+            
+            t1 = dict2tree(rdict)
+            t2 = dict2tree(tdict)   
 
-            for ttree in args.src_trees:
-                t2 = Tree(ttree,format=args.src_newick_format)
 
-                if args.ncbi:
+        if args.ncbi:
 
-                    taxids = set([getattr(leaf, rattr) for leaf in t1.iter_leaves()])
-                    taxids.update([getattr(leaf, tattr) for leaf in t2.iter_leaves()])
-                    taxid2name = ncbi.get_taxid_translator(taxids)
-                    for leaf in  t1.get_leaves()+t2.get_leaves():
-                        try:
-                            leaf.name=taxid2name.get(int(leaf.name), leaf.name)
-                        except ValueError:
-                            pass
-                        
-                # Report extension
-                if args.extended == 1:
-                    extend = True
-                else:
-                    extend = False
-                    
-                # Single cell
-                if args.rmatrix and args.tmatrix:
-                    
-                    rvalues = np.genfromtxt(fname=args.rmatrix, delimiter=',', skip_header=1).T
-                    rIDs = np.genfromtxt(fname=args.rmatrix, delimiter=',',max_rows=1,dtype=str).T
-                    rmap = {k : rvalues[i] for i,k in enumerate(rIDs)} 
-                    
-                    tvalues = np.genfromtxt(fname=args.tmatrix, delimiter=',', skip_header=1).T
-                    tIDs = np.genfromtxt(fname=args.tmatrix, delimiter=',',max_rows=1,dtype=str).T
-                    tmap = {k : tvalues[i] for i,k in enumerate(tIDs)}
-                    
+            taxids = set([getattr(leaf, rattr) for leaf in t1.iter_leaves()])
+            taxids.update([getattr(leaf, tattr) for leaf in t2.iter_leaves()])
+            taxid2name = ncbi.get_taxid_translator(taxids)
+            for leaf in  t1.get_leaves()+t2.get_leaves():
+                try:
+                    leaf.name=taxid2name.get(int(leaf.name), leaf.name)
+                except ValueError:
+                    pass
 
-                    
-                    leaves = np.concatenate((rIDs,tIDs))
-                    pearson = {x: {} for x in leaves}
-                    for a in rIDs:
-                        for b in tIDs:
-                            pearson[a][b] = pearson[b][a] = 1 - np.corrcoef(rmap[a],tmap[b])[0][1]
+        # Report extension
+        if args.extended == 1:
+            extend = True
+        else:
+            extend = False
 
-                    for leaf in t1.iter_leaves():
-                        # we can't pass lists so we give a string and then parse it
-                        leaf.add_features(complex=json.dumps(pearson))
-                    
-                    for leaf in t2.iter_leaves():
-                        # we can't pass lists so we give a string and then parse it
-                        leaf.add_features(complex=json.dumps(pearson)) 
-                
-                    rattr, tattr = 'complex', 'complex'
-                    dist_fn = SINGLECELL
-                    
-                else:
-                    if args.distance == 'e':
-                        dist_fn = EUCL_DIST
-                    elif args.distance == 'rf':
-                        dist_fn = RF_DIST
-                    elif args.distance == 'eb':
-                        dist_fn = EUCL_DIST_B
-                    
-                if args.maxcores == -1:
-                    maxcores = mp.cpu_count()
-                else:
-                    maxcores = args.maxcores
+        # Single cell
+        if args.rmatrix and args.tmatrix:
 
-                difftable = treediff(t1, t2, rattr, tattr, dist_fn, args.fullsearch, extended=extend,cores=maxcores)
+            pool = mp.Pool(11)
+            
+            # Select only common genes by gene name y both dictionaries
+            log.info("Searching for shared genes in matrix...")
+            rdict['dict'] = {header : [rdict['dict'][header][element] for element in [i for i,value in enumerate(rdict['idx']) if value in tdict['idx']]] for header in tqdm(rdict['headers']))
+            pool.close()
+            tdict['dict'] = {header : [tdict['dict'][header][element] for element in [i for i,value in enumerate(tdict['idx']) if value in rdict['idx']]] for header in tqdm(tdict['headers'])}
 
-                if len(difftable) != 0:
-                    if args.report == "topology":
-                        show_difftable_topo(difftable, rattr, tattr, usecolor=args.color,extended=extend)
-                    if args.report == "nodetopo":
-                        show_difftable_toponodes(difftable, rattr, tattr, usecolor=args.color,extended=extend)
-                    elif args.report == "diffs":
-                        show_difftable(difftable, extended=extend)
-                    elif args.report == "diffs_tab":
-                        show_difftable_tab(difftable, extended=extend)
-                    elif args.report == "nodetab":
-                        show_difftable_tabnodes(difftable, extended=extend)
-                    elif args.report == 'table':
-                        rf, rf_max, _, _, _, _, _ = t1.robinson_foulds(t2, attr_t1=rattr, attr_t2=tattr)
-                        show_difftable_summary(difftable, rf, rf_max, extended=extend)
-                else:
-                    log.info("Difference between (Reference) %s and (Target) %s returned no results" % (rtree, ttree))
+            leaves = np.concatenate((rdict['headers'],tdict['headers']))
+            pearson = {x: {} for x in leaves}
+            for a in rdict['headers']:
+                for b in tdict['headers']:
+                    pearson[a][b] = pearson[b][a] = 1 - np.corrcoef(rdict['dict'][a],tdict['dict'][b])[0][1]
 
-                    
+
+            for leaf in t1.iter_leaves():
+                # we can't pass lists so we give a string and then parse it
+                leaf.add_features(complex=json.dumps(pearson))
+
+            for leaf in t2.iter_leaves():
+                # we can't pass lists so we give a string and then parse it
+                leaf.add_features(complex=json.dumps(pearson)) 
+
+            rattr, tattr = 'complex', 'complex'
+            dist_fn = SINGLECELL
+
+        else:
+            if args.distance == 'e':
+                dist_fn = EUCL_DIST
+            elif args.distance == 'rf':
+                dist_fn = RF_DIST
+            elif args.distance == 'eb':
+                dist_fn = EUCL_DIST_B
+
+        if args.maxcores == -1:
+            maxcores = mp.cpu_count()
+        else:
+            maxcores = args.maxcores
+
+        difftable = treediff(t1, t2, rattr, tattr, dist_fn, args.fullsearch, extended=extend,cores=maxcores)
+
+        if len(difftable) != 0:
+            if args.report == "topology":
+                show_difftable_topo(difftable, rattr, tattr, usecolor=args.color,extended=extend)
+            if args.report == "nodetopo":
+                show_difftable_toponodes(difftable, rattr, tattr, usecolor=args.color,extended=extend)
+            elif args.report == "diffs":
+                show_difftable(difftable, extended=extend)
+            elif args.report == "diffs_tab":
+                show_difftable_tab(difftable, extended=extend)
+            elif args.report == "nodetab":
+                show_difftable_tabnodes(difftable, extended=extend)
+            elif args.report == 'table':
+                rf, rf_max, _, _, _, _, _ = t1.robinson_foulds(t2, attr_t1=rattr, attr_t2=tattr)
+                show_difftable_summary(difftable, rf, rf_max, extended=extend)
+        else:
+            log.info("Difference between (Reference) %s and (Target) %s returned no results" % (rtree, ttree))
+
+
