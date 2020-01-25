@@ -649,13 +649,15 @@ def run(args):
         # Single cell
         if args.rmatrix and args.tmatrix:
 
-            pool = mp.Pool(11)
             
             # Select only common genes by gene name y both dictionaries
-            log.info("Searching for shared genes in matrix...")
-            rdict['dict'] = {header : [rdict['dict'][header][element] for element in [i for i,value in enumerate(rdict['idx']) if value in tdict['idx']]] for header in tqdm(rdict['headers']))
-            pool.close()
-            tdict['dict'] = {header : [tdict['dict'][header][element] for element in [i for i,value in enumerate(tdict['idx']) if value in rdict['idx']]] for header in tqdm(tdict['headers'])}
+            
+            rfilter = [i for i,value in enumerate(rdict['idx']) if value in tdict['idx']]
+            tfilter = [i for i,value in enumerate(tdict['idx']) if value in rdict['idx']]
+            
+            rdict['dict'] = {header : [rdict['dict'][header][element] for element in rfilter] for header in rdict['headers']}
+
+            tdict['dict'] = {header : [tdict['dict'][header][element] for element in tfilter] for header in tdict['headers']}
 
             leaves = np.concatenate((rdict['headers'],tdict['headers']))
             pearson = {x: {} for x in leaves}
