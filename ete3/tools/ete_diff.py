@@ -123,19 +123,6 @@ def dict2tree(treedict):
 
     matrix = np.zeros((len(headers), len(headers)))
     dm = {h : {} for h in headers}
-    
-#        for i1, col1 in enumerate(treedict['headers']):
-#         v1 = treedict['dict'][col1]
-#         for i2, col2 in enumerate(treedict['headers']):
-#             v2 = treedict['dict'][col2]
-#             if col1 != col2:
-#                 def get_matrix((i1, col1),(i2, col2))
-#                     v1 = np.array([np.sqrt(x*10000) for x in v1])
-#                     v2 = np.array([np.sqrt(x*10000) for x in v2])
-
-#                     corr = np.corrcoef(v1,v2)[0][1]
-#                     dm[col1][col2] = corr
-#                     matrix[i1, i2] = corr
             
     def get_matrix(v1,v2):
 
@@ -274,21 +261,20 @@ def sepstring(items, sep=", "):
 ### Treediff ###
 
 def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extended=False, cores=1):
+    log = logging.getLogger()
     log.info("Computing distance matrix...")
     t1_cached_content = t1.get_cached_content(store_attr=attr1)
     t2_cached_content = t2.get_cached_content(store_attr=attr2)
 
-    #parts1 = [(k, v) for k, v in t1_cached_content.items() if k.children]
-    #parts2 = [(k, v) for k, v in t2_cached_content.items() if k.children]
+#     parts1 = [(k, v) for k, v in t1_cached_content.items() if k.children]
+#     parts2 = [(k, v) for k, v in t2_cached_content.items() if k.children]
 
     parts1 = [(k, v) for k, v in t1_cached_content.items()]
     parts2 = [(k, v) for k, v in t2_cached_content.items()]
 
-
     parts1 = sorted(parts1, key = lambda x : len(x[1]))
     parts2 = sorted(parts2, key = lambda x : len(x[1]))
 
-    log.info("Calculating distance matrix...");
     pool = mp.Pool(cores)
     matrix = [[pool.apply_async(dist_fn,args=((n1,x),(n2,y))) for n2,y in parts2] for n1,x in parts1]
     pool.close()
@@ -299,10 +285,9 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extend
                 matrix[i][j] = matrix[i][j].get()
                 pbar.update(1)
 
-
     # debug
 #     matrix = [[dist_fn((n1,x),(n2,y)) for n2,y in parts2] for n1,x in parts1]
-    
+
     # Reduce matrix to avoid useless comparisons
     if reduce_matrix:
         log.info( "Reducing distance matrix...")
@@ -343,8 +328,7 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extend
     b_dist = -1
     for r in range(len(matrix)):
         c = cols[r]
-#         if matrix[r][c] != 0:
-        if True:
+        if matrix[r][c] != 0 or dist_fn == SINGLECELL:
             if extended:
                 b_dist = get_distances2(parts1[r][0], parts2[c][0])
             else:
@@ -615,6 +599,7 @@ def run(args):
 
         rattr, tattr = args.ref_attr, args.target_attr
 
+        log.info("Loading trees...")
         if args.ref_trees and args.src_trees:
             rtree = args.ref_trees
             ttree = args.src_trees
@@ -672,7 +657,7 @@ def run(args):
 
             for leaf in t2.iter_leaves():
                 # we can't pass lists so we give a string and then parse it
-                leaf.add_features(complex=json.dumps(pearson)) 
+                leaf.add_features(complex=json.dumps(pearson))
 
             rattr, tattr = 'complex', 'complex'
             dist_fn = SINGLECELL
