@@ -98,13 +98,13 @@ def RF_DIST(a, b):
     rf, rfmax, names, side1, side2, d1, d2 = a[0].robinson_foulds(b[0])
     return (rf/rfmax if rfmax else 0.0)
 
-def load_csv_matrix(file):
+def load_csv_matrix(file,separator):
     idx = []
     with open(file, "r") as f:
-        headers = f.readline().split(',')[1:] # exclude empty space at the begining
+        headers = f.readline().split(separator)[1:] # exclude empty space at the begining
         col2v = { h :[] for h in headers}
         for line in f:
-            elements = line.strip().split(',')
+            elements = line.strip().split(separator)
             idx.append(elements.pop(0))
             for i,h in enumerate(headers):
                 col2v[h].append(float(elements[i]))
@@ -559,6 +559,10 @@ def populate_args(diff_args_p):
                            help=('Distance measure: e = Euclidean distance, rf = Robinson-Foulds symetric distance'
                                  ' eb = Euclidean distance + branch length difference between disjoint leaves'))
     
+    diff_args.add_argument("--separator", dest="sep",
+                           type=str, choices= ['tsv','csv'], default='csv',
+                           help=('Data separator, either tsv or csv. tsv by default'))
+    
     diff_args.add_argument("--ref-matrix", dest="rmatrix",
                            type=str,
                            help=('For Single Cell Analysis, csv with cell IDs as columns headers and their '
@@ -607,8 +611,11 @@ def run(args):
             t2 = Tree(ttree,format=args.src_newick_format)
             
         elif args.rmatrix and args.tmatrix:
-            rdict = load_csv_matrix(args.rmatrix)
-            tdict = load_csv_matrix(args.tmatrix)
+            sepdict = {'tsv' : "\t", "csv" : ","}
+            sep_ = sepdict[args.sep]
+            
+            rdict = load_csv_matrix(args.rmatrix,sep_)
+            tdict = load_csv_matrix(args.tmatrix,sep_)
             
             t1 = dict2tree(rdict)
             t2 = dict2tree(tdict)   
