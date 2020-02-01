@@ -98,7 +98,7 @@ def RF_DIST(a, b):
     rf, rfmax, names, side1, side2, d1, d2 = a[0].robinson_foulds(b[0])
     return (rf/rfmax if rfmax else 0.0)
 
-def load_csv_matrix(file,separator):
+def load_matrix(file,separator):
     idx = []
     with open(file, "r") as f:
         headers = f.readline().split(separator)[1:] # exclude empty space at the begining
@@ -115,33 +115,22 @@ def load_csv_matrix(file,separator):
     
     return treedict
 
-def dict2tree(treedict):
-    
-    idx = treedict['idx']
-    headers = treedict['headers']
-    col2v = treedict['dict']
 
-    matrix = np.zeros((len(headers), len(headers)))
-    dm = {h : {} for h in headers}
-            
-    def get_matrix(v1,v2):
+def dict2tree(treedict,jobs=1):
 
-        corr = np.corrcoef(v1,v2)[0][1]
-        return corr
+    matrix = np.zeros((len(treedict['headers']), len(treedict['headers'])))
+    dm = {h : {} for h in treedict['headers']}
 
-    matrix = [[get_matrix(treedict['dict'][col1],treedict['dict'][col2]) for col2 in treedict['headers']] for col1 in treedict['headers']]
+    pool = mp.Pool(jobs)
+    matrix = [[pool.apply_async(np.corrcoef,args=(treedict['dict'][col1],treedict['dict'][col2])) for col2 in treedict['headers']] for col1 in treedict['headers']]
+    pool.close()
+    with tqdm(total=len(matrix[0])*len(matrix)) as pbar:
+        for i in range(len(matrix)):
+            for j in range(len(matrix[0])):
+                matrix[i][j] = matrix[i][j].get()[0][1]
+                pbar.update(1)
 
-    
-#     pool = mp.Pool(1)
-#     matrix = [[pool.apply_async(get_matrix,args=(map(float,treedict['dict'][col1]),map(float,treedict['dict'][col2]))) for col2 in treedict['headers']] for col1 in treedict['headers']]
-#     pool.close()
-#     with tqdm(total=len(matrix[0])*len(matrix)) as pbar:
-#         for i in range(len(matrix)):
-#             for j in range(len(matrix[0])):
-#                 matrix[i][j] = matrix[i][j].get()
-#                 pbar.update(1)
-
-    Z = hcluster.linkage(matrix, "single")
+    Z = hcluster.linkage(matrix, "average") #"single" for default, "average" for UPGMA
     T = hcluster.to_tree(Z)
 
 
@@ -168,7 +157,7 @@ def dict2tree(treedict):
     tree = root
 
     for leaf in tree:
-        leaf.name = headers[int(leaf.name)]
+        leaf.name = treedict['headers'][int(leaf.name)]
         
     return tree
 
@@ -260,7 +249,7 @@ def sepstring(items, sep=", "):
 
 ### Treediff ###
 
-def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extended=False, cores=1):
+def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extended=False, jobs=1):
     log = logging.getLogger()
     log.info("Computing distance matrix...")
     t1_cached_content = t1.get_cached_content(store_attr=attr1)
@@ -275,7 +264,7 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extend
     parts1 = sorted(parts1, key = lambda x : len(x[1]))
     parts2 = sorted(parts2, key = lambda x : len(x[1]))
 
-    pool = mp.Pool(cores)
+    pool = mp.Pool(jobs)
     matrix = [[pool.apply_async(dist_fn,args=((n1,x),(n2,y))) for n2,y in parts2] for n1,x in parts1]
     pool.close()
     
@@ -474,18 +463,6 @@ def show_difftable_toponodes(difftable, attr1, attr2, usecolor=False, extended=F
         n2 = Tree(n2.write())
         n1.ladderize()
         n2.ladderize()
-#         for leaf in n1.iter_leaves():
-#             leaf.name = getattr(leaf, attr1)
-#             if leaf.name in diff:
-#                 leaf.name += " ***"
-#                 if usecolor:
-#                     leaf.name = color(leaf.name, "red")
-#         for leaf in n2.iter_leaves():
-#             leaf.name = getattr(leaf, attr2)
-#             if leaf.name in diff:
-#                 leaf.name += " ***"
-#                 if usecolor:
-#                     leaf.name = color(leaf.name, "red")
 
         topo1 = n1.get_ascii(show_internal=False, compact=False)
         topo2 = n2.get_ascii(show_internal=False, compact=False)
@@ -559,7 +536,7 @@ def populate_args(diff_args_p):
                            help=('Distance measure: e = Euclidean distance, rf = Robinson-Foulds symetric distance'
                                  ' eb = Euclidean distance + branch length difference between disjoint leaves'))
     
-    diff_args.add_argument("--separator", dest="sep",
+    diff_args.add_argument("--extension", dest="ext",
                            type=str, choices= ['tsv','csv'], default='csv',
                            help=('Data separator, either tsv or csv. tsv by default'))
     
@@ -577,8 +554,8 @@ def populate_args(diff_args_p):
                            action="store_true",
                            help=('Extend with branch distance after node comparison'))
     
-    diff_args.add_argument("-C", "--cpu", dest="maxcores", type=int,
-                            default=1, help="Maximum number of CPU cores"
+    diff_args.add_argument("-C", "--cpu", dest="maxjobs", type=int,
+                            default=1, help="Maximum number of CPU/jobs"
                             " available in the execution host. If higher"
                             " than 1, tasks with multi-threading"
                             " capabilities will enabled. Note that this"
@@ -597,6 +574,12 @@ def run(args):
             logging.basicConfig(format='%(message)s', level=logging.INFO)
         log = logging
 
+        # Set maximun number of jobs
+        if args.maxjobs == -1:
+            maxjobs = mp.cpu_count()
+        else:
+            maxjobs = args.maxjobs          
+        
         if args.ncbi:
             from common import ncbi
             ncbi.connect_database()
@@ -612,13 +595,15 @@ def run(args):
             
         elif args.rmatrix and args.tmatrix:
             sepdict = {'tsv' : "\t", "csv" : ","}
-            sep_ = sepdict[args.sep]
+            sep_ = sepdict[args.ext]
             
-            rdict = load_csv_matrix(args.rmatrix,sep_)
-            tdict = load_csv_matrix(args.tmatrix,sep_)
+            rdict = load_matrix(args.rmatrix,sep_)
+            tdict = load_matrix(args.tmatrix,sep_)
             
-            t1 = dict2tree(rdict)
-            t2 = dict2tree(tdict)   
+            log.info("Reference Tree...")
+            t1 = dict2tree(rdict,maxjobs)
+            log.info("Target Tree...")
+            t2 = dict2tree(tdict,maxjobs)   
 
 
         if args.ncbi:
@@ -636,16 +621,17 @@ def run(args):
         if args.extended == 1:
             extend = True
         else:
-            extend = False
-
+            extend = False          
+            
         # Single cell
         if args.rmatrix and args.tmatrix:
 
             
             # Select only common genes by gene name y both dictionaries
             
-            rfilter = [i for i,value in enumerate(rdict['idx']) if value in tdict['idx']]
-            tfilter = [i for i,value in enumerate(tdict['idx']) if value in rdict['idx']]
+            log.info("Getting shared genes...")
+            rfilter = [i for i,value in enumerate(tqdm(rdict['idx'])) if value in tdict['idx']]
+            tfilter = [i for i,value in enumerate(tqdm(tdict['idx'])) if value in rdict['idx']]
             
             rdict['dict'] = {header : [rdict['dict'][header][element] for element in rfilter] for header in rdict['headers']}
 
@@ -677,17 +663,12 @@ def run(args):
             elif args.distance == 'eb':
                 dist_fn = EUCL_DIST_B
 
-        if args.maxcores == -1:
-            maxcores = mp.cpu_count()
-        else:
-            maxcores = args.maxcores
-
-        difftable = treediff(t1, t2, rattr, tattr, dist_fn, args.fullsearch, extended=extend,cores=maxcores)
+        difftable = treediff(t1, t2, rattr, tattr, dist_fn, args.fullsearch, extended=extend,jobs=maxjobs)
 
         if len(difftable) != 0:
-            if args.report == "topology":
+            if args.report == "topology" and dist_fn != SINGLECELL:
                 show_difftable_topo(difftable, rattr, tattr, usecolor=args.color,extended=extend)
-            if args.report == "nodetopo":
+            if args.report == "nodetopo" or (args.report == "topology" and dist_fn == SINGLECELL):
                 show_difftable_toponodes(difftable, rattr, tattr, usecolor=args.color,extended=extend)
             elif args.report == "diffs":
                 show_difftable(difftable, extended=extend)
