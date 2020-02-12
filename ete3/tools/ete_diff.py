@@ -66,20 +66,23 @@ DESC = ""
 
 def SINGLECELL(a,b):
 
-    dist = 0
+    dist = []
     for p in a[1]:
         pearson = json.loads(p)
         break
     len_axb = 0
 
+
     for leaf_a in a[0].iter_leaves():
         for leaf_b in b[0].iter_leaves():
             len_axb += 1
-            dist += pearson[leaf_a.name][leaf_b.name]
-            
-    dist = dist / len_axb
+            dist.append(pearson[leaf_a.name][leaf_b.name])
+    
+    dist = np.percentile(dist,50)
+#     dist = sum(dist) / len_axb
     
     return dist
+
 
 def EUCL_DIST(a,b):  
     return 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1])))
@@ -101,7 +104,7 @@ def RF_DIST(a, b):
 def load_matrix(file,separator):
     idx = []
     with open(file, "r") as f:
-        headers = f.readline().split(separator)[1:] # exclude empty space at the begining
+        headers = f.readline().rstrip().split(separator)[1:] # exclude empty space at the begining
         col2v = { h :[] for h in headers}
         for line in f:
             elements = line.strip().split(separator)
@@ -117,6 +120,8 @@ def load_matrix(file,separator):
 
 
 def dict2tree(treedict,jobs=1):
+    log = logging.getLogger()
+    log.info(treedict['headers'])
 
     matrix = np.zeros((len(treedict['headers']), len(treedict['headers'])))
     dm = {h : {} for h in treedict['headers']}
@@ -276,7 +281,7 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extend
 
     # debug
 #     matrix = [[dist_fn((n1,x),(n2,y)) for n2,y in parts2] for n1,x in parts1]
-
+    
     # Reduce matrix to avoid useless comparisons
     if reduce_matrix:
         log.info( "Reducing distance matrix...")
@@ -457,7 +462,9 @@ def show_difftable_toponodes(difftable, attr1, attr2, usecolor=False, extended=F
     showtable = []
     maxcolwidth = 80
     total_dist = 0
-    for dist, b_dist, side1, side2, diff, n1, n2 in sorted(difftable, reverse=True):
+
+    for dist, b_dist, side1, side2, diff, n1, n2 in sorted(difftable, reverse=True,key = lambda x : x[0]):
+
         total_dist += dist
         n1 = Tree(n1.write())
         n2 = Tree(n2.write())
@@ -602,8 +609,11 @@ def run(args):
             
             log.info("Reference Tree...")
             t1 = dict2tree(rdict,maxjobs)
+
+            log.info(t1)
             log.info("Target Tree...")
-            t2 = dict2tree(tdict,maxjobs)   
+            t2 = dict2tree(tdict,maxjobs)
+            log.info(t2)
 
 
         if args.ncbi:
@@ -632,6 +642,7 @@ def run(args):
             log.info("Getting shared genes...")
             rfilter = [i for i,value in enumerate(tqdm(rdict['idx'])) if value in tdict['idx']]
             tfilter = [i for i,value in enumerate(tqdm(tdict['idx'])) if value in rdict['idx']]
+            log.info("Total Genes Shared = " + str(len(rfilter)))
             
             rdict['dict'] = {header : [rdict['dict'][header][element] for element in rfilter] for header in rdict['headers']}
 
@@ -642,7 +653,6 @@ def run(args):
             for a in rdict['headers']:
                 for b in tdict['headers']:
                     pearson[a][b] = pearson[b][a] = 1 - np.corrcoef(rdict['dict'][a],tdict['dict'][b])[0][1]
-
 
             for leaf in t1.iter_leaves():
                 # we can't pass lists so we give a string and then parse it
