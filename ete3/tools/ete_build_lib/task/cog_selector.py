@@ -143,9 +143,9 @@ class CogSelector(CogSelectorTask):
         cognumber += 1 # sets the ammount of cogs in file
         for sp, ncogs in sorted(list(sp2cogs.items()), key=lambda x: x[1], reverse=True):
             log.log(28, "% 20s  found in single copy in  % 6d (%0.1f%%) COGs " %(sp, ncogs, 100 * ncogs/float(cognumber)))
-
+        
         valid_cogs = sorted([sing for sing in all_singletons if len(sing) >= min_species],
-                            sort_cogs_by_size)
+                            sort_cogs_by_size) #Ziqi issue
 
         log.log(28, "Largest cog size: %s. Smallest cog size: %s" %(
                 largest_cog, smallest_cog))
