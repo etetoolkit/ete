@@ -979,15 +979,28 @@ def _main(arguments):
                 else:
                     raise ValueError("The provided custom path for external tools is not a valid directory")
         else:
-            print(colorify('\nWARNING: path of external tools is not provided, now loading TOOLCHAIN', "yellow"), file=sys.stderr)
+            print(colorify('\nWARNING: path of external tools is not provided, now loading TOOLCHAIN\n', "yellow"), file=sys.stderr)
             builtin_apps_path = os.path.join(os.path.split(ete3_path)[0], "ete3_apps/bin")
+            
+            
             if not os.path.exists(builtin_apps_path):
-                raise ValueError("you path please")
+                print(colorify('\nWARNING: external applications directory are not found at %s' %builtin_apps_path, "yellow"), file=sys.stderr)
+                print(colorify('Use "ete build install_tools" to install or upgrade tools', "orange"), file=sys.stderr)
+                print(colorify('\nWARNING: external applications not found', "yellow"), file=sys.stderr)
+                print(colorify('Install using conda (recomended):', "lgreen"), file=sys.stderr)
+                print(colorify(' conda install -c etetoolkit ete_toolchain', "white"), file=sys.stderr)
+                print(colorify('or manually compile from:', "lgreen"), file=sys.stderr)
+                print(colorify(' https://github.com/etetoolkit/ete_toolchain', "white"), file=sys.stderr)
+                print(colorify('or manually compile from:', "lgreen"), file=sys.stderr)
+                print(colorify(' https://anaconda.org/bioconda', "white"), file=sys.stderr)
+                raise ValueError(colorify("Please select binary path of your external apps by adding -L [custom path]| LOCAL| TOOLCHAIN.", "yellow"))
             else:
                 APPSPATH = builtin_apps_path
             
     else:
-            raise ValueError("ETE's toolchain directory is missing")
+        #print(colorify('\nWARNING: external applications directory are not found at %s' % ete3_path, "yellow"), file=sys.stderr)
+        #print(colorify('Use "ete build install_tools" to install or upgrade tools', "orange"), file=sys.stderr)
+        raise ValueError("ETE's toolchain directory is missing!\n Please select binary path of your external apps by -L [custom path]| LOCAL| TOOLCHAIN.")
 
     #######################################################
     if len(arguments) == 1:
