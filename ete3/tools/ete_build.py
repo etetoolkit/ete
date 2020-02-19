@@ -93,7 +93,6 @@ from .ete_build_lib.configcheck import (is_file, is_dir, check_config,
                                          block_detail, list_apps)
 from .ete_build_lib import seqio
 
-
 try:
     from ..version import __version__
 except ImportError:
@@ -259,8 +258,11 @@ def main(args):
                 parsed_workflows.extend(temp_workflows)
         return parsed_workflows
 
-    genetree_workflows = parse_workflows(args.workflow, "genetree")
-    supermatrix_workflows = parse_workflows(args.supermatrix_workflow, "supermatrix")
+    if args.workflow:
+        genetree_workflows = parse_workflows(args.workflow, "genetree")
+        supermatrix_workflows = parse_workflows(args.supermatrix_workflow, "supermatrix")
+    else:
+        raise ConfigError("the following arguments are required: -w")
 
     # Stop if mixing types of meta-workflows
     if supermatrix_workflows and len(genetree_workflows) > 1:
@@ -649,115 +651,40 @@ def main(args):
         raise DataError("Errors found in some tasks")
 
 
-def _main(arguments, builtin_apps_path=None):
+# def _main(arguments, builtin_apps_path=None):
+def _main(arguments):
     global BASEPATH, APPSPATH, args
-    #print('this is buildin_apps_path', builtin_apps_path) #builtin_apps_path call by ete.py
-
+    
+    #builtin_apps_path call by ete.py
     # read standard path or binary
     # 1)binary 2)internal toolchain 3)customize apps path etet_toolchain with argvs flags
-    if builtin_apps_path:
-        APPSPATH = builtin_apps_path
-        print("the apps path", APPSPATH)
+    # to determine if "ete3_apps/" exsist
+    
+    #if builtin_apps_path:
+    #    if '-l' in arguments:
+    #        APPSPATH = builtin_apps_path
+    #    elif '--local-binary' in arguments:
+    #        APPSPATH = builtin_apps_path
+    #    else:
+    #        builtin_apps_path = os.path.join(builtin_apps_path, "ete3_apps/bin")
+    #        APPSPATH = builtin_apps_path
         
     ETEHOMEDIR = os.path.expanduser("~/.etetoolkit/")
 
-    if len(arguments) == 1:
-        if not pexist(APPSPATH):
-            print(colorify('\nWARNING: external applications not found', "yellow"), file=sys.stderr)
-            print(colorify('Install using conda (recomended):', "lgreen"), file=sys.stderr)
-            print(colorify(' conda install -c etetoolkit ete_toolchain', "white"), file=sys.stderr)
-            print(colorify('or manually compile from:', "lgreen"), file=sys.stderr)
-            print(colorify(' https://github.com/etetoolkit/ete_toolchain', "white"), file=sys.stderr)
-            print()
-
-
-    if len(arguments) > 1:
-        _config_path = pjoin(BASEPATH, 'ete_build.cfg')
-        if arguments[1] == "check":
-            if not pexist(APPSPATH):
-                print('this is apps_path', APPSPATH)
-                print(colorify('\nWARNING: external applications not found', "yellow"), file=sys.stderr)
-                print(colorify('Install using conda (recomended):', "lgreen"), file=sys.stderr)
-                print(colorify(' conda install -c etetoolkit ete_toolchain', "white"), file=sys.stderr)
-                print(colorify('or manually compile from:', "lgreen"), file=sys.stderr)
-                print(colorify(' https://github.com/etetoolkit/ete_toolchain', "white"), file=sys.stderr)
-                print()
-                sys.exit(0)
-
-            try:
-                toolchain_version = open(pjoin(APPSPATH, "__version__")).readline()
-            except IOError:
-                toolchain_version = "unknown"
-
-            print("Current Toolchain path: %s " %APPSPATH)
-            print("Current Toolchain version: %s" %toolchain_version)
-
-            # setup portable apps
-            config = {}
-            for k in apps.builtin_apps:
-                # concatnate the path with "bin"
-                cmd = apps.get_call(k, APPSPATH, "/tmp", "1")
-                config[k] = cmd
-            apps.test_apps(config)
-            sys.exit(0)
-
-        elif arguments[1] in ("workflows", "wl"):
-            if arguments[1] == "wl":
-                print(colorify("WARNING: 'wl' is obsolete and will be removed in the future, use 'workflows' instead", "orange"), file=sys.stderr)
-
-            base_config = check_config(_config_path)
-            try:
-                wf_type = arguments[2]
-            except IndexError:
-                wf_type = None
-            list_workflows(base_config, wf_type)
-            sys.exit(0)
-
-        elif arguments[1] == "apps":
-            base_config = check_config(_config_path)
-            list_apps(base_config, set(arguments[2:]))
-            sys.exit(0)
-
-        elif arguments[1] == "show":
-            base_config = check_config(_config_path)
-            try:
-                block = arguments[2]
-            except IndexError:
-                print("Expected a block name, found none")
-                sys.exit(1)
-
-            block_detail(block, base_config)
-            sys.exit(0)
-
-        elif arguments[1] == "dump":
-            if len(arguments) > 2:
-                base_config = check_config(_config_path)
-                block_detail(arguments[2], base_config, color=False)
-            else:
-                print(open(_config_path).read())
-            sys.exit(0)
-
-        elif arguments[1] == "validate":
-            print('Validating configuration file ', arguments[2])
-            if pexist(arguments[2]):
-                base_config = check_config(arguments[2])
-                print('Everything ok')
-            else:
-                print('File does not exist')
-                sys.exit(-1)
-            sys.exit(0)
-
-        elif arguments[1] == "version":
-            print(__version__)
-            sys.exit(0)
 
     parser = argparse.ArgumentParser(description=__DESCRIPTION__ + __EXAMPLES__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
 
-    # Input data related flags
-    input_group = parser.add_argument_group('==== Input Options ====')
-
-    input_group.add_argument('[check | workflows | apps | show | dump | validate]',
+    #subcommand group [check | workflows | apps | show | dump | validate]
+    
+    subcommand_group = parser.add_argument_group('==== Subcommands ====')
+    
+    subcommand_group.add_argument("check", nargs='?')
+    subcommand_group.add_argument("workflows", nargs='?', default=['genetree', 'supermatrix'])
+    subcommand_group.add_argument("apps", type=str, nargs='*', default=list(apps.APPTYPES.keys()))
+    subcommand_group.add_argument("show", type=str, nargs='*')
+    subcommand_group.add_argument("validate", type=is_file, nargs='*')
+    subcommand_group.add_argument('[check | workflows | apps | show | dump | validate]',
                              nargs='?',
                              help=("Utility commands:\n"
                                    "check: check that external applications are executable.\n"
@@ -768,6 +695,9 @@ def _main(arguments, builtin_apps_path=None):
                                    "version: Show current version.\n"
                                    ))
 
+    # Input data related flags
+    input_group = parser.add_argument_group('==== Input Options ====')
+
     input_group.add_argument("-c", "--custom-config", dest="custom_config",
                              type=is_file,
                              help="Custom configuration file.")
@@ -776,12 +706,14 @@ def _main(arguments, builtin_apps_path=None):
                              type=is_file, default=BASEPATH+'/ete_build.cfg',
                              help="Base configuration file.")
 
-    input_group.add_argument("--tools-dir", dest="tools_dir",
+    # Ziqi check this
+    input_group.add_argument("-L", "--tools-dir", dest="tools_dir",
                              type=str,
-                             help="Custom path where external software is avaiable.")
+                             #required=True, #Ziqi
+                             help="How to find binaries to external software: [custom path], TOOLCHAIN, LOCAL")
 
     input_group.add_argument("-w", dest="workflow",
-                             required=True,
+                             #required=True, #ziqi
                              nargs='+',
                              help="One or more gene-tree workflow names. All the specified workflows will be executed using the same input data.")
 
@@ -912,7 +844,8 @@ def _main(arguments, builtin_apps_path=None):
     # Output data related flags
     output_group = parser.add_argument_group('==== Output Options ====')
     output_group.add_argument("-o", "--outdir", dest="outdir",
-                              type=str, required=True,
+                              type=str, 
+                              #required=True, #ziqi
                               help="""Output directory for results.""")
 
     output_group.add_argument("--scratch-dir", dest="scratch_dir",
@@ -1026,8 +959,130 @@ def _main(arguments, builtin_apps_path=None):
                           " debugging will start from such task on.")
 
     args = parser.parse_args(arguments)
-    if args.tools_dir:
-        APPSPATH = args.tools_dir
+
+    ete3_path = shutil.which("ete3")
+    if ete3_path:
+        if args.tools_dir:    
+            if args.tools_dir == 'LOCAL':
+                builtin_apps_path = os.path.split(ete3_path)[0]
+                APPSPATH = builtin_apps_path
+            
+            elif args.tools_dir == 'TOOLCHAIN':
+                builtin_apps_path = os.path.join(os.path.split(ete3_path)[0], "ete3_apps/bin")
+                APPSPATH = builtin_apps_path
+                
+            else: # here for the customize path
+                if os.path.isdir(args.tools_dir):
+                    APPSPATH = os.path.realpath(args.tools_dir)
+                #builtin_apps_path = os.path.join(os.path.split(ete3_path)[0], "ete3_apps/bin")
+                #APPSPATH = builtin_apps_path
+                else:
+                    raise ValueError("The provided custom path for external tools is not a valid directory")
+        else:
+            print(colorify('\nWARNING: path of external tools is not provided, now loading TOOLCHAIN', "yellow"), file=sys.stderr)
+            builtin_apps_path = os.path.join(os.path.split(ete3_path)[0], "ete3_apps/bin")
+            if not os.path.exists(builtin_apps_path):
+                raise ValueError("you path please")
+            else:
+                APPSPATH = builtin_apps_path
+            
+    else:
+            raise ValueError("ETE's toolchain directory is missing")
+
+    #######################################################
+    if len(arguments) == 1:
+        #print(arguments)
+        if not pexist(APPSPATH):
+            print(colorify('\nWARNING: external applications not found', "yellow"), file=sys.stderr)
+            print(colorify('Install using conda (recomended):', "lgreen"), file=sys.stderr)
+            print(colorify(' conda install -c etetoolkit ete_toolchain', "white"), file=sys.stderr)
+            print(colorify('or manually compile from:', "lgreen"), file=sys.stderr)
+            print(colorify(' https://github.com/etetoolkit/ete_toolchain', "white"), file=sys.stderr)
+            print()
+
+
+    if len(arguments) > 1:
+        _config_path = pjoin(BASEPATH, 'ete_build.cfg')
+        #print(args)
+
+        if arguments[1] == 'check':
+            if not pexist(APPSPATH):
+                #print('this is apps_path', APPSPATH)
+                print(colorify('\nWARNING: external applications not found', "yellow"), file=sys.stderr)
+                print(colorify('Install using conda (recomended):', "lgreen"), file=sys.stderr)
+                print(colorify(' conda install -c etetoolkit ete_toolchain', "white"), file=sys.stderr)
+                print(colorify('or manually compile from:', "lgreen"), file=sys.stderr)
+                print(colorify(' https://github.com/etetoolkit/ete_toolchain', "white"), file=sys.stderr)
+                print()
+                sys.exit(0)
+
+            try:
+                toolchain_version = open(pjoin(APPSPATH, "__version__")).readline()
+            except IOError:
+                toolchain_version = "unknown"
+
+            print("Current Toolchain path: %s " %APPSPATH)
+            print("Current Toolchain version: %s" %toolchain_version)
+
+            # setup portable apps
+            config = {}
+            for k in apps.builtin_apps:
+                # concatnate the path with "bin"
+                cmd = apps.get_call(k, APPSPATH, "/tmp", "1")
+                config[k] = cmd
+            apps.test_apps(config)
+            sys.exit(0)
+
+        elif arguments[1] == 'workflows':
+            #if arguments[1] == "wl":
+            #    print(colorify("WARNING: 'wl' is obsolete and will be removed in the future, use 'workflows' instead", "orange"), file=sys.stderr)
+            base_config = check_config(_config_path)
+            try:
+                wf_type = arguments[2]
+            except IndexError:
+                wf_type = None
+            list_workflows(base_config, wf_type)
+            sys.exit(0)
+
+        elif arguments[1] == 'apps':
+            #print(arguments[2:])
+            base_config = check_config(_config_path)
+            list_apps(base_config, set(arguments[2:]))
+            sys.exit(0)
+
+        elif arguments[1] == 'show':
+            base_config = check_config(_config_path)
+            try:
+                block = arguments[2]
+            except IndexError:
+                print("Expected a block name, found none")
+                sys.exit(1)
+
+            block_detail(block, base_config)
+            sys.exit(0)
+
+        elif arguments[1] == "dump":
+            if len(arguments) > 2:
+                base_config = check_config(_config_path)
+                block_detail(arguments[2], base_config, color=False)
+            else:
+                print(open(_config_path).read())
+            sys.exit(0)
+
+        elif arguments[1] == "validate":
+            print('Validating configuration file ', arguments[2])
+            if pexist(arguments[2]):
+                base_config = check_config(arguments[2])
+                print('Everything ok')
+            else:
+                print('File does not exist')
+                sys.exit(-1)
+            sys.exit(0)
+
+        elif arguments[1] == "version":
+            print(__version__)
+            sys.exit(0)
+################################################################
 
     try:
         toolchain_version = open(pjoin(APPSPATH, "__version__")).readline()
@@ -1053,12 +1108,14 @@ def _main(arguments, builtin_apps_path=None):
     if not args.aa_seed_file and not args.nt_seed_file:
         parser.error('At least one input file argument (-a, -n) is required')
 
-    outdir = os.path.abspath(args.outdir)
-    final_dir, runpath = os.path.split(outdir)
-    if not runpath:
-        raise ValueError("Invalid outdir")
-
-    GLOBALS["output_dir"] = os.path.abspath(args.outdir)
+    if args.outdir:
+        outdir = os.path.abspath(args.outdir)
+        final_dir, runpath = os.path.split(outdir)
+        if not runpath:
+            raise ValueError("Invalid outdir")
+        GLOBALS["output_dir"] = os.path.abspath(args.outdir)
+    else:
+        parser.error('The following arguments are required: -o/--outdir')
 
     if args.scratch_dir:
         # set paths for scratch folder for sqlite files

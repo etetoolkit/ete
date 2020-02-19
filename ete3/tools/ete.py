@@ -138,15 +138,14 @@ def _main(arguments):
         elif subcommand == "build": 
             from . import ete_build
             del arguments[1]
+            #builtin_apps_path = None
+            #ete3_path = which("ete3")
 
-            builtin_apps_path = None
-            ete3_path = which("ete3")
-
-            if ete3_path:
-                builtin_apps_path = os.path.join(os.path.split(ete3_path)[0], "ete3_apps/bin") #Ziqi
-                #builtin_apps_path = os.path.split(ete3_path)[0]
-            ete_build._main(arguments, builtin_apps_path)
-            
+            # is it a good place to make judgement?
+            #if ete3_path:
+            #    builtin_apps_path = os.path.join(os.path.split(ete3_path)[0], "ete3_apps/bin") #Ziqi
+            #    builtin_apps_path = os.path.split(ete3_path)[0]
+            ete_build._main(arguments)
             return
 
     # CREATE REUSABLE PARSER OPTIONS
