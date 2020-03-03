@@ -166,6 +166,34 @@ def dict2tree(treedict,jobs=1):
         
     return tree
 
+def tree_from_matrix(matrix,sep=",",dictionary=False,jobs=1):
+    tree_dict = load_matrix(matrix,sep)
+
+    if dictionary == True:
+        return dict2tree(tree_dict,jobs), tree_dict
+    else:
+        return dict2tree(tree_dict,jobs)
+    
+def pearson_corr(rdict,tdict):
+    # Select only common genes by gene name y both dictionaries
+
+    log.info("Getting shared genes...")
+    rfilter = [i for i,value in enumerate(tqdm(rdict['idx'])) if value in tdict['idx']]
+    tfilter = [i for i,value in enumerate(tqdm(tdict['idx'])) if value in rdict['idx']]
+    log.info("Total Genes Shared = " + str(len(rfilter)))
+
+    rdict['dict'] = {header : [rdict['dict'][header][element] for element in rfilter] for header in rdict['headers']}
+
+    tdict['dict'] = {header : [tdict['dict'][header][element] for element in tfilter] for header in tdict['headers']}
+
+    leaves = np.concatenate((rdict['headers'],tdict['headers']))
+    pearson = {x: {} for x in leaves}
+    for a in rdict['headers']:
+        for b in tdict['headers']:
+            pearson[a][b] = pearson[b][a] = 1 - np.corrcoef(rdict['dict'][a],tdict['dict'][b])[0][1]
+
+    return pearson
+
 def get_distances1(t1,t2):
     def _get_leaves_paths(t):
         leaves = t.get_leaves()
@@ -313,29 +341,63 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extend
         matrix = new_matrix
 
     log.info("Comparing trees...")
-
-    matrix = np.asarray(matrix, dtype=np.float32)
-
-    cols , _ = lapjv(matrix,extend_cost=True)
-
+    
     difftable = []
     b_dist = -1
-    for r in range(len(matrix)):
-        c = cols[r]
-        if matrix[r][c] != 0 or dist_fn == SINGLECELL:
+    matrix = np.asarray(matrix, dtype=np.float32)
+    
+    if dist_fn != SINGLECELL:
+        
+        cols , _ = lapjv(matrix,extend_cost=True)
+
+        for r in range(len(matrix)):
+            c = cols[r]
+            if matrix[r][c] != 0 or dist_fn == SINGLECELL:
+                if extended:
+                    b_dist = get_distances2(parts1[r][0], parts2[c][0])
+                else:
+                    pass
+
+                dist, side1, side2, diff, n1, n2 = (matrix[r][c], 
+                                                    parts1[r][1], parts2[c][1],
+                                                    parts1[r][1].symmetric_difference(parts2[c][1]),
+                                                    parts1[r][0], parts2[c][0])
+                difftable.append([dist, b_dist, side1, side2, diff, n1, n2])
+
+        return difftable
+    
+    elif dist_fn == SINGLECELL:
+        for r in range(len(matrix)):
+            c = np.argmin(matrix[r])
+
             if extended:
                 b_dist = get_distances2(parts1[r][0], parts2[c][0])
             else:
                 pass
-                
+
             dist, side1, side2, diff, n1, n2 = (matrix[r][c], 
                                                 parts1[r][1], parts2[c][1],
                                                 parts1[r][1].symmetric_difference(parts2[c][1]),
                                                 parts1[r][0], parts2[c][0])
             difftable.append([dist, b_dist, side1, side2, diff, n1, n2])
 
-    return difftable
+        return difftable
+    
+#     elif dist_fn == SINGLECELL:
+#         for r in range(len(matrix)):
+#             for c in range(len(matrix[0])):
+#                 if extended:
+#                     b_dist = get_distances2(parts1[r][0], parts2[c][0])
+#                 else:
+#                     pass
 
+#                 dist, side1, side2, diff, n1, n2 = (matrix[r][c], 
+#                                                     parts1[r][1], parts2[c][1],
+#                                                     parts1[r][1].symmetric_difference(parts2[c][1]),
+#                                                     parts1[r][0], parts2[c][0])
+#                 difftable.append([dist, b_dist, side1, side2, diff, n1, n2])
+
+#         return difftable
 
 
 ### REPORTS ###
@@ -604,15 +666,12 @@ def run(args):
             sepdict = {'tsv' : "\t", "csv" : ","}
             sep_ = sepdict[args.ext]
             
-            rdict = load_matrix(args.rmatrix,sep_)
-            tdict = load_matrix(args.tmatrix,sep_)
-            
             log.info("Reference Tree...")
-            t1 = dict2tree(rdict,maxjobs)
-
+            t1, rdict = tree_from_matrix(args.rmatrix,sep_,dictionary=True,jobs=maxjobs)
             log.info(t1)
+            
             log.info("Target Tree...")
-            t2 = dict2tree(tdict,maxjobs)
+            t2, tdict = tree_from_matrix(args.tmatrix,sep_,dictionary=True,jobs=maxjobs)
             log.info(t2)
 
 
@@ -631,28 +690,12 @@ def run(args):
         if args.extended == 1:
             extend = True
         else:
-            extend = False          
+            extend = False
             
         # Single cell
         if args.rmatrix and args.tmatrix:
-
             
-            # Select only common genes by gene name y both dictionaries
-            
-            log.info("Getting shared genes...")
-            rfilter = [i for i,value in enumerate(tqdm(rdict['idx'])) if value in tdict['idx']]
-            tfilter = [i for i,value in enumerate(tqdm(tdict['idx'])) if value in rdict['idx']]
-            log.info("Total Genes Shared = " + str(len(rfilter)))
-            
-            rdict['dict'] = {header : [rdict['dict'][header][element] for element in rfilter] for header in rdict['headers']}
-
-            tdict['dict'] = {header : [tdict['dict'][header][element] for element in tfilter] for header in tdict['headers']}
-
-            leaves = np.concatenate((rdict['headers'],tdict['headers']))
-            pearson = {x: {} for x in leaves}
-            for a in rdict['headers']:
-                for b in tdict['headers']:
-                    pearson[a][b] = pearson[b][a] = 1 - np.corrcoef(rdict['dict'][a],tdict['dict'][b])[0][1]
+            pearson = pearson_corr(rdict,tdict)
 
             for leaf in t1.iter_leaves():
                 # we can't pass lists so we give a string and then parse it
@@ -672,6 +715,9 @@ def run(args):
                 dist_fn = RF_DIST
             elif args.distance == 'eb':
                 dist_fn = EUCL_DIST_B
+            else:
+                pass
+                
 
         difftable = treediff(t1, t2, rattr, tattr, dist_fn, args.fullsearch, extended=extend,jobs=maxjobs)
 
