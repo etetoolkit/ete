@@ -248,7 +248,7 @@ def read_newick(newick, root_node=None, format=0, quoted_names=False):
                 import gzip
                 nw = gzip.open(newick).read()
             else:
-                nw = open(newick, 'rU').read()
+                nw = open(newick, 'r').read()
         else:
             nw = newick
 
