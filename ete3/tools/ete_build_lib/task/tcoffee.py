@@ -16,7 +16,7 @@ class TCoffee(AlgTask):
         self.confname = confname
         self.conf = conf
         # Initialize task
-        task_name =   "TCoffee(-%s)" %conf["-mode"] if "-mode" in conf else "TCoffee" #Ziqi
+        task_name =   "TCoffee(-%s)" %conf["-mode"] if "-mode" in conf else "TCoffee"
         AlgTask.__init__(self, nodeid, "alg", task_name,
                          OrderedDict(), self.conf[self.confname])
         self.seqtype = seqtype
@@ -36,7 +36,7 @@ class TCoffee(AlgTask):
         self.jobs.append(job)
         
     def finish(self):
-        alg = SeqGroup(os.path.join(self.jobs[0].jobdir, "mcoffee.fasta")) #Ziqi
+        alg = SeqGroup(os.path.join(self.jobs[0].jobdir, "mcoffee.fasta"))
         fasta = alg.write(format="fasta")
         phylip = alg.write(format="iphylip_relaxed")
         AlgTask.store_data(self, fasta, phylip)

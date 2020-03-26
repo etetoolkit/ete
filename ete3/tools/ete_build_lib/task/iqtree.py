@@ -29,9 +29,6 @@ class IQTree(TreeTask):
             base_args["-st"] = "AA" if seqtype == "aa" else "DNA"            
         else:
             if conf[confname]["-st"].startswith("CODON"):
-                #print(GLOBALS["seqtypes"])
-                #print(seqtype)
-                #if seqtype == "aa" or "aa" not in GLOBALS["seqtypes"]: #logic confusion Ziqi
                 if seqtype == "aa" or "aa" in GLOBALS["seqtypes"]: 
                     raise ConfigError("IQTREE CODON models require a codon alignment.\nProvide nucleotide sequences with '-n' and set '--nt-switch-thr 0.0' to ensure codon alignments.")
             
