@@ -651,10 +651,8 @@ def main(args):
 
 def _main(arguments, builtin_apps_path=None):
     global BASEPATH, APPSPATH, args
-    #print('this is buildin_apps_path', builtin_apps_path) #builtin_apps_path call by ete.py
 
-    # read standard path or binary
-    # 1)binary 2)internal toolchain 3)customize apps path etet_toolchain with argvs flags
+    # read path of ete_toolchain
     if builtin_apps_path:
         APPSPATH = builtin_apps_path
         print("the apps path", APPSPATH)
