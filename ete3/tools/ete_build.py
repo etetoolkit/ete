@@ -655,7 +655,6 @@ def _main(arguments, builtin_apps_path=None):
     # read path of ete_toolchain
     if builtin_apps_path:
         APPSPATH = builtin_apps_path
-        print("the apps path", APPSPATH)
         
     ETEHOMEDIR = os.path.expanduser("~/.etetoolkit/")
 
@@ -673,7 +672,6 @@ def _main(arguments, builtin_apps_path=None):
         _config_path = pjoin(BASEPATH, 'ete_build.cfg')
         if arguments[1] == "check":
             if not pexist(APPSPATH):
-                print('this is apps_path', APPSPATH)
                 print(colorify('\nWARNING: external applications not found', "yellow"), file=sys.stderr)
                 print(colorify('Install using conda (recomended):', "lgreen"), file=sys.stderr)
                 print(colorify(' conda install -c etetoolkit ete_toolchain', "white"), file=sys.stderr)
@@ -693,7 +691,6 @@ def _main(arguments, builtin_apps_path=None):
             # setup portable apps
             config = {}
             for k in apps.builtin_apps:
-                # concatnate the path with "bin"
                 cmd = apps.get_call(k, APPSPATH, "/tmp", "1")
                 config[k] = cmd
             apps.test_apps(config)
