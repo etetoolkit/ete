@@ -46,6 +46,7 @@ import logging
 import os
 import six
 from six.moves import map
+from functools import cmp_to_key
 log = logging.getLogger("main")
 
 from ..master_task import CogSelectorTask
@@ -53,6 +54,7 @@ from ..errors import DataError, TaskError
 from ..utils import (GLOBALS, print_as_table, generate_node_ids, encode_seqname,
                      md5, pjoin, _min, _max, _mean, _median, _std, iter_cog_seqs, cmp)
 from .. import db
+
 
 __all__ = ["CogSelector"]
 
@@ -143,13 +145,13 @@ class CogSelector(CogSelectorTask):
         cognumber += 1 # sets the ammount of cogs in file
         for sp, ncogs in sorted(list(sp2cogs.items()), key=lambda x: x[1], reverse=True):
             log.log(28, "% 20s  found in single copy in  % 6d (%0.1f%%) COGs " %(sp, ncogs, 100 * ncogs/float(cognumber)))
-
+        
         valid_cogs = sorted([sing for sing in all_singletons if len(sing) >= min_species],
-                            sort_cogs_by_size)
+                            key=cmp_to_key(sort_cogs_by_size))
 
         log.log(28, "Largest cog size: %s. Smallest cog size: %s" %(
                 largest_cog, smallest_cog))
-        self.cog_analysis = ""
+        self.cog_analysis = ""  
 
         # save original cog names hitting the hard limit
         if len(valid_cogs) > self.cog_hard_limit:

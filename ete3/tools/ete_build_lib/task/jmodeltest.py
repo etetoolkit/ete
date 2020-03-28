@@ -87,7 +87,7 @@ class JModeltest(ModelTesterTask):
         best_model = None
         best_model_in_next_line = False
         t = None
-        for line in open(self.jobs[-1].stdout_file, "rU"):
+        for line in open(self.jobs[-1].stdout_file, "r"):
             line = line.strip()
             if best_model_in_next_line and line.startswith("Model"):
                 pass#best_model = line.split("=")[1].strip()

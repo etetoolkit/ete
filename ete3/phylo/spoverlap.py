@@ -129,15 +129,13 @@ def get_evol_events_from_leaf(node, sos_thr=0.0):
             all_events.append(event)
 
         # If NO species overlap: speciation
-        elif score == sos_thr:
+        elif score <= sos_thr:
             event.node = current.up
             event.etype = "S"
             event.orthologs = set([n.name for n in sister_leaves if n.species != ref_spcs])
             event.outparalogs = set([])
             current.up.add_feature("evoltype","S")
             all_events.append(event)
-        else:
-            pass # do not add event if distances == 0
 
         # Updates browsed species
         browsed_spcs   |= sister_spcs

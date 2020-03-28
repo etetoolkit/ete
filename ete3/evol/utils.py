@@ -37,15 +37,15 @@ from __future__ import absolute_import
 #
 #
 # #END_LICENSE#############################################################
-#!/usr/bin/python
-#        Author: Francois-Jose Serra
-# Creation Date: 2010/04/22 16:05:46
 
 
-# from __future__ import division # unnecessary?
-from .. import Tree
 from math import log, exp
+
 from six.moves import range
+from numpy import floor, pi as PI, sin
+
+from .. import Tree
+
 
 def get_rooting(tol, seed_species, agename = False):
     '''
@@ -128,23 +128,23 @@ def translate(sequence):
     '''
     #dictionary with the genetic code
     gencode = {
-    'ATA':'I', 'ATC':'I', 'ATT':'I', 'ATG':'M',
-    'ACA':'T', 'ACC':'T', 'ACG':'T', 'ACT':'T',
-    'AAC':'N', 'AAT':'N', 'AAA':'K', 'AAG':'K',
-    'AGC':'S', 'AGT':'S', 'AGA':'R', 'AGG':'R',
-    'CTA':'L', 'CTC':'L', 'CTG':'L', 'CTT':'L',
-    'CCA':'P', 'CCC':'P', 'CCG':'P', 'CCT':'P',
-    'CAC':'H', 'CAT':'H', 'CAA':'Q', 'CAG':'Q',
-    'CGA':'R', 'CGC':'R', 'CGG':'R', 'CGT':'R',
-    'GTA':'V', 'GTC':'V', 'GTG':'V', 'GTT':'V',
-    'GCA':'A', 'GCC':'A', 'GCG':'A', 'GCT':'A',
-    'GAC':'D', 'GAT':'D', 'GAA':'E', 'GAG':'E',
-    'GGA':'G', 'GGC':'G', 'GGG':'G', 'GGT':'G',
-    'TCA':'S', 'TCC':'S', 'TCG':'S', 'TCT':'S',
-    'TTC':'F', 'TTT':'F', 'TTA':'L', 'TTG':'L',
-    'TAC':'Y', 'TAT':'Y', 'TAA':'.', 'TAG':'.',
-    'TGC':'C', 'TGT':'C', 'TGA':'.', 'TGG':'W',
-    '---':'-', 'nnn':'x', 'NNN':'X'
+        'ATA':'I', 'ATC':'I', 'ATT':'I', 'ATG':'M',
+        'ACA':'T', 'ACC':'T', 'ACG':'T', 'ACT':'T',
+        'AAC':'N', 'AAT':'N', 'AAA':'K', 'AAG':'K',
+        'AGC':'S', 'AGT':'S', 'AGA':'R', 'AGG':'R',
+        'CTA':'L', 'CTC':'L', 'CTG':'L', 'CTT':'L',
+        'CCA':'P', 'CCC':'P', 'CCG':'P', 'CCT':'P',
+        'CAC':'H', 'CAT':'H', 'CAA':'Q', 'CAG':'Q',
+        'CGA':'R', 'CGC':'R', 'CGG':'R', 'CGT':'R',
+        'GTA':'V', 'GTC':'V', 'GTG':'V', 'GTT':'V',
+        'GCA':'A', 'GCC':'A', 'GCG':'A', 'GCT':'A',
+        'GAC':'D', 'GAT':'D', 'GAA':'E', 'GAG':'E',
+        'GGA':'G', 'GGC':'G', 'GGG':'G', 'GGT':'G',
+        'TCA':'S', 'TCC':'S', 'TCG':'S', 'TCT':'S',
+        'TTC':'F', 'TTT':'F', 'TTA':'L', 'TTG':'L',
+        'TAC':'Y', 'TAT':'Y', 'TAA':'.', 'TAG':'.',
+        'TGC':'C', 'TGT':'C', 'TGA':'.', 'TGG':'W',
+        '---':'-', 'nnn':'x', 'NNN':'X'
     }
     ambig = {'Y':['A', 'G'], 'R':['C', 'T'], 'M':['G', 'T'], 'K':['A', 'C'], \
              'S':['G', 'C'],'W':['A', 'T'], 'V':['C', 'G', 'T'], \
@@ -183,10 +183,14 @@ def translate(sequence):
 
 # reused from pycogent
 ROUND_ERROR = 1e-14
-MAXLOG =  7.09782712893383996843E2
-big = 4.503599627370496e15
-biginv =  2.22044604925031308085e-16
-MACHEP =  1.11022302462515654042E-16
+MAXLOG      = 7.09782712893383996843E2
+MAXLGM      = 2.556348e305
+big         = 4.503599627370496e15
+biginv      = 2.22044604925031308085e-16
+MACHEP      = 1.11022302462515654042E-16
+LS2PI       =  0.91893853320467274178
+LOGPI       = 1.14472988584940017414
+
 
 def chi_high(x, df):
     """Returns right-hand tail of chi-square distribution (x to infinity).
@@ -206,6 +210,7 @@ def chi_high(x, df):
         raise ValueError("chi_high: df must be >= 1 (got %s)." % df)
     return igamc(float(df)/2, x/2)
 
+
 def fix_rounding_error(x):
     """If x is almost in the range 0-1, fixes it.
 
@@ -216,8 +221,8 @@ def fix_rounding_error(x):
         return 0
     elif 1 < x < 1+ROUND_ERROR:
         return 1
-    else:
-        return x
+    return x
+
 
 def igamc(a,x):
     """Complemented incomplete Gamma integral: see Cephes docs."""
@@ -265,20 +270,15 @@ def igamc(a,x):
             break
     return ans * ax
 
+
 def lgam(x):
     """Natural log of the gamma fuction: see Cephes docs for details"""
-    sgngam = 1
     if x < -34:
         q = -x
         w = lgam(q)
         p = floor(q)
         if p == q:
             raise OverflowError("lgam returned infinity.")
-        i = p
-        if i & 1 == 0:
-            sgngam = -1
-        else:
-            sgngam = 1
         z = q - p
         if z > 0.5:
             p += 1
@@ -303,10 +303,7 @@ def lgam(x):
             p += 1
             u = x + p
         if z < 0:
-            sgngam = -1
             z = -z
-        else:
-            sgngam = 1
         if u == 2:
             return log(z)
         p -= 2
@@ -321,11 +318,12 @@ def lgam(x):
     p = 1/(x*x)
     if x >= 1000:
         q += ((  7.9365079365079365079365e-4 * p
-                -2.7777777777777777777778e-3) *p
-                + 0.0833333333333333333333) / x
+                 -2.7777777777777777777778e-3) *p
+              + 0.0833333333333333333333) / x
     else:
         q += polevl(p, GA)/x
     return q
+
 
 def polevl(x, coef):
     """evaluates a polynomial y = C_0 + C_1x + C_2x^2 + ... + C_Nx^N
@@ -337,53 +335,6 @@ def polevl(x, coef):
         result = result * x + c
     return result
 
-
-
-def igamc(a,x):
-    """Complemented incomplete Gamma integral: see Cephes docs."""
-    if x <= 0 or a <= 0:
-        return 1
-    if x < 1 or x < a:
-        return 1 - igam(a, x)
-    ax = a * log(x) - x - lgam(a)
-    if ax < -MAXLOG:    #underflow
-        return 0
-    ax = exp(ax)
-    #continued fraction
-    y = 1 - a
-    z = x + y + 1
-    c = 0
-    pkm2 = 1
-    qkm2 = x
-    pkm1 = x + 1
-    qkm1 = z * x
-    ans = pkm1/qkm1
-
-    while 1:
-        c += 1
-        y += 1
-        z += 2
-        yc = y * c
-        pk = pkm1 * z - pkm2 * yc
-        qk = qkm1 * z - qkm2 * yc
-        if qk != 0:
-            r = pk/qk
-            t = abs((ans-r)/r)
-            ans = r
-        else:
-            t = 1
-        pkm2 = pkm1
-        pkm1 = pk
-        qkm2 = qkm1
-        qkm1 = qk
-        if abs(pk) > big:
-            pkm2 *= biginv
-            pkm1 *= biginv
-            qkm2 *= biginv
-            qkm1 *= biginv
-        if t <= MACHEP:
-            break
-    return ans * ax
 
 def igam(a, x):
     """Left tail of incomplete gamma function: see Cephes docs for details"""
@@ -414,51 +365,49 @@ def igam(a, x):
 
 #Coefficients for Gamma follow:
 GA = [
-        8.11614167470508450300E-4,
-        -5.95061904284301438324E-4,
-        7.93650340457716943945E-4,
-        -2.77777777730099687205E-3,
-        8.33333333333331927722E-2,
-    ]
+    8.11614167470508450300E-4,
+    -5.95061904284301438324E-4,
+    7.93650340457716943945E-4,
+    -2.77777777730099687205E-3,
+    8.33333333333331927722E-2,
+]
 
 GB = [
-        -1.37825152569120859100E3,
-        -3.88016315134637840924E4,
-        -3.31612992738871184744E5,
-        -1.16237097492762307383E6,
-        -1.72173700820839662146E6,
-        -8.53555664245765465627E5,
-    ]
+    -1.37825152569120859100E3,
+    -3.88016315134637840924E4,
+    -3.31612992738871184744E5,
+    -1.16237097492762307383E6,
+    -1.72173700820839662146E6,
+    -8.53555664245765465627E5,
+]
 
 GC = [
-        1.00000000000000000000E0,
-        -3.51815701436523470549E2,
-        -1.70642106651881159223E4,
-        -2.20528590553854454839E5,
-        -1.13933444367982507207E6,
-        -2.53252307177582951285E6,
-        -2.01889141433532773231E6,
-    ]
+    1.00000000000000000000E0,
+    -3.51815701436523470549E2,
+    -1.70642106651881159223E4,
+    -2.20528590553854454839E5,
+    -1.13933444367982507207E6,
+    -2.53252307177582951285E6,
+    -2.01889141433532773231E6,
+]
 
 GP = [
-        1.60119522476751861407E-4,
-        1.19135147006586384913E-3,
-        1.04213797561761569935E-2,
-        4.76367800457137231464E-2,
-        2.07448227648435975150E-1,
-        4.94214826801497100753E-1,
-        9.99999999999999996796E-1,
-    ]
+    1.60119522476751861407E-4,
+    1.19135147006586384913E-3,
+    1.04213797561761569935E-2,
+    4.76367800457137231464E-2,
+    2.07448227648435975150E-1,
+    4.94214826801497100753E-1,
+    9.99999999999999996796E-1,
+]
 
 GQ = [
-        -2.31581873324120129819E-5,
-        5.39605580493303397842E-4,
-        -4.45641913851797240494E-3,
-        1.18139785222060435552E-2,
-        3.58236398605498653373E-2,
-        -2.34591795718243348568E-1,
-        7.14304917030273074085E-2,
-        1.00000000000000000320E0,
-    ]
-
-biginv =  2.22044604925031308085e-16
+    -2.31581873324120129819E-5,
+    5.39605580493303397842E-4,
+    -4.45641913851797240494E-3,
+    1.18139785222060435552E-2,
+    3.58236398605498653373E-2,
+    -2.34591795718243348568E-1,
+    7.14304917030273074085E-2,
+    1.00000000000000000320E0,
+]

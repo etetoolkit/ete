@@ -81,7 +81,7 @@ optional() {
     fi
 }
 
-setup_miniconda() {
+setup_miniconda3() {
     if ! [ -f "${CONDA}/bin/conda" ]; then
         clr_green ">>> Downloading miniconda for $PLATFORM... "
         echo "${CONDA}/bin/conda"
@@ -120,6 +120,48 @@ setup_miniconda() {
     clr_green "DONE"
 }
 
+setup_miniconda2() {
+    if ! [ -f "${CONDA}/bin/conda" ]; then
+        clr_green ">>> Downloading miniconda for $PLATFORM... "
+        echo "${CONDA}/bin/conda"
+        if [[ $PLATFORM == 'Linux' ]]; then
+            run "wget -nv https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh 2>&1 | tee -a ${LOG}"
+            handle_error "$?" "ERROR: Failed to download miniconda installation script" "$wget_output"
+            clr_green "DONE"
+        elif [[ $PLATFORM == 'Darwin' ]]; then
+            run "wget -nv https://repo.continuum.io/miniconda/Miniconda2-latest-MacOSX-x86_64.sh -O miniconda.sh 2>&1 | tee -a ${LOG}"
+            handle_error "$?" "ERROR: Failed to download miniconda installation script" "$wget_output"
+            clr_green "DONE"
+        else
+            handle_error "1" "OS not supported"
+        fi
+
+        clr_green ">>> Installing miniconda... "
+        run "bash miniconda.sh -b -p "${CONDA}" 2>&1 | tee -a ${LOG}"
+        handle_error "$?" "ERROR: Failed to install miniconda" "$install_output"
+        clr_green "DONE"
+
+        clr_green ">>> Updating miniconda packages and package information... "
+        run "${CONDA}/bin/conda update -q -y conda 2>&1 | tee -a ${LOG}"
+        handle_error "$?" "ERROR: Failed to update conda packages" "$conda_update_output"
+        clr_green "DONE"
+
+        clr_green ">>> Cleaning up miniconda installation files... "
+        run "rm -f miniconda.sh 2>&1 | tee -a ${LOG}"
+        handle_error "$?" "ERROR: Failed to remove miniconda.sh" "$clean_output"
+        clr_green "DONE"
+
+    fi
+
+    clr_green ">>> Collecting information about conda... "
+    run "${CONDA}/bin/conda info -a 2>&1 | tee -a ${LOG}"
+    handle_error "$?" "ERROR: Failed to collect information about conda" "$info_output"
+    clr_green "DONE"
+}
+
+
+
+
 create_env_qt4() {
     # env_output=$("${CONDA}/bin/conda" env list | grep "test_${VERSION}")
     # if [ $? == 0 ]; then
@@ -131,7 +173,7 @@ create_env_qt4() {
     clr_green ">>> Creating test environment for version ${VERSION}... "
 
     run "${CONDA}/bin/conda env remove -y -n test_${VERSION} || true"
-    run "${CONDA}/bin/conda create -q -y -n test_${VERSION} python=${VERSION} pip pyqt=4 qt=4 setuptools numpy six lxml coverage scikit-bio biopython scipy"
+    run "${CONDA}/bin/conda create -q -y -n test_${VERSION} python=${VERSION} pip=10 pyqt=4 qt=4 numpy=1.16.4 six lxml coverage scikit-bio biopython=1.74 scipy=1.2.1"
     clr_green "DONE"
 }
 
@@ -145,7 +187,7 @@ create_env() {
     
     clr_green ">>> Creating test environment for version ${VERSION}... "
     run "${CONDA}/bin/conda env remove -y -n test_${VERSION} || true"
-    run "${CONDA}/bin/conda create -q -y -n test_${VERSION} python=${VERSION} pip setuptools pyqt numpy six lxml coverage scikit-bio biopython scipy"
+    run "${CONDA}/bin/conda create -q -y -n test_${VERSION} python=${VERSION} pyqt numpy six lxml coverage scikit-bio biopython scipy"
     clr_green "DONE"
 
     # clr_green ">>> Updating conda packages in environment test_${VERSION}... "
@@ -154,8 +196,14 @@ create_env() {
     # clr_green "DONE"
 }
 
+create_env_27() {
+    
+    clr_green ">>> Creating test environment for version ${VERSION}... "
+    run "${CONDA}/bin/conda env remove -y -n test_${VERSION} || true"
 
-
+    run "${CONDA}/bin/conda create -q -y -n test_${VERSION} python=${VERSION} pyqt qt numpy six lxml coverage scikit-bio biopython scipy -c conda-forge"
+    clr_green "DONE"
+}
 
 install_external_apps() {
     if [ "$EXTERNAL_APPS" == "1" ]; then
@@ -202,7 +250,6 @@ run_tests() {
 
 # Location of current script
 FILEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-CONDA="${FILEDIR}/test_tmp/miniconda"
 EXTERNAL_APPS=0
 SETUP=1
 TEST=1
@@ -298,11 +345,22 @@ echo -n > "${LOG}"
 # At any of these signals conditionally show the contents of the logfile
 trap 'exitcode=$? ; showlog ; exit $exitcode' EXIT HUP INT QUIT TERM
 
+if [ "$VERSION" == "2.7" ]; then
+    CONDA="${FILEDIR}/test_tmp/miniconda2"
+else
+    CONDA="${FILEDIR}/test_tmp/miniconda3"
+fi
+
 if [ "${SETUP}" == "1" ]; then
-    setup_miniconda
+    
     if [ "$QT4" == "1" ]; then
+        setup_miniconda3
         create_env_qt4
+    elif [ "$VERSION" == "2.7" ]; then        
+        setup_miniconda2
+        create_env_27
     else
+        setup_miniconda3
         create_env
     fi
     install_external_apps

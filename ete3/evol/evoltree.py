@@ -74,12 +74,19 @@ Yang, Z. 2007.
 '''
 
 import os
+import sys
 from warnings import warn
 
 from .. import PhyloNode, SeqGroup
 from ..parser.newick import write_newick
 from .model import Model, PARAMS, AVAIL
-from .utils import translate, chi_high
+from .utils import translate
+from ..tools.utils import which
+try:
+    from scipy.stats import chi2
+    chi_high = lambda x, y: 1 - chi2.cdf(x, y)
+except ImportError:
+    from .utils import chi_high
 
 try:
     from ..treeview import TreeStyle
@@ -117,6 +124,10 @@ class EvolNode(PhyloNode):
         '''
         # _update names?
         self.workdir = '/tmp/ete3-tmp/'
+        if not binpath:
+            ete3_path = which("ete3")
+            binpath = os.path.split(ete3_path)[0]
+
         self.execpath = binpath
         self._models = {}
         self.__gui_mark_mode = False
@@ -236,19 +247,20 @@ class EvolNode(PhyloNode):
             open(fullpath+'/tmp.ctl', 'w').write(ctrl_string)
         hlddir = os.getcwd()
         os.chdir(fullpath)
-        bin = os.path.join(self.execpath, model_obj.properties['exec'])
+        bin_ = os.path.join(self.execpath, model_obj.properties['exec'])
         try:
-            proc = Popen([bin, 'tmp.ctl'], stdout=PIPE, stdin=PIPE)
+            proc = Popen([bin_, 'tmp.ctl'], stdout=PIPE, stdin=PIPE)
         except OSError:
             raise Exception(('ERROR: {} not installed, ' +
-                             'or wrong path to binary\n').format(bin))
+                             'or wrong path to binary\n').format(bin_))
         run, err = proc.communicate(b'\n') # send \n via stdin in case codeml/slr asks something (note on py3, stdin needs bytes)
+        run = run.decode(sys.stdout.encoding)
 
         if err is not None:
             warn("ERROR: codeml not found!!!\n" +
                  "       define your variable EvolTree.execpath")
             return 1
-        if b'error' in run or b'Error' in run:
+        if 'error' in run or 'Error' in run:
             warn("ERROR: inside codeml!!\n" + run)
             return 1
         os.chdir(hlddir)
@@ -406,7 +418,6 @@ class EvolNode(PhyloNode):
                 node.add_feature('mark', ' '+marks[node_ids.index(node.node_id)])
             elif not 'mark' in node.features:
                 node.add_feature('mark', '')
-                
 
     def link_to_evol_model(self, path, model):
         '''
@@ -426,8 +437,8 @@ class EvolNode(PhyloNode):
         # new entry in _models dict
         while model.name in self._models:
             model.name = model.name.split('__')[0] + str(
-                (int(model.name.split('__')[1])
-                 +1)  if '__' in model.name else 0)
+                (int(model.name.split('__')[1]) + 1)
+                if '__' in model.name else 0)
         self._models[model.name] = model
         if not os.path.isfile(path):
             warn("ERROR: not a file: " + path)
@@ -521,7 +532,7 @@ class EvolNode(PhyloNode):
             if hasattr(altn, 'lnL') and hasattr(null, 'lnL'):
                 if  null.lnL - altn.lnL < 0:
                     return chi_high(2 * abs(altn.lnL - null.lnL),
-                                    df=float(altn.np - null.np))
+                                    float(altn.np - null.np))
                 else:
                     warn("\nWARNING: Likelihood of the alternative model is "
                          "smaller than null's (%f - %f = %f)" % (
@@ -557,4 +568,3 @@ class EvolNode(PhyloNode):
 
 # cosmetic alias
 EvolTree = EvolNode
-

@@ -21,7 +21,7 @@ print t
 # course, the definition of an outgroup will depend on user criteria.
 ancestor = t.get_common_ancestor("E","D")
 t.set_outgroup(ancestor)
-print "Tree rooteda at E and D's ancestor is more basal that the others."
+print "Tree rooted at E and D's ancestor is more basal that the others."
 print t
 #
 #                    /-B

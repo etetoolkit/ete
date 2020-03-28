@@ -1,37 +1,41 @@
 language: python
 sudo: false
 
+services:
+  - xvfb
+
 python:
   - "2.7"
-  - "3.4"
+  #- "3.4"
   - "3.5"
   - "3.6"
 
 cache:
   directories:
-  - test_tmp
+    - test_tmp
 
 install:
   - ./run_tests.sh -s --setup-only -v "$TRAVIS_PYTHON_VERSION"
-        
+
 before_script:
   # Ensure tags are available on the cloned repository
   - git fetch --tags --depth=50
 
   # Start xvfb
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
-  
+  # - "export DISPLAY=:99.0"
+  # - "sh -e /etc/init.d/xvfb start"
+  # - sleep 3
+
 script:
   - ./run_tests.sh --test-only -sv "$TRAVIS_PYTHON_VERSION"
-  - if [[ $TRAVIS_PYTHON_VERSION == 2.7 ]]; then ./run_tests.sh --qt4 -sv "$TRAVIS_PYTHON_VERSION" ; fi 
+  # - if [[ $TRAVIS_PYTHON_VERSION == 2.7 ]]; then ./run_tests.sh --qt4 -sv "$TRAVIS_PYTHON_VERSION" ; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == 2.7 ]]; then ./run_tests.sh -sv "$TRAVIS_PYTHON_VERSION" ; fi
   #- coverage run -m ete3.test.test_api
   #- coverage run -a -m ete3.test.test_ete_evol   # too heavy for travis
   #- coverage run -a -m ete3.test.test_ete_build  # too heavy for travis
-  
+
 after_success:
   - coveralls
-  
 # branches:
 #   only:
 #     - master

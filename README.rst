@@ -4,9 +4,15 @@
 .. image:: https://badges.gitter.im/Join%20Chat.svg
    :alt: Join the chat at https://gitter.im/jhcepas/ete
    :target: https://gitter.im/jhcepas/ete?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge 
-
 ..
    .. image:: https://coveralls.io/repos/jhcepas/ete/badge.png
+
+.. image:: http://img.shields.io/badge/stackoverflow-etetoolkit-blue.svg
+   :target: https://stackoverflow.com/questions/tagged/etetoolkit+or+ete3
+
+.. image:: http://img.shields.io/badge/biostars-etetoolkit-purple.svg
+   :target: https://www.biostars.org/t/etetoolkit,ete3,ete,ete2/
+
 
 Overview
 -----------
@@ -46,21 +52,25 @@ Getting Support
 **Whenerver possible, please avoid sending support related emails directly to
 the developers. Keep communication public:**
 
-- For any type of question on how to use ETE in a bioinformatics context, the
-  BioStars community (http://biostars.org) provides an excellent help desk. ETE
-  developers contribute there with answers, but you will also get feedback from
-  other users. It is recommended to tag your questions with the "etetoolkit"
-  label.
+- For any type of question on how to use ETE in the bioinformatics context, use BioStars (http://biostars.org) or even StackOverflow forums. 
 
-- For technical problems or more ETE specific questions, you can also use the
-  official ETE mailing list at https://groups.google.com/d/forum/etetoolkit. To
-  avoid spam, messages from new users are moderated. Expect some delay until
-  your first message and account is validated.
+  Please use the **"etetoolkit"** tag for your questions: 
+
+.. image:: http://img.shields.io/badge/stackoverflow-etetoolkit-blue.svg
+   :target: https://stackoverflow.com/questions/tagged/etetoolkit+or+ete3
+
+.. image:: http://img.shields.io/badge/biostars-etetoolkit-purple.svg
+   :target: https://www.biostars.org/t/etetoolkit,ete3,ete,ete2/
 
 - Bug reports, feature requests and general discussion should be posted into github:
   https://github.com/etetoolkit/ete/issues
 
-- For any other inquire please contact *huerta /at/ embl.de*
+- For more technical problems, you can also use the
+  official ETE mailing list at https://groups.google.com/d/forum/etetoolkit. To
+  avoid spam, messages from new users are moderated. Expect some delay until
+  your first message and account is validated.
+
+- For any other inquire please contact *jhcepas /at/ gmail.com*
    
 
 Contributing and BUG reporting

@@ -230,15 +230,28 @@ def read_newick(newick, root_node=None, format=0, quoted_names=False):
         from ..coretype.tree import TreeNode
         root_node = TreeNode()
 
-    if isinstance(newick, six.string_types):   
-        if os.path.exists(newick):
+    if isinstance(newick, six.string_types):
+
+        # try to determine whether the file exists.  
+        # For very large trees, if newick contains the content of the tree, rather than a file name,
+        # this may fail, at least on Windows, because the os fails to stat the file content, deeming it 
+        # too long for testing with os.path.exists.  This raises a ValueError with description
+        # "stat: path too long for Windows".  This is described in issue #258
+        try: 
+            file_exists = os.path.exists(newick)
+        except ValueError:      # failed to stat
+            file_exists = False
+
+        # if newick refers to a file, read it from file; otherwise, regard it as a Newick content string.
+        if file_exists:
             if newick.endswith('.gz'):
                 import gzip
                 nw = gzip.open(newick).read()
             else:
-                nw = open(newick, 'rU').read()
+                nw = open(newick, 'r').read()
         else:
             nw = newick
+
 
         matcher = compile_matchers(formatcode=format)
         nw = nw.strip()

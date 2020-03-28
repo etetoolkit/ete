@@ -651,4 +651,4 @@ def cmp(x, y):
     """cmp() exists in Python 2 but was removed in Python 3.
     This implements the same behavior on both versions.
     """
-    return (x > y) - (x < y)
+    return bool(x > y) - bool(x < y) 
