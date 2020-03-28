@@ -63,6 +63,7 @@ CLASS2MODULE = {
 builtin_apps = {
     'muscle'             : "%BIN%/muscle",
     'mafft'              : "MAFFT_BINARIES=%BIN%  %BIN%/mafft --thread %CORES%",
+    #'mafft'              : "%BIN%/mafft --thread %CORES%",
     'clustalo'           : "%BIN%/clustalo --threads %CORES%",
     'trimal'             : "%BIN%/trimal",
     'readal'             : "%BIN%/readal",
@@ -135,7 +136,7 @@ def get_call(appname, apps_path, exec_path, cores):
     except KeyError:
         return None
 
-    bin_path = os.path.join(apps_path, "bin")
+    bin_path = apps_path 
     tmp_path = os.path.join(exec_path, "tmp")
     #apps_base = apps_path.rstrip("/x86-64").rstrip("/x86-32")
     cmd = re.sub("%BIN%", bin_path, cmd)

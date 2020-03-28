@@ -29,7 +29,7 @@ class TCoffee(AlgTask):
         args[""] = pjoin(GLOBALS["input_dir"], self.multiseq_file)
         for k, v in self.args.items():
             args[k] = v
-        args["-outfile"] = "mcoffee.fasta"
+        args["-outfile"] = "mcoffee.fasta" 
         job = Job(self.conf["app"]["tcoffee"], args, parent_ids=[self.nodeid])
         job.add_input_file(self.multiseq_file)
         job.cores = self.conf["threading"]["tcoffee"]

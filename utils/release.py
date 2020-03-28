@@ -1,5 +1,5 @@
 import re
-import commands
+import subprocess
 import os
 import sys
 import readline
@@ -18,7 +18,7 @@ parser.add_option("--doconly", dest="doconly", action='store_true')
 
 def _ex(cmd, interrupt=True):
     if options.verbose or options.simulate:
-        print "***", cmd
+        print("***"), cmd
     if not options.simulate:
         s = os.system(cmd)
         if s != 0 and interrupt:
@@ -37,7 +37,7 @@ def ask(string, valid_values, default=-1, case_sensitive=False):
     while v not in valid_values:
         readline.set_startup_hook(lambda: readline.insert_text(default))
         try:
-            v = raw_input("%s [%s] " % (string, ', '.join(valid_values))).strip()
+            v = input("%s [%s] " % (string, ', '.join(valid_values))).strip()
             if v == '' and default>=0:
                 v = valid_values[default]
             if not case_sensitive:
@@ -49,7 +49,7 @@ def ask(string, valid_values, default=-1, case_sensitive=False):
 def ask_path(string, default_path):
     v = None
     while v is None:
-        v = raw_input("%s [%s] " % (string, default_path)).strip()
+        v = input("%s [%s] " % (string, default_path)).strip()
         if v == '':
             v = default_path
         if not os.path.exists(v):
@@ -65,11 +65,11 @@ CURRENT_VERSION = open('../VERSION').readline().strip()
 a, b, c, tag, ncom, hcom  = re.search("(\d+)\.(\d+)\.(\d+)(-?\w+\d+)?-?(\d+)?-?(\w+)?", CURRENT_VERSION).groups()
 a, b, c = map(int, (a, b, c))
 SERIES_VERSION = "%s.%s" %(a, b)
-print '===================================================='
-print 'CURRENT VERSION:', a, b, c, tag, ncom, hcom
-print '===================================================='
+print('====================================================')
+print('CURRENT VERSION:', a, b, c, tag, ncom, hcom)
+print('====================================================')
 # test examples
-raw_input('continue?')
+input('continue?')
 
 if not options.doconly:
     # commit changes in VERSION
@@ -81,7 +81,7 @@ if not options.doconly:
         NEW_VERSION = "%s.%s.%s" %(a, b, c+1)
 
     if ask('Increase version to "%s" ?' %NEW_VERSION, ['y', 'n']) == 'n':
-        NEW_VERSION = raw_input('new version string:').strip()
+        NEW_VERSION = input('new version string:').strip()
 
     if ask('Write "%s" and commit changes?' %NEW_VERSION, ['y', 'n']) == 'y':
         open('../VERSION', 'w').write(NEW_VERSION)        
@@ -94,13 +94,14 @@ if not options.doconly:
     _ex('rm -rf release/  && git clone .. release/')
     
     # build docs
-    _ex('cd release/sdoc/ && make html && make latex')
-    _ex('cd release/sdoc/_build/latex && make all-pdf')
+    ## _ex('cd release/sdoc/ && make html && make latex')
+    ## _ex('cd release/sdoc/_build/latex && make all-pdf')
     # Generates HTML doc (it includes a link to the PDF doc, so it
     # must be executed after PDF commands)
-    _ex('cp -a release/sdoc/_build/html/ release/doc/')
-    _ex('cp -a release/sdoc/_build/latex/*.pdf release/doc/')
+    ## _ex('cp -a release/sdoc/_build/html/ release/doc/')
+    ## _ex('cp -a release/sdoc/_build/latex/*.pdf release/doc/')
     # Build dist
+    
     _ex('cd release/ && python setup.py sdist')
 
     # test distribution

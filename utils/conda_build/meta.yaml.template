@@ -8,7 +8,7 @@ source:
     #git_url: https://github.com/jhcepas/ete.git
 
 build:
-   noarch_python: True
+    noarch: python
 
 requirements:
   build:
