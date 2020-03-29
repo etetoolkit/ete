@@ -146,9 +146,12 @@ class TreeNode(object):
     def _get_children(self):
         return self._children
     def _set_children(self, value):
-        if type(value) == list and \
-           len(set([type(n)==type(self) for n in value]))<2:
-            self._children = value
+        if type(value) == list:
+            for n in value:
+                if type(n) == type(self):
+                    self._children = value
+                else:
+                    raise TreeError("Incorrect children type")
         else:
             raise TreeError("Incorrect children type")
 
