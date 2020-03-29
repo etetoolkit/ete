@@ -754,6 +754,9 @@ def update_db(dbfile, targz_file=None):
             local_md5 = md5(open("taxdump.tar.gz", "rb").read()).hexdigest()
             if local_md5 != md5_check:
                 do_download = True
+                print('Updating taxdump.tar.gz from NCBI FTP site (via HTTP)...', file=sys.stderr)
+                urlretrieve("http://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz", targz_file)
+                print('Done. Parsing...', file=sys.stderr)
             else:
                 print('Local taxdump.tar.gz seems up-to-date', file=sys.stderr)
         else:
