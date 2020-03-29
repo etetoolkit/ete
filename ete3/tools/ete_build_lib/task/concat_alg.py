@@ -42,6 +42,7 @@ import logging
 from collections import defaultdict
 import six
 from six.moves import zip
+from functools import cmp_to_key
 log = logging.getLogger("main")
 
 from . import Msf
@@ -252,7 +253,7 @@ def get_concatenated_alg(alg_filenames, models=None,
         else:
             return r
 
-    sorted_algs = sorted(alg_objects, sort_single_algs)
+    sorted_algs = sorted(alg_objects,  key=cmp_to_key(sort_single_algs))
     concat_alg_lengths = [alg.seqlength for alg in sorted_algs]
     model2win = {}
     model2size = {}

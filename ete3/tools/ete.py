@@ -135,14 +135,15 @@ def _main(arguments):
             status = ete_upgrade_tools._main()
             sys.exit(status)
             
-        elif subcommand == "build":
+        elif subcommand == "build": 
             from . import ete_build
             del arguments[1]
 
             builtin_apps_path = None
             ete3_path = which("ete3")
-            if ete3_path: 
-                builtin_apps_path = os.path.join(os.path.split(ete3_path)[0], "ete3_apps")
+
+            if ete3_path:
+                builtin_apps_path = os.path.join(os.path.split(ete3_path)[0], "ete3_apps/bin")
             ete_build._main(arguments, builtin_apps_path)
             
             return

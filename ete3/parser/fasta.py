@@ -63,7 +63,7 @@ def read_fasta(source, obj=None, header_delimiter="\t", fix_duplicates=True):
             import gzip
             _source = gzip.open(source)
         else:
-            _source = open(source, "rU")
+            _source = open(source, "r")
     else:
         _source = iter(source.split("\n"))
 

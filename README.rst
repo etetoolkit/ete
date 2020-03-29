@@ -22,9 +22,9 @@ assists in the automated manipulation, analysis and visualization of
 phylogenetic trees. Clustering trees or any other tree-like data structure are
 also supported.
 
-ETE is currently developed as a tool for researchers working in phylogenetics
-and genomics. ETE provides specialized tools to reconstruct, compare and visualize
-phylogenetic trees. If you use ETE for a published work, please cite:
+Given that ETE is mainly developed as a tool for researchers working in phylogenetics
+and genomics, it also provides specialized tools in that context (e.g. reconstructing, comparing and visualizing
+phylogenetic trees). If you use ETE in a published work, please cite:
 
 ::
 
@@ -49,18 +49,18 @@ Gallery of examples
   
 Getting Support
 ------------------
-**Whenerver possible, please avoid sending support related emails directly to
+**Please, whenerver possible, avoid sending direct support-related emails to
 the developers. Keep communication public:**
 
 - For any type of question on how to use ETE in the bioinformatics context, use BioStars (http://biostars.org) or even StackOverflow forums. 
 
   Please use the **"etetoolkit"** tag for your questions: 
 
-.. image:: http://img.shields.io/badge/stackoverflow-etetoolkit-blue.svg
-   :target: https://stackoverflow.com/questions/tagged/etetoolkit+or+ete3
+   .. image:: http://img.shields.io/badge/stackoverflow-etetoolkit-blue.svg
+      :target: https://stackoverflow.com/questions/tagged/etetoolkit+or+ete3
 
-.. image:: http://img.shields.io/badge/biostars-etetoolkit-purple.svg
-   :target: https://www.biostars.org/t/etetoolkit,ete3,ete,ete2/
+   .. image:: http://img.shields.io/badge/biostars-etetoolkit-purple.svg
+      :target: https://www.biostars.org/t/etetoolkit,ete3,ete,ete2/
 
 - Bug reports, feature requests and general discussion should be posted into github:
   https://github.com/etetoolkit/ete/issues
@@ -70,12 +70,15 @@ the developers. Keep communication public:**
   avoid spam, messages from new users are moderated. Expect some delay until
   your first message and account is validated.
 
-- For any other inquire please contact *jhcepas /at/ gmail.com*
+- For any other inquire (collaborations, sponsoring, etc), please contact *jhcepas /at/ gmail.com*
    
 
 Contributing and BUG reporting
 ---------------------------------
 https://github.com/etetoolkit/ete/wiki/Contributing
   
+ROADMAP
+--------
+https://github.com/etetoolkit/ete/wiki/ROADMAP
 
 

@@ -652,9 +652,10 @@ def main(args):
 def _main(arguments, builtin_apps_path=None):
     global BASEPATH, APPSPATH, args
 
+    # read path of ete_toolchain
     if builtin_apps_path:
         APPSPATH = builtin_apps_path
-
+        
     ETEHOMEDIR = os.path.expanduser("~/.etetoolkit/")
 
     if len(arguments) == 1:
@@ -669,7 +670,6 @@ def _main(arguments, builtin_apps_path=None):
 
     if len(arguments) > 1:
         _config_path = pjoin(BASEPATH, 'ete_build.cfg')
-
         if arguments[1] == "check":
             if not pexist(APPSPATH):
                 print(colorify('\nWARNING: external applications not found', "yellow"), file=sys.stderr)
@@ -998,7 +998,7 @@ def _main(arguments, builtin_apps_path=None):
     exec_group.add_argument("--nochecks", dest="nochecks",
                             action="store_true",
                             help="Skip basic checks (i.e. tools available) everytime the application starts.")
-
+    
     # Interface related flags
     ui_group = parser.add_argument_group("==== Program Interface Options ====")
     # ui_group.add_argument("-u", dest="enable_ui",

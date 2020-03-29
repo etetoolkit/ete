@@ -42,13 +42,12 @@ from __future__ import print_function
 import random
 import copy
 import itertools
-import statistics
 from collections import deque
 from hashlib import md5
 from functools import cmp_to_key
 
 import six
-from six.moves import cPickle, map, range, zip
+from six.moves import (cPickle, map, range, zip)
 
 from ..parser.newick import read_newick, write_newick
 from .. import utils
@@ -70,18 +69,14 @@ DEFAULT_DIST = 1.0
 DEFAULT_SUPPORT = 1.0
 DEFAULT_NAME = ""
 
-
 class TreeError(Exception):
     """
     A problem occurred during a TreeNode operation
     """
-
-    def __init__(self, value=""):
+    def __init__(self, value=''):
         self.value = value
-
     def __str__(self):
         return repr(self.value)
-
 
 class TreeNode(object):
     """
@@ -126,25 +121,22 @@ class TreeNode(object):
 
     def _get_dist(self):
         return self._dist
-
     def _set_dist(self, value):
         try:
             self._dist = float(value)
         except ValueError:
-            raise TreeError("node dist must be a float number")
+            raise TreeError('node dist must be a float number')
 
     def _get_support(self):
         return self._support
-
     def _set_support(self, value):
         try:
             self._support = float(value)
         except ValueError:
-            raise TreeError("node support must be a float number")
+            raise TreeError('node support must be a float number')
 
     def _get_up(self):
         return self._up
-
     def _set_up(self, value):
         if type(value) == type(self) or value is None:
             self._up = value
@@ -153,9 +145,11 @@ class TreeNode(object):
 
     def _get_children(self):
         return self._children
-
     def _set_children(self, value):
-        if type(value) == list and len(set([type(n) == type(self) for n in value])) < 2:
+        if type(value) == list:
+            for n in value:
+                if type(n) != type(self):
+                    raise TreeError("Incorrect child node type")
             self._children = value
         else:
             raise TreeError("Incorrect children type")
@@ -185,24 +179,18 @@ class TreeNode(object):
         if isinstance(value, _FaceAreas):
             self._faces = value
         else:
-            raise ValueError("[%s] is not a valid FaceAreas instance" % type(value))
+            raise ValueError("[%s] is not a valid FaceAreas instance" %type(value))
 
     def _get_face_areas(self):
         if not hasattr(self, "_faces"):
             self._faces = _FaceAreas()
         return self._faces
 
-    faces = property(fget=_get_face_areas, fset=_set_face_areas)
+    faces = property(fget=_get_face_areas, \
+                         fset=_set_face_areas)
 
-    def __init__(
-        self,
-        newick=None,
-        format=0,
-        dist=None,
-        support=None,
-        name=None,
-        quoted_node_names=False,
-    ):
+    def __init__(self, newick=None, format=0, dist=None, support=None,
+                 name=None, quoted_node_names=False):
         self._children = []
         self._up = None
         self._dist = DEFAULT_DIST
@@ -221,9 +209,9 @@ class TreeNode(object):
         # Initialize tree
         if newick is not None:
             self._dist = 0.0
-            read_newick(
-                newick, root_node=self, format=format, quoted_names=quoted_node_names
-            )
+            read_newick(newick, root_node = self, format=format,
+                        quoted_names=quoted_node_names)
+
 
     def __nonzero__(self):
         return True
@@ -237,12 +225,12 @@ class TreeNode(object):
         return True
 
     def __repr__(self):
-        return "Tree node '%s' (%s)" % (self.name, hex(self.__hash__()))
+        return "Tree node '%s' (%s)" %(self.name, hex(self.__hash__()))
 
     def __and__(self, value):
         """ This allows to execute tree&'A' to obtain the descendant node
         whose name is A"""
-        value = str(value)
+        value=str(value)
         try:
             first_match = next(self.iter_search_nodes(name=value))
             return first_match
@@ -262,16 +250,15 @@ class TreeNode(object):
 
     def __str__(self):
         """ Print tree in newick format. """
-        return self.get_ascii(
-            compact=DEFAULT_COMPACT, show_internal=DEFAULT_SHOWINTERNAL
-        )
+        return self.get_ascii(compact=DEFAULT_COMPACT, \
+                                show_internal=DEFAULT_SHOWINTERNAL)
 
     def __contains__(self, item):
         """ Check if item belongs to this node. The 'item' argument must
         be a node instance or its associated name."""
         if isinstance(item, self.__class__):
             return item in set(self.get_descendants())
-        elif type(item) == str:
+        elif type(item)==str:
             return item in set([n.name for n in self.traverse()])
 
     def __len__(self):
@@ -423,11 +410,11 @@ class TreeNode(object):
             parent.remove_child(self)
 
         # Avoids parents with only one child
-        if prevent_nondicotomic and parent and len(parent.children) < 2:
-            parent.delete(
-                prevent_nondicotomic=False,
-                preserve_branch_length=preserve_branch_length,
-            )
+        if prevent_nondicotomic and parent and\
+              len(parent.children) < 2:
+            parent.delete(prevent_nondicotomic=False,
+                          preserve_branch_length=preserve_branch_length)
+
 
     def detach(self):
         """
@@ -443,6 +430,7 @@ class TreeNode(object):
             self.up.children.remove(self)
             self.up = None
         return self
+
 
     def prune(self, nodes, preserve_branch_length=False):
         """Prunes the topology of a node to conserve only the selected list of leaf
@@ -528,7 +516,6 @@ class TreeNode(object):
           #       \-J
 
         """
-
         def cmp_nodes(x, y):
             # if several nodes are in the same path of two kept nodes,
             # only one should be maintained. This prioritize internal
@@ -562,7 +549,7 @@ class TreeNode(object):
         visitors2nodes = {}
         for node, visitors in six.iteritems(n2count):
             # keep nodes connection at least two other nodes
-            if len(visitors) > 1:
+            if len(visitors)>1:
                 visitor_key = frozenset(visitors)
                 visitors2nodes.setdefault(visitor_key, set()).add(node)
 
@@ -571,7 +558,7 @@ class TreeNode(object):
                 sorted_nodes = sorted(nodes, key=cmp_to_key(cmp_nodes))
                 to_keep.add(sorted_nodes[0])
 
-        for n in self.get_descendants("postorder"):
+        for n in self.get_descendants('postorder'):
             if n not in to_keep:
                 if preserve_branch_length:
                     if len(n.children) == 1:
@@ -581,16 +568,19 @@ class TreeNode(object):
 
                 n.delete(prevent_nondicotomic=False)
 
+
     def swap_children(self):
         """
         Swaps current children order.
         """
-        if len(self.children) > 1:
+        if len(self.children)>1:
             self.children.reverse()
+
 
     # #####################
     # Tree traversing
     # #####################
+
 
     def get_children(self):
         """
@@ -603,7 +593,7 @@ class TreeNode(object):
         Returns an independent list of sister nodes.
         """
         if self.up is not None:
-            return [ch for ch in self.up.children if ch != self]
+            return [ch for ch in self.up.children if ch!=self]
         else:
             return []
 
@@ -669,9 +659,8 @@ class TreeNode(object):
         :argument None is_leaf_fn: See :func:`TreeNode.traverse` for
           documentation.
         """
-        return [
-            n for n in self.iter_descendants(strategy=strategy, is_leaf_fn=is_leaf_fn)
-        ]
+        return [n for n in self.iter_descendants(strategy=strategy, \
+                                                 is_leaf_fn=is_leaf_fn)]
 
     def traverse(self, strategy="levelorder", is_leaf_fn=None):
         """
@@ -692,11 +681,11 @@ class TreeNode(object):
            dynamically collapsing internal nodes matching
            ``is_leaf_fn``.
         """
-        if strategy == "preorder":
+        if strategy=="preorder":
             return self._iter_descendants_preorder(is_leaf_fn=is_leaf_fn)
-        elif strategy == "levelorder":
+        elif strategy=="levelorder":
             return self._iter_descendants_levelorder(is_leaf_fn=is_leaf_fn)
-        elif strategy == "postorder":
+        elif strategy=="postorder":
             return self._iter_descendants_postorder(is_leaf_fn=is_leaf_fn)
 
     def iter_prepostorder(self, is_leaf_fn=None):
@@ -723,7 +712,7 @@ class TreeNode(object):
                     # ADD CHILDREN
                     to_visit.extend(reversed(node.children + [[1, node]]))
             else:
-                # POSTORDER ACTIONS
+                #POSTORDER ACTIONS
                 yield (True, node)
 
     def _iter_descendants_postorder(self, is_leaf_fn=None):
@@ -745,7 +734,7 @@ class TreeNode(object):
                 else:
                     yield node
             else:
-                # POSTORDER ACTIONS
+                #POSTORDER ACTIONS
                 yield node
 
     def _iter_descendants_levelorder(self, is_leaf_fn=None):
@@ -753,7 +742,7 @@ class TreeNode(object):
         Iterate over all desdecendant nodes.
         """
         tovisit = deque([self])
-        while len(tovisit) > 0:
+        while len(tovisit)>0:
             node = tovisit.popleft()
             yield node
             if not is_leaf_fn or not is_leaf_fn(node):
@@ -775,24 +764,24 @@ class TreeNode(object):
                 node = None
 
     def iter_ancestors(self):
-        """versionadded: 2.2
+        '''versionadded: 2.2
 
         Iterates over the list of all ancestor nodes from current node
         to the current tree root.
 
-        """
+        '''
         node = self
         while node.up is not None:
             yield node.up
             node = node.up
 
     def get_ancestors(self):
-        """versionadded: 2.2
+        '''versionadded: 2.2
 
         Returns the list of all ancestor nodes from current node to
         the current tree root.
 
-        """
+        '''
         return [n for n in self.iter_ancestors()]
 
     def describe(self):
@@ -800,9 +789,9 @@ class TreeNode(object):
         Prints general information about this node and its
         connections.
         """
-        if len(self.get_tree_root().children) == 2:
+        if len(self.get_tree_root().children)==2:
             rooting = "Yes"
-        elif len(self.get_tree_root().children) > 2:
+        elif len(self.get_tree_root().children)>2:
             rooting = "No"
         else:
             rooting = "No children"
@@ -810,22 +799,13 @@ class TreeNode(object):
         cached_content = self.get_cached_content()
         print("Number of leaf nodes:\t%d" % len(cached_content[self]))
         print("Total number of nodes:\t%d" % len(cached_content))
-        print("Rooted:\t%s" % rooting)
-        print("Most distant node:\t%s" % max_node.name)
-        print("Max. distance:\t%f" % max_dist)
+        print("Rooted:\t%s" %rooting)
+        print("Most distant node:\t%s" %max_node.name)
+        print("Max. distance:\t%f" %max_dist)
 
-    def write(
-        self,
-        features=None,
-        outfile=None,
-        format=0,
-        is_leaf_fn=None,
-        format_root_node=False,
-        dist_formatter=None,
-        support_formatter=None,
-        name_formatter=None,
-        quoted_node_names=False,
-    ):
+    def write(self, features=None, outfile=None, format=0, is_leaf_fn=None,
+              format_root_node=False, dist_formatter=None, support_formatter=None,
+              name_formatter=None, quoted_node_names=False):
         """
         Returns the newick representation of current node. Several
         arguments control the way in which extra data is shown for
@@ -857,17 +837,13 @@ class TreeNode(object):
 
         """
 
-        nw = write_newick(
-            self,
-            features=features,
-            format=format,
-            is_leaf_fn=is_leaf_fn,
-            format_root_node=format_root_node,
-            dist_formatter=dist_formatter,
-            support_formatter=support_formatter,
-            name_formatter=name_formatter,
-            quoted_names=quoted_node_names,
-        )
+        nw = write_newick(self, features=features, format=format,
+                          is_leaf_fn=is_leaf_fn,
+                          format_root_node=format_root_node,
+                          dist_formatter=dist_formatter,
+                          support_formatter=support_formatter,
+                          name_formatter=name_formatter,
+                          quoted_names=quoted_node_names)
 
         if outfile is not None:
             with open(outfile, "w") as OUT:
@@ -903,9 +879,8 @@ class TreeNode(object):
 
         get_path = kargs.get("get_path", False)
 
-        if len(target_nodes) == 1 and type(target_nodes[0]) in set(
-            [set, tuple, list, frozenset]
-        ):
+        if len(target_nodes) == 1 and type(target_nodes[0]) \
+                in set([set, tuple, list, frozenset]):
             target_nodes = target_nodes[0]
 
         # Convert node names into node instances
@@ -914,6 +889,7 @@ class TreeNode(object):
         # If only one node is provided, use self as the second target
         if type(target_nodes) != list:
             target_nodes = [target_nodes, self]
+
 
         n2path = {}
         reference = []
@@ -959,7 +935,7 @@ class TreeNode(object):
             conditions_passed = 0
             for key, value in six.iteritems(conditions):
                 if hasattr(n, key) and getattr(n, key) == value:
-                    conditions_passed += 1
+                    conditions_passed +=1
             if conditions_passed == len(conditions):
                 yield n
 
@@ -1038,7 +1014,7 @@ class TreeNode(object):
             current = n
             while current != ancestor:
                 if topology_only:
-                    if current != target:
+                    if  current!=target:
                         dist += 1
                 else:
                     dist += current.dist
@@ -1060,9 +1036,7 @@ class TreeNode(object):
 
         """
         # Init farthest node to current farthest leaf
-        farthest_node, farthest_dist = self.get_farthest_leaf(
-            topology_only=topology_only
-        )
+        farthest_node, farthest_dist = self.get_farthest_leaf(topology_only=topology_only)
 
         prev = self
         cdist = 0.0 if topology_only else prev.dist
@@ -1079,14 +1053,14 @@ class TreeNode(object):
                         fdist += 1.0
                     else:
                         fdist += ch.dist
-                    if cdist + fdist > farthest_dist:
+                    if cdist+fdist > farthest_dist:
                         farthest_dist = cdist + fdist
                         farthest_node = fnode
             prev = current
             if topology_only:
                 cdist += 1
             else:
-                cdist += prev.dist
+                cdist  += prev.dist
             current = prev.up
         return farthest_node, farthest_dist
 
@@ -1118,6 +1092,7 @@ class TreeNode(object):
                     d += n.dist if not topology_only else 1.0
         return min_node, min_dist, max_node, max_dist
 
+
     def get_farthest_leaf(self, topology_only=False, is_leaf_fn=None):
         """
         Returns node's farthest descendant node (which is always a leaf), and the
@@ -1132,8 +1107,7 @@ class TreeNode(object):
           current node and the distance to it.
         """
         min_node, min_dist, max_node, max_dist = self._get_farthest_and_closest_leaves(
-            topology_only=topology_only, is_leaf_fn=is_leaf_fn
-        )
+        topology_only=topology_only, is_leaf_fn=is_leaf_fn)
         return max_node, max_dist
 
     def get_closest_leaf(self, topology_only=False, is_leaf_fn=None):
@@ -1150,10 +1124,10 @@ class TreeNode(object):
 
         """
         min_node, min_dist, max_node, max_dist = self._get_farthest_and_closest_leaves(
-            topology_only=topology_only, is_leaf_fn=is_leaf_fn
-        )
+            topology_only=topology_only, is_leaf_fn=is_leaf_fn)
 
         return min_node, min_dist
+
 
     def get_midpoint_outgroup(self):
         """
@@ -1166,26 +1140,20 @@ class TreeNode(object):
         nB, A2B_dist = nA.get_farthest_node()
 
         outgroup = nA
-        middist = A2B_dist / 2.0
+        middist  = A2B_dist / 2.0
         cdist = 0
         current = nA
         while current is not None:
             cdist += current.dist
-            if cdist > (middist):  # Deja de subir cuando se pasa del maximo
+            if cdist > (middist): # Deja de subir cuando se pasa del maximo
                 break
             else:
                 current = current.up
         return current
 
-    def populate(
-        self,
-        size,
-        names_library=None,
-        reuse_names=False,
-        random_branches=False,
-        branch_range=(0, 1),
-        support_range=(0, 1),
-    ):
+    def populate(self, size, names_library=None, reuse_names=False,
+                 random_branches=False, branch_range=(0,1),
+                 support_range=(0,1)):
         """
         Generates a random topology by populating current node.
 
@@ -1213,15 +1181,15 @@ class TreeNode(object):
             connector = NewNode()
             for ch in self.get_children():
                 ch.detach()
-                connector.add_child(child=ch)
+                connector.add_child(child = ch)
             root = NewNode()
-            self.add_child(child=connector)
-            self.add_child(child=root)
+            self.add_child(child = connector)
+            self.add_child(child = root)
         else:
             root = self
 
         next_deq = deque([root])
-        for i in range(size - 1):
+        for i in range(size-1):
             if random.randint(0, 1):
                 p = next_deq.pop()
             else:
@@ -1242,7 +1210,7 @@ class TreeNode(object):
                 c2.support = 1.0
 
         # next contains leaf nodes
-        charset = "abcdefghijklmnopqrstuvwxyz"
+        charset =  "abcdefghijklmnopqrstuvwxyz"
         if names_library:
             names_library = deque(names_library)
         else:
@@ -1254,8 +1222,9 @@ class TreeNode(object):
                 else:
                     tname = names_library.pop()
             else:
-                tname = "".join(next(avail_names))
+                tname = ''.join(next(avail_names))
             n.name = tname
+
 
     def set_outgroup(self, outgroup):
         """
@@ -1336,13 +1305,13 @@ class TreeNode(object):
         outgroup2.up = self
         # outgroup is always the first children. Some function my
         # trust on this fact, so do no change this.
-        self.children = [outgroup, outgroup2]
-        middist = (outgroup2.dist + outgroup.dist) / 2
+        self.children = [outgroup,outgroup2]
+        middist = (outgroup2.dist + outgroup.dist)/2
         outgroup.dist = middist
         outgroup2.dist = middist
         outgroup2.support = outgroup.support
 
-    def unroot(self, mode="legacy"):
+    def unroot(self, mode='legacy'):
         """
         Unroots current node. This function is expected to be used on
         the absolute tree root node, but it can be also be applied to
@@ -1356,18 +1325,16 @@ class TreeNode(object):
         value of the deleted edge is dropped
 
         """
-        if not (mode == "legacy" or mode == "keep"):
-            raise ValueError(
-                "The value of the mode parameter must be 'legacy' or 'keep'"
-            )
-        if len(self.children) == 2:
+        if not (mode == 'legacy' or mode == 'keep'):
+            raise ValueError("The value of the mode parameter must be 'legacy' or 'keep'")
+        if len(self.children)==2:
             if not self.children[0].is_leaf():
                 if mode == "keep":
-                    self.children[1].dist += self.children[0].dist
+                    self.children[1].dist+=self.children[0].dist
                 self.children[0].delete()
             elif not self.children[1].is_leaf():
                 if mode == "keep":
-                    self.children[0].dist += self.children[1].dist
+                    self.children[0].dist+=self.children[1].dist
                 self.children[1].delete()
             else:
                 raise TreeError("Cannot unroot a tree with only two leaves")
@@ -1379,19 +1346,11 @@ class TreeNode(object):
 
         """
         from ..treeview import drawer
+        drawer.show_tree(self, layout=layout,
+                         tree_style=tree_style, win_name=name)
 
-        drawer.show_tree(self, layout=layout, tree_style=tree_style, win_name=name)
-
-    def render(
-        self,
-        file_name,
-        layout=None,
-        w=None,
-        h=None,
-        tree_style=None,
-        units="px",
-        dpi=90,
-    ):
+    def render(self, file_name, layout=None, w=None, h=None, \
+                       tree_style=None, units="px", dpi=90):
         """
         Renders the node structure as an image.
 
@@ -1411,29 +1370,14 @@ class TreeNode(object):
         """
 
         from ..treeview import drawer
-
-        if file_name.startswith("%%return"):
-            return drawer.get_img(
-                self,
-                w=w,
-                h=h,
-                layout=layout,
-                tree_style=tree_style,
-                units=units,
-                dpi=dpi,
-                return_format=file_name,
-            )
+        if file_name.startswith('%%return'):
+            return drawer.get_img(self, w=w, h=h,
+                                  layout=layout, tree_style=tree_style,
+                                  units=units, dpi=dpi, return_format=file_name)
         else:
-            return drawer.render_tree(
-                self,
-                file_name,
-                w=w,
-                h=h,
-                layout=layout,
-                tree_style=tree_style,
-                units=units,
-                dpi=dpi,
-            )
+            return drawer.render_tree(self, file_name, w=w, h=h,
+                                    layout=layout, tree_style=tree_style,
+                                      units=units, dpi=dpi)
 
     def copy(self, method="cpickle"):
         """.. versionadded: 2.1
@@ -1466,11 +1410,9 @@ class TreeNode(object):
 
         """
         method = method.lower()
-        if method == "newick":
-            new_node = self.__class__(
-                self.write(features=["name"], format_root_node=True)
-            )
-        elif method == "newick-extended":
+        if method=="newick":
+            new_node = self.__class__(self.write(features=["name"], format_root_node=True))
+        elif method=="newick-extended":
             self.write(features=[], format_root_node=True)
             new_node = self.__class__(self.write(features=[]))
         elif method == "deepcopy":
@@ -1488,7 +1430,7 @@ class TreeNode(object):
 
         return new_node
 
-    def _asciiArt(self, char1="-", show_internal=True, compact=False, attributes=None):
+    def _asciiArt(self, char1='-', show_internal=True, compact=False, attributes=None):
         """
         Returns the ASCII representation of the tree.
 
@@ -1496,45 +1438,41 @@ class TreeNode(object):
         """
         if not attributes:
             attributes = ["name"]
-        node_name = ", ".join(
-            map(str, [getattr(self, v) for v in attributes if hasattr(self, v)])
-        )
+        node_name = ', '.join(map(str, [getattr(self, v) for v in attributes if hasattr(self, v)]))
 
         LEN = max(3, len(node_name) if not self.children or show_internal else 3)
-        PAD = " " * LEN
-        PA = " " * (LEN - 1)
+        PAD = ' ' * LEN
+        PA = ' ' * (LEN-1)
         if not self.is_leaf():
             mids = []
             result = []
             for c in self.children:
                 if len(self.children) == 1:
-                    char2 = "/"
+                    char2 = '/'
                 elif c is self.children[0]:
-                    char2 = "/"
+                    char2 = '/'
                 elif c is self.children[-1]:
-                    char2 = "\\"
+                    char2 = '\\'
                 else:
-                    char2 = "-"
+                    char2 = '-'
                 (clines, mid) = c._asciiArt(char2, show_internal, compact, attributes)
-                mids.append(mid + len(result))
+                mids.append(mid+len(result))
                 result.extend(clines)
                 if not compact:
-                    result.append("")
+                    result.append('')
             if not compact:
                 result.pop()
             (lo, hi, end) = (mids[0], mids[-1], len(result))
-            prefixes = (
-                [PAD] * (lo + 1) + [PA + "|"] * (hi - lo - 1) + [PAD] * (end - hi)
-            )
+            prefixes = [PAD] * (lo+1) + [PA+'|'] * (hi-lo-1) + [PAD] * (end-hi)
             mid = int((lo + hi) / 2)
-            prefixes[mid] = char1 + "-" * (LEN - 2) + prefixes[mid][-1]
-            result = [p + l for (p, l) in zip(prefixes, result)]
+            prefixes[mid] = char1 + '-'*(LEN-2) + prefixes[mid][-1]
+            result = [p+l for (p,l) in zip(prefixes, result)]
             if show_internal:
                 stem = result[mid]
-                result[mid] = stem[0] + node_name + stem[len(node_name) + 1 :]
+                result[mid] = stem[0] + node_name + stem[len(node_name)+1:]
             return (result, mid)
         else:
-            return ([char1 + "-" + node_name], 0)
+            return ([char1 + '-' + node_name], 0)
 
     def get_ascii(self, show_internal=True, compact=False, attributes=None):
         """
@@ -1547,10 +1485,10 @@ class TreeNode(object):
             ASCII representation.
 
         """
-        (lines, mid) = self._asciiArt(
-            show_internal=show_internal, compact=compact, attributes=attributes
-        )
-        return "\n" + "\n".join(lines)
+        (lines, mid) = self._asciiArt(show_internal=show_internal,
+                                      compact=compact, attributes=attributes)
+        return '\n'+'\n'.join(lines)
+
 
     def ladderize(self, direction=0):
         """
@@ -1626,9 +1564,7 @@ class TreeNode(object):
             if not n.is_leaf():
                 n.children.sort(key=lambda x: str(sorted(node2content[x])))
 
-    def get_cached_content(
-        self, store_attr=None, container_type=set, leaves_only=True, _store=None
-    ):
+    def get_cached_content(self, store_attr=None, container_type=set, leaves_only=True, _store=None):
         """
         .. versionadded: 2.2
 
@@ -1661,12 +1597,10 @@ class TreeNode(object):
             return _val
 
         for ch in self.children:
-            ch.get_cached_content(
-                store_attr=store_attr,
-                container_type=container_type,
-                leaves_only=leaves_only,
-                _store=_store,
-            )
+            ch.get_cached_content(store_attr=store_attr,
+                                  container_type=container_type,
+                                  leaves_only=leaves_only,
+                                  _store=_store)
 
         if self.children:
             if not leaves_only:
@@ -1691,19 +1625,11 @@ class TreeNode(object):
 
         return _store
 
-    def robinson_foulds(
-        self,
-        t2,
-        attr_t1="name",
-        attr_t2="name",
-        unrooted_trees=False,
-        expand_polytomies=False,
-        polytomy_size_limit=5,
-        skip_large_polytomies=False,
-        correct_by_polytomy_size=False,
-        min_support_t1=0.0,
-        min_support_t2=0.0,
-    ):
+    def robinson_foulds(self, t2, attr_t1="name", attr_t2="name",
+                        unrooted_trees=False, expand_polytomies=False,
+                        polytomy_size_limit=5, skip_large_polytomies=False,
+                        correct_by_polytomy_size=False, min_support_t1=0.0,
+                        min_support_t2=0.0):
         """
         .. versionadded: 2.2
 
@@ -1731,70 +1657,39 @@ class TreeNode(object):
         """
         ref_t = self
         target_t = t2
-        if not unrooted_trees and (
-            len(ref_t.children) > 2 or len(target_t.children) > 2
-        ):
-            raise TreeError(
-                "Unrooted tree found! You may want to activate the unrooted_trees flag."
-            )
+        if not unrooted_trees and (len(ref_t.children) > 2 or len(target_t.children) > 2):
+            raise TreeError("Unrooted tree found! You may want to activate the unrooted_trees flag.")
 
         if expand_polytomies and correct_by_polytomy_size:
-            raise TreeError(
-                "expand_polytomies and correct_by_polytomy_size are mutually exclusive."
-            )
+            raise TreeError("expand_polytomies and correct_by_polytomy_size are mutually exclusive.")
 
         if expand_polytomies and unrooted_trees:
-            raise TreeError(
-                "expand_polytomies and unrooted_trees arguments cannot be enabled at the same time"
-            )
+            raise TreeError("expand_polytomies and unrooted_trees arguments cannot be enabled at the same time")
 
-        attrs_t1 = set(
-            [getattr(n, attr_t1) for n in ref_t.iter_leaves() if hasattr(n, attr_t1)]
-        )
-        attrs_t2 = set(
-            [getattr(n, attr_t2) for n in target_t.iter_leaves() if hasattr(n, attr_t2)]
-        )
+
+        attrs_t1 = set([getattr(n, attr_t1) for n in ref_t.iter_leaves() if hasattr(n, attr_t1)])
+        attrs_t2 = set([getattr(n, attr_t2) for n in target_t.iter_leaves() if hasattr(n, attr_t2)])
         common_attrs = attrs_t1 & attrs_t2
         # release mem
         attrs_t1, attrs_t2 = None, None
 
         # Check for duplicated items (is it necessary? can we optimize? what's the impact in performance?')
-        size1 = len(
-            [
-                True
-                for n in ref_t.iter_leaves()
-                if getattr(n, attr_t1, None) in common_attrs
-            ]
-        )
-        size2 = len(
-            [
-                True
-                for n in target_t.iter_leaves()
-                if getattr(n, attr_t2, None) in common_attrs
-            ]
-        )
+        size1 = len([True for n in ref_t.iter_leaves() if getattr(n, attr_t1, None) in common_attrs])
+        size2 = len([True for n in target_t.iter_leaves() if getattr(n, attr_t2, None) in common_attrs])
         if size1 > len(common_attrs):
-            raise TreeError("Duplicated items found in source tree")
+            raise TreeError('Duplicated items found in source tree')
         if size2 > len(common_attrs):
-            raise TreeError("Duplicated items found in reference tree")
+            raise TreeError('Duplicated items found in reference tree')
 
         if expand_polytomies:
-            ref_trees = [
-                Tree(nw)
-                for nw in ref_t.expand_polytomies(
-                    map_attr=attr_t1,
-                    polytomy_size_limit=polytomy_size_limit,
-                    skip_large_polytomies=skip_large_polytomies,
-                )
-            ]
-            target_trees = [
-                Tree(nw)
-                for nw in target_t.expand_polytomies(
-                    map_attr=attr_t2,
-                    polytomy_size_limit=polytomy_size_limit,
-                    skip_large_polytomies=skip_large_polytomies,
-                )
-            ]
+            ref_trees = [Tree(nw) for nw in
+                         ref_t.expand_polytomies(map_attr=attr_t1,
+                                                 polytomy_size_limit=polytomy_size_limit,
+                                                 skip_large_polytomies=skip_large_polytomies)]
+            target_trees = [Tree(nw) for nw in
+                            target_t.expand_polytomies(map_attr=attr_t2,
+                                                       polytomy_size_limit=polytomy_size_limit,
+                                                       skip_large_polytomies=skip_large_polytomies)]
             attr_t1, attr_t2 = "name", "name"
         else:
             ref_trees = [ref_t]
@@ -1802,22 +1697,10 @@ class TreeNode(object):
 
         polytomy_correction = 0
         if correct_by_polytomy_size:
-            corr1 = sum(
-                [0]
-                + [len(n.children) - 2 for n in ref_t.traverse() if len(n.children) > 2]
-            )
-            corr2 = sum(
-                [0]
-                + [
-                    len(n.children) - 2
-                    for n in target_t.traverse()
-                    if len(n.children) > 2
-                ]
-            )
+            corr1 = sum([0]+[len(n.children) - 2 for n in ref_t.traverse() if len(n.children) > 2])
+            corr2 = sum([0]+[len(n.children) - 2 for n in target_t.traverse() if len(n.children) > 2])
             if corr1 and corr2:
-                raise TreeError(
-                    "Both trees contain polytomies! Try expand_polytomies=True instead"
-                )
+                raise TreeError("Both trees contain polytomies! Try expand_polytomies=True instead")
             else:
                 polytomy_correction = max([corr1, corr2])
 
@@ -1826,250 +1709,91 @@ class TreeNode(object):
             t1_content = t1.get_cached_content()
             t1_leaves = t1_content[t1]
             if unrooted_trees:
-                edges1 = set(
-                    [
-                        tuple(
-                            sorted(
-                                [
-                                    tuple(
-                                        sorted(
-                                            [
-                                                getattr(n, attr_t1)
-                                                for n in content
-                                                if hasattr(n, attr_t1)
-                                                and getattr(n, attr_t1) in common_attrs
-                                            ]
-                                        )
-                                    ),
-                                    tuple(
-                                        sorted(
-                                            [
-                                                getattr(n, attr_t1)
-                                                for n in t1_leaves - content
-                                                if hasattr(n, attr_t1)
-                                                and getattr(n, attr_t1) in common_attrs
-                                            ]
-                                        )
-                                    ),
-                                ]
-                            )
-                        )
-                        for content in six.itervalues(t1_content)
-                    ]
-                )
-                edges1.discard(((), ()))
+                edges1 = set([
+                        tuple(sorted([tuple(sorted([getattr(n, attr_t1) for n in content if hasattr(n, attr_t1) and getattr(n, attr_t1) in common_attrs])),
+                                      tuple(sorted([getattr(n, attr_t1) for n in t1_leaves-content if hasattr(n, attr_t1) and getattr(n, attr_t1) in common_attrs]))]))
+                        for content in six.itervalues(t1_content)])
+                edges1.discard(((),()))
             else:
-                edges1 = set(
-                    [
-                        tuple(
-                            sorted(
-                                [
-                                    getattr(n, attr_t1)
-                                    for n in content
-                                    if hasattr(n, attr_t1)
-                                    and getattr(n, attr_t1) in common_attrs
-                                ]
-                            )
-                        )
-                        for content in six.itervalues(t1_content)
-                    ]
-                )
+                edges1 = set([
+                        tuple(sorted([getattr(n, attr_t1) for n in content if hasattr(n, attr_t1) and getattr(n, attr_t1) in common_attrs]))
+                        for content in six.itervalues(t1_content)])
                 edges1.discard(())
 
             if min_support_t1:
-                support_t1 = dict(
-                    [
-                        (
-                            tuple(
-                                sorted(
-                                    [
-                                        getattr(n, attr_t1)
-                                        for n in content
-                                        if hasattr(n, attr_t1)
-                                        and getattr(n, attr_t1) in common_attrs
-                                    ]
-                                )
-                            ),
-                            branch.support,
-                        )
-                        for branch, content in six.iteritems(t1_content)
-                    ]
-                )
+                support_t1 = dict([
+                        (tuple(sorted([getattr(n, attr_t1) for n in content if hasattr(n, attr_t1) and getattr(n, attr_t1) in common_attrs])), branch.support)
+                        for branch, content in six.iteritems(t1_content)])
 
             for t2 in target_trees:
                 t2_content = t2.get_cached_content()
                 t2_leaves = t2_content[t2]
                 if unrooted_trees:
-                    edges2 = set(
-                        [
-                            tuple(
-                                sorted(
-                                    [
-                                        tuple(
-                                            sorted(
-                                                [
-                                                    getattr(n, attr_t2)
-                                                    for n in content
-                                                    if hasattr(n, attr_t2)
-                                                    and getattr(n, attr_t2)
-                                                    in common_attrs
-                                                ]
-                                            )
-                                        ),
-                                        tuple(
-                                            sorted(
-                                                [
-                                                    getattr(n, attr_t2)
-                                                    for n in t2_leaves - content
-                                                    if hasattr(n, attr_t2)
-                                                    and getattr(n, attr_t2)
-                                                    in common_attrs
-                                                ]
-                                            )
-                                        ),
-                                    ]
-                                )
-                            )
-                            for content in six.itervalues(t2_content)
-                        ]
-                    )
-                    edges2.discard(((), ()))
+                    edges2 = set([
+                            tuple(sorted([
+                                        tuple(sorted([getattr(n, attr_t2) for n in content if hasattr(n, attr_t2) and getattr(n, attr_t2) in common_attrs])),
+                                        tuple(sorted([getattr(n, attr_t2) for n in t2_leaves-content if hasattr(n, attr_t2) and getattr(n, attr_t2) in common_attrs]))]))
+                            for content in six.itervalues(t2_content)])
+                    edges2.discard(((),()))
                 else:
-                    edges2 = set(
-                        [
-                            tuple(
-                                sorted(
-                                    [
-                                        getattr(n, attr_t2)
-                                        for n in content
-                                        if hasattr(n, attr_t2)
-                                        and getattr(n, attr_t2) in common_attrs
-                                    ]
-                                )
-                            )
-                            for content in six.itervalues(t2_content)
-                        ]
-                    )
+                    edges2 = set([
+                            tuple(sorted([getattr(n, attr_t2) for n in content if hasattr(n, attr_t2) and getattr(n, attr_t2) in common_attrs]))
+                            for content in six.itervalues(t2_content)])
                     edges2.discard(())
 
                 if min_support_t2:
-                    support_t2 = dict(
-                        [
-                            (
-                                tuple(
-                                    sorted(
-                                        (
-                                            [
-                                                getattr(n, attr_t2)
-                                                for n in content
-                                                if hasattr(n, attr_t2)
-                                                and getattr(n, attr_t2) in common_attrs
-                                            ]
-                                        )
-                                    )
-                                ),
-                                branch.support,
-                            )
-                            for branch, content in six.iteritems(t2_content)
-                        ]
-                    )
+                    support_t2 = dict([
+                        (tuple(sorted(([getattr(n, attr_t2) for n in content if hasattr(n, attr_t2) and getattr(n, attr_t2) in common_attrs]))), branch.support)
+                        for branch, content in six.iteritems(t2_content)])
+
 
                 # if a support value is passed as a constraint, discard lowly supported branches from the analysis
                 discard_t1, discard_t2 = set(), set()
                 if min_support_t1 and unrooted_trees:
-                    discard_t1 = set(
-                        [
-                            p
-                            for p in edges1
-                            if support_t1.get(p[0], support_t1.get(p[1], 999999999))
-                            < min_support_t1
-                        ]
-                    )
+                    discard_t1 = set([p for p in edges1 if support_t1.get(p[0], support_t1.get(p[1], 999999999)) < min_support_t1])
                 elif min_support_t1:
-                    discard_t1 = set(
-                        [p for p in edges1 if support_t1[p] < min_support_t1]
-                    )
+                    discard_t1 = set([p for p in edges1 if support_t1[p] < min_support_t1])
 
                 if min_support_t2 and unrooted_trees:
-                    discard_t2 = set(
-                        [
-                            p
-                            for p in edges2
-                            if support_t2.get(p[0], support_t2.get(p[1], 999999999))
-                            < min_support_t2
-                        ]
-                    )
+                    discard_t2 = set([p for p in edges2 if support_t2.get(p[0], support_t2.get(p[1], 999999999)) < min_support_t2])
                 elif min_support_t2:
-                    discard_t2 = set(
-                        [p for p in edges2 if support_t2[p] < min_support_t2]
-                    )
+                    discard_t2 = set([p for p in edges2 if support_t2[p] < min_support_t2])
 
-                # rf = len(edges1 ^ edges2) - (len(discard_t1) + len(discard_t2)) - polytomy_correction # poly_corr is 0 if the flag is not enabled
-                # rf = len((edges1-discard_t1) ^ (edges2-discard_t2)) - polytomy_correction
+
+                #rf = len(edges1 ^ edges2) - (len(discard_t1) + len(discard_t2)) - polytomy_correction # poly_corr is 0 if the flag is not enabled
+                #rf = len((edges1-discard_t1) ^ (edges2-discard_t2)) - polytomy_correction
 
                 # the two root edges are never counted here, as they are always
                 # present in both trees because of the common attr filters
-                rf = (
-                    len(((edges1 ^ edges2) - discard_t2) - discard_t1)
-                    - polytomy_correction
-                )
+                rf = len(((edges1 ^ edges2) - discard_t2) - discard_t1) - polytomy_correction
 
                 if unrooted_trees:
                     # thought this may work, but it does not, still I don't see why
-                    # max_parts = (len(common_attrs)*2) - 6 - len(discard_t1) - len(discard_t2)
-                    max_parts = len(
-                        [
-                            p
-                            for p in edges1 - discard_t1
-                            if len(p[0]) > 1 and len(p[1]) > 1
-                        ]
-                    ) + len(
-                        [
-                            p
-                            for p in edges2 - discard_t2
-                            if len(p[0]) > 1 and len(p[1]) > 1
-                        ]
-                    )
+                    #max_parts = (len(common_attrs)*2) - 6 - len(discard_t1) - len(discard_t2)
+                    max_parts = (len([p for p in edges1 - discard_t1 if len(p[0])>1 and len(p[1])>1]) +
+                                 len([p for p in edges2 - discard_t2 if len(p[0])>1 and len(p[1])>1]))
                 else:
                     # thought this may work, but it does not, still I don't see why
-                    # max_parts = (len(common_attrs)*2) - 4 - len(discard_t1) - len(discard_t2)
+                    #max_parts = (len(common_attrs)*2) - 4 - len(discard_t1) - len(discard_t2)
 
                     # Otherwise we need to count the actual number of valid
                     # partitions in each tree -2 is to avoid counting the root
                     # partition of the two trees (only needed in rooted trees)
-                    max_parts = (
-                        len([p for p in edges1 - discard_t1 if len(p) > 1])
-                        + len([p for p in edges2 - discard_t2 if len(p) > 1])
-                    ) - 2
+                    max_parts = (len([p for p in edges1 - discard_t1 if len(p)>1]) +
+                                 len([p for p in edges2 - discard_t2 if len(p)>1])) - 2
 
                     # print max_parts
 
                 if not min_comparison or min_comparison[0] > rf:
-                    min_comparison = [
-                        rf,
-                        max_parts,
-                        common_attrs,
-                        edges1,
-                        edges2,
-                        discard_t1,
-                        discard_t2,
-                    ]
+                    min_comparison = [rf, max_parts, common_attrs, edges1, edges2, discard_t1, discard_t2]
 
         return min_comparison
 
-    def compare(
-        self,
-        ref_tree,
-        use_collateral=False,
-        min_support_source=0.0,
-        min_support_ref=0.0,
-        has_duplications=False,
-        expand_polytomies=False,
-        unrooted=False,
-        max_treeko_splits_to_be_artifact=1000,
-        ref_tree_attr="name",
-        source_tree_attr="name",
-    ):
+
+
+    def compare(self, ref_tree, use_collateral=False, min_support_source=0.0, min_support_ref=0.0,
+                has_duplications=False, expand_polytomies=False, unrooted=False,
+                max_treeko_splits_to_be_artifact=1000, ref_tree_attr='name', source_tree_attr='name'):
 
         """compare this tree with another using robinson foulds symmetric difference
         and number of shared edges. Trees of different sizes and with duplicated
@@ -2083,51 +1807,28 @@ class TreeNode(object):
         def _safe_div(a, b):
             if a != 0:
                 return a / float(b)
-            else:
-                return 0.0
+            else: return 0.0
 
         def _compare(src_tree, ref_tree):
             # calculate partitions and rf distances
-            (
-                rf,
-                maxrf,
-                common,
-                ref_p,
-                src_p,
-                ref_disc,
-                src_disc,
-            ) = ref_tree.robinson_foulds(
-                src_tree,
-                expand_polytomies=expand_polytomies,
-                unrooted_trees=unrooted,
-                attr_t1=ref_tree_attr,
-                attr_t2=source_tree_attr,
-                min_support_t2=min_support_source,
-                min_support_t1=min_support_ref,
-            )
+            rf, maxrf, common, ref_p, src_p, ref_disc, src_disc  = ref_tree.robinson_foulds(src_tree,
+                                                                                            expand_polytomies=expand_polytomies,
+                                                                                            unrooted_trees=unrooted,
+                                                                                            attr_t1=ref_tree_attr,
+                                                                                            attr_t2=source_tree_attr,
+                                                                                            min_support_t2=min_support_source,
+                                                                                            min_support_t1=min_support_ref)
 
             # if trees share leaves, count their distances
             if len(common) > 0 and src_p and ref_p:
                 if unrooted:
-                    valid_ref_edges = set(
-                        [
-                            p
-                            for p in (ref_p - ref_disc)
-                            if len(p[0]) > 1 and len(p[1]) > 0
-                        ]
-                    )
-                    valid_src_edges = set(
-                        [
-                            p
-                            for p in (src_p - src_disc)
-                            if len(p[0]) > 1 and len(p[1]) > 0
-                        ]
-                    )
+                    valid_ref_edges = set([p for p in (ref_p - ref_disc) if len(p[0])>1 and len(p[1])>0])
+                    valid_src_edges = set([p for p in (src_p - src_disc) if len(p[0])>1 and len(p[1])>0])
                     common_edges = valid_ref_edges & valid_src_edges
                 else:
 
-                    valid_ref_edges = set([p for p in (ref_p - ref_disc) if len(p) > 1])
-                    valid_src_edges = set([p for p in (src_p - src_disc) if len(p) > 1])
+                    valid_ref_edges = set([p for p in (ref_p - ref_disc) if len(p)>1])
+                    valid_src_edges = set([p for p in (src_p - src_disc) if len(p)>1])
                     common_edges = valid_ref_edges & valid_src_edges
 
             else:
@@ -2144,31 +1845,16 @@ class TreeNode(object):
                 #     incompatible_target_branches = float(len((p2-d2) - p1))
                 #     target_found.append(1 - (incompatible_target_branches / (len(p2-d2))))
 
-            return (
-                rf,
-                maxrf,
-                len(common),
-                valid_ref_edges,
-                valid_src_edges,
-                common_edges,
-            )
+            return rf, maxrf, len(common), valid_ref_edges, valid_src_edges, common_edges
 
-        total_valid_ref_edges = len(
-            [
-                n
-                for n in ref_tree.traverse()
-                if n.children and n.support > min_support_ref
-            ]
-        )
+
+        total_valid_ref_edges = len([n for n in ref_tree.traverse() if n.children and n.support > min_support_ref])
         result = {}
         if has_duplications:
             orig_target_size = len(source_tree)
             ntrees, ndups, sp_trees = source_tree.get_speciation_trees(
-                autodetect_duplications=True,
-                newick_only=True,
-                target_attr=source_tree_attr,
-                map_features=[source_tree_attr, "support"],
-            )
+                autodetect_duplications=True, newick_only=True,
+                target_attr=source_tree_attr, map_features=[source_tree_attr, "support"])
 
             if ntrees < max_treeko_splits_to_be_artifact:
                 all_rf = []
@@ -2180,11 +1866,9 @@ class TreeNode(object):
 
                 for subtree_nw in sp_trees:
 
-                    # if seedid and not use_collateral and (seedid not in subtree_nw):
+                    #if seedid and not use_collateral and (seedid not in subtree_nw):
                     #    continue
-                    subtree = source_tree.__class__(
-                        subtree_nw, sp_naming_function=source_tree._speciesFunction
-                    )
+                    subtree = source_tree.__class__(subtree_nw, sp_naming_function = source_tree._speciesFunction)
                     if not subtree.children:
                         continue
 
@@ -2193,51 +1877,26 @@ class TreeNode(object):
                     # find the support for each node in the treeko tree from the
                     # original one.
                     if min_support_source > 0:
-                        subtree_content = subtree.get_cached_content(store_attr="name")
+                        subtree_content = subtree.get_cached_content(store_attr='name')
                         for n in subtree.traverse():
                             if n.children:
-                                n.support = source_tree.get_common_ancestor(
-                                    subtree_content[n]
-                                ).support
+                                n.support = source_tree.get_common_ancestor(subtree_content[n]).support
 
-                    (
-                        total_rf,
-                        max_rf,
-                        ncommon,
-                        valid_ref_edges,
-                        valid_src_edges,
-                        common_edges,
-                    ) = _compare(subtree, ref_tree)
+                    total_rf, max_rf, ncommon, valid_ref_edges, valid_src_edges, common_edges = _compare(subtree, ref_tree)
 
                     all_rf.append(total_rf)
                     all_max_rf.append(max_rf)
                     tree_sizes.append(ncommon)
 
                     if unrooted:
-                        ref_found_in_src = (
-                            len(common_edges) / float(len(valid_ref_edges))
-                            if valid_ref_edges
-                            else None
-                        )
-                        src_found_in_ref = (
-                            len(common_edges) / float(len(valid_src_edges))
-                            if valid_src_edges
-                            else None
-                        )
+                        ref_found_in_src = len(common_edges)/float(len(valid_ref_edges)) if valid_ref_edges else None
+                        src_found_in_ref = len(common_edges)/float(len(valid_src_edges)) if valid_src_edges else None
                     else:
                         # in rooted trees, we want to discount the root edge
                         # from the percentage of congruence. Otherwise we will never see a 0%
                         # congruence for totally different trees
-                        ref_found_in_src = (
-                            (len(common_edges) - 1) / float(len(valid_ref_edges) - 1)
-                            if len(valid_ref_edges) > 1
-                            else None
-                        )
-                        src_found_in_ref = (
-                            (len(common_edges) - 1) / float(len(valid_src_edges) - 1)
-                            if len(valid_src_edges) > 1
-                            else None
-                        )
+                        ref_found_in_src = (len(common_edges)-1)/float(len(valid_ref_edges)-1) if len(valid_ref_edges)>1 else None
+                        src_found_in_ref = (len(common_edges)-1)/float(len(valid_src_edges)-1) if len(valid_src_edges)>1 else None
 
                     if ref_found_in_src is not None:
                         ref_found.append(ref_found_in_src)
@@ -2247,24 +1906,16 @@ class TreeNode(object):
 
                 if all_rf:
                     # Treeko speciation distance
-                    alld = [
-                        _safe_div(all_rf[i], float(all_max_rf[i]))
-                        for i in range(len(all_rf))
-                    ]
+                    alld = [_safe_div(all_rf[i], float(all_max_rf[i])) for i in range(len(all_rf))]
                     a = sum([alld[i] * tree_sizes[i] for i in range(len(all_rf))])
                     b = float(sum(tree_sizes))
-                    treeko_d = a / b if a else 0.0
+                    treeko_d = a/b if a else 0.0
                     result["treeko_dist"] = treeko_d
 
                     result["rf"] = utils.mean(all_rf)
                     result["max_rf"] = max(all_max_rf)
                     result["effective_tree_size"] = utils.mean(tree_sizes)
-                    result["norm_rf"] = utils.mean(
-                        [
-                            _safe_div(all_rf[i], float(all_max_rf[i]))
-                            for i in range(len(all_rf))
-                        ]
-                    )
+                    result["norm_rf"] = utils.mean([_safe_div(all_rf[i], float(all_max_rf[i])) for i in range(len(all_rf))])
 
                     result["ref_edges_in_source"] = utils.mean(ref_found)
                     result["source_edges_in_ref"] = utils.mean(src_found)
@@ -2274,45 +1925,22 @@ class TreeNode(object):
                     result["source_edges"] = set()
                     result["ref_edges"] = set()
         else:
-            (
-                total_rf,
-                max_rf,
-                ncommon,
-                valid_ref_edges,
-                valid_src_edges,
-                common_edges,
-            ) = _compare(source_tree, ref_tree)
+            total_rf, max_rf, ncommon, valid_ref_edges, valid_src_edges, common_edges = _compare(source_tree, ref_tree)
 
             result["rf"] = float(total_rf) if max_rf else "NA"
             result["max_rf"] = float(max_rf)
             if unrooted:
-                result["ref_edges_in_source"] = (
-                    len(common_edges) / float(len(valid_ref_edges))
-                    if valid_ref_edges
-                    else "NA"
-                )
-                result["source_edges_in_ref"] = (
-                    len(common_edges) / float(len(valid_src_edges))
-                    if valid_src_edges
-                    else "NA"
-                )
+                result["ref_edges_in_source"] = len(common_edges)/float(len(valid_ref_edges)) if valid_ref_edges else "NA"
+                result["source_edges_in_ref"] = len(common_edges)/float(len(valid_src_edges)) if valid_src_edges else "NA"
             else:
                 # in rooted trees, we want to discount the root edge from the
                 # percentage of congruence. Otherwise we will never see a 0%
                 # congruence for totally different trees
-                result["ref_edges_in_source"] = (
-                    (len(common_edges) - 1) / float(len(valid_ref_edges) - 1)
-                    if len(valid_ref_edges) > 1
-                    else "NA"
-                )
-                result["source_edges_in_ref"] = (
-                    (len(common_edges) - 1) / float(len(valid_src_edges) - 1)
-                    if len(valid_src_edges) > 1
-                    else "NA"
-                )
+                result["ref_edges_in_source"] = (len(common_edges)-1)/float(len(valid_ref_edges)-1) if len(valid_ref_edges)>1 else "NA"
+                result["source_edges_in_ref"] = (len(common_edges)-1)/float(len(valid_src_edges)-1) if len(valid_src_edges)>1 else "NA"
 
             result["effective_tree_size"] = ncommon
-            result["norm_rf"] = total_rf / float(max_rf) if max_rf else "NA"
+            result["norm_rf"] = total_rf/float(max_rf) if max_rf else "NA"
             result["treeko_dist"] = "NA"
             result["source_subtrees"] = 1
             result["common_edges"] = common_edges
@@ -2320,7 +1948,7 @@ class TreeNode(object):
             result["ref_edges"] = valid_ref_edges
         return result
 
-    def _diff(self, t2, output="topology", attr_t1="name", attr_t2="name", color=True):
+    def _diff(self, t2, output='topology', attr_t1='name', attr_t2='name', color=True):
         """
         .. versionadded:: 2.3
 
@@ -2330,7 +1958,6 @@ class TreeNode(object):
 
         """
         from ..tools import ete_diff
-
         difftable = ete_diff.treediff(self, t2, attr1=attr_t1, attr2=attr_t2)
         if output == "topology":
             ete_diff.show_difftable_topo(difftable, attr_t1, attr_t2, usecolor=color)
@@ -2338,37 +1965,35 @@ class TreeNode(object):
             ete_diff.show_difftable(difftable)
         elif output == "diffs_tab":
             ete_diff.show_difftable_tab(difftable)
-        elif output == "table":
-            rf, rf_max, _, _, _, _, _ = self.robinson_foulds(
-                t2, attr_t1=attr_t1, attr_t2=attr_t2
-            )[:2]
+        elif output == 'table':
+            rf, rf_max, _, _, _, _, _ = self.robinson_foulds(t2, attr_t1=attr_t1, attr_t2=attr_t2)[:2]
             ete_diff.show_difftable_summary(difftable, rf, rf_max)
         else:
             return difftable
 
-    def iter_edges(self, cached_content=None):
-        """
+    def iter_edges(self, cached_content = None):
+        '''
         .. versionadded:: 2.3
 
         Iterate over the list of edges of a tree. Each edge is represented as a
         tuple of two elements, each containing the list of nodes separated by
         the edge.
-        """
+        '''
 
         if not cached_content:
             cached_content = self.get_cached_content()
         all_leaves = cached_content[self]
         for n, side1 in six.iteritems(cached_content):
-            yield (side1, all_leaves - side1)
+            yield (side1, all_leaves-side1)
 
-    def get_edges(self, cached_content=None):
-        """
+    def get_edges(self, cached_content = None):
+        '''
         .. versionadded:: 2.3
 
         Returns the list of edges of a tree. Each edge is represented as a
         tuple of two elements, each containing the list of nodes separated by
         the edge.
-        """
+        '''
 
         return [edge for edge in self.iter_edges(cached_content)]
 
@@ -2385,13 +2010,12 @@ class TreeNode(object):
 
         for n in self.get_descendants():
             if len(n.children) == 1:
-                n.delete(
-                    prevent_nondicotomic=True,
-                    preserve_branch_length=preserve_branch_length,
-                )
+                n.delete(prevent_nondicotomic=True,
+                         preserve_branch_length=preserve_branch_length)
+
 
     def get_topology_id(self, attr="name"):
-        """
+        '''
         .. versionadded:: 2.3
 
         Returns the unique ID representing the topology of the current tree. Two
@@ -2406,13 +2030,13 @@ class TreeNode(object):
         other node attribute could be used instead.
 
 
-        """
+        '''
         edge_keys = []
         for s1, s2 in self.get_edges():
             k1 = sorted([getattr(e, attr) for e in s1])
             k2 = sorted([getattr(e, attr) for e in s2])
             edge_keys.append(sorted([k1, k2]))
-        return md5(str(sorted(edge_keys)).encode("utf-8")).hexdigest()
+        return md5(str(sorted(edge_keys)).encode('utf-8')).hexdigest()
 
     # def get_partitions(self):
     #     """
@@ -2472,6 +2096,11 @@ class TreeNode(object):
             tree_length = float(tree_length)
 
         if strategy == "weighted":
+            def _median(nums):
+                n = len(nums)
+                s = sorted(nums)
+                return (sum(s[n // 2 - 1 : n // 2 + 1]) / 2.0, s[n // 2])[n % 2]
+
             # get remaining distance to tree tips
             dist2tip = {self: tree_length}
             # modify the dist property of nodes
@@ -2481,7 +2110,7 @@ class TreeNode(object):
                 else:
                     # weight the distance of children nodes by their median
                     cdist = (
-                        statistics.median(dist2root[l] for l in node) - dist2root[node]
+                        _median(dist2root[l] for l in node) - dist2root[node]
                     )
                     if cdist == 0:
                         node.dist = dist2tip[node.up]
@@ -2518,9 +2147,9 @@ class TreeNode(object):
         else:
             raise ValueError("[%s] is not a valid strategy" % type(strategy))
 
-    def check_monophyly(
-        self, values, target_attr, ignore_missing=False, unrooted=False
-    ):
+
+    def check_monophyly(self, values, target_attr, ignore_missing=False,
+                        unrooted=False):
         """
         .. versionadded: 2.2
 
@@ -2570,27 +2199,20 @@ class TreeNode(object):
             values = values & found_values
 
         # Locate leaves matching requested attribute values
-        targets = set(
-            [leaf for leaf in n2leaves[self] if getattr(leaf, target_attr) in values]
-        )
+        targets = set([leaf for leaf in n2leaves[self]
+                   if getattr(leaf, target_attr) in values])
         if not ignore_missing:
             if values - set([getattr(leaf, target_attr) for leaf in targets]):
-                raise ValueError(
-                    "The monophyly of the provided values could never be reached, as not all of them exist in the tree."
-                    " Please check your target attribute and values, or set the ignore_missing flag to True"
-                )
+                raise ValueError('The monophyly of the provided values could never be reached, as not all of them exist in the tree.'
+                                 ' Please check your target attribute and values, or set the ignore_missing flag to True')
 
         if unrooted:
             smallest = None
             for side1, side2 in self.iter_edges(cached_content=n2leaves):
-                if targets.issubset(side1) and (
-                    not smallest or len(side1) < len(smallest)
-                ):
+                if targets.issubset(side1) and (not smallest or len(side1) < len(smallest)):
                     smallest = side1
-                elif targets.issubset(side2) and (
-                    not smallest or len(side2) < len(smallest)
-                ):
-                    smallest = side2
+                elif targets.issubset(side2) and (not smallest or len(side2) < len(smallest)):
+                        smallest = side2
                 if smallest is not None and len(smallest) == len(targets):
                     break
             foreign_leaves = smallest - targets
@@ -2602,9 +2224,8 @@ class TreeNode(object):
             # and avoid unnecessary traversing.
             common = self.get_common_ancestor(targets)
             observed = n2leaves[common]
-            foreign_leaves = set(
-                [leaf for leaf in observed if getattr(leaf, target_attr) not in values]
-            )
+            foreign_leaves = set([leaf for leaf in observed
+                              if getattr(leaf, target_attr) not in values])
 
         if not foreign_leaves:
             return True, "monophyletic", foreign_leaves
@@ -2614,9 +2235,8 @@ class TreeNode(object):
             poly_common = self.get_common_ancestor(foreign_leaves)
             # if the common ancestor of all foreign leaves is self
             # contained, we have a paraphyly. Otherwise, polyphyly.
-            polyphyletic = [
-                leaf for leaf in poly_common if getattr(leaf, target_attr) in values
-            ]
+            polyphyletic = [leaf for leaf in poly_common if
+                            getattr(leaf, target_attr) in values]
             if polyphyletic:
                 return False, "polyphyletic", foreign_leaves
             else:
@@ -2650,10 +2270,9 @@ class TreeNode(object):
             if is_monophyletic(match):
                 yield match
 
-    def expand_polytomies(
-        self, map_attr="name", polytomy_size_limit=5, skip_large_polytomies=False
-    ):
-        """
+    def expand_polytomies(self, map_attr="name", polytomy_size_limit=5,
+                          skip_large_polytomies=False):
+        '''
         .. versionadded:: 2.3
 
         Given a tree with one or more polytomies, this functions returns the
@@ -2675,26 +2294,26 @@ class TreeNode(object):
            polytomy size: 9 number of binary trees: 2027025
 
         http://ajmonline.org/2010/darwin.php
-        """
+        '''
 
         class TipTuple(tuple):
             pass
 
         def add_leaf(tree, label):
-            yield (label, tree)
-            if not isinstance(tree, TipTuple) and isinstance(tree, tuple):
-                for left in add_leaf(tree[0], label):
-                    yield (left, tree[1])
-                for right in add_leaf(tree[1], label):
-                    yield (tree[0], right)
+          yield (label, tree)
+          if not isinstance(tree, TipTuple) and isinstance(tree, tuple):
+            for left in add_leaf(tree[0], label):
+              yield (left, tree[1])
+            for right in add_leaf(tree[1], label):
+              yield (tree[0], right)
 
         def enum_unordered(labels):
-            if len(labels) == 1:
-                yield labels[0]
-            else:
-                for tree in enum_unordered(labels[1:]):
-                    for new_tree in add_leaf(tree, labels[0]):
-                        yield new_tree
+          if len(labels) == 1:
+            yield labels[0]
+          else:
+            for tree in enum_unordered(labels[1:]):
+              for new_tree in add_leaf(tree, labels[0]):
+                yield new_tree
 
         n2subtrees = {}
         for n in self.traverse("postorder"):
@@ -2704,31 +2323,19 @@ class TreeNode(object):
                 subtrees = []
                 if len(n.children) > polytomy_size_limit:
                     if skip_large_polytomies:
-                        for childtrees in itertools.product(
-                            *[n2subtrees[ch] for ch in n.children]
-                        ):
+                        for childtrees in itertools.product(*[n2subtrees[ch] for ch in n.children]):
                             subtrees.append(TipTuple(childtrees))
                     else:
-                        raise TreeError(
-                            "Found polytomy larger than current limit: %s" % n
-                        )
+                        raise TreeError("Found polytomy larger than current limit: %s" %n)
                 else:
-                    for childtrees in itertools.product(
-                        *[n2subtrees[ch] for ch in n.children]
-                    ):
-                        subtrees.extend(
-                            [
-                                TipTuple(subtree)
-                                for subtree in enum_unordered(childtrees)
-                            ]
-                        )
+                    for childtrees in itertools.product(*[n2subtrees[ch] for ch in n.children]):
+                        subtrees.extend([TipTuple(subtree) for subtree in enum_unordered(childtrees)])
 
             n2subtrees[n] = subtrees
-        return [
-            "%s;" % str(nw) for nw in n2subtrees[self]
-        ]  # tuples are in newick format ^_^
+        return ["%s;"%str(nw) for nw in n2subtrees[self]] # tuples are in newick format ^_^
 
-    def resolve_polytomy(self, default_dist=0.0, default_support=0.0, recursive=True):
+    def resolve_polytomy(self, default_dist=0.0, default_support=0.0,
+                         recursive=True):
         """
         .. versionadded: 2.2
 
@@ -2748,12 +2355,13 @@ class TreeNode(object):
              node. When False, only current node will be checked and fixed.
         """
 
+
         def _resolve(node):
             if len(node.children) > 2:
                 children = list(node.children)
                 node.children = []
                 next_node = root = node
-                for i in range(len(children) - 2):
+                for i in range(len(children)-2):
                     next_node = next_node.add_child()
                     next_node.dist = default_dist
                     next_node.support = default_support
@@ -2763,13 +2371,114 @@ class TreeNode(object):
                     next_node.add_child(ch)
                     if ch != children[-2]:
                         next_node = next_node.children[0]
-
         target = [self]
         if recursive:
             target.extend([n for n in self.get_descendants()])
         for n in target:
             _resolve(n)
 
+    def cophenetic_matrix(self):
+        """
+        .. versionadded: 3.1.1
+
+        Generate a cophenetic distance matrix of the treee to standard output
+
+        The `cophenetic matrix <https://en.wikipedia.org/wiki/Cophenetic>` is a matrix representation of the
+        distance between each node.
+
+        if we have a tree like
+
+                                   ----A
+                      _____________|y
+                      |            |
+                      |            ----B
+              ________|z
+                      |            ----C
+                      |            |
+                      |____________|x     -----D
+                                   |      |
+                                   |______|w
+                                          |
+                                          |
+                                          -----E
+
+        Where w,x,y,z are internal nodes.
+        d(A,B) = d(y,A) + d(y,B)
+        and
+        d(A, E) = d(z,A) + d(z, E) = {d(z,y) + d(y,A)} + {d(z,x) + d(x,w) + d(w,E)}
+
+        We use an idea inspired by the ete3 team: https://gist.github.com/jhcepas/279f9009f46bf675e3a890c19191158b :
+
+        For each node find its path to the root.
+
+        e.g.
+
+        A -> A, y, z
+        E -> E, w, x,z
+
+        and make these orderless sets. Then we XOR the two sets to only find the elements
+        that are in one or other sets but not both. In this case A, E, y, x, w.
+
+        The distance between the two nodes is the sum of the distances from each of those nodes
+        to the parent
+
+        One more optimization: since the distances are symmetric, and distance to itself is zero
+        we user itertools.combinations rather than itertools.permutations. This cuts our computes from theta(n^2)
+        1/2n^2 - n (= O(n^2), which is still not great, but in reality speeds things up for large trees).
+
+
+        For this tree, we will return the two dimensional array:
+                         A                  B                   C                   D                     E
+        A                0           d(A-y) + d(B-y)     d(A-z) + d(C-z)     d(A-z) + d(D-z)       d(A-z) + d(E-z)
+        B         d(B-y) + d(A-y)           0            d(B-z) + d(C-z)     d(B-z) + d(D-z)       d(B-z) + d(E-z)
+        C         d(C-z) + d(A-z)    d(C-z) + d(B-z)            0            d(C-x) + d(D-x)       d(C-x) + d(E-x)
+        D         d(D-z) + d(A-z)    d(D-z) + d(B-z)     d(D-x) + d(C-x)            0              d(D-w) + d(E-w)
+        E         d(E-z) + d(A-z)    d(E-z) + d(B-z)     d(E-x) + d(C-x)     d(E-w) + d(D-w)              0
+
+        We will also return the one dimensional array with the leaves in the order in which they appear in the matrix
+        (i.e. the column and/or row headers).
+
+        :param filename: the optional file to write to. If not provided, output will be to standard output
+        :return: two-dimensional array and a one dimensional array
+        """
+
+        leaves = self.get_leaves()
+        paths = {x: set() for x in leaves}
+
+        # get the paths going up the tree
+        # we get all the nodes up to the last one and store them in a set
+
+        for n in leaves:
+            if n.is_root():
+                continue
+            movingnode = n
+            while not movingnode.is_root():
+                paths[n].add(movingnode)
+                movingnode = movingnode.up
+
+        # now we want to get all pairs of nodes using itertools combinations. We need AB AC etc but don't need BA CA
+
+        leaf_distances = {x.name: {} for x in leaves}
+
+        for (leaf1, leaf2) in itertools.combinations(leaves, 2):
+            # figure out the unique nodes in the path
+            uniquenodes = paths[leaf1] ^ paths[leaf2]
+            distance = sum(x.dist for x in uniquenodes)
+            leaf_distances[leaf1.name][leaf2.name] = leaf_distances[leaf2.name][leaf1.name] = distance
+
+        allleaves = sorted(leaf_distances.keys()) # the leaves in order that we will return
+
+        output = [] # the two dimensional array that we will return
+
+        for i, n in enumerate(allleaves):
+            output.append([])
+            for m in allleaves:
+                if m == n:
+                    output[i].append(0) # distance to ourself = 0
+                else:
+                    output[i].append(leaf_distances[n][m])
+        return output, allleaves
+                     
     def add_face(self, face, column, position="branch-right"):
         """
         .. versionadded: 2.1
@@ -2789,7 +2498,7 @@ class TreeNode(object):
             self._faces = _FaceAreas()
 
         if position not in FACE_POSITIONS:
-            raise ValueError("face position not in %s" % FACE_POSITIONS)
+            raise ValueError("face position not in %s" %FACE_POSITIONS)
 
         if isinstance(face, Face):
             getattr(self._faces, position).add_face(face, column=column)
@@ -2827,6 +2536,7 @@ class TreeNode(object):
         >>> print tree
 
         """
+
 
         def get_node(nodename, dist=None):
             if nodename not in nodes_by_name:
@@ -2894,29 +2604,27 @@ class TreeNode(object):
 
     def phonehome(self):
         from .. import _ph
-
         _ph.call()
 
-
 def _translate_nodes(root, *nodes):
-    name2node = dict([[n, None] for n in nodes if type(n) is str])
+    name2node = dict([ [n, None] for n in nodes if type(n) is str])
     if name2node:
         for n in root.traverse():
             if n.name in name2node:
                 if name2node[n.name] is not None:
-                    raise TreeError("Ambiguous node name: " + str(n.name))
+                    raise TreeError("Ambiguous node name: "+str(n.name))
                 else:
                     name2node[n.name] = n
 
     if None in list(name2node.values()):
         notfound = [key for key, value in six.iteritems(name2node) if value is None]
-        raise ValueError("Node names not found: " + str(notfound))
+        raise ValueError("Node names not found: "+str(notfound))
 
     valid_nodes = []
     for n in nodes:
         if type(n) is not str:
-            if type(n) is not root.__class__:
-                raise TreeError("Invalid target node: " + str(n))
+            if type(n) is not root.__class__ :
+                raise TreeError("Invalid target node: "+str(n))
             else:
                 valid_nodes.append(n)
 
@@ -2926,8 +2634,11 @@ def _translate_nodes(root, *nodes):
     else:
         return valid_nodes
 
-
 # Alias
 #: .. currentmodule:: ete3
 Tree = TreeNode
+
+
+
+
 

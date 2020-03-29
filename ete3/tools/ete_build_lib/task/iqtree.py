@@ -29,8 +29,8 @@ class IQTree(TreeTask):
             base_args["-st"] = "AA" if seqtype == "aa" else "DNA"            
         else:
             if conf[confname]["-st"].startswith("CODON"):
-                if seqtype == "aa" or "aa" not in GLOBALS["seqtypes"]:
-                    raise ConfigError("IQTREE CODON models require a codon alignmen.\nProvide nucleotide sequences with '-n' and set '--nt-switch-thr 0.0' to ensure codon alignments.")
+                if seqtype == "aa" or "aa" not in GLOBALS["seqtypes"]: 
+                    raise ConfigError("IQTREE CODON models require a codon alignment.\nProvide nucleotide sequences with '-n' and set '--nt-switch-thr 0.0' to ensure codon alignments.")
             
         if model:
             raise TaskError('External model selection not yet supported for IQTree')
@@ -53,7 +53,8 @@ class IQTree(TreeTask):
         self.lk = None
         
         TreeTask.__init__(self, nodeid, "tree", "IQTree",
-                          base_args, conf[confname])            
+                          base_args, conf[confname])  
+                  
         self.init()
 
     def load_jobs(self):

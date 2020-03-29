@@ -342,6 +342,11 @@ class NCBITaxa(object):
             except KeyError:
                 raise ValueError('%s not found!' %parent)
 
+        # checks if taxid is a deprecated one, and converts into the right one. 
+        _, conversion = self._translate_merged([taxid]) #try to find taxid in synonyms table
+        if conversion: 
+            taxid = conversion[taxid]
+            
         with open(self.dbfile+".traverse.pkl", "rb") as CACHED_TRAVERSE:
             prepostorder = pickle.load(CACHED_TRAVERSE)
         descendants = {}
@@ -749,6 +754,9 @@ def update_db(dbfile, targz_file=None):
             local_md5 = md5(open("taxdump.tar.gz", "rb").read()).hexdigest()
             if local_md5 != md5_check:
                 do_download = True
+                print('Updating taxdump.tar.gz from NCBI FTP site (via HTTP)...', file=sys.stderr)
+                urlretrieve("http://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz", targz_file)
+                print('Done. Parsing...', file=sys.stderr)
             else:
                 print('Local taxdump.tar.gz seems up-to-date', file=sys.stderr)
         else:

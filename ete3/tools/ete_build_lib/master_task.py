@@ -262,7 +262,7 @@ class Task(object):
 
     def get_saved_status(self):
         try:
-            return open(self.status_file, "rU").read(1)
+            return open(self.status_file, "r").read(1)
         except IOError:
             return "?"
 

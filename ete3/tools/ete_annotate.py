@@ -92,7 +92,7 @@ def run(args):
                            % annotation)
 
             features.add(aname)
-            for line in open(asource, 'rU'):
+            for line in open(asource, 'r'):
                 line = line.strip()
                 if not line or line.startswith('#'):
                     continue

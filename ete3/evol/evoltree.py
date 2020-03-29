@@ -126,7 +126,7 @@ class EvolNode(PhyloNode):
         self.workdir = '/tmp/ete3-tmp/'
         if not binpath:
             ete3_path = which("ete3")
-            binpath = os.path.join(os.path.split(ete3_path)[0], "ete3_apps", "bin")
+            binpath = os.path.split(ete3_path)[0]
 
         self.execpath = binpath
         self._models = {}
