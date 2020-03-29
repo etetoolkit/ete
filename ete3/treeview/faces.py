@@ -49,9 +49,11 @@ else:
     isfinite = lambda n: n and _isfinite(n)
 
 try:
-    from urllib2 import urlopen
-except ImportError:
+    # For Python 3.0 and later
     from urllib.request import urlopen
+except ImportError:
+    # Fall back to Python 2's urllib2
+    from urllib2 import urlopen
 
 import six
 from six.moves import map
