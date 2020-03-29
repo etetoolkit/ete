@@ -355,7 +355,12 @@ class NCBITaxa(object):
                 break
             
         if not found:
-            raise ValueError("taxid not found:%s" %taxid)
+            conv_taxids, conversion = self._translate_merged([taxid]) #try to find taxid in synonyms table
+            if conversion:
+                return list(conv_taxids)
+            else:
+                raise ValueError("taxid not found:%s" %taxid)
+
         elif found == 1:
             return [taxid]        
             
