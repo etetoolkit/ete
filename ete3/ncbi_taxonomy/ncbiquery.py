@@ -342,6 +342,11 @@ class NCBITaxa(object):
             except KeyError:
                 raise ValueError('%s not found!' %parent)
 
+        # checks if taxid is a deprecated one, and converts into the right one. 
+        _, conversion = self._translate_merged([taxid]) #try to find taxid in synonyms table
+        if conversion: 
+            taxid = conversion[taxid]
+            
         with open(self.dbfile+".traverse.pkl", "rb") as CACHED_TRAVERSE:
             prepostorder = pickle.load(CACHED_TRAVERSE)
         descendants = {}
