@@ -888,8 +888,7 @@ class TreeNode(object):
 
         # If only one node is provided, use self as the second target
         if type(target_nodes) != list:
-            target_nodes = [target_nodes, self]
-
+            target_nodes = [target_nodes] # If only one node or identical nodes, should return the this node as mrca
 
         n2path = {}
         reference = []
@@ -897,7 +896,7 @@ class TreeNode(object):
         for n in target_nodes:
             current = n
             while current:
-                n2path.setdefault(n, set()).add(current)
+                n2path.setdefault(n, set()).add(current) 
                 if not ref_node:
                     reference.append(current)
                 current = current.up
@@ -907,8 +906,8 @@ class TreeNode(object):
         common = None
         for n in reference:
             broken = False
-            for node, path in six.iteritems(n2path):
-                if node is not ref_node and n not in path:
+            for node, path in six.iteritems(n2path): 
+                if node is not ref_node and n not in path: 
                     broken = True
                     break
 
