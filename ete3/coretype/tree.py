@@ -886,10 +886,19 @@ class TreeNode(object):
         # Convert node names into node instances
         target_nodes = _translate_nodes(self, *target_nodes)
 
-        # If only one node is provided, use self as the second target
-        if type(target_nodes) != list:
-            target_nodes = [target_nodes, self]
 
+        if type(target_nodes) != list:
+            # If only one node is provided and is the same as the seed node,
+            # return itself
+            if target_nodes is self:
+                if get_path:
+                    return self, {}
+                else:
+                    return self
+            else:
+                #Otherwise find the common ancestor of current seed node and
+                #the target_node provided
+                target_nodes = [target_nodes, self]
 
         n2path = {}
         reference = []
@@ -2484,7 +2493,7 @@ class TreeNode(object):
                 else:
                     output[i].append(leaf_distances[n][m])
         return output, allleaves
-                     
+
     def add_face(self, face, column, position="branch-right"):
         """
         .. versionadded: 2.1
@@ -2527,14 +2536,14 @@ class TreeNode(object):
 
     @staticmethod
     def from_parent_child_table(parent_child_table):
-        """Converts a parent-child table into an ETE Tree instance. 
-        
+        """Converts a parent-child table into an ETE Tree instance.
+
         :argument parent_child_table: a list of tuples containing parent-child
            relationships. For example: [("A", "B", 0.1), ("A", "C", 0.2), ("C",
            "D", 1), ("C", "E", 1.5)]. Where each tuple represents: [parent, child,
            child-parent-dist]
-        
-        :returns: A new Tree instance 
+
+        :returns: A new Tree instance
 
         :example:
 
@@ -2569,20 +2578,20 @@ class TreeNode(object):
 
     @staticmethod
     def from_skbio(skbio_tree, map_attributes=None):
-        """Converts a scikit-bio TreeNode object into ETE Tree object. 
-        
-        :argument skbio_tree: a scikit bio TreeNode instance 
+        """Converts a scikit-bio TreeNode object into ETE Tree object.
+
+        :argument skbio_tree: a scikit bio TreeNode instance
 
         :argument None map_attributes: A list of attribute nanes in the
            scikit-bio tree that should be mapped into the ETE tree
            instance. (name, id and branch length are always mapped)
 
-        :returns: A new Tree instance 
+        :returns: A new Tree instance
 
         :example:
 
         >>> tree = Tree.from_skibio(skbioTree, map_attributes=["value"])
-        
+
         """
         from skbio import TreeNode as skbioTreeNode
 
@@ -2643,8 +2652,3 @@ def _translate_nodes(root, *nodes):
 # Alias
 #: .. currentmodule:: ete3
 Tree = TreeNode
-
-
-
-
-
