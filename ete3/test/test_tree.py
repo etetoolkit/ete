@@ -808,7 +808,7 @@ class Test_Coretype_Tree(unittest.TestCase):
         # weighted, balanced or fixed
         t =  Tree()
         t.populate(100, random_branches=True)
-        t.convert_to_ultrametric(100, "weights")
+        t.convert_to_ultrametric(100, "weighted")
         self.assertEqual(set([round(t.get_distance(n), 6) for n in t]), set([100.0]))
 
         t =  Tree()

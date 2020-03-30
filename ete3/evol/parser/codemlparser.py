@@ -145,9 +145,9 @@ def divide_data(pamout, model):
     '''
     for num in range (1, int (model.properties['params']['ndata'])):
         model.name = model.name + '_' + str(num)
-        out = open (pamout + '_' + str(num), 'w')
+        out = open(pamout + '_' + str(num), 'w')
         copy = False
-        for line in open (pamout):
+        for line in open(pamout):
             if copy == False and \
                    line.startswith('Data set '+ str (num) + '\n'):
                 copy = True
@@ -163,18 +163,19 @@ def divide_data(pamout, model):
                   + '\n    trying as with only one dataset')
         if model.typ == 'site':
             rst = '/'.join (pamout.split('/')[:-1])+'/rst'
-            rstout = open (rst + '_' + str(num), 'w')
+            rstout = open(rst + '_' + str(num), 'w')
             copy = False
-            for line in open(rst):
-                if copy == False and \
-                       re.match('\t' + str (num)+'\n', line) is not None:
-                    copy = True
-                    continue
-                if copy == True and \
-                       re.match('\t' + str (num + 1)+'\n', line) is not None:
-                    copy = False
-                if copy == True:
-                    rstout.write(line)
+            with open(rst, "r") as f:
+                for line in f:
+                    if copy == False and \
+                        re.match('\t' + str (num)+'\n', line) is not None:
+                        copy = True
+                        continue
+                    if copy == True and \
+                        re.match('\t' + str (num + 1)+'\n', line) is not None:
+                        copy = False
+                    if copy == True:
+                        rstout.write(line)
             rstout.close()
             setattr (model, 'data_' + str (num),
                      parse_paml (pamout + '_' + str(num), model))
@@ -188,19 +189,20 @@ def get_ancestor (pamout, model):
     only for fb_ancestor model, retrieves ancestral sequences also
     from rst file.
     '''
-    for line in open ('/'.join (pamout.split('/')[:-1])+'/rst'):
-        if line.startswith ('node #'):
-            pamlid, seq = re.sub ('node#([0-9]+)([A-Z]*)\n', '\\1\t\\2',
-                                  re.sub (' ', '', line)).split ('\t')
-            n = model._tree.get_descendant_by_node_id (int (pamlid))
-            n.add_feature ('nt_sequence', seq)
-        elif line.startswith ('Node #'):
-            pamlid, seq = re.sub ('Node#([0-9]+)([A-Z]*)\n', '\\1\t\\2',
-                                  re.sub (' ', '', line)).split ('\t')
-            n = model._tree.get_descendant_by_node_id (int (pamlid))
-            n.add_feature ('sequence', seq)
-        elif line.startswith ('Counts of changes at sites'):
-            break
+    with open('/'.join (pamout.split('/')[:-1])+'/rst') as f:
+        for line in f:
+            if line.startswith ('node #'):
+                pamlid, seq = re.sub ('node#([0-9]+)([A-Z]*)\n', '\\1\t\\2',
+                                    re.sub (' ', '', line)).split ('\t')
+                n = model._tree.get_descendant_by_node_id (int (pamlid))
+                n.add_feature ('nt_sequence', seq)
+            elif line.startswith ('Node #'):
+                pamlid, seq = re.sub ('Node#([0-9]+)([A-Z]*)\n', '\\1\t\\2',
+                                    re.sub (' ', '', line)).split ('\t')
+                n = model._tree.get_descendant_by_node_id (int (pamlid))
+                n.add_feature ('sequence', seq)
+            elif line.startswith ('Counts of changes at sites'):
+                break
 
 def parse_paml (pamout, model):
     '''
@@ -212,7 +214,8 @@ def parse_paml (pamout, model):
     if not '*' in str (model.properties['params']['ndata']):
         divide_data (pamout, model)
         return
-    all_lines = open (pamout).readlines()
+    with open(pamout) as f:
+        all_lines = f.readlines()
     # if we do not have tree, load it
     if model._tree is None:
         from ..evol import EvolTree
@@ -323,27 +326,29 @@ def _get_labels_from_paml (tree, relations, pamout, model):
     from copy import copy
     old2new = {}
     # label leaves
-    for line in open (pamout, 'r').readlines():
-        if re.search ('^#[0-9][0-9]*:', line):
-            nam, paml_id = re.sub ('#([0-9]+): (.*)', '\\2 \\1',
-                                   line.strip()).split()
-            node = (tree & nam)
-            old2new[node.node_id] = int(paml_id)
-            node.add_feature ('node_id', int(paml_id))
-        if line.startswith ('Sums of codon'):
-            break
+    with open(pamout, 'r') as f:
+        for line in f:
+            if re.search('^#[0-9][0-9]*:', line):
+                nam, paml_id = re.sub ('#([0-9]+): (.*)', '\\2 \\1',
+                                    line.strip()).split()
+                node = (tree & nam)
+                old2new[node.node_id] = int(paml_id)
+                node.add_feature ('node_id', int(paml_id))
+            if line.startswith ('Sums of codon'):
+                break
+
     # label the root
     tree.add_feature ('node_id', int (len (tree) + 1))
+
     # label other internal nodes
     for node in tree.traverse(strategy='postorder'):
         if node.is_root(): continue
         paml_id = next(filter(lambda x: x[1]==node.node_id, relations))[0]
         old2new[node.up.node_id] = paml_id
         node.up.node_id = paml_id
+
     ### change keys in branches dict of model
     branches = copy(model.branches)
     for b in model.branches:
         model.branches[b] = branches[old2new[b]]
-
-
 

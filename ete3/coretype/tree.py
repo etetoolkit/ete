@@ -2160,7 +2160,7 @@ class TreeNode(object):
                 node2dist[node] = node2dist[node.up] + 1
 
         else:
-            raise ValueError("[%s] is not a valid strategy." % type(strategy))
+            raise ValueError("[%s] is not a valid strategy." % strategy)
 
 
     def check_monophyly(self, values, target_attr, ignore_missing=False,
