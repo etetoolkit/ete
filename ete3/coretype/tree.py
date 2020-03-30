@@ -2119,7 +2119,7 @@ class TreeNode(object):
                 else:
                     # weight the distance of children nodes by their median
                     cdist = (
-                        _median(dist2root[l] for l in node) - dist2root[node]
+                        _median([dist2root[l] for l in node]) - dist2root[node]
                     )
                     if cdist == 0:
                         node.dist = dist2tip[node.up]
