@@ -246,9 +246,11 @@ def read_newick(newick, root_node=None, format=0, quoted_names=False):
         if file_exists:
             if newick.endswith('.gz'):
                 import gzip
-                nw = gzip.open(newick).read()
+                with gzip.open(newick) as f:
+                    nw = f.read()
             else:
-                nw = open(newick, 'r').read()
+                with open(newick, 'r') as f:
+                    nw = f.read()
         else:
             nw = newick
 

@@ -2122,21 +2122,27 @@ class TreeNode(object):
             # pre-calculate how many splits remain under each node
             node2max_depth = {}
             for node in self.traverse("postorder"):
-                if not node.is_leaf():
-                    max_depth = max([node2max_depth[c] for c in node.children]) + 1
-                    node2max_depth[node] = max_depth
-                else:
+                if node.is_leaf():
                     node2max_depth[node] = 1
-            node2dist = {self: 0.0}
+                else:
+                    node2max_depth[node] = max([node2max_depth[c] for c in node.children]) + 1
+
             # modify the dist property of nodes
+            node2dist = {self: 0.0}
             for node in self.iter_descendants("levelorder"):
                 node.dist = (tree_length - node2dist[node.up]) / node2max_depth[node]
                 node2dist[node] = node.dist + node2dist[node.up]
 
         elif strategy == "fixed":
-            step = tree_length / node2max_depth[self]
-            node2dist = {self: 0.0}
+            # get tree depth by the maximum
+            step2root = {self: 0}
+            for node in self.iter_descendants("levelorder"):
+                step2root[node] = step2root[node.up] + 1
+            tree_step = max(step2root.values()) + 1
+            step = tree_length / tree_step
+
             # modify the dist property of nodes
+            node2dist = {self: 0.0}
             for node in self.iter_descendants("levelorder"):
                 if not node.is_leaf():
                     node.dist = step
@@ -2145,7 +2151,7 @@ class TreeNode(object):
                 node2dist[node] = node2dist[node.up] + 1
 
         else:
-            raise ValueError("[%s] is not a valid strategy" % type(strategy))
+            raise ValueError("[%s] is not a valid strategy." % type(strategy))
 
 
     def check_monophyly(self, values, target_attr, ignore_missing=False,

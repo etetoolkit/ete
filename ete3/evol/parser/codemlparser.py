@@ -68,7 +68,8 @@ def parse_rst(path):
     i         = 0
     bsa       = False
     path = '/'.join(path.split('/')[:-1]) + '/rst'
-    for line in open(path):
+    f = open(path)
+    for line in f:
         # get number of classes of sites
         if line.startswith ('dN/dS '):
             k = int(re.sub ('.* \(K=([0-9]+)\)\n', '\\1', line))
@@ -132,6 +133,7 @@ def parse_rst(path):
             sites [typ].setdefault ('se', []).append (float (line [5 + i]))
         except IndexError:
             del (sites [typ]['se'])
+    f.close()
     return {'classes': classes,
             'sites' :sites,
             'n_classes': {k: n_classes[k] - bsa for k in n_classes}}

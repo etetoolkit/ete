@@ -493,10 +493,10 @@ class Test_Coretype_Tree(unittest.TestCase):
         common = A.get_common_ancestor(C)
         self.assertEqual("root", common.get_tree_root().tag)
 
-        self.assert_(common.get_tree_root().is_root())
-        self.assert_(not A.is_root())
-        self.assert_(A.is_leaf())
-        self.assert_(not A.get_tree_root().is_leaf())
+        self.assertTrue(common.get_tree_root().is_root())
+        self.assertTrue(not A.is_root())
+        self.assertTrue(A.is_leaf())
+        self.assertTrue(not A.get_tree_root().is_leaf())
         self.assertRaises(TreeError, A.get_common_ancestor, Tree())
 
 
@@ -783,7 +783,12 @@ class Test_Coretype_Tree(unittest.TestCase):
 
         # Convert tree to a ultrametric topology in which distance from
         # leaf to root is always 100. Two strategies are available:
-        # balanced or fixed
+        # weighted, balanced or fixed
+        t =  Tree()
+        t.populate(100, random_branches=True)
+        t.convert_to_ultrametric(100, "weights")
+        self.assertEqual(set([round(t.get_distance(n), 6) for n in t]), set([100.0]))
+
         t =  Tree()
         t.populate(100, random_branches=True)
         t.convert_to_ultrametric(100, "balanced")
@@ -792,11 +797,6 @@ class Test_Coretype_Tree(unittest.TestCase):
         t =  Tree()
         t.populate(100, random_branches=True)
         t.convert_to_ultrametric(100, "fixed")
-        self.assertEqual(set([round(t.get_distance(n), 6) for n in t]), set([100.0]))
-
-        t =  Tree()
-        t.populate(100, random_branches=True)
-        t.convert_to_ultrametric(100, "balanced")
         self.assertEqual(set([round(t.get_distance(n), 6) for n in t]), set([100.0]))
 
 

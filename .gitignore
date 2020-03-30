@@ -6,9 +6,6 @@ doc/_build/
 dist/
 *.egg-info
 
-# mypy
-.mypy_cache/
-
 # Conda testing environment
 miniconda.sh
 miniconda/
