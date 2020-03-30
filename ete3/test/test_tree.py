@@ -56,7 +56,9 @@ class Test_Coretype_Tree(unittest.TestCase):
         """ Tests newick support """
         # Read and write newick tree from file (and support for NHX
         # format): newick parser
-        open("/tmp/etetemptree.nw","w").write(nw_full)
+        with open("/tmp/etetemptree.nw","w") as OUT:
+            OUT.write(nw_full)
+
         t = Tree("/tmp/etetemptree.nw")
         t.write(outfile='/tmp/etewritetest.nw')
         self.assertEqual(nw_full, t.write(features=["flag","mood"]))
@@ -494,10 +496,10 @@ class Test_Coretype_Tree(unittest.TestCase):
         common = A.get_common_ancestor(C)
         self.assertEqual("root", common.get_tree_root().tag)
 
-        self.assert_(common.get_tree_root().is_root())
-        self.assert_(not A.is_root())
-        self.assert_(A.is_leaf())
-        self.assert_(not A.get_tree_root().is_leaf())
+        self.assertTrue(common.get_tree_root().is_root())
+        self.assertTrue(not A.is_root())
+        self.assertTrue(A.is_leaf())
+        self.assertTrue(not A.get_tree_root().is_leaf())
         self.assertRaises(TreeError, A.get_common_ancestor, Tree())
 
         # Test multiple target nodes and get_path argument
@@ -508,13 +510,14 @@ class Test_Coretype_Tree(unittest.TestCase):
         self.assertEqual(common, N2)
         self.assertEqual(path.keys(), expected_path.keys())
         for k in path.keys():
-            self.assertEqual(list(sorted(path[k])), list(sorted(expected_path[k])))
+            self.assertEqual(list(sorted(path[k], key=lambda x: x.name)),
+                             list(sorted(expected_path[k], key=lambda x: x.name)))
 
         # Test common ancestor function using self as single argument (issue #398)
         common = A.get_common_ancestor(A)
-        self.assert_(common, A)
+        self.assertEqual(common, A)
         common = C.get_common_ancestor("C")
-        self.assert_(common, C)
+        self.assertEqual(common, C)
         common, path = C.get_common_ancestor("C", get_path=True)
         self.assertEqual(common, C)
         self.assertDictEqual(path, {})
@@ -532,10 +535,10 @@ class Test_Coretype_Tree(unittest.TestCase):
         # Tree magic python features
         t = Tree(nw_dflt)
         self.assertEqual(len(t), 20)
-        self.assert_("Ddi0002240" in t)
-        self.assert_(t.children[0] in t)
+        self.assertTrue("Ddi0002240" in t)
+        self.assertTrue(t.children[0] in t)
         for a in t:
-            self.assert_(a.name)
+            self.assertTrue(a.name)
 
         # Populate
         t = Tree(nw_full)
@@ -554,13 +557,13 @@ class Test_Coretype_Tree(unittest.TestCase):
 
         # Check gettters and itters return the same
         t = Tree(nw2_full)
-        self.assert_(t.get_leaf_names(), [name for name in  t.iter_leaf_names()])
-        self.assert_(t.get_leaves(), [name for name in  t.iter_leaves()])
-        self.assert_(t.get_descendants(), [n for n in  t.iter_descendants()])
+        self.assertEqual(t.get_leaf_names(), [name for name in  t.iter_leaf_names()])
+        self.assertEqual(t.get_leaves(), [name for name in  t.iter_leaves()])
+        self.assertEqual(t.get_descendants(), [n for n in  t.iter_descendants()])
 
         self.assertEqual(set([n for n in t.traverse("preorder")]), \
                              set([n for n in t.traverse("postorder")]))
-        self.assert_(t in set([n for n in t.traverse("preorder")]))
+        self.assertTrue(t in set([n for n in t.traverse("preorder")]))
 
         # Check order or visiting nodes
 
