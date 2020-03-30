@@ -3,6 +3,7 @@ from __future__ import print_function
 import unittest
 import random
 import itertools
+import json
 
 import sys
 from six.moves import range
@@ -469,7 +470,7 @@ class Test_Coretype_Tree(unittest.TestCase):
         # getting nodes, get_childs, get_sisters, get_tree_root,
         # get_common_ancestor, get_nodes_by_name
         # get_descendants_by_name, is_leaf, is_root
-        t = Tree("(((A,B),C)[&&NHX:tag=common],D)[&&NHX:tag=root:name=root];")
+        t = Tree("(((A,B)N1,C)N2[&&NHX:tag=common],D)[&&NHX:tag=root:name=root];", format=1)
         self.assertEqual(t.get_sisters(), [])
 
         A = t.search_nodes(name="A")[0]
@@ -499,6 +500,24 @@ class Test_Coretype_Tree(unittest.TestCase):
         self.assert_(not A.get_tree_root().is_leaf())
         self.assertRaises(TreeError, A.get_common_ancestor, Tree())
 
+        # Test multiple target nodes and get_path argument
+        common, path = t.get_common_ancestor(['A', 'C'], get_path=True)
+        N1 = t & "N1"
+        N2 = t & "N2"
+        expected_path = {A: set([A, root, N1, N2]), C: set([C, N2, root])}
+        self.assertEqual(common, N2)
+        self.assertEqual(path.keys(), expected_path.keys())
+        for k in path.keys():
+            self.assertEqual(list(sorted(path[k])), list(sorted(expected_path[k])))
+
+        # Test common ancestor function using self as single argument (issue #398)
+        common = A.get_common_ancestor(A)
+        self.assert_(common, A)
+        common = C.get_common_ancestor("C")
+        self.assert_(common, C)
+        common, path = C.get_common_ancestor("C", get_path=True)
+        self.assertEqual(common, C)
+        self.assertDictEqual(path, {})
 
     def test_getters_iters(self):
 
@@ -863,12 +882,12 @@ class Test_Coretype_Tree(unittest.TestCase):
         # RF unrooted in too small trees
         self.assertEqual(_astuple(small.compare(ref1, unrooted=True)),
                          ("NA", "NA", 0.0, "NA", "NA", 2, 1, "NA"))
-        
+
         small = Tree("(A, B);")
         # RF unrooted in too small trees
         self.assertEqual(_astuple(small.compare(ref1, unrooted=False)),
                          ("NA", "NA", 0.0, "NA", "NA", 2, 1, "NA"))
-        
+
         # identical trees, 8 rooted partitions in total (4 an 4), and 6 unrooted
         self.assertEqual(_astuple(s1.compare(ref1)),
                          (0.0, 0.0, 8, 1.0, 1.0, 6, 1, "NA"))
