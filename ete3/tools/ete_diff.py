@@ -64,8 +64,9 @@ DESC = ""
 # EUCL_DIST = lambda a,b: 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) # 24
 
 
-def SINGLECELL(a,b):
-
+def SINGLECELL(*args):
+    a = args[0]
+    b = args[1]
     dist = []
     for p in a[1]:
         pearson = json.loads(p)
@@ -84,13 +85,20 @@ def SINGLECELL(a,b):
     return dist
 
 
-def EUCL_DIST(a,b):  
+def EUCL_DIST(*args):  
+    a = args[0]
+    b = args[1]
     return 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1])))
 
-def EUCL_DIST_B(a,b): 
+def EUCL_DIST_B(*args): 
+    
+    a = args[0]
+    b = args[1]
+    attr1 = args[2]
+    attr2 = args[3]
 
-    dist_a = sum([descendant.dist for descendant in a[0].iter_leaves() if descendant.name in(a[1] - b[1])])
-    dist_b = sum([descendant.dist for descendant in b[0].iter_leaves() if descendant.name in(b[1] - a[1])])
+    dist_a = sum([descendant.dist for descendant in a[0].iter_leaves() if getattr(descendant,attr1) in(a[1] - b[1])])
+    dist_b = sum([descendant.dist for descendant in b[0].iter_leaves() if getattr(descendant,attr2) in(b[1] - a[1])])
     
     return 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)
 
@@ -298,7 +306,7 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extend
     parts2 = sorted(parts2, key = lambda x : len(x[1]))
 
     pool = mp.Pool(jobs)
-    matrix = [[pool.apply_async(dist_fn,args=((n1,x),(n2,y))) for n2,y in parts2] for n1,x in parts1]
+    matrix = [[pool.apply_async(dist_fn,args=((n1,x),(n2,y),attr1,attr2)) for n2,y in parts2] for n1,x in parts1]
     pool.close()
     
     with tqdm(total=len(matrix[0])*len(matrix)) as pbar:
@@ -657,8 +665,8 @@ def run(args):
 
         log.info("Loading trees...")
         if args.ref_trees and args.src_trees:
-            rtree = args.ref_trees
-            ttree = args.src_trees
+            rtree = args.ref_trees[0]
+            ttree = args.src_trees[0]
             t1 = Tree(rtree,format=args.ref_newick_format)
             t2 = Tree(ttree,format=args.src_newick_format)
             
