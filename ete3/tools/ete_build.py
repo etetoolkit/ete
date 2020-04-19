@@ -706,7 +706,6 @@ def _main(arguments):
                              type=is_file, default=BASEPATH+'/ete_build.cfg',
                              help="Base configuration file.")
 
-    # Ziqi check this
     input_group.add_argument("-L", "--tools-dir", dest="tools_dir",
                              type=str,
                              #required=True, #Ziqi
@@ -980,6 +979,7 @@ def _main(arguments):
                 else:
                     raise ValueError("The provided custom path for external tools is not a valid directory")
         else:
+            # default path is ete3_apps/bin
             print(colorify('\nWARNING: path of external tools is not provided, now loading TOOLCHAIN\n', "yellow"), file=sys.stderr)
             builtin_apps_path = os.path.join(os.path.split(ete3_path)[0], "ete3_apps/bin")
             
