@@ -960,6 +960,7 @@ def _main(arguments):
 
     args = parser.parse_args(arguments)
 
+    # start to load apps_path depending on flags, therefore need to load args before load the path
     ete3_path = shutil.which("ete3")
     if ete3_path:
         if args.tools_dir:    

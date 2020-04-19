@@ -141,11 +141,12 @@ def _main(arguments):
             #builtin_apps_path = None
             #ete3_path = which("ete3")
 
-            # is it a good place to make judgement?
+            
             #if ete3_path:
-            #    builtin_apps_path = os.path.join(os.path.split(ete3_path)[0], "ete3_apps/bin") #Ziqi
+            #    builtin_apps_path = os.path.join(os.path.split(ete3_path)[0], "ete3_apps/bin") 
             #    builtin_apps_path = os.path.split(ete3_path)[0]
-            ete_build._main(arguments)
+
+            ete_build._main(arguments) # pass arguments to ete_build including flag of apps_bin, so as to determine apps_path there
             return
 
     # CREATE REUSABLE PARSER OPTIONS
