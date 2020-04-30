@@ -102,7 +102,23 @@ def EUCL_DIST_B(*args):
     
     return 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)
 
-def RF_DIST(a, b):
+def EUCL_DIST_B_ALL(*args): 
+    
+    a = args[0]
+    b = args[1]
+    attr1 = args[2]
+    attr2 = args[3]
+
+    dist_a = sum([descendant.dist for descendant in a[0].iter_leaves()])
+    dist_b = sum([descendant.dist for descendant in b[0].iter_leaves()])
+    
+    return 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)
+
+def RF_DIST(*args):
+    
+    a = args[0]
+    b = args[1]
+    
     if len(a[1] & b[1]) < 2:
         return 1.0
     (a, b) = (b, a) if len(b[1]) > len(a[1]) else (a,b)
@@ -609,7 +625,7 @@ def populate_args(diff_args_p):
                         help="If enabled, it will use colors in some of the report")
     
     diff_args.add_argument("--dist", dest="distance",
-                           type=str, choices= ['e', 'rf', 'eb'], default='e',
+                           type=str, choices= ['e', 'rf', 'eb','eb-all'], default='e',
                            help=('Distance measure: e = Euclidean distance, rf = Robinson-Foulds symetric distance'
                                  ' eb = Euclidean distance + branch length difference between disjoint leaves'))
     
@@ -723,6 +739,8 @@ def run(args):
                 dist_fn = RF_DIST
             elif args.distance == 'eb':
                 dist_fn = EUCL_DIST_B
+            elif args.distance == 'eb-all':
+                dist_fn = EUCL_DIST_B_ALL
             else:
                 pass
                 
