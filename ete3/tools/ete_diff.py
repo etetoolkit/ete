@@ -306,9 +306,13 @@ def sepstring(items, sep=", "):
 
 ### Treediff ###
 
-def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extended=False, jobs=1):
+def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, reduce_matrix=False,extended=False, jobs=1):
     log = logging.getLogger()
     log.info("Computing distance matrix...")
+    for index, n in enumerate(t1.traverse('preorder')):
+        n._nid = index
+    for index, n in enumerate(t2.traverse('preorder')):
+        n._nid = index
     t1_cached_content = t1.get_cached_content(store_attr=attr1)
     t2_cached_content = t2.get_cached_content(store_attr=attr2)
 
@@ -376,7 +380,7 @@ def treediff(t1, t2, attr1, attr2, dist_fn=EUCL_DIST, reduce_matrix=False,extend
 
         for r in range(len(matrix)):
             c = cols[r]
-            if matrix[r][c] != 0 or dist_fn == SINGLECELL:
+            if True: #if matrix[r][c] != 0:
                 if extended:
                     b_dist = get_distances2(parts1[r][0], parts2[c][0])
                 else:
