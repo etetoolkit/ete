@@ -440,7 +440,7 @@ def show_difftable_summary(difftable, rf=-1, rf_max=-1, extended=None):
         total_bdist += b_dist
   
     if extended:
-        print("\n"+"\t".join(["Dist", "Branch Dist", "Mismatches", "RF", "maxRF"]))
+        print("\n"+"\t".join(["Dist", "branchDist", "Mismatches", "RF", "maxRF"]))
         print("%0.6f\t%0.6f\t%10d\t%d\t%d" %(total_dist,total_bdist, len(difftable), rf, rf_max))
     else:
         print("\n"+"\t".join(["Dist", "Mismatches", "RF", "maxRF"]))
@@ -451,13 +451,13 @@ def show_difftable(difftable, extended=False):
     
     if extended:
         for dist, b_dist, side1, side2, diff, n1, n2 in sorted(difftable, reverse=True):
-            showtable.append([dist, b_dist, len(side1), len(side2), len(diff), sepstring(diff)])
-        print_table(showtable, header=["Dist", "Branch Dist", "Size1", "Size2", "ndiffs", "Diff"],
+            showtable.append([dist, b_dist, len(side1), len(side2), len(diff), sepstring(side1), sepstring(side2), sepstring(diff)])
+        print_table(showtable, header=["Dist", "branchDist", "Size1", "Size2", "ndiffs", "refTree", "targetTree", "Diff"],
                     max_col_width=80, wrap_style="wrap", row_line=True)
     else:
         for dist, b_dist, side1, side2, diff, n1, n2 in sorted(difftable, reverse=True):
-            showtable.append([dist, len(side1), len(side2), len(diff), sepstring(diff)])
-        print_table(showtable, header=["Dist", "Size1", "Size2", "ndiffs", "Diff"],
+            showtable.append([dist, len(side1), len(side2), len(diff), sepstring(side1), sepstring(side2), sepstring(diff)])
+        print_table(showtable, header=["Dist", "Size1", "Size2", "ndiffs", "refTree", "targetTree", "Diff"],
                     max_col_width=80, wrap_style="wrap", row_line=True)
 
 def show_difftable_tab(difftable, extended=None):
@@ -468,13 +468,13 @@ def show_difftable_tab(difftable, extended=None):
             showtable.append([dist, b_dist, len(side1), len(side2), len(diff),
                               sepstring(side1, "|"), sepstring(side2, "|"),
                               sepstring(diff, "|")])
-        print('#' + '\t'.join(["Dist", "Branch Dist", "Size1", "Size2", "ndiffs", "Diff", "refTree", "targetTree"]))
+        print('#' + '\t'.join(["Dist", "branchDist", "Size1", "Size2", "ndiffs", "refTree", "targetTree", "Diff"]))
     else:
         for dist, b_dist, side1, side2, diff, n1, n2 in sorted(difftable, reverse=True):
             showtable.append([dist, len(side1), len(side2), len(diff),
                               sepstring(side1, "|"), sepstring(side2, "|"),
                               sepstring(diff, "|")])
-        print('#' + '\t'.join(["Dist", "Size1", "Size2", "ndiffs", "Diff", "refTree", "targetTree"]))
+        print('#' + '\t'.join(["Dist", "Size1", "Size2", "ndiffs", "refTree", "targetTree", "Diff"]))
         
     print('\n'.join(['\t'.join(map(str, items)) for items in showtable]))
     
@@ -528,7 +528,7 @@ def show_difftable_topo(difftable, attr1, attr2, usecolor=False, extended=None):
             showtable.append([dist, "%d/%d (%d)" %(len(side1), len(side2),len(diff)), topo1, topo2])
     
     if extended:
-        print_table(showtable, header=["Dist", "Branch Dist", "#Diffs", "Tree1", "Tree2"],
+        print_table(showtable, header=["Dist", "branchDist", "#Diffs", "Tree1", "Tree2"],
                     max_col_width=maxcolwidth, wrap_style="wrap", row_line=True)
     else:
         print_table(showtable, header=["Dist", "#Diffs", "Tree1", "Tree2"],
@@ -550,7 +550,7 @@ def show_difftable_summary_SCA(difftable, rf=-1, rf_max=-1, extended=None):
         total_bdist += b_dist
   
     if extended:
-        print("\n"+"\t".join(["Dist", "Branch Dist", "Mismatches", "RF", "maxRF"]))
+        print("\n"+"\t".join(["Dist", "branchDist", "Mismatches", "RF", "maxRF"]))
         print("%0.6f\t%0.6f\t%10d\t%d\t%d" %(total_dist,total_bdist, len(difftable), rf, rf_max))
     else:
         print("\n"+"\t".join(["Dist", "Mismatches", "RF", "maxRF"]))
@@ -561,13 +561,13 @@ def show_difftable_SCA(difftable, extended=False):
     
     if extended:
         for dist, b_dist, side1, side2, diff, n1, n2 in sorted(difftable, reverse=True,key = lambda x : x[0]):
-            showtable.append([dist, b_dist, len(side1), len(side2)])
-        print_table(showtable, header=["Dist", "Branch Dist", "Size1", "Size2"],
+            showtable.append([dist, b_dist, len(side1), len(side2), sepstring(side1), sepstring(side2)])
+        print_table(showtable, header=["Dist", "branchDist", "Size1", "Size2","refTree", "targetTree"],
                     max_col_width=80, wrap_style="wrap", row_line=True)
     else:
         for dist, b_dist, side1, side2, diff, n1, n2 in sorted(difftable, reverse=True,key = lambda x : x[0]):
-            showtable.append([dist, len(side1), len(side2)])
-        print_table(showtable, header=["Dist", "Size1", "Size2"],
+            showtable.append([dist, len(side1), len(side2), sepstring(side1), sepstring(side2)])
+        print_table(showtable, header=["Dist", "Size1", "Size2", "refTree", "targetTree"],
                     max_col_width=80, wrap_style="wrap", row_line=True)    
     
 def show_difftable_tab_SCA(difftable, extended=None):
@@ -575,8 +575,8 @@ def show_difftable_tab_SCA(difftable, extended=None):
     
     if extended:
         for dist, b_dist, side1, side2, diff, n1, n2 in sorted(difftable, reverse=True,key = lambda x : x[0]):
-            showtable.append([dist, b_dist, len(side1), len(side2)])
-        print('#' + '\t'.join(["Dist", "Branch Dist", "Size1", "Size2", "refTree", "targetTree"]))
+            showtable.append([dist, b_dist, len(side1), len(side2), sepstring(side1, "|"), sepstring(side2, "|")])
+        print('#' + '\t'.join(["Dist", "branchDist", "Size1", "Size2", "refTree", "targetTree"]))
     else:
         for dist, b_dist, side1, side2, diff, n1, n2 in sorted(difftable, reverse=True,key = lambda x : x[0]):
             showtable.append([dist, len(side1), len(side2),
