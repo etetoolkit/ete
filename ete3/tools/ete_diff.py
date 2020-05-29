@@ -398,7 +398,7 @@ def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, reduce_m
 
         for r in range(len(matrix)):
             c = cols[r]
-#             if matrix[r][c] != 0:
+            
             if extended:
                 b_dist = extended(parts1[r][0], parts2[c][0])
             else:
@@ -412,6 +412,7 @@ def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, reduce_m
 
         return difftable
     
+    # Show only best match
     elif dist_fn == SINGLECELL:
         for r in range(len(matrix)):
             c = np.argmin(matrix[r])
@@ -420,60 +421,41 @@ def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, reduce_m
                 b_dist = extended(parts1[r][0], parts2[c][0])
             else:
                 pass
-
+            
             dist, side1, side2, diff, n1, n2 = (matrix[r][c], 
-                                                parts1[r][1], parts2[c][1],
+                                                [l.name for l in parts1[r][0].iter_leaves()], [l.name for l in parts2[r][0].iter_leaves()],
                                                 parts1[r][1].symmetric_difference(parts2[c][1]),
                                                 parts1[r][0], parts2[c][0])
             difftable.append([dist, b_dist, side1, side2, diff, n1, n2])
 
         return difftable
-    
-    
-    # Show all results
-#     elif dist_fn == SINGLECELL:
-#         for r in range(len(matrix)):
-#             for c in range(len(matrix[0])):
-#                 if extended:
-#                     b_dist = get_distances2(parts1[r][0], parts2[c][0])
-#                 else:
-#                     pass
-
-#                 dist, side1, side2, diff, n1, n2 = (matrix[r][c], 
-#                                                     parts1[r][1], parts2[c][1],
-#                                                     parts1[r][1].symmetric_difference(parts2[c][1]),
-#                                                     parts1[r][0], parts2[c][0])
-#                 difftable.append([dist, b_dist, side1, side2, diff, n1, n2])
-
-#         return difftable
-
 
 ### REPORTS ###
 
 def show_difftable_summary(difftable, rf=-1, rf_max=-1, extended=None):
     total_dist = 0
     total_bdist = 0
-    for dist, b_dist, side1, side2, diff, n1, n2 in difftable:
+    for dist, b_dist, side1, side2, diff, n1, n2 in sorted(difftable, reverse=True):
         total_dist += dist
         total_bdist += b_dist
-        
+  
     if extended:
-        log.info("\n"+"\t".join(["Dist", "Branch Dist", "Mismatches", "RF", "maxRF"]))
+        print("\n"+"\t".join(["Dist", "Branch Dist", "Mismatches", "RF", "maxRF"]))
         print("%0.6f\t%0.6f\t%10d\t%d\t%d" %(total_dist,total_bdist, len(difftable), rf, rf_max))
     else:
-        log.info("\n"+"\t".join(["Dist", "Mismatches", "RF", "maxRF"]))
+        print("\n"+"\t".join(["Dist", "Mismatches", "RF", "maxRF"]))
         print("%0.6f\t%10d\t%d\t%d" %(total_dist, len(difftable), rf, rf_max))
 
 def show_difftable(difftable, extended=False):
     showtable = []
     
     if extended:
-        for dist, b_dist, side1, side2, diff, n1, n2 in difftable:
+        for dist, b_dist, side1, side2, diff, n1, n2 in sorted(difftable, reverse=True):
             showtable.append([dist, b_dist, len(side1), len(side2), len(diff), sepstring(diff)])
         print_table(showtable, header=["Dist", "Branch Dist", "Size1", "Size2", "ndiffs", "Diff"],
                     max_col_width=80, wrap_style="wrap", row_line=True)
     else:
-        for dist, b_dist, side1, side2, diff, n1, n2 in difftable:
+        for dist, b_dist, side1, side2, diff, n1, n2 in sorted(difftable, reverse=True):
             showtable.append([dist, len(side1), len(side2), len(diff), sepstring(diff)])
         print_table(showtable, header=["Dist", "Size1", "Size2", "ndiffs", "Diff"],
                     max_col_width=80, wrap_style="wrap", row_line=True)
@@ -482,13 +464,13 @@ def show_difftable_tab(difftable, extended=None):
     showtable = []
     
     if extended:
-        for dist, b_dist, side1, side2, diff, n1, n2 in difftable:
+        for dist, b_dist, side1, side2, diff, n1, n2 in sorted(difftable, reverse=True):
             showtable.append([dist, b_dist, len(side1), len(side2), len(diff),
                               sepstring(side1, "|"), sepstring(side2, "|"),
                               sepstring(diff, "|")])
         print('#' + '\t'.join(["Dist", "Branch Dist", "Size1", "Size2", "ndiffs", "Diff", "refTree", "targetTree"]))
     else:
-        for dist, b_dist, side1, side2, diff, n1, n2 in difftable:
+        for dist, b_dist, side1, side2, diff, n1, n2 in sorted(difftable, reverse=True):
             showtable.append([dist, len(side1), len(side2), len(diff),
                               sepstring(side1, "|"), sepstring(side2, "|"),
                               sepstring(diff, "|")])
@@ -496,21 +478,9 @@ def show_difftable_tab(difftable, extended=None):
         
     print('\n'.join(['\t'.join(map(str, items)) for items in showtable]))
     
-def show_difftable_tabnodes(difftable, extended=None):
-    showtable = []
-    
-    if extended:
-        for dist, b_dist, side1, side2, diff, n1, n2 in difftable:
-            showtable.append([dist, n1, n2])
-        print('#' + '\t'.join(["Dist", "refTree", "targetTree"]))
-    else:
-        for dist, b_dist, side1, side2, diff, n1, n2 in difftable:
-            showtable.append([dist, n1, n2])
-        print('#' + '\t'.join(["Dist", "refTree", "targetTree"]))
-        
-    print('\n'.join(['\t'.join(map(str, items)) for items in showtable]))
     
 def show_difftable_topo(difftable, attr1, attr2, usecolor=False, extended=None):
+    log = logging.getLogger()
     if not difftable:
         return
     showtable = []
@@ -566,7 +536,56 @@ def show_difftable_topo(difftable, attr1, attr2, usecolor=False, extended=None):
         
     log.info("Total euclidean distance:\t%0.4f\tMismatching nodes:\t%d" %(total_dist, len(difftable)))
     
-def show_difftable_toponodes(difftable, attr1, attr2, usecolor=False, extended=None):
+    
+    
+    
+    
+### SCA REPORTS ###
+    
+def show_difftable_summary_SCA(difftable, rf=-1, rf_max=-1, extended=None):
+    total_dist = 0
+    total_bdist = 0
+    for dist, b_dist, side1, side2, diff, n1, n2 in sorted(difftable, reverse=True,key = lambda x : x[0]):
+        total_dist += dist
+        total_bdist += b_dist
+  
+    if extended:
+        print("\n"+"\t".join(["Dist", "Branch Dist", "Mismatches", "RF", "maxRF"]))
+        print("%0.6f\t%0.6f\t%10d\t%d\t%d" %(total_dist,total_bdist, len(difftable), rf, rf_max))
+    else:
+        print("\n"+"\t".join(["Dist", "Mismatches", "RF", "maxRF"]))
+        print("%0.6f\t%10d\t%d\t%d" %(total_dist, len(difftable), rf, rf_max))
+        
+def show_difftable_SCA(difftable, extended=False):
+    showtable = []
+    
+    if extended:
+        for dist, b_dist, side1, side2, diff, n1, n2 in sorted(difftable, reverse=True,key = lambda x : x[0]):
+            showtable.append([dist, b_dist, len(side1), len(side2)])
+        print_table(showtable, header=["Dist", "Branch Dist", "Size1", "Size2"],
+                    max_col_width=80, wrap_style="wrap", row_line=True)
+    else:
+        for dist, b_dist, side1, side2, diff, n1, n2 in sorted(difftable, reverse=True,key = lambda x : x[0]):
+            showtable.append([dist, len(side1), len(side2)])
+        print_table(showtable, header=["Dist", "Size1", "Size2"],
+                    max_col_width=80, wrap_style="wrap", row_line=True)    
+    
+def show_difftable_tab_SCA(difftable, extended=None):
+    showtable = []
+    
+    if extended:
+        for dist, b_dist, side1, side2, diff, n1, n2 in sorted(difftable, reverse=True,key = lambda x : x[0]):
+            showtable.append([dist, b_dist, len(side1), len(side2)])
+        print('#' + '\t'.join(["Dist", "Branch Dist", "Size1", "Size2", "refTree", "targetTree"]))
+    else:
+        for dist, b_dist, side1, side2, diff, n1, n2 in sorted(difftable, reverse=True,key = lambda x : x[0]):
+            showtable.append([dist, len(side1), len(side2),
+                              sepstring(side1, "|"), sepstring(side2, "|")])
+        print('#' + '\t'.join(["Dist", "Size1", "Size2", "refTree", "targetTree"]))
+        
+    print('\n'.join(['\t'.join(map(str, items)) for items in showtable]))    
+    
+def show_difftable_topo_SCA(difftable, attr1, attr2, usecolor=False, extended=None):
     if not difftable:
         return
     showtable = []
@@ -574,7 +593,7 @@ def show_difftable_toponodes(difftable, attr1, attr2, usecolor=False, extended=N
     total_dist = 0
 
     for dist, b_dist, side1, side2, diff, n1, n2 in sorted(difftable, reverse=True,key = lambda x : x[0]):
-
+        log = logging.getLogger()
         total_dist += dist
         n1 = Tree(n1.write())
         n2 = Tree(n2.write())
@@ -612,6 +631,15 @@ def show_difftable_toponodes(difftable, attr1, attr2, usecolor=False, extended=N
         
     log.info("Total euclidean distance:\t%0.4f\tMismatching nodes:\t%d" %(total_dist, len(difftable)))
        
+        
+        
+        
+        
+        
+        
+        
+### ARGUMENTS ###        
+        
 def populate_args(diff_args_p):
 
     diff_args = diff_args_p.add_argument_group("DIFF GENERAL OPTIONS")
@@ -636,7 +664,7 @@ def populate_args(diff_args_p):
                         help="Do not show process information")
     
     diff_args.add_argument("--report", dest="report",
-                        choices=["topology", "diffs", "diffs_tab", "summary","table","nodetab","nodetopo"],
+                        choices=["topology", "diffs", "diffs_tab", "summary"],
                         default = "topology",
                         help="Different format for the comparison results")
 
@@ -653,31 +681,33 @@ def populate_args(diff_args_p):
                            help=('Distance measure (e by default): e = Euclidean distance, rf = Robinson-Foulds symetric distance'
                                  ' eb = Euclidean distance + branch length difference between disjoint leaves'))
     
-    diff_args.add_argument("--extension", dest="ext",
-                           type=str, choices= ['tsv','csv'], default='csv',
-                           help=('Data separator, either tsv or csv. tsv by default'))
+    diff_args_r = diff_args_p.add_argument_group("DIFF RESEARCH OPTIONS")
     
-    diff_args.add_argument("--ref-matrix", dest="rmatrix",
-                           type=str,
-                           help=('For Single Cell Analysis, csv with cell IDs as columns headers and their '
-                                 'expresion values below. If given, --dist will be ignored'))
-    
-    diff_args.add_argument("--target-matrix", dest="tmatrix",
-                           type=str,
-                           help=('For Single Cell Analysis, csv with cell IDs as columns headers and their '
-                                 'expresion values below. If given, --dist will be ignored'))
-    
-    diff_args.add_argument("--extended", dest="extended",
+    diff_args_r.add_argument("--extended", dest="extended",
                            type=str, choices= [None,'cc','be'], default=None,
                            help=('Extend with branch distance after node comparison (None by default). cc = Branch distance based in cophenetic-like distance between trees '
                                 'be = branch extended distance based on the distance from unique leaves to root between source tree and target tree'))
     
-    diff_args.add_argument("--parallelism", dest="extended",
+    diff_args_r.add_argument("--ref-matrix", dest="rmatrix",
+                           type=str,
+                           help=('For Single Cell Analysis data, csv/tsv (see --extension option) with cell IDs as columns headers and their '
+                                 'expresion values below. If given, --dist will be ignored'))
+    
+    diff_args_r.add_argument("--target-matrix", dest="tmatrix",
+                           type=str,
+                           help=('For Single Cell Analysis data, csv/tsv (see --extension option) with cell IDs as columns headers and their '
+                                 'expresion values below. If given, --dist will be ignored'))
+    
+    diff_args_r.add_argument("--extension", dest="ext",
+                           type=str, choices= ['tsv','csv'], default='csv',
+                           help=('Data separator for Single Cell Analysis data expression matrix (csv by default)'))
+    
+    diff_args_r.add_argument("--parallelism", dest="parallelism",
                            type=str, choices= [None,'sync','async'], default=None,
                            help=('Distance matrix computation parallelism (None by default). sync form syncronous and asyncc for asyncronous parallelism. '
                                 'CAUTION: Only for research purpose as the wall time will be higher for all functions'))
     
-    diff_args.add_argument("-C", "--cpu", dest="maxjobs", type=int,
+    diff_args_r.add_argument("-C", "--cpu", dest="maxjobs", type=int,
                             default=1, help="CAUTION: only for non linear parallelism (see --parallelism option). "
                             " Maximum number of CPU/jobs"
                             " available in the execution host. If higher"
@@ -722,10 +752,10 @@ def run(args):
             sep_ = sepdict[args.ext]
             
             log.info("Reference Tree...")
-            t1, rdict = tree_from_matrix(args.rmatrix,sep_,dictionary=True,jobs=maxjobs,parallel=None)
+            t1, rdict = tree_from_matrix(args.rmatrix,sep_,dictionary=True,jobs=maxjobs,parallel=args.parallelism)
             
             log.info("Target Tree...")
-            t2, tdict = tree_from_matrix(args.tmatrix,sep_,dictionary=True,jobs=maxjobs,parallel=None)
+            t2, tdict = tree_from_matrix(args.tmatrix,sep_,dictionary=True,jobs=maxjobs,parallel=args.parallelism)
 
 
         if args.ncbi:
@@ -742,7 +772,7 @@ def run(args):
         # Report extension
         if args.extended == 'cc':
             extend = cc_distance
-        if args.extended == 'be':
+        elif args.extended == 'be':
             extend = be_distance
         else:
             extend = None
@@ -777,22 +807,30 @@ def run(args):
             
                 
 
-        difftable = treediff(t1, t2, rattr, tattr, dist_fn, args.fullsearch, extended=extend,jobs=maxjobs)
+        difftable = treediff(t1, t2, rattr, tattr, dist_fn, args.fullsearch, extended=extend,jobs=maxjobs, parallel=args.parallelism)
 
         if len(difftable) != 0:
-            if args.report == "topology" and dist_fn != SINGLECELL:
-                show_difftable_topo(difftable, rattr, tattr, usecolor=args.color,extended=extend)
-            if args.report == "nodetopo" or (args.report == "topology" and dist_fn == SINGLECELL):
-                show_difftable_toponodes(difftable, rattr, tattr, usecolor=args.color,extended=extend)
-            elif args.report == "diffs":
-                show_difftable(difftable, extended=extend)
-            elif args.report == "diffs_tab":
-                show_difftable_tab(difftable, extended=extend)
-            elif args.report == "nodetab":
-                show_difftable_tabnodes(difftable, extended=extend)
-            elif args.report == 'table':
-                rf, rf_max, _, _, _, _, _ = t1.robinson_foulds(t2, attr_t1=rattr, attr_t2=tattr)
-                show_difftable_summary(difftable, rf, rf_max, extended=extend)
+            if dist_fn != SINGLECELL:
+                if args.report == "topology" and dist_fn != SINGLECELL:
+                    show_difftable_topo(difftable, rattr, tattr, usecolor=args.color,extended=extend)
+                elif args.report == "diffs":
+                    show_difftable(difftable, extended=extend)
+                elif args.report == "diffs_tab":
+                    show_difftable_tab(difftable, extended=extend)
+                elif args.report == 'summary':
+                    rf, rf_max, _, _, _, _, _ = t1.robinson_foulds(t2, attr_t1=rattr, attr_t2=tattr)
+                    
+            elif dist_fn == SINGLECELL:
+                if args.report == "topology" and dist_fn != SINGLECELL:
+                    show_difftable_topo_SCA(difftable, rattr, tattr, usecolor=args.color,extended=extend)
+                elif args.report == "diffs":
+                    show_difftable_SCA(difftable, extended=extend)
+                elif args.report == "diffs_tab":
+                    show_difftable_tab_SCA(difftable, extended=extend)
+                elif args.report == 'summary':
+                    rf, rf_max, _, _, _, _, _ = t1.robinson_foulds(t2, attr_t1='name', attr_t2='name')
+                    show_difftable_summary_SCA(difftable, rf, rf_max, extended=extend)
+
         else:
             log.info("Difference between (Reference) %s and (Target) %s returned no results" % (rtree, ttree))
 
