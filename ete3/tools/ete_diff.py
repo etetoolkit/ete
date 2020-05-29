@@ -528,10 +528,10 @@ def show_difftable_topo(difftable, attr1, attr2, usecolor=False, extended=None):
             showtable.append([dist, "%d/%d (%d)" %(len(side1), len(side2),len(diff)), topo1, topo2])
     
     if extended:
-        print_table(showtable, header=["Dist", "branchDist", "#Diffs", "Tree1", "Tree2"],
+        print_table(showtable, header=["Dist", "branchDist", "#Diffs", "refTree", "targetTree"],
                     max_col_width=maxcolwidth, wrap_style="wrap", row_line=True)
     else:
-        print_table(showtable, header=["Dist", "#Diffs", "Tree1", "Tree2"],
+        print_table(showtable, header=["Dist", "#Diffs", "refTree", "targetTree"],
                     max_col_width=maxcolwidth, wrap_style="wrap", row_line=True)    
         
     log.info("Total euclidean distance:\t%0.4f\tMismatching nodes:\t%d" %(total_dist, len(difftable)))
@@ -623,10 +623,10 @@ def show_difftable_topo_SCA(difftable, attr1, attr2, usecolor=False, extended=No
             showtable.append([dist, "%d/%d (%d)" %(len(side1), len(side2),len(diff)), topo1, topo2])
     
     if extended:
-        print_table(showtable, header=["Dist", "Branch Dist", "#Diffs", "Tree1", "Tree2"],
+        print_table(showtable, header=["Dist", "branchDist", "#Diffs", "refTree", "targetTree"],
                     max_col_width=maxcolwidth, wrap_style="wrap", row_line=True)
     else:
-        print_table(showtable, header=["Dist", "#Diffs", "Tree1", "Tree2"],
+        print_table(showtable, header=["Dist", "#Diffs", "refTree", "targetTree"],
                     max_col_width=maxcolwidth, wrap_style="wrap", row_line=True)    
         
     log.info("Total euclidean distance:\t%0.4f\tMismatching nodes:\t%d" %(total_dist, len(difftable)))
@@ -811,7 +811,7 @@ def run(args):
 
         if len(difftable) != 0:
             if dist_fn != SINGLECELL:
-                if args.report == "topology" and dist_fn != SINGLECELL:
+                if args.report == "topology":
                     show_difftable_topo(difftable, rattr, tattr, usecolor=args.color,extended=extend)
                 elif args.report == "diffs":
                     show_difftable(difftable, extended=extend)
@@ -821,7 +821,7 @@ def run(args):
                     rf, rf_max, _, _, _, _, _ = t1.robinson_foulds(t2, attr_t1=rattr, attr_t2=tattr)
                     
             elif dist_fn == SINGLECELL:
-                if args.report == "topology" and dist_fn != SINGLECELL:
+                if args.report == "topology":
                     show_difftable_topo_SCA(difftable, rattr, tattr, usecolor=args.color,extended=extend)
                 elif args.report == "diffs":
                     show_difftable_SCA(difftable, extended=extend)
