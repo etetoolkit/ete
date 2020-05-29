@@ -54,20 +54,18 @@ from .ete_diff_lib._lapjv import lapjv
 import textwrap
 import argparse
 import logging
-from tqdm import tqdm
 log = logging.Logger("main")
 
 
 
 DESC = ""
 
-# EUCL_DIST = lambda a,b: 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) # 24
-
-
 def SINGLECELL(*args):
     a = args[0]
     b = args[1]
     dist = []
+
+    # Extract and parse pearson dict from first element (could be anyother)
     for p in a[1]:
         pearson = json.loads(p)
         break
@@ -88,9 +86,9 @@ def SINGLECELL(*args):
 def EUCL_DIST(*args):  
     a = args[0]
     b = args[1]
-    return 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1])))
+    return 1 - (float(len(a[1] & b[1])) / max(len(b[1]), len(a[1])))
 
-def EUCL_DIST_B(*args): 
+def EUCL_DIST_B(*args):
     
     a = args[0]
     b = args[1]
@@ -143,21 +141,28 @@ def load_matrix(file,separator):
     return treedict
 
 
-def dict2tree(treedict,jobs=1):
+def dict2tree(treedict,jobs=1,parallel=None):
     log = logging.getLogger()
-    log.info(treedict['headers'])
+#     log.info(treedict['headers'])
 
     matrix = np.zeros((len(treedict['headers']), len(treedict['headers'])))
     dm = {h : {} for h in treedict['headers']}
 
-    pool = mp.Pool(jobs)
-    matrix = [[pool.apply_async(np.corrcoef,args=(treedict['dict'][col1],treedict['dict'][col2])) for col2 in treedict['headers']] for col1 in treedict['headers']]
-    pool.close()
-    with tqdm(total=len(matrix[0])*len(matrix)) as pbar:
+    if parallel == 'sync':
+        pool = mp.Pool(jobs)
+        matrix = [[pool.apply(np.corrcoef,args=(treedict['dict'][col1],treedict['dict'][col2])) for col2 in treedict['headers']] for col1 in treedict['headers']]
+        pool.close()    
+    
+    if parallel == 'async':
+        pool = mp.Pool(jobs)
+        matrix = [[pool.apply_async(np.corrcoef,args=(treedict['dict'][col1],treedict['dict'][col2])) for col2 in treedict['headers']] for col1 in treedict['headers']]
+        pool.close()
         for i in range(len(matrix)):
             for j in range(len(matrix[0])):
                 matrix[i][j] = matrix[i][j].get()[0][1]
-                pbar.update(1)
+    
+    else:
+        matrix = [[(np.corrcoef(treedict['dict'][col1],treedict['dict'][col2]))[0][1] for col2 in treedict['headers']] for col1 in treedict['headers']]
 
     Z = hcluster.linkage(matrix, "average") #"single" for default, "average" for UPGMA
     T = hcluster.to_tree(Z)
@@ -190,20 +195,20 @@ def dict2tree(treedict,jobs=1):
         
     return tree
 
-def tree_from_matrix(matrix,sep=",",dictionary=False,jobs=1):
+def tree_from_matrix(matrix,sep=",",dictionary=False,jobs=1,parallel=None):
     tree_dict = load_matrix(matrix,sep)
 
     if dictionary == True:
-        return dict2tree(tree_dict,jobs), tree_dict
+        return dict2tree(tree_dict,jobs,parallel), tree_dict
     else:
-        return dict2tree(tree_dict,jobs)
+        return dict2tree(tree_dict,jobs,parallel)
     
 def pearson_corr(rdict,tdict):
     # Select only common genes by gene name y both dictionaries
-
+    log = logging.getLogger()
     log.info("Getting shared genes...")
-    rfilter = [i for i,value in enumerate(tqdm(rdict['idx'])) if value in tdict['idx']]
-    tfilter = [i for i,value in enumerate(tqdm(tdict['idx'])) if value in rdict['idx']]
+    rfilter = [i for i,value in enumerate(rdict['idx']) if value in tdict['idx']]
+    tfilter = [i for i,value in enumerate(tdict['idx']) if value in rdict['idx']]
     log.info("Total Genes Shared = " + str(len(rfilter)))
 
     rdict['dict'] = {header : [rdict['dict'][header][element] for element in rfilter] for header in rdict['headers']}
@@ -218,7 +223,10 @@ def pearson_corr(rdict,tdict):
 
     return pearson
 
-def get_distances1(t1,t2):
+def be_distance(t1,t2):
+    """Branch-Extended Distance"""
+    
+    # Get total distance from leaf to root
     def _get_leaves_paths(t):
         leaves = t.get_leaves()
         leave_branches = set()
@@ -235,6 +243,7 @@ def get_distances1(t1,t2):
 
         return leave_branches
 
+    # Get difference of distances from unique leaves in tree 1 - unique leaves in tree 2
     def _get_distances(leaf_distances1,leaf_distances2):
 
         unique_leaves1 = leaf_distances1 - leaf_distances2
@@ -245,7 +254,8 @@ def get_distances1(t1,t2):
     return _get_distances(_get_leaves_paths(t1),_get_leaves_paths(t2))    
 
 
-def get_distances2(t1,t2):
+def cc_distance(t1,t2):
+    """Cophenetic-Compared Distance"""
     def cophenetic_compared_matrix(t_source,t_compare):
 
         leaves = t_source.get_leaves()
@@ -306,7 +316,7 @@ def sepstring(items, sep=", "):
 
 ### Treediff ###
 
-def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, reduce_matrix=False,extended=False, jobs=1):
+def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, reduce_matrix=False,extended=None, jobs=1, parallel=None):
     log = logging.getLogger()
     log.info("Computing distance matrix...")
     for index, n in enumerate(t1.traverse('preorder')):
@@ -314,29 +324,37 @@ def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, reduce_m
     for index, n in enumerate(t2.traverse('preorder')):
         n._nid = index
     t1_cached_content = t1.get_cached_content(store_attr=attr1)
+    t1 = None
     t2_cached_content = t2.get_cached_content(store_attr=attr2)
+    t2 = None
 
 #     parts1 = [(k, v) for k, v in t1_cached_content.items() if k.children]
 #     parts2 = [(k, v) for k, v in t2_cached_content.items() if k.children]
 
     parts1 = [(k, v) for k, v in t1_cached_content.items()]
+    t1_cached_content = None
     parts2 = [(k, v) for k, v in t2_cached_content.items()]
+    t2_cached_content = None
 
     parts1 = sorted(parts1, key = lambda x : len(x[1]))
     parts2 = sorted(parts2, key = lambda x : len(x[1]))
-
-    pool = mp.Pool(jobs)
-    matrix = [[pool.apply_async(dist_fn,args=((n1,x),(n2,y),attr1,attr2)) for n2,y in parts2] for n1,x in parts1]
-    pool.close()
+   
+    if parallel == 'sync':
+        pool = mp.Pool(jobs)
+        matrix = [[pool.apply(dist_fn,args=((n1,x),(n2,y),attr1,attr2)) for n2,y in parts2] for n1,x in parts1]
+        pool.close()
     
-    with tqdm(total=len(matrix[0])*len(matrix)) as pbar:
+    elif parallel == 'async':
+        pool = mp.Pool(jobs)
+        matrix = [[pool.apply_async(dist_fn,args=((n1,x),(n2,y),attr1,attr2)) for n2,y in parts2] for n1,x in parts1]
+        pool.close()
+    
         for i in range(len(matrix)):
             for j in range(len(matrix[0])):
                 matrix[i][j] = matrix[i][j].get()
-                pbar.update(1)
 
-    # debug
-#     matrix = [[dist_fn((n1,x),(n2,y)) for n2,y in parts2] for n1,x in parts1]
+    else:
+        matrix = [[dist_fn((n1,x),(n2,y),attr1,attr2) for n2,y in parts2] for n1,x in parts1]
     
     # Reduce matrix to avoid useless comparisons
     if reduce_matrix:
@@ -380,26 +398,9 @@ def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, reduce_m
 
         for r in range(len(matrix)):
             c = cols[r]
-            if True: #if matrix[r][c] != 0:
-                if extended:
-                    b_dist = get_distances2(parts1[r][0], parts2[c][0])
-                else:
-                    pass
-
-                dist, side1, side2, diff, n1, n2 = (matrix[r][c], 
-                                                    parts1[r][1], parts2[c][1],
-                                                    parts1[r][1].symmetric_difference(parts2[c][1]),
-                                                    parts1[r][0], parts2[c][0])
-                difftable.append([dist, b_dist, side1, side2, diff, n1, n2])
-
-        return difftable
-    
-    elif dist_fn == SINGLECELL:
-        for r in range(len(matrix)):
-            c = np.argmin(matrix[r])
-
+#             if matrix[r][c] != 0:
             if extended:
-                b_dist = get_distances2(parts1[r][0], parts2[c][0])
+                b_dist = extended(parts1[r][0], parts2[c][0])
             else:
                 pass
 
@@ -411,6 +412,25 @@ def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, reduce_m
 
         return difftable
     
+    elif dist_fn == SINGLECELL:
+        for r in range(len(matrix)):
+            c = np.argmin(matrix[r])
+
+            if extended:
+                b_dist = extended(parts1[r][0], parts2[c][0])
+            else:
+                pass
+
+            dist, side1, side2, diff, n1, n2 = (matrix[r][c], 
+                                                parts1[r][1], parts2[c][1],
+                                                parts1[r][1].symmetric_difference(parts2[c][1]),
+                                                parts1[r][0], parts2[c][0])
+            difftable.append([dist, b_dist, side1, side2, diff, n1, n2])
+
+        return difftable
+    
+    
+    # Show all results
 #     elif dist_fn == SINGLECELL:
 #         for r in range(len(matrix)):
 #             for c in range(len(matrix[0])):
@@ -430,7 +450,7 @@ def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, reduce_m
 
 ### REPORTS ###
 
-def show_difftable_summary(difftable, rf=-1, rf_max=-1, extended=False):
+def show_difftable_summary(difftable, rf=-1, rf_max=-1, extended=None):
     total_dist = 0
     total_bdist = 0
     for dist, b_dist, side1, side2, diff, n1, n2 in difftable:
@@ -458,7 +478,7 @@ def show_difftable(difftable, extended=False):
         print_table(showtable, header=["Dist", "Size1", "Size2", "ndiffs", "Diff"],
                     max_col_width=80, wrap_style="wrap", row_line=True)
 
-def show_difftable_tab(difftable, extended=False):
+def show_difftable_tab(difftable, extended=None):
     showtable = []
     
     if extended:
@@ -476,7 +496,7 @@ def show_difftable_tab(difftable, extended=False):
         
     print('\n'.join(['\t'.join(map(str, items)) for items in showtable]))
     
-def show_difftable_tabnodes(difftable, extended=False):
+def show_difftable_tabnodes(difftable, extended=None):
     showtable = []
     
     if extended:
@@ -490,7 +510,7 @@ def show_difftable_tabnodes(difftable, extended=False):
         
     print('\n'.join(['\t'.join(map(str, items)) for items in showtable]))
     
-def show_difftable_topo(difftable, attr1, attr2, usecolor=False, extended=False):
+def show_difftable_topo(difftable, attr1, attr2, usecolor=False, extended=None):
     if not difftable:
         return
     showtable = []
@@ -546,7 +566,7 @@ def show_difftable_topo(difftable, attr1, attr2, usecolor=False, extended=False)
         
     log.info("Total euclidean distance:\t%0.4f\tMismatching nodes:\t%d" %(total_dist, len(difftable)))
     
-def show_difftable_toponodes(difftable, attr1, attr2, usecolor=False, extended=False):
+def show_difftable_toponodes(difftable, attr1, attr2, usecolor=False, extended=None):
     if not difftable:
         return
     showtable = []
@@ -630,7 +650,7 @@ def populate_args(diff_args_p):
     
     diff_args.add_argument("--dist", dest="distance",
                            type=str, choices= ['e', 'rf', 'eb','eb-all'], default='e',
-                           help=('Distance measure: e = Euclidean distance, rf = Robinson-Foulds symetric distance'
+                           help=('Distance measure (e by default): e = Euclidean distance, rf = Robinson-Foulds symetric distance'
                                  ' eb = Euclidean distance + branch length difference between disjoint leaves'))
     
     diff_args.add_argument("--extension", dest="ext",
@@ -648,11 +668,18 @@ def populate_args(diff_args_p):
                                  'expresion values below. If given, --dist will be ignored'))
     
     diff_args.add_argument("--extended", dest="extended",
-                           action="store_true",
-                           help=('Extend with branch distance after node comparison'))
+                           type=str, choices= [None,'cc','be'], default=None,
+                           help=('Extend with branch distance after node comparison (None by default). cc = Branch distance based in cophenetic-like distance between trees '
+                                'be = branch extended distance based on the distance from unique leaves to root between source tree and target tree'))
+    
+    diff_args.add_argument("--parallelism", dest="extended",
+                           type=str, choices= [None,'sync','async'], default=None,
+                           help=('Distance matrix computation parallelism (None by default). sync form syncronous and asyncc for asyncronous parallelism. '
+                                'CAUTION: Only for research purpose as the wall time will be higher for all functions'))
     
     diff_args.add_argument("-C", "--cpu", dest="maxjobs", type=int,
-                            default=1, help="Maximum number of CPU/jobs"
+                            default=1, help="CAUTION: only for non linear parallelism (see --parallelism option). "
+                            " Maximum number of CPU/jobs"
                             " available in the execution host. If higher"
                             " than 1, tasks with multi-threading"
                             " capabilities will enabled. Note that this"
@@ -695,12 +722,10 @@ def run(args):
             sep_ = sepdict[args.ext]
             
             log.info("Reference Tree...")
-            t1, rdict = tree_from_matrix(args.rmatrix,sep_,dictionary=True,jobs=maxjobs)
-            log.info(t1)
+            t1, rdict = tree_from_matrix(args.rmatrix,sep_,dictionary=True,jobs=maxjobs,parallel=None)
             
             log.info("Target Tree...")
-            t2, tdict = tree_from_matrix(args.tmatrix,sep_,dictionary=True,jobs=maxjobs)
-            log.info(t2)
+            t2, tdict = tree_from_matrix(args.tmatrix,sep_,dictionary=True,jobs=maxjobs,parallel=None)
 
 
         if args.ncbi:
@@ -715,10 +740,12 @@ def run(args):
                     pass
 
         # Report extension
-        if args.extended == 1:
-            extend = True
+        if args.extended == 'cc':
+            extend = cc_distance
+        if args.extended == 'be':
+            extend = be_distance
         else:
-            extend = False
+            extend = None
             
         # Single cell
         if args.rmatrix and args.tmatrix:
@@ -726,14 +753,14 @@ def run(args):
             pearson = pearson_corr(rdict,tdict)
 
             for leaf in t1.iter_leaves():
-                # we can't pass lists so we give a string and then parse it
-                leaf.add_features(complex=json.dumps(pearson))
+                # we can't pass dicts or lists due to an incompatibility with get_cached_content so we give a string and then parse it
+                leaf.pearson=json.dumps(pearson)
 
             for leaf in t2.iter_leaves():
-                # we can't pass lists so we give a string and then parse it
-                leaf.add_features(complex=json.dumps(pearson))
+                # we can't pass dicts or lists due to an incompatibility with get_cached_content so we give a string and then parse it
+                leaf.pearson=json.dumps(pearson)
 
-            rattr, tattr = 'complex', 'complex'
+            rattr, tattr = 'pearson', 'pearson'
             dist_fn = SINGLECELL
 
         else:
@@ -747,6 +774,7 @@ def run(args):
                 dist_fn = EUCL_DIST_B_ALL
             else:
                 pass
+            
                 
 
         difftable = treediff(t1, t2, rattr, tattr, dist_fn, args.fullsearch, extended=extend,jobs=maxjobs)
