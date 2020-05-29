@@ -819,6 +819,7 @@ def run(args):
                     show_difftable_tab(difftable, extended=extend)
                 elif args.report == 'summary':
                     rf, rf_max, _, _, _, _, _ = t1.robinson_foulds(t2, attr_t1=rattr, attr_t2=tattr)
+                    show_difftable_summary(difftable, rf, rf_max, extended=extend)
                     
             elif dist_fn == SINGLECELL:
                 if args.report == "topology":
