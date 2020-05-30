@@ -60,6 +60,9 @@ log = logging.Logger("main")
 
 DESC = ""
 
+
+### Distances ###
+
 def SINGLECELL(*args):
     a = args[0]
     b = args[1]
@@ -92,23 +95,33 @@ def EUCL_DIST_B(*args):
     
     a = args[0]
     b = args[1]
-    attr1 = args[2]
-    attr2 = args[3]
-
-    dist_a = sum([descendant.dist for descendant in a[0].iter_leaves() if getattr(descendant,attr1) in(a[1] - b[1])])
-    dist_b = sum([descendant.dist for descendant in b[0].iter_leaves() if getattr(descendant,attr2) in(b[1] - a[1])])
+    support = args[3]
+    attr1 = args[4]
+    attr2 = args[5]
     
+    if support:
+        dist_a = sum([descendant.dist * descendant.support for descendant in a[0].iter_leaves() if getattr(descendant,attr1) in(a[1] - b[1])])
+        dist_b = sum([descendant.dist * descendant.support for descendant in b[0].iter_leaves() if getattr(descendant,attr2) in(b[1] - a[1])])
+    else: 
+        dist_a = sum([descendant.dist for descendant in a[0].iter_leaves() if getattr(descendant,attr1) in(a[1] - b[1])])
+        dist_b = sum([descendant.dist for descendant in b[0].iter_leaves() if getattr(descendant,attr2) in(b[1] - a[1])])
+        
     return 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)
 
 def EUCL_DIST_B_ALL(*args): 
     
     a = args[0]
     b = args[1]
-    attr1 = args[2]
-    attr2 = args[3]
+    support = args[3]
+    attr1 = args[4]
+    attr2 = args[5]
 
-    dist_a = sum([descendant.dist for descendant in a[0].iter_leaves()])
-    dist_b = sum([descendant.dist for descendant in b[0].iter_leaves()])
+    if support:
+        dist_a = sum([descendant.dist * descendant.support for descendant in a[0].iter_leaves()])
+        dist_b = sum([descendant.dist * descendant.support for descendant in b[0].iter_leaves()])
+    else: 
+        dist_a = sum([descendant.dist for descendant in a[0].iter_leaves()])
+        dist_b = sum([descendant.dist for descendant in b[0].iter_leaves()])
     
     return 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)
 
@@ -122,6 +135,10 @@ def RF_DIST(*args):
     (a, b) = (b, a) if len(b[1]) > len(a[1]) else (a,b)
     rf, rfmax, names, side1, side2, d1, d2 = a[0].robinson_foulds(b[0])
     return (rf/rfmax if rfmax else 0.0)
+
+
+
+### Functions ###
 
 def load_matrix(file,separator):
     idx = []
@@ -143,7 +160,6 @@ def load_matrix(file,separator):
 
 def dict2tree(treedict,jobs=1,parallel=None):
     log = logging.getLogger()
-#     log.info(treedict['headers'])
 
     matrix = np.zeros((len(treedict['headers']), len(treedict['headers'])))
     dm = {h : {} for h in treedict['headers']}
@@ -316,7 +332,7 @@ def sepstring(items, sep=", "):
 
 ### Treediff ###
 
-def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, reduce_matrix=False,extended=None, jobs=1, parallel=None):
+def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, support=False, reduce_matrix=False,extended=None, jobs=1, parallel=None):
     log = logging.getLogger()
     log.info("Computing distance matrix...")
     for index, n in enumerate(t1.traverse('preorder')):
@@ -341,12 +357,12 @@ def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, reduce_m
    
     if parallel == 'sync':
         pool = mp.Pool(jobs)
-        matrix = [[pool.apply(dist_fn,args=((n1,x),(n2,y),attr1,attr2)) for n2,y in parts2] for n1,x in parts1]
+        matrix = [[pool.apply(dist_fn,args=((n1,x),(n2,y),support,attr1,attr2)) for n2,y in parts2] for n1,x in parts1]
         pool.close()
     
     elif parallel == 'async':
         pool = mp.Pool(jobs)
-        matrix = [[pool.apply_async(dist_fn,args=((n1,x),(n2,y),attr1,attr2)) for n2,y in parts2] for n1,x in parts1]
+        matrix = [[pool.apply_async(dist_fn,args=((n1,x),(n2,y),support,attr1,attr2)) for n2,y in parts2] for n1,x in parts1]
         pool.close()
     
         for i in range(len(matrix)):
@@ -354,7 +370,7 @@ def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, reduce_m
                 matrix[i][j] = matrix[i][j].get()
 
     else:
-        matrix = [[dist_fn((n1,x),(n2,y),attr1,attr2) for n2,y in parts2] for n1,x in parts1]
+        matrix = [[dist_fn((n1,x),(n2,y),support,attr1,attr2) for n2,y in parts2] for n1,x in parts1]
     
     # Reduce matrix to avoid useless comparisons
     if reduce_matrix:
@@ -654,6 +670,16 @@ def populate_args(diff_args_p):
                         help=("Defines the attribute in TARGET tree that will be used"
                               " to perform the comparison"))
     
+    diff_args.add_argument("--dist", dest="distance",
+                           type=str, choices= ['e', 'rf', 'eb','eb-all'], default='e',
+                           help=('Distance measure (e by default): e = Euclidean distance, rf = Robinson-Foulds symetric distance'
+                                 ' eb = Euclidean distance + branch length difference between disjoint leaves'
+                                 ' eb-all = Euclidean distance + branch length difference between all leaves'))
+    
+    diff_args.add_argument("--support", dest="support",
+                        action="store_true",
+                        help="Use support values to calculate distances when they are eb or eb-all")
+    
     diff_args.add_argument("--fullsearch", dest="fullsearch",
                         action="store_true",
                         help=("Enable this option if duplicated attributes (i.e. name)"
@@ -675,11 +701,6 @@ def populate_args(diff_args_p):
     diff_args.add_argument("--color", dest="color",
                         action="store_true",
                         help="If enabled, it will use colors in some of the report")
-    
-    diff_args.add_argument("--dist", dest="distance",
-                           type=str, choices= ['e', 'rf', 'eb','eb-all'], default='e',
-                           help=('Distance measure (e by default): e = Euclidean distance, rf = Robinson-Foulds symetric distance'
-                                 ' eb = Euclidean distance + branch length difference between disjoint leaves'))
     
     diff_args_r = diff_args_p.add_argument_group("DIFF RESEARCH OPTIONS")
     
@@ -807,7 +828,7 @@ def run(args):
             
                 
 
-        difftable = treediff(t1, t2, rattr, tattr, dist_fn, args.fullsearch, extended=extend,jobs=maxjobs, parallel=args.parallelism)
+        difftable = treediff(t1, t2, rattr, tattr, dist_fn, args.support, args.fullsearch, extended=extend,jobs=maxjobs, parallel=args.parallelism)
 
         if len(difftable) != 0:
             if dist_fn != SINGLECELL:
