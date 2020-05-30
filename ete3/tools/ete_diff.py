@@ -713,8 +713,8 @@ def populate_args(diff_args_p):
     
     diff_args.add_argument("--fullsearch", dest="fullsearch",
                         action="store_true",
-                        help=("Enable this option if duplicated attributes (i.e. name)"
-                              "exist in reference or target trees."))
+                        help=("Enable this option to if trivial results (distance 0) are not needed and duplicated attributes (i.e. name)"
+                              " exist in reference or target trees and need to be removed."))
     
     diff_args.add_argument("--quiet", dest="quiet",
                         action="store_true",
@@ -861,7 +861,7 @@ def run(args):
             
                 
 
-        difftable = treediff(t1, t2, rattr, tattr, dist_fn, args.support, args.fullsearch, extended=extend,jobs=maxjobs, parallel=args.parallelism)
+        difftable = treediff(t1, t2, rattr, tattr, dist_fn, args.support, reduce_matrix=args.fullsearch, extended=extend,jobs=maxjobs, parallel=args.parallelism)
 
         if len(difftable) != 0:
             if dist_fn != SINGLECELL:
