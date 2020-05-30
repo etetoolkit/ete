@@ -95,9 +95,9 @@ def EUCL_DIST_B(*args):
     
     a = args[0]
     b = args[1]
-    support = args[3]
-    attr1 = args[4]
-    attr2 = args[5]
+    support = args[2]
+    attr1 = args[3]
+    attr2 = args[4]
     
     if support:
         dist_a = sum([descendant.dist * descendant.support for descendant in a[0].iter_leaves() if getattr(descendant,attr1) in(a[1] - b[1])])
@@ -112,9 +112,9 @@ def EUCL_DIST_B_ALL(*args):
     
     a = args[0]
     b = args[1]
-    support = args[3]
-    attr1 = args[4]
-    attr2 = args[5]
+    support = args[2]
+    attr1 = args[3]
+    attr2 = args[4]
 
     if support:
         dist_a = sum([descendant.dist * descendant.support for descendant in a[0].iter_leaves()])
