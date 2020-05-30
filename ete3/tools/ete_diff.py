@@ -91,6 +91,38 @@ def EUCL_DIST(*args):
     b = args[1]
     return 1 - (float(len(a[1] & b[1])) / max(len(b[1]), len(a[1])))
 
+def EUCL_FULL(*args):
+    a = args[0]
+    b = args[1]
+    support = args[2]
+    attr1 = args[3]
+    attr2 = args[4]
+    
+    
+    def _get_leaves_paths(t,attr,support):
+        leaves = t.get_leaves()
+        leave_branches = set()
+
+        for n in leaves:
+            if n.is_root():
+                continue
+            movingnode = n
+            length = 0
+            while not movingnode.is_root():
+                if support:
+                    length += movingnode.dist * movingnode.support
+                else:
+                    length += movingnode.dist
+                movingnode = movingnode.up
+            leave_branches.add((getattr(n,attr),length))
+
+        return leave_branches
+
+    dist_a = sum([descendant[1] for descendant in _get_leaves_paths(a[0],attr1,support) if descendant[0] in(a[1] - b[1])])
+    dist_b = sum([descendant[1] for descendant in _get_leaves_paths(b[0],attr2,support) if descendant[0] in(b[1] - a[1])])
+    
+    return 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)
+
 def EUCL_DIST_B(*args):
     
     a = args[0]
@@ -99,12 +131,8 @@ def EUCL_DIST_B(*args):
     attr1 = args[3]
     attr2 = args[4]
     
-    if support:
-        dist_a = sum([descendant.dist * descendant.support for descendant in a[0].iter_leaves() if getattr(descendant,attr1) in(a[1] - b[1])])
-        dist_b = sum([descendant.dist * descendant.support for descendant in b[0].iter_leaves() if getattr(descendant,attr2) in(b[1] - a[1])])
-    else: 
-        dist_a = sum([descendant.dist for descendant in a[0].iter_leaves() if getattr(descendant,attr1) in(a[1] - b[1])])
-        dist_b = sum([descendant.dist for descendant in b[0].iter_leaves() if getattr(descendant,attr2) in(b[1] - a[1])])
+    dist_a = sum([descendant.dist for descendant in a[0].iter_leaves() if getattr(descendant,attr1) in(a[1] - b[1])])
+    dist_b = sum([descendant.dist for descendant in b[0].iter_leaves() if getattr(descendant,attr2) in(b[1] - a[1])])
         
     return 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)
 
@@ -116,12 +144,8 @@ def EUCL_DIST_B_ALL(*args):
     attr1 = args[3]
     attr2 = args[4]
 
-    if support:
-        dist_a = sum([descendant.dist * descendant.support for descendant in a[0].iter_leaves()])
-        dist_b = sum([descendant.dist * descendant.support for descendant in b[0].iter_leaves()])
-    else: 
-        dist_a = sum([descendant.dist for descendant in a[0].iter_leaves()])
-        dist_b = sum([descendant.dist for descendant in b[0].iter_leaves()])
+    dist_a = sum([descendant.dist for descendant in a[0].iter_leaves()])
+    dist_b = sum([descendant.dist for descendant in b[0].iter_leaves()])
     
     return 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)
 
@@ -239,11 +263,11 @@ def pearson_corr(rdict,tdict):
 
     return pearson
 
-def be_distance(t1,t2):
+def be_distance(t1,t2,attr1,attr2,support):
     """Branch-Extended Distance"""
     
     # Get total distance from leaf to root
-    def _get_leaves_paths(t):
+    def _get_leaves_paths(t,attr,support):
         leaves = t.get_leaves()
         leave_branches = set()
 
@@ -253,9 +277,12 @@ def be_distance(t1,t2):
             movingnode = n
             length = 0
             while not movingnode.is_root():
-                length += movingnode.dist
+                if support:
+                    length += movingnode.dist * movingnode.support
+                else:
+                    length += movingnode.dist
                 movingnode = movingnode.up
-            leave_branches.add((n.name,length))
+            leave_branches.add((getattr(n,attr),length))
 
         return leave_branches
 
@@ -267,15 +294,15 @@ def be_distance(t1,t2):
         
         return abs(sum([leaf[1] for leaf in unique_leaves1]) - sum([leaf[1] for leaf in unique_leaves2]))
 
-    return _get_distances(_get_leaves_paths(t1),_get_leaves_paths(t2))    
+    return _get_distances(_get_leaves_paths(t1,attr1,support),_get_leaves_paths(t2,attr2,support))    
 
 
-def cc_distance(t1,t2):
+def cc_distance(t1,t2,attr1,attr2,support):
     """Cophenetic-Compared Distance"""
-    def cophenetic_compared_matrix(t_source,t_compare):
+    def cophenetic_compared_matrix(t_source,t_compare,attr1,attr2,support):
 
         leaves = t_source.get_leaves()
-        paths = {x.name: set() for x in leaves}
+        paths = {getattr(x,attr1): set() for x in leaves}
 
         # get the paths going up the tree
         # we get all the nodes up to the last one and store them in a set
@@ -285,12 +312,12 @@ def cc_distance(t1,t2):
                 continue
             movingnode = n
             while not movingnode.is_root():
-                paths[n.name].add(movingnode)
+                paths[getattr(n,attr1)].add(movingnode)
                 movingnode = movingnode.up
 
         # We set the paths for leaves not in the source tree as empty to indicate they are non-existent
 
-        for i in (set(x.name for x in t_compare.get_leaves()) - set(x.name for x in t_source.get_leaves())):
+        for i in (set(getattr(x,attr2) for x in t_compare.get_leaves()) - set(getattr(x,attr1) for x in t_source.get_leaves())):
             paths[i] = set()
 
         # now we want to get all pairs of nodes using itertools combinations. We need AB AC etc but don't need BA CA
@@ -301,7 +328,7 @@ def cc_distance(t1,t2):
             # figure out the unique nodes in the path
             if len(paths[leaf1]) > 0 and len(paths[leaf2]) > 0:
                 uniquenodes = paths[leaf1] ^ paths[leaf2]
-                distance = sum(x.dist for x in uniquenodes)
+                distance = sum(x.dist * x.support for x in uniquenodes)
             else:
                 distance = 0
             leaf_distances[leaf1][leaf2] = leaf_distances[leaf2][leaf1] = distance
@@ -319,8 +346,8 @@ def cc_distance(t1,t2):
                     output[i].append(leaf_distances[n][m])
         return np.asarray(output)
 
-    ccm1 = cophenetic_compared_matrix(t1,t2)
-    ccm2 = cophenetic_compared_matrix(t2,t1)
+    ccm1 = cophenetic_compared_matrix(t1,t2,attr1,attr2,support)
+    ccm2 = cophenetic_compared_matrix(t2,t1,attr1,attr2,support)
     
     return LA.norm(ccm1-ccm2)
 
@@ -416,7 +443,7 @@ def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, support=
             c = cols[r]
             
             if extended:
-                b_dist = extended(parts1[r][0], parts2[c][0])
+                b_dist = extended(parts1[r][0], parts2[c][0],attr1,attr2,support)
             else:
                 pass
 
@@ -434,7 +461,7 @@ def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, support=
             c = np.argmin(matrix[r])
 
             if extended:
-                b_dist = extended(parts1[r][0], parts2[c][0])
+                b_dist = extended(parts1[r][0], parts2[c][0],attr1,attr2,support)
             else:
                 pass
             
