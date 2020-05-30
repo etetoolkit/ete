@@ -91,7 +91,7 @@ def EUCL_DIST(*args):
     b = args[1]
     return 1 - (float(len(a[1] & b[1])) / max(len(b[1]), len(a[1])))
 
-def EUCL_FULL(*args):
+def EUCL_DIST_B_FULL(*args):
     a = args[0]
     b = args[1]
     support = args[2]
@@ -328,7 +328,10 @@ def cc_distance(t1,t2,attr1,attr2,support):
             # figure out the unique nodes in the path
             if len(paths[leaf1]) > 0 and len(paths[leaf2]) > 0:
                 uniquenodes = paths[leaf1] ^ paths[leaf2]
-                distance = sum(x.dist * x.support for x in uniquenodes)
+                if support:
+                    distance = sum(x.dist * x.support for x in uniquenodes)
+                else:
+                    distance = sum(x.dist for x in uniquenodes)
             else:
                 distance = 0
             leaf_distances[leaf1][leaf2] = leaf_distances[leaf2][leaf1] = distance
@@ -698,14 +701,15 @@ def populate_args(diff_args_p):
                               " to perform the comparison"))
     
     diff_args.add_argument("--dist", dest="distance",
-                           type=str, choices= ['e', 'rf', 'eb','eb-all'], default='e',
+                           type=str, choices= ['e', 'rf', 'eb','eb-all','eb-full'], default='e',
                            help=('Distance measure (e by default): e = Euclidean distance, rf = Robinson-Foulds symetric distance'
                                  ' eb = Euclidean distance + branch length difference between disjoint leaves'
-                                 ' eb-all = Euclidean distance + branch length difference between all leaves'))
+                                 ' eb-all = Euclidean distance + branch length difference between all leaves'
+                                 ' eb-full = Euclidean distance + branch length difference between all nodes'))
     
     diff_args.add_argument("--support", dest="support",
                         action="store_true",
-                        help="Use support values to calculate distances when they are eb or eb-all")
+                        help="Use support values to calculate distances when they are e-full or extended")
     
     diff_args.add_argument("--fullsearch", dest="fullsearch",
                         action="store_true",
@@ -850,6 +854,8 @@ def run(args):
                 dist_fn = EUCL_DIST_B
             elif args.distance == 'eb-all':
                 dist_fn = EUCL_DIST_B_ALL
+            elif args.distance == 'eb-full':
+                dist_fn = EUCL_DIST_B_FULL
             else:
                 pass
             
