@@ -50,7 +50,7 @@ import itertools
 import multiprocessing as mp
 from ..coretype.tree import Tree
 from ..utils import print_table, color
-from .ete_diff_lib._lapjv import lapjv
+from lap import lapjv
 import textwrap
 import argparse
 import logging
@@ -365,6 +365,7 @@ def sepstring(items, sep=", "):
 def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, support=False, reduce_matrix=False,extended=None, jobs=1, parallel=None):
     log = logging.getLogger()
     log.info("Computing distance matrix...")
+    
     for index, n in enumerate(t1.traverse('preorder')):
         n._nid = index
     for index, n in enumerate(t2.traverse('preorder')):
@@ -373,7 +374,7 @@ def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, support=
     t1 = None
     t2_cached_content = t2.get_cached_content(store_attr=attr2)
     t2 = None
-
+    
 #     parts1 = [(k, v) for k, v in t1_cached_content.items() if k.children]
 #     parts2 = [(k, v) for k, v in t2_cached_content.items() if k.children]
 
@@ -384,7 +385,7 @@ def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, support=
 
     parts1 = sorted(parts1, key = lambda x : len(x[1]))
     parts2 = sorted(parts2, key = lambda x : len(x[1]))
-   
+    
     if parallel == 'sync':
         pool = mp.Pool(jobs)
         matrix = [[pool.apply(dist_fn,args=((n1,x),(n2,y),support,attr1,attr2)) for n2,y in parts2] for n1,x in parts1]
@@ -401,7 +402,7 @@ def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, support=
 
     else:
         matrix = [[dist_fn((n1,x),(n2,y),support,attr1,attr2) for n2,y in parts2] for n1,x in parts1]
-    
+
     # Reduce matrix to avoid useless comparisons
     if reduce_matrix:
         log.info( "Reducing distance matrix...")
@@ -440,7 +441,7 @@ def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, support=
     
     if dist_fn != SINGLECELL:
         
-        cols , _ = lapjv(matrix,extend_cost=True)
+        _, cols , _ = lapjv(matrix,extend_cost=True)
 
         for r in range(len(matrix)):
             c = cols[r]
