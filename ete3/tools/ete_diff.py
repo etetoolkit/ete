@@ -154,7 +154,7 @@ def RF_DIST(*args):
     a = args[0]
     b = args[1]
     
-    if len(a[1] & b[1]) < 2:
+    if len(a[1] & b[1]) < 1:
         return 1.0
     (a, b) = (b, a) if len(b[1]) > len(a[1]) else (a,b)
     rf, rfmax, names, side1, side2, d1, d2 = a[0].robinson_foulds(b[0])
