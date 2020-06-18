@@ -64,6 +64,23 @@ DESC = ""
 ### Distances ###
 
 def SINGLECELL(*args):
+    '''
+    Calculates the distance between two nodes using the precomputed distances obtained from the formula: 
+        1 - Pearson correlation between reference node and target node
+        The final distance is calculated as the percentile 50 of all leave distances between the compared nodes.
+
+
+    Parameters:
+        args[0]:  (reference node as tree object, Pearson correlation from both trees as dictionary), as tuple
+        args[1]:  (target node as tree object, Pearson correlation from both trees as dictionary), as tuple
+        args[2]:  flag indicating the use of support values, as boolean (this argument has no effect in this function)
+        args[3]:  observed attribute from reference node, as string (this argument has no effect in this function)
+        args[4]:  observed attribute from target node, as string (this argument has no effect in this function)
+
+    Returns:
+        float: distance value between the two nodes
+    '''
+    
     a = args[0]
     b = args[1]
     dist = []
@@ -81,17 +98,98 @@ def SINGLECELL(*args):
             dist.append(pearson[leaf_a.name][leaf_b.name])
     
     dist = np.percentile(dist,50)
-#     dist = sum(dist) / len_axb
     
     return dist
 
 
-def EUCL_DIST(*args):  
+def EUCL_DIST(*args):
+    '''
+    Calculates the distance between two nodes using the formula:
+        1 - (Shared attributes / maximum length of the two nodes)
+
+    Parameters:
+        args[0]:  (reference node as tree object, observed attributes as set), as tuple
+        args[1]:  (target node as tree object, observed attributes as set), as tuple
+        args[2]:  flag indicating the use of support values, as boolean (this argument has no effect in this function)
+        args[3]:  observed attribute from reference node, as string (this argument has no effect in this function)
+        args[4]:  observed attribute from target node, as string (this argument has no effect in this function)
+
+    Returns:
+        float: distance value between the two nodes
+    '''
+    
     a = args[0]
     b = args[1]
     return 1 - (float(len(a[1] & b[1])) / max(len(b[1]), len(a[1])))
 
+def EUCL_DIST_B(*args):
+    '''
+    Calculates the distance between two nodes using the formula:
+        1 - (Shared attributes / maximum length of the two nodes) + absoulte value of the distance difference between shared leaves from both nodes to their parents
+
+    Parameters:
+        args[0]:  (reference node as tree object, observed attributes as set), as tuple
+        args[1]:  (target node as tree object, observed attributes as set), as tuple
+        args[2]:  flag indicating the use of support values, as boolean (this argument has no effect in this function)
+        args[3]:  observed attribute from reference node, as string
+        args[4]:  observed attribute from target node, as string
+
+    Returns:
+        float: distance value between the two nodes
+    '''
+    
+    a = args[0]
+    b = args[1]
+    attr1 = args[3]
+    attr2 = args[4]
+    
+    dist_a = sum([descendant.dist for descendant in a[0].iter_leaves() if getattr(descendant,attr1) in(a[1] - b[1])])
+    dist_b = sum([descendant.dist for descendant in b[0].iter_leaves() if getattr(descendant,attr2) in(b[1] - a[1])])
+        
+    return 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)
+
+def EUCL_DIST_B_ALL(*args): 
+    '''
+    Calculates the distance between two nodes using the formula:
+        1 - (Shared attributes / maximum length of the two nodes) + absoulte value of the distance difference between all leaves from both nodes to their parents
+
+    Parameters:
+        args[0]:  (reference node as tree object, observed attributes as set), as tuple
+        args[1]:  (target node as tree object, observed attributes as set), as tuple
+        args[2]:  flag indicating the use of support values, as boolean (this argument has no effect in this function)
+        args[3]:  observed attribute from reference node, as string (this argument has no effect in this function)
+        args[4]:  observed attribute from target node, as string (this argument has no effect in this function)
+
+    Returns:
+        float: distance value between the two nodes
+    '''
+    
+    a = args[0]
+    b = args[1]
+
+    dist_a = sum([descendant.dist for descendant in a[0].iter_leaves()])
+    dist_b = sum([descendant.dist for descendant in b[0].iter_leaves()])
+    
+    return 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)
+
+
 def EUCL_DIST_B_FULL(*args):
+    '''
+    Calculates the distance between two nodes using the formula:
+        1 - (Shared attributes / maximum length of the two nodes) + absoulte value of the distance difference between shared leaves from both nodes to their parents
+        Branch distances are calculated as the entire path leave to root
+
+    Parameters:
+        args[0]:  (reference node as tree object, observed attributes as set), as tuple
+        args[1]:  (target node as tree object, observed attributes as set) as tuple
+        args[2]:  flag indicating the use of support values, as boolean
+        args[3]:  observed attribute from reference tree, as string
+        args[4]:  observed attribute from target tree, as string
+
+    Returns:
+        float: distance value between the two nodes
+    '''
+    
     a = args[0]
     b = args[1]
     support = args[2]
@@ -123,33 +221,22 @@ def EUCL_DIST_B_FULL(*args):
     
     return 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)
 
-def EUCL_DIST_B(*args):
-    
-    a = args[0]
-    b = args[1]
-    support = args[2]
-    attr1 = args[3]
-    attr2 = args[4]
-    
-    dist_a = sum([descendant.dist for descendant in a[0].iter_leaves() if getattr(descendant,attr1) in(a[1] - b[1])])
-    dist_b = sum([descendant.dist for descendant in b[0].iter_leaves() if getattr(descendant,attr2) in(b[1] - a[1])])
-        
-    return 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)
-
-def EUCL_DIST_B_ALL(*args): 
-    
-    a = args[0]
-    b = args[1]
-    support = args[2]
-    attr1 = args[3]
-    attr2 = args[4]
-
-    dist_a = sum([descendant.dist for descendant in a[0].iter_leaves()])
-    dist_b = sum([descendant.dist for descendant in b[0].iter_leaves()])
-    
-    return 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)
-
 def RF_DIST(*args):
+    '''
+    Calculates the distance between two nodes using the formula:
+        Robinson-Foulds distance / Maximum possible Robinson-Foulds distance
+
+    Parameters:
+        args[0]:  (reference node as tree object, observed attributes as set), as tuple
+        args[1]:  (target node as tree object, observed attributes as set), as tuple
+        args[2]:  flag indicating the use of support values, as boolean (this argument has no effect in this function)
+        args[3]:  observed attribute from reference tree, as string (this argument has no effect in this function)
+        args[4]:  observed attribute from target tree as, string (this argument has no effect in this function)
+
+    Returns:
+        float: distance value between the two nodes
+    '''    
+
     
     a = args[0]
     b = args[1]
@@ -165,6 +252,20 @@ def RF_DIST(*args):
 ### Functions ###
 
 def load_matrix(file,separator):
+     '''
+    Digests files containing a expression matrix and translates it to a dictionary
+
+    Parameters:
+        file: expression matrix filename, as string
+        separator: Column separator, as string
+
+    Returns:
+        dictionary with key values:
+            idx: values are row indexes, as integers
+            headers: values are column names, as strings
+            dict: values are dictionary of columns as key values and their expression values, as lists
+    '''      
+
     idx = []
     with open(file, "r") as f:
         headers = f.readline().rstrip().split(separator)[1:] # exclude empty space at the begining
@@ -183,6 +284,22 @@ def load_matrix(file,separator):
 
 
 def dict2tree(treedict,jobs=1,parallel=None):
+     '''
+    Generates a tree object from a dictionary using UPGMA algorithm and Pearson correlations between observations
+
+    Parameters:
+        treedict: dictionary with key values:
+            idx: values are row indexes, as integers
+            headers: values are column names, as strings
+            dict: values are dictionary of columns as key values and their expression values, as lists
+        jobs: maximum number of jobs to use when parallel argument is provided, as integer
+        parallel: parallelization method, as string. Options are:
+            async for asyncronous parallelization
+            sync for asyncronous parallelization
+
+    Returns:
+        tree object
+    '''  
     log = logging.getLogger()
 
     matrix = np.zeros((len(treedict['headers']), len(treedict['headers'])))
@@ -236,6 +353,21 @@ def dict2tree(treedict,jobs=1,parallel=None):
     return tree
 
 def tree_from_matrix(matrix,sep=",",dictionary=False,jobs=1,parallel=None):
+     '''
+    Wrapps a tree object recontruction using load_matrix and dict2tree functions
+
+    Parameters:
+        matrix: expression matrix filename, as string
+        sep: column separator, as string
+        dictionary: whether to return source dictionary used to generate the tree object, as boolean
+        jobs: maximum number of jobs to use when parallel argument is provided, as integer
+        parallel: parallelization method, as string. Options are:
+            async for asyncronous parallelization
+            sync for asyncronous parallelization
+       
+    Returns:
+        tree object
+    '''  
     tree_dict = load_matrix(matrix,sep)
 
     if dictionary == True:
@@ -244,6 +376,24 @@ def tree_from_matrix(matrix,sep=",",dictionary=False,jobs=1,parallel=None):
         return dict2tree(tree_dict,jobs,parallel)
     
 def pearson_corr(rdict,tdict):
+     '''
+    Generates a dictionary of precomputed pearson correlations for all observations of two trees
+
+    Parameters:
+        rdict: dictionary with key values:
+            idx: values are row indexes as integers
+            headers: values are column names as strings
+            dict: values are dictionary of columns as key values and their expression values as lists
+        tdict: dictionary with key values:
+            idx: values are row indexes as integers
+            headers: Values are column names as strings
+            dict: values are dictionary of columns as key values and their expression values as lists
+       
+    Returns:
+        Dictionary of pearson correlations formed by sub dictionaries. 
+        Each value is accessed introducing the reference observation as first key and the target observation as second key
+            (e.g. dictionary['reference_observation']['target_observation'])
+    '''  
     # Select only common genes by gene name y both dictionaries
     log = logging.getLogger()
     log.info("Getting shared genes...")
@@ -263,8 +413,21 @@ def pearson_corr(rdict,tdict):
 
     return pearson
 
-def be_distance(t1,t2,attr1,attr2,support):
-    """Branch-Extended Distance"""
+def be_distance(t1,t2,support, attr1,attr2):
+     '''
+    Calculates a Branch-Extended Distance. 
+    This distance is intended as an extension for the main distance used by ETE-diff to link similar nodes without altering the results
+
+    Parameters:
+        t1: reference node, as tree object
+        t2: target node, as tree object
+        support: whether to use support values to calculate the distance, as boolean
+        attr1: observed attribute for the reference node, as string
+        attr2: observed attribute for the target node, as string
+       
+    Returns:
+        float distance value
+    '''
     
     # Get total distance from leaf to root
     def _get_leaves_paths(t,attr,support):
@@ -297,8 +460,21 @@ def be_distance(t1,t2,attr1,attr2,support):
     return _get_distances(_get_leaves_paths(t1,attr1,support),_get_leaves_paths(t2,attr2,support))    
 
 
-def cc_distance(t1,t2,attr1,attr2,support):
-    """Cophenetic-Compared Distance"""
+def cc_distance(t1,t2,support,attr1,attr2):
+     '''
+    Calculates a Cophenetic-Compared Distance. 
+    This distance is intended as an extension for the main distance used by ETE-diff to link similar nodes without altering the results
+
+    Parameters:
+        t1: reference node, as tree object
+        t2: target node, as tree object
+        support: whether to use support values to calculate the distance, as boolean
+        attr1: observed attribute for the reference node, as string
+        attr2: observed attribute for the target node, as string
+       
+    Returns:
+        float distance value
+    '''
     def cophenetic_compared_matrix(t_source,t_compare,attr1,attr2,support):
 
         leaves = t_source.get_leaves()
@@ -363,6 +539,35 @@ def sepstring(items, sep=", "):
 ### Treediff ###
 
 def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, support=False, reduce_matrix=False,extended=None, jobs=1, parallel=None):
+     '''
+    Main function of ETE-diff module.
+    Compares two trees and returns a list of differences for each node from the reference tree
+
+    Parameters:
+        t1: reference tree, as tree object
+        t2: target tree, as tree object
+        attr1: observed attribute for the reference node, as string
+        attr2: observed attribute for the target node, as string
+        dist_fn: distance function that will be used to calculate the distances between nodes, as python function
+        support: whether to use support values for the different calculations, as boolean
+        reduce_matrix: whether to reduce the distances matrix removing columns and rows where observations equal to 0 (perfect matches) are found, as boolean
+        extended: whether to use an extension function, as python function
+        jobs: maximum number of parallel jobs to use if parallel argument is given, as integer
+        parallel: parallelization method, as string. Options are:
+            async for asyncronous parallelization
+            sync for asyncronous parallelization
+
+       
+    Returns:
+        list where each entry contains a list with:
+            distance, as float
+            extended distance, as float (-1 if not calculated)
+            observed attributes on reference node, as set
+            observed attributes on target node, as set
+            observed attributes disfferent between both nodes, as set
+            reference node, as tree object
+            target node, as tree object
+    '''
     log = logging.getLogger()
     log.info("Computing distance matrix...")
     
@@ -447,7 +652,7 @@ def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, support=
             c = cols[r]
             
             if extended:
-                b_dist = extended(parts1[r][0], parts2[c][0],attr1,attr2,support)
+                b_dist = extended(parts1[r][0], parts2[c][0],support,attr1,attr2)
             else:
                 pass
 
@@ -480,6 +685,26 @@ def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, support=
 ### REPORTS ###
 
 def show_difftable_summary(difftable, rf=-1, rf_max=-1, extended=None):
+     '''
+    Generates a summary report from the result of treediff function and the Robinson-Foulds distance between two trees
+
+    Parameters:
+        difftable: list where each entry contains a list with:
+            distance, as float
+            extended distance, as float (-1 if not calculated)
+            observed attributes on reference node, as set
+            observed attributes on target node, as set
+            observed attributes disfferent between both nodes, as set
+            reference node, as tree object
+            target node, as tree object
+        rf: Robinson-Foulds distance for reference and target tree, as float
+        rf_max: maximum Robinson-Foulds distance for reference and target tree, as float
+        extended: whether to show extended distance in final report, as boolean
+
+       
+    Returns:
+        Summary report of treediff function and robinson_foulds method, as string
+    '''
     total_dist = 0
     total_bdist = 0
     for dist, b_dist, side1, side2, diff, n1, n2 in sorted(difftable, reverse=True):
@@ -494,6 +719,24 @@ def show_difftable_summary(difftable, rf=-1, rf_max=-1, extended=None):
         print("%0.6f\t%10d\t%d\t%d" %(total_dist, len(difftable), rf, rf_max))
 
 def show_difftable(difftable, extended=False):
+     '''
+    Generates a table report from the result of treediff function
+
+    Parameters:
+        difftable: list where each entry contains a list with:
+            distance, as float
+            extended distance, as float (-1 if not calculated)
+            observed attributes on reference node, as set
+            observed attributes on target node, as set
+            observed attributes disfferent between both nodes, as set
+            reference node, as tree object
+            target node, as tree object
+        extended: whether to show extended distance in final report, as boolean
+
+       
+    Returns:
+        Table report of treediff function, as string
+    '''
     showtable = []
     
     if extended:
@@ -508,6 +751,24 @@ def show_difftable(difftable, extended=False):
                     max_col_width=80, wrap_style="wrap", row_line=True)
 
 def show_difftable_tab(difftable, extended=None):
+     '''
+    Generates a tabulated table report from the result of treediff function
+
+    Parameters:
+        difftable: list where each entry contains a list with:
+            distance, as float
+            extended distance, as float (-1 if not calculated)
+            observed attributes on reference node, as set
+            observed attributes on target node, as set
+            observed attributes disfferent between both nodes, as set
+            reference node, as tree object
+            target node, as tree object
+        extended: whether to show extended distance in final report, as boolean
+
+       
+    Returns:
+        Tabulated table report of treediff function, as string
+    '''
     showtable = []
     
     if extended:
@@ -527,6 +788,26 @@ def show_difftable_tab(difftable, extended=None):
     
     
 def show_difftable_topo(difftable, attr1, attr2, usecolor=False, extended=None):
+     '''
+    Generates a topology table report from the result of treediff function
+
+    Parameters:
+        difftable: list where each entry contains a list with:
+            distance, as float
+            extended distance, as float (-1 if not calculated)
+            observed attributes on reference node, as set
+            observed attributes on target node, as set
+            observed attributes disfferent between both nodes, as set
+            reference node, as tree object
+            target node, as tree object
+        attr1: observed attribute from the reference tree, as string
+        attr2: observed attribute from the target tree, as string
+        extended: whether to show extended distance in final report, as boolean
+
+       
+    Returns:
+        Topology table report of treediff function, as string
+    '''
     log = logging.getLogger()
     if not difftable:
         return
@@ -590,6 +871,26 @@ def show_difftable_topo(difftable, attr1, attr2, usecolor=False, extended=None):
 ### SCA REPORTS ###
     
 def show_difftable_summary_SCA(difftable, rf=-1, rf_max=-1, extended=None):
+     '''
+    Generates a summary report variant from the result of treediff function and the Robinson-Foulds distance between two trees for the Single Cell Analysis 
+
+    Parameters:
+        difftable: list where each entry contains a list with:
+            distance, as float
+            extended distance, as float (-1 if not calculated)
+            observed attributes on reference node, as set
+            observed attributes on target node, as set
+            observed attributes disfferent between both nodes, as set
+            reference node, as tree object
+            target node, as tree object
+        rf: Robinson-Foulds distance for reference and target tree, as float
+        rf_max: maximum Robinson-Foulds distance for reference and target tree, as float
+        extended: whether to show extended distance in final report, as boolean
+
+       
+    Returns:
+        Summary report of treediff function and robinson_foulds method, as string
+    '''
     total_dist = 0
     total_bdist = 0
     for dist, b_dist, side1, side2, diff, n1, n2 in sorted(difftable, reverse=True,key = lambda x : x[0]):
@@ -604,6 +905,24 @@ def show_difftable_summary_SCA(difftable, rf=-1, rf_max=-1, extended=None):
         print("%0.6f\t%10d\t%d\t%d" %(total_dist, len(difftable), rf, rf_max))
         
 def show_difftable_SCA(difftable, extended=False):
+     '''
+    Generates a table report from the result variant of treediff function for the Single Cell Analysis 
+
+    Parameters:
+        difftable: list where each entry contains a list with:
+            distance, as float
+            extended distance, as float (-1 if not calculated)
+            observed attributes on reference node, as set
+            observed attributes on target node, as set
+            observed attributes disfferent between both nodes, as set
+            reference node, as tree object
+            target node, as tree object
+        extended: whether to show extended distance in final report, as boolean
+
+       
+    Returns:
+        Table report of treediff function, as string
+    '''
     showtable = []
     
     if extended:
@@ -618,6 +937,24 @@ def show_difftable_SCA(difftable, extended=False):
                     max_col_width=80, wrap_style="wrap", row_line=True)    
     
 def show_difftable_tab_SCA(difftable, extended=None):
+     '''
+    Generates a tabulated table report variant from the result of treediff function for the Single Cell Analysis
+
+    Parameters:
+        difftable: list where each entry contains a list with:
+            distance, as float
+            extended distance, as float (-1 if not calculated)
+            observed attributes on reference node, as set
+            observed attributes on target node, as set
+            observed attributes disfferent between both nodes, as set
+            reference node, as tree object
+            target node, as tree object
+        extended: whether to show extended distance in final report, as boolean
+
+       
+    Returns:
+        Table report of treediff function, as string
+    '''
     showtable = []
     
     if extended:
@@ -633,6 +970,26 @@ def show_difftable_tab_SCA(difftable, extended=None):
     print('\n'.join(['\t'.join(map(str, items)) for items in showtable]))    
     
 def show_difftable_topo_SCA(difftable, attr1, attr2, usecolor=False, extended=None):
+     '''
+    Generates a topology table report from the result of treediff function for the Single Cell Analysis
+
+    Parameters:
+        difftable: list where each entry contains a list with:
+            distance, as float
+            extended distance, as float (-1 if not calculated)
+            observed attributes on reference node, as set
+            observed attributes on target node, as set
+            observed attributes disfferent between both nodes, as set
+            reference node, as tree object
+            target node, as tree object
+        attr1: observed attribute from the reference tree, as string
+        attr2: observed attribute from the target tree, as string
+        extended: whether to show extended distance in final report, as boolean
+
+       
+    Returns:
+        Topology table report of treediff function, as string
+    '''
     if not difftable:
         return
     showtable = []
@@ -688,6 +1045,15 @@ def show_difftable_topo_SCA(difftable, attr1, attr2, usecolor=False, extended=No
 ### ARGUMENTS ###        
         
 def populate_args(diff_args_p):
+     '''
+    Loads arguments on the argument parser object used by ETE wrapper module
+
+    Parameters:
+        argument parser object for ETE-diff module
+ 
+    Returns:
+        None
+    '''
 
     diff_args = diff_args_p.add_argument_group("DIFF GENERAL OPTIONS")
         
@@ -770,6 +1136,15 @@ def populate_args(diff_args_p):
                             "regardless of their specific configuration.")
     
 def run(args):
+     '''
+    Carries ETE wrapper workflow when ETE-diff is called from command line and prints selected report on terminal
+
+    Parameters:
+        argument parser object for ETE-diff module
+ 
+    Returns:
+        None
+    '''
     
     if (not args.ref_trees or not args.src_trees) and (not args.rmatrix or not args.tmatrix):
         logging.warning("Target tree/matrix or reference tree/matrix weren't introduced. You can find the arguments in the help command (-h)")
