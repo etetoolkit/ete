@@ -63,7 +63,7 @@ DESC = ""
 
 ### Distances ###
 
-def SINGLECELL(*args):
+def SINGLECELL(a,b,support,attr1,attr2):
     '''
     Calculates the distance between two nodes using the precomputed distances obtained from the formula: 
         1 - Pearson correlation between reference node and target node
@@ -71,11 +71,11 @@ def SINGLECELL(*args):
 
 
     Parameters:
-        args[0]:  (reference node as tree object, Pearson correlation from both trees as dictionary), as tuple
-        args[1]:  (target node as tree object, Pearson correlation from both trees as dictionary), as tuple
-        args[2]:  flag indicating the use of support values, as boolean (this argument has no effect in this function)
-        args[3]:  observed attribute from reference node, as string (this argument has no effect in this function)
-        args[4]:  observed attribute from target node, as string (this argument has no effect in this function)
+        a:  (reference node as tree object, Pearson correlation from both trees as dictionary), as tuple
+        b:  (target node as tree object, Pearson correlation from both trees as dictionary), as tuple
+        support:  flag indicating the use of support values, as boolean (this argument has no effect in this function)
+        attr1:  observed attribute from reference node, as string (this argument has no effect in this function)
+        attr2:  observed attribute from target node, as string (this argument has no effect in this function)
 
     Returns:
         float: distance value between the two nodes
@@ -102,17 +102,17 @@ def SINGLECELL(*args):
     return dist
 
 
-def EUCL_DIST(*args):
+def EUCL_DIST(a,b,support,attr1,attr2):
     '''
     Calculates the distance between two nodes using the formula:
         1 - (Shared attributes / maximum length of the two nodes)
 
     Parameters:
-        args[0]:  (reference node as tree object, observed attributes as set), as tuple
-        args[1]:  (target node as tree object, observed attributes as set), as tuple
-        args[2]:  flag indicating the use of support values, as boolean (this argument has no effect in this function)
-        args[3]:  observed attribute from reference node, as string (this argument has no effect in this function)
-        args[4]:  observed attribute from target node, as string (this argument has no effect in this function)
+        a:  (reference node as tree object, observed attributes as set), as tuple
+        b:  (target node as tree object, observed attributes as set), as tuple
+        support:  flag indicating the use of support values, as boolean (this argument has no effect in this function)
+        attr1:  observed attribute from reference node, as string (this argument has no effect in this function)
+        attr2:  observed attribute from target node, as string (this argument has no effect in this function)
 
     Returns:
         float: distance value between the two nodes
@@ -122,17 +122,17 @@ def EUCL_DIST(*args):
     b = args[1]
     return 1 - (float(len(a[1] & b[1])) / max(len(b[1]), len(a[1])))
 
-def EUCL_DIST_B(*args):
+def EUCL_DIST_B(a,b,support,attr1,attr2):
     '''
     Calculates the distance between two nodes using the formula:
         1 - (Shared attributes / maximum length of the two nodes) + absoulte value of the distance difference between shared leaves from both nodes to their parents
 
     Parameters:
-        args[0]:  (reference node as tree object, observed attributes as set), as tuple
-        args[1]:  (target node as tree object, observed attributes as set), as tuple
-        args[2]:  flag indicating the use of support values, as boolean (this argument has no effect in this function)
-        args[3]:  observed attribute from reference node, as string
-        args[4]:  observed attribute from target node, as string
+        a:  (reference node as tree object, observed attributes as set), as tuple
+        b:  (target node as tree object, observed attributes as set), as tuple
+        support:  flag indicating the use of support values, as boolean (this argument has no effect in this function)
+        attr1:  observed attribute from reference node, as string
+        attr2:  observed attribute from target node, as string
 
     Returns:
         float: distance value between the two nodes
@@ -148,17 +148,17 @@ def EUCL_DIST_B(*args):
         
     return 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)
 
-def EUCL_DIST_B_ALL(*args): 
+def EUCL_DIST_B_ALL(a,b,support,attr1,attr2): 
     '''
     Calculates the distance between two nodes using the formula:
         1 - (Shared attributes / maximum length of the two nodes) + absoulte value of the distance difference between all leaves from both nodes to their parents
 
     Parameters:
-        args[0]:  (reference node as tree object, observed attributes as set), as tuple
-        args[1]:  (target node as tree object, observed attributes as set), as tuple
-        args[2]:  flag indicating the use of support values, as boolean (this argument has no effect in this function)
-        args[3]:  observed attribute from reference node, as string (this argument has no effect in this function)
-        args[4]:  observed attribute from target node, as string (this argument has no effect in this function)
+        a:  (reference node as tree object, observed attributes as set), as tuple
+        b:  (target node as tree object, observed attributes as set), as tuple
+        support:  flag indicating the use of support values, as boolean (this argument has no effect in this function)
+        attr1:  observed attribute from reference node, as string (this argument has no effect in this function)
+        attr2:  observed attribute from target node, as string (this argument has no effect in this function)
 
     Returns:
         float: distance value between the two nodes
@@ -173,18 +173,18 @@ def EUCL_DIST_B_ALL(*args):
     return 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)
 
 
-def EUCL_DIST_B_FULL(*args):
+def EUCL_DIST_B_FULL(a,b,support,attr1,attr2):
     '''
     Calculates the distance between two nodes using the formula:
         1 - (Shared attributes / maximum length of the two nodes) + absoulte value of the distance difference between shared leaves from both nodes to their parents
         Branch distances are calculated as the entire path leave to root
 
     Parameters:
-        args[0]:  (reference node as tree object, observed attributes as set), as tuple
-        args[1]:  (target node as tree object, observed attributes as set) as tuple
-        args[2]:  flag indicating the use of support values, as boolean
-        args[3]:  observed attribute from reference tree, as string
-        args[4]:  observed attribute from target tree, as string
+        a:  (reference node as tree object, observed attributes as set), as tuple
+        b:  (target node as tree object, observed attributes as set) as tuple
+        support:  flag indicating the use of support values, as boolean
+        attr1:  observed attribute from reference tree, as string
+        attr2:  observed attribute from target tree, as string
 
     Returns:
         float: distance value between the two nodes
@@ -221,17 +221,17 @@ def EUCL_DIST_B_FULL(*args):
     
     return 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)
 
-def RF_DIST(*args):
+def RF_DIST(a,b,support,attr1,attr2):
     '''
     Calculates the distance between two nodes using the formula:
         Robinson-Foulds distance / Maximum possible Robinson-Foulds distance
 
     Parameters:
-        args[0]:  (reference node as tree object, observed attributes as set), as tuple
-        args[1]:  (target node as tree object, observed attributes as set), as tuple
-        args[2]:  flag indicating the use of support values, as boolean (this argument has no effect in this function)
-        args[3]:  observed attribute from reference tree, as string (this argument has no effect in this function)
-        args[4]:  observed attribute from target tree as, string (this argument has no effect in this function)
+        a:  (reference node as tree object, observed attributes as set), as tuple
+        b:  (target node as tree object, observed attributes as set), as tuple
+        support:  flag indicating the use of support values, as boolean (this argument has no effect in this function)
+        attr1:  observed attribute from reference tree, as string (this argument has no effect in this function)
+        attr2:  observed attribute from target tree as, string (this argument has no effect in this function)
 
     Returns:
         float: distance value between the two nodes
