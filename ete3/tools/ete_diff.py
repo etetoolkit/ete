@@ -80,9 +80,7 @@ def SINGLECELL(a,b,support,attr1,attr2):
     Returns:
         float: distance value between the two nodes
     '''
-    
-    a = args[0]
-    b = args[1]
+
     dist = []
 
     # Extract and parse pearson dict from first element (could be anyother)
@@ -117,9 +115,7 @@ def EUCL_DIST(a,b,support,attr1,attr2):
     Returns:
         float: distance value between the two nodes
     '''
-    
-    a = args[0]
-    b = args[1]
+
     return 1 - (float(len(a[1] & b[1])) / max(len(b[1]), len(a[1])))
 
 def EUCL_DIST_B(a,b,support,attr1,attr2):
@@ -137,11 +133,7 @@ def EUCL_DIST_B(a,b,support,attr1,attr2):
     Returns:
         float: distance value between the two nodes
     '''
-    
-    a = args[0]
-    b = args[1]
-    attr1 = args[3]
-    attr2 = args[4]
+
     
     dist_a = sum([descendant.dist for descendant in a[0].iter_leaves() if getattr(descendant,attr1) in(a[1] - b[1])])
     dist_b = sum([descendant.dist for descendant in b[0].iter_leaves() if getattr(descendant,attr2) in(b[1] - a[1])])
@@ -163,9 +155,7 @@ def EUCL_DIST_B_ALL(a,b,support,attr1,attr2):
     Returns:
         float: distance value between the two nodes
     '''
-    
-    a = args[0]
-    b = args[1]
+
 
     dist_a = sum([descendant.dist for descendant in a[0].iter_leaves()])
     dist_b = sum([descendant.dist for descendant in b[0].iter_leaves()])
@@ -189,12 +179,7 @@ def EUCL_DIST_B_FULL(a,b,support,attr1,attr2):
     Returns:
         float: distance value between the two nodes
     '''
-    
-    a = args[0]
-    b = args[1]
-    support = args[2]
-    attr1 = args[3]
-    attr2 = args[4]
+
     
     
     def _get_leaves_paths(t,attr,support):
@@ -237,10 +222,6 @@ def RF_DIST(a,b,support,attr1,attr2):
         float: distance value between the two nodes
     '''    
 
-    
-    a = args[0]
-    b = args[1]
-    
     if len(a[1] & b[1]) < 1:
         return 1.0
     (a, b) = (b, a) if len(b[1]) > len(a[1]) else (a,b)
@@ -252,7 +233,7 @@ def RF_DIST(a,b,support,attr1,attr2):
 ### Functions ###
 
 def load_matrix(file,separator):
-     '''
+    '''
     Digests files containing a expression matrix and translates it to a dictionary
 
     Parameters:
@@ -284,7 +265,7 @@ def load_matrix(file,separator):
 
 
 def dict2tree(treedict,jobs=1,parallel=None):
-     '''
+    '''
     Generates a tree object from a dictionary using UPGMA algorithm and Pearson correlations between observations
 
     Parameters:
@@ -353,7 +334,7 @@ def dict2tree(treedict,jobs=1,parallel=None):
     return tree
 
 def tree_from_matrix(matrix,sep=",",dictionary=False,jobs=1,parallel=None):
-     '''
+    '''
     Wrapps a tree object recontruction using load_matrix and dict2tree functions
 
     Parameters:
@@ -376,7 +357,7 @@ def tree_from_matrix(matrix,sep=",",dictionary=False,jobs=1,parallel=None):
         return dict2tree(tree_dict,jobs,parallel)
     
 def pearson_corr(rdict,tdict):
-     '''
+    '''
     Generates a dictionary of precomputed pearson correlations for all observations of two trees
 
     Parameters:
@@ -414,7 +395,7 @@ def pearson_corr(rdict,tdict):
     return pearson
 
 def be_distance(t1,t2,support, attr1,attr2):
-     '''
+    '''
     Calculates a Branch-Extended Distance. 
     This distance is intended as an extension for the main distance used by ETE-diff to link similar nodes without altering the results
 
@@ -461,7 +442,7 @@ def be_distance(t1,t2,support, attr1,attr2):
 
 
 def cc_distance(t1,t2,support,attr1,attr2):
-     '''
+    '''
     Calculates a Cophenetic-Compared Distance. 
     This distance is intended as an extension for the main distance used by ETE-diff to link similar nodes without altering the results
 
@@ -539,7 +520,7 @@ def sepstring(items, sep=", "):
 ### Treediff ###
 
 def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, support=False, reduce_matrix=False,extended=None, jobs=1, parallel=None):
-     '''
+    '''
     Main function of ETE-diff module.
     Compares two trees and returns a list of differences for each node from the reference tree
 
@@ -685,7 +666,7 @@ def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, support=
 ### REPORTS ###
 
 def show_difftable_summary(difftable, rf=-1, rf_max=-1, extended=None):
-     '''
+    '''
     Generates a summary report from the result of treediff function and the Robinson-Foulds distance between two trees
 
     Parameters:
@@ -719,7 +700,7 @@ def show_difftable_summary(difftable, rf=-1, rf_max=-1, extended=None):
         print("%0.6f\t%10d\t%d\t%d" %(total_dist, len(difftable), rf, rf_max))
 
 def show_difftable(difftable, extended=False):
-     '''
+    '''
     Generates a table report from the result of treediff function
 
     Parameters:
@@ -751,7 +732,7 @@ def show_difftable(difftable, extended=False):
                     max_col_width=80, wrap_style="wrap", row_line=True)
 
 def show_difftable_tab(difftable, extended=None):
-     '''
+    '''
     Generates a tabulated table report from the result of treediff function
 
     Parameters:
@@ -788,7 +769,7 @@ def show_difftable_tab(difftable, extended=None):
     
     
 def show_difftable_topo(difftable, attr1, attr2, usecolor=False, extended=None):
-     '''
+    '''
     Generates a topology table report from the result of treediff function
 
     Parameters:
@@ -871,7 +852,7 @@ def show_difftable_topo(difftable, attr1, attr2, usecolor=False, extended=None):
 ### SCA REPORTS ###
     
 def show_difftable_summary_SCA(difftable, rf=-1, rf_max=-1, extended=None):
-     '''
+    '''
     Generates a summary report variant from the result of treediff function and the Robinson-Foulds distance between two trees for the Single Cell Analysis 
 
     Parameters:
@@ -905,7 +886,7 @@ def show_difftable_summary_SCA(difftable, rf=-1, rf_max=-1, extended=None):
         print("%0.6f\t%10d\t%d\t%d" %(total_dist, len(difftable), rf, rf_max))
         
 def show_difftable_SCA(difftable, extended=False):
-     '''
+    '''
     Generates a table report from the result variant of treediff function for the Single Cell Analysis 
 
     Parameters:
@@ -937,7 +918,7 @@ def show_difftable_SCA(difftable, extended=False):
                     max_col_width=80, wrap_style="wrap", row_line=True)    
     
 def show_difftable_tab_SCA(difftable, extended=None):
-     '''
+    '''
     Generates a tabulated table report variant from the result of treediff function for the Single Cell Analysis
 
     Parameters:
@@ -970,7 +951,7 @@ def show_difftable_tab_SCA(difftable, extended=None):
     print('\n'.join(['\t'.join(map(str, items)) for items in showtable]))    
     
 def show_difftable_topo_SCA(difftable, attr1, attr2, usecolor=False, extended=None):
-     '''
+    '''
     Generates a topology table report from the result of treediff function for the Single Cell Analysis
 
     Parameters:
@@ -1045,7 +1026,7 @@ def show_difftable_topo_SCA(difftable, attr1, attr2, usecolor=False, extended=No
 ### ARGUMENTS ###        
         
 def populate_args(diff_args_p):
-     '''
+    '''
     Loads arguments on the argument parser object used by ETE wrapper module
 
     Parameters:
@@ -1136,7 +1117,7 @@ def populate_args(diff_args_p):
                             "regardless of their specific configuration.")
     
 def run(args):
-     '''
+    '''
     Carries ETE wrapper workflow when ETE-diff is called from command line and prints selected report on terminal
 
     Parameters:
