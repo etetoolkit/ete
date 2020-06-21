@@ -610,10 +610,11 @@ def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, support=
 
         parts1 = [parts1[row] for row in rows_to_include]
         parts2 = [parts2[col] for col in cols_to_include]
-        
-        new_matrix = []
-        for row in rows_to_include:
-            new_matrix.append([matrix[row][col] for col in cols_to_include])
+            
+        new_matrix = np.empty([len(rows_to_include),len(cols_to_include)],dtype=np.float32)
+        for i, row in enumerate(rows_to_include):
+            for j, col in enumerate(cols_to_include):
+                new_matrix[i][j] = matrix[row][col]
  
         if len(new_matrix) < 1:
             return new_matrix
@@ -621,7 +622,7 @@ def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, support=
         log.info("Distance matrix reduced from %dx%d to %dx%d" %\
                 (len(matrix), len(matrix[0]), len(new_matrix), len(new_matrix[0])))
             
-        matrix = np.asarray(new_matrix)
+        matrix = new_matrix
 
     log.info("Comparing trees...")
     difftable = []
