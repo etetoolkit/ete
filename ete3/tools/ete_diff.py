@@ -562,9 +562,6 @@ def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, support=
     t1 = None
     t2_cached_content = t2.get_cached_content(store_attr=attr2)
     t2 = None
-    
-#     parts1 = [(k, v) for k, v in t1_cached_content.items() if k.children]
-#     parts2 = [(k, v) for k, v in t2_cached_content.items() if k.children]
 
     parts1 = [(k, v) for k, v in t1_cached_content.items()]
     t1_cached_content = None
@@ -591,6 +588,11 @@ def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, support=
     else:
         gen = ((dist_fn((n1,x),(n2,y),support,attr1,attr2) for n2,y in parts2) for n1,x in parts1)
 
+    matrix = np.empty([len(parts1),len(parts2)],dtype=np.float32)
+    for i, subgen in enumerate(gen):
+        for j, element in enumerate(subgen):
+            matrix[i][j] = element
+
     # Reduce matrix to avoid useless comparisons
     if reduce_matrix:
         log.info( "Reducing distance matrix...")
@@ -598,8 +600,8 @@ def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, support=
         rows_to_include = []
         for i, row in enumerate(matrix):
             try:
-                cols_to_include.remove(row.index(0.0))
-            except ValueError:
+                cols_to_include.remove(np.where(row == 0.0)[0][0])
+            except IndexError:
                 rows_to_include.append(i)
             except KeyError:
                 pass
@@ -619,16 +621,11 @@ def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, support=
         log.info("Distance matrix reduced from %dx%d to %dx%d" %\
                 (len(matrix), len(matrix[0]), len(new_matrix), len(new_matrix[0])))
             
-        gen = new_matrix
+        matrix = np.asarray(new_matrix)
 
     log.info("Comparing trees...")
-    
     difftable = []
     b_dist = -1
-    matrix = np.empty([len(parts1),len(parts2)],dtype=np.float32)
-    for i, subgen in enumerate(gen):
-        for j, element in enumerate(subgen):
-            matrix[i][j] = element
     
     if dist_fn != SINGLECELL:
         
