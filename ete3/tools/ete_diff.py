@@ -135,10 +135,10 @@ def EUCL_DIST_B(a,b,support,attr1,attr2):
     '''
 
     
-    dist_a = sum([descendant.dist for descendant in a[0].iter_leaves() if getattr(descendant,attr1) in(a[1] - b[1])])
-    dist_b = sum([descendant.dist for descendant in b[0].iter_leaves() if getattr(descendant,attr2) in(b[1] - a[1])])
+    dist_a = sum([descendant.dist for descendant in a[0].iter_leaves() if getattr(descendant,attr1) in(a[1] - b[1])]) / len([i for i in a[0].iter_leaves()])
+    dist_b = sum([descendant.dist for descendant in b[0].iter_leaves() if getattr(descendant,attr2) in(b[1] - a[1])]) / len([i for i in b[0].iter_leaves()])
         
-    return 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)
+    return 1 - ((float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)) / 2
 
 def EUCL_DIST_B_ALL(a,b,support,attr1,attr2): 
     '''
@@ -157,10 +157,10 @@ def EUCL_DIST_B_ALL(a,b,support,attr1,attr2):
     '''
 
 
-    dist_a = sum([descendant.dist for descendant in a[0].iter_leaves()])
-    dist_b = sum([descendant.dist for descendant in b[0].iter_leaves()])
+    dist_a = sum([descendant.dist for descendant in a[0].iter_leaves()]) / len([i for i in a[0].iter_leaves()])
+    dist_b = sum([descendant.dist for descendant in b[0].iter_leaves()]) / len([i for i in b[0].iter_leaves()])
     
-    return 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)
+    return 1 - ((float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)) / 2
 
 
 def EUCL_DIST_B_FULL(a,b,support,attr1,attr2):
@@ -191,20 +191,22 @@ def EUCL_DIST_B_FULL(a,b,support,attr1,attr2):
                 continue
             movingnode = n
             length = 0
+            nodes = 0
             while not movingnode.is_root():
+                nodes += 1
                 if support:
                     length += movingnode.dist * movingnode.support
                 else:
                     length += movingnode.dist
                 movingnode = movingnode.up
-            leave_branches.add((getattr(n,attr),length))
+            leave_branches.add((getattr(n,attr),length/nodes))
 
         return leave_branches
 
-    dist_a = sum([descendant[1] for descendant in _get_leaves_paths(a[0],attr1,support) if descendant[0] in(a[1] - b[1])])
-    dist_b = sum([descendant[1] for descendant in _get_leaves_paths(b[0],attr2,support) if descendant[0] in(b[1] - a[1])])
+    dist_a = sum([descendant[1] for descendant in _get_leaves_paths(a[0],attr1,support) if descendant[0] in(a[1] - b[1])]) / len([i for i in a[0].iter_leaves()])
+    dist_b = sum([descendant[1] for descendant in _get_leaves_paths(b[0],attr2,support) if descendant[0] in(b[1] - a[1])]) / len([i for i in b[0].iter_leaves()])
     
-    return 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)
+    return 1 - ((float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)) / 2
 
 def RF_DIST(a,b,support,attr1,attr2):
     '''
