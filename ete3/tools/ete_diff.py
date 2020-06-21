@@ -574,20 +574,20 @@ def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, support=
     
     if parallel == 'sync':
         pool = mp.Pool(jobs)
-        matrix = [[pool.apply(dist_fn,args=((n1,x),(n2,y),support,attr1,attr2)) for n2,y in parts2] for n1,x in parts1]
+        gen = [[pool.apply(dist_fn,args=((n1,x),(n2,y),support,attr1,attr2)) for n2,y in parts2] for n1,x in parts1]
         pool.close()
     
     elif parallel == 'async':
         pool = mp.Pool(jobs)
-        matrix = [[pool.apply_async(dist_fn,args=((n1,x),(n2,y),support,attr1,attr2)) for n2,y in parts2] for n1,x in parts1]
+        gen = [[pool.apply_async(dist_fn,args=((n1,x),(n2,y),support,attr1,attr2)) for n2,y in parts2] for n1,x in parts1]
         pool.close()
     
-        for i in range(len(matrix)):
-            for j in range(len(matrix[0])):
-                matrix[i][j] = matrix[i][j].get()
+        for i, subgen in enumerate(gen):
+            for j, element in enumerate(subgen):
+                gen[i][j] = element.get()
 
     else:
-        matrix = [[dist_fn((n1,x),(n2,y),support,attr1,attr2) for n2,y in parts2] for n1,x in parts1]
+        gen = ((dist_fn((n1,x),(n2,y),support,attr1,attr2) for n2,y in parts2) for n1,x in parts1)
 
     # Reduce matrix to avoid useless comparisons
     if reduce_matrix:
@@ -617,13 +617,16 @@ def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, support=
         log.info("Distance matrix reduced from %dx%d to %dx%d" %\
                 (len(matrix), len(matrix[0]), len(new_matrix), len(new_matrix[0])))
             
-        matrix = new_matrix
+        gen = new_matrix
 
     log.info("Comparing trees...")
     
     difftable = []
     b_dist = -1
-    matrix = np.asarray(matrix, dtype=np.float32)
+    matrix = np.empty([len(parts1),len(parts2)],dtype=np.float32)
+    for i, subgen in enumerate(gen):
+        for j, element in enumerate(subgen):
+            matrix[i][j] = element
     
     if dist_fn != SINGLECELL:
         
