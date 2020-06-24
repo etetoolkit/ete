@@ -95,7 +95,7 @@ def SINGLECELL(a,b,support,attr1,attr2):
             len_axb += 1
             dist.append(pearson[leaf_a.name][leaf_b.name])
     
-    dist = np.percentile(dist,50)
+    dist = np.percentile(dist,50)/(1 - 1 / (len([i for i in b[0].iter_leaves()])))
     
     return dist
 
@@ -563,10 +563,16 @@ def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, support=
     t2_cached_content = t2.get_cached_content(store_attr=attr2)
     t2 = None
 
-    parts1 = [(k, v) for k, v in t1_cached_content.items()]
-    t1_cached_content = None
-    parts2 = [(k, v) for k, v in t2_cached_content.items()]
-    t2_cached_content = None
+    if dist_fn != SINGLECELL:
+        parts1 = [(k, v) for k, v in t1_cached_content.items()]
+        t1_cached_content = None
+        parts2 = [(k, v) for k, v in t2_cached_content.items()]
+        t2_cached_content = None
+    else: 
+        parts1 = [(k, v) for k, v in t1_cached_content.items() if k.children]
+        t1_cached_content = None
+        parts2 = [(k, v) for k, v in t2_cached_content.items() if k.children]
+        t2_cached_content = None
 
     parts1 = sorted(parts1, key = lambda x : len(x[1]))
     parts2 = sorted(parts2, key = lambda x : len(x[1]))
@@ -652,19 +658,36 @@ def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, support=
     elif dist_fn == SINGLECELL:
         for r in range(len(matrix)):
             c = np.argmin(matrix[r])
+            if np.percentile(matrix,5) >= matrix[r][c]:
 
-            if extended:
-                b_dist = extended(parts1[r][0], parts2[c][0],attr1,attr2,support)
-            else:
-                pass
-            
-            dist, side1, side2, diff, n1, n2 = (matrix[r][c], 
-                                                [l.name for l in parts1[r][0].iter_leaves()], [l.name for l in parts2[r][0].iter_leaves()],
-                                                parts1[r][1].symmetric_difference(parts2[c][1]),
-                                                parts1[r][0], parts2[c][0])
-            difftable.append([dist, b_dist, side1, side2, diff, n1, n2])
+                if extended:
+                    b_dist = extended(parts1[r][0], parts2[c][0],attr1,attr2,support)
+                else:
+                    pass
+
+                dist, side1, side2, diff, n1, n2 = (matrix[r][c], 
+                                                    [l.name for l in parts1[r][0].iter_leaves()], [l.name for l in parts2[r][0].iter_leaves()],
+                                                    parts1[r][1].symmetric_difference(parts2[c][1]),
+                                                    parts1[r][0], parts2[c][0])
+                difftable.append([dist, b_dist, side1, side2, diff, n1, n2])
 
         return difftable
+
+#     elif dist_fn == SINGLECELL:
+#         for r in range(len(matrix)):
+#             for c in range(len(matrix[r])):
+#                 if extended:
+#                     b_dist = get_distances2(parts1[r][0], parts2[c][0])
+#                 else:
+#                     pass
+
+#                 dist, side1, side2, diff, n1, n2 = (matrix[r][c], 
+#                                                     parts1[r][1], parts2[c][1],
+#                                                     parts1[r][1].symmetric_difference(parts2[c][1]),
+#                                                     parts1[r][0], parts2[c][0])
+#                 difftable.append([dist, b_dist, side1, side2, diff, n1, n2])
+
+#         return difftable
 
 ### REPORTS ###
 
@@ -1017,7 +1040,7 @@ def show_difftable_topo_SCA(difftable, attr1, attr2, usecolor=False, extended=No
         print_table(showtable, header=["Dist", "#Diffs", "refTree", "targetTree"],
                     max_col_width=maxcolwidth, wrap_style="wrap", row_line=True)    
         
-    log.info("Total euclidean distance:\t%0.4f\tMismatching nodes:\t%d" %(total_dist, len(difftable)))
+    log.info("Total distance:\t%0.4f\tMismatching nodes:\t%d" %(total_dist, len(difftable)))
        
         
         
@@ -1063,7 +1086,7 @@ def populate_args(diff_args_p):
                         help="Use support values to calculate distances when they are e-full or extended")
     
     diff_args.add_argument("--fullsearch", dest="fullsearch",
-                        action="store_true",
+                        action="store_false",
                         help=("Enable this option to if trivial results (distance 0) are not needed and duplicated attributes (i.e. name)"
                               " exist in reference or target trees and need to be removed."))
     
