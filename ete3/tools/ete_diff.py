@@ -673,21 +673,6 @@ def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, support=
 
         return difftable
 
-#     elif dist_fn == SINGLECELL:
-#         for r in range(len(matrix)):
-#             for c in range(len(matrix[r])):
-#                 if extended:
-#                     b_dist = get_distances2(parts1[r][0], parts2[c][0])
-#                 else:
-#                     pass
-
-#                 dist, side1, side2, diff, n1, n2 = (matrix[r][c], 
-#                                                     parts1[r][1], parts2[c][1],
-#                                                     parts1[r][1].symmetric_difference(parts2[c][1]),
-#                                                     parts1[r][0], parts2[c][0])
-#                 difftable.append([dist, b_dist, side1, side2, diff, n1, n2])
-
-#         return difftable
 
 ### REPORTS ###
 
