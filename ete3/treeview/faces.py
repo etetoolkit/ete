@@ -2421,7 +2421,7 @@ class DiamondFace(StaticItemFace, Face):
         return self.height
 
 
-class ArrowFace(Face)
+class ArrowFace(Face):
 
     """
 
