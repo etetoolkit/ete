@@ -107,12 +107,9 @@ class NCBITaxa(object):
         if taxdump_file:
             self.update_taxonomy_database(taxdump_file)
 
-        if dbfile is None and not os.path.exists(self.dbfile):
+        if not os.path.exists(self.dbfile):
             print('NCBI database not present yet (first time used?)', file=sys.stderr)
             self.update_taxonomy_database(taxdump_file)
-
-        if not os.path.exists(self.dbfile):
-            raise ValueError("Cannot open taxonomy database: %s" % self.dbfile)
 
         self.db = None
         self._connect()
