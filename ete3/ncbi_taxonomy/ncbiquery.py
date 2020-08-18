@@ -823,7 +823,7 @@ def upload_data(dbfile):
             print('\rInserting synonyms:     % 6d' %i, end=' ', file=sys.stderr)
             sys.stderr.flush()
         taxid, spname = line.strip('\n').split('\t')
-        db.execute("INSERT INTO synonym (taxid, spname) VALUES (?, ?);", (taxid, spname))
+        db.execute("INSERT OR IGNORE INTO synonym (taxid, spname) VALUES (?, ?);", (taxid, spname))
     print()
     db.commit()
     for i, line in enumerate(open("merged.tab")):
