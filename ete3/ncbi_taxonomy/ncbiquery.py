@@ -784,7 +784,8 @@ def update_db(dbfile, targz_file=None):
     print("Updating database: %s ..." %dbfile)
     generate_table(t)
 
-    open("syn.tab", "w").write('\n'.join(["%s\t%s" %(v[0],v[1]) for v in synonyms]))
+    with open("syn.tab", "w") as SYN:
+        SYN.write('\n'.join(["%s\t%s" %(v[0],v[1]) for v in synonyms]))
 
     with open("merged.tab", "w") as merged:
         for line in tar.extractfile("merged.dmp"):
