@@ -1158,6 +1158,11 @@ class TreeNode(object):
                 break
             else:
                 current = current.up
+
+        # if we reached the root, the tree is already at midpoint. Return any child as valid outgroup
+        if current is None:
+            current = self.children[0]
+
         return current
 
     def populate(self, size, names_library=None, reuse_names=False,
