@@ -64,9 +64,9 @@ class Test_ncbiquery(unittest.TestCase):
     #Out[10]: [63221, 741158, 2665953, 1425170]
     self.assertEqual(set(out), set([63221, 741158, 2665953, 1425170]))
     
-    out = ncbi.get_descendant_taxa("9605", intermediate_nodes=False, rank_limit="species")
-    #Out[11]: [9606, 1425170]
-    self.assertEqual(set(out), set([9606, 1425170]))
+    out = ncbi.get_descendant_taxa("9596", intermediate_nodes=False, rank_limit="species")
+    #Out[11]: [9597, 9598]
+    self.assertEqual(set(out), set([9597, 9598]))
     
   def test_get_topology(self):
     ncbi = NCBITaxa(dbfile=DATABASE_PATH)
