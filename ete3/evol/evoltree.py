@@ -261,15 +261,10 @@ class EvolNode(PhyloNode):
         run, err = proc.communicate(b'\n')
         run = run.decode(sys.stdout.encoding)
 
-        if err is not None:
-            print(err)
-            warn("ERROR: codeml not found!!!\n" +
-                 "       define your variable EvolTree.execpath")
-            return 1
-        if 'error' in run or 'Error' in run:
-            warn("ERROR: inside codeml!!\n" + run)
-            return 1
         os.chdir(hlddir)
+        if err:
+            warn("ERROR: inside codeml!!\n" + err)
+            return 1
         if keep:
             setattr(model_obj, 'run', run)
             self.link_to_evol_model(os.path.join(fullpath, 'out'), model_obj)
@@ -460,7 +455,7 @@ class EvolNode(PhyloNode):
         try:
             return self._models[modelname]
         except KeyError:
-            warn("Model %s not found." % (modelname))
+            Exception("ERROR: Model %s not found." % (modelname))
 
     def write(self, features=None, outfile=None, format=10):
         """
