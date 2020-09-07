@@ -314,7 +314,7 @@ class WebTreeApplication(object):
                     html += """<li><a  href='javascript:void(0);' onClick='hide_popup(); run_action("%s", "%s", "%s");'> %s </a></li> """ %\
                         (treeid, nodeid, i, aname)
             html += '</ul>'
-            return html
+            return [html.encode('utf-8')]
 
         elif method == "action":
             if not self._load_tree(treeid):
@@ -322,16 +322,16 @@ class WebTreeApplication(object):
 
             if aindex is None:
                 # just refresh tree
-                return self._get_tree_img(treeid=treeid)
+                return [self._get_tree_img(treeid=treeid).encode('utf-8')]
             else:
                 aname, target, handler, checker, html_generator = self.actions[int(aindex)]
 
             if target in set(["node", "face", "layout"]):
-                return self._get_tree_img(treeid=treeid, pre_drawing_action=[target, handler, [nodeid]])
+                return [self._get_tree_img(treeid=treeid, pre_drawing_action=[target, handler, [nodeid]]).encode('utf-8')]
             elif target in set(["search"]):
-                return self._get_tree_img(treeid=treeid, pre_drawing_action=[target, handler, [search_term]])
+                return [self._get_tree_img(treeid=treeid, pre_drawing_action=[target, handler, [search_term]]).encode('utf-8')]
             elif target in set(["refresh"]):
-                return self._get_tree_img(treeid=treeid)
+                return [self._get_tree_img(treeid=treeid).encode('utf-8')]
             return "Bad guy"
 
         elif self._external_app_handler:
