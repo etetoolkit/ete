@@ -84,7 +84,10 @@ cdef class TreeNode(object):
     cdef public double _support
     cdef public set features
     cdef public list _children
-        
+    cdef public object _up
+    cdef public object _img_style
+
+
     cdef public (double, double) size
     cdef public double d1
     
