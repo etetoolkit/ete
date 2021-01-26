@@ -8,11 +8,10 @@ from flask import Flask, request, jsonify, g, redirect, url_for
 from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth, MultiAuth
 from flask_restful import Resource, Api
 from flask_cors import CORS
-import sqlalchemy
 
-from ete4 import Tree
-from ete4.smartview import draw
-from ete4.smartview.treeimage import TreeImage 
+from ... import Tree
+from .. import draw
+from ..treeimage import TreeImage 
 
 app = None
 
