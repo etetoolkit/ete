@@ -153,7 +153,6 @@ if __name__ == '__main__':
     parser.add_argument("-t", dest="trees", nargs='+', type=str, help="Trees to browse")
     args = parser.parse_args()
     newicks = [os.path.abspath(t) for t in args.trees]
-    print(newicks)
     # probably a dirty approach, but we need to serve contect with root anchored
     # to the same dir. Alternatives?
     os.chdir(os.path.abspath(os.path.dirname(__file__)))

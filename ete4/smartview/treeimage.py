@@ -1,7 +1,5 @@
-
 from collections import namedtuple
 from .utils import timeit
-
 
 class TreeImage():
     def __init__(self, tree):
@@ -22,6 +20,4 @@ class TreeImage():
             else: # First time visiting a node
                 if not n.children:                    
                     n.size = (n.dist, 1.0)
-                    print(n.size)
                     n.d1 = 0.5
-        print (self.tree.size)
