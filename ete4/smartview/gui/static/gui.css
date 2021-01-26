@@ -1,0 +1,90 @@
+* {
+    padding: 0;
+    margin: 0;
+}
+
+.line {
+    stroke: #000;
+}
+
+.rect {
+    stroke: #000;
+    stroke-width: 0.2;
+}
+
+.text {
+    font-family: sans-serif;
+    user-select: none;
+}
+
+.names {
+    fill: #00A;
+}
+
+.lengths {
+    fill: #888;
+}
+
+.noderect {
+    opacity: 0;
+    fill: #222;
+}
+
+.outlinerect {
+    fill: #DDF;
+}
+
+.noderect:hover {
+    opacity: 0.05;
+}
+
+.outlinerect:hover {
+    fill: #CCF;
+}
+
+.tooltip {
+    opacity: 0.05;
+    transition: opacity 1s, font-size 0.5s;
+}
+
+.tooltip:hover {
+    opacity: 1;
+    font-size: 2rem;
+}
+
+.tree {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.minimap {
+    position: absolute;
+    border-style: double;
+    border-width: 3px;
+    right: 10px;
+    bottom: 10px;
+    width: 10%;
+    height: 60%;
+    z-index: 1;
+    background: #FFF;
+}
+
+.visible_rect {
+    position: absolute;
+    border-style: solid;
+    border-width: 1px;
+    z-index: 2;
+    background: rgba(0, 0, 0, 0.4);
+    cursor: grab;
+}
+
+.datgui {
+    position: absolute;
+    top: 0px;
+    right: 20px;
+    z-index: 3;
+}

@@ -43,7 +43,7 @@ from sys import stderr
 from . import clustvalidation
 from ..coretype.tree import _translate_nodes
 from .. import TreeNode, ArrayTable
-from .. import numpy
+import numpy
 from six.moves import range
 
 __all__ = ["ClusterNode", "ClusterTree"]

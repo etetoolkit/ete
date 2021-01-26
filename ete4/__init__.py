@@ -43,27 +43,16 @@
 from __future__ import absolute_import
 from warnings import warn
 
-try:
-    import numpy
-except ImportError as e:
-    numpy = None
-
 from .ncbi_taxonomy import *
 from .coretype.tree import *
 from .coretype.seqgroup import *
 from .phylo.phylotree import *
 from .evol.evoltree import *
-from .webplugin.webapp import *
 from .phyloxml import Phyloxml, PhyloxmlTree
 from .nexml import Nexml, NexmlTree
 from .evol import EvolTree
 from .coretype.arraytable import *
 from .clustering.clustertree import *
-
-try:
-    from .phylomedb.phylomeDB3 import *
-except ImportError as e:
-    pass
 
 try:
     from .treeview.svg_colors import *

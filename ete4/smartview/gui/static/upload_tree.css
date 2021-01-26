@@ -1,0 +1,16 @@
+h1 {
+    text-align: center;
+    color: blue;
+}
+
+#div_info {
+    text-align: center;
+}
+
+div {
+    margin: 2rem 2rem;
+}
+
+input, label, textarea {
+    margin: 0.4rem 0;
+}

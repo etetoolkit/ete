@@ -1,6 +1,5 @@
-ETE is currently maintained by Jaime Huerta-Cepas at the Structural and
-Computational Biology Unit of EMBL (Heidelberg, Germany).
-
+ETE is currently maintained by the Comparative Genomics and Metagenomics 
+at CBGP (UPM-INIA), Madrid, Spain. 
 
 Citation: 
 
@@ -8,7 +7,7 @@ Citation:
    analysis and visualization of phylogenomic data."  Mol Biol Evol (2016) doi:
    10.1093/molbev/msw046
 
-CONTACT: jhcepas@gmail.com
+CONTACT: jhcepas@gmail.com (Jaime Huerta Cepas)
 
 Previous references: 
 

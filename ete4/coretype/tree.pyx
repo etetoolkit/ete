@@ -78,7 +78,16 @@ class TreeError(Exception):
     def __str__(self):
         return repr(self.value)
 
-class TreeNode(object):
+cdef class TreeNode(object):
+    cdef public str name
+    cdef public double _dist
+    cdef public double _support
+    cdef public set features
+    cdef public list _children
+        
+    cdef public (double, double) size
+    cdef public double d1
+    
     """
     TreeNode (Tree) class is used to store a tree structure. A tree
     consists of a collection of TreeNode instances connected in a
@@ -163,7 +172,7 @@ class TreeNode(object):
     def _set_style(self, value):
         self.set_style(value)
 
-    #: Branch length distance to parent node. Default = 0.0
+    #: Node styling properties
     img_style = property(fget=_get_style, fset=_set_style)
 
     #: Branch length distance to parent node. Default = 0.0
@@ -205,6 +214,8 @@ class TreeNode(object):
             self.support = support
 
         self.name = name if name is not None else DEFAULT_NAME
+        self.size = (0, 0) 
+        self.d1 = 0.0
 
         # Initialize tree
         if newick is not None:

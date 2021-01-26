@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Upload Tree</title>
+  <link rel="icon" type="image/png" href="icon.png">
+  <link rel="stylesheet" href="upload_tree.css">
+  <script defer src="/static/upload_tree.js"></script>
+</head>
+
+<body>
+<h1>Upload Tree</h1>
+
+<div id="div_info"></div>
+
+<div id="div_login">
+  <div>
+  <label for="input_username">Username</label>
+  <input type="text" id="input_username" minlength="1">
+  </div>
+
+  <div>
+  <label for="input_password">Password</label>
+  <input type="password" id="input_password">
+  </div>
+
+  <div>
+  <button id="button_login">Login</button>
+  </div>
+</div>
+
+<div id="div_upload">
+  <div>
+  <label for="input_name">Name (1 to 128 characters)</label><br>
+  <input type="text" id="input_name" required
+    placeholder="Tree name" minlength="1" maxlength="128" size="20">
+  </div>
+
+  <div>
+  <label for="input_description">Description</label><br>
+  <textarea id="input_description" rows="4" cols="50"
+    placeholder="Description of the tree (can be empty)"></textarea>
+  </div>
+
+  <div>
+  <input type="radio" id="radio_file" name="newick" value="file">
+  <label for="radio_file">Newick file</label><br>
+  <input id="input_newick_file" type="file"
+    accept=".tree,.newick,.nw,.tre,.txt" disabled>
+  </div>
+
+  <div>
+  <input type="radio" id="radio_string" name="newick" value="string">
+  <label for="radio_string">Newick string</label><br>
+  <textarea id="input_newick_string" rows="4" cols="50"
+    placeholder="Newick representation of the tree" disabled></textarea>
+  </div>
+
+  <div>
+  <button id="button_upload">Upload</button>
+  </div>
+</div>
+
+</body>
+</html>

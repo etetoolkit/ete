@@ -14,17 +14,31 @@
    :target: https://www.biostars.org/t/etetoolkit,ete3,ete,ete2/
 
 
-Overview
------------
+Overview ETE v4
+-------------------
 
 ETE (Environment for Tree Exploration) is a Python programming toolkit that
 assists in the automated manipulation, analysis and visualization of
-phylogenetic trees. Clustering trees or any other tree-like data structure are
-also supported.
+phylogenetic trees. 
 
-Given that ETE is mainly developed as a tool for researchers working in phylogenetics
-and genomics, it also provides specialized tools in that context (e.g. reconstructing, comparing and visualizing
-phylogenetic trees). If you use ETE in a published work, please cite:
+Main features include: 
+ - Read and write support for trees in Newick format 
+ - Multiple functions for traversing, searching and manipulating tree topologies and node annotations
+ - Integration with NCBI Taxonomic database
+ - Integration with GTDB database
+ - Programmatic visualization framework 
+ - Visualization of huge trees based on adaptive zooming
+ - Comparing trees 
+ - Phylogenetic functions: 
+   - orthology detection
+   - phylogenetic distance?
+
+- Command line tools: 
+ - phylogenetic reconstruction protocols
+ - tree comparison
+ - tree diff
+
+If you use ETE, please cite:
 
 ::
 
@@ -76,7 +90,13 @@ the developers. Keep communication public:**
 Contributing and BUG reporting
 ---------------------------------
 https://github.com/etetoolkit/ete/wiki/Contributing
-  
+
+
+Code of Conduct
+---------------------------------
+https://github.com/etetoolkit/ete/wiki/Contributing
+
+
 ROADMAP
 --------
 https://github.com/etetoolkit/ete/wiki/ROADMAP

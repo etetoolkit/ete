@@ -42,7 +42,7 @@ from __future__ import print_function
 import re
 from sys import stderr
 
-from .. import numpy
+import numpy
 
 from six.moves import map
 

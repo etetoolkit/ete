@@ -5,54 +5,14 @@ from __future__ import absolute_import
 from __future__ import print_function
 import sys
 import os
-import ez_setup
+#import ez_setup
 import hashlib
 import time, random
 import re
-try:
-    from urllib2 import quote
-    from urllib2 import urlopen
-    from urllib2 import HTTPError
-except ImportError:
-    from urllib.parse import quote
-    from urllib.request import urlopen
-    from urllib.error import HTTPError
+from Cython.Build import cythonize
+from distutils.core import setup, Extension
 
 HERE = os.path.abspath(os.path.split(os.path.realpath(__file__))[0])
-
-if "--donottrackinstall" in sys.argv:
-    TRACKINSTALL = None
-    sys.argv.remove("--donottrackinstall")
-else:
-    # Avoids importing self module
-    orig_path = list(sys.path)
-    _wd = os.getcwd()
-    try:
-        sys.path.remove(_wd)
-    except ValueError:
-        pass
-    try:
-        sys.path.remove("")
-    except ValueError:
-        pass
-
-    # Is this and upgrade or a new install?
-    try:
-        import ete3
-    except ImportError:
-        TRACKINSTALL = "ete-new-installation"
-    else:
-        TRACKINSTALL = "ete-upgrade"
-
-    sys.path = orig_path
-
-
-try:
-    from setuptools import setup, find_packages
-except ImportError:
-    ez_setup.use_setuptools()
-    from setuptools import setup, find_packages
-
 
 PYTHON_DEPENDENCIES = [
     ["numpy", "Numpy is required for the ArrayTable and ClusterTree classes.", 0],
@@ -109,10 +69,8 @@ except IOError:
 
 print("\nInstalling ETE (%s) \n" %ETE_VERSION)
 print()
-
-
     
-MOD_NAME = "ete3"
+MOD_NAME = "ete4"
 
 LONG_DESCRIPTION="""
 The Environment for Tree Exploration (ETE) is a Python programming
@@ -133,16 +91,20 @@ please cite:
 Visit http://etetoolkit.org for more info.
 """
 
+extensions = [Extension('ete4.coretype.tree', ['ete4/coretype/tree.pyx']), 
+              Extension('ete4.smartview.draw', ['ete4/smartview/draw.pyx']), 
+              ],
+
 try:
     _s = setup(
         include_package_data = True,
 
         name = MOD_NAME,
         version = ETE_VERSION,
-        packages = ["ete3"],
+        packages = ["ete4"],
 
         entry_points = {"console_scripts":
-                        ["ete3 = %s.tools.ete:main" %MOD_NAME]},
+                        ["ete4 = %s.tools.ete:main" %MOD_NAME]},
         requires = ["six"],
 
         # Project uses reStructuredText, so ensure that the docutils get
@@ -152,13 +114,14 @@ try:
         package_data = {
 
         },
-        data_files = [("%s/tools" %MOD_NAME, ["%s/tools/ete_build.cfg" %MOD_NAME])],
+        data_files = [("%s/tools" %MOD_NAME, 
+                       ["%s/tools/ete_build.cfg" %MOD_NAME])],
 
         # metadata for upload to PyPI
-        author = "Jaime Huerta-Cepas",
+        author = "Jaime Huerta-Cepas, Jordi Burguet-Castells",
         author_email = "jhcepas@gmail.com",
-        maintainer = "Jaime Huerta-Cepas",
-        maintainer_email = "huerta@embl.de",
+        maintainer = "Jaime Huerta-Cepas, Jordi Burguet-Castells",
+        maintainer_email = "jhcepas@gmail.com",
         platforms = "OS Independent",
         license = "GPLv3",
         description = "A Python Environment for (phylogenetic) Tree Exploration",
@@ -167,10 +130,18 @@ try:
         provides = [MOD_NAME],
         keywords = "tree, tree reconstruction, tree visualization, tree comparison, phylogeny, phylogenetics, phylogenomics",
         url = "http://etetoolkit.org",
-        download_url = "http://etetoolkit.org/static/releases/ete3/",
+        download_url = "http://etetoolkit.org/static/releases/ete4/",
 
+
+        ext_modules = cythonize(*extensions),
+        # scripts=glob('scripts/*.py'),
+        # data_files=[
+        #     ('server', glob('scripts/static/*.*')),
+        #     ('server/external', glob('scripts/static/external/*')),
+        #     ('sql', glob('scripts/*.sql')),
+        #     ('examples', glob('examples/*'))])
     )
-
+ 
 except:
     print("\033[91m - Errors found! - \033[0m")
     raise
@@ -184,14 +155,3 @@ else:
             print(" Warning:\033[93m Optional library [%s] could not be found \033[0m" %mname)
             print("  ",msg)
             missing=True
-
-    notwanted = set(["-h", "--help", "-n", "--dry-run"])
-    seen = set(_s.script_args)
-    wanted = set(["install", "bdist", "bdist_egg"])
-    if TRACKINSTALL is not None and (wanted & seen) and not (notwanted & seen):
-        try:
-            welcome = quote("New alien in earth! (%s %s)" %(TRACKINSTALL, time.ctime()))
-            urlopen("http://etetoolkit.org/static/et_phone_home.php?ID=%s&VERSION=%s&MSG=%s"
-                            %(TRACKINSTALL, ETE_VERSION, welcome))
-        except Exception:
-            pass

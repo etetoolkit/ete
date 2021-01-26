@@ -44,7 +44,7 @@ import re
 import math
 from os import path
 
-from .. import numpy
+import numpy
 from ..parser.text_arraytable import write_arraytable, read_arraytable
 import six
 from six.moves import range

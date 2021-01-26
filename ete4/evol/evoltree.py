@@ -479,8 +479,8 @@ class EvolNode(PhyloNode):
             return nwk
         else:
             return nwk
-    write.__doc__ += super(PhyloNode, PhyloNode()).write.__doc__.replace(
-        'argument format', 'argument 10 format')
+    #write.__doc__ += super(PhyloNode, PhyloNode()).write.__doc__.replace(
+    #    'argument format', 'argument 10 format')
 
 
     def get_most_likely(self, altn, null):
