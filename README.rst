@@ -100,3 +100,6 @@ https://github.com/etetoolkit/ete/wiki/Contributing
 ROADMAP
 --------
 https://github.com/etetoolkit/ete/wiki/ROADMAP
+
+
+.. |Contributor Covenant| image:: https://img.shields.io/badge/Contributor%20Covenant-2.0-4baaaa.svg :target: code_of_conduct.md
