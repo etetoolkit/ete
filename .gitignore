@@ -5,6 +5,8 @@ build
 doc/_build/
 dist/
 *.egg-info
+*.c
+*.so
 
 # Conda testing environment
 miniconda.sh

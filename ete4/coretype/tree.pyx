@@ -217,7 +217,7 @@ cdef class TreeNode(object):
         self._up = None
         self._dist = DEFAULT_DIST
         self._properties = {}
-        self.support = DEFAULT_SUPPORT # Include support in features
+        self.support = DEFAULT_SUPPORT # Include support in properties
         self._img_style = None
         self.features = set([])
         # Add basic features
