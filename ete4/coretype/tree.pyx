@@ -49,7 +49,7 @@ from functools import cmp_to_key
 import six
 from six.moves import (cPickle, map, range, zip)
 
-from ..parser.newick import read_newick, write_newick
+# from ete4.parser.newick import read_newick, write_newick
 from .. import utils
 
 # the following imports are necessary to set fixed styles and faces
@@ -81,7 +81,7 @@ class TreeError(Exception):
 cdef class TreeNode(object):
     cdef public str name
     cdef public double _dist
-    cdef public double _support
+    cdef public dict _properties
     cdef public set features
     cdef public list _children
     cdef public object _up
@@ -140,12 +140,20 @@ cdef class TreeNode(object):
             raise TreeError('node dist must be a float number')
 
     def _get_support(self):
-        return self._support
+        return self._properties.get('support')
     def _set_support(self, value):
         try:
-            self._support = float(value)
+            self._properties['support'] = float(value)
         except ValueError:
             raise TreeError('node support must be a float number')
+
+    def _get_properties(self):
+        return self._properties
+    def _set_properties(self, value):
+        try:
+            self._properties = dict(value)
+        except ValueError:
+            raise TreeError('node properties must be a dict')
 
     def _get_up(self):
         return self._up
@@ -182,6 +190,8 @@ cdef class TreeNode(object):
     dist = property(fget=_get_dist, fset=_set_dist)
     #: Branch support for current node
     support = property(fget=_get_support, fset=_set_support)
+    #: Properties for current node (support included)
+    properties = property(fget=_get_properties, fset=_set_properties)
     #: Pointer to parent node
     up = property(fget=_get_up, fset=_set_up)
     #: A list of children nodes
@@ -206,7 +216,8 @@ cdef class TreeNode(object):
         self._children = []
         self._up = None
         self._dist = DEFAULT_DIST
-        self._support = DEFAULT_SUPPORT
+        self._properties = {}
+        self.support = DEFAULT_SUPPORT # Include support in features
         self._img_style = None
         self.features = set([])
         # Add basic features
@@ -222,10 +233,15 @@ cdef class TreeNode(object):
 
         # Initialize tree
         if newick is not None:
+            from ete4.parser.newick import read_newick
             self._dist = 0.0
-            read_newick(newick, root_node = self, format=format,
-                        quoted_names=quoted_node_names)
-
+            # read_newick(newick, root_node = self, format=format,
+                        # quoted_names=quoted_node_names)
+            t = read_newick(newick)
+            self.name = t.name
+            self._dist = t.dist
+            self._children = t.children
+            self._properties = t.properties
 
     def __nonzero__(self):
         return True
@@ -851,13 +867,15 @@ cdef class TreeNode(object):
 
         """
 
-        nw = write_newick(self, features=features, format=format,
-                          is_leaf_fn=is_leaf_fn,
-                          format_root_node=format_root_node,
-                          dist_formatter=dist_formatter,
-                          support_formatter=support_formatter,
-                          name_formatter=name_formatter,
-                          quoted_names=quoted_node_names)
+        from ete4.parser.newick import write_newick
+        # nw = write_newick(self, features=features, format=format,
+                          # is_leaf_fn=is_leaf_fn,
+                          # format_root_node=format_root_node,
+                          # dist_formatter=dist_formatter,
+                          # support_formatter=support_formatter,
+                          # name_formatter=name_formatter,
+                          # quoted_names=quoted_node_names)
+        nw = write_newick(self)
 
         if outfile is not None:
             with open(outfile, "w") as OUT:
