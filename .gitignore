@@ -24,4 +24,3 @@ test_tmp/
 # Coverage files
 .coverage
 htmlcov/
-ete
