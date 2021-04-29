@@ -56,8 +56,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from ete4 import Tree
 from ete4.smartview import draw
-from ete4.smartview.tree import get_node
-from ete4.smartview.ete import gardening, nexus
+import ete4.smartview.gardening as gdn
+from ete4.smartview.ete import nexus
 from ete4.parser.newick import NewickError
 
 
@@ -275,13 +275,13 @@ class Trees(Resource):
                 raise InvalidUsage('operation not allowed with subtree')
             node_id = request.json
             t = load_tree(tid)
-            app.trees[tid] = gardening.root_at(get_node(t, node_id))
+            app.trees[tid] = gdn.root_at(gdn.get_node(t, node_id))
             return {'message': 'ok'}
         elif rule == '/trees/<string:tree_id>/move':
             try:
                 t = load_tree(tree_id)
                 node_id, shift = request.json
-                gardening.move(get_node(t, node_id), shift)
+                gdn.move(gdn.get_node(t, node_id), shift)
                 return {'message': 'ok'}
             except AssertionError as e:
                 raise InvalidUsage(f'cannot move ${node_id}: {e}')
@@ -289,7 +289,7 @@ class Trees(Resource):
             try:
                 t = load_tree(tree_id)
                 node_id = request.json
-                gardening.remove(get_node(t, node_id))
+                gdn.remove(gdn.get_node(t, node_id))
                 return {'message': 'ok'}
             except AssertionError as e:
                 raise InvalidUsage(f'cannot remove ${node_id}: {e}')
@@ -297,7 +297,7 @@ class Trees(Resource):
             try:
                 t = load_tree(tree_id)
                 node_id, name = request.json
-                get_node(t, node_id).name = name
+                gdn.get_node(t, node_id).name = name
                 return {'message': 'ok'}
             except AssertionError as e:
                 raise InvalidUsage(f'cannot rename ${node_id}: {e}')
@@ -361,17 +361,17 @@ def load_tree(tree_id):
         tid, subtree = get_tid(tree_id)
 
         if tid in app.trees:
-            return get_node(app.trees[tid], subtree)
+            return gdn.get_node(app.trees[tid], subtree)
 
         newicks = dbget0('newick', 'trees WHERE id=?', tid)
         assert len(newicks) == 1
 
         t = Tree(newicks[0])
-        gardening.standardize(t)
+        gdn.standardize(t)
 
         app.trees[tid] = t
 
-        return get_node(t, subtree)
+        return gdn.get_node(t, subtree)
     except (AssertionError, IndexError):
         raise InvalidUsage(f'unknown tree id {tree_id}', 404)
 
@@ -424,17 +424,8 @@ def get_drawer(tree_id, args):
 
 def get_newick(tree_id, max_mb):
     "Return the newick representation of the given tree"
-    try:
-        tid, subtree = get_tid(tree_id)
 
-        if subtree and tid in app.trees:
-            newick = get_node(app.trees[tid], subtree).write()
-        else:
-            newicks = dbget0('newick', 'trees WHERE id=?', tid)
-            assert len(newicks) == 1
-            newick = newicks[0]
-    except (AssertionError, IndexError) as e:
-        raise InvalidUsage(f'unknown tree id {tree_id}: {e}', 404)
+    newick = load_tree(tree_id).write()
 
     size_mb = len(newick) / 1e6
     if size_mb > max_mb:
@@ -609,7 +600,7 @@ def sort(tree_id, node_id, key_text, reverse):
             'children': node.children, 'ch': node.children,
             'len': len, 'sum': sum, 'abs': abs})
 
-    gardening.sort(get_node(t, node_id), key, reverse)
+    gdn.sort(gdn.get_node(t, node_id), key, reverse)
 
 
 def add_trees_from_request():

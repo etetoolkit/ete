@@ -23,7 +23,7 @@ function on_box_contextmenu(event, box, name, properties, node_id=[]) {
 
         add_label("Node" + (name.length > 0 ? name_text : ""));
 
-        add_button("🔍 Zoom into node", () => zoom_into_box(box));
+        add_button("🔍 Zoom into branch", () => zoom_into_box(box));
 
         if (node_id.length > 0) {
             add_node_options(box, name, properties, node_id);
@@ -45,7 +45,7 @@ function on_box_contextmenu(event, box, name, properties, node_id=[]) {
 
 
 function add_node_options(box, name, properties, node_id) {
-    add_button("📌 Go to subtree at node", () => {
+    add_button("📌 Go to subtree at branch", () => {
         view.subtree += (view.subtree ? "," : "") + node_id;
         on_tree_change();
     }, "Explore the subtree starting at the current node.");
@@ -53,7 +53,7 @@ function add_node_options(box, name, properties, node_id) {
         Swal.fire({text: `${node_id}`, position: "bottom",
                    showConfirmButton: false});
     });
-    add_button("📥 Download newick from node", () => download_newick(node_id),
+    add_button("📥 Download branch as newick", () => download_newick(node_id),
                "Download subtree starting at this node as a newick file.");
     if ("taxid" in properties) {
         const taxid = properties["taxid"];
@@ -62,14 +62,14 @@ function add_node_options(box, name, properties, node_id) {
             window.open(`${urlbase}/wwwtax.cgi?id=${taxid}`);
         }, `Open the NCBI Taxonomy Browser on this taxonomy ID: ${taxid}.`);
     }
-    add_button("🏷️ Tag node", () => {
+    add_button("🏷️ Tag branch", () => {
         Swal.fire({
             input: "text",
             inputPlaceholder: "Enter tag",
             preConfirm: name => tag_node(node_id, name),
         });
     });
-    add_button("🗞️ Collapse node", () => collapse_node(name, node_id),
+    add_button("🗞️ Collapse branch", () => collapse_node(name, node_id),
                "Do not show nodes below the current one.");
 
     if (view.allow_modifications)
@@ -96,22 +96,22 @@ function add_node_modifying_options(box, name, properties, node_id) {
             update();
         }, "Set this node as the root of the tree. Changes the tree structure.");
     }
-    add_button("⬆️ Move node up ⚠️", async () => {
+    add_button("⬆️ Move branch up ⚠️", async () => {
         await tree_command("move", [node_id, -1]);
         draw_minimap();
         update();
-    }, "Move the current node one step above its current position. " +
+    }, "Move the current branch one step above its current position. " +
         "Changes the tree structure.");
-    add_button("⬇️ Move node down ⚠️", async () => {
+    add_button("⬇️ Move branch down ⚠️", async () => {
         await tree_command("move", [node_id, +1]);
         draw_minimap();
         update();
-    }, "Move the current node one step below its current position. " +
+    }, "Move the current branch one step below its current position. " +
         "Changes the tree structure.");
-    add_button("🔃 Sort from node ⚠️", () => sort(node_id),
+    add_button("🔃 Sort branch ⚠️", () => sort(node_id),
         "Sort branches below this node according to the current sorting " +
         "function. Changes the tree structure.");
-    add_button("✂️ Remove node ⚠️", async () => {
+    add_button("✂️ Remove branch ⚠️", async () => {
         await tree_command("remove", node_id);
         draw_minimap();
         update();

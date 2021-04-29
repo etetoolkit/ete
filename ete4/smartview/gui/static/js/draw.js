@@ -311,11 +311,13 @@ function create_outline(sbox, tl, zx, zy) {
 function create_rect_outline(sbox, tl, zx, zy) {
     const [x, y, dx_min, dx_max, dy] = transform(sbox, tl, zx, zy);
 
+    const dx = view.outline.slanted ? dx_min : dx_max;
+
     return create_svg_element("path", {
         "class": "outline",
         "d": `M ${x} ${y + dy/2}
               L ${x + dx_max} ${y}
-              L ${x + dx_min} ${y + dy}
+              L ${x + dx} ${y + dy}
               L ${x} ${y + dy/2}`,
     });
 }
@@ -330,16 +332,19 @@ function transform(sbox, tl, zx, zy) {
 // Return a svg outline in the direction of an annular sector.
 function create_circ_outline(sbox, tl, z) {
     const [r, a, dr_min, dr_max, da] = sbox;
+
+    const dr = view.outline.slanted ? dr_min : dr_max;
+
     const large = da > Math.PI ? 1 : 0;
     const p0 = cartesian_shifted(r, a + da/2, tl, z),
           p10 = cartesian_shifted(r + dr_max, a, tl, z),
-          p11 = cartesian_shifted(r + dr_min, a + da, tl, z);
+          p11 = cartesian_shifted(r + dr, a + da, tl, z);
 
     return create_svg_element("path", {
         "class": "outline",
         "d": `M ${p0.x} ${p0.y}
               L ${p10.x} ${p10.y}
-              A ${z * (r + dr_max)} ${z * (r + dr_min)} 0 ${large} 1 ${p11.x} ${p11.y}
+              A ${z * (r + dr_max)} ${z * (r + dr)} 0 ${large} 1 ${p11.x} ${p11.y}
               L ${p0.x} ${p0.y}`,
     });
 }
@@ -424,24 +429,17 @@ function get_text_placement_rect(box, anchor, text, tl, zx, zy, type="") {
     const fs_max = Math.min(zx * dx_char * 1.6, zy * dy);
     const fs = font_adjust(fs_max, type);
 
-    const shift = 1 - fs / (zy * dy);
+    const scale = fs / (zy * dy);
     const [ax, ay] = anchor;
-    let x_in_tree = x + ax * shift * dx,
-        y_in_tree = y + ay * shift * dy + 0.9 * fs / zy;
+    const x_in_tree = x + ax * (1 - scale) * dx,
+          y_in_tree = y + ay * (1 - scale) * dy + 0.9 * fs / zy;
     // We give the position as the bottom-left point, the same convention as in
     // svgs. We go a bit up (0.9 instead of 1.0) because of the baseline.
 
-    let text_anchor = "start";
-    if (ax > 0.6) {
-        x_in_tree += (1 - shift) * dx;
-        text_anchor = "end";
-    }
-    else if (ax > 0.3) {
-        x_in_tree += (1 - shift) * dx / 2;
-        text_anchor = "middle";
-    }
+    const dx_in_tree = scale * dx;
+    const [x_anchor, text_anchor] = anchored_position(x_in_tree, dx_in_tree, ax);
 
-    return [zx * (x_in_tree - tl.x), zy * (y_in_tree - tl.y), fs, text_anchor];
+    return [zx * (x_anchor - tl.x), zy * (y_in_tree - tl.y), fs, text_anchor];
 }
 
 
@@ -459,27 +457,34 @@ function get_text_placement_circ(box, anchor, text, tl, z, type="") {
     const fs_max = z * Math.min(dr_char * 1.6, r * da);
     const fs = font_adjust(fs_max, type);
 
-    const shift = 1 - fs / (z * r * da);
+    const scale = fs / (z * r * da);
     const [ar, aa] = anchor;
-    let r_shifted = r + ar * shift * dr,
-        a_shifted = a + aa * shift * da + 0.8 * (fs / r) / z;
+    const r_in_tree = r + ar * (1 - scale) * dr,
+          a_in_tree = a + aa * (1 - scale) * da + 0.8 * (fs / r) / z;
     // We give the position as the bottom-left point, the same convention as in
     // svgs. We go a bit up (0.8 instead of 1.0) because of the baseline.
 
-    let text_anchor = "start";
-    if (ar > 0.6) {
-        r_shifted += (1 - shift) * dr;
-        text_anchor = "end";
-    }
-    else if (ar > 0.3) {
-        r_shifted += (1 - shift) * dr / 2;
-        text_anchor = "middle";
-    }
+    const dr_in_tree = scale * dr;
+    const [r_anchor, text_anchor] = anchored_position(r_in_tree, dr_in_tree, ar);
 
-    const x_in_tree = r_shifted * Math.cos(a_shifted),
-          y_in_tree = r_shifted * Math.sin(a_shifted);
+    const x_anchor = r_anchor * Math.cos(a_in_tree),
+          y_anchor = r_anchor * Math.sin(a_in_tree);
 
-    return [z * (x_in_tree - tl.x), z * (y_in_tree - tl.y), fs, text_anchor];
+    return [z * (x_anchor - tl.x), z * (y_anchor - tl.y), fs, text_anchor];
+}
+
+
+// Return the x position and the svg text-anchor to place the text for a given
+// original in-tree x text position, dx width, and ax anchor.
+// This is useful to fine-tune the placement (since dx is just an approximation
+// to the exact width of the text).
+function anchored_position(x, dx, ax) {
+    if (ax < 0.3)
+        return [x, "start"];
+    else if (ax < 0.6)
+        return [x + dx/2, "middle"];
+    else
+        return [x + dx, "end"];
 }
 
 

@@ -49,7 +49,6 @@ from functools import cmp_to_key
 import six
 from six.moves import (cPickle, map, range, zip)
 
-# from ete4.parser.newick import read_newick, write_newick
 from .. import utils
 
 # the following imports are necessary to set fixed styles and faces
@@ -171,6 +170,8 @@ cdef class TreeNode(object):
                 if type(n) != type(self):
                     raise TreeError("Incorrect child node type")
             self._children = value
+            for child in self._children:
+                child.up = self
         else:
             raise TreeError("Incorrect children type")
 
@@ -217,15 +218,10 @@ cdef class TreeNode(object):
         self._up = None
         self._dist = DEFAULT_DIST
         self._properties = {}
-        self.support = DEFAULT_SUPPORT # Include support in properties
         self._img_style = None
         self.features = set([])
         # Add basic features
         self.features.update(["dist", "support", "name"])
-        if dist is not None:
-            self.dist = dist
-        if support is not None:
-            self.support = support
 
         self.name = name if name is not None else DEFAULT_NAME
         self.size = (0, 0) 
@@ -233,15 +229,27 @@ cdef class TreeNode(object):
 
         # Initialize tree
         if newick is not None:
-            from ete4.parser.newick import read_newick
-            self._dist = 0.0
-            # read_newick(newick, root_node = self, format=format,
-                        # quoted_names=quoted_node_names)
-            t = read_newick(newick)
-            self.name = t.name
-            self._dist = t.dist
-            self._children = t.children
-            self._properties = t.properties
+            from ete4.parser.newick import read_newick, get_content_fields
+            if newick == '' or newick[0] != '(':
+                # Get content from incomplete newick string
+                content = get_content_fields(newick.rstrip(';'))
+                self.name, self._dist, self._properties = content
+            else:
+                # Parse complete newick
+                t = read_newick(newick)
+                self.name = t.name
+                self._dist = t.dist
+                self._properties = t.properties
+                self._children = t.children
+                for child in self._children:
+                    child.up = self
+        
+        self.support = self.support or DEFAULT_SUPPORT
+        # Custom values if provided
+        if dist is not None:
+            self.dist = dist
+        if support is not None:
+            self.support = support
 
     def __nonzero__(self):
         return True
@@ -868,13 +876,6 @@ cdef class TreeNode(object):
         """
 
         from ete4.parser.newick import write_newick
-        # nw = write_newick(self, features=features, format=format,
-                          # is_leaf_fn=is_leaf_fn,
-                          # format_root_node=format_root_node,
-                          # dist_formatter=dist_formatter,
-                          # support_formatter=support_formatter,
-                          # name_formatter=name_formatter,
-                          # quoted_names=quoted_node_names)
         nw = write_newick(self)
 
         if outfile is not None:
@@ -1319,6 +1320,7 @@ cdef class TreeNode(object):
             buffered_support = quien_va_ser_padre.support
 
             while quien_va_ser_hijo is not self:
+                print(buffered_support)
                 quien_va_ser_padre.children.append(quien_va_ser_hijo)
                 quien_va_ser_hijo.children.remove(quien_va_ser_padre)
 

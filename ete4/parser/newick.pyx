@@ -6,7 +6,7 @@ class NewickError(Exception):
     pass
 
 
-LENGTH_FORMAT = '%g'  # format used to represent the length as a string
+DIST_FORMAT = '%g'  # format used to represent the dist as a string
 
 
 # Functions that depend on the tree being represented in Newick format.
@@ -16,16 +16,6 @@ def load(fp):
 
 def read_newick(tree_text):
     "Return tree from its newick representation"
-    if tree_text == '':
-        return Tree()
-    if tree_text[0] != '(':
-        name, length, properties = get_content_fields(tree_text.rstrip(';'))
-        t = Tree()
-        t.name = name
-        t.dist = length
-        t.properties = properties
-        return t
-
     if not tree_text.endswith(';'):
         raise NewickError('text ends with no ";"')
 
@@ -55,8 +45,7 @@ def read_nodes(nodes_text, int pos=0):
         if pos >= len(nodes_text):
             raise NewickError('nodes text ends missing a matching ")"')
 
-        while nodes_text[pos] in ' \t\r\n':
-            pos += 1  # skip whitespace
+        pos = skip_spaces_and_comments(nodes_text, pos)
 
         if nodes_text[pos] == '(':
             children, pos = read_nodes(nodes_text, pos)
@@ -70,6 +59,18 @@ def read_nodes(nodes_text, int pos=0):
         nodes.append(t)
 
     return nodes, pos+1
+
+
+def skip_spaces_and_comments(text, int pos):
+    "Return position in text after pos and after all whitespaces and comments"
+    while pos < len(text) and text[pos] in ' \t\r\n[':
+        if text[pos] == '[':
+            if text[pos+1] == '&':  # special annotation
+                return pos
+            else:
+                pos = text.find(']', pos+1)  # skip comment
+        pos += 1  # skip whitespace and comment endings
+    return pos
 
 
 def read_content(str text, int pos, endings=',);'):
@@ -93,7 +94,7 @@ def read_quoted_name(str text, int pos):
         if text[pos] == "'":
             # Newick format escapes ' as ''
             if pos+1 >= len(text) or text[pos+1] != "'":
-                return text[start:pos].replace("''", "'"), pos+1
+                return text[start:pos].replace("''", "'"), pos
             pos += 2
         else:
             pos += 1
@@ -102,56 +103,57 @@ def read_quoted_name(str text, int pos):
 
 
 def get_content_fields(content):
-    """Return name, length, properties from the content (as a newick) of a node
+    """Return name, dist, properties from the content (as a newick) of a node
 
     Example:
       'abc:123[&&NHX:x=foo:y=bar]' -> ('abc', 123, {'x': 'foo', 'y': 'bar'})
     """
-    cdef double length
+    cdef double dist
     if content.startswith("'"):
         name, pos = read_quoted_name(content, 0)
+        pos = skip_spaces_and_comments(content, pos+1)
     else:
         name, pos = read_content(content, 0, endings=':[')
 
     if pos < len(content) and content[pos] == ':':
-        length_txt, pos = read_content(content, pos+1, endings='[')
+        pos = skip_spaces_and_comments(content, pos+1)
+        dist_txt, pos = read_content(content, pos, endings='[ ')
         try:
-            length = float(length_txt)
+            dist = float(dist_txt)
         except ValueError:
-            raise NewickError('invalid number %r in %r' % (length_txt, content))
+            raise NewickError('invalid number %r in %r' % (dist_txt, content))
     else:
-        length = -1
+        dist = 0.0
 
     if pos < len(content) and content[pos] == '[':
-        properties = get_properties(content[pos:])
+        pos_end = content.find(']', pos+1)
+        properties = get_properties(content[pos+1:pos_end])
     elif pos >= len(content):
         properties = {}
     else:
         raise NewickError('malformed content: %r' % content)
 
-    return name, length, properties
+    return name, dist, properties
 
 
 def get_properties(text):
     """Return a dict with the properties extracted from the text in NHX format
 
-    Example: '[&&NHX:x=foo:y=bar]' -> {'x': 'foo', 'y': 'bar'}
+    Example: '&&NHX:x=foo:y=bar' -> {'x': 'foo', 'y': 'bar'}
     """
     try:
-        assert text.startswith('[&&NHX:') and text.endswith(']'), \
-            'properties not contained between "[&&NHX:" and "]"'
-        pairs = text[len('[&&NHX:'):-1].split(':')
-        return dict(pair.split('=') for pair in pairs)
+        assert text.startswith('&&NHX:'), 'unknown annotation (not "&&NHX")'
+        return dict(pair.split('=') for pair in text[len('&&NHX:'):].split(':'))
     except (AssertionError, ValueError) as e:
         raise NewickError('invalid NHX format (%s) in text %r' % (e, text))
 
 
 def content_repr(node):
     "Return content of a node as represented in newick format"
-    length_str = f':{LENGTH_FORMAT}' % node.dist if node.dist >= 0 else ''
+    dist_str = f':{DIST_FORMAT}' % node.dist if node.dist >= 0 else ''
     pairs_str = ':'.join('%s=%s' % kv for kv in node.properties.items())
     props_str = f'[&&NHX:{pairs_str}]' if pairs_str else ''
-    return quote(node.name) + length_str + props_str
+    return quote(node.name) + dist_str + props_str
 
 
 def quote(name, escaped_chars=" \t\r\n()[]':;,"):
@@ -165,7 +167,7 @@ def quote(name, escaped_chars=" \t\r\n()[]':;,"):
 def write_newick(tree):
     "Return newick representation from tree"
     children_text = ','.join(write_newick(node).rstrip(';') for node in tree.children)
-    return (f'({children_text})' if children_text else '') + content_repr(tree) + ';'
+    return (f'({children_text})' if tree.children else '') + content_repr(tree) + ';'
 
 
 def dump(tree, fp):

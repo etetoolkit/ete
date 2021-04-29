@@ -83,6 +83,7 @@ const view = {
         opacity: 0.1,
         color: "#A50",
         width: 0.5,
+        slanted: true,
     },
     line: {
         color: "#000",
@@ -167,6 +168,8 @@ function get_tid() {
 
         view.tree = Object.keys(trees)[0];  // select a default tree
         on_tree_change();
+
+        return trees[view.tree];
     }
 }
 
@@ -192,6 +195,9 @@ async function tree_command(command, params=undefined) {
 
 // What happens when the user selects a new tree in the menu.
 async function on_tree_change() {
+    if (!menus.main)
+        return;  // we haven't initialized yet!
+
     div_tree.style.cursor = "wait";
     remove_searches();
     remove_collapsed();
