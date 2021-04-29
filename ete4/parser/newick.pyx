@@ -123,7 +123,7 @@ def get_content_fields(content):
         except ValueError:
             raise NewickError('invalid number %r in %r' % (dist_txt, content))
     else:
-        dist = 0.0
+        dist = -1
 
     if pos < len(content) and content[pos] == '[':
         pos_end = content.find(']', pos+1)

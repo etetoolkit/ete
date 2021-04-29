@@ -166,7 +166,7 @@ def get_node(tree, node_id):
 
 def standardize(tree):
     "Transform from a tree not following strict newick conventions"
-    update_size(tree, True)
+    update_size(tree, recursive=True)
     for node in tree.traverse():
         try:
             node.support = float(node.name)
