@@ -128,22 +128,26 @@ def remove(node):
         parent = parent.up
 
 
-def update_size(node, recursive=False):
+def update_all_sizes(tree):
+    for node in tree.children:
+        update_all_sizes(node)
+    update_size(tree)
+
+
+def update_size(node):
     if node.is_leaf():
         node.size = (node.dist, 1)
-    sumdists, nleaves = get_size(node.children, recursive)
+    sumdists, nleaves = get_size(node.children)
     node.size = (abs(node.dist) + sumdists, max(1, nleaves))
 
 
-cdef (double, double) get_size(nodes, recursive=False):
+cdef (double, double) get_size(nodes):
     "Return the size of all the nodes stacked"
     # The size of a node is (sumdists, nleaves) with sumdists the dist to
     # its furthest leaf (including itself) and nleaves its number of leaves.
     cdef double sumdists, nleaves
     sumdists = nleaves = 0
     for node in nodes:
-        if recursive:
-            update_size(node, recursive)
         sumdists = max(sumdists, node.size[0])
         nleaves += node.size[1]
     return sumdists, nleaves
@@ -166,7 +170,7 @@ def get_node(tree, node_id):
 
 def standardize(tree):
     "Transform from a tree not following strict newick conventions"
-    update_size(tree, recursive=True)
+    update_all_sizes(tree)
     for node in tree.traverse():
         try:
             node.support = float(node.name)
