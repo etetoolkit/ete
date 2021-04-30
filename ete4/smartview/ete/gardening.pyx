@@ -44,7 +44,6 @@ def add_intermediate(node):
 
     intermediate = Tree('')  # create intermediate node
     intermediate.children = [node]
-    node.up = intermediate
     intermediate.up = parent
 
     if node.dist >= 0:  # split dist between the new and old nodes
