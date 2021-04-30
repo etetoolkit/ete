@@ -3,7 +3,7 @@ Classes and functions for drawing a tree.
 """
 
 from math import sin, cos, pi, sqrt, atan2
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
 import random
 
 from ete4.smartview.tree import walk
@@ -617,9 +617,7 @@ def get_drawers():
 
 def summary(nodes):
     "Return a list of names summarizing the given list of nodes"
-    return list(set(first_name(node) for node in nodes))
-    # NOTE: This doesn't preserve the order, but it is *much* faster than
-    #   iterating in a list and saving only if they are not already there.
+    return list(OrderedDict((first_name(node), None) for node in nodes).keys())
 
 
 def first_name(tree):
