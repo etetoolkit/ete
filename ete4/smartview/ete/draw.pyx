@@ -622,7 +622,7 @@ def summary(nodes):
 
 def first_name(tree):
     "Return the name of the first node that has a name"
-    return next((node.name for node in tree if node.name), '')
+    return next((node.name for node in tree.traverse('preorder') if node.name), '')
 
 
 def draw_texts(box, anchor, texts, text_type):
