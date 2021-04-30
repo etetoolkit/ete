@@ -44,10 +44,10 @@ const view = {
 
     // representation
     drawer: {name: "RectLeafNames", type: "rect", npanels: 1},  // default drawer
-    min_size: 15,
+    min_size: 15,  // for less pixels, the drawer will collapse things
     label_expression: () => label_expression(),
     label_property: () => label_property(),
-    current_property: "name",
+    current_property: "name",  // pre-selected property in the add label menu
     labels: {},  // will contain the labels created
     rmin: 0,
     angle: {min: -180, max: 180},
@@ -150,7 +150,7 @@ async function main() {
 async function init_trees() {
     const trees_info = await api("/trees");
 
-    trees_info.forEach(t => trees[t.name] = t.id);
+    trees_info.forEach(t => trees[t.name] = t.id);  // like trees["mytree"] = 7
 }
 
 

@@ -46,9 +46,10 @@ window.zoom_into_box = zoom_into_box;  // exposed so it can be called in onclick
 
 
 // Zoom maintaining the given point on the screen.
-function zoom_around(point, zoom_in, do_zoom={x:true, y:true}) {
-    const qz = {x: (zoom_in ? 1.25 : 0.8),  // zoom change (quotient)
-                y: (zoom_in ? 1.25 : 0.8)};
+function zoom_around(point, zoom_in, do_zoom={x:true, y:true}, qz=undefined) {
+    if (!qz)
+        qz = {x: (zoom_in ? 1.25 : 0.8),  // zoom change (quotient)
+              y: (zoom_in ? 1.25 : 0.8)};
 
     if (view.drawer.type === "rect") {
         zoom_xy(point, qz, do_zoom);
