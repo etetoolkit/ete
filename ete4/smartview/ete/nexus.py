@@ -6,7 +6,7 @@ Read trees from a file in nexus format.
 
 import re
 
-from ete4.smartview import tree
+from ete4.parser.newick import read_newick, write_newick
 
 
 class NexusError(Exception):
@@ -19,7 +19,7 @@ def load(fp):
 
 
 def loads(text):
-    return {name: tree.loads(newick) for name,newick in get_trees(text).items()}
+    return {name: read_newick(newick) for name,newick in get_trees(text).items()}
 
 
 def get_trees(text):
@@ -54,13 +54,13 @@ def apply_translations(translate, newick):
     if not translate:
         return newick
 
-    t = tree.loads(newick)
+    t = read_newick(newick)
 
     for node in t:
         if node.name in translate:
             node.name = translate[node.name]
 
-    return tree.dumps(t)
+    return write_newick(t)
 
 
 def get_section(text, section_name):

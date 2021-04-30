@@ -6,7 +6,7 @@ from math import sin, cos, pi, sqrt, atan2
 from collections import namedtuple
 import random
 
-from ete4.smartview.tree import walk
+from ete4.smartview.ete.walk import walk
 
 Size = namedtuple('Size', 'dx dy')  # size of a 2D shape (sizes are always >= 0)
 Box = namedtuple('Box', 'x y dx dy')  # corner and size of a 2D shape

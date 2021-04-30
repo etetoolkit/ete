@@ -15,7 +15,7 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter as fmt
 
 import sqlite3
 
-from ete import tree
+from ete4.parser.newick import read_newick, NewickError
 
 TData = namedtuple('TData', 'name description newick owner readers')
 
@@ -30,7 +30,7 @@ def main():
         with sqlite3.connect(args.db) as connection:
             tree_id, name = update_database(connection, tdata)
         print(f'Added tree {name} with id {tree_id}.')
-    except (FileNotFoundError, tree.NewickError,
+    except (FileNotFoundError, NewickError,
             sqlite3.OperationalError, sqlite3.IntegrityError) as e:
         sys.exit(e)
 
@@ -59,7 +59,7 @@ def get_newick(treefile, verify=True):
 
     if verify:
         print('Verifying newick...')
-        tree.loads(newick)  # discarded, but will raise exception if invalid
+        read_newick(newick)  # discarded, but will raise exception if invalid
 
     return newick
 
