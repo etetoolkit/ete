@@ -18,15 +18,21 @@ function init_events() {
     document.addEventListener("wheel", on_wheel, {passive: false});
     // NOTE: chrome now uses passive=true otherwise
 
-    document.addEventListener("pointerdown", on_pointerdown);
+    document.addEventListener("mousedown", on_mousedown);
 
-    document.addEventListener("pointerup", on_pointerup);
+    document.addEventListener("mousemove", on_mousemove);
 
-    document.addEventListener("pointermove", on_pointermove);
+    document.addEventListener("mouseup", on_mouseup);
 
     document.addEventListener("contextmenu", on_contextmenu);
 
     window.addEventListener("resize", on_resize);
+
+    document.addEventListener("touchstart", on_touchstart);
+
+    document.addEventListener("touchmove", on_touchmove);
+
+    document.addEventListener("touchend", on_touchend);
 }
 
 
@@ -123,11 +129,11 @@ function is_svg(element) {
 
 
 // Mouse down -- select text, or move in minimap, or start dragging.
-function on_pointerdown(event) {
+function on_mousedown(event) {
     if (!div_contextmenu.contains(event.target))
         div_contextmenu.style.visibility = "hidden";
 
-    if (event.button !== 0)
+    if (event.button && event.button !== 0)
         return;  // we are only interested in left-clicks
 
     if (view.select_text)
@@ -148,19 +154,19 @@ function on_pointerdown(event) {
 }
 
 
-// Mouse up -- stop dragging.
-function on_pointerup(event) {
-    drag_stop();
-}
-
-
 // Mouse move -- move tree view if dragging, update position coordinates.
-function on_pointermove(event) {
+function on_mousemove(event) {
     const point = {x: event.pageX, y: event.pageY};
 
     drag_move(point);
 
     [view.pos.cx, view.pos.cy] = coordinates(point);
+}
+
+
+// Mouse up -- stop dragging.
+function on_mouseup(event) {
+    drag_stop();
 }
 
 
@@ -175,4 +181,68 @@ function on_contextmenu(event) {
 function on_resize(event) {
     update();
     // We could also draw_minimap()
+}
+
+
+// Pinch and zoom in touchscreen devices.
+
+const finger_d = {x: 0, y: 0};  // distance between the two fingers, for x and y
+
+
+// Touch start -- record the distance between the two fingers.
+function on_touchstart(event) {
+    if (event.touches.length > 2) {
+        event.preventDefault();
+    }
+    else if (event.touches.length === 2) {
+        event.preventDefault();
+        const [t0, t1] = event.touches;
+        const [x0, y0] = [t0.pageX, t0.pageY],
+              [x1, y1] = [t1.pageX, t1.pageY];
+        [finger_d.x, finger_d.y] = [Math.abs(x1 - x0), Math.abs(y1 - y0)];
+    }
+    else {  // single finger: like a pointer
+        on_mousedown(event.touches[0]);
+    }
+}
+
+
+// Touch move -- zoom according to the change in distance of the two fingers.
+function on_touchmove(event) {
+    if (event.touches.length > 2) {
+        event.preventDefault();
+    }
+    else if (event.touches.length == 2) {
+        event.preventDefault();
+        const dx_min = div_tree.offsetWidth * 0.05,    // bigger than 5% of the
+              dy_min = div_tree.offsetHeight * 0.05;   // screen width & height
+        const [t0, t1] = event.touches;
+        const [x0, y0] = [t0.pageX, t0.pageY],
+              [x1, y1] = [t1.pageX, t1.pageY];
+
+        const [dx, dy] = [Math.abs(x1 - x0), Math.abs(y1 - y0)];
+
+        const do_zoom = {x: dx > dx_min, y: dy > dy_min};
+        const zoom_in = (dx + dy) > (finger_d.x + finger_d.y);  // but not used
+        const qz = {x: dx / finger_d.x,
+                    y: dy / finger_d.y};
+
+        if (view.drawer.type === "circ")
+            qz.x = qz.y = Math.sqrt(qz.x * qz.y);
+
+        zoom_around({x: x1, y: y1}, zoom_in, do_zoom, qz);
+
+        [finger_d.x, finger_d.y] = [Math.abs(x1 - x0), Math.abs(y1 - y0)];
+    }
+    else {  // single finger: just drag the image
+        on_mousemove(event.touches[0]);
+    }
+}
+
+
+function on_touchend(event) {
+    if (event.touches.length > 1)
+        event.preventDefault();
+    else
+        on_mouseup(event.touches[0]);
 }

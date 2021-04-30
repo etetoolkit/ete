@@ -55,6 +55,7 @@
     width: 100%;
     height: 100%;
     overflow: hidden;
+    touch-action: none;
 }
 
 .aligned {
@@ -66,6 +67,7 @@
     height: 100%;
     background: white;
     overflow: hidden;
+    touch-action: none;
 }
 
 .dotted {
@@ -80,6 +82,7 @@
     bottom: 10px;
     z-index: 1;
     background: #FFF;
+    touch-action: none;
 }
 
 .visible_rect {
@@ -90,6 +93,7 @@
     z-index: 2;
     background: rgba(0, 0, 0, 0.4);
     cursor: grab;
+    touch-action: none;
 }
 
 .menu_main,.menu_representation,.menu_tags_searches {
