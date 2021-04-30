@@ -24,23 +24,11 @@ def root_at(node):
 
     future_root = add_intermediate(node)
 
-    # Go from the current root towards the goal node, switching relations.
     old_root, node_id = get_root_id(future_root)
 
-    current = old_root
-    for i in node_id:
-        new = current.children.pop(i)
-
-        new.up, current.up = None, new
-        new.dist, current.dist = 0, new.dist
-        switch_property(current, new, 'support')
-
-        new.children.append(current)
-
-        update_size(current)
-        update_size(new)
-
-        current = new
+    current = old_root  # current root, which will change in each iteration
+    for child_pos in node_id:
+        current = rehang(current, child_pos)
 
     if len(old_root.children) == 1:
         substitute(old_root, old_root.children[0])
@@ -52,18 +40,17 @@ def add_intermediate(node):
     "Add an intermediate parent to the given node and return it"
     parent = node.up
 
-    pos = parent.children.index(node)  # position of node in parent's children
-
-    parent.children.pop(pos)  # detach from parent
+    parent.children.remove(node)  # detach from parent
 
     intermediate = Tree('')  # create intermediate node
     intermediate.children = [node]
+    node.up = intermediate
     intermediate.up = parent
 
-    if node.dist >= 0:  # split length between the new and old nodes
+    if node.dist >= 0:  # split dist between the new and old nodes
         node.dist = intermediate.dist = node.dist / 2
 
-    parent.children.insert(pos, intermediate)  # add at previous position
+    parent.children.append(intermediate)
 
     return intermediate
 
@@ -72,33 +59,53 @@ def get_root_id(node):
     "Return the root of the tree of which node is part of, and its node_id"
     # For the returned  (root, node_id)  we have  root[node_id] == node
     positions = []
-    current_root, parent = node, node.up
+    current, parent = node, node.up
     while parent:
-        positions.append(parent.children.index(current_root))
-        current_root, parent = parent, parent.up
-    return current_root, positions[::-1]
+        positions.append(parent.children.index(current))
+        current, parent = parent, parent.up
+    return current, positions[::-1]
 
 
-def switch_property(n1, n2, pname='support'):
-    "Switch for nodes n1 and n2 the values of property pname"
-    p1 = n1.properties.get(pname)
-    p2 = n2.properties.get(pname)
+def rehang(node, child_pos):
+    "Rehang node on its child at position child_pos and return it"
+    # Swap parenthood.
+    child = node.children.pop(child_pos)
+    child.children.append(node)
+    node.up, child.up = child, node.up
 
-    if p1:
-        n2.properties[pname] = p1  # update it from the value in n1
-    elif pname in n2.properties:
-        del n2.properties[pname]  # or delete it if n1 doesn't have it
+    swap_branch_properties(node, child)  # so they reflect the rehanging
+    # The branch properties of a node reflect its relation wrt its parent.
 
-    if p2:
-        n1.properties[pname] = p2
-    elif pname in n1.properties:
-        del n1.properties[pname]
+    update_size(node)   # since their total dist till the furthest leaf and
+    update_size(child)  # their total number of leaves will have changed
+
+    return child  # which is now the parent of its previous parent
+
+
+def swap_branch_properties(n1, n2):
+    "Swap between nodes n1 and n2 all their branch properties"
+    # "dist" (encoded as a data attribute) is a branch property -> swap
+    n1.dist, n2.dist = n2.dist, n1.dist
+
+    # "name" (also a data attribute) is a node property -> don't swap
+
+    # "support" (encoded in the properties dict) is a branch property -> swap
+    s1 = n1.properties.get('support')
+    s2 = n2.properties.get('support')
+    n1.properties.pop('support', None)
+    n2.properties.pop('support', None)
+    if s1:
+        n2.properties['support'] = s1
+    if s2:
+        n1.properties['support'] = s2
+
+    # And that's it. I don't know of any other standard branch properties.
 
 
 def substitute(old, new):
     "Substitute old node for new node in the tree where the old node was"
     if old.dist > 0:
-        new.dist += old.dist  # add its length to the new if it has any
+        new.dist += old.dist  # add its dist to the new if it has any
 
     parent = old.up
     parent.children.remove(old)
