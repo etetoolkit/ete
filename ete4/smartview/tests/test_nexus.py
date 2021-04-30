@@ -8,7 +8,7 @@ Tests related to the nexus module. To run with pytest.
 #   http://hydrodictyon.eeb.uconn.edu/eebedia/index.php/Phylogenetics:_NEXUS_Format
 
 import os
-PATH = os.path.abspath(f'{os.path.dirname(__file__)}/..')
+PATH = os.path.abspath(f'{os.path.dirname(__file__)}/../../..')
 
 import sys
 sys.path.insert(0, PATH)

@@ -3,7 +3,7 @@ Tests for add_tree.py. To run with pytest.
 """
 
 import os
-PATH = os.path.abspath(f'{os.path.dirname(__file__)}/..')
+PATH = os.path.abspath(f'{os.path.dirname(__file__)}/../../..')
 
 import sys
 from tempfile import NamedTemporaryFile

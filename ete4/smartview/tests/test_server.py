@@ -6,7 +6,7 @@ The backend server must be running for the tests to run properly.
 
 import sys
 from os.path import abspath, dirname
-sys.path.insert(0, f'{abspath(dirname(__file__))}/..')
+sys.path.insert(0, f'{abspath(dirname(__file__))}/../../..')
 
 from contextlib import contextmanager
 import urllib.request as req

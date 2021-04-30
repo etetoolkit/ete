@@ -4,7 +4,7 @@ Tests for drawing trees. To run with pytest.
 
 import sys
 from os.path import abspath, dirname
-sys.path.insert(0, f'{abspath(dirname(__file__))}/..')
+sys.path.insert(0, f'{abspath(dirname(__file__))}/../../..')
 
 from math import pi, sqrt
 

@@ -4,7 +4,7 @@ Test the functionality of gardening.py. To run with pytest.
 
 import sys
 from os.path import abspath, dirname
-sys.path.insert(0, f'{abspath(dirname(__file__))}/..')
+sys.path.insert(0, f'{abspath(dirname(__file__))}/../../..')
 
 from ete4 import Tree
 from ete4.smartview import gardening

@@ -3,7 +3,7 @@ Tests for tree-related functions. To run with pytest.
 """
 
 import os
-PATH = os.path.abspath(f'{os.path.dirname(__file__)}/..')
+PATH = os.path.abspath(f'{os.path.dirname(__file__)}/../../..')
 
 import sys
 sys.path.insert(0, PATH)
