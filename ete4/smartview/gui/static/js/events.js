@@ -224,11 +224,11 @@ function on_touchmove(event) {
 
         const do_zoom = {x: dx > dx_min, y: dy > dy_min};
         const zoom_in = (dx + dy) > (finger_d.x + finger_d.y);  // but not used
-        const qz = {x: dx / finger_d.x,
-                    y: dy / finger_d.y};
+        const qz = {x: dx / finger_d.x,   // the zoom ratio qz is the same
+                    y: dy / finger_d.y};  // as the distance ratio
 
-        if (view.drawer.type === "circ")
-            qz.x = qz.y = Math.sqrt(qz.x * qz.y);
+        if (view.drawer.type === "circ")  // for those, we want zx == zy
+            qz.x = qz.y = Math.sqrt(qz.x * qz.y);  // geometric mean
 
         zoom_around({x: x1, y: y1}, zoom_in, do_zoom, qz);
 
