@@ -37,80 +37,82 @@ def test_sort():
     assert str(t2) == str(t)
 
     gardening.sort(t2, reverse=True)
-    assert str(t2) == strip("""
-        :0
-        ├─c
-        │ ├─g
-        │ └─f
-        └─b
-          ├─e
-          └─d
-    """)
+    assert str(t2) == """
+      /-g
+   /-|
+  |   \-f
+--|
+  |   /-e
+   \-|
+      \-d\
+"""
 
     t3 = Tree('((f,g)b,c,d,((j,k)h,i)e)a;')
     gardening.sort(t3, key=lambda node: len(node.children))
-    assert str(t3) == strip("""
-        a
-        ├─c
-        ├─d
-        ├─b
-        │ ├─f
-        │ └─g
-        └─e
-          ├─i
-          └─h
-            ├─j
-            └─k
-""")
+    assert str(t3) == """
+   /-c
+  |
+  |--d
+  |
+--|   /-f
+  |--|
+  |   \-g
+  |
+  |   /-i
+   \-|
+     |   /-j
+      \-|
+         \-k\
+"""
 
 
 def test_root_at():
     t = load_sample_tree()
 
-    t = gardening.root_at(t[0,1])
-    assert str(t) == strip("""
-        :0
-        ├─e
-        └─b
-          ├─d
-          └─c
-            ├─f
-            └─g
-    """)
+    t = gardening.root_at(gardening.get_node(t, [0,1]))
+    assert str(t) == """
+   /-e
+--|
+  |   /-d
+   \-|
+     |   /-f
+      \-|
+         \-g\
+"""
 
 
-    t = gardening.root_at(t['d'])
-    assert str(t) == strip("""
-        :0
-        ├─d
-        └─b
-          ├─c
-          │ ├─f
-          │ └─g
-          └─e
-    """)
+    t = gardening.root_at(t&'d')
+    assert str(t) == """
+   /-d
+  |
+--|      /-f
+  |   /-|
+   \-|   \-g
+     |
+      \-e\
+"""
 
-    t = gardening.root_at(t['c'])
-    assert str(t) == strip("""
-        :0
-        ├─c
-        │ ├─f
-        │ └─g
-        └─b
-          ├─e
-          └─d
-    """)
+    t = gardening.root_at(t&'c')
+    assert str(t) == """
+      /-f
+   /-|
+  |   \-g
+--|
+  |   /-e
+   \-|
+      \-d\
+"""
 
-    t = gardening.root_at(t['b'])
-    assert str(t) == strip("""
-        :0
-        ├─b
-        │ ├─e
-        │ └─d
-        └─c
-          ├─f
-          └─g
-    """)
+    t = gardening.root_at(t&'b')
+    assert str(t) == """
+      /-e
+   /-|
+  |   \-d
+--|
+  |   /-f
+   \-|
+      \-g\
+"""
 
 
 def test_get_root_id():
@@ -124,40 +126,37 @@ def test_get_root_id():
             ('e', [0,1]),
             ('f', [1,0]),
             ('g', [1,1])]:
-        node = t[node_name]
+        node = t&node_name
         assert gardening.get_root_id(node) == (t, node_id)
-        assert node == t[node_id]
+        assert node == gardening.get_node(t, node_id)
 
 
 def test_move():
     t = load_sample_tree()
 
-    gardening.move(t['b'])
-    assert str(t) == strip("""
-        :0
-        ├─c
-        │ ├─f
-        │ └─g
-        └─b
-          ├─d
-          └─e
-    """)
+    gardening.move(t&'b')
+    assert str(t) == """
+      /-f
+   /-|
+  |   \-g
+--|
+  |   /-d
+   \-|
+      \-e\
+"""
 
 
 def test_remove():
     t = load_sample_tree()
 
-    gardening.remove(t['c'])
-    assert str(t) == strip("""
-        :0
-        └─b
-          ├─d
-          └─e
-    """)
+    gardening.remove(t&'c')
+    assert str(t) == """
+      /-d
+-- /-|
+      \-e\
+"""
 
-    gardening.remove(t['d'])
-    assert str(t) == strip("""
-        :0
-        └─b
-          └─e
-    """)
+    gardening.remove(t&'d')
+    assert str(t) == """
+-- /- /-e\
+"""

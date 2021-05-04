@@ -38,10 +38,20 @@ END;
 
         trees = nexus.load(fp)
         newicks = {name: t.write() for name, t in trees.items()}
+        print(newicks)
         assert newicks == {
-            'tree1': '((1,2),3);',
-            'tree2': '((Scarabaeus,Drosophila),Aranaeus);',
-            'tree3': '((Scarabaeus,Drosophila),Aranaeus);'}
+            'tree1': '((1[&&NHX:support=1.0],\
+                        2[&&NHX:support=1.0])[&&NHX:support=1.0],\
+                        3[&&NHX:support=1.0])\
+                        [&&NHX:support=1.0];'.replace(' ', ''),
+            'tree2': '((Scarabaeus[&&NHX:support=1.0],\
+                        Drosophila[&&NHX:support=1.0])[&&NHX:support=1.0],\
+                        Aranaeus[&&NHX:support=1.0])\
+                        [&&NHX:support=1.0];'.replace(' ', ''),
+            'tree3': '((Scarabaeus[&&NHX:support=1.0],\
+                        Drosophila[&&NHX:support=1.0])[&&NHX:support=1.0],\
+                        Aranaeus[&&NHX:support=1.0])\
+                        [&&NHX:support=1.0];'.replace(' ', '')}
 
 
 def test_loads_bad_file():
@@ -71,9 +81,24 @@ end;
 """
 
     trees = nexus.get_trees(text)
+    print(trees)
     assert trees == {
-        'one': '(Ephedra,Gnetum,(Welwitschia,(Ginkgo,Pinus)));',
-        'two': '(Ephedra,Welwitschia,(Pinus,(Gnetum,Ginkgo)));'}
+            'one': """(Ephedra[&&NHX:support=1.0],\
+                    Gnetum[&&NHX:support=1.0],\
+                    (Welwitschia[&&NHX:support=1.0],\
+                    (Ginkgo[&&NHX:support=1.0],\
+                    Pinus[&&NHX:support=1.0])\
+                    [&&NHX:support=1.0])\
+                    [&&NHX:support=1.0])\
+                    [&&NHX:support=1.0];""".replace(' ', ''), 
+            'two': """(Ephedra[&&NHX:support=1.0],\
+                    Welwitschia[&&NHX:support=1.0],\
+                    (Pinus[&&NHX:support=1.0],\
+                    (Gnetum[&&NHX:support=1.0],\
+                    Ginkgo[&&NHX:support=1.0])\
+                    [&&NHX:support=1.0])\
+                    [&&NHX:support=1.0])\
+                    [&&NHX:support=1.0];""".replace(' ', '')}
 
 
 def test_loads_without_trees():

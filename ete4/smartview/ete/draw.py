@@ -364,7 +364,7 @@ class DrawerCirc(Drawer):
     def draw_nodedot(self, center):
         r, a = center
         if -pi < a < pi:
-            yield draw_circle(cartersian(center), radius=1,
+            yield draw_circle(cartesian(center), radius=1,
                               circle_type='nodedot')
 
     def draw_nodebox(self, node, node_id, box, result_of):
@@ -717,6 +717,10 @@ def get_asec(element):
     elif eid in ['line', 'arc']:
         (x1, y1), (x2, y2) = element[1], element[2]
         rect = Box(min(x1, x2), min(y1, y2), abs(x2 - x1), abs(y2 - y1))
+        return circumasec(rect)
+    elif eid == 'circle':
+        (x, y), r = element[1], element[2]
+        rect = Box(x, y, 0, 0)
         return circumasec(rect)
     else:
         raise ValueError(f'unrecognized element: {element!r}')

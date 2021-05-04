@@ -33,7 +33,7 @@ def root_at(node):
     if len(old_root.children) == 1:
         join_branch(old_root)
 
-    return current
+    return current # which is now future_root
 
 
 def split_branch(node):
@@ -77,7 +77,7 @@ def rehang(node, child_pos):
     child.up = node.up # swap parenthood.
     child.children.append(node)
 
-    swap_branch_properties(node, child)  # to reflect the new parenthood
+    swap_branch_properties(child, node)  # to reflect the new parenthood
 
     update_size(node)   # since their total dist till the furthest leaf and
     update_size(child)  # their total number of leaves will have changed

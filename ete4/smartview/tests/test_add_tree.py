@@ -3,7 +3,7 @@ Tests for add_tree.py. To run with pytest.
 """
 
 import os
-PATH = os.path.abspath(f'{os.path.dirname(__file__)}/../../..')
+PATH = os.path.abspath(f'{os.path.dirname(__file__)}/..')
 
 import sys
 from tempfile import NamedTemporaryFile
@@ -18,6 +18,7 @@ def exec(command):
 
 def test_add_trees_to_db():
     path_trees = f''
+    print(PATH)
     with NamedTemporaryFile() as fp:
         exec(f'sqlite3 {fp.name} < {PATH}/gui/create_tables.sql')
         exec(f'sqlite3 {fp.name} < {PATH}/gui/sample_data.sql')

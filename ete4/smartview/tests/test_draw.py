@@ -61,7 +61,7 @@ def test_draw_elements():
 
 def test_draw_node():
     t = Tree('A:10')
-    gdn.standardize(t)
+    gdn.update_all_sizes(t)
 
     drawer1 = draw.DrawerRectLeafNames(t, zoom=(20, 20))
     assert_equal(list(drawer1.draw_node(t, (0, 0), 0.5)), [
@@ -79,13 +79,14 @@ def test_draw_node():
 def test_draw_collapsed():
     tree_text = '((B:200,(C:250,D:300)E:350)A:100)F;'
     t = Tree(tree_text)
-    gdn.standardize(t)
+    gdn.update_all_sizes(t)
 
     drawer_z10 = draw.DrawerRectLeafNames(t, zoom=(10, 10))
     assert not any(e[0] == 'outline' for e in drawer_z10.draw())
 
     drawer_z2 = draw.DrawerRectLeafNames(t, zoom=(2, 2))
     elements_z2 = list(drawer_z2.draw())
+    print(elements_z2)
     assert_equal(elements_z2, [
         ['outline', (101.0, 0, 200, 650.0, 3.0)],
         ['text', (751.0, 0, 1.0, 1.5), (0, 0.5), 'B', 'name'],
@@ -93,9 +94,9 @@ def test_draw_collapsed():
         ['line', (1.0, 1.5), (101.0, 1.5), 'lengthline', []],
         ['circle', (101.0, 1.5), 1, 'nodedot'],
         ['line', (0.0, 1.5), (1.0, 1.5), 'lengthline', []],
-        ['line', (1.0, 1.5), 1, 'nodedot'],
-        ['nodebox', (0.0, 0.0, 752.0, 3.0), 'F', {}, [], []],
-        ['nodebox', (1.0, 0.0, 751.0, 3.0), 'A', {}, (0,), []],
+        ['circle', (1.0, 1.5), 1, 'nodedot'],
+        ['nodebox', (0.0, 0.0, 752.0, 3.0), 'F', {'support': 1}, [], []],
+        ['nodebox', (1.0, 0.0, 751.0, 3.0), 'A', {'support': 1}, (0,), []],
         ['nodebox', (101.0, 0, 651.0, 3.0), '(collapsed)', {}, [], []]])
 
     drawer_z1 = draw.DrawerRectLeafNames(t)
@@ -109,7 +110,7 @@ def test_draw_collapsed():
 def test_draw_tree_rect():
     tree_text = '((A:200,(B:250,C:300)D:350)E:100)F;'
     t = Tree(tree_text)
-    gdn.standardize(t)
+    gdn.update_all_sizes(t)
 
     drawer = draw.DrawerRectLeafNames(t, zoom=(10, 10))
     elements = list(drawer.draw())
@@ -131,18 +132,18 @@ def test_draw_tree_rect():
         ['line', (101.0, 0.5), (101.0, 2.0), 'childrenline', []],
         ['line', (0.0, 1.25), (1.0, 1.25), 'lengthline', []],
         ['circle', (1.0, 1.25), 1, 'nodedot'],
-        ['nodebox', (0.0, 0.0, 751.66666666666666, 3.0), 'F', {}, [], []],
-        ['nodebox', (1.0, 0.0, 750.66666666666666, 3.0), 'E', {}, (0,), []],
-        ['nodebox', (101.0, 1.0, 650.66666666666666, 2.0), 'D', {}, (0, 1), []],
-        ['nodebox', (451.0, 2.0, 300.66666666666666, 1.0), 'C', {}, (0, 1, 1), []],
-        ['nodebox', (451.0, 1.0, 250.66666666666666, 1.0), 'B', {}, (0, 1, 0), []],
-        ['nodebox', (101.0, 0.0, 200.66666666666666, 1.0), 'A', {}, (0, 0), []]])
+        ['nodebox', (0.0, 0.0, 751.66666666666666, 3.0), 'F', {'support': 1}, [], []],
+        ['nodebox', (1.0, 0.0, 750.66666666666666, 3.0), 'E', {'support': 1}, (0,), []],
+        ['nodebox', (101.0, 1.0, 650.66666666666666, 2.0), 'D', {'support': 1}, (0, 1), []],
+        ['nodebox', (451.0, 2.0, 300.66666666666666, 1.0), 'C', {'support': 1}, (0, 1, 1), []],
+        ['nodebox', (451.0, 1.0, 250.66666666666666, 1.0), 'B', {'support': 1}, (0, 1, 0), []],
+        ['nodebox', (101.0, 0.0, 200.66666666666666, 1.0), 'A', {'support': 1}, (0, 0), []]])
 
 
 def test_draw_tree_circ():
     tree_text = '((A:200,(B:250,C:300)D:350)E:100)F;'
     t = Tree(tree_text)
-    gdn.standardize(t)
+    gdn.update_all_sizes(t)
 
     drawer_circ = draw.DrawerCircLeafNames(t, zoom=(10, 10))
     elements_circ = list(drawer_circ.draw())
@@ -164,12 +165,12 @@ def test_draw_tree_circ():
         ['arc', (-50.50000000000002, -87.46856578222828), (50.500000000000064, 87.46856578222827), 0, 'childrenline'],
         ['line', (0.0, -0.0), (0.8660254037844383, -0.5000000000000007), 'lengthline', []],
         ['circle', (0.8660254037844383, -0.5000000000000007), 1, 'nodedot'],
-        ['nodebox', (0.0, -3.141592643589793, 1799.5938145981931, 6.283185287179586), 'F', {}, [], []],
-        ['nodebox', (1.0, -3.141592643589793, 1798.5938145981931, 6.283185287179586), 'E', {}, (0,), []],
-        ['nodebox', (101.0, -1.0471975511965979, 1698.5938145981931, 4.188790194786391), 'D', {}, (0, 1), []],
-        ['nodebox', (451.0, 1.0471975511965974, 1348.5938145981931, 2.0943950923931958), 'C', {}, (0, 1, 1), []],
-        ['nodebox', (451.0, -1.0471975511965979, 1228.78064451842, 2.0943951023931953), 'B', {}, (0, 1, 0), []],
-        ['nodebox', (101.0, -3.141592643589793, 620.2752838802346, 2.0943950923931953), 'A', {}, (0, 0), []]])
+        ['nodebox', (0.0, -3.141592643589793, 1799.5938145981931, 6.283185287179586), 'F', {'support': 1}, [], []],
+        ['nodebox', (1.0, -3.141592643589793, 1798.5938145981931, 6.283185287179586), 'E', {'support': 1}, (0,), []],
+        ['nodebox', (101.0, -1.0471975511965979, 1698.5938145981931, 4.188790194786391), 'D', {'support': 1}, (0, 1), []],
+        ['nodebox', (451.0, 1.0471975511965974, 1348.5938145981931, 2.0943950923931958), 'C', {'support': 1}, (0, 1, 1), []],
+        ['nodebox', (451.0, -1.0471975511965979, 1228.78064451842, 2.0943951023931953), 'B', {'support': 1}, (0, 1, 0), []],
+        ['nodebox', (101.0, -3.141592643589793, 620.2752838802346, 2.0943950923931953), 'A', {'support': 1}, (0, 0), []]])
 
 
 def test_intersects():
@@ -202,17 +203,7 @@ def test_intersects():
 
 def test_size():
     t = Tree('(a:2,b:3,c:4)d;')
-    gdn.standardize(t)
-
-    drawer = draw.DrawerRectLeafNames(t, zoom=(10, 10))
-    assert drawer.node_size(t) == Size(4, 3)
-    assert drawer.content_size(t) == Size(0, 3)
-    assert drawer.children_size(t) == Size(4, 3)
-
-
-    # Root with specified branch length
-    t = Tree('(a:2,b:3,c:4)d:1;')
-    gdn.standardize(t)
+    gdn.update_all_sizes(t)
 
     drawer = draw.DrawerRectLeafNames(t, zoom=(10, 10))
     assert drawer.node_size(t) == Size(5, 3)

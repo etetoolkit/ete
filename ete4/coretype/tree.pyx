@@ -82,7 +82,7 @@ cdef class TreeNode(object):
     cdef public double _dist
     cdef public dict _properties
     cdef public set features
-    cdef public list _children
+    cdef public Children _children
     cdef public object _up
     cdef public object _img_style
 
@@ -165,13 +165,11 @@ cdef class TreeNode(object):
     def _get_children(self):
         return self._children
     def _set_children(self, value):
-        if type(value) == list:
+        if type(value) in [list, Children]:
             for n in value:
                 if type(n) != type(self):
                     raise TreeError("Incorrect child node type")
-            self._children = value
-            for child in self._children:
-                child.up = self
+            self._children = Children(self, list(value))
         else:
             raise TreeError("Incorrect children type")
 
@@ -214,7 +212,7 @@ cdef class TreeNode(object):
 
     def __init__(self, newick=None, format=0, dist=None, support=None,
                  name=None, quoted_node_names=False):
-        self._children = []
+        self.children = []
         self._up = None
         self._dist = DEFAULT_DIST
         self._properties = {}
@@ -240,9 +238,7 @@ cdef class TreeNode(object):
                 self.name = t.name
                 self._dist = t.dist
                 self._properties = t.properties
-                self._children = t.children
-                for child in self._children:
-                    child.up = self
+                self.children = t.children
         
         self.support = self.support or DEFAULT_SUPPORT
         # Custom values if provided
@@ -1471,7 +1467,8 @@ cdef class TreeNode(object):
         elif method == "cpickle":
             parent = self.up
             self.up = None
-            new_node = six.moves.cPickle.loads(six.moves.cPickle.dumps(self, 2))
+            new_node = cPickle.loads(cPickle.dumps(self, 2))
+            print(new_node)
             self.up = parent
         else:
             raise TreeError("Invalid copy method")
@@ -2619,6 +2616,28 @@ cdef class TreeNode(object):
     def phonehome(self):
         from .. import _ph
         _ph.call()
+
+
+cdef class Children(list):
+    "A list that automatically sets the parent of its elements"
+
+    cdef public TreeNode parent
+
+    def __init__(self, parent, nodes=()):
+        super().__init__(nodes)
+        self.parent = parent
+        for node in nodes:
+            node.up = self.parent
+
+    def append(self, node):
+        super().append(node)
+        node.up = self.parent
+
+    def __iadd__(self, nodes):
+        for node in nodes:
+            node.up = self.parent
+        return super().__iadd__(nodes)
+
 
 def _translate_nodes(root, *nodes):
     name2node = dict([ [n, None] for n in nodes if type(n) is str])
