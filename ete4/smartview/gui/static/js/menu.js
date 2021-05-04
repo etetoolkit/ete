@@ -172,10 +172,21 @@ function add_folder_style(menu) {
 
     const folder_node = folder_style.addFolder("node");
 
-    folder_node.add(view.node, "opacity", 0, 0.2).step(0.001).onChange(
-        () => style("node").opacity = view.node.opacity);
-    folder_node.addColor(view.node, "color").onChange(
-        () => style("node").fill = view.node.color);
+    const folder_box = folder_node.addFolder("box");
+
+    folder_box.add(view.node.box, "opacity", 0, 0.2).step(0.001).onChange(
+        () => style("node").opacity = view.node.box.opacity);
+    folder_box.addColor(view.node.box, "color").onChange(
+        () => style("node").fill = view.node.box.color);
+
+    const folder_dot = folder_node.addFolder("dot");
+
+    folder_dot.add(view.node.dot, "radius", 0, 10).step(0.1).onChange(() =>
+        Array.from(div_tree.getElementsByClassName("nodedot")).forEach(
+            e => e.setAttribute("r", view.node.dot.radius)));
+
+    folder_dot.add(view.node.dot, "opacity", 0, 1).step(0.01).onChange(
+        () => style("nodedot").opacity = view.node.dot.opacity);
 
     const folder_outline = folder_style.addFolder("outline");
 
@@ -190,12 +201,34 @@ function add_folder_style(menu) {
         draw_minimap();
     });
 
-    const folder_line = folder_style.addFolder("line");
+    const folder_lines = folder_style.addFolder("lines");
 
-    folder_line.addColor(view.line, "color").onChange(
-        () => style("line").stroke = view.line.color);
-    folder_line.add(view.line, "width", 0.1, 10).onChange(
-        () => style("line").strokeWidth = view.line.width);
+    const folder_length = folder_lines.addFolder("length");
+
+    folder_length.addColor(view.line.length, "color").onChange(
+        () => style("lengthline").stroke = view.line.length.color);
+    folder_length.add(view.line.length, "width", 0.1, 10).onChange(
+        () => style("lengthline").strokeWidth = view.line.length.width);
+
+    const folder_children = folder_lines.addFolder("children");
+
+    folder_children.addColor(view.line.children, "color").onChange(
+        () => style("childrenline").stroke = view.line.children.color);
+    folder_children.add(view.line.children, "width", 0.1, 10).onChange(
+        () => style("childrenline").strokeWidth = view.line.children.width);
+    folder_children.add(view.line.children, "pattern",
+        ["solid", "dotted", "dotted - 2", "dotted - 4"])
+        .onChange(() => {
+            const pattern = view.line.children.pattern;
+            if (pattern === "solid")
+                style("childrenline").strokeDasharray = "";
+            else if (pattern === "dotted")
+                style("childrenline").strokeDasharray = "1";
+            else if (pattern === "dotted - 2")
+                style("childrenline").strokeDasharray = "2";
+            else if (pattern === "dotted - 4")
+                style("childrenline").strokeDasharray = "4";
+        });
 
     const folder_text = folder_style.addFolder("text");
 
@@ -240,10 +273,13 @@ function add_folder_style(menu) {
 function style(name) {
     const pos = {
         "line": 1,
-        "font": 3,
-        "name": 4,
-        "node": 5,
-        "outline": 6,
+        "lengthline": 2,
+        "childrenline": 3,
+        "nodedot": 4,
+        "font": 6,
+        "name": 7,
+        "node": 8,
+        "outline": 9,
     };
     return document.styleSheets[0].cssRules[pos[name]].style;
 }

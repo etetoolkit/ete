@@ -34,6 +34,7 @@ async function draw_minimap() {
     draw(div_minimap, items, tl, view.minimap.zoom);
 
     remove_nodeboxes();  // we don't want to select or highlight nodes here
+    remove_nodedots();  // nor the dots
 
     view.minimap.uptodate = true;
 
@@ -67,6 +68,13 @@ function remove_nodeboxes() {
     Array.from(div_minimap.getElementsByClassName("node")).forEach(
         e => e.remove());
     Array.from(div_minimap.getElementsByClassName("fg_node")).forEach(
+        e => e.remove());
+}
+
+
+// Remove the dots that represent the nodes.
+function remove_nodedots() {
+    Array.from(div_minimap.getElementsByClassName("nodedot")).forEach(
         e => e.remove());
 }
 

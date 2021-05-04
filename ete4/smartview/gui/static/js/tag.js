@@ -26,8 +26,8 @@ function tag_node(node_id, name) {
     };
 
     view.tags[name].remove = function() {
-        view.tags[name].opacity = view.node.opacity;
-        view.tags[name].color = view.node.color;
+        view.tags[name].opacity = view.node.box.opacity;
+        view.tags[name].color = view.node.box.color;
         colorize_tag(name);
         delete view.tags[name];
         menus.tags_searches.__folders.tags.removeFolder(folder);

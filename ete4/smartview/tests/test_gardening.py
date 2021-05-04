@@ -7,7 +7,7 @@ from os.path import abspath, dirname
 sys.path.insert(0, f'{abspath(dirname(__file__))}/../../..')
 
 from ete4 import Tree
-from ete4.smartview import gardening
+from ete4.smartview.ete import gardening
 
 
 def load_sample_tree():

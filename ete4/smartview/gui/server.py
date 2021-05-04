@@ -55,10 +55,8 @@ from itsdangerous import TimedJSONWebSignatureSerializer as JSONSigSerializer
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from ete4 import Tree
-from ete4.smartview import draw
-import ete4.smartview.gardening as gdn
-from ete4.smartview.ete import nexus
 from ete4.parser.newick import NewickError
+from ete4.smartview.ete import nexus, draw, gardening as gdn
 
 
 db = None  # call initialize() to fill these up

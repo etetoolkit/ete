@@ -94,8 +94,7 @@ Visit http://etetoolkit.org for more info.
 extensions = [
         Extension('ete4.coretype.tree', ['ete4/coretype/tree.pyx']), 
         Extension('ete4.parser.newick', ['ete4/parser/newick.pyx']), 
-        Extension('ete4.smartview.draw', ['ete4/smartview/ete/draw.pyx']), 
-        Extension('ete4.smartview.gardening', ['ete4/smartview/ete/gardening.pyx']), 
+        Extension('ete4.smartview.ete.gardening', ['ete4/smartview/ete/gardening.pyx']), 
             ],
 
 try:

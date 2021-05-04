@@ -284,7 +284,7 @@ def test_get_unknown_tree():
 
 
 def test_get_known_tree():
-    valid_elements = ['nodebox', 'outline', 'line', 'arc', 'text']
+    valid_elements = ['nodebox', 'outline', 'line', 'arc', 'circle', 'text']
 
     trees = [x['id'] for x in get('trees')]
 

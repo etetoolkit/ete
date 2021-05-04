@@ -108,9 +108,9 @@ async function get_trees_file() {
     await assert(input_trees_file.files.length > 0, "Missing file");
 
     const size_MB = input_trees_file.files[0].size / 1e6;
-    await assert (size_MB < 10,
+    await assert (size_MB < 30,
         `Sorry, the file is too big<br>` +
-        `(${size_MB.toFixed(1)} MB, the maximum is 10 MB)`);
+        `(${size_MB.toFixed(1)} MB, the maximum is 30 MB)`);
 
     return input_trees_file.files[0];
 }

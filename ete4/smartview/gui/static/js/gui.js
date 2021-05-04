@@ -76,8 +76,14 @@ const view = {
 
     // style
     node: {
-        opacity: 0,
-        color: "#222",
+        box: {
+            opacity: 0,
+            color: "#222",
+        },
+        dot: {
+            radius: 2,
+            opacity: 1,
+        },
     },
     outline: {
         opacity: 0.1,
@@ -86,8 +92,15 @@ const view = {
         slanted: true,
     },
     line: {
-        color: "#000",
-        width: 1,
+        length: {
+            color: "#000",
+            width: 1,
+        },
+        children: {
+            color: "#000",
+            width: 1,
+            pattern: "dotted",
+        },
     },
     array: {padding: 0.0},
     font_sizes: {auto: true, scroller: undefined, fixed: 10},
@@ -139,6 +152,8 @@ async function main() {
     store_node_properties();
 
     draw_minimap();
+    show_minimap("visible");
+
     update();
 
     const sample_trees = ["ncbi", "GTDB_bact_r95"];  // hardcoded for the moment
@@ -553,7 +568,7 @@ function coordinates(point) {
     if (view.drawer.type === "rect") {
         return [x, y];
     }
-    else {
+    else if (view.drawer.type === "circ") {
         const r = Math.sqrt(x*x + y*y);
         const a = Math.atan2(y, x) * 180 / Math.PI;
         return [r, a];
@@ -580,10 +595,10 @@ function on_box_wheel(event, box) {
     const zoom_in = event.deltaY < 0;
     const do_zoom = {x: !event.ctrlKey, y: !event.altKey};
 
-    if (view.drawer.type === "circ" || !view.smart_zoom)
-        zoom_around(point, zoom_in, do_zoom);
-    else
+    if (view.drawer.type === "rect" && view.smart_zoom)
         zoom_towards_box(box, point, zoom_in, do_zoom);
+    else
+        zoom_around(point, zoom_in, do_zoom);
 }
 
 

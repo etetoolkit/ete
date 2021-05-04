@@ -20,7 +20,7 @@ function zoom_into_box(box, border=0.10) {
         view.zoom.x = div_tree.offsetWidth / (w * (1 + 2 * border));
         view.zoom.y = div_tree.offsetHeight / (h * (1 + 2 * border));
     }
-    else {
+    else if (view.drawer.type === "circ") {
         const [r, a, dr, da] = box;
         const points = [[r, a], [r, a+da], [r+dr, a], [r+dr, a+da]];
         const xs = points.map(([r, a]) => r * Math.cos(a)),
@@ -54,7 +54,7 @@ function zoom_around(point, zoom_in, do_zoom={x:true, y:true}, qz=undefined) {
     if (view.drawer.type === "rect") {
         zoom_xy(point, qz, do_zoom);
     }
-    else {
+    else if (view.drawer.type === "circ") {
         if (do_zoom.x) {
             do_zoom.y = true;  // both dimensions zoom together in circular
             zoom_xy(point, qz, do_zoom);

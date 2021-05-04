@@ -207,6 +207,11 @@ function create_item(item, tl, zoom) {
 
         return create_arc(p1, p2, large, tl, zx, type);
     }
+    else if (item[0] === "circle") {
+        const [ , center, radius, type] = item;
+
+        return create_circle(center, radius, tl, zx, zy, type);
+    }
     else if (item[0] === "text") {
         const [ , box, anchor, text, type] = item;
 
@@ -388,6 +393,16 @@ function create_arc(p1, p2, large, tl, z, type="") {
         "class": "line " + type,
         "d": `M ${n1.x} ${n1.y} A ${r} ${r} 0 ${large} 1 ${n2.x} ${n2.y}`,
         "stroke": view.line.color,
+    });
+}
+
+
+function create_circle(center, radius, tl, zx, zy, type="") {
+    const [x, y] = [zx * (center[0] - tl.x), zy * (center[1] - tl.y)];
+
+    return create_svg_element("circle", {
+        "class": "circle " + type,
+        "cx": x, "cy": y, "r": view.node.dot.radius,
     });
 }
 

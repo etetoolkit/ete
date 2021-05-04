@@ -6,8 +6,6 @@ import { draw_tree } from "./draw.js";
 export { collapse_node, remove_collapsed };
 
 
-
-
 // Mark node as collapsed and show it in the corresponding menu.
 function collapse_node(name, node_id) {
     const id = node_id.toString();  // [1,0,1] -> "1,0,1"

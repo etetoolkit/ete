@@ -163,6 +163,8 @@ class Drawer:
                 yield from self.draw_lengthline((x, y + bdy), (x + dx, y + bdy),
                                                 parent_of)
 
+                yield from self.draw_nodedot((x + dx, y + bdy))
+
             if bdy0 != bdy1:
                 yield from self.draw_childrenline((x + dx, y + bdy0),
                                                   (x + dx, y + bdy1))
@@ -267,15 +269,18 @@ class DrawerRect(Drawer):
 
     def draw_lengthline(self, p1, p2, parent_of):
         "Yield a line representing a length"
-        line = draw_line(p1, p2, '', parent_of)
+        line = draw_line(p1, p2, 'lengthline', parent_of)
         if not self.viewport or intersects_box(self.viewport, get_rect(line)):
             yield line
 
     def draw_childrenline(self, p1, p2):
         "Yield a line spanning children that starts at p1 and ends at p2"
-        line = draw_line(p1, p2)
+        line = draw_line(p1, p2, 'childrenline')
         if not self.viewport or intersects_box(self.viewport, get_rect(line)):
             yield line
+
+    def draw_nodedot(self, center):
+        yield draw_circle(center, radius=1, circle_type='nodedot')
 
     def draw_nodebox(self, node, node_id, box, result_of):
         yield draw_nodebox(box, node.name, node.properties, node_id, result_of)
@@ -344,7 +349,8 @@ class DrawerCirc(Drawer):
     def draw_lengthline(self, p1, p2, parent_of):
         "Yield a line representing a length"
         if -pi <= p1[1] < pi:  # NOTE: the angles p1[1] and p2[1] are equal
-            yield draw_line(cartesian(p1), cartesian(p2), '', parent_of)
+            yield draw_line(cartesian(p1), cartesian(p2),
+                            'lengthline', parent_of)
 
     def draw_childrenline(self, p1, p2):
         "Yield an arc spanning children that starts at p1 and ends at p2"
@@ -352,7 +358,14 @@ class DrawerCirc(Drawer):
         a1, a2 = clip_angles(a1, a2)
         if a1 < a2:
             is_large = a2 - a1 > pi
-            yield draw_arc(cartesian((r1, a1)), cartesian((r2, a2)), is_large)
+            yield draw_arc(cartesian((r1, a1)), cartesian((r2, a2)), 
+                           is_large, 'childrenline')
+
+    def draw_nodedot(self, center):
+        r, a = center
+        if -pi < a < pi:
+            yield draw_circle(cartersian(center), radius=1,
+                              circle_type='nodedot')
 
     def draw_nodebox(self, node, node_id, box, result_of):
         r, a, dr, da = box
@@ -362,18 +375,18 @@ class DrawerCirc(Drawer):
                                node.name, node.properties, node_id, result_of)
 
 
-def clip_angles(double a1, double a2):
+def clip_angles(a1, a2):
     "Return the angles such that a1 to a2 extend at maximum from -pi to pi"
     EPSILON = 1e-8  # without it, p1 can be == p2 and svg arcs are not drawn
     return max(-pi + EPSILON, a1), min(pi - EPSILON, a2)
 
 
-def cartesian((double, double) point):
+def cartesian(point):
     r, a = point
     return r * cos(a), r * sin(a)
 
 
-def polar((double, double) point):
+def polar(point):
     x, y = point
     return sqrt(x*x + y*y), atan2(y, x)
 
@@ -648,6 +661,9 @@ def draw_line(p1, p2, line_type='', parent_of=None):
 def draw_arc(p1, p2, large=False, arc_type=''):
     return ['arc', p1, p2, int(large), arc_type]
 
+def draw_circle(center, radius, circle_type=''):
+    return ['circle', center, radius, circle_type]
+
 def draw_text(box, anchor, text, text_type=''):
     return ['text', box, anchor, text, text_type]
 
@@ -682,6 +698,10 @@ def get_rect(element):
     elif eid in ['line', 'arc']:  # not a great approximation for an arc...
         (x1, y1), (x2, y2) = element[1], element[2]
         return Box(min(x1, x2), min(y1, y2), abs(x2 - x1), abs(y2 - y1))
+    elif eid == 'circle':
+        (x, y), r = element[1], element[2]
+        rect = Box(x, y, 0, 0)
+        return circumasec(rect)
     else:
         raise ValueError(f'unrecognized element: {element!r}')
 
@@ -707,7 +727,6 @@ def drawn_size(elements, get_box):
     # The type of size will depend on the kind of boxes that are returned by
     # get_box() for the elements. It is width and height for boxes that are
     # rectangles, and dr and da for boxes that are annular sectors.
-    cdef double x, y, dx, dy, x_min, x_max, y_min, y_max
 
     if not elements:
         return Size(0, 0)
@@ -768,7 +787,6 @@ def stack(sbox, box):
 
 def circumrect(asec):
     "Return the rectangle that circumscribes the given annular sector"
-    cdef double rmin, amin, dr, da
     if asec is None:
         return None
 
@@ -796,7 +814,6 @@ def circumrect(asec):
 
 def circumasec(rect):
     "Return the annular sector that circumscribes the given rectangle"
-    cdef double x, y, dx, dy
     if rect is None:
         return None
     x, y, dx, dy = rect

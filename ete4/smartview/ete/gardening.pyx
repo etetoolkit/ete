@@ -22,7 +22,7 @@ def root_at(node):
     if not node.up:
         return node
 
-    future_root = add_intermediate(node)
+    future_root = split_branch(node)
 
     old_root, node_id = get_root_id(future_root)
 
@@ -31,12 +31,12 @@ def root_at(node):
         current = rehang(current, child_pos)
 
     if len(old_root.children) == 1:
-        substitute(old_root, old_root.children[0])
+        join_branch(old_root)
 
     return current
 
 
-def add_intermediate(node):
+def split_branch(node):
     "Add an intermediate parent to the given node and return it"
     parent = node.up
 
@@ -44,12 +44,17 @@ def add_intermediate(node):
 
     intermediate = Tree('')  # create intermediate node
     intermediate.children = [node]
-    intermediate.up = parent
 
     if node.dist >= 0:  # split dist between the new and old nodes
         node.dist = intermediate.dist = node.dist / 2
 
+    if 'support' in node.properties:  # copy support if it has it
+        intermediate.properties['support'] = node.properties['support']
+
     parent.children.append(intermediate)
+
+    update_size(node)
+    update_size(intermediate)
 
     return intermediate
 
@@ -67,13 +72,12 @@ def get_root_id(node):
 
 def rehang(node, child_pos):
     "Rehang node on its child at position child_pos and return it"
-    # Swap parenthood.
     child = node.children.pop(child_pos)
-    child.children.append(node)
-    node.up, child.up = child, node.up
 
-    swap_branch_properties(node, child)  # so they reflect the rehanging
-    # The branch properties of a node reflect its relation wrt its parent.
+    child.up = node.up # swap parenthood.
+    child.children.append(node)
+
+    swap_branch_properties(node, child)  # to reflect the new parenthood
 
     update_size(node)   # since their total dist till the furthest leaf and
     update_size(child)  # their total number of leaves will have changed
@@ -82,34 +86,41 @@ def rehang(node, child_pos):
 
 
 def swap_branch_properties(n1, n2):
-    "Swap between nodes n1 and n2 all their branch properties"
-    # "dist" (encoded as a data attribute) is a branch property -> swap
+    "Swap between nodes n1 and n2 their branch-related properties"
+    # The branch properties of a node reflect its relation w.r.t. its parent.
+
+    # "dist" (a data attribute) is a branch property -> swap
     n1.dist, n2.dist = n2.dist, n1.dist
 
-    # "name" (also a data attribute) is a node property -> don't swap
-
-    # "support" (encoded in the properties dict) is a branch property -> swap
-    s1 = n1.properties.get('support')
-    s2 = n2.properties.get('support')
-    n1.properties.pop('support', None)
-    n2.properties.pop('support', None)
-    if s1:
-        n2.properties['support'] = s1
-    if s2:
-        n1.properties['support'] = s2
-
-    # And that's it. I don't know of any other standard branch properties.
+    # "support" (in the properties dictionary) is a branch property -> swap
+    swap_property(n1, n2, 'support')
 
 
-def substitute(old, new):
-    "Substitute old node for new node in the tree where the old node was"
-    if old.dist > 0:
-        new.dist += old.dist  # add its dist to the new if it has any
+def swap_property(n1, n2, pname):
+    "Swap property pname between nodes n1 and n2"
+    p1 = n1.properties.pop(pname, None)
+    p2 = n2.properties.pop(pname, None)
+    if p1:
+        n2.properties[pname] = p1
+    if p2:
+        n1.properties[pname] = p2
 
-    parent = old.up
-    parent.children.remove(old)
-    parent.children.append(new)
-    new.up = parent
+
+def join_branch(node):
+    "Substitute node for its only child"
+    assert len(node.children) == 1, 'cannot join branch with multiple children'
+
+    child = node.children[0]
+
+    if 'support' in node.properties or 'support' in child.properties:
+        assert node.properties.get('support') == child.properties.get('support')
+
+    if node.dist > 0:
+        child.dist += node.dist  # restore total dist
+
+    parent = node.up
+    parent.children.remove(node)
+    parent.children.append(child)
 
 
 def move(node, shift=1):
@@ -182,8 +193,9 @@ def standardize(tree):
     update_all_sizes(tree)
 
     for node in tree.traverse():
-        try:
-            node.support = float(node.name)
-            node.name = ''
-        except ValueError:
-            pass
+        if not node.is_leaf():
+            try:
+                node.support = float(node.name)
+                node.name = ''
+            except ValueError:
+                pass

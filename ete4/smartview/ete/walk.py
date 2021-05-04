@@ -4,8 +4,8 @@ Rationale to efficiently "walk" (traverse) the tree in smartview
 
 from collections import namedtuple
 
-TreePos = namedtuple('TreePos', 'node nch')
 # Position on the tree: current node, number of visited children.
+TreePos = namedtuple('TreePos', 'node nch')
 
 
 def walk(tree):
@@ -45,7 +45,7 @@ class Walker:
 
     @property
     def node_id(self):
-        return tuple([branch.nch for branch in self.visiting[:-1]])
+        return tuple(branch.nch for branch in self.visiting[:-1])
 
     @property
     def first_visit(self):
