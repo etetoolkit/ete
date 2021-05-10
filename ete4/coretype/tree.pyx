@@ -165,11 +165,8 @@ cdef class TreeNode(object):
     def _get_children(self):
         return self._children
     def _set_children(self, value):
-        if type(value) in [list, Children]:
-            for n in value:
-                if type(n) != type(self):
-                    raise TreeError("Incorrect child node type")
-            self._children = Children(self, list(value))
+        if type(value) in (list, Children):
+            self._children = Children(self, value)
         else:
             raise TreeError("Incorrect children type")
 
@@ -1316,7 +1313,6 @@ cdef class TreeNode(object):
             buffered_support = quien_va_ser_padre.support
 
             while quien_va_ser_hijo is not self:
-                print(buffered_support)
                 quien_va_ser_padre.children.append(quien_va_ser_hijo)
                 quien_va_ser_hijo.children.remove(quien_va_ser_padre)
 
@@ -1468,7 +1464,6 @@ cdef class TreeNode(object):
             parent = self.up
             self.up = None
             new_node = cPickle.loads(cPickle.dumps(self, 2))
-            print(new_node)
             self.up = parent
         else:
             raise TreeError("Invalid copy method")
@@ -2624,19 +2619,26 @@ cdef class Children(list):
     cdef public TreeNode parent
 
     def __init__(self, parent, nodes=()):
-        super().__init__(nodes)
         self.parent = parent
         for node in nodes:
+            self.check_type(node)
             node.up = self.parent
+        super().__init__(nodes)
 
     def append(self, node):
-        super().append(node)
+        self.check_type(node)
         node.up = self.parent
+        super().append(node)
 
     def __iadd__(self, nodes):
         for node in nodes:
+            self.check_type(node)
             node.up = self.parent
         return super().__iadd__(nodes)
+
+    def check_type(self, node):
+        if type(node) != type(self.parent):
+            raise TreeError("Incorrect child node type")
 
 
 def _translate_nodes(root, *nodes):
