@@ -17,7 +17,10 @@ async function download_newick(node_id) {
 // Download a file with the current view of the tree as a svg.
 function download_svg() {
     const svg = div_tree.children[0].cloneNode(true);
-    Array.from(svg.getElementsByClassName("node")).forEach(e => e.remove());
+    // Remove foreground nodeboxes for faster rendering
+    // (Background nodes not excluded as they are purposely styled)
+    Array.from(svg.getElementsByClassName("fg_node")).forEach(e => e.remove());
+    apply_css(svg, document.styleSheets[0]);
     const svg_xml = (new XMLSerializer()).serializeToString(svg);
     const content = "data:image/svg+xml;base64," + btoa(svg_xml);
     download(view.tree + ".svg", content);
@@ -30,7 +33,10 @@ function download_image() {
     canvas.width = div_tree.offsetWidth;
     canvas.height = div_tree.offsetHeight;
     const svg = div_tree.children[0].cloneNode(true);
-    Array.from(svg.getElementsByClassName("node")).forEach(e => e.remove());
+    // Remove foreground nodeboxes for faster rendering
+    // (Background nodes not excluded as they are purposely styled)
+    Array.from(svg.getElementsByClassName("fg_node")).forEach(e => e.remove());
+    apply_css(svg, document.styleSheets[0]);
     const svg_xml = (new XMLSerializer()).serializeToString(svg);
     const ctx = canvas.getContext("2d");
     const img = new Image();
@@ -41,6 +47,19 @@ function download_image() {
     });
 }
 
+
+// Apply CSS rules to elements contained in a (cloned) container
+function apply_css(container, stylesheet) {
+    let styles = [];
+    Array.from(stylesheet.rules).forEach(r => {
+        const style = r.cssText;
+        if (style) 
+            styles.push(style);
+    })
+    const style_element = document.createElement("style");
+    style_element.innerHTML = styles.join("\n");
+    container.appendChild(style_element);
+}
 
 // Make the browser download a file.
 function download(fname, content) {

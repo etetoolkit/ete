@@ -700,8 +700,7 @@ def get_rect(element):
         return Box(min(x1, x2), min(y1, y2), abs(x2 - x1), abs(y2 - y1))
     elif eid == 'circle':
         (x, y), r = element[1], element[2]
-        rect = Box(x, y, 0, 0)
-        return circumasec(rect)
+        return Box(x, y, 0, 0)
     else:
         raise ValueError(f'unrecognized element: {element!r}')
 
