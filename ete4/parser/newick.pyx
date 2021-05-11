@@ -37,6 +37,8 @@
 #
 # #END_LICENSE#############################################################
 """ Jordi's newick parser """
+import os
+
 from ete4 import Tree
 
 
@@ -49,15 +51,62 @@ class NewickError(Exception):
         Exception.__init__(self, value)
 
 
-DIST_FORMAT = '%g'  # format used to represent the dist as a string
+DIST_FORMAT = '%g' # format used to represent the dist as a string
+
+
+def get_newick_txt(newick):
+    # try to determine whether the file exists.
+    # For very large trees, if newick contains the content of the tree,
+    # rather than a file name, this may fail, at least on Windows, 
+    # because the os fails to stat the file content, deeming it
+    # too long for testing with os.path.exists.  
+    # This raises a ValueError with description
+    # "stat: path too long for Windows".  
+    # This is described in issue #258
+    try:
+        file_exists = os.path.exists(newick)
+    except ValueError:      # failed to stat
+        file_exists = False
+
+    # if newick refers to a file, read it from file
+    # otherwise, regard it as a Newick content string.
+    if file_exists:
+        if newick.endswith('.gz'):
+            import gzip
+            with gzip.open(newick) as INPUT:
+                nw = INPUT.read()
+        else:
+            with open(newick) as INPUT:
+                nw = INPUT.read()
+    else:
+        nw = newick
+    return nw
 
 
 # Functions that depend on the tree being represented in Newick format.
-def load(fp):
-    return read_newick(fp.read().strip())
+def read_newick(nw, root_node=None):
+    """ Reads a newick tree from either a string or a file, and returns
+    an ETE tree structure.
+    A previously existent node object can be passed as the root of the
+    tree, which means that all its new children will belong to the same
+    class as the root. This allows to work with custom TreeNode
+    objects.
+    You can also take advantage from this behaviour to concatenate
+    several tree structures.
+    """
+    # Retrieve file content nw is an existant file name
+    newick = get_newick_txt(nw)
+    t = root_node or Tree()
+    if newick == '' or newick[0] != '(':
+        # Get content from incomplete newick string
+        fill_node_content(t, newick)
+    else:
+        # Parse complete newick
+        read_newick_from_string(newick, t)
+    return t
 
 
-def read_newick(tree_text):
+def read_newick_from_string(tree_text, root_node=None):
     "Return tree from its newick representation"
     if not tree_text.endswith(';'):
         raise NewickError('text ends with no ";"')
@@ -71,9 +120,14 @@ def read_newick(tree_text):
     if pos != len(tree_text) - 1:
         raise NewickError(f'root node ends at position {pos}, before tree ends')
 
-    t = Tree(content)
+    # Use pre-existing TreeNode object
+    # Or create new one
+    t = root_node or Tree()
+
+    fill_node_content(t, content)
     t.add_children(nodes)
-    return  t
+
+    return t
 
 
 def read_nodes(nodes_text, int pos=0):
@@ -102,6 +156,26 @@ def read_nodes(nodes_text, int pos=0):
         nodes.append(t)
 
     return nodes, pos+1
+
+
+def fill_node_content(node, newick, children=None):
+    """Fill TreeNode with 'content' information: a tuple
+    consisting of name, dist and properties. 
+    Such information is extracted from an incomplete newick text field
+    In addition, already computed children may be added to the TreeNode object
+    """
+    content = get_content_fields(newick.rstrip(';'))
+    name, dist, properties = content
+    node.name = name
+    node.dist = dist
+    # Avoid removing preexisting properties
+    # while overriding default values
+    node.properties = { **node.properties, **properties }
+    
+    if children:
+        node.add_children(children)
+
+    return node
 
 
 def skip_spaces_and_comments(text, int pos):
@@ -211,7 +285,3 @@ def write_newick(tree):
     "Return newick representation from tree"
     children_text = ','.join(write_newick(node).rstrip(';') for node in tree.children)
     return (f'({children_text})' if tree.children else '') + content_repr(tree) + ';'
-
-
-def dump(tree, fp):
-    fp.write(write_newick(tree))

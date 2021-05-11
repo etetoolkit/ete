@@ -214,18 +214,8 @@ cdef class TreeNode(object):
 
         # Initialize tree
         if newick is not None:
-            from ete4.parser.newick import read_newick, get_content_fields
-            if newick == '' or newick[0] != '(':
-                # Get content from incomplete newick string
-                content = get_content_fields(newick.rstrip(';'))
-                self.name, self._dist, self._properties = content
-            else:
-                # Parse complete newick
-                t = read_newick(newick)
-                self.name = t.name
-                self._dist = t.dist
-                self._properties = t.properties
-                self.add_children(t.children)
+            from ete4.parser.newick import read_newick
+            read_newick(newick, self)
         
         self.support = self.support or DEFAULT_SUPPORT
         # Custom values if provided

@@ -38,7 +38,6 @@ END;
 
         trees = nexus.load(fp)
         newicks = {name: t.write() for name, t in trees.items()}
-        print(newicks)
         assert newicks == {
             'tree1': '((1[&&NHX:support=1.0],\
                         2[&&NHX:support=1.0])[&&NHX:support=1.0],\
@@ -81,7 +80,6 @@ end;
 """
 
     trees = nexus.get_trees(text)
-    print(trees)
     assert trees == {
             'one': """(Ephedra[&&NHX:support=1.0],\
                     Gnetum[&&NHX:support=1.0],\
