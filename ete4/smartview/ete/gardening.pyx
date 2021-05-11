@@ -40,10 +40,11 @@ def split_branch(node):
     "Add an intermediate parent to the given node and return it"
     parent = node.up
 
-    parent.children.remove(node)  # detach from parent
+    parent.remove_child(node)  # detach from parent
 
     intermediate = Tree('')  # create intermediate node
-    intermediate.children = [node]
+    intermediate.remove_children()
+    intermediate.add_child(node)
 
     if node.dist >= 0:  # split dist between the new and old nodes
         node.dist = intermediate.dist = node.dist / 2
@@ -51,7 +52,7 @@ def split_branch(node):
     if 'support' in node.properties:  # copy support if it has it
         intermediate.properties['support'] = node.properties['support']
 
-    parent.children.append(intermediate)
+    parent.add_child(intermediate)
 
     update_size(node)
     update_size(intermediate)
@@ -72,10 +73,10 @@ def get_root_id(node):
 
 def rehang(node, child_pos):
     "Rehang node on its child at position child_pos and return it"
-    child = node.children.pop(child_pos)
+    child = node.pop_child(child_pos)
 
     child.up = node.up # swap parenthood.
-    child.children.append(node)
+    child.add_child(node)
 
     swap_branch_properties(child, node)  # to reflect the new parenthood
 
@@ -119,8 +120,8 @@ def join_branch(node):
         child.dist += node.dist  # restore total dist
 
     parent = node.up
-    parent.children.remove(node)
-    parent.children.append(child)
+    parent.remove_child(node)
+    parent.add_child(child)
 
 
 def move(node, shift=1):
@@ -138,7 +139,7 @@ def remove(node):
     assert node.up, 'cannot remove the root'
 
     parent = node.up
-    parent.children.remove(node)
+    parent.remove_child(node)
 
     while parent:
         update_size(parent)

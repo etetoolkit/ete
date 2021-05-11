@@ -72,7 +72,7 @@ def read_newick(tree_text):
         raise NewickError(f'root node ends at position {pos}, before tree ends')
 
     t = Tree(content)
-    t.children = nodes
+    t.add_children(nodes)
     return  t
 
 
@@ -98,7 +98,7 @@ def read_nodes(nodes_text, int pos=0):
         content, pos = read_content(nodes_text, pos)
 
         t = Tree(content)
-        t.children = children
+        t.add_children(children)
         nodes.append(t)
 
     return nodes, pos+1

@@ -82,7 +82,7 @@ cdef class TreeNode(object):
     cdef public double _dist
     cdef public dict _properties
     cdef public set features
-    cdef public Children _children
+    cdef public list children
     cdef public object _up
     cdef public object _img_style
 
@@ -162,14 +162,6 @@ cdef class TreeNode(object):
         else:
             raise TreeError("bad node_up type")
 
-    def _get_children(self):
-        return self._children
-    def _set_children(self, value):
-        if type(value) in (list, Children):
-            self._children = Children(self, value)
-        else:
-            raise TreeError("Incorrect children type")
-
     def _get_style(self):
         if self._img_style is None:
             self._set_style(None)
@@ -190,8 +182,6 @@ cdef class TreeNode(object):
     properties = property(fget=_get_properties, fset=_set_properties)
     #: Pointer to parent node
     up = property(fget=_get_up, fset=_set_up)
-    #: A list of children nodes
-    children = property(fget=_get_children, fset=_set_children)
 
     def _set_face_areas(self, value):
         if isinstance(value, _FaceAreas):
@@ -235,7 +225,7 @@ cdef class TreeNode(object):
                 self.name = t.name
                 self._dist = t.dist
                 self._properties = t.properties
-                self.children = t.children
+                self.add_children(t.children)
         
         self.support = self.support or DEFAULT_SUPPORT
         # Custom values if provided
@@ -346,9 +336,28 @@ cdef class TreeNode(object):
         if support is not None:
             child.support = support
 
-        self.children.append(child)
+        if type(child) != type(self):
+            raise TreeError("Incorrect children type")
+
         child.up = self
+        self.children.append(child)
+
         return child
+
+    def add_children(self, children=[]):
+        for child in children:
+            self.add_child(child)
+        return children
+
+    def pop_child(self, child_idx):
+        try:
+            child = self.children.pop(child_idx)
+        except ValueError as e:
+            raise TreeError("child not found")
+        else:
+            child.up = None
+            return child
+
 
     def remove_child(self, child):
         """
@@ -362,6 +371,12 @@ cdef class TreeNode(object):
         else:
             child.up = None
             return child
+
+    def remove_children(self):
+        removed = []
+        for child in self.children:
+            removed.append(self.remove_child(child))
+        return removed
 
     def add_sister(self, sister=None, name=None, dist=None):
         """
@@ -2611,35 +2626,6 @@ cdef class TreeNode(object):
     def phonehome(self):
         from .. import _ph
         _ph.call()
-
-
-cdef class Children(list):
-    "A list that automatically sets the parent of its elements"
-
-    cdef public TreeNode parent
-
-    def __init__(self, parent, nodes=()):
-        self.parent = parent
-        for node in nodes:
-            self.check_type(node)
-            node.up = self.parent
-        super().__init__(nodes)
-
-    def append(self, node):
-        self.check_type(node)
-        node.up = self.parent
-        super().append(node)
-
-    def __iadd__(self, nodes):
-        for node in nodes:
-            self.check_type(node)
-            node.up = self.parent
-        return super().__iadd__(nodes)
-
-    def check_type(self, node):
-        if type(node) != type(self.parent):
-            raise TreeError("Incorrect child node type")
-
 
 def _translate_nodes(root, *nodes):
     name2node = dict([ [n, None] for n in nodes if type(n) is str])
