@@ -327,7 +327,7 @@ cdef class TreeNode(object):
             child.support = support
 
         if type(child) != type(self):
-            raise TreeError("Incorrect children type")
+            raise TreeError(f'Incorrect child type: {type(child)}')
 
         child.up = self
         self.children.append(child)

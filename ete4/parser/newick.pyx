@@ -106,13 +106,13 @@ def read_newick(nw, root_node=None):
     return t
 
 
-def read_newick_from_string(tree_text, root_node=None):
+def read_newick_from_string(tree_text, root_node):
     "Return tree from its newick representation"
     if not tree_text.endswith(';'):
         raise NewickError('text ends with no ";"')
 
     if tree_text[0] == '(':
-        nodes, pos = read_nodes(tree_text, 0)
+        nodes, pos = read_nodes(tree_text, root_node.__class__, 0)
     else:
         nodes, pos = [], 0
 
@@ -120,17 +120,14 @@ def read_newick_from_string(tree_text, root_node=None):
     if pos != len(tree_text) - 1:
         raise NewickError(f'root node ends at position {pos}, before tree ends')
 
-    # Use pre-existing TreeNode object
-    # Or create new one
-    t = root_node or Tree()
-
+    t = root_node
     fill_node_content(t, content)
     t.add_children(nodes)
 
     return t
 
 
-def read_nodes(nodes_text, int pos=0):
+def read_nodes(nodes_text, node_class, int pos=0):
     "Return a list of nodes and the position in the text where they end"
     # nodes_text looks like '(a,b,c)', where any element can be a list of nodes
     if nodes_text[pos] != '(':
@@ -145,13 +142,13 @@ def read_nodes(nodes_text, int pos=0):
         pos = skip_spaces_and_comments(nodes_text, pos)
 
         if nodes_text[pos] == '(':
-            children, pos = read_nodes(nodes_text, pos)
+            children, pos = read_nodes(nodes_text, node_class, pos)
         else:
             children = []
 
         content, pos = read_content(nodes_text, pos)
 
-        t = Tree(content)
+        t = node_class(content)
         t.add_children(children)
         nodes.append(t)
 
