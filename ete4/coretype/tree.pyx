@@ -349,7 +349,7 @@ cdef class TreeNode(object):
             self.add_child(child)
         return children
 
-    def pop_child(self, child_idx):
+    def pop_child(self, child_idx=-1):
         try:
             child = self.children.pop(child_idx)
         except ValueError as e:
