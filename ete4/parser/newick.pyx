@@ -80,7 +80,7 @@ def get_newick_txt(newick):
                 nw = INPUT.read()
     else:
         nw = newick
-    return nw
+    return str(nw).strip()
 
 
 # Functions that depend on the tree being represented in Newick format.
