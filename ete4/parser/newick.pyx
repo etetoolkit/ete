@@ -50,8 +50,21 @@ class NewickError(Exception):
         value += "\nYou may want to check the input Newick format."
         Exception.__init__(self, value)
 
+FLOAT_FORMATTER = "%0.6g"
+NAME_FORMATTER = "%s"
 
-DIST_FORMAT = '%g' # format used to represent the dist as a string
+
+def set_float_format(formatter):
+    ''' Set the conversion format used to represent float distances and support
+    values in the newick representation of trees.
+    For example, use set_float_format('%0.32f') to specify 32 decimal numbers
+    when exporting node distances and bootstrap values.
+    Scientific notation (%e) or any other custom format is allowed. The
+    formatter string should not contain any character that may break newick
+    structure (i.e.: ":;,()")
+    '''
+    global FLOAT_FORMATTER
+    FLOAT_FORMATTER = formatter
 
 
 def get_newick_txt(newick):
@@ -83,7 +96,6 @@ def get_newick_txt(newick):
     return str(nw).strip()
 
 
-# Functions that depend on the tree being represented in Newick format.
 def read_newick(nw, root_node=None):
     """ Reads a newick tree from either a string or a file, and returns
     an ETE tree structure.
@@ -199,13 +211,14 @@ def read_content(str text, int pos, endings=',);'):
 
 def read_quoted_name(str text, int pos):
     "Return quoted name and the position where it ends"
-    if pos >= len(text) or text[pos] != "'":
-        raise NewickError(f'text at position {pos} does not start with "\'"')
+    if pos >= len(text) or text[pos] not in ("'", '"'):
+        raise NewickError(f'text at position {pos} does not start with "\'"\
+                            nor "\"')
 
     pos += 1
     start = pos
     while pos < len(text):
-        if text[pos] == "'":
+        if text[pos] in ("'", '"'):
             # Newick format escapes ' as ''
             if pos+1 >= len(text) or text[pos+1] != "'":
                 return text[start:pos].replace("''", "'"), pos
@@ -223,7 +236,7 @@ def get_content_fields(content):
       'abc:123[&&NHX:x=foo:y=bar]' -> ('abc', 123, {'x': 'foo', 'y': 'bar'})
     """
     cdef double dist
-    if content.startswith("'"):
+    if content.startswith(("'", '"')):
         name, pos = read_quoted_name(content, 0)
         pos = skip_spaces_and_comments(content, pos+1)
     else:
@@ -262,12 +275,31 @@ def get_properties(text):
         raise NewickError('invalid NHX format (%s) in text %r' % (e, text))
 
 
-def content_repr(node):
+def content_repr(node, properties=[], dist_formatter=None,
+                 support_formatter=None, name_formatter=None):
     "Return content of a node as represented in newick format"
-    dist_str = f':{DIST_FORMAT}' % node.dist if node.dist >= 0 else ''
-    pairs_str = ':'.join('%s=%s' % kv for kv in node.properties.items())
+
+    if dist_formatter is None: dist_formatter = FLOAT_FORMATTER
+    if support_formatter is None: support_formatter = FLOAT_FORMATTER
+    if name_formatter is None: name_formatter = NAME_FORMATTER
+
+    if node.name:
+        name_str = quote(f'{name_formatter}' % node.name)
+        support_str = ''
+    else:
+        name_str = ''
+        support_str = f'{support_formatter}' % node.support
+        if 'support' in properties:
+            properties.remove('support')
+        
+    dist_str = f':{dist_formatter}' % node.dist if node.dist >= 0 else ''
+
+    pairs_str = ':'.join('%s=%s' % (k, node.properties.get(k)) 
+                                    for k in properties
+                                    if node.properties.get(k))
     props_str = f'[&&NHX:{pairs_str}]' if pairs_str else ''
-    return quote(node.name) + dist_str + props_str
+
+    return (name_str or support_str) + dist_str + props_str
 
 
 def quote(name, escaped_chars=" \t\r\n()[]':;,"):
@@ -278,7 +310,13 @@ def quote(name, escaped_chars=" \t\r\n()[]':;,"):
         return name
 
 
-def write_newick(tree):
+def write_newick(tree, properties=[], dist_formatter=None,
+                 support_formatter=None, name_formatter=None):
     "Return newick representation from tree"
     children_text = ','.join(write_newick(node).rstrip(';') for node in tree.children)
-    return (f'({children_text})' if tree.children else '') + content_repr(tree) + ';'
+    content = content_repr(tree, 
+                           properties, 
+                           dist_formatter, 
+                           support_formatter,
+                           name_formatter)
+    return (f'({children_text})' if tree.children else '') + content + ';'

@@ -839,7 +839,7 @@ cdef class TreeNode(object):
         print("Most distant node:\t%s" %max_node.name)
         print("Max. distance:\t%f" %max_dist)
 
-    def write(self, features=None, outfile=None, format=0, is_leaf_fn=None,
+    def write(self, properties=[], outfile=None, format=0, is_leaf_fn=None,
               format_root_node=False, dist_formatter=None, support_formatter=None,
               name_formatter=None, quoted_node_names=False):
         """
@@ -874,7 +874,11 @@ cdef class TreeNode(object):
         """
 
         from ete4.parser.newick import write_newick
-        nw = write_newick(self)
+        nw = write_newick(self, 
+                          properties=properties,
+                          dist_formatter=dist_formatter,
+                          support_formatter=support_formatter,
+                          name_formatter=name_formatter)
 
         if outfile is not None:
             with open(outfile, "w") as OUT:

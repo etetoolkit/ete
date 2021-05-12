@@ -195,8 +195,15 @@ def standardize(tree):
 
     for node in tree.traverse():
         if not node.is_leaf():
+            name_split = node.name.rsplit(":", 1)
+            if len(name_split) > 1:
+                # Whether node name contains the support value
+                name, support = name_split
+            else:
+                # Whether node name is the support value
+                name, support = ('', node.name)
             try:
-                node.support = float(node.name)
-                node.name = ''
+                node.support = float(support)
+                node.name = name
             except ValueError:
                 pass
