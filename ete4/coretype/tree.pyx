@@ -873,12 +873,13 @@ cdef class TreeNode(object):
 
         """
 
-        from ete4.parser.newick import write_newick
-        nw = write_newick(self, 
-                          properties=properties,
-                          dist_formatter=dist_formatter,
-                          support_formatter=support_formatter,
-                          name_formatter=name_formatter)
+        from ete4.parser.newick import set_formatters, write_newick
+        # Set dist, support and name formatters
+        set_formatters(dist_formatter=dist_formatter,
+                       support_formatter=support_formatter,
+                       name_formatter=name_formatter)
+
+        nw = write_newick(self, properties=properties)
 
         if outfile is not None:
             with open(outfile, "w") as OUT:

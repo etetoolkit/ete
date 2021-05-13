@@ -50,11 +50,17 @@ class NewickError(Exception):
         value += "\nYou may want to check the input Newick format."
         Exception.__init__(self, value)
 
-FLOAT_FORMATTER = "%0.6g"
-NAME_FORMATTER = "%s"
+DEFAULT_FLOAT_FORMATTER = "%0.6g"
+DEFAULT_NAME_FORMATTER = "%s"
+
+FLOAT_FORMATTER = DEFAULT_FLOAT_FORMATTER
+DIST_FORMATTER = FLOAT_FORMATTER
+SUPPORT_FORMATTER = FLOAT_FORMATTER
+NAME_FORMATTER = DEFAULT_NAME_FORMATTER
 
 
-def set_float_format(formatter):
+def set_formatters(float_formatter=None, dist_formatter=None,
+                   support_formatter=None, name_formatter=None):
     ''' Set the conversion format used to represent float distances and support
     values in the newick representation of trees.
     For example, use set_float_format('%0.32f') to specify 32 decimal numbers
@@ -63,8 +69,14 @@ def set_float_format(formatter):
     formatter string should not contain any character that may break newick
     structure (i.e.: ":;,()")
     '''
-    global FLOAT_FORMATTER
-    FLOAT_FORMATTER = formatter
+    if float_formatter:
+        global FLOAT_FORMATTER
+        FLOAT_FORMATTER = float_formatter
+
+    global DIST_FORMATTER, SUPPORT_FORMATTER, NAME_FORMATTER
+    DIST_FORMATTER = dist_formatter or FLOAT_FORMATTER
+    SUPPORT_FORMATTER = support_formatter or FLOAT_FORMATTER
+    NAME_FORMATTER = name_formatter or DEFAULT_NAME_FORMATTER
 
 
 def get_newick_txt(newick):
@@ -139,7 +151,7 @@ def read_newick_from_string(tree_text, root_node):
     return t
 
 
-def read_nodes(nodes_text, node_class, int pos=0):
+def read_nodes(nodes_text, NewNode, int pos=0):
     "Return a list of nodes and the position in the text where they end"
     # nodes_text looks like '(a,b,c)', where any element can be a list of nodes
     if nodes_text[pos] != '(':
@@ -154,13 +166,13 @@ def read_nodes(nodes_text, node_class, int pos=0):
         pos = skip_spaces_and_comments(nodes_text, pos)
 
         if nodes_text[pos] == '(':
-            children, pos = read_nodes(nodes_text, node_class, pos)
+            children, pos = read_nodes(nodes_text, NewNode, pos)
         else:
             children = []
 
         content, pos = read_content(nodes_text, pos)
 
-        t = node_class(content)
+        t = NewNode(content)
         t.add_children(children)
         nodes.append(t)
 
@@ -275,24 +287,18 @@ def get_properties(text):
         raise NewickError('invalid NHX format (%s) in text %r' % (e, text))
 
 
-def content_repr(node, properties=[], dist_formatter=None,
-                 support_formatter=None, name_formatter=None):
+def content_repr(node, properties=[]):
     "Return content of a node as represented in newick format"
-
-    if dist_formatter is None: dist_formatter = FLOAT_FORMATTER
-    if support_formatter is None: support_formatter = FLOAT_FORMATTER
-    if name_formatter is None: name_formatter = NAME_FORMATTER
-
     if node.name:
-        name_str = quote(f'{name_formatter}' % node.name)
+        name_str = quote(f'{NAME_FORMATTER}' % node.name)
         support_str = ''
     else:
         name_str = ''
-        support_str = f'{support_formatter}' % node.support
+        support_str = f'{SUPPORT_FORMATTER}' % node.support
         if 'support' in properties:
             properties.remove('support')
         
-    dist_str = f':{dist_formatter}' % node.dist if node.dist >= 0 else ''
+    dist_str = f':{DIST_FORMATTER}' % node.dist if node.dist >= 0 else ''
 
     pairs_str = ':'.join('%s=%s' % (k, node.properties.get(k)) 
                                     for k in properties
@@ -310,13 +316,8 @@ def quote(name, escaped_chars=" \t\r\n()[]':;,"):
         return name
 
 
-def write_newick(tree, properties=[], dist_formatter=None,
-                 support_formatter=None, name_formatter=None):
+def write_newick(tree, properties=[]):
     "Return newick representation from tree"
     children_text = ','.join(write_newick(node).rstrip(';') for node in tree.children)
-    content = content_repr(tree, 
-                           properties, 
-                           dist_formatter, 
-                           support_formatter,
-                           name_formatter)
-    return (f'({children_text})' if tree.children else '') + content + ';'
+    content_text = content_repr(tree, properties)
+    return (f'({children_text})' if tree.children else '') + content_text + ';'
