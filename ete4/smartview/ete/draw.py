@@ -526,12 +526,15 @@ class DrawerRectFaces(DrawerRect):
                   return False
             return True
 
+        def it_fits(box):
+            _, _, dx, dy = box
+            return dx * zx > self.MIN_SIZE and dy * zy > self.MIN_SIZE/1.5
+
         def draw_face(face, pos, row, col, n_row, n_col):
             if face.get_content():
                 box = face.compute_bounding_box(self, point, size, 
                             bdy, text_fit, pos, row, col, n_row, n_col)
-                _, _, dx, dy = box
-                if dx * zx > self.MIN_SIZE and dy * zy > self.MIN_SIZE:
+                if it_fits(box) or not face.is_constrained:
                     return face.draw()
 
         def draw_faces_at_pos(node, pos):
@@ -542,8 +545,6 @@ class DrawerRectFaces(DrawerRect):
                 
             faces = dict(getattr(node_faces, pos, {}))
             n_col = len(faces.keys())
-
-            # TODO: take into account piled up columns
 
             for col, face_list in faces.items():
                 n_row = len(face_list)
@@ -598,14 +599,14 @@ class DrawerCircFaces(DrawerCirc):
         def it_fits(box):
             r, a, dr, da = box
             if r > 0 and (dr * z > self.MIN_SIZE\
-              and (r + dr) * da * z > self.MIN_SIZE):
+              and (r + dr) * da * z > self.MIN_SIZE/1.5):
                 return True
 
         def draw_face(face, pos, row, col, n_row, n_col):
             if face.get_content():
                 box = face.compute_bounding_box(self, point,
                         size, bda, text_fit, pos, row, col, n_row, n_col)
-                if it_fits(box):
+                if it_fits(box) or not face.is_constrained:
                     return face.draw()
 
         def draw_faces_at_pos(node, pos):
@@ -633,7 +634,7 @@ class DrawerCircFaces(DrawerCirc):
                 layout_fn(node)
 
         # Render Faces in different panels
-        if self.NPANELS > 1 or (self.NPANELS == 1 and self.panel == 0):
+        if self.NPANELS == 1 or (self.NPANELS > 1 and self.panel == 0):
             for pos in FACE_POSITIONS[:3]:
                 yield from draw_faces_at_pos(node, pos)
 
@@ -741,10 +742,9 @@ class DrawerCircAlignHeatMap(DrawerCircFaces):
 def get_drawers():
     return [ DrawerRect, DrawerCirc, 
             DrawerRectFaces, DrawerCircFaces,
-            DrawerAlignRectFaces, DrawerAlignCircFaces ]
-    return [ DrawerRectFaces, DrawerCircFaces,
-        DrawerRectAlignFaces, DrawerCircAlignNames,
-        DrawerAlignHeatMap, DrawerCircAlignHeatMap ]
+            DrawerAlignRectFaces, DrawerAlignCircFaces,
+            DrawerAlignHeatMap, DrawerCircAlignHeatMap,
+            ]
 
 
 def summary(nodes):

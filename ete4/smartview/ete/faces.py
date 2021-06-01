@@ -6,12 +6,13 @@ from ete4.smartview.ete.draw import draw_text, draw_circle
 
 class Face(object):
 
-    def __init__(self):
+    def __init__(self, constrained=True):
         self.node = None
         self.type = 'svg'
         self._content = None
         self._box = None
         self._anchor = None
+        self.is_constrained = constrained
 
     def __name__(self):
         return "face"
@@ -40,8 +41,8 @@ class Face(object):
 
 class TextFace(Face):
 
-    def __init__(self, text, text_type="", color="black"):
-        Face.__init__(self)
+    def __init__(self, text, text_type="", color="black", constrained=True):
+        Face.__init__(self, constrained)
         self._content = text
         self._text_type = text_type
         self._color = color
@@ -55,13 +56,9 @@ class TextFace(Face):
             bdy, text_fit, 
             pos, row, col,
             n_row, n_col):
-
         self._check_own_content()
         x, y = point
         dx, dy = size
-        i = col
-        j = row
-        n = n_col
         if pos == 'branch-top':
             box = (x + col * dx/n_col, y + (n_row - row - 1) * bdy/n_row,
                    dx/n_col, bdy/n_row)  # above the branch
@@ -71,10 +68,10 @@ class TextFace(Face):
                    dx/n_col, dy - bdy)  # below the branch
             anchor = (0, 0)  # left x, top y
         elif pos == 'branch-top-left':
-            box = (x - (i + 1) * dx/n_col, y, dx/n_col, bdy)  # left of branch-top
+            box = (x - (col + 1) * dx/n_col, y, dx/n_col, bdy)  # left of branch-top
             anchor = (1, 1)  # right x, bottom y
         elif pos == 'branch-bottom-left':
-            box = (x - (i + 1) * dx/n_col, y + bdy, dx/n_col, dy - bdy)  # etc.
+            box = (x - (col + 1) * dx/n_col, y + bdy, dx/n_col, dy - bdy)  # etc.
             anchor = (1, 0)  # right x, top y
         elif pos == 'float':
             fit = text_fit(self._content, dy/n_row)
@@ -103,8 +100,8 @@ class TextFace(Face):
 
 class AttrFace(TextFace):
 
-    def __init__(self, attr, color="black"):
-        Face.__init__(self)
+    def __init__(self, attr, color="black", constrained=True):
+        Face.__init__(self, constrained)
         self._attr = attr
         self._text_type = "attr_" + self._attr
         self._color = color

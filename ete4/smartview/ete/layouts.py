@@ -4,7 +4,7 @@ from ete4.smartview.ete.draw import summary
 
 
 def get_leaf_name_layout():
-    leaf_name_face = AttrFace('name')
+    leaf_name_face = AttrFace('name', constrained=False)
     def layout_fn(node):
         if node.is_leaf():
             node.add_face(leaf_name_face, position='float', column=0)
@@ -13,7 +13,7 @@ def get_leaf_name_layout():
             names = summary(node.children)
             texts = names if len(names) < 6 else (names[:3] + ['...'] + names[-2:])
             for i, text in enumerate(texts):
-                node.add_face(TextFace(text, text_type="attr_name"),
+                node.add_face(TextFace(text, text_type="attr_name", constrained=False),
                         position='float', column=0, collapsed=True)
                 
     return layout_fn
@@ -54,4 +54,3 @@ class TreeStyle(object):
 
         if layout_fn:
             self.layout_fn.append(layout_fn)
-
