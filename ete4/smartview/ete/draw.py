@@ -3,14 +3,18 @@ Classes and functions for drawing a tree.
 """
 
 from math import sin, cos, pi, sqrt, atan2
-from collections import namedtuple, OrderedDict
+from collections import namedtuple, OrderedDict, defaultdict
 import random
 
+# from ete4 import TreeStyle
 from ete4.smartview.ete.walk import walk
 
 Size = namedtuple('Size', 'dx dy')  # size of a 2D shape (sizes are always >= 0)
 Box = namedtuple('Box', 'x y dx dy')  # corner and size of a 2D shape
 SBox = namedtuple('SBox', 'x y dx_min dx_max dy')  # slanted box
+
+FACE_POSITIONS = ["branch-top", "branch-bottom", "float", "aligned"]
+
 # They are all "generalized coordinates" (can be radius and angle, say).
 
 
@@ -44,19 +48,22 @@ class Drawer:
 
     MIN_SIZE = 6  # anything that has less pixels will be outlined
 
-    NPANELS = 1  # number of drawing panels (including the aligned ones)
     TYPE = 'base'  # can be 'rect' or 'circ' for working drawers
 
+    NPANELS = 1 # number of drawing panels (including the aligned ones)
+
     def __init__(self, tree, viewport=None, panel=0, zoom=(1, 1),
-                 limits=None, collapsed_ids=None, labels=None, searches=None):
+                 limits=None, collapsed_ids=None, searches=None,
+                 tree_style=None):
         self.tree = tree
         self.viewport = Box(*viewport) if viewport else None
         self.panel = panel
         self.zoom = zoom
         self.xmin, self.xmax, self.ymin, self.ymax = limits or (0, 0, 0, 0)
         self.collapsed_ids = collapsed_ids or set()  # manually collapsed
-        self.labels = labels or []
         self.searches = searches or {}  # looks like {text: (results, parents)}
+        self.tree_style = tree_style  
+
 
     def draw(self):
         "Yield graphic elements to draw the tree"
@@ -85,6 +92,7 @@ class Drawer:
         "Update list of graphics to draw and return new position"
         box_node = make_box(point, self.node_size(it.node))
         x, y = point
+        it.node.is_collapsed = False
 
         if not self.in_viewport(box_node):
             self.bdy_dys[-1].append( (box_node.dy / 2, box_node.dy) )
@@ -134,7 +142,8 @@ class Drawer:
         box = Box(x_before, y_before, ndx, dy)
         result_of = [text for text,(results,_) in self.searches.items()
                         if it.node in results]
-        self.nodeboxes += self.draw_nodebox(it.node, it.node_id, box, result_of)
+        self.nodeboxes += self.draw_nodebox(it.node, it.node_id, box,
+                result_of, { 'fill': it.node.img_style.get('bgcolor') })
 
         return x_before, y_after
 
@@ -155,21 +164,40 @@ class Drawer:
         bdy = (bdy0 + bdy1) / 2  # this node's branch dy
         self.bdy_dys[-1].append( (bdy, dy) )
 
+        # Collapsed nodes will be drawn from self.draw_collapsed()
+        if not node.is_collapsed:
+            yield from self.draw_node(node, point, bdy)
+
         # Draw the branch line ("lengthline") and a line spanning all children.
         if self.panel == 0:
+            node_style = node.img_style
             if dx > 0:
                 parent_of = [text for text,(_,parents) in self.searches.items()
                                 if node in parents]
+                hz_line_style = {
+                        'type': node_style['hz_line_type'],
+                        'width': node_style['hz_line_width'],
+                        'color': node_style['hz_line_color'],
+                }
                 yield from self.draw_lengthline((x, y + bdy), (x + dx, y + bdy),
-                                                parent_of)
+                                parent_of, hz_line_style)
 
-                yield from self.draw_nodedot((x + dx, y + bdy))
+                nodedot_style = {
+                        'shape': node_style['shape'],
+                        'size': node_style['size'],
+                        'fill': node_style['fgcolor'],
+                }
+                yield from self.draw_nodedot((x + dx, y + bdy), nodedot_style)
 
             if bdy0 != bdy1:
+                vt_line_style = {
+                        'type': node_style['vt_line_type'],
+                        'width': node_style['vt_line_width'],
+                        'color': node_style['vt_line_color'],
+                }
                 yield from self.draw_childrenline((x + dx, y + bdy0),
-                                                  (x + dx, y + bdy1))
-
-        yield from self.draw_node(node, point, bdy)
+                                                  (x + dx, y + bdy1),
+                                                  style=vt_line_style)
 
     def get_outline(self):
         "Yield the outline representation"
@@ -198,7 +226,10 @@ class Drawer:
 
         name, properties = ((node0.name, node0.properties) if uncollapse else
                             ('(collapsed)', {}))
-        box = draw_nodebox(self.flush_outline(ndx), name, properties, [], result_of)
+
+        box = draw_nodebox(self.flush_outline(ndx), name, 
+                properties, [], result_of, 
+                { 'fill': node0.img_style.get('bgcolor') })
         self.nodeboxes.append(box)
 
         yield from graphics
@@ -267,23 +298,30 @@ class DrawerRect(Drawer):
     def get_box(self, element):
         return get_rect(element)
 
-    def draw_lengthline(self, p1, p2, parent_of):
+    def draw_lengthline(self, p1, p2, parent_of, style):
         "Yield a line representing a length"
-        line = draw_line(p1, p2, 'lengthline', parent_of)
+        line = draw_line(p1, p2, 'lengthline', parent_of, style)
         if not self.viewport or intersects_box(self.viewport, get_rect(line)):
             yield line
 
-    def draw_childrenline(self, p1, p2):
+    def draw_childrenline(self, p1, p2, style):
         "Yield a line spanning children that starts at p1 and ends at p2"
-        line = draw_line(p1, p2, 'childrenline')
+        line = draw_line(p1, p2, 'childrenline', style=style)
         if not self.viewport or intersects_box(self.viewport, get_rect(line)):
             yield line
 
-    def draw_nodedot(self, center):
-        yield draw_circle(center, radius=1, circle_type='nodedot')
+    def draw_nodedot(self, center, style):
+        size = style['size']
+        if size > 0:
+            fill = style['fill']
+            if style['shape'] == 'circle':
+                yield draw_circle(center, radius=size, 
+                        circle_type='nodedot', style={'fill':fill})
+        #TODO rectangular representation
 
-    def draw_nodebox(self, node, node_id, box, result_of):
-        yield draw_nodebox(box, node.name, node.properties, node_id, result_of)
+    def draw_nodebox(self, node, node_id, box, result_of, style=None):
+        yield draw_nodebox(box, node.name, node.properties,
+                node_id, result_of, style)
 
 
 
@@ -293,9 +331,10 @@ class DrawerCirc(Drawer):
     TYPE = 'circ'
 
     def __init__(self, tree, viewport=None, panel=0, zoom=(1, 1),
-                 limits=None, collapsed_ids=None, labels=None, searches=None):
+                 limits=None, collapsed_ids=None, searches=None,
+                 tree_style=None):
         super().__init__(tree, viewport, panel, zoom,
-                         limits, collapsed_ids, labels, searches)
+                         limits, collapsed_ids, searches, tree_style)
 
         assert self.zoom[0] == self.zoom[1], 'zoom must be equal in x and y'
 
@@ -346,33 +385,36 @@ class DrawerCirc(Drawer):
     def get_box(self, element):
         return get_asec(element)
 
-    def draw_lengthline(self, p1, p2, parent_of):
+    def draw_lengthline(self, p1, p2, parent_of, style):
         "Yield a line representing a length"
         if -pi <= p1[1] < pi:  # NOTE: the angles p1[1] and p2[1] are equal
             yield draw_line(cartesian(p1), cartesian(p2),
-                            'lengthline', parent_of)
+                            'lengthline', parent_of, style)
 
-    def draw_childrenline(self, p1, p2):
+    def draw_childrenline(self, p1, p2, style):
         "Yield an arc spanning children that starts at p1 and ends at p2"
         (r1, a1), (r2, a2) = p1, p2
         a1, a2 = clip_angles(a1, a2)
         if a1 < a2:
             is_large = a2 - a1 > pi
             yield draw_arc(cartesian((r1, a1)), cartesian((r2, a2)), 
-                           is_large, 'childrenline')
+                           is_large, 'childrenline', style=style)
 
-    def draw_nodedot(self, center):
+    def draw_nodedot(self, center, style):
         r, a = center
-        if -pi < a < pi:
-            yield draw_circle(cartesian(center), radius=1,
-                              circle_type='nodedot')
+        size = style['size']
+        if -pi < a < pi and size > 0:
+            fill = style['fill']
+            if style['shape'] == 'circle':
+                yield draw_circle(cartesian(center), radius=size,
+                          circle_type='nodedot', style={'fill': fill})
 
-    def draw_nodebox(self, node, node_id, box, result_of):
+    def draw_nodebox(self, node, node_id, box, result_of, style=None):
         r, a, dr, da = box
         a1, a2 = clip_angles(a, a + da)
         if a1 < a2:
             yield draw_nodebox(Box(r, a1, dr, a2 - a1),
-                               node.name, node.properties, node_id, result_of)
+                       node.name, node.properties, node_id, result_of, style)
 
 
 def clip_angles(a1, a2):
@@ -410,7 +452,8 @@ def draw_rect_leaf_name(drawer, node, point):
     dx_fit = drawer.dx_fitting_texts([node.name], dy)
     box = Box(x_text, y, dx_fit, dy)
 
-    yield draw_text(box, (0, 0.5), node.name, 'name')
+    yield draw_text(box, (0, 0.5), node.name, 'name',
+            style={ 'fill': node.img_style.get('fgcolor') })
 
 
 def draw_circ_leaf_name(drawer, node, point):
@@ -425,7 +468,8 @@ def draw_circ_leaf_name(drawer, node, point):
         r_text = (r + dr) if drawer.panel == 0 else drawer.xmin
         dr_fit = drawer.dx_fitting_texts([node.name], (r + dr) * da)
         box = Box(r_text, a, dr_fit, da)
-        yield draw_text(box, (0, 0.5), node.name, 'name')
+        yield draw_text(box, (0, 0.5), node.name, 'name',
+                style={ 'fill': node.img_style.get('fgcolor') })
 
 
 def draw_rect_collapsed_names(drawer):
@@ -466,106 +510,181 @@ def draw_circ_collapsed_names(drawer):
 
 # The actual drawers.
 
-class DrawerRectLabels(DrawerRect):
+class DrawerRectFaces(DrawerRect):
+
     def draw_node(self, node, point, bdy):
         size = self.content_size(node)
         zx, zy = self.zoom
 
-        def fit(text, fs):
+        def text_fit(text, fs):
             return self.dx_fitting_texts([text], fs)
 
-        for label_fn in self.labels:
-            box, anchor, text, text_type = label_fn(node, point, bdy, size, fit)
-            _, _, dx, dy = box
-            if text and dx * zx > self.MIN_SIZE and dy * zy > self.MIN_SIZE:
-                yield draw_text(box, anchor, text, text_type)
+        def is_node_valid(node_type):
+            """ Returns True if node is of node type 'node_type' """
+            if (node_type == "leaf" and not node.is_leaf())\
+              or (node_type == "internal" and node.is_leaf()):
+                  return False
+            return True
+
+        def draw_face(face, pos, row, col, n_row, n_col):
+            if face.get_content():
+                box = face.compute_bounding_box(self, point, size, 
+                            bdy, text_fit, pos, row, col, n_row, n_col)
+                _, _, dx, dy = box
+                if dx * zx > self.MIN_SIZE and dy * zy > self.MIN_SIZE:
+                    return face.draw()
+
+        def draw_faces_at_pos(node, pos):
+            if node.is_collapsed:
+                node_faces = node.collapsed_faces
+            else:
+                node_faces = node.faces
+                
+            faces = dict(getattr(node_faces, pos, {}))
+            n_col = len(faces.keys())
+
+            # TODO: take into account piled up columns
+
+            for col, face_list in faces.items():
+                n_row = len(face_list)
+                for row, face in enumerate(face_list):
+                    face.node = node
+                    drawn_face = draw_face(face, pos, row, col, n_row, n_col)
+                    if drawn_face:
+                        yield drawn_face
+
+        if not node.is_initialized:
+            node.is_initialized = True
+            for layout_fn in self.tree_style.layout_fn:
+                layout_fn(node)
+
+        # Render Faces in different panels
+        if self.NPANELS == 1 or (self.NPANELS > 1 and self.panel == 0):
+            for pos in FACE_POSITIONS[:3]:
+                yield from draw_faces_at_pos(node, pos)
+
+        if self.NPANELS == 1 or (self.NPANELS > 1 and self.panel == 1):
+            yield from draw_faces_at_pos(node, 'aligned')
+
+    def draw_collapsed(self):
+        x, y, dx_min, dx_max, dy = self.outline
+
+        node0 = self.collapsed[0]
+        node = node0 if len(self.collapsed) == 1 else node0.up
+        node.is_collapsed = True
+
+        x = x + dx_max - self.content_size(node)[0]
+        x = x if self.panel == 0 else self.xmin
+        yield from self.draw_node(node, (x, y), dy/2)
 
 
-class DrawerCircLabels(DrawerCirc):
+class DrawerCircFaces(DrawerCirc):
+
     def draw_node(self, node, point, bda):
         size = self.content_size(node)
         z = self.zoom[0]  # zx == zy
 
         r_point, a_point = point
-        def fit(text, fs):
+        def text_fit(text, fs):
             return self.dx_fitting_texts([text], r_point * fs)
 
-        for label_fn in self.labels:
-            box, anchor, text, text_type = label_fn(node, point, bda, size, fit)
+        def is_node_valid(node_type):
+            """ Returns True if node is of node type 'node_type' """
+            if (node_type == "leaf" and not node.is_leaf())\
+              or (node_type == "internal" and node.is_leaf()):
+                  return False
+            return True
+
+        def it_fits(box):
             r, a, dr, da = box
-            if text and r > 0 and (dr * z > self.MIN_SIZE and
-                                   (r + dr) * da * z > self.MIN_SIZE):
-                yield draw_text(box, anchor, text, text_type)
+            if r > 0 and (dr * z > self.MIN_SIZE\
+              and (r + dr) * da * z > self.MIN_SIZE):
+                return True
 
+        def draw_face(face, pos, row, col, n_row, n_col):
+            if face.get_content():
+                box = face.compute_bounding_box(self, point,
+                        size, bda, text_fit, pos, row, col, n_row, n_col)
+                if it_fits(box):
+                    return face.draw()
 
-class DrawerRectLeafNames(DrawerRectLabels):
-    def draw_node(self, node, point, bdy):
-        yield from super().draw_node(node, point, bdy)
-        yield from draw_rect_leaf_name(self, node, point)
+        def draw_faces_at_pos(node, pos):
+            if node.is_collapsed:
+                node_faces = node.collapsed_faces
+            else:
+                node_faces = node.faces
+                
+            faces = dict(getattr(node_faces, pos, {}))
+            n_col = len(faces.keys())
+
+            # TODO: take into account piled up columns
+
+            for col, face_list in faces.items():
+                n_row = len(face_list)
+                for row, face in enumerate(face_list):
+                    face.node = node
+                    drawn_face = draw_face(face, pos, row, col, n_row, n_col)
+                    if drawn_face:
+                        yield drawn_face
+
+        if not node.is_initialized:
+            node.is_initialized = True
+            for layout_fn in self.tree_style.layout_fn:
+                layout_fn(node)
+
+        # Render Faces in different panels
+        if self.NPANELS > 1 or (self.NPANELS == 1 and self.panel == 0):
+            for pos in FACE_POSITIONS[:3]:
+                yield from draw_faces_at_pos(node, pos)
+
+        if self.NPANELS == 1 or (self.NPANELS > 1 and self.panel == 1):
+            yield from draw_faces_at_pos(node, 'aligned')
 
     def draw_collapsed(self):
-        yield from draw_rect_collapsed_names(self)
-
-
-class DrawerCircLeafNames(DrawerCircLabels):
-    def draw_node(self, node, point, bda):
-        yield from super().draw_node(node, point, bda)
-        yield from draw_circ_leaf_name(self, node, point)
-
-    def draw_collapsed(self):
-        yield from draw_circ_collapsed_names(self)
-
-
-class DrawerAlignNames(DrawerRectLabels):
-    NPANELS = 2
-
-    def draw_node(self, node, point, bdy):
-        if self.panel == 0:
-            yield from super().draw_node(node, point, bdy)
-
-            if node.is_leaf() and self.viewport:
-                x, y = point
-                dx, dy = self.content_size(node)
-                p1 = (x + dx, y + dy/2)
-                p2 = (self.viewport.x + self.viewport.dx, y + dy/2)
-                yield draw_line(p1, p2, 'dotted')
-        elif self.panel == 1:
-            yield from draw_rect_leaf_name(self, node, point)
-
-    def draw_collapsed(self):
-        names = summary(self.collapsed)
-        if all(name == '' for name in names):
+        r, a, dr_min, dr_max, da = self.outline
+        if not (-pi <= a <= pi and -pi <= a + da <= pi):
             return
 
-        if self.panel == 0:
-            if self.viewport:
-                x, y, dx_min, dx_max, dy = self.outline
-                p1 = (x + dx_max, y + dy/2)
-                p2 = (self.viewport.x + self.viewport.dx, y + dy/2)
-                yield draw_line(p1, p2, 'dotted')
-        elif self.panel == 1:
-            yield from draw_rect_collapsed_names(self)
+        node0 = self.collapsed[0]
+        node = node0 if len(self.collapsed) == 1 else node0.up
+        node.is_collapsed = True
+
+        r = r + dr_max - self.content_size(node)[0]
+        r = r if self.panel == 0 else self.xmin
+        yield from self.draw_node(node, (r, a), da/2)
 
 
-class DrawerCircAlignNames(DrawerCircLabels):
+class DrawerAlignRectFaces(DrawerRectFaces):
     NPANELS = 2
 
-    def draw_node(self, node, point, bda):
-        if self.panel == 0:
-            yield from super().draw_node(node, point, bda)
-        elif self.panel == 1:
-            yield from draw_circ_leaf_name(self, node, point)
+    def draw_node(self, node, point, bdy):
+        yield from super().draw_node(node, point, bdy)
+        if self.panel == 0 and node.is_leaf() and self.viewport:
+            x, y = point
+            dx, dy = self.content_size(node)
+            p1 = (x + dx, y + dy/2)
+            p2 = (self.viewport.x + self.viewport.dx, y + dy/2)
+            yield draw_line(p1, p2, 'dotted')
 
     def draw_collapsed(self):
-        if self.panel == 1:
-            yield from draw_circ_collapsed_names(self)
+        yield from super().draw_collapsed()
+        if self.panel == 0 and self.viewport:
+            x, y, dx_min, dx_max, dy = self.outline
+            p1 = (x + dx_max, y + dy/2)
+            p2 = (self.viewport.x + self.viewport.dx, y + dy/2)
+            yield draw_line(p1, p2, 'dotted')
+
+
+class DrawerAlignCircFaces(DrawerCircFaces):
+    NPANELS = 2
+
 
 
 # NOTE: The next two drawers (DrawerAlignHeatMap and DrawerCircAlignHeatMap)
 #   are only there as an example for how to represent gene array data and so on
 #   with heatmaps, but not really useful now (as opposed to the previous ones!).
 
-class DrawerAlignHeatMap(DrawerRectLabels):
+class DrawerAlignHeatMap(DrawerRectFaces):
     NPANELS = 2
 
     def draw_node(self, node, point, bdy):
@@ -591,7 +710,7 @@ class DrawerAlignHeatMap(DrawerRectLabels):
             yield draw_array(Box(0, y, 600, dy), array)
 
 
-class DrawerCircAlignHeatMap(DrawerCircLabels):
+class DrawerCircAlignHeatMap(DrawerCircFaces):
     NPANELS = 2
 
     def draw_node(self, node, point, bda):
@@ -620,12 +739,12 @@ class DrawerCircAlignHeatMap(DrawerCircLabels):
 
 
 def get_drawers():
-    return [
-        DrawerRect, DrawerCirc,
-        DrawerRectLabels, DrawerCircLabels,
-        DrawerRectLeafNames, DrawerCircLeafNames,
-        DrawerAlignNames, DrawerCircAlignNames,
-        DrawerAlignHeatMap, DrawerCircAlignHeatMap]
+    return [ DrawerRect, DrawerCirc, 
+            DrawerRectFaces, DrawerCircFaces,
+            DrawerAlignRectFaces, DrawerAlignCircFaces ]
+    return [ DrawerRectFaces, DrawerCircFaces,
+        DrawerRectAlignFaces, DrawerCircAlignNames,
+        DrawerAlignHeatMap, DrawerCircAlignHeatMap ]
 
 
 def summary(nodes):
@@ -649,23 +768,30 @@ def draw_texts(box, anchor, texts, text_type):
 
 # Basic drawing elements.
 
-def draw_nodebox(box, name='', properties=None, node_id=None, result_of=None):
-    return ['nodebox', box, name, properties or {}, node_id or [], result_of or []]
+def draw_nodebox(box, name='', properties=None, 
+        node_id=None, result_of=None, style=None):
+    return ['nodebox', box, name, 
+            properties or {}, node_id or [], 
+            result_of or [], style or {}]
 
-def draw_outline(sbox):
-    return ['outline', sbox]
+def draw_outline(sbox, style=None):
+    return ['outline', sbox, style or {}]
 
-def draw_line(p1, p2, line_type='', parent_of=None):
-    return ['line', p1, p2, line_type, parent_of or []]
+def draw_line(p1, p2, line_type='', parent_of=None, style=None):
+    if style and style['type']:
+        types = ['solid', 'dotted', 'dashed']
+        style['type'] = types[int(style['type'])]
 
-def draw_arc(p1, p2, large=False, arc_type=''):
-    return ['arc', p1, p2, int(large), arc_type]
+    return ['line', p1, p2, line_type, parent_of or [], style or {}]
 
-def draw_circle(center, radius, circle_type=''):
-    return ['circle', center, radius, circle_type]
+def draw_arc(p1, p2, large=False, arc_type='', style=None):
+    return ['arc', p1, p2, int(large), arc_type, style or {}]
 
-def draw_text(box, anchor, text, text_type=''):
-    return ['text', box, anchor, text, text_type]
+def draw_circle(center, radius, circle_type='', style=None):
+    return ['circle', center, radius, circle_type, style or {}]
+
+def draw_text(box, anchor, text, text_type='', style=None):
+    return ['text', box, anchor, text, text_type, style or {}]
 
 def draw_array(box, a):
     return ['array', box, a]

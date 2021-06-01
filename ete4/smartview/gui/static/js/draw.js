@@ -30,6 +30,7 @@ async function draw_tree() {
 
     div_tree.style.cursor = "wait";
 
+    // Will be replaced by faces
     const labels = JSON.stringify(Object.keys(view.labels).map(
         t => [t, view.labels[t].nodetype, view.labels[t].position]));
 
@@ -37,7 +38,6 @@ async function draw_tree() {
         "drawer": view.drawer.name, "min_size": view.min_size,
         "zx": zx, "zy": zy, "x": x, "y": y, "w": w, "h": h,
         "collapsed_ids": JSON.stringify(Object.keys(view.collapsed_ids)),
-        "labels": labels,
     };
 
     const params_circ = {  // parameters to the drawer, in circular mode
@@ -119,6 +119,8 @@ function put_nodes_in_background(g) {
         const bg_node = e.cloneNode();
         e.id = "foreground-" + bg_node.id;  // avoid id collisions
         e.classList = ["fg_node"];  // avoid being wrongly selected as a node
+        e.style.opacity = null; // Remove bg_node styles
+        e.style.fill = null;
         g.insertBefore(bg_node, first);
     });
 }
@@ -153,7 +155,8 @@ async function draw_aligned(params) {
         for (let panel = 1; panel < view.drawer.npanels; panel++) {
             const qs = new URLSearchParams({
                 ...params, "panel": panel,
-                "rmin": view.rmin + panel * view.tree_size.width}).toString();
+                "rmin": view.rmin + panel * view.tree_size.width
+            }).toString();
 
             const items = await api(`/trees/${get_tid()}/draw?${qs}`);
 
@@ -171,7 +174,7 @@ function create_item(item, tl, zoom) {
     const [zx, zy] = [zoom.x, zoom.y];  // shortcut
 
     if (item[0] === "nodebox") {
-        const [ , box, name, properties, node_id, result_of] = item;
+        const [ , box, name, properties, node_id, result_of, style] = item;
 
         const b = create_box(box, tl, zx, zy);
 
@@ -179,6 +182,8 @@ function create_item(item, tl, zoom) {
 
         b.classList.add("node");
         result_of.forEach(t => b.classList.add(get_search_class(t, "results")));
+
+        style_nodebox(b, style)
 
         b.addEventListener("click", event =>
             on_box_click(event, box, node_id));
@@ -193,29 +198,49 @@ function create_item(item, tl, zoom) {
         return b;
     }
     else if (item[0] === "outline") {
-        const [ , sbox] = item;
+        const [ , sbox, style] = item;
 
-        return create_outline(sbox, tl, zx, zy);
+        const outline = create_outline(sbox, tl, zx, zy);
+
+        style_outline(outline, style);
+
+        return outline
     }
     else if (item[0] === "line") {
-        const [ , p1, p2, type, parent_of] = item;
+        const [ , p1, p2, type, parent_of, style] = item;
 
-        return create_line(p1, p2, tl, zx, zy, type, parent_of);
+        const line = create_line(p1, p2, tl, zx, zy, type, parent_of);
+
+        style_line(line, style);
+
+        return line;
     }
     else if (item[0] === "arc") {
-        const [ , p1, p2, large, type] = item;
+        const [ , p1, p2, large, type, style] = item;
 
-        return create_arc(p1, p2, large, tl, zx, type);
+        const arc = create_arc(p1, p2, large, tl, zx, type);
+
+        style_line(arc, style);
+
+        return arc;
     }
     else if (item[0] === "circle") {
-        const [ , center, radius, type] = item;
+        const [ , center, radius, type, style] = item;
 
-        return create_circle(center, radius, tl, zx, zy, type);
+        const circle = create_circle(center, radius, tl, zx, zy, type);
+
+        style_circle(circle, style);
+
+        return circle
     }
     else if (item[0] === "text") {
-        const [ , box, anchor, text, type] = item;
+        const [ , box, anchor, txt, type, style] = item;
 
-        return create_text(box, anchor, text, tl, zx, zy, get_class_name(type));
+        const text =  create_text(box, anchor, txt, tl, zx, zy, get_class_name(type));
+
+        style_text(text, style);
+
+        return text;
     }
     else if (item[0] === "array") {
         const [ , box, array] = item;
@@ -402,7 +427,7 @@ function create_circle(center, radius, tl, zx, zy, type="") {
 
     return create_svg_element("circle", {
         "class": "circle " + type,
-        "cx": x, "cy": y, "r": view.node.dot.radius,
+        "cx": x, "cy": y, "r": radius, // view.node.dot.radius,
     });
 }
 
@@ -412,7 +437,7 @@ function create_text(box, anchor, text, tl, zx, zy, type="") {
         get_text_placement_rect(box, anchor, text, tl, zx, zy, type) :
         get_text_placement_circ(box, anchor, text, tl, zx, type);
 
-    const dx = (type === "name") ? view.name.padding.left * fs / 100 : 0;
+    const dx = (type === "attr_name") ? view.name.padding.left * fs / 100 : 0;
 
     const t = create_svg_element("text", {
         "class": "text " + type,
@@ -552,13 +577,57 @@ function get_approx_BBox(text) {
 
 // Return the font size adjusted for the given type of text.
 function font_adjust(fs, type) {
-    if (type === "name")
+    if (type === "attr_name")
         return Math.min(view.name.max_size,
                         (1 - view.name.padding.vertical) * fs);
 
     for (const expression of Object.keys(view.labels))
         if (type === get_class_name("label_" + expression))
             return Math.min(view.labels[expression].max_size, fs);
+    
+    return Math.min(view.font_sizes.max, fs)
+}
 
-    return fs;
+// Style created items with information from backend
+function style_nodebox(nodebox, style){
+    if (style.fill && style.fill != "")
+        nodebox.style.fill = style.fill;
+    return nodebox;
+}
+
+
+function style_line(line, style) {
+    if (style.type)
+        line.style["stroke-dasharray"] = style.type === "solid" 
+            ? null : style.type == "dotted"
+            ? 2 : 5;
+
+    if (style.width)
+        line.style["stroke-width"] = style.width;
+
+    if (style.color)
+        line.style["stroke"] = style.color;
+
+    return line;
+}
+
+
+function style_outline(outline, style) {
+    if (style.fill && style.fill != "")
+        outline.style.fill = style.fill;
+    return outline;
+}
+
+
+function style_circle(circle, style) {
+    if (style.fill && style.fill != "")
+        circle.style.fill = style.fill;
+    return circle;
+}
+
+
+function style_text(text, style) {
+    if (style.fill && style.fill != "")
+        text.style.fill = style.fill;
+    return text;
 }

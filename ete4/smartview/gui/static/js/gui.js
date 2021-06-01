@@ -43,7 +43,7 @@ const view = {
     allow_modifications: true,
 
     // representation
-    drawer: {name: "RectLeafNames", type: "rect", npanels: 1},  // default drawer
+    drawer: {name: "RectFaces", type: "rect", npanels: 1},  // default drawer
     min_size: 15,  // for less pixels, the drawer will collapse things
     label_expression: () => label_expression(),
     label_property: () => label_property(),
@@ -77,8 +77,8 @@ const view = {
     // style
     node: {
         box: {
-            opacity: 0,
-            color: "#222",
+            opacity: 0.2,
+            color: "#fff",
         },
         dot: {
             radius: 2,
@@ -103,13 +103,15 @@ const view = {
         },
     },
     array: {padding: 0.0},
-    font_sizes: {auto: true, scroller: undefined, fixed: 10},
+    font_sizes: {auto: true, fixed: 10, max: 15, scroller: {
+        fixed: undefined, max: undefined
+    }},
 
     name: {  // this may go away if we can do names nicely with labels
         color: "#00A",
         font: "sans-serif",
         max_size: 25,
-        padding: {left: 10, vertical: 0.20},
+        padding: {left: 30, vertical: 0.20},
     },
 
     // minimap
@@ -338,7 +340,7 @@ async function set_consistent_values() {
                    Opening a default drawer.`,
             icon: "error",
         });
-        view.drawer.name = "Rect";
+        view.drawer.name = "RectFaces";
         drawer_info = {"type": "rect", "npanels": 1};
     }
 

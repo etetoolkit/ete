@@ -57,6 +57,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from ete4 import Tree
 from ete4.parser.newick import NewickError
 from ete4.smartview.ete import nexus, draw, gardening as gdn
+from ete4 import NodeStyle
+from ete4.smartview.ete.faces import TextFace, LabelFace
 
 
 db = None  # call initialize() to fill these up
@@ -377,7 +379,7 @@ def load_tree(tree_id):
 def get_drawer(tree_id, args):
     "Return the drawer initialized as specified in the args"
     valid_keys = ['x', 'y', 'w', 'h', 'panel', 'zx', 'zy', 'drawer', 'min_size',
-                  'collapsed_ids', 'labels', 'rmin', 'amin', 'amax']
+                  'collapsed_ids', 'rmin', 'amin', 'amax']
 
     try:
         assert all(k in valid_keys for k in args.keys()), 'invalid keys'
@@ -394,9 +396,9 @@ def get_drawer(tree_id, args):
         zoom = (get('zx', 1), get('zy', 1))
         assert zoom[0] > 0 and zoom[1] > 0, 'zoom must be > 0'
 
-        drawer_name = args.get('drawer', 'RectLeafNames')
-        drawer_class = next(d for d in draw.get_drawers()
-            if d.__name__[len('Drawer'):] == drawer_name)
+        drawer_name = args.get('drawer', 'RectFaces')
+        drawer_class = next((d for d in draw.get_drawers()
+            if d.__name__[len('Drawer'):] == drawer_name), None)
 
         drawer_class.MIN_SIZE = get('min_size', 6)
         assert drawer_class.MIN_SIZE > 0, 'min_size must be > 0'
@@ -408,12 +410,10 @@ def get_drawer(tree_id, args):
         collapsed_ids = set(tuple(int(i) for i in node_id.split(','))
             for node_id in json.loads(args.get('collapsed_ids', '[]')))
 
-        labels = get_label_fns(json.loads(args.get('labels', '[]')))
-
         searches = app.searches.get(tree_id)
 
         return drawer_class(load_tree(tree_id), viewport, panel, zoom,
-                            limits, collapsed_ids, labels, searches)
+                    limits, collapsed_ids, searches, app.tree_style)
     except StopIteration:
         raise InvalidUsage(f'not a valid drawer: {drawer_name}')
     except (ValueError, AssertionError) as e:
@@ -430,75 +430,6 @@ def get_newick(tree_id, max_mb):
         raise InvalidUsage('newick too big (%.3g MB)' % size_mb)
 
     return newick
-
-
-def get_label_fns(labels):
-    "Return a list of functions that when called on a node will label it"
-    positions = set(pos for _,_,pos in labels)
-    label_at = {pos: [label for label in labels if label[2] == pos]
-                    for pos in positions}
-
-    fns = []
-    for pos, labels_pos in label_at.items():
-        for i, label in enumerate(labels_pos):
-            fns.append(get_label_fn(label, i, len(labels_pos)))
-
-    return fns
-
-
-def get_label_fn(label, i, n):
-    "Return a function that given a node will put a label on it"
-    # "label" is the i-th label of n for that postion.
-    expression, nodetype, pos = label
-
-    try:
-        code = compile(expression, '<string>', 'eval')
-    except SyntaxError as e:
-        raise InvalidUsage(f'compiling expression: {e}')
-
-    def label_fn(node, point, bdy, size, fit):
-        box, anchor = (0, 0, 0, 0), (0, 0)
-
-        if ((nodetype == "leaf" and not node.is_leaf()) or
-            (nodetype == "internal" and node.is_leaf())):
-            return box, anchor, '', ''
-
-        text = str(safer_eval(code, {
-            'name': node.name, 'is_leaf': node.is_leaf(),
-            'length': node.dist, 'dist': node.dist, 'd': node.dist,
-            'support': node.support,
-            'properties': node.properties, 'p': node.properties,
-            'get': dict.get, 'split': str.split,
-            'children': node.children, 'ch': node.children,
-            'regex': re.search,
-            'len': len, 'sum': sum, 'abs': abs, 'float': float, 'pi': pi}))
-
-        x, y = point
-        dx, dy = size
-
-        if pos == 'branch-top':
-            box = (x + i * dx/n, y, dx/n, bdy)  # above the branch
-            anchor = (0.5, 1)  # halfway x, bottom y
-        elif pos == 'branch-bottom':
-            box = (x + i * dx/n, y + bdy, dx/n, dy - bdy)  # below the branch
-            anchor = (0.5, 0)  # halfway x, top y
-        elif pos == 'branch-top-left':
-            box = (x - (i + 1) * dx/n, y, dx/n, bdy)  # left of branch-top
-            anchor = (1, 1)  # right x, bottom y
-        elif pos == 'branch-bottom-left':
-            box = (x - (i + 1) * dx/n, y + bdy, dx/n, dy - bdy)  # etc.
-            anchor = (1, 0)  # right x, top y
-        elif pos == 'float':
-            box = (x + dx, y + i * dy/n, fit(text, dy), dy/n)  # right of node
-            anchor = (0, bdy / dy)  # left x, branch position in y
-        else:
-            raise InvalidUsage(f'unkown position {pos}')
-
-        text_type = 'label_' + expression
-
-        return box, anchor, text, text_type
-
-    return label_fn
 
 
 def store_search(tree_id, args):
@@ -859,10 +790,12 @@ def get_fields(required=None, valid_extra=None):
 # App initialization.
 
 def create_example_database():
+    print('\n\ndatabse\n\n')
     db_path = app.config['DATABASE']
 
     os.system(f'sqlite3 {db_path} < create_tables.sql')
     os.system(f'sqlite3 {db_path} < sample_data.sql')
+    print('\n\n../examples/{tfile}\n\n')
 
     for tfile in ['HmuY.aln2.tree', 'aves.tree', 'GTDB_bact_r95.tree']:
         os.system(f'./add_tree.py --db {db_path} ../examples/{tfile}')
@@ -880,6 +813,7 @@ def initialize():
 
     app.trees = {}  # to keep in memory loaded trees
     app.searches = {}  # to keep in memory the searches
+    app.tree_style = None
 
     serializer = JSONSigSerializer(app.config['SECRET_KEY'], expires_in=3600)
 
@@ -911,6 +845,7 @@ def initialize():
 def configure(app):
     "Set the configuration for the flask app"
     app.root_path = os.path.abspath('.')  # in case we launched from another dir
+    app.instance_path = app.root_path + '/instance'
 
     CORS(app)  # allow cross-origin resource sharing (requests from other domains)
 
@@ -950,10 +885,11 @@ def add_resources(api):
     add(Id, '/id/<path:path>')
 
 
-
 app = initialize()
 
+
 if __name__ == '__main__':
+
     if not os.path.exists(app.config['DATABASE']):
         create_example_database()
 

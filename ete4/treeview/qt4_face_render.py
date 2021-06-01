@@ -376,8 +376,8 @@ def update_node_faces(node, n2f, img):
         # In case there are fixed faces
         fixed_faces =  getattr(getattr(node, "faces", None) , position, {})
 
-        # _temp_faces should be initialized by the set_style funcion
-        all_faces = getattr(node._temp_faces, position)
+        # _temp_faces should be initialized by the set_style function
+        all_faces = getattr(node.properties["_temp_faces"], position)
         for column, values in six.iteritems(fixed_faces):
             all_faces.setdefault(column, []).extend(values)
 
@@ -391,6 +391,6 @@ def update_node_faces(node, n2f, img):
     # all temp and fixed faces are now referenced by the faceblock, so
     # we can clear the node temp faces (don't want temp faces to be
     # replicated with copy or dumped with cpickle)
-    node._temp_faces = None
+    node.properties.pop("_temp_faces")
 
     return faceblock

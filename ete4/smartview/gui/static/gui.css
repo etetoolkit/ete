@@ -22,7 +22,7 @@
 }
 
 .box {
-    stroke: #000;
+    /*stroke: #000;*/
     stroke-width: 0.5;
 }
 
@@ -36,8 +36,8 @@
 }
 
 .node {
-    opacity: 0;
-    fill: #222;
+    opacity: 0.2;
+    fill: #fff;
 }
 
 .outline {
