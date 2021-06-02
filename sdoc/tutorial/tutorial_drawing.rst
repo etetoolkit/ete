@@ -330,7 +330,8 @@ Faces position
 ^^^^^^^^^^^^^^^^
 
 Faces can be added to different areas around the node, namely
-**branch-right**, **branch-top**, **branch-bottom** or **aligned**.
+**branch-right**, **branch-top**, **branch-bottom**, **float**,
+**float-behind**, **float-right**, or **aligned**.
 Each area represents a table in which faces can be added through the
 :func:`TreeNode.add_face` method. For instance, if two text labels
 want to be drawn bellow the branch line of a given node, a pair of

@@ -66,7 +66,7 @@ _COLOR_CHECKER = lambda x: x.lower() in SVG_COLORS or re.match(_COLOR_MATCH, x)
 _NODE_TYPE_CHECKER = lambda x: x in ["sphere", "circle", "square"]
 _BOOL_CHECKER =  lambda x: isinstance(x, bool) or x in (0,1)
 
-FACE_POSITIONS = set(["branch-right", "branch-top", "branch-bottom", "float", "float-behind", "aligned"])
+FACE_POSITIONS = set(["branch-right", "branch-top", "branch-bottom", "float", "float-behind", "float-right", "aligned"])
 
 __all__  = ["NodeStyle", "TreeStyle", "FaceContainer", "_leaf", "add_face_to_node", "COLOR_SCHEMES"]
 
@@ -601,7 +601,8 @@ def add_face_to_node(face, node, column, aligned=False, position="branch-right")
     :argument node: a tree node instance (:class:`Tree`, :class:`PhyloTree`, etc.)
     :argument column: An integer number starting from 0
     :argument "branch-right" position: Possible values are
-      "branch-right", "branch-top", "branch-bottom", "float", "float-behind" and "aligned".
+      "branch-right", "branch-top", "branch-bottom", "float", "float-behind",
+      "float-right" and "aligned".
     """
 
     ## ADD HERE SOME TYPE CHECK FOR node and face
