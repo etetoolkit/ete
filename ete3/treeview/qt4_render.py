@@ -798,16 +798,22 @@ def render_floatings(n2i, n2f, img, float_layer, float_behind_layer, extra_width
                 xtra = 0
 
             if img.mode == "c":
-                # Floatings are positioned over branches
-                crender.rotate_and_displace(fb, item.rotation, fb.h, item.radius - item.nodeRegion.width() + xtra)
-                # Floatings are positioned starting from the node circle
-                #crender.rotate_and_displace(fb, item.rotation, fb.h, item.radius - item.nodeRegion.width())
+                if isRight:
+                    # Floatings are positioned right to all other aligned faces
+                    crender.rotate_and_displace(fb, item.rotation, fb.h, extra_width + tree_end_x)
+                else:
+                    # Floatings are positioned over branches
+                    crender.rotate_and_displace(fb, item.rotation, fb.h, item.radius - item.nodeRegion.width() + xtra)
+                    # Floatings are positioned starting from the node circle
+                    #crender.rotate_and_displace(fb, item.rotation, fb.h, item.radius - item.nodeRegion.width())
 
             elif img.mode == "r":
                 if isRight:
+                    # Floatings are positioned right to all other aligned faces
                     start = extra_width + tree_end_x # This puts it to the right of the column
                     fb.setPos(start, item.content.mapToScene(start, item.center - (fb.h/2.0)).y())
                 else:
+                    # Floatings are positioned over branches
                     start = item.branch_length + xtra - fb.w #if fb.w < item.branch_length else 0.0
                     fb.setPos(item.content.mapToScene(start, item.center - (fb.h/2.0)))
 
