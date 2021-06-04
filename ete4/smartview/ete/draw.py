@@ -6,7 +6,6 @@ from math import sin, cos, pi, sqrt, atan2
 from collections import namedtuple, OrderedDict, defaultdict
 import random
 
-# from ete4 import TreeStyle
 from ete4.smartview.ete.walk import walk
 
 Size = namedtuple('Size', 'dx dy')  # size of a 2D shape (sizes are always >= 0)
@@ -80,6 +79,8 @@ class Drawer:
                 point = self.on_first_visit(point, it, graphics)
             else:
                 point = self.on_last_visit(point, it, graphics)
+                if (point[0] < 0):
+                    print(it.node)
             yield from graphics
 
         if self.outline:
@@ -187,7 +188,8 @@ class Drawer:
                         'size': node_style['size'],
                         'fill': node_style['fgcolor'],
                 }
-                yield from self.draw_nodedot((x + dx, y + bdy), nodedot_style)
+                yield from self.draw_nodedot((x + dx, y + bdy),
+                        dy * self.zoom[1], nodedot_style)
 
             if bdy0 != bdy1:
                 vt_line_style = {
@@ -251,6 +253,33 @@ class Drawer:
         max_len = max(len(t) for t in texts)  # number of chars of the longest
         return max_len * dx_char / zx  # in tree units
 
+    def get_collapsed_node(self):
+        """Get node that will be rendered as a collapsed node.
+        Its children are nodes either manually collapsed or too
+        small to be rendered"""
+        # This approach may be unefficient but useful if 
+        # graphic representations are treated as
+        # (Tree) nodes with associated Face(s)
+        # (Collapsing the parent node is not viable
+        # as not all the children of such node ought to be collapsed)
+
+        if len(self.collapsed) == 1:
+            node0 = self.collapsed[0]
+            node0.is_collapsed = True
+            return node0
+
+        try:
+            node = Tree()
+        except:
+            from ete4 import Tree # avoid circular import
+            node = Tree()
+
+        node.is_collapsed = True
+        node.add_children(self.collapsed)
+        node.size = (0, self.outline[-1])
+
+        return node
+
     # These are the 2 functions that the user overloads to choose what to draw
     # when representing a node and a group of collapsed nodes:
 
@@ -310,14 +339,21 @@ class DrawerRect(Drawer):
         if not self.viewport or intersects_box(self.viewport, get_rect(line)):
             yield line
 
-    def draw_nodedot(self, center, style):
-        size = style['size']
+    def draw_nodedot(self, center, max_size, style):
+        "Yield circle or square on node based on node.img_style"
+        size = min(max_size, style['size'])
         if size > 0:
             fill = style['fill']
+            nodedot_style={'fill':fill}
             if style['shape'] == 'circle':
                 yield draw_circle(center, radius=size, 
-                        circle_type='nodedot', style={'fill':fill})
-        #TODO rectangular representation
+                        circle_type='nodedot', style=nodedot_style)
+            elif style['shape'] == 'square':
+                x, y = center
+                zx, zy = self.zoom
+                dx, dy = 2 * size / zx, 2 * size / zy
+                box = (x - dx/2, y - dy/2, dx, dy)
+                yield draw_rect(box, rect_type='nodedot', style=nodedot_style)
 
     def draw_nodebox(self, node, node_id, box, result_of, style=None):
         yield draw_nodebox(box, node.name, node.properties,
@@ -400,14 +436,21 @@ class DrawerCirc(Drawer):
             yield draw_arc(cartesian((r1, a1)), cartesian((r2, a2)), 
                            is_large, 'childrenline', style=style)
 
-    def draw_nodedot(self, center, style):
+    def draw_nodedot(self, center, max_size, style):
         r, a = center
-        size = style['size']
+        size = min(max_size, style['size'])
         if -pi < a < pi and size > 0:
             fill = style['fill']
+            nodedot_style={'fill':fill}
             if style['shape'] == 'circle':
                 yield draw_circle(cartesian(center), radius=size,
-                          circle_type='nodedot', style={'fill': fill})
+                          circle_type='nodedot', style=nodedot_style)
+            elif style['shape'] == 'square':
+                z = self.zoom[0] # same zoom in x and y
+                x, y = cartesian((r, a))
+                dx, dy = 2 * size / z, 2 * size / z
+                box = Box(x - dx / 2, y - dy / 2, dx, dy)
+                yield draw_rect(box, rect_type='nodedot', style=nodedot_style)
 
     def draw_nodebox(self, node, node_id, box, result_of, style=None):
         r, a, dr, da = box
@@ -519,21 +562,15 @@ class DrawerRectFaces(DrawerRect):
         def text_fit(text, fs):
             return self.dx_fitting_texts([text], fs)
 
-        def is_node_valid(node_type):
-            """ Returns True if node is of node type 'node_type' """
-            if (node_type == "leaf" and not node.is_leaf())\
-              or (node_type == "internal" and node.is_leaf()):
-                  return False
-            return True
-
         def it_fits(box):
             _, _, dx, dy = box
-            return dx * zx > self.MIN_SIZE and dy * zy > self.MIN_SIZE/1.5
+            return dx * zx > self.MIN_SIZE and dy * zy > self.MIN_SIZE
 
-        def draw_face(face, pos, row, col, n_row, n_col):
+        def draw_face(face, pos, row, n_row, n_col, dx_before):
             if face.get_content():
                 box = face.compute_bounding_box(self, point, size, 
-                            bdy, text_fit, pos, row, col, n_row, n_col)
+                            bdy, text_fit, pos, row, n_row, n_col,
+                            dx_before)
                 if it_fits(box) or not face.is_constrained:
                     return face.draw()
 
@@ -546,13 +583,19 @@ class DrawerRectFaces(DrawerRect):
             faces = dict(getattr(node_faces, pos, {}))
             n_col = len(faces.keys())
 
-            for col, face_list in faces.items():
+            dx_before = 0
+            for col, face_list in enumerate(faces.values()): # .items() ? 
+                dx_max = 0
                 n_row = len(face_list)
                 for row, face in enumerate(face_list):
                     face.node = node
-                    drawn_face = draw_face(face, pos, row, col, n_row, n_col)
+                    drawn_face = draw_face(face, pos, row, n_row, n_col,
+                            dx_before)
                     if drawn_face:
+                        dx_max = max(dx_max, face.get_box().dx +
+                                2 * face.padding_x / zx)
                         yield drawn_face
+                dx_before += dx_max
 
         if not node.is_initialized:
             node.is_initialized = True
@@ -570,13 +613,14 @@ class DrawerRectFaces(DrawerRect):
     def draw_collapsed(self):
         x, y, dx_min, dx_max, dy = self.outline
 
-        node0 = self.collapsed[0]
-        node = node0 if len(self.collapsed) == 1 else node0.up
-        node.is_collapsed = True
+        collapsed_node = self.get_collapsed_node()
 
-        x = x + dx_max - self.content_size(node)[0]
+        x = x + dx_max - collapsed_node.dist
         x = x if self.panel == 0 else self.xmin
-        yield from self.draw_node(node, (x, y), dy/2)
+
+        if (x < 0): print(x)
+
+        yield from self.draw_node(collapsed_node, (x, y), dy/2)
 
 
 class DrawerCircFaces(DrawerCirc):
@@ -589,23 +633,15 @@ class DrawerCircFaces(DrawerCirc):
         def text_fit(text, fs):
             return self.dx_fitting_texts([text], r_point * fs)
 
-        def is_node_valid(node_type):
-            """ Returns True if node is of node type 'node_type' """
-            if (node_type == "leaf" and not node.is_leaf())\
-              or (node_type == "internal" and node.is_leaf()):
-                  return False
-            return True
-
         def it_fits(box):
             r, a, dr, da = box
-            if r > 0 and (dr * z > self.MIN_SIZE\
-              and (r + dr) * da * z > self.MIN_SIZE/1.5):
-                return True
+            return r > 0 and dr * z > self.MIN_SIZE\
+              and (r + dr) * da * z > self.MIN_SIZE
 
-        def draw_face(face, pos, row, col, n_row, n_col):
+        def draw_face(face, pos, row, n_row, n_col, dr_before):
             if face.get_content():
                 box = face.compute_bounding_box(self, point,
-                        size, bda, text_fit, pos, row, col, n_row, n_col)
+                        size, bda, text_fit, pos, row, n_row, n_col, dr_before)
                 if it_fits(box) or not face.is_constrained:
                     return face.draw()
 
@@ -618,15 +654,19 @@ class DrawerCircFaces(DrawerCirc):
             faces = dict(getattr(node_faces, pos, {}))
             n_col = len(faces.keys())
 
-            # TODO: take into account piled up columns
-
-            for col, face_list in faces.items():
+            dr_before = 0
+            for col, face_list in enumerate(faces.values()): # .items() ? 
+                dr_max = 0
                 n_row = len(face_list)
                 for row, face in enumerate(face_list):
                     face.node = node
-                    drawn_face = draw_face(face, pos, row, col, n_row, n_col)
+                    drawn_face = draw_face(face, pos, row, n_row, n_col,
+                            dr_before)
                     if drawn_face:
+                        dr_max = max(dr_max, face.get_box().dx +
+                                2 * face.padding_x / z)
                         yield drawn_face
+                dr_before += dr_max
 
         if not node.is_initialized:
             node.is_initialized = True
@@ -646,13 +686,12 @@ class DrawerCircFaces(DrawerCirc):
         if not (-pi <= a <= pi and -pi <= a + da <= pi):
             return
 
-        node0 = self.collapsed[0]
-        node = node0 if len(self.collapsed) == 1 else node0.up
-        node.is_collapsed = True
+        collapsed_node = self.get_collapsed_node()
 
-        r = r + dr_max - self.content_size(node)[0]
+        r = r + dr_max - collapsed_node.dist
         r = r if self.panel == 0 else self.xmin
-        yield from self.draw_node(node, (r, a), da/2)
+
+        yield from self.draw_node(collapsed_node, (r, a), da/2)
 
 
 class DrawerAlignRectFaces(DrawerRectFaces):
@@ -793,6 +832,9 @@ def draw_circle(center, radius, circle_type='', style=None):
 def draw_text(box, anchor, text, text_type='', style=None):
     return ['text', box, anchor, text, text_type, style or {}]
 
+def draw_rect(box, rect_type, style=None):
+    return ['rect', box, rect_type, style or {}]
+
 def draw_array(box, a):
     return ['array', box, a]
 
@@ -816,7 +858,7 @@ def get_ys(box):
 def get_rect(element):
     "Return the rectangle that contains the given graphic element"
     eid = element[0]
-    if eid in ['nodebox', 'array', 'text']:
+    if eid in ['nodebox', 'rect', 'array', 'text']:
         return element[1]
     elif eid == 'outline':
         x, y, dx_min, dx_max, dy = element[1]
@@ -834,7 +876,7 @@ def get_rect(element):
 def get_asec(element):
     "Return the annular sector that contains the given graphic element"
     eid = element[0]
-    if eid in ['nodebox', 'array', 'text']:
+    if eid in ['nodebox', 'rect', 'array', 'text']:
         return element[1]
     elif eid == 'outline':
         r, a, dr_min, dr_max, da = element[1]

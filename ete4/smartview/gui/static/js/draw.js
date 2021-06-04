@@ -242,6 +242,26 @@ function create_item(item, tl, zoom) {
 
         return text;
     }
+    else if (item[0] === "rect") {
+        const [ , box, type, style] = item;
+
+        const rect = create_rect(box, tl, zx, zy, type);
+
+        // Rotate rectangle in circular representation
+        if (view.drawer.type === "circ") {
+            const [x, y, dx, dy] = box;
+            const angle = Math.atan2(zy * y, zx * x) * 180 / Math.PI;
+            const c = {
+                x: +rect.getAttribute("x") + zx * dx / 2,
+                y: +rect.getAttribute("y") + zy * dy / 2
+            };
+            addRotation(rect, angle, c.x, c.y)
+        };
+
+        style_rect(rect, style);
+
+        return rect;
+    }
     else if (item[0] === "array") {
         const [ , box, array] = item;
         const [x0, y0, dx0, dy0] = box;
@@ -285,27 +305,28 @@ function create_svg_element(name, attrs={}) {
 
 
 // Return a box (rectangle or annular sector).
-function create_box(box, tl, zx, zy) {
+function create_box(box, tl, zx, zy, type) {
     const b = view.drawer.type === "rect" ?
-                    create_rect(box, tl, zx, zy) :
-                    create_asec(box, tl, zx);
+                    create_rect(box, tl, zx, zy, type) :
+                    create_asec(box, tl, zx, type);
     b.classList.add("box");
     return b;
 }
 
 
-function create_rect(box, tl, zx, zy) {
+function create_rect(box, tl, zx, zy, type) {
     const [x, y, w, h] = box;
 
     return create_svg_element("rect", {
         "x": zx * (x - tl.x), "y": zy * (y - tl.y),
         "width": zx * w, "height": zy * h,
+        "class": type || null,
     });
 }
 
 
 // Return a svg annular sector, described by box and with zoom z.
-function create_asec(box, tl, z) {
+function create_asec(box, tl, z, type) {
     const [r, a, dr, da] = box;
     const large = da > Math.PI ? 1 : 0;
     const p00 = cartesian_shifted(r, a, tl, z),
@@ -319,6 +340,7 @@ function create_asec(box, tl, z) {
               A ${z * (r + dr)} ${z * (r + dr)} 0 ${large} 1 ${p11.x} ${p11.y}
               L ${p01.x} ${p01.y}
               A ${z * r} ${z * r} 0 ${large} 0 ${p00.x} ${p00.y}`,
+        "class": type || null,
     });
 }
 
@@ -630,4 +652,11 @@ function style_text(text, style) {
     if (style.fill && style.fill != "")
         text.style.fill = style.fill;
     return text;
+}
+
+
+function style_rect(rect, style) {
+    if (style.fill && style.fill != "")
+        rect.style.fill = style.fill;
+    return rect;
 }
