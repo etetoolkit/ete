@@ -79,8 +79,6 @@ class Drawer:
                 point = self.on_first_visit(point, it, graphics)
             else:
                 point = self.on_last_visit(point, it, graphics)
-                if (point[0] < 0):
-                    print(it.node)
             yield from graphics
 
         if self.outline:
@@ -245,14 +243,6 @@ class Drawer:
         self.outline = None
         return Box(x, y, max(dx_max, minimum_dx), dy)
 
-    def dx_fitting_texts(self, texts, dy):
-        "Return a dx wide enough on the screen to fit all texts in the given dy"
-        zx, zy = self.zoom
-        dy_char = zy * dy / len(texts)  # height of a char, in screen units
-        dx_char = dy_char / 1.5  # approximate width of a char
-        max_len = max(len(t) for t in texts)  # number of chars of the longest
-        return max_len * dx_char / zx  # in tree units
-
     def get_collapsed_node(self):
         """Get node that will be rendered as a collapsed node.
         Its children are nodes either manually collapsed or too
@@ -276,6 +266,7 @@ class Drawer:
 
         node.is_collapsed = True
         node.add_children(self.collapsed)
+        node.dist = 0
         node.size = (0, self.outline[-1])
 
         return node
@@ -325,7 +316,7 @@ class DrawerRect(Drawer):
         return box.dy * zy < self.MIN_SIZE
 
     def get_box(self, element):
-        return get_rect(element)
+        return get_rect(element, self.zoom)
 
     def draw_lengthline(self, p1, p2, parent_of, style):
         "Yield a line representing a length"
@@ -419,7 +410,7 @@ class DrawerCirc(Drawer):
         return (r + dr) * da * z < self.MIN_SIZE
 
     def get_box(self, element):
-        return get_asec(element)
+        return get_asec(element, self.zoom)
 
     def draw_lengthline(self, p1, p2, parent_of, style):
         "Yield a line representing a length"
@@ -447,7 +438,7 @@ class DrawerCirc(Drawer):
                           circle_type='nodedot', style=nodedot_style)
             elif style['shape'] == 'square':
                 z = self.zoom[0] # same zoom in x and y
-                x, y = cartesian((r, a))
+                x, y = cartesian(center)
                 dx, dy = 2 * size / z, 2 * size / z
                 box = Box(x - dx / 2, y - dy / 2, dx, dy)
                 yield draw_rect(box, rect_type='nodedot', style=nodedot_style)
@@ -481,6 +472,14 @@ def is_good_angle_interval(a1, a2):
     return -pi <= a1 < a2 < pi + EPSILON
 
 
+def dx_fitting_texts(texts, dy, zoom):
+    "Return a dx wide enough on the screen to fit all texts in the given dy"
+    zx, zy = zoom
+    dy_char = zy * dy / len(texts)  # height of a char, in screen units
+    dx_char = dy_char / 1.5  # approximate width of a char
+    max_len = max(len(t) for t in texts)  # number of chars of the longest
+    return max_len * dx_char / zx  # in tree units
+
 # Drawing generators.
 
 def draw_rect_leaf_name(drawer, node, point):
@@ -492,7 +491,7 @@ def draw_rect_leaf_name(drawer, node, point):
     dx, dy = drawer.content_size(node)
 
     x_text = (x + dx) if drawer.panel == 0 else drawer.xmin
-    dx_fit = drawer.dx_fitting_texts([node.name], dy)
+    dx_fit = dx_fitting_texts([node.name], dy, drawer.zoom)
     box = Box(x_text, y, dx_fit, dy)
 
     yield draw_text(box, (0, 0.5), node.name, 'name',
@@ -509,7 +508,7 @@ def draw_circ_leaf_name(drawer, node, point):
 
     if is_good_angle_interval(a, a + da) and r + dr > 0:
         r_text = (r + dr) if drawer.panel == 0 else drawer.xmin
-        dr_fit = drawer.dx_fitting_texts([node.name], (r + dr) * da)
+        dr_fit = dx_fitting_texts([node.name], (r + dr) * da, drawer.zoom)
         box = Box(r_text, a, dr_fit, da)
         yield draw_text(box, (0, 0.5), node.name, 'name',
                 style={ 'fill': node.img_style.get('fgcolor') })
@@ -526,7 +525,7 @@ def draw_rect_collapsed_names(drawer):
     texts = names if len(names) < 6 else (names[:3] + ['...'] + names[-2:])
 
     x_text = (x + dx_max) if drawer.panel == 0 else drawer.xmin
-    dx_fit = drawer.dx_fitting_texts(texts, dy)
+    dx_fit = dx_fitting_texts(texts, dy, drawer.zoom)
     box = Box(x_text, y, dx_fit, dy)
 
     yield from draw_texts(box, (0, 0.5), texts, 'name')
@@ -545,7 +544,7 @@ def draw_circ_collapsed_names(drawer):
     texts = names if len(names) < 6 else (names[:3] + ['...'] + names[-2:])
 
     r_text = (r + dr_max) if drawer.panel == 0 else drawer.xmin
-    dr_fit = drawer.dx_fitting_texts(texts, (r + dr_max) * da)
+    dr_fit = dx_fitting_texts(texts, (r + dr_max) * da, drawer.zoom)
     box = Box(r_text, a, dr_fit, da)
 
     yield from draw_texts(box, (0, 0.5), texts, 'name')
@@ -559,18 +558,15 @@ class DrawerRectFaces(DrawerRect):
         size = self.content_size(node)
         zx, zy = self.zoom
 
-        def text_fit(text, fs):
-            return self.dx_fitting_texts([text], fs)
-
         def it_fits(box):
             _, _, dx, dy = box
             return dx * zx > self.MIN_SIZE and dy * zy > self.MIN_SIZE
 
-        def draw_face(face, pos, row, n_row, n_col, dx_before):
+        def draw_face(face, pos, row, n_row, n_col, dx_before, dy_before):
             if face.get_content():
                 box = face.compute_bounding_box(self, point, size, 
-                            bdy, text_fit, pos, row, n_row, n_col,
-                            dx_before)
+                            bdy, pos, row, n_row, n_col,
+                            dx_before, dy_before)
                 if it_fits(box) or not face.is_constrained:
                     return face.draw()
 
@@ -586,14 +582,18 @@ class DrawerRectFaces(DrawerRect):
             dx_before = 0
             for col, face_list in enumerate(faces.values()): # .items() ? 
                 dx_max = 0
+                dy_before = 0
                 n_row = len(face_list)
                 for row, face in enumerate(face_list):
                     face.node = node
                     drawn_face = draw_face(face, pos, row, n_row, n_col,
-                            dx_before)
+                            dx_before, dy_before)
                     if drawn_face:
-                        dx_max = max(dx_max, face.get_box().dx +
-                                2 * face.padding_x / zx)
+                        _, _, dx, dy = face.get_box()
+                        hz_padding = 2 * face.padding_x / zx
+                        vt_padding = 2 * face.padding_y / zy
+                        dx_max = max(dx_max, dx + hz_padding)
+                        dy_before += dy + vt_padding
                         yield drawn_face
                 dx_before += dx_max
 
@@ -618,8 +618,6 @@ class DrawerRectFaces(DrawerRect):
         x = x + dx_max - collapsed_node.dist
         x = x if self.panel == 0 else self.xmin
 
-        if (x < 0): print(x)
-
         yield from self.draw_node(collapsed_node, (x, y), dy/2)
 
 
@@ -629,19 +627,15 @@ class DrawerCircFaces(DrawerCirc):
         size = self.content_size(node)
         z = self.zoom[0]  # zx == zy
 
-        r_point, a_point = point
-        def text_fit(text, fs):
-            return self.dx_fitting_texts([text], r_point * fs)
-
         def it_fits(box):
             r, a, dr, da = box
             return r > 0 and dr * z > self.MIN_SIZE\
               and (r + dr) * da * z > self.MIN_SIZE
 
-        def draw_face(face, pos, row, n_row, n_col, dr_before):
+        def draw_face(face, pos, row, n_row, n_col, dr_before, da_before):
             if face.get_content():
                 box = face.compute_bounding_box(self, point,
-                        size, bda, text_fit, pos, row, n_row, n_col, dr_before)
+                        size, bda, pos, row, n_row, n_col, dr_before, da_before)
                 if it_fits(box) or not face.is_constrained:
                     return face.draw()
 
@@ -657,14 +651,18 @@ class DrawerCircFaces(DrawerCirc):
             dr_before = 0
             for col, face_list in enumerate(faces.values()): # .items() ? 
                 dr_max = 0
+                da_before = 0
                 n_row = len(face_list)
                 for row, face in enumerate(face_list):
                     face.node = node
                     drawn_face = draw_face(face, pos, row, n_row, n_col,
-                            dr_before)
+                            dr_before, da_before)
                     if drawn_face:
-                        dr_max = max(dr_max, face.get_box().dx +
-                                2 * face.padding_x / z)
+                        _, _, dr, da = face.get_box()
+                        hz_padding = 2 * face.padding_x / z
+                        vt_padding = 2 * face.padding_y / z
+                        dr_max = max(dr_max, dr + hz_padding)
+                        da_before = da + vt_padding
                         yield drawn_face
                 dr_before += dr_max
 
@@ -855,7 +853,7 @@ def get_ys(box):
     return y, y + dy
 
 
-def get_rect(element):
+def get_rect(element, zoom=(0, 0)):
     "Return the rectangle that contains the given graphic element"
     eid = element[0]
     if eid in ['nodebox', 'rect', 'array', 'text']:
@@ -868,12 +866,14 @@ def get_rect(element):
         return Box(min(x1, x2), min(y1, y2), abs(x2 - x1), abs(y2 - y1))
     elif eid == 'circle':
         (x, y), r = element[1], element[2]
-        return Box(x, y, 0, 0)
+        zx, zy = zoom
+        rx, ry = r / zx, r / zy
+        return Box(x - rx, y - ry, 2 * rx, 2 * ry)
     else:
         raise ValueError(f'unrecognized element: {element!r}')
 
 
-def get_asec(element):
+def get_asec(element, zoom=(0, 0)):
     "Return the annular sector that contains the given graphic element"
     eid = element[0]
     if eid in ['nodebox', 'rect', 'array', 'text']:
@@ -887,7 +887,9 @@ def get_asec(element):
         return circumasec(rect)
     elif eid == 'circle':
         (x, y), r = element[1], element[2]
-        rect = Box(x, y, 0, 0)
+        z = zoom[0]
+        r = r / z
+        rect = Box(x - r, y - r, 2 * r, 2 * r)
         return circumasec(rect)
     else:
         raise ValueError(f'unrecognized element: {element!r}')

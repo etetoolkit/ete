@@ -582,7 +582,8 @@ function flip_with_bbox(text, bbox) {
 function addRotation(element, angle, cx=0, cy=0) {
     const svg = div_tree.children[0];
     const tr = svg.createSVGTransform();
-    tr.setRotate(angle, cx, cy);
+    if (angle && (-360 < angle < 360))
+        tr.setRotate(angle, cx, cy);
     element.transform.baseVal.appendItem(tr);
 }
 

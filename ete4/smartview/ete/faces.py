@@ -1,7 +1,8 @@
 import re
 from math import pi
 
-from ete4.smartview.ete.draw import Box, draw_text, draw_circle, draw_rect, cartesian
+from ete4.smartview.ete.draw import Box, draw_text, draw_circle, draw_rect,\
+                                    cartesian, dx_fitting_texts
 
 
 class Face(object):
@@ -28,28 +29,27 @@ class Face(object):
     def compute_bounding_box(self, 
             drawer,
             point, size,
-            bdy, text_fit, 
-            pos, row,
+            bdy, pos, row,
             n_row, n_col,
-            dx_before):
+            dx_before, dy_before):
 
         self._check_own_content()
         x, y = point
         dx, dy = size
         zx, zy = drawer.zoom
         padding_x, padding_y = self.padding_x / zx, self.padding_y / zy
+        circ_drawer = drawer.TYPE == 'circ'
 
         if pos == 'branch-top':  # above the branch
             avail_dx = dx / n_col
             avail_dy = bdy / n_row
-            xy = (x + dx_before,
-                  y + (n_row - row - 1) * avail_dy)
+            xy = (x + dx_before, y + bdy - avail_dy - dy_before)
 
         elif pos == 'branch-bottom':  # below the branch
             avail_dx = dx / n_col
             avail_dy = (dy - bdy) / n_row
-            xy = (x + dx_before,
-                  y + bdy + row * avail_dy)
+            divisor = x if circ_drawer else 1
+            xy = (x + dx_before, y + bdy + dy_before / divisor)
 
         elif pos == 'branch-top-left':  # left of branch-top
             width, height = get_dimensions(dx / n_col, bdy)
@@ -115,18 +115,20 @@ class TextFace(Face):
     def compute_bounding_box(self, 
             drawer,
             point, size,
-            bdy, text_fit, 
-            pos, row,
+            bdy, pos, row,
             n_row, n_col,
-            dx_before):
+            dx_before, dy_before):
+
+        def text_fit(text, fs):
+            dy = fs * point[0] if drawer.TYPE == 'circ' else fs
+            return dx_fitting_texts([text], dy, drawer.zoom)
 
         box = super().compute_bounding_box( 
             drawer,
             point, size,
-            bdy, text_fit, 
-            pos, row,
+            bdy, pos, row,
             n_row, n_col,
-            dx_before)
+            dx_before, dy_before)
 
         x, y , dx, dy = box
 
@@ -144,18 +146,10 @@ class TextFace(Face):
             box = (x - (col + 1) * dx/n_col, y + bdy, dx/n_col, dy - bdy)  # etc.
             anchor = (1, 0)  # right x, top y
 
-        elif pos == 'float':
+        else: # float and aligned
             fit = text_fit(self._content, dy)
             box = (x, y, fit, dy)
             anchor = (0, 0.5)  # left x, branch position in y
-
-        elif pos == 'aligned':
-            fit = text_fit(self._content, dy)
-            box = (x, y, fit, dy)
-            anchor = (0, 0.5)  # left x, branch position in y
-
-        else:
-            raise InvalidUsage(f'unkown position {pos}')
 
         self._box = Box(*box)
         self._anchor = anchor
@@ -251,18 +245,16 @@ class CircleFace(Face):
     def compute_bounding_box(self, 
             drawer,
             point, size,
-            bdy, text_fit, 
-            pos, row,
+            bdy, pos, row,
             n_row, n_col,
-            dx_before):
+            dx_before, dy_before):
 
         box = super().compute_bounding_box( 
             drawer,
             point, size,
-            bdy, text_fit, 
-            pos, row,
+            bdy, pos, row,
             n_row, n_col,
-            dx_before)
+            dx_before, dy_before)
 
         x, y, dx, dy = box
         zx, zy = drawer.zoom
@@ -272,12 +264,15 @@ class CircleFace(Face):
         self._max_radius = min(max_diameter / 2, self.radius)
 
         cx = x + self._max_radius / zx - padding_x
+        circ_drawer = drawer.TYPE == 'circ'
 
         if pos == 'branch-top':
-            cy = y + dy - self._max_radius / zy # container bottom
+            divisor = zy * x if circ_drawer else zy
+            cy = y + dy - self._max_radius / divisor # container bottom
 
         elif pos == 'branch-bottom':
-            cy = y + self._max_radius / zy # container top
+            divisor = zy * x if circ_drawer else zy
+            cy = y + self._max_radius / divisor # container top
 
         elif pos == 'branch-top-left':
             pass
@@ -286,17 +281,18 @@ class CircleFace(Face):
             pass
 
         elif pos == 'float':
-            cx = x + dx / 2 - padding_x # centered
+            self._max_radius = min(dy * zy / 2, self.radius)
+            cx = x + self._max_radius / zx - padding_x # centered
             cy = y + dy / 2 # centered
 
         elif pos == 'aligned':
             self._max_radius = min(dy * zy / 2, self.radius)
-            cx = x + self._max_radius / zx - padding_x
+            cx = x + self._max_radius / zx - padding_x # centered
             cy = y + dy / 2 # centered
 
         self._center = (cx, cy)
         
-        if drawer.TYPE == 'circ':
+        if circ_drawer:
             self._center = cartesian(self._center)
 
         self._box = Box(cx, cy, 
@@ -325,20 +321,22 @@ class RectFace(Face):
     def compute_bounding_box(self, 
             drawer,
             point, size,
-            bdy, text_fit, 
-            pos, row,
+            bdy, pos, row,
             n_row, n_col,
-            dx_before):
+            dx_before, dy_before):
 
         def get_dimensions(max_width, max_height):
+            if not (max_width or max_height)\
+              or (max_width <= 0 or max_height <= 0):
+                return 0, 0
             width = self.width / zx
             height = self.height / zy
             hw_ratio = height / width
 
-            if width > max_width:
+            if max_width and width > max_width:
                 width = max_width
                 height = width * hw_ratio
-            if height > max_height:
+            if max_height and height > max_height:
                 height = max_height
                 width = height / hw_ratio
 
@@ -347,13 +345,13 @@ class RectFace(Face):
         box = super().compute_bounding_box( 
             drawer,
             point, size,
-            bdy, text_fit, 
-            pos, row,
+            bdy, pos, row,
             n_row, n_col,
-            dx_before)
+            dx_before, dy_before)
 
         x, y, dx, dy = box
         zx, zy = drawer.zoom
+        circ_drawer = drawer.TYPE == 'circ'
 
         if pos == 'branch-top':
             width, height = get_dimensions(dx, dy)
@@ -361,7 +359,8 @@ class RectFace(Face):
 
         elif pos == 'branch-bottom':
             width, height = get_dimensions(dx, dy)
-            box = (x, y, width, height) # container top
+            c_dy = height / x if circ_drawer else 0
+            box = (x, y + c_dy, width, height) # container top
 
         elif pos == 'branch-top-left':
             width, height = get_dimensions(dx / n_col, bdy)
@@ -372,8 +371,8 @@ class RectFace(Face):
             box = (x - (col + 1) * dx/n_col, y + bdy, width, height)
 
         elif pos == 'float':
-            width, height = get_dimensions(dx, dy)
-            box = (x + (dx - width) / 2, y + (dy - height) / 2, width, height)
+            width, height = get_dimensions(None, dy)
+            box = (x, y + (dy - height) / 2, width, height)
 
         elif pos == 'aligned':
             width = (self.width - 2 * self.padding_x) / zx
@@ -381,9 +380,9 @@ class RectFace(Face):
             box = (x, y + (dy - height) / 2, width, height)
 
         if drawer.TYPE == 'circ':
-            r, a = cartesian((box[0], box[1]))
-            dr, da = box[2:]
-            box = (r, a, dr, da)
+            r, a, dr, da = box
+            x, y = cartesian((r, a))
+            box = (x, y, dr, da)
 
         self._box = Box(*box)
         return self._box

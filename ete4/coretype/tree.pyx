@@ -52,9 +52,6 @@ from six.moves import (cPickle, map, range, zip)
 from .. import utils
 
 # the following imports are necessary to set fixed styles and faces
-from ..treeview.main import NodeStyle, _FaceAreas, FaceContainer, FACE_POSITIONS
-# from ..treeview.faces import Face
-from ete4.smartview.ete.faces import Face
 try:
     from ..treeview.main import NodeStyle, _FaceAreas, FaceContainer, FACE_POSITIONS
     # from ..treeview.faces import Face
