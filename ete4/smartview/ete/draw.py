@@ -63,7 +63,6 @@ class Drawer:
         self.searches = searches or {}  # looks like {text: (results, parents)}
         self.tree_style = tree_style  
 
-
     def draw(self):
         "Yield graphic elements to draw the tree"
         self.outline = None  # sbox surrounding the current collapsed nodes
@@ -165,7 +164,7 @@ class Drawer:
 
         # Collapsed nodes will be drawn from self.draw_collapsed()
         if not node.is_collapsed:
-            yield from self.draw_node(node, point, bdy)
+            yield from self.draw_node(node, point, dx, bdy)
 
         # Draw the branch line ("lengthline") and a line spanning all children.
         if self.panel == 0:
@@ -253,11 +252,19 @@ class Drawer:
         # (Collapsing the parent node is not viable
         # as not all the children of such node ought to be collapsed)
 
+        node0 = self.collapsed[0]
         if len(self.collapsed) == 1:
-            node0 = self.collapsed[0]
             node0.is_collapsed = True
             return node0
+        
+        parent = node0.up
+        if all(node.up == parent for node in self.collapsed):
+            parent.is_collapsed = True
+            return parent
 
+        return None
+
+        # Doubtful this code is necesssary
         try:
             node = Tree()
         except:
@@ -266,16 +273,19 @@ class Drawer:
 
         node.is_collapsed = True
         node.add_children(self.collapsed)
-        node.dist = 0
-        node.size = (0, self.outline[-1])
+        x, y, dx_min, dx_max, dy = self.outline
+        node.dist = dx_min
+        node.size = (0, dy)
 
         return node
 
     # These are the 2 functions that the user overloads to choose what to draw
     # when representing a node and a group of collapsed nodes:
 
-    def draw_node(self, node, point, bdy):  # bdy: branch dy (height)
+    def draw_node(self, node, point, ndx, bdy):
         "Yield graphic elements to draw the contents of the node"
+        # ndx: node width. In collapsed nodes it includes the outline width
+        # bdy: branch dy (height)
         yield from []  # only drawn if the node's content is visible
 
     def draw_collapsed(self):
@@ -462,11 +472,6 @@ def cartesian(point):
     return r * cos(a), r * sin(a)
 
 
-def polar(point):
-    x, y = point
-    return sqrt(x*x + y*y), atan2(y, x)
-
-
 def is_good_angle_interval(a1, a2):
     EPSILON = 1e-8  # without it, rounding can fake a2 > pi
     return -pi <= a1 < a2 < pi + EPSILON
@@ -554,7 +559,7 @@ def draw_circ_collapsed_names(drawer):
 
 class DrawerRectFaces(DrawerRect):
 
-    def draw_node(self, node, point, bdy):
+    def draw_node(self, node, point, ndx, bdy):
         size = self.content_size(node)
         zx, zy = self.zoom
 
@@ -565,7 +570,7 @@ class DrawerRectFaces(DrawerRect):
         def draw_face(face, pos, row, n_row, n_col, dx_before, dy_before):
             if face.get_content():
                 box = face.compute_bounding_box(self, point, size, 
-                            bdy, pos, row, n_row, n_col,
+                            ndx, bdy, pos, row, n_row, n_col,
                             dx_before, dy_before)
                 if it_fits(box) or not face.is_constrained:
                     return face.draw()
@@ -577,10 +582,10 @@ class DrawerRectFaces(DrawerRect):
                 node_faces = node.faces
                 
             faces = dict(getattr(node_faces, pos, {}))
-            n_col = len(faces.keys())
+            n_col = max(faces.keys(), default = -1) + 1
 
             dx_before = 0
-            for col, face_list in enumerate(faces.values()): # .items() ? 
+            for col, face_list in faces.items(): # .items() ? 
                 dx_max = 0
                 dy_before = 0
                 n_row = len(face_list)
@@ -615,15 +620,18 @@ class DrawerRectFaces(DrawerRect):
 
         collapsed_node = self.get_collapsed_node()
 
-        x = x + dx_max - collapsed_node.dist
+        # x = x - collapsed_node.dist
         x = x if self.panel == 0 else self.xmin
 
-        yield from self.draw_node(collapsed_node, (x, y), dy/2)
+        if collapsed_node:
+            yield from self.draw_node(collapsed_node, (x, y), dx_max, dy/2)
+        else:
+            print("no collapsed node")
 
 
 class DrawerCircFaces(DrawerCirc):
 
-    def draw_node(self, node, point, bda):
+    def draw_node(self, node, point, ndr, bda):
         size = self.content_size(node)
         z = self.zoom[0]  # zx == zy
 
@@ -634,8 +642,9 @@ class DrawerCircFaces(DrawerCirc):
 
         def draw_face(face, pos, row, n_row, n_col, dr_before, da_before):
             if face.get_content():
-                box = face.compute_bounding_box(self, point,
-                        size, bda, pos, row, n_row, n_col, dr_before, da_before)
+                box = face.compute_bounding_box(self, point, size,
+                        ndr, bda, pos, row, n_row, n_col,
+                        dr_before, da_before)
                 if it_fits(box) or not face.is_constrained:
                     return face.draw()
 
@@ -658,7 +667,7 @@ class DrawerCircFaces(DrawerCirc):
                     drawn_face = draw_face(face, pos, row, n_row, n_col,
                             dr_before, da_before)
                     if drawn_face:
-                        _, _, dr, da = face.get_box()
+                        x, y, dr, da = face.get_box()
                         hz_padding = 2 * face.padding_x / z
                         vt_padding = 2 * face.padding_y / z
                         dr_max = max(dr_max, dr + hz_padding)
@@ -686,17 +695,17 @@ class DrawerCircFaces(DrawerCirc):
 
         collapsed_node = self.get_collapsed_node()
 
-        r = r + dr_max - collapsed_node.dist
+        # r = r + dr_max - collapsed_node.dist
         r = r if self.panel == 0 else self.xmin
 
-        yield from self.draw_node(collapsed_node, (r, a), da/2)
+        yield from self.draw_node(collapsed_node, (r, a), dr_max, da/2)
 
 
 class DrawerAlignRectFaces(DrawerRectFaces):
     NPANELS = 2
 
-    def draw_node(self, node, point, bdy):
-        yield from super().draw_node(node, point, bdy)
+    def draw_node(self, node, point, ndx, bdy):
+        yield from super().draw_node(node, point, ndx, bdy)
         if self.panel == 0 and node.is_leaf() and self.viewport:
             x, y = point
             dx, dy = self.content_size(node)
