@@ -12,7 +12,7 @@ Size = namedtuple('Size', 'dx dy')  # size of a 2D shape (sizes are always >= 0)
 Box = namedtuple('Box', 'x y dx dy')  # corner and size of a 2D shape
 SBox = namedtuple('SBox', 'x y dx_min dx_max dy')  # slanted box
 
-FACE_POSITIONS = ["branch-top", "branch-bottom", "float", "aligned"]
+FACE_POSITIONS = ["branch-top", "branch-bottom", "branch-right", "aligned"]
 
 # They are all "generalized coordinates" (can be radius and angle, say).
 
@@ -45,7 +45,9 @@ FACE_POSITIONS = ["branch-top", "branch-bottom", "float", "aligned"]
 class Drawer:
     "Base class (needs subclassing with extra functions to draw)"
 
-    MIN_SIZE = 6  # anything that has less pixels will be outlined
+    COLLAPSE_SIZE = 6  # anything that has less pixels will be outlined
+
+    MIN_SIZE = 2  # anything that has less pixels will not be drawn
 
     TYPE = 'base'  # can be 'rect' or 'circ' for working drawers
 
@@ -214,8 +216,6 @@ class Drawer:
             graphics += self.draw_content(node0, (x, y))
         else:
             self.bdy_dys[-1].append( (self.outline.dy / 2, self.outline.dy) )
-            if self.panel == 0:
-                graphics += self.draw_outline()
             graphics += self.draw_collapsed()
 
         self.collapsed = []
@@ -232,9 +232,6 @@ class Drawer:
         self.nodeboxes.append(box)
 
         yield from graphics
-
-    def draw_outline(self): # member function so it can be overloaded
-        yield draw_outline(self.outline)
 
     def flush_outline(self, minimum_dx=0):
         "Return box outlining the collapsed nodes and reset the current outline"
@@ -282,9 +279,9 @@ class Drawer:
     # These are the 2 functions that the user overloads to choose what to draw
     # when representing a node and a group of collapsed nodes:
 
-    def draw_node(self, node, point, ndx, bdy):
+    def draw_node(self, node, point, bdx, bdy):
         "Yield graphic elements to draw the contents of the node"
-        # ndx: node width. In collapsed nodes it includes the outline width
+        # bdx: branch dx (width)
         # bdy: branch dy (height)
         yield from []  # only drawn if the node's content is visible
 
@@ -323,7 +320,7 @@ class DrawerRect(Drawer):
 
     def is_small(self, box):
         zx, zy = self.zoom
-        return box.dy * zy < self.MIN_SIZE
+        return box.dy * zy < self.COLLAPSE_SIZE
 
     def get_box(self, element):
         return get_rect(element, self.zoom)
@@ -390,12 +387,6 @@ class DrawerCirc(Drawer):
         else:
             return intersects_angles(self.viewport, box)
 
-    def draw_outline(self):
-        r, a, dr_min, dr_max, da = self.outline
-        a1, a2 = clip_angles(a, a + da)
-        self.outline = SBox(r, a1, dr_min, dr_max, a2 - a1)
-        yield draw_outline(self.outline)
-
     def flush_outline(self, minimum_dr=0):
         "Return box outlining the collapsed nodes"
         r, a, dr, da = super().flush_outline(minimum_dr)
@@ -417,7 +408,7 @@ class DrawerCirc(Drawer):
     def is_small(self, box):
         z = self.zoom[0]  # zx == zy in this drawer
         r, a, dr, da = box
-        return (r + dr) * da * z < self.MIN_SIZE
+        return (r + dr) * da * z < self.COLLAPSE_SIZE
 
     def get_box(self, element):
         return get_asec(element, self.zoom)
@@ -444,13 +435,12 @@ class DrawerCirc(Drawer):
             fill = style['fill']
             nodedot_style={'fill':fill}
             if style['shape'] == 'circle':
-                yield draw_circle(cartesian(center), radius=size,
+                yield draw_circle(center, radius=size,
                           circle_type='nodedot', style=nodedot_style)
             elif style['shape'] == 'square':
                 z = self.zoom[0] # same zoom in x and y
-                x, y = cartesian(center)
-                dx, dy = 2 * size / z, 2 * size / z
-                box = Box(x - dx / 2, y - dy / 2, dx, dy)
+                dr, da = 2 * size / z, 2 * size / (z * r)
+                box = Box(r - dr / 2, a - da / 2, dr, da)
                 yield draw_rect(box, rect_type='nodedot', style=nodedot_style)
 
     def draw_nodebox(self, node, node_id, box, result_of, style=None):
@@ -559,7 +549,7 @@ def draw_circ_collapsed_names(drawer):
 
 class DrawerRectFaces(DrawerRect):
 
-    def draw_node(self, node, point, ndx, bdy):
+    def draw_node(self, node, point, bdx, bdy):
         size = self.content_size(node)
         zx, zy = self.zoom
 
@@ -570,7 +560,7 @@ class DrawerRectFaces(DrawerRect):
         def draw_face(face, pos, row, n_row, n_col, dx_before, dy_before):
             if face.get_content():
                 box = face.compute_bounding_box(self, point, size, 
-                            ndx, bdy, pos, row, n_row, n_col,
+                            bdx, bdy, pos, row, n_row, n_col,
                             dx_before, dy_before)
                 if it_fits(box) or not face.is_constrained:
                     return face.draw()
@@ -585,7 +575,7 @@ class DrawerRectFaces(DrawerRect):
             n_col = max(faces.keys(), default = -1) + 1
 
             dx_before = 0
-            for col, face_list in faces.items(): # .items() ? 
+            for col, face_list in sorted(faces.items()):
                 dx_max = 0
                 dy_before = 0
                 n_row = len(face_list)
@@ -620,20 +610,31 @@ class DrawerRectFaces(DrawerRect):
 
         collapsed_node = self.get_collapsed_node()
 
-        # x = x - collapsed_node.dist
+        is_manually_collapsed = collapsed_node in self.collapsed
+        box_node = make_box((x, y), self.node_size(collapsed_node))
+
+        if is_manually_collapsed or self.is_small(box_node):
+            bdx = 0
+        else:
+            x = x - collapsed_node.dist
+            bdx = collapsed_node.dist
+
         x = x if self.panel == 0 else self.xmin
 
         if collapsed_node:
-            yield from self.draw_node(collapsed_node, (x, y), dx_max, dy/2)
+            yield from self.draw_node(collapsed_node, (x, y), bdx, dy/2)
         else:
             print("no collapsed node")
 
 
 class DrawerCircFaces(DrawerCirc):
 
-    def draw_node(self, node, point, ndr, bda):
+    def draw_node(self, node, point, bdr, bda):
         size = self.content_size(node)
         z = self.zoom[0]  # zx == zy
+            
+        if point[0] == 0:
+            return
 
         def it_fits(box):
             r, a, dr, da = box
@@ -643,7 +644,7 @@ class DrawerCircFaces(DrawerCirc):
         def draw_face(face, pos, row, n_row, n_col, dr_before, da_before):
             if face.get_content():
                 box = face.compute_bounding_box(self, point, size,
-                        ndr, bda, pos, row, n_row, n_col,
+                        bdr, bda, pos, row, n_row, n_col,
                         dr_before, da_before)
                 if it_fits(box) or not face.is_constrained:
                     return face.draw()
@@ -657,8 +658,14 @@ class DrawerCircFaces(DrawerCirc):
             faces = dict(getattr(node_faces, pos, {}))
             n_col = len(faces.keys())
 
-            dr_before = 0
-            for col, face_list in enumerate(faces.values()): # .items() ? 
+            # Avoid drawing faces very close to center
+            if pos in ['branch-top', 'branch-bottom'] and abs(point[0]) < 1e-5:
+                n_col += 1
+                dr_before = .7 * size[0] / n_col
+            else:
+                dr_before = 0
+
+            for col, face_list in sorted(faces.items()):
                 dr_max = 0
                 da_before = 0
                 n_row = len(face_list)
@@ -667,9 +674,9 @@ class DrawerCircFaces(DrawerCirc):
                     drawn_face = draw_face(face, pos, row, n_row, n_col,
                             dr_before, da_before)
                     if drawn_face:
-                        x, y, dr, da = face.get_box()
+                        r, a, dr, da = face.get_box()
                         hz_padding = 2 * face.padding_x / z
-                        vt_padding = 2 * face.padding_y / z
+                        vt_padding = 2 * face.padding_y / (z * r)
                         dr_max = max(dr_max, dr + hz_padding)
                         da_before = da + vt_padding
                         yield drawn_face
@@ -690,22 +697,32 @@ class DrawerCircFaces(DrawerCirc):
 
     def draw_collapsed(self):
         r, a, dr_min, dr_max, da = self.outline
-        if not (-pi <= a <= pi and -pi <= a + da <= pi):
-            return
+        # Render issues in border nodes
+        # if not (-pi <= a <= pi and -pi <= a + da <= pi):
+            # return
 
         collapsed_node = self.get_collapsed_node()
+
+        is_manually_collapsed = collapsed_node in self.collapsed
+        box_node = make_box((r, a), self.node_size(collapsed_node))
+
+        if is_manually_collapsed or self.is_small(box_node):
+            bdr = 0
+        else:
+            r = r - collapsed_node.dist
+            bdr = collapsed_node.dist
 
         # r = r + dr_max - collapsed_node.dist
         r = r if self.panel == 0 else self.xmin
 
-        yield from self.draw_node(collapsed_node, (r, a), dr_max, da/2)
+        yield from self.draw_node(collapsed_node, (r, a), bdr, da/2)
 
 
 class DrawerAlignRectFaces(DrawerRectFaces):
     NPANELS = 2
 
-    def draw_node(self, node, point, ndx, bdy):
-        yield from super().draw_node(node, point, ndx, bdy)
+    def draw_node(self, node, point, bdx, bdy):
+        yield from super().draw_node(node, point, bdx, bdy)
         if self.panel == 0 and node.is_leaf() and self.viewport:
             x, y = point
             dx, dy = self.content_size(node)
@@ -803,12 +820,12 @@ def first_name(tree):
     return next((node.name for node in tree.traverse('preorder') if node.name), '')
 
 
-def draw_texts(box, anchor, texts, text_type):
+def draw_texts(box, texts, text_type):
     "Yield texts so they fit in the box"
     dy = box.dy / len(texts)
     y = box.y
     for text in texts:
-        yield draw_text(Box(box.x, y, box.dx, dy), anchor, text, text_type)
+        yield draw_text(Box(box.x, y, box.dx, dy), text, text_type)
         y += dy
 
 
@@ -836,8 +853,8 @@ def draw_arc(p1, p2, large=False, arc_type='', style=None):
 def draw_circle(center, radius, circle_type='', style=None):
     return ['circle', center, radius, circle_type, style or {}]
 
-def draw_text(box, anchor, text, text_type='', style=None):
-    return ['text', box, anchor, text, text_type, style or {}]
+def draw_text(box, text, text_type='', style=None):
+    return ['text', box, text, text_type, style or {}]
 
 def draw_rect(box, rect_type, style=None):
     return ['rect', box, rect_type, style or {}]

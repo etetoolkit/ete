@@ -398,8 +398,8 @@ def get_drawer(tree_id, args):
         drawer_class = next((d for d in draw.get_drawers()
             if d.__name__[len('Drawer'):] == drawer_name), None)
 
-        drawer_class.MIN_SIZE = get('min_size', 6)
-        assert drawer_class.MIN_SIZE > 0, 'min_size must be > 0'
+        drawer_class.COLLAPSE_SIZE = get('min_size', 6)
+        assert drawer_class.COLLAPSE_SIZE > 0, 'min_size must be > 0'
 
         limits = (None if not drawer_name.startswith('Circ') else
             (get('rmin', 0), 0,

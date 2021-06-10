@@ -2533,7 +2533,7 @@ cdef class TreeNode(object):
                     output[i].append(leaf_distances[n][m])
         return output, allleaves
 
-    def add_face(self, face, column, position="branch-right", collapsed=False):
+    def add_face(self, face, column, position="branch-right", collapsed_only=False):
         """
         .. versionadded: 2.1
 
@@ -2552,7 +2552,7 @@ cdef class TreeNode(object):
             raise ValueError("face position not in %s" %FACE_POSITIONS)
 
         if isinstance(face, Face):
-            if collapsed:
+            if collapsed_only:
                 getattr(self._collapsed_faces, position).add_face(face, column=column)
             else:
                 getattr(self._faces, position).add_face(face, column=column)
