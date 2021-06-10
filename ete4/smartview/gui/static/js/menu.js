@@ -247,20 +247,26 @@ function add_folder_style(menu) {
     folder_name.add(view.name, "max_size", 1, 200).name("max size").onChange(
         update);
 
+    view.font_sizes.scroller.max = create_font_size_scroller("max");
     folder_text.add(view.font_sizes, "auto").name("automatic size").onChange(
         () => {
             style("font").fontSize =
                 view.font_sizes.auto ? "" : `${view.font_sizes.fixed}px`;
 
-            if (view.font_sizes.auto && view.font_sizes.scroller)
-                view.font_sizes.scroller.remove();
+            if (view.font_sizes.auto && view.font_sizes.scroller.fixed)
+                view.font_sizes.scroller.fixed.remove();
             else
-                view.font_sizes.scroller = create_font_size_scroller();
+                view.font_sizes.scroller.fixed = create_font_size_scroller();
     });
 
-    function create_font_size_scroller() {
-        return folder_text.add(view.font_sizes, "fixed", 0.1, 50).onChange(
-            () => style("font").fontSize = `${view.font_sizes.fixed}px`);
+    function create_font_size_scroller(type) {
+        return folder_text.add(view.font_sizes, type, 0.1, 50).onChange(
+            () => {
+                if (type == "fixed")
+                    style("font").fontSize = `${view.font_sizes[type]}px`;
+                else
+                    update();
+            });
     }
 
     const folder_array = folder_style.addFolder("array");

@@ -254,13 +254,13 @@ def render(root_node, img, hide_root=False):
         set_style(n, layout_fn)
 
         if img.show_branch_length:
-            faces.add_face_to_node(bl_face, n, 0, position="branch-top")
+            n.add_face(bl_face, 0, position="branch-top")
 
         if not _leaf(n) and img.show_branch_support:
-            faces.add_face_to_node(su_face, n, 0, position="branch-bottom")
+            n.add_face(su_face, 0, position="branch-bottom")
 
         if _leaf(n) and n.name and img.show_leaf_name:
-            faces.add_face_to_node(na_face, n, 0, position="branch-right")
+            n.add_face(na_face, 0, position="branch-right")
 
         if _leaf(n):# or len(n.img_style["_faces"]["aligned"]):
             virtual_leaves += 1
@@ -771,7 +771,7 @@ def set_style(n, layout_func):
     #    n.set_style()
     #    n.img_style = NodeStyle()
 
-    n._temp_faces = _FaceAreas()
+    n.properties["_temp_faces"] = _FaceAreas()
 
     for func in layout_func:
         func(n)
@@ -925,7 +925,7 @@ def get_tree_img_map(n2i, x_scale=1, y_scale=1):
     #nid = 0
     for n, main_item in six.iteritems(n2i):
         #n.add_feature("_nid", str(nid))
-        nid = n._nid
+        nid = n.properties['_nid']
 
         rect = main_item.mapToScene(main_item.fullRegion).boundingRect()
         x1 = x_scale * rect.x()

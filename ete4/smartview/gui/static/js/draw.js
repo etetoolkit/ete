@@ -30,6 +30,7 @@ async function draw_tree() {
 
     div_tree.style.cursor = "wait";
 
+    // Will be replaced by faces
     const labels = JSON.stringify(Object.keys(view.labels).map(
         t => [t, view.labels[t].nodetype, view.labels[t].position]));
 
@@ -37,7 +38,6 @@ async function draw_tree() {
         "drawer": view.drawer.name, "min_size": view.min_size,
         "zx": zx, "zy": zy, "x": x, "y": y, "w": w, "h": h,
         "collapsed_ids": JSON.stringify(Object.keys(view.collapsed_ids)),
-        "labels": labels,
     };
 
     const params_circ = {  // parameters to the drawer, in circular mode
@@ -119,6 +119,8 @@ function put_nodes_in_background(g) {
         const bg_node = e.cloneNode();
         e.id = "foreground-" + bg_node.id;  // avoid id collisions
         e.classList = ["fg_node"];  // avoid being wrongly selected as a node
+        e.style.opacity = null; // Remove bg_node styles
+        e.style.fill = null;
         g.insertBefore(bg_node, first);
     });
 }
@@ -153,7 +155,8 @@ async function draw_aligned(params) {
         for (let panel = 1; panel < view.drawer.npanels; panel++) {
             const qs = new URLSearchParams({
                 ...params, "panel": panel,
-                "rmin": view.rmin + panel * view.tree_size.width}).toString();
+                "rmin": view.rmin + panel * view.tree_size.width
+            }).toString();
 
             const items = await api(`/trees/${get_tid()}/draw?${qs}`);
 
@@ -171,7 +174,7 @@ function create_item(item, tl, zoom) {
     const [zx, zy] = [zoom.x, zoom.y];  // shortcut
 
     if (item[0] === "nodebox") {
-        const [ , box, name, properties, node_id, result_of] = item;
+        const [ , box, name, properties, node_id, result_of, style] = item;
 
         const b = create_box(box, tl, zx, zy);
 
@@ -179,6 +182,8 @@ function create_item(item, tl, zoom) {
 
         b.classList.add("node");
         result_of.forEach(t => b.classList.add(get_search_class(t, "results")));
+
+        style_nodebox(b, style)
 
         b.addEventListener("click", event =>
             on_box_click(event, box, node_id));
@@ -193,29 +198,59 @@ function create_item(item, tl, zoom) {
         return b;
     }
     else if (item[0] === "outline") {
-        const [ , sbox] = item;
+        const [ , sbox, style] = item;
 
-        return create_outline(sbox, tl, zx, zy);
+        const outline = create_outline(sbox, tl, zx, zy);
+
+        style_outline(outline, style);
+
+        return outline
     }
     else if (item[0] === "line") {
-        const [ , p1, p2, type, parent_of] = item;
+        const [ , p1, p2, type, parent_of, style] = item;
 
-        return create_line(p1, p2, tl, zx, zy, type, parent_of);
+        const line = create_line(p1, p2, tl, zx, zy, type, parent_of);
+
+        style_line(line, style);
+
+        return line;
     }
     else if (item[0] === "arc") {
-        const [ , p1, p2, large, type] = item;
+        const [ , p1, p2, large, type, style] = item;
 
-        return create_arc(p1, p2, large, tl, zx, type);
+        const arc = create_arc(p1, p2, large, tl, zx, type);
+
+        style_line(arc, style);
+
+        return arc;
     }
     else if (item[0] === "circle") {
-        const [ , center, radius, type] = item;
+        const [ , center, radius, type, style] = item;
 
-        return create_circle(center, radius, tl, zx, zy, type);
+        const circle = create_circle(center, radius, tl, zx, zy, type);
+
+        style_circle(circle, style);
+
+        return circle
     }
     else if (item[0] === "text") {
-        const [ , box, anchor, text, type] = item;
+        const [ , box, txt, type, style] = item;
 
-        return create_text(box, anchor, text, tl, zx, zy, get_class_name(type));
+        const text =  create_text(box, txt, style.max_fsize,
+            tl, zx, zy, get_class_name(type));
+
+        style_text(text, style);
+
+        return text;
+    }
+    else if (item[0] === "rect") {
+        const [ , box, type, style] = item;
+
+        const rect = create_box(box, tl, zx, zy, type);
+
+        style_rect(rect, style);
+
+        return rect;
     }
     else if (item[0] === "array") {
         const [ , box, array] = item;
@@ -260,27 +295,31 @@ function create_svg_element(name, attrs={}) {
 
 
 // Return a box (rectangle or annular sector).
-function create_box(box, tl, zx, zy) {
+function create_box(box, tl, zx, zy, type) {
     const b = view.drawer.type === "rect" ?
-                    create_rect(box, tl, zx, zy) :
-                    create_asec(box, tl, zx);
+                    create_rect(box, tl, zx, zy, type) :
+                    create_asec(box, tl, zx, type);
     b.classList.add("box");
     return b;
 }
 
 
-function create_rect(box, tl, zx, zy) {
-    const [x, y, w, h] = box;
+function create_rect(box, tl, zx, zy, type) {
+    let [x, y, w, h] = box;
+
+    if (view.drawer.type === "circ")
+        ({x, y} = cartesian_shifted(x, y, tl, zx));
 
     return create_svg_element("rect", {
         "x": zx * (x - tl.x), "y": zy * (y - tl.y),
         "width": zx * w, "height": zy * h,
+        "class": type || null,
     });
 }
 
 
 // Return a svg annular sector, described by box and with zoom z.
-function create_asec(box, tl, z) {
+function create_asec(box, tl, z, type) {
     const [r, a, dr, da] = box;
     const large = da > Math.PI ? 1 : 0;
     const p00 = cartesian_shifted(r, a, tl, z),
@@ -294,6 +333,7 @@ function create_asec(box, tl, z) {
               A ${z * (r + dr)} ${z * (r + dr)} 0 ${large} 1 ${p11.x} ${p11.y}
               L ${p01.x} ${p01.y}
               A ${z * r} ${z * r} 0 ${large} 0 ${p00.x} ${p00.y}`,
+        "class": type || null,
     });
 }
 
@@ -398,25 +438,26 @@ function create_arc(p1, p2, large, tl, z, type="") {
 
 
 function create_circle(center, radius, tl, zx, zy, type="") {
-    const [x, y] = [zx * (center[0] - tl.x), zy * (center[1] - tl.y)];
+    if (view.drawer.type === "rect") 
+        var [x, y] = [zx * (center[0] - tl.x), zy * (center[1] - tl.y)]
+    else 
+        var {x, y} = cartesian_shifted(center[0], center[1], tl, zx);
 
     return create_svg_element("circle", {
         "class": "circle " + type,
-        "cx": x, "cy": y, "r": view.node.dot.radius,
+        "cx": x, "cy": y, "r": radius, // view.node.dot.radius,
     });
 }
 
 
-function create_text(box, anchor, text, tl, zx, zy, type="") {
-    const [x, y, fs, text_anchor] = view.drawer.type === "rect" ?
-        get_text_placement_rect(box, anchor, text, tl, zx, zy, type) :
-        get_text_placement_circ(box, anchor, text, tl, zx, type);
-
-    const dx = (type === "name") ? view.name.padding.left * fs / 100 : 0;
+function create_text(box, text, fs, tl, zx, zy, type="") {
+    const [x, y, text_anchor] = view.drawer.type === "rect" ?
+        get_text_placement_rect(box, text, fs, tl, zx, zy) :
+        get_text_placement_circ(box, text, fs, tl, zx);
 
     const t = create_svg_element("text", {
         "class": "text " + type,
-        "x": x + dx, "y": y,
+        "x": x, "y": y,
         "font-size": `${fs}px`,
         "text-anchor": text_anchor,
     });
@@ -432,74 +473,37 @@ function create_text(box, anchor, text, tl, zx, zy, type="") {
 }
 
 
-// Return position, font size and text anchor to draw text when box is a rect.
-function get_text_placement_rect(box, anchor, text, tl, zx, zy, type="") {
+// Return position to draw text when box is a rect.
+function get_text_placement_rect(box, text, fs, tl, zx, zy) {
     if (text.length === 0)
         throw new Error("please do not try to place empty texts :)")
         // We could, but it's almost surely a bug upstream!
 
-    const [x, y, dx, dy] = box;
+    const [x, y, , ] = box;
 
-    const dx_char = dx / text.length;  // ~ width of 1 char (in tree units)
-    const fs_max = Math.min(zx * dx_char * 1.6, zy * dy);
-    const fs = font_adjust(fs_max, type);
-
-    const scale = fs / (zy * dy);
-    const [ax, ay] = anchor;
-    const x_in_tree = x + ax * (1 - scale) * dx,
-          y_in_tree = y + ay * (1 - scale) * dy + 0.9 * fs / zy;
+    const y_in_tree = y + 0.9 * fs / zy;
     // We give the position as the bottom-left point, the same convention as in
     // svgs. We go a bit up (0.9 instead of 1.0) because of the baseline.
 
-    const dx_in_tree = scale * dx;
-    const [x_anchor, text_anchor] = anchored_position(x_in_tree, dx_in_tree, ax);
-
-    return [zx * (x_anchor - tl.x), zy * (y_in_tree - tl.y), fs, text_anchor];
+    return [zx * (x - tl.x), zy * (y_in_tree - tl.y)];
 }
 
 
-// Return position, font size and text anchor to draw text when box is an asec.
-function get_text_placement_circ(box, anchor, text, tl, z, type="") {
+// Return position to draw text when box is an asec.
+function get_text_placement_circ(box, text, fs, tl, z) {
     if (text.length === 0)
         throw new Error("please do not try to place empty texts :)");
         // We could, but it's almost surely a bug upstream!
 
-    const [r, a, dr, da] = box;
-    if (r === 0)
-        throw new Error("r cannot be 0 (text would have 0 font size)");
-
-    const dr_char = dr / text.length;  // ~ dr of 1 char (in tree units)
-    const fs_max = z * Math.min(dr_char * 1.6, r * da);
-    const fs = font_adjust(fs_max, type);
-
-    const scale = fs / (z * r * da);
-    const [ar, aa] = anchor;
-    const r_in_tree = r + ar * (1 - scale) * dr,
-          a_in_tree = a + aa * (1 - scale) * da + 0.8 * (fs / r) / z;
+    const [r, a, , ] = box;
+    const a_in_tree = a + 0.8 * (fs / r) / z;
     // We give the position as the bottom-left point, the same convention as in
     // svgs. We go a bit up (0.8 instead of 1.0) because of the baseline.
 
-    const dr_in_tree = scale * dr;
-    const [r_anchor, text_anchor] = anchored_position(r_in_tree, dr_in_tree, ar);
+    const x = r * Math.cos(a_in_tree),
+          y = r * Math.sin(a_in_tree);
 
-    const x_anchor = r_anchor * Math.cos(a_in_tree),
-          y_anchor = r_anchor * Math.sin(a_in_tree);
-
-    return [z * (x_anchor - tl.x), z * (y_anchor - tl.y), fs, text_anchor];
-}
-
-
-// Return the x position and the svg text-anchor to place the text for a given
-// original in-tree x text position, dx width, and ax anchor.
-// This is useful to fine-tune the placement (since dx is just an approximation
-// to the exact width of the text).
-function anchored_position(x, dx, ax) {
-    if (ax < 0.3)
-        return [x, "start"];
-    else if (ax < 0.6)
-        return [x + dx/2, "middle"];
-    else
-        return [x + dx, "end"];
+    return [z * (x - tl.x), z * (y - tl.y)];
 }
 
 
@@ -535,7 +539,8 @@ function flip_with_bbox(text, bbox) {
 function addRotation(element, angle, cx=0, cy=0) {
     const svg = div_tree.children[0];
     const tr = svg.createSVGTransform();
-    tr.setRotate(angle, cx, cy);
+    if (angle && (-360 < angle < 360))
+        tr.setRotate(angle, cx, cy);
     element.transform.baseVal.appendItem(tr);
 }
 
@@ -552,13 +557,68 @@ function get_approx_BBox(text) {
 
 // Return the font size adjusted for the given type of text.
 function font_adjust(fs, type) {
-    if (type === "name")
+    if (type === "leaf_name")
         return Math.min(view.name.max_size,
                         (1 - view.name.padding.vertical) * fs);
 
     for (const expression of Object.keys(view.labels))
         if (type === get_class_name("label_" + expression))
             return Math.min(view.labels[expression].max_size, fs);
+    
+    return Math.min(view.font_sizes.max, fs)
+}
 
-    return fs;
+// Style created items with information from backend
+function style_nodebox(nodebox, style){
+    if (style.fill && style.fill != "")
+        nodebox.style.fill = style.fill;
+    return nodebox;
+}
+
+
+function style_line(line, style) {
+    if (style.type)
+        line.style["stroke-dasharray"] = style.type === "solid" 
+            ? null : style.type == "dotted"
+            ? 2 : 5;
+
+    if (style.width)
+        line.style["stroke-width"] = style.width;
+
+    if (style.color)
+        line.style["stroke"] = style.color;
+
+    return line;
+}
+
+
+function style_outline(outline, style) {
+    if (style.fill && style.fill != "")
+        outline.style.fill = style.fill;
+    return outline;
+}
+
+
+function style_circle(circle, style) {
+    if (style.fill && style.fill != "")
+        circle.style.fill = style.fill;
+    return circle;
+}
+
+
+function style_text(text, style) {
+    if (style.fill && style.fill != "")
+        text.style.fill = style.fill;
+
+    if (style.ftype && style.ftype != "")
+        text.style["font-family"] = style.ftype;
+
+    return text;
+}
+
+
+function style_rect(rect, style) {
+    if (style.fill && style.fill != "")
+        rect.style.fill = style.fill;
+    return rect;
 }
