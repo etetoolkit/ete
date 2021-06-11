@@ -18,12 +18,12 @@ def swap_pos(pos, angle):
 
 class Face(object):
 
-    def __init__(self, name="", padding_x=0, padding_y=0, constrained=True):
+    def __init__(self, name="", padding_x=0, padding_y=0, is_constrained=True):
         self.node = None
         self.name = name
         self._content = "Empty"
         self._box = None
-        self.is_constrained = constrained
+        self.is_constrained = is_constrained
         self.padding_x = padding_x
         self.padding_y = padding_y
 
@@ -113,11 +113,11 @@ class TextFace(Face):
     def __init__(self, text, name='', color='black',
             max_fsize=15, ftype="sans-serif",
             padding_x=0, padding_y=0,
-            constrained=True):
+            is_constrained=True):
 
         Face.__init__(self, name=name,
                 padding_x=padding_x, padding_y=padding_y,
-                constrained=constrained)
+                is_constrained=is_constrained)
 
         self._content = text
         self.color = color
@@ -197,14 +197,14 @@ class AttrFace(TextFace):
             color="black", 
             max_fsize=15, ftype="sans-serif",
             padding_x=0, padding_y=0,
-            constrained=True):
+            is_constrained=True):
 
 
         TextFace.__init__(self, text="",
                 name=name, color=color,
                 max_fsize=max_fsize, ftype=ftype,
                 padding_x=padding_x, padding_y=padding_y,
-                constrained=constrained)
+                is_constrained=is_constrained)
 
         self._attr = attr
 
@@ -266,11 +266,11 @@ class LabelFace(AttrFace):
 class CircleFace(Face):
 
     def __init__(self, radius, color, name="",
-            padding_x=0, padding_y=0, constrained=True):
+            padding_x=0, padding_y=0, is_constrained=True):
 
         Face.__init__(self, name=name,
                 padding_x=padding_x, padding_y=padding_y,
-                constrained=constrained)
+                is_constrained=is_constrained)
 
         self.radius = radius
         self.color = color
@@ -337,10 +337,10 @@ class CircleFace(Face):
 
 class RectFace(Face):
     def __init__(self, width, height, color="black",
-            padding_x=0, padding_y=0, constrained=True):
+            padding_x=0, padding_y=0, is_constrained=True):
 
         Face.__init__(self, padding_x=padding_x, padding_y=padding_y,
-                constrained=constrained)
+                is_constrained=is_constrained)
 
         self.width = width
         self.height = height
@@ -423,10 +423,10 @@ class OutlineFace(Face):
     def __init__(self, 
             stroke_color='black', stroke_width=1,
             color="lightgray", opacity=1,
-            padding_x=0, padding_y=0, constrained=True):
+            padding_x=0, padding_y=0, is_constrained=True):
 
         Face.__init__(self, padding_x=padding_x, padding_y=padding_y,
-                constrained=constrained)
+                is_constrained=is_constrained)
 
         self.opacity = opacity
         self.color = color
@@ -467,4 +467,3 @@ class OutlineFace(Face):
                 'fill-opacity': self.opacity,
                 }
         return draw_outline(self.outline, style)
-

@@ -12,7 +12,7 @@ REST call examples:
   DELETE /users/{id}  Delete user by "id"
 """
 
-# The structure that we want to follow is:
+# khe structure that we want to follow is:
 #
 # user
 #   id: int

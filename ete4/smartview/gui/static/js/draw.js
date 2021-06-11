@@ -568,6 +568,10 @@ function font_adjust(fs, type) {
     return Math.min(view.font_sizes.max, fs)
 }
 
+function is_style_property(property) {
+    return property && property != ""
+}
+
 // Style created items with information from backend
 function style_nodebox(nodebox, style){
     if (style.fill && style.fill != "")
@@ -577,15 +581,15 @@ function style_nodebox(nodebox, style){
 
 
 function style_line(line, style) {
-    if (style.type)
+    if (is_style_property(style.type))
         line.style["stroke-dasharray"] = style.type === "solid" 
             ? null : style.type == "dotted"
             ? 2 : 5;
 
-    if (style.width)
+    if (is_style_property(style.width))
         line.style["stroke-width"] = style.width;
 
-    if (style.color)
+    if (is_style_property(style.color))
         line.style["stroke"] = style.color;
 
     return line;
@@ -593,8 +597,12 @@ function style_line(line, style) {
 
 
 function style_outline(outline, style) {
-    if (style.fill && style.fill != "")
+    if (is_style_property(style.fill))
         outline.style.fill = style.fill;
+
+    if (is_style_property(style.stroke))
+        outline.style.stroke = style.stroke;
+
     return outline;
 }
 

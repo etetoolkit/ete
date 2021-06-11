@@ -318,6 +318,7 @@ def quote(name, escaped_chars=" \t\r\n()[]':;,"):
 
 def write_newick(tree, properties=[]):
     "Return newick representation from tree"
-    children_text = ','.join(write_newick(node).rstrip(';') for node in tree.children)
+    children_text = ','.join(write_newick(node, properties=properties).rstrip(';')\
+            for node in tree.children)
     content_text = content_repr(tree, properties)
     return (f'({children_text})' if tree.children else '') + content_text + ';'

@@ -259,6 +259,7 @@ class Drawer:
             parent.is_collapsed = True
             return parent
 
+        print('\nNo collapsed node found\n')
         return None
 
         # Doubtful this code is necesssary
@@ -621,10 +622,7 @@ class DrawerRectFaces(DrawerRect):
 
         x = x if self.panel == 0 else self.xmin
 
-        if collapsed_node:
-            yield from self.draw_node(collapsed_node, (x, y), bdx, dy/2)
-        else:
-            print("no collapsed node")
+        yield from self.draw_node(collapsed_node, (x, y), bdx, dy/2)
 
 
 class DrawerCircFaces(DrawerCirc):
@@ -912,9 +910,8 @@ def get_asec(element, zoom=(0, 0)):
         rect = Box(min(x1, x2), min(y1, y2), abs(x2 - x1), abs(y2 - y1))
         return circumasec(rect)
     elif eid == 'circle':
-        (x, y), r = element[1], element[2]
         z = zoom[0]
-        r = r / z
+        (x, y), r = cartesian(element[1]), element[2] / z
         rect = Box(x - r, y - r, 2 * r, 2 * r)
         return circumasec(rect)
     else:

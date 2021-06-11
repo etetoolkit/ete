@@ -7,7 +7,7 @@ from ete4.smartview.ete.draw import summary
 def get_leaf_name_layout(pos='branch-right', color='black', padding_x=5, padding_y=0):
     leaf_name_face = AttrFace(attr='name', name='leaf_name',
             color=color, padding_x=padding_x, padding_y=padding_y,
-            constrained=False)
+            is_constrained=False)
     def layout_fn(node):
         if node.is_leaf():
             node.add_face(leaf_name_face, position=pos, column=0)
@@ -19,7 +19,7 @@ def get_leaf_name_layout(pos='branch-right', color='black', padding_x=5, padding
                 node.add_face(TextFace(text, name='leaf_name', 
                                 color=color, 
                                 padding_x=padding_x, padding_y=padding_y,
-                                constrained=False),
+                                is_constrained=False),
                         position=pos, column=1, collapsed_only=True)
                 
     return layout_fn
@@ -33,7 +33,7 @@ def get_branch_length_layout(pos='branch-top',
                 pos=pos,
                 color=color,
                 padding_x=padding_x, padding_y=padding_y,
-                constrained=False)
+                is_constrained=False)
 
 
 def get_branch_support_layout(pos='branch-bottom', 
@@ -44,17 +44,17 @@ def get_branch_support_layout(pos='branch-bottom',
                 pos=pos,
                 color=color,
                 padding_x=padding_x, padding_y=padding_y,
-                constrained=False)
+                is_constrained=False)
     
 
 def get_branch_attr_layout(attr, pos, name=None, color='black',
-        padding_x=0, padding_y=0, constrained=True):
+        padding_x=0, padding_y=0, is_constrained=True):
     branch_attr_face = AttrFace(attr,
             name=name or f'branch_{attr}',
             color=color,
             padding_x=padding_x,
             padding_y=padding_y,
-            constrained=constrained)
+            is_constrained=is_constrained)
     def layout_fn(node):
         if not node.is_leaf() and node.dist > 0:
             node.add_face(branch_attr_face, position=pos, column=0)
@@ -64,7 +64,7 @@ def get_branch_attr_layout(attr, pos, name=None, color='black',
 
 
 def get_outline_layout():
-    outline_face = OutlineFace(constrained=False)
+    outline_face = OutlineFace(is_constrained=False)
     def layout_fn(node):
         if not node.is_leaf():
             node.add_face(outline_face, 
