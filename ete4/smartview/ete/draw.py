@@ -210,26 +210,36 @@ class Drawer:
         node0 = self.collapsed[0]
         uncollapse = len(self.collapsed) == 1 and node0.is_leaf()
 
+        x, y, _, _, _ = self.outline
+
         if uncollapse:
             self.bdy_dys.append([])
-            x, y, _, _, _ = self.outline
             graphics += self.draw_content(node0, (x, y))
         else:
             self.bdy_dys[-1].append( (self.outline.dy / 2, self.outline.dy) )
             graphics += self.draw_collapsed()
 
-        self.collapsed = []
+        collapsed_node = self.get_collapsed_node()
+        is_manually_collapsed = collapsed_node in self.collapsed
+        is_small = self.is_small(make_box((x, y),
+            self.node_size(collapsed_node)))
 
         ndx = drawn_size(graphics, self.get_box).dx
+
+        # Draw collapsed node nodebox when necessary
+        if is_manually_collapsed or is_small:
+            name, properties = collapsed_node.name, collapsed_node.properties
+
+            box = draw_nodebox(self.flush_outline(ndx), name, 
+                    properties, [], result_of, 
+                    { 'fill': collapsed_node.img_style.get('bgcolor') })
+            self.nodeboxes.append(box)
+        else:
+            self.flush_outline()
+            ndx -= collapsed_node.dist
+
+        self.collapsed = []
         self.node_dxs[-1].append(ndx)
-
-        name, properties = ((node0.name, node0.properties) if uncollapse else
-                            ('(collapsed)', {}))
-
-        box = draw_nodebox(self.flush_outline(ndx), name, 
-                properties, [], result_of, 
-                { 'fill': node0.img_style.get('bgcolor') })
-        self.nodeboxes.append(box)
 
         yield from graphics
 
@@ -241,13 +251,7 @@ class Drawer:
 
     def get_collapsed_node(self):
         """Get node that will be rendered as a collapsed node.
-        Its children are nodes either manually collapsed or too
-        small to be rendered"""
-        # This approach may be unefficient but useful if 
-        # graphic representations are treated as
-        # (Tree) nodes with associated Face(s)
-        # (Collapsing the parent node is not viable
-        # as not all the children of such node ought to be collapsed)
+        Either the only node collapsed or the parent of all collapsed nodes."""
 
         node0 = self.collapsed[0]
         if len(self.collapsed) == 1:
@@ -255,7 +259,7 @@ class Drawer:
             return node0
         
         parent = node0.up
-        if all(node.up == parent for node in self.collapsed):
+        if all(node.up == parent for node in self.collapsed[1:]):
             parent.is_collapsed = True
             return parent
 
@@ -276,6 +280,16 @@ class Drawer:
         node.size = (0, dy)
 
         return node
+
+    def is_fully_collapsed(self, collapsed_node):
+        """Returns true if collapsed_node is utterly collapsed,
+        i.e. has no branch width"""
+        x, y, *_ = self.outline
+        is_manually_collapsed = collapsed_node in self.collapsed
+        box_node = make_box((x, y), self.node_size(collapsed_node))
+
+        return is_manually_collapsed or self.is_small(box_node)
+
 
     # These are the 2 functions that the user overloads to choose what to draw
     # when representing a node and a group of collapsed nodes:
@@ -611,10 +625,7 @@ class DrawerRectFaces(DrawerRect):
 
         collapsed_node = self.get_collapsed_node()
 
-        is_manually_collapsed = collapsed_node in self.collapsed
-        box_node = make_box((x, y), self.node_size(collapsed_node))
-
-        if is_manually_collapsed or self.is_small(box_node):
+        if self.is_fully_collapsed(collapsed_node):
             bdx = 0
         else:
             x = x - collapsed_node.dist
@@ -701,16 +712,12 @@ class DrawerCircFaces(DrawerCirc):
 
         collapsed_node = self.get_collapsed_node()
 
-        is_manually_collapsed = collapsed_node in self.collapsed
-        box_node = make_box((r, a), self.node_size(collapsed_node))
-
-        if is_manually_collapsed or self.is_small(box_node):
+        if self.is_fully_collapsed(collapsed_node):
             bdr = 0
         else:
             r = r - collapsed_node.dist
             bdr = collapsed_node.dist
 
-        # r = r + dr_max - collapsed_node.dist
         r = r if self.panel == 0 else self.xmin
 
         yield from self.draw_node(collapsed_node, (r, a), bdr, da/2)
@@ -720,19 +727,26 @@ class DrawerAlignRectFaces(DrawerRectFaces):
     NPANELS = 2
 
     def draw_node(self, node, point, bdx, bdy):
-        yield from super().draw_node(node, point, bdx, bdy)
+        node_graphics = list(super().draw_node(node, point, bdx, bdy))
+        yield from node_graphics
         if self.panel == 0 and node.is_leaf() and self.viewport:
             x, y = point
-            dx, dy = self.content_size(node)
-            p1 = (x + dx, y + dy/2)
+            dx, dy = self.node_size(node)
+            ndx = drawn_size(node_graphics, self.get_box).dx
+            p1 = (x + dx + ndx, y + dy/2)
             p2 = (self.viewport.x + self.viewport.dx, y + dy/2)
             yield draw_line(p1, p2, 'dotted')
 
     def draw_collapsed(self):
-        yield from super().draw_collapsed()
+        collapsed_graphics = list(super().draw_collapsed())
+        yield from collapsed_graphics
         if self.panel == 0 and self.viewport:
             x, y, dx_min, dx_max, dy = self.outline
-            p1 = (x + dx_max, y + dy/2)
+            collapsed_node = self.get_collapsed_node()
+            dx = collapsed_node.dist\
+                    if not self.is_fully_collapsed(collapsed_node) else 0
+            ndx = drawn_size(collapsed_graphics, self.get_box).dx
+            p1 = (x - dx + ndx, y + dy/2)
             p2 = (self.viewport.x + self.viewport.dx, y + dy/2)
             yield draw_line(p1, p2, 'dotted')
 

@@ -568,8 +568,9 @@ function font_adjust(fs, type) {
     return Math.min(view.font_sizes.max, fs)
 }
 
+// Chech whether style property exists and is not empty
 function is_style_property(property) {
-    return property && property != ""
+    return property != undefined && property != null && property != ""
 }
 
 // Style created items with information from backend
@@ -590,7 +591,7 @@ function style_line(line, style) {
         line.style["stroke-width"] = style.width;
 
     if (is_style_property(style.color))
-        line.style["stroke"] = style.color;
+        line.style.stroke = style.color;
 
     return line;
 }
@@ -600,8 +601,14 @@ function style_outline(outline, style) {
     if (is_style_property(style.fill))
         outline.style.fill = style.fill;
 
+    if (is_style_property(style["fill-opacity"]))
+        outline.style["fill-opacity"] = style["fill-opacity"];
+
     if (is_style_property(style.stroke))
         outline.style.stroke = style.stroke;
+
+    if (is_style_property(style["stroke-width"]))
+        outline.style["stroke-width"] = style["stroke-width"];
 
     return outline;
 }

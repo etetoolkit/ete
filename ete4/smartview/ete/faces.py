@@ -421,8 +421,8 @@ class RectFace(Face):
 
 class OutlineFace(Face):
     def __init__(self, 
-            stroke_color='black', stroke_width=1,
-            color="lightgray", opacity=1,
+            stroke_color='black', stroke_width=0.5,
+            color="lightgray", opacity=0.3,
             padding_x=0, padding_y=0, is_constrained=True):
 
         Face.__init__(self, padding_x=padding_x, padding_y=padding_y,
@@ -434,7 +434,7 @@ class OutlineFace(Face):
         self.stroke_width = stroke_width
         self.outline = None
 
-    def compute_bounding_box(self, 
+    def compute_bounding_box(self,
             drawer,
             point, size,
             bdx, bdy,

@@ -94,11 +94,11 @@ const view = {
     line: {
         length: {
             color: "#000",
-            width: 1,
+            width: 0.5,
         },
         children: {
             color: "#000",
-            width: 1,
+            width: 0.5,
             pattern: "solid",
         },
     },
