@@ -3,7 +3,7 @@ Classes and functions for drawing a tree.
 """
 
 from math import sin, cos, pi, sqrt, atan2
-from collections import namedtuple, OrderedDict, defaultdict
+from collections import namedtuple, OrderedDict, defaultdict, deque
 import random
 
 from ete4.smartview.ete.walk import walk
@@ -72,6 +72,9 @@ class Drawer:
         self.nodeboxes = []  # boxes surrounding all nodes and collapsed boxes
         self.node_dxs = [[]]  # lists of nodes dx (to find the max)
         self.bdy_dys = [[]]  # lists of branch dys and total dys
+
+        if self.panel == 0:
+            self.tree_style.aligned_grid_dxs = defaultdict(lambda: 0)
 
         point = self.xmin, self.ymin
         for it in walk(self.tree):
@@ -613,7 +616,20 @@ class DrawerRectFaces(DrawerRect):
                         dx_max = max(dx_max, dx + hz_padding)
                         dy_before += dy + vt_padding
                         yield drawn_face
-                dx_before += dx_max
+
+                # Update dx_before
+                if pos == 'aligned'\
+                        and self.tree_style.aligned_grid\
+                        and self.NPANELS > 1:
+                    dx_grid = self.tree_style.aligned_grid_dxs[col]
+                    if self.panel == 0:
+                        # Compute aligned grid
+                        dx_grid = max(dx_grid, dx_max)
+                        self.tree_style.aligned_grid_dxs[col] = dx_grid
+                    else:
+                        dx_before += dx_grid
+                else:
+                    dx_before += dx_max
 
         if not node.is_initialized:
             node.is_initialized = True
@@ -621,12 +637,18 @@ class DrawerRectFaces(DrawerRect):
                 layout_fn(node)
 
         # Render Faces in different panels
-        if self.NPANELS == 1 or (self.NPANELS > 1 and self.panel == 0):
-            for pos in FACE_POSITIONS[:3]:
+        if self.NPANELS > 1:
+            if self.panel == 0:
+                for pos in FACE_POSITIONS[:3]:
+                    yield from draw_faces_at_pos(node, pos)
+                # Only run function to compute aligned grid
+                if self.tree_style.aligned_grid: 
+                    deque(draw_faces_at_pos(node, 'aligned'))
+            else:
+                yield from draw_faces_at_pos(node, 'aligned')
+        else:
+            for pos in FACE_POSITIONS:
                 yield from draw_faces_at_pos(node, pos)
-
-        if self.NPANELS == 1 or (self.NPANELS > 1 and self.panel == 1):
-            yield from draw_faces_at_pos(node, 'aligned')
 
     def draw_collapsed(self):
         x, y, dx_min, dx_max, dy = self.outline

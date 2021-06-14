@@ -1,3 +1,4 @@
+from collections import defaultdict
 from types import FunctionType, MethodType
 from ete4.smartview.ete.faces import AttrFace, CircleFace, RectFace, TextFace,\
                                      OutlineFace
@@ -77,6 +78,8 @@ def get_outline_layout():
 class TreeStyle(object):
     def __init__(self):
         self._layout_handler = []
+        self.aligned_grid = True
+        self.aligned_grid_dxs = defaultdict(lambda: 0)
         
     @property
     def layout_fn(self):
