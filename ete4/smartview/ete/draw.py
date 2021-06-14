@@ -675,7 +675,8 @@ class DrawerCircFaces(DrawerCirc):
                 if not node.is_leaf() else node.dist
         z = self.zoom[0]  # zx == zy
             
-        if point[0] == 0:
+        r_node = point[0]
+        if r_node == 0:
             return
 
         def it_fits(box):
@@ -703,9 +704,11 @@ class DrawerCircFaces(DrawerCirc):
             n_col = len(faces.keys())
 
             # Avoid drawing faces very close to center
-            if pos in ['branch-top', 'branch-bottom'] and abs(point[0]) < 1e-5:
+            if pos.startswith('branch-') and abs(r_node) < 1e-5:
                 n_col += 1
                 dr_before = .7 * size[0] / n_col
+            elif pos == 'aligned' and self.panel == 1:
+                dr_before = self.tree_style.aligned_grid_dxs[-1]
             else:
                 dr_before = 0
 
@@ -724,7 +727,27 @@ class DrawerCircFaces(DrawerCirc):
                         dr_max = max(dr_max, dr + hz_padding)
                         da_before = da + vt_padding
                         yield drawn_face
-                dr_before += dr_max
+                
+                # Update dr_before
+                if pos == 'aligned'\
+                        and self.tree_style.aligned_grid\
+                        and self.NPANELS > 1:
+                    dr_grid = self.tree_style.aligned_grid_dxs[col]
+                    if self.panel == 0:
+                        # Compute aligned grid
+                        dr_grid = max(dr_grid, dr_max)
+                        self.tree_style.aligned_grid_dxs[col] = dr_grid
+                    else:
+                        dr_before += dr_grid
+                else:
+                    dr_before += dr_max
+
+            if pos == 'branch-right'\
+                    and (node.is_leaf() or node.is_collapsed):
+                dr_grid = self.tree_style.aligned_grid_dxs[-1]
+                dr_grid = max(dr_grid, r_node + dr_before)
+                self.tree_style.aligned_grid_dxs[-1] = dr_grid
+
 
         if not node.is_initialized:
             node.is_initialized = True
@@ -732,12 +755,18 @@ class DrawerCircFaces(DrawerCirc):
                 layout_fn(node)
 
         # Render Faces in different panels
-        if self.NPANELS == 1 or (self.NPANELS > 1 and self.panel == 0):
-            for pos in FACE_POSITIONS[:3]:
+        if self.NPANELS > 1:
+            if self.panel == 0:
+                for pos in FACE_POSITIONS[:3]:
+                    yield from draw_faces_at_pos(node, pos)
+                # Only run function to compute aligned grid
+                if self.tree_style.aligned_grid: 
+                    deque(draw_faces_at_pos(node, 'aligned'))
+            else:
+                yield from draw_faces_at_pos(node, 'aligned')
+        else:
+            for pos in FACE_POSITIONS:
                 yield from draw_faces_at_pos(node, pos)
-
-        if self.NPANELS == 1 or (self.NPANELS > 1 and self.panel == 1):
-            yield from draw_faces_at_pos(node, 'aligned')
 
     def draw_collapsed(self):
         r, a, dr_min, dr_max, da = self.outline
