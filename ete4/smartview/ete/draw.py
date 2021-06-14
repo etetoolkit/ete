@@ -166,7 +166,8 @@ class Drawer:
 
         # Collapsed nodes will be drawn from self.draw_collapsed()
         if not node.is_collapsed:
-            yield from self.draw_node(node, point, dx, bdy)
+            bdy0_, bdy1_ = (0, dy) if node.is_leaf() else (bdy0, bdy1)
+            yield from self.draw_node(node, point, dx, bdy, bdy0_, bdy1_)
 
         # Draw the branch line ("lengthline") and a line spanning all children.
         if self.panel == 0:
@@ -294,10 +295,12 @@ class Drawer:
     # These are the 2 functions that the user overloads to choose what to draw
     # when representing a node and a group of collapsed nodes:
 
-    def draw_node(self, node, point, bdx, bdy):
+    def draw_node(self, node, point, bdx, bdy, bdy0, bdy1):
         "Yield graphic elements to draw the contents of the node"
         # bdx: branch dx (width)
         # bdy: branch dy (height)
+        # bdy0: fist child branch dy (height)
+        # bdy1: last child branch dy (height)
         yield from []  # only drawn if the node's content is visible
 
     def draw_collapsed(self):
@@ -564,8 +567,11 @@ def draw_circ_collapsed_names(drawer):
 
 class DrawerRectFaces(DrawerRect):
 
-    def draw_node(self, node, point, bdx, bdy):
+    def draw_node(self, node, point, bdx, bdy, bdy0, bdy1):
         size = self.content_size(node)
+        # Space available for branch-right Face position
+        dx_to_closest_child = min(child.dist for child in node.children)\
+                if not node.is_leaf() else node.dist
         zx, zy = self.zoom
 
         def it_fits(box):
@@ -575,7 +581,9 @@ class DrawerRectFaces(DrawerRect):
         def draw_face(face, pos, row, n_row, n_col, dx_before, dy_before):
             if face.get_content():
                 box = face.compute_bounding_box(self, point, size, 
-                            bdx, bdy, pos, row, n_row, n_col,
+                            dx_to_closest_child,
+                            bdx, bdy, bdy0, bdy1,
+                            pos, row, n_row, n_col,
                             dx_before, dy_before)
                 if it_fits(box) or not face.is_constrained:
                     return face.draw()
@@ -633,13 +641,16 @@ class DrawerRectFaces(DrawerRect):
 
         x = x if self.panel == 0 else self.xmin
 
-        yield from self.draw_node(collapsed_node, (x, y), bdx, dy/2)
+        yield from self.draw_node(collapsed_node, (x, y), bdx, dy/2, 0, dy)
 
 
 class DrawerCircFaces(DrawerCirc):
 
-    def draw_node(self, node, point, bdr, bda):
+    def draw_node(self, node, point, bdr, bda, bda0, bda1):
         size = self.content_size(node)
+        # Space available for branch-right Face position
+        dr_to_closest_child = min(child.dist for child in node.children)\
+                if not node.is_leaf() else node.dist
         z = self.zoom[0]  # zx == zy
             
         if point[0] == 0:
@@ -653,7 +664,9 @@ class DrawerCircFaces(DrawerCirc):
         def draw_face(face, pos, row, n_row, n_col, dr_before, da_before):
             if face.get_content():
                 box = face.compute_bounding_box(self, point, size,
-                        bdr, bda, pos, row, n_row, n_col,
+                        dr_to_closest_child,
+                        bdr, bda, bda0, bda1,
+                        pos, row, n_row, n_col,
                         dr_before, da_before)
                 if it_fits(box) or not face.is_constrained:
                     return face.draw()
@@ -720,14 +733,14 @@ class DrawerCircFaces(DrawerCirc):
 
         r = r if self.panel == 0 else self.xmin
 
-        yield from self.draw_node(collapsed_node, (r, a), bdr, da/2)
+        yield from self.draw_node(collapsed_node, (r, a), bdr, da/2, 0, da)
 
 
 class DrawerAlignRectFaces(DrawerRectFaces):
     NPANELS = 2
 
-    def draw_node(self, node, point, bdx, bdy):
-        node_graphics = list(super().draw_node(node, point, bdx, bdy))
+    def draw_node(self, node, point, bdx, bdy, bdy0, bdy1):
+        node_graphics = list(super().draw_node(node, point, bdx, bdy, bdy0, bdy1))
         yield from node_graphics
         if self.panel == 0 and node.is_leaf() and self.viewport:
             x, y = point
@@ -735,7 +748,10 @@ class DrawerAlignRectFaces(DrawerRectFaces):
             ndx = drawn_size(node_graphics, self.get_box).dx
             p1 = (x + dx + ndx, y + dy/2)
             p2 = (self.viewport.x + self.viewport.dx, y + dy/2)
-            yield draw_line(p1, p2, 'dotted')
+            style = { 'type': 1, # dotted
+                      'width': 0.5,
+                      'color': 'gray' }
+            yield draw_line(p1, p2, 'align-link', style=style)
 
     def draw_collapsed(self):
         collapsed_graphics = list(super().draw_collapsed())
@@ -748,7 +764,10 @@ class DrawerAlignRectFaces(DrawerRectFaces):
             ndx = drawn_size(collapsed_graphics, self.get_box).dx
             p1 = (x - dx + ndx, y + dy/2)
             p2 = (self.viewport.x + self.viewport.dx, y + dy/2)
-            yield draw_line(p1, p2, 'dotted')
+            style = { 'type': 1, # dotted
+                      'width': 0.5,
+                      'color': 'gray'}
+            yield draw_line(p1, p2, 'align-link', style=style)
 
 
 class DrawerAlignCircFaces(DrawerCircFaces):

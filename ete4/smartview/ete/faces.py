@@ -40,7 +40,9 @@ class Face(object):
     def compute_bounding_box(self, 
             drawer,
             point, size,
+            dx_to_closest_child,
             bdx, bdy, 
+            bdy0, bdy1,
             pos, row,
             n_row, n_col,
             dx_before, dy_before):
@@ -73,13 +75,15 @@ class Face(object):
             box = (x - (col + 1) * dx/n_col, y + bdy, width, height)
 
         elif pos == 'branch-right':  # right of node
-            avail_dx = dx / n_col
-            avail_dy = min(bdy, dy - bdy) * 2 / n_row
+            avail_dx = dx_to_closest_child / n_col \
+                    if not (self.node.is_leaf() or self.node.is_collapsed)\
+                    else None
+            avail_dy = min([bdy, dy - bdy, bdy - bdy0, bdy1 - bdy]) * 2 / n_row
             xy = (x + bdx + dx_before,
                   y + bdy + (row - n_row / 2) * avail_dy)
 
         elif pos == 'aligned': # right of tree
-            avail_dx = 10 / zx # arbitrary value. Should be overriden
+            avail_dx = None # should be overriden
             avail_dy = dy / n_row
             aligned_x = drawer.node_size(drawer.tree)[0]\
                     if drawer.panel == 0 else drawer.xmin
@@ -91,7 +95,8 @@ class Face(object):
         self._box = Box(
             xy[0] + padding_x,
             xy[1] + padding_y,
-            max(avail_dx - 2 * padding_x, 0),
+            # avail_dx may not be initialized for branch-right and aligned
+            max(avail_dx - 2 * padding_x, 0) if avail_dx else None,
             max(avail_dy - 2 * padding_y, 0))
 
         return self._box
@@ -131,7 +136,9 @@ class TextFace(Face):
     def compute_bounding_box(self, 
             drawer,
             point, size,
+            dx_to_closest_child,
             bdx, bdy,
+            bdy0, bdy1,
             pos, row,
             n_row, n_col,
             dx_before, dy_before):
@@ -142,7 +149,9 @@ class TextFace(Face):
         box = super().compute_bounding_box( 
             drawer,
             point, size,
+            dx_to_closest_child,
             bdx, bdy, 
+            bdy0, bdy1,
             pos, row,
             n_row, n_col,
             dx_before, dy_before)
@@ -161,17 +170,15 @@ class TextFace(Face):
             return dchar * len(text) / zx, dy / (zy * r)
 
         max_dy = min(dy, self.max_fsize / zy)
+        width, height = fit_fontsize(self._content, dx, max_dy)
 
         if pos == 'branch-top':
-            width, height = fit_fontsize(self._content, dx, max_dy)
             box = (x, y + dy - height, width, height) # container bottom
 
         elif pos == 'branch-bottom':
-            width, height = fit_fontsize(self._content, dx, max_dy)
             box = (x, y, width, height) # container top
 
         else: # branch-right and aligned
-            width, height = fit_fontsize(self._content, None, max_dy)
             box = (x, y + (dy - height) / 2, width, height)
 
         self._fsize = height * zy * r
@@ -284,7 +291,9 @@ class CircleFace(Face):
     def compute_bounding_box(self, 
             drawer,
             point, size,
+            dx_to_closest_child,
             bdx, bdy,
+            bdy0, bdy1,
             pos, row,
             n_row, n_col,
             dx_before, dy_before):
@@ -295,7 +304,9 @@ class CircleFace(Face):
         box = super().compute_bounding_box( 
             drawer,
             point, size,
+            dx_to_closest_child,
             bdx, bdy,
+            bdy0, bdy1,
             pos, row,
             n_row, n_col,
             dx_before, dy_before)
@@ -306,7 +317,7 @@ class CircleFace(Face):
         padding_x, padding_y = self.padding_x / zx, self.padding_y / (zy * r)
 
         max_dy = dy * zy * r
-        max_diameter = min(dx * zx, max_dy)
+        max_diameter = min(dx * zx, max_dy) if dx != None else max_dy
         self._max_radius = min(max_diameter / 2, self.radius)
 
         cx = x + self._max_radius / zx - padding_x
@@ -318,7 +329,8 @@ class CircleFace(Face):
             cy = y + self._max_radius / (zy * r) # container top
 
         else: # branch-right and aligned
-            self._max_radius = min(dy * zy * r / 2, self.radius)
+            if pos == 'aligned':
+                self._max_radius = min(dy * zy * r / 2, self.radius)
             cx = x + self._max_radius / zx - padding_x # centered
             cy = y + dy / 2 # centered
 
@@ -349,7 +361,9 @@ class RectFace(Face):
     def compute_bounding_box(self, 
             drawer,
             point, size,
+            dx_to_closest_child,
             bdx, bdy,
+            bdy0, bdy1,
             pos, row,
             n_row, n_col,
             dx_before, dy_before):
@@ -360,7 +374,9 @@ class RectFace(Face):
         box = super().compute_bounding_box( 
             drawer,
             point, size,
+            dx_to_closest_child,
             bdx, bdy,
+            bdy0, bdy1,
             pos, row,
             n_row, n_col,
             dx_before, dy_before)
@@ -401,7 +417,7 @@ class RectFace(Face):
             box = (x, y, width, height) # container top
 
         elif pos == 'branch-right':
-            width, height = get_dimensions(None, max_dy)
+            width, height = get_dimensions(dx, max_dy)
             box = (x, y + (dy - height) / 2, width, height)
 
         elif pos == 'aligned':
@@ -437,7 +453,9 @@ class OutlineFace(Face):
     def compute_bounding_box(self,
             drawer,
             point, size,
+            dx_to_closest_child,
             bdx, bdy,
+            bdy0, bdy1,
             pos, row,
             n_row, n_col,
             dx_before, dy_before):
