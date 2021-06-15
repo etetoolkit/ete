@@ -589,7 +589,7 @@ class DrawerRectFaces(DrawerRect):
                             pos, row, n_row, n_col,
                             dx_before, dy_before)
                 if it_fits(box) or not face.is_constrained:
-                    return face.draw()
+                    yield from face.draw()
 
         def draw_faces_at_pos(node, pos):
             if node.is_collapsed:
@@ -607,15 +607,15 @@ class DrawerRectFaces(DrawerRect):
                 n_row = len(face_list)
                 for row, face in enumerate(face_list):
                     face.node = node
-                    drawn_face = draw_face(face, pos, row, n_row, n_col,
-                            dx_before, dy_before)
+                    drawn_face = list(draw_face(face, pos, row, n_row, n_col,
+                            dx_before, dy_before))
                     if drawn_face:
                         _, _, dx, dy = face.get_box()
                         hz_padding = 2 * face.padding_x / zx
                         vt_padding = 2 * face.padding_y / zy
                         dx_max = max(dx_max, dx + hz_padding)
                         dy_before += dy + vt_padding
-                        yield drawn_face
+                        yield from drawn_face
 
                 # Update dx_before
                 if pos == 'aligned'\
@@ -692,7 +692,7 @@ class DrawerCircFaces(DrawerCirc):
                         pos, row, n_row, n_col,
                         dr_before, da_before)
                 if it_fits(box) or not face.is_constrained:
-                    return face.draw()
+                    yield from face.draw()
 
         def draw_faces_at_pos(node, pos):
             if node.is_collapsed:
@@ -718,15 +718,15 @@ class DrawerCircFaces(DrawerCirc):
                 n_row = len(face_list)
                 for row, face in enumerate(face_list):
                     face.node = node
-                    drawn_face = draw_face(face, pos, row, n_row, n_col,
-                            dr_before, da_before)
+                    drawn_face = list(draw_face(face, pos, row, n_row, n_col,
+                            dr_before, da_before))
                     if drawn_face:
                         r, a, dr, da = face.get_box()
                         hz_padding = 2 * face.padding_x / z
                         vt_padding = 2 * face.padding_y / (z * r)
                         dr_max = max(dr_max, dr + hz_padding)
                         da_before = da + vt_padding
-                        yield drawn_face
+                        yield from drawn_face
                 
                 # Update dr_before
                 if pos == 'aligned'\

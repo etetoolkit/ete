@@ -7,6 +7,45 @@ from ete4.smartview.ete.draw import Box, SBox,\
                                     clip_angles,\
                                     draw_triangle
 
+_aacolors = {
+    'A':"#C8C8C8" ,
+    'R':"#145AFF" ,
+    'N':"#00DCDC" ,
+    'D':"#E60A0A" ,
+    'C':"#E6E600" ,
+    'Q':"#00DCDC" ,
+    'E':"#E60A0A" ,
+    'G':"#EBEBEB" ,
+    'H':"#8282D2" ,
+    'I':"#0F820F" ,
+    'L':"#0F820F" ,
+    'K':"#145AFF" ,
+    'M':"#E6E600" ,
+    'F':"#3232AA" ,
+    'P':"#DC9682" ,
+    'S':"#FA9600" ,
+    'T':"#FA9600" ,
+    'W':"#B45AB4" ,
+    'Y':"#3232AA" ,
+    'V':"#0F820F" ,
+    'B':"#FF69B4" ,
+    'Z':"#FF69B4" ,
+    'X':"#BEA06E",
+    '.':"#FFFFFF",
+    '-':"#FFFFFF",
+    }
+
+_ntcolors = {
+    'A':'#A0A0FF',
+    'G':'#FF7070',
+    'I':'#80FFFF',
+    'C':'#FF8C4B',
+    'T':'#A0FFA0',
+    'U':'#FF8080',
+    '.':"#FFFFFF",
+    '-':"#FFFFFF",
+    ' ':"#FFFFFF"
+}
 
 def swap_pos(pos, angle):
     if abs(angle) >= pi / 2:
@@ -194,7 +233,7 @@ class TextFace(Face):
                 'max_fsize': self._fsize,
                 'ftype': f'{self.ftype}, sans-serif', # default sans-serif
                 }
-        return draw_text(self._box, 
+        yield draw_text(self._box, 
                 self._content, self.name, style)
 
 
@@ -344,7 +383,7 @@ class CircleFace(Face):
         
     def draw(self):
         self._check_own_variables()
-        return draw_circle(self._center, self._max_radius,
+        yield draw_circle(self._center, self._max_radius,
                 self.name, style={'fill': self.color})
 
 
@@ -431,7 +470,7 @@ class RectFace(Face):
 
     def draw(self):
         self._check_own_variables()
-        return draw_rect(self._box,
+        yield draw_rect(self._box,
                 self.name,
                 style={'fill': self.color})
 
@@ -485,4 +524,128 @@ class OutlineFace(Face):
                 'fill': self.color,
                 'fill-opacity': self.opacity,
                 }
-        return draw_outline(self.outline, style)
+        yield draw_outline(self.outline, style)
+
+
+class SeqFace(Face):
+    def __init__(self, seq, seqtype, poswidth=15,
+            max_fsize=15, ftype='sans-serif',
+            padding_x=0, padding_y=0, is_constrained=True):
+
+        Face.__init__(self, padding_x=padding_x, padding_y=padding_y,
+                is_constrained=is_constrained)
+
+        self.seq = seq
+        self.seqtype = seqtype
+        self.colors = _aacolors if self.seqtype == 'aa' else _ntcolors
+        self.poswidth = poswidth  # width of each nucleotide/aa
+        self._scaled_poswidth = None  # drawer zoom applied
+        # Text
+        self.ftype = ftype
+        self.max_fsize = max_fsize
+        self._fsize = None
+        self._scaled_fsize = None
+
+    def compute_bounding_box(self,
+            drawer,
+            point, size,
+            dx_to_closest_child,
+            bdx, bdy,
+            bdy0, bdy1,
+            pos, row,
+            n_row, n_col,
+            dx_before, dy_before):
+
+        if drawer.TYPE == 'circ':
+            pos = swap_pos(pos, point[1])
+
+        box = super().compute_bounding_box( 
+            drawer,
+            point, size,
+            dx_to_closest_child,
+            bdx, bdy,
+            bdy0, bdy1,
+            pos, row,
+            n_row, n_col,
+            dx_before, dy_before)
+
+        x, y, _, dy = box
+        zx, zy = drawer.zoom
+
+        self._scaled_poswidth = self.poswidth / zx
+        dx = self._scaled_poswidth * len(self.seq)
+
+        r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
+        self._fsize = min([self.poswidth / 1.5, dy * zy * r, self.max_fsize])
+
+        self._scaled_fsize = self._fsize / zy
+
+        self._box = Box(x, y, dx, dy)
+        
+        return self._box
+
+    def draw(self):
+        x, y, _, dy = self._box
+        dx = self._scaled_poswidth
+        text_style = {
+            'max_fsize': self._fsize,
+            'text_anchor': 'middle',
+            'ftype': f'{self.ftype}, sans-serif', # default sans-serif
+            }
+        for idx, pos in enumerate(self.seq):
+            box = Box(x + idx * dx, y, dx, dy)
+            text_box = Box(x + idx * dx + dx / 2,
+                    y + (dy - self._scaled_fsize) / 2,
+                    dx, dy)
+            yield draw_rect(box,
+                    self.seqtype + "_" + pos,
+                    style={'fill': self.colors[pos]})
+            yield draw_text(text_box,
+                    pos,
+                    style=text_style)
+
+
+
+class SeqMotifFace(Face):
+    def __init__(self, seq, width=3):
+
+        Face.__init__(self, padding_x=padding_x, padding_y=padding_y,
+                is_constrained=is_constrained)
+
+        self.seq = 'HSQGTFTSDYSKYLDSRRAQDFVQWLMNT'
+        self.width = width  # width of each nucleotide/aa
+
+    def compute_bounding_box(self,
+            drawer,
+            point, size,
+            dx_to_closest_child,
+            bdx, bdy,
+            bdy0, bdy1,
+            pos, row,
+            n_row, n_col,
+            dx_before, dy_before):
+
+        if drawer.TYPE == 'circ':
+            pos = swap_pos(pos, point[1])
+
+        box = super().compute_bounding_box( 
+            drawer,
+            point, size,
+            dx_to_closest_child,
+            bdx, bdy,
+            bdy0, bdy1,
+            pos, row,
+            n_row, n_col,
+            dx_before, dy_before)
+
+        x, y, dx, dy = box
+        zx, zy = drawer.zoom
+        
+        return Box(x, y, self.width * len(self.seq) / dx, dy)
+
+    def build_regions(self):
+        """Build and sort sequence regions: seq representation and motifs"""
+        return
+
+    def draw(self):
+        return

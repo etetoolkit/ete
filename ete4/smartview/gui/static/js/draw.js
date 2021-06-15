@@ -500,11 +500,9 @@ function create_triangle(box, tip, tl, zx, zy, type="") {
     if (view.drawer.type === "circ") 
         points.forEach((point, idx, arr) => {
             const [r, a] = point;
-            const {x:px, y:py} = cartesian_shifted(r, a, tl, zx);
+            const {x: px, y: py} = cartesian_shifted(r, a, tl, zx);
             arr[idx] = [px, py];
         });
-        console.log('after')
-
 
     return create_svg_element("polygon", {
         "class": "triangle " + type,
@@ -514,7 +512,7 @@ function create_triangle(box, tip, tl, zx, zy, type="") {
 
 
 function create_text(box, text, fs, tl, zx, zy, type="") {
-    const [x, y, text_anchor] = view.drawer.type === "rect" ?
+    const [x, y] = view.drawer.type === "rect" ?
         get_text_placement_rect(box, text, fs, tl, zx, zy) :
         get_text_placement_circ(box, text, fs, tl, zx);
 
@@ -522,7 +520,6 @@ function create_text(box, text, fs, tl, zx, zy, type="") {
         "class": "text " + type,
         "x": x, "y": y,
         "font-size": `${fs}px`,
-        "text-anchor": text_anchor,
     });
 
     t.appendChild(document.createTextNode(text));
@@ -685,11 +682,14 @@ function style_circle(circle, style) {
 
 
 function style_text(text, style) {
-    if (style.fill && style.fill != "")
+    if (is_style_property(style.fill))
         text.style.fill = style.fill;
 
-    if (style.ftype && style.ftype != "")
+    if (is_style_property(style.ftype))
         text.style["font-family"] = style.ftype;
+
+    if (is_style_property(style.text_anchor))
+        text.style["text-anchor"] = style.text_anchor;
 
     return text;
 }
