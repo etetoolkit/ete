@@ -883,15 +883,22 @@ def add_resources(api):
     add(Id, '/id/<path:path>')
 
 
-app = initialize()
+def run_smartview(tree_style=None):
+    global app
+    app = initialize()
 
+    app.tree_style = tree_style or TreeStyle()
 
-if __name__ == '__main__':
-
+    # Create database if not already created
     if not os.path.exists(app.config['DATABASE']):
         create_example_database()
 
     app.run(debug=True, use_reloader=False)
+
+
+if __name__ == '__main__':
+    run_smartview()
+
 
 # But for production it's better if we serve it with something like:
 #   gunicorn server:app

@@ -935,6 +935,15 @@ def draw_arc(p1, p2, large=False, arc_type='', style=None):
 def draw_circle(center, radius, circle_type='', style=None):
     return ['circle', center, radius, circle_type, style or {}]
 
+def draw_triangle(box, tip, triangle_type='', style=None):
+    """Returns array with all the information needed to draw a triangle
+    in front end. 
+    :box: bounds triangle
+    :tip: defines tip orientation 'top', 'left' or 'right'.
+    :triangle_type: will label triangle in front end (class)
+    """
+    return ['triangle', box, tip, triangle_type, style or {}]
+
 def draw_text(box, text, text_type='', style=None):
     return ['text', box, text, text_type, style or {}]
 
@@ -964,7 +973,7 @@ def get_ys(box):
 def get_rect(element, zoom=(0, 0)):
     "Return the rectangle that contains the given graphic element"
     eid = element[0]
-    if eid in ['nodebox', 'rect', 'array', 'text']:
+    if eid in ['nodebox', 'rect', 'array', 'text', 'triangle']:
         return element[1]
     elif eid == 'outline':
         x, y, dx_min, dx_max, dy = element[1]
@@ -984,7 +993,7 @@ def get_rect(element, zoom=(0, 0)):
 def get_asec(element, zoom=(0, 0)):
     "Return the annular sector that contains the given graphic element"
     eid = element[0]
-    if eid in ['nodebox', 'rect', 'array', 'text']:
+    if eid in ['nodebox', 'rect', 'array', 'text', 'triangle']:
         return element[1]
     elif eid == 'outline':
         r, a, dr_min, dr_max, da = element[1]

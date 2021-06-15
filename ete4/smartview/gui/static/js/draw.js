@@ -233,6 +233,15 @@ function create_item(item, tl, zoom) {
 
         return circle
     }
+    else if (item[0] === "triangle") {
+        const [ , box, tip, type, style] = item;
+
+        const triangle = create_triangle(box, tip, tl, zx, zy, type);
+
+        style_polygon(triangle, style);
+
+        return triangle;
+    }
     else if (item[0] === "text") {
         const [ , box, txt, type, style] = item;
 
@@ -248,7 +257,7 @@ function create_item(item, tl, zoom) {
 
         const rect = create_box(box, tl, zx, zy, type);
 
-        style_rect(rect, style);
+        style_polygon(rect, style);
 
         return rect;
     }
@@ -337,6 +346,7 @@ function create_asec(box, tl, z, type) {
     });
 }
 
+
 function cartesian_shifted(r, a, tl, z) {
     return {x: z * (r * Math.cos(a) - tl.x),
             y: z * (r * Math.sin(a) - tl.y)};
@@ -354,7 +364,7 @@ function create_outline(sbox, tl, zx, zy) {
 
 // Return a svg horizontal outline.
 function create_rect_outline(sbox, tl, zx, zy) {
-    const [x, y, dx_min, dx_max, dy] = transform(sbox, tl, zx, zy);
+    const [x, y, dx_min, dx_max, dy] = transform_sbox(sbox, tl, zx, zy);
 
     const dx = view.outline.slanted ? dx_min : dx_max;
 
@@ -367,8 +377,14 @@ function create_rect_outline(sbox, tl, zx, zy) {
     });
 }
 
+// Return the box translated (from tl) and scaled.
+function transform_box(box, tl, zx, zy) {
+    const [x, y, dx, dy] = box;
+    return [zx * (x - tl.x), zy * (y - tl.y), zx * dx, zy * dy];
+}
+
 // Return the sbox translated (from tl) and scaled.
-function transform(sbox, tl, zx, zy) {
+function transform_sbox(sbox, tl, zx, zy) {
     const [x, y, dx_min, dx_max, dy] = sbox;
     return [zx * (x - tl.x), zy * (y - tl.y), zx * dx_min, zx * dx_max, zy * dy];
 }
@@ -446,6 +462,53 @@ function create_circle(center, radius, tl, zx, zy, type="") {
     return create_svg_element("circle", {
         "class": "circle " + type,
         "cx": x, "cy": y, "r": radius, // view.node.dot.radius,
+    });
+}
+
+
+function create_triangle(box, tip, tl, zx, zy, type="") {
+
+    const points = [];
+    const [x, y, dx, dy] = view.drawer.type === "rect"
+        ? transform_box(box, tl, zx, zy)
+        : box;
+
+    const rect_drawer = view.drawer.type === "rect";
+    const circ_drawer = view.drawer.type === "circ";
+
+    if ((rect_drawer && tip === "top") || (circ_drawer && tip === "left"))
+        points.push(
+            [x + dx/2, y], 
+            [x, y + dy], 
+            [x + dx, y + dy]);
+    if ((rect_drawer && tip === "right") || (circ_drawer && tip === "top"))
+        points.push(
+            [x, y],
+            [x, y + dy],
+            [x + dx, y + dy/2]);
+    if ((rect_drawer && tip === "bottom") || (circ_drawer && tip === "right"))
+        points.push(
+            [x, y],
+            [x + dx/2, y + dy], 
+            [x + dx, y]);
+    if ((rect_drawer && tip === "left") || (circ_drawer && tip === "bottom"))
+        points.push(
+            [x, y + dy/2], 
+            [x + dx, y + dy],
+            [x + dx, y]);
+
+    if (view.drawer.type === "circ") 
+        points.forEach((point, idx, arr) => {
+            const [r, a] = point;
+            const {x:px, y:py} = cartesian_shifted(r, a, tl, zx);
+            arr[idx] = [px, py];
+        });
+        console.log('after')
+
+
+    return create_svg_element("polygon", {
+        "class": "triangle " + type,
+        "points": points.join(" "),
     });
 }
 
@@ -615,7 +678,7 @@ function style_outline(outline, style) {
 
 
 function style_circle(circle, style) {
-    if (style.fill && style.fill != "")
+    if (is_style_property(style.fill))
         circle.style.fill = style.fill;
     return circle;
 }
@@ -632,8 +695,9 @@ function style_text(text, style) {
 }
 
 
-function style_rect(rect, style) {
-    if (style.fill && style.fill != "")
-        rect.style.fill = style.fill;
-    return rect;
+function style_polygon(polygon, style) {
+    if (is_style_property(style.fill))
+        polygon.style.fill = style.fill;
+
+    return polygon
 }

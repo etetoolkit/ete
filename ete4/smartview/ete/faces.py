@@ -4,7 +4,8 @@ from math import pi
 from ete4.smartview.ete.draw import Box, SBox,\
                                     draw_text, draw_circle, draw_rect,\
                                     draw_outline,\
-                                    cartesian, clip_angles
+                                    clip_angles,\
+                                    draw_triangle
 
 
 def swap_pos(pos, angle):
