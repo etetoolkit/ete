@@ -229,9 +229,24 @@ function create_item(item, tl, zoom) {
 
         const circle = create_circle(center, radius, tl, zx, zy, type);
 
-        style_circle(circle, style);
+        style_ellipse(circle, style); // same styling as ellipse
 
         return circle
+    }
+    else if (item[0] === "ellipse") {
+        const [ , center, rx, ry, type, style] = item;
+
+        const ellipse = create_ellipse(center, rx, ry, tl, zx, zy, type);
+
+        if (view.drawer.type == "circ") {
+            const [cx, cy] = center;
+            const angle = Math.atan2(cy, cx) * 180 / Math.PI;
+            addRotation(ellipse, angle, cx, cy);
+        }
+        
+        style_ellipse(ellipse, style);
+
+        return ellipse;
     }
     else if (item[0] === "triangle") {
         const [ , box, tip, type, style] = item;
@@ -454,6 +469,7 @@ function create_arc(p1, p2, large, tl, z, type="") {
 
 
 function create_circle(center, radius, tl, zx, zy, type="") {
+    // Could be merged with create_ellipse()
     if (view.drawer.type === "rect") 
         var [x, y] = [zx * (center[0] - tl.x), zy * (center[1] - tl.y)]
     else 
@@ -462,6 +478,19 @@ function create_circle(center, radius, tl, zx, zy, type="") {
     return create_svg_element("circle", {
         "class": "circle " + type,
         "cx": x, "cy": y, "r": radius, // view.node.dot.radius,
+    });
+}
+
+
+function create_ellipse(center, rx, ry, tl, zx, zy, type="") {
+    if (view.drawer.type === "rect") 
+        var [x, y] = [zx * (center[0] - tl.x), zy * (center[1] - tl.y)]
+    else 
+        var {x, y} = cartesian_shifted(center[0], center[1], tl, zx);
+
+    return create_svg_element("ellipse", {
+        "class": "ellipse " + type,
+        "cx": x, "cy": y, "rx": rx, "ry": ry,
     });
 }
 
@@ -615,19 +644,6 @@ function get_approx_BBox(text) {
 }
 
 
-// Return the font size adjusted for the given type of text.
-function font_adjust(fs, type) {
-    if (type === "leaf_name")
-        return Math.min(view.name.max_size,
-                        (1 - view.name.padding.vertical) * fs);
-
-    for (const expression of Object.keys(view.labels))
-        if (type === get_class_name("label_" + expression))
-            return Math.min(view.labels[expression].max_size, fs);
-    
-    return Math.min(view.font_sizes.max, fs)
-}
-
 // Chech whether style property exists and is not empty
 function is_style_property(property) {
     return property != undefined && property != null && property != ""
@@ -674,10 +690,10 @@ function style_outline(outline, style) {
 }
 
 
-function style_circle(circle, style) {
+function style_ellipse(ellipse, style) {
     if (is_style_property(style.fill))
-        circle.style.fill = style.fill;
-    return circle;
+        ellipse.style.fill = style.fill;
+    return ellipse;
 }
 
 

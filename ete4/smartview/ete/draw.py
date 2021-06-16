@@ -935,6 +935,9 @@ def draw_arc(p1, p2, large=False, arc_type='', style=None):
 def draw_circle(center, radius, circle_type='', style=None):
     return ['circle', center, radius, circle_type, style or {}]
 
+def draw_ellipse(center, rx, ry, ellipse_type='', style=None):
+    return ['ellipse', center, rx, ry, ellipse_type, style or {}]
+
 def draw_triangle(box, tip, triangle_type='', style=None):
     """Returns array with all the information needed to draw a triangle
     in front end. 
@@ -986,6 +989,11 @@ def get_rect(element, zoom=(0, 0)):
         zx, zy = zoom
         rx, ry = r / zx, r / zy
         return Box(x - rx, y - ry, 2 * rx, 2 * ry)
+    elif eid == 'ellipse':
+        (x, y), rx, ry = element[1:4]
+        zx, zy = zoom
+        rx, ry = rx / zx, ry / zy
+        return Box(x - rx, y - ry, 2 * rx, 2 * ry)
     else:
         raise ValueError(f'unrecognized element: {element!r}')
 
@@ -1006,6 +1014,12 @@ def get_asec(element, zoom=(0, 0)):
         z = zoom[0]
         (x, y), r = cartesian(element[1]), element[2] / z
         rect = Box(x - r, y - r, 2 * r, 2 * r)
+        return circumasec(rect)
+    elif eid == 'ellipse':
+        x, y = cartesian(element[1])
+        zx, zy = zoom
+        rx, ry = element[2] / zx, element[3] / zy
+        rect = Box(x - rx, y - ry, 2 * rx, 2 * ry)
         return circumasec(rect)
     else:
         raise ValueError(f'unrecognized element: {element!r}')
