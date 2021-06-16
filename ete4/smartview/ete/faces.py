@@ -228,7 +228,7 @@ class TextFace(Face):
         self._box = Box(*box)
         return self._box
 
-    def draw(self):
+    def draw(self, drawer):
         self._check_own_variables()
         style = {
                 'fill': self.color,
@@ -383,7 +383,7 @@ class CircleFace(Face):
 
         return self._box
         
-    def draw(self):
+    def draw(self, drawer):
         self._check_own_variables()
         yield draw_circle(self._center, self._max_radius,
                 self.name, style={'fill': self.color})
@@ -470,7 +470,7 @@ class RectFace(Face):
         self._box = Box(*box)
         return self._box
 
-    def draw(self):
+    def draw(self, drawer):
         self._check_own_variables()
         yield draw_rect(self._box,
                 self.name,
@@ -519,7 +519,7 @@ class OutlineFace(Face):
         x, y, dx_min, dx_max, dy = self.outline
         return Box(x, y, dx_max, dy)
 
-    def draw(self):
+    def draw(self, drawer):
         style = {
                 'stroke': self.stroke_color,
                 'stroke-width': self.stroke_width,
@@ -542,16 +542,14 @@ class SeqFace(Face):
         self.colors = _aacolors if self.seqtype == 'aa' else _ntcolors
         self.poswidth = poswidth  # width of each nucleotide/aa
 
-        self.zoom = None  # drawer zoom applied when drawing
-
         # Text
         self.draw_text = draw_text
         self.ftype = ftype
         self.max_fsize = max_fsize
         self._fsize = None
 
-    def compute_fsize(self, dy, r):
-        zy = self.zoom[1]
+    def compute_fsize(self, dy, r, drawer):
+        zy = drawer.zoom[1]
         self._fsize = min([self.poswidth / 1.4, dy * zy * r, self.max_fsize])
 
     def compute_bounding_box(self,
@@ -578,22 +576,21 @@ class SeqFace(Face):
             dx_before, dy_before)
 
         zx, zy = drawer.zoom
-        self.zoom = drawer.zoom
 
         x, y, _, dy = box
         dx = self.poswidth * len(self.seq) / zx
 
         if self.draw_text:
             r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
-            self.compute_fsize(dy, r)
+            self.compute_fsize(dy, r, drawer)
 
         self._box = Box(x, y, dx, dy)
         
         return self._box
 
-    def draw(self):
-        x, y, _, dy = self._box
-        zx, zy = self.zoom
+    def draw(self, drawer):
+        x0, y, _, dy = self._box
+        zx, zy = drawer.zoom
         dx = self.poswidth / zx
         text_style = {
             'max_fsize': self._fsize,
@@ -601,15 +598,17 @@ class SeqFace(Face):
             'ftype': f'{self.ftype}, sans-serif', # default sans-serif
             }
         for idx, pos in enumerate(self.seq):
+            x = x0 + idx * dx
+            r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
             # Draw rect
-            box = Box(x + idx * dx, y, dx, dy)
+            box = Box(x, y, dx, dy)
             yield draw_rect(box,
                     self.seqtype + "_" + pos,
                     style={'fill': self.colors[pos]})
             # Draw text
             if self.draw_text:
-                text_box = Box(x + idx * dx + dx / 2,
-                        y + (dy - self._fsize / zy) / 2,
+                text_box = Box(x + dx / 2,
+                        y + (dy - self._fsize / (zy * r)) / 2,
                         dx, dy)
                 yield draw_text(text_box,
                         pos,
@@ -643,8 +642,6 @@ class SeqMotifFace(Face):
         self.width = width or (len(seq) * 15 if seq else 15)
         self.poswidth = self.width / len(seq) # 15 if argument width=None
         self.height = height  # dynamically computed if not provided
-
-        self.zoom = None  # drawer zoom applied when drawing
 
         self.fg = '#000'
         self.bg = _aacolors if self.seqtype == 'aa' else _ntcolors
@@ -730,8 +727,8 @@ class SeqMotifFace(Face):
                             self.fgcolor, self.bgcolor, None])
                     pos += len(reg)
 
-    def compute_fsize(self, dy, r):
-        zy = self.zoom[1]
+    def compute_fsize(self, dy, r, drawer):
+        zy = drawer.zoom[1]
         self._fsize = min([self.poswidth / 1.4, dy * zy * r, self.max_fsize])
 
     def compute_bounding_box(self,
@@ -759,23 +756,23 @@ class SeqMotifFace(Face):
 
         x, y, _, dy = box
         zx, zy = drawer.zoom
-        self.zoom = drawer.zoom
 
         r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
-        self.compute_fsize(dy, r)
+        self.compute_fsize(dy, r, drawer)
         
         self._box = Box(x, y, self.width / zx, dy)
         return self._box
 
-    def draw(self):
+    def draw(self, drawer):
         x0, y, dx, dy = self._box
+        zx, zy = drawer.zoom
         pos_dx = dx / len(self.seq)
-        zx, zy = self.zoom
         x = x0
         for (start, end, shape, w, h, fg, bg, text) in self.regions:
             w = (w / zx if w else pos_dx) * (end + 1 - start)
             h = min([h or dy * zy, dy * zy, self.height or dy * zy]) / zy
-            box = Box(x, y + (dy - h) / 2, w, h)
+            r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
+            box = Box(x, y + (dy - h / r) / 2, w, h / r)
 
             # Line
             if shape == 'line':
@@ -788,8 +785,9 @@ class SeqMotifFace(Face):
 
             # Triangle
             elif shape in self.triangles.keys():
-                box = Box(x, y + (dy - h) / 2, w, h)
-                yield draw_triangle(box, self.triangles[shape], style={'fill': bg})
+                box = Box(x, y + (dy - h / r) / 2, w, h / r)
+                yield draw_triangle(box, self.triangles[shape],
+                        style={'fill': bg})
 
             # Circle/ellipse
             elif shape == 'o':
@@ -810,20 +808,20 @@ class SeqMotifFace(Face):
                 elif shape == 'compactseq':
                     postext = False
                     poswidth = w / (end + 1 - start) * zx
+
                 seq = self.seq[start : end + 1]
                 seq_face = SeqFace(seq, self.seqtype, poswidth,
                         draw_text=postext, max_fsize=self.max_fsize,
                         ftype=self.ftype, is_constrained=self.is_constrained)
                 seq_face._box = box # assign box manually
-                seq_face.zoom = self.zoom
-                seq_face.compute_fsize(h, 1) # TODO: solve circular mode
-                yield from seq_face.draw()
+                seq_face.compute_fsize(h, 1, drawer)
+                yield from seq_face.draw(drawer)
 
             # Text on top of shape
             if text:
-                self.compute_fsize(h, 1) # TODO: solve circular mode
+                self.compute_fsize(h, 1, drawer)
                 text_box = Box(x + w / 2,
-                        y + (dy - self._fsize / zy) / 2,
+                        y + (dy - self._fsize / (zy * r)) / 2,
                         dx, self._fsize / zy)
                 text_style = {
                     'max_fsize': self._fsize,

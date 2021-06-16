@@ -239,8 +239,8 @@ function create_item(item, tl, zoom) {
         const ellipse = create_ellipse(center, rx, ry, tl, zx, zy, type);
 
         if (view.drawer.type == "circ") {
-            const [cx, cy] = center;
-            const angle = Math.atan2(cy, cx) * 180 / Math.PI;
+            const {x: cx, y: cy} = cartesian_shifted(center[0], center[1], tl, zx);
+            const angle = Math.atan2(zy * tl.y + cy, zx * tl.x + cx) * 180 / Math.PI;
             addRotation(ellipse, angle, cx, cy);
         }
         
@@ -252,6 +252,15 @@ function create_item(item, tl, zoom) {
         const [ , box, tip, type, style] = item;
 
         const triangle = create_triangle(box, tip, tl, zx, zy, type);
+
+        const [r, a, dr, da] = box;
+        if (view.drawer.type === "circ" 
+            && ["top", "bottom"].includes(tip)
+            && (Math.abs(a + da) > Math.PI / 2)) {
+            const {x: cx, y: cy} = cartesian_shifted(r + dr / 2,
+                                                     a + da / 2, tl, zx);
+            addRotation(triangle, 180, cx, cy);
+        }
 
         style_polygon(triangle, style);
 
@@ -470,10 +479,11 @@ function create_arc(p1, p2, large, tl, z, type="") {
 
 function create_circle(center, radius, tl, zx, zy, type="") {
     // Could be merged with create_ellipse()
+    const [cx, cy] = center;
     if (view.drawer.type === "rect") 
-        var [x, y] = [zx * (center[0] - tl.x), zy * (center[1] - tl.y)]
+        var [x, y] = [zx * (cx - tl.x), zy * (cy - tl.y)]
     else 
-        var {x, y} = cartesian_shifted(center[0], center[1], tl, zx);
+        var {x, y} = cartesian_shifted(cx, cy, tl, zx);
 
     return create_svg_element("circle", {
         "class": "circle " + type,
@@ -483,10 +493,11 @@ function create_circle(center, radius, tl, zx, zy, type="") {
 
 
 function create_ellipse(center, rx, ry, tl, zx, zy, type="") {
+    const [cx, cy] = center;
     if (view.drawer.type === "rect") 
-        var [x, y] = [zx * (center[0] - tl.x), zy * (center[1] - tl.y)]
+        var [x, y] = [zx * (cx - tl.x), zy * (cy - tl.y)]
     else 
-        var {x, y} = cartesian_shifted(center[0], center[1], tl, zx);
+        var {x, y} = cartesian_shifted(cx, cy, tl, zx);
 
     return create_svg_element("ellipse", {
         "class": "ellipse " + type,
@@ -502,25 +513,22 @@ function create_triangle(box, tip, tl, zx, zy, type="") {
         ? transform_box(box, tl, zx, zy)
         : box;
 
-    const rect_drawer = view.drawer.type === "rect";
-    const circ_drawer = view.drawer.type === "circ";
-
-    if ((rect_drawer && tip === "top") || (circ_drawer && tip === "left"))
+    if (tip === "top")
         points.push(
             [x + dx/2, y], 
             [x, y + dy], 
             [x + dx, y + dy]);
-    if ((rect_drawer && tip === "right") || (circ_drawer && tip === "top"))
+    if (tip === "right")
         points.push(
             [x, y],
             [x, y + dy],
             [x + dx, y + dy/2]);
-    if ((rect_drawer && tip === "bottom") || (circ_drawer && tip === "right"))
+    if (tip === "bottom")
         points.push(
             [x, y],
             [x + dx/2, y + dy], 
             [x + dx, y]);
-    if ((rect_drawer && tip === "left") || (circ_drawer && tip === "bottom"))
+    if (tip === "left")
         points.push(
             [x, y + dy/2], 
             [x + dx, y + dy],
@@ -608,8 +616,8 @@ async function fix_text_orientations() {
     texts.slice(500).forEach(t => flip_with_bbox(t, get_approx_BBox(t)));
 }
 
-function is_upside_down(text) {
-    const angle = text.transform.baseVal[0].angle;
+function is_upside_down(element) {
+    const angle = element.transform.baseVal[0].angle;
     return angle < -90 || angle > 90;
 }
 

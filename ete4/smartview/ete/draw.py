@@ -589,7 +589,7 @@ class DrawerRectFaces(DrawerRect):
                             pos, row, n_row, n_col,
                             dx_before, dy_before)
                 if it_fits(box) or not face.is_constrained:
-                    yield from face.draw()
+                    yield from face.draw(self)
 
         def draw_faces_at_pos(node, pos):
             if node.is_collapsed:
@@ -692,7 +692,7 @@ class DrawerCircFaces(DrawerCirc):
                         pos, row, n_row, n_col,
                         dr_before, da_before)
                 if it_fits(box) or not face.is_constrained:
-                    yield from face.draw()
+                    yield from face.draw(self)
 
         def draw_faces_at_pos(node, pos):
             if node.is_collapsed:
