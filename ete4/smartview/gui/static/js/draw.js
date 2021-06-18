@@ -176,7 +176,7 @@ function create_item(item, tl, zoom) {
     if (item[0] === "nodebox") {
         const [ , box, name, properties, node_id, result_of, style] = item;
 
-        const b = create_box(box, tl, zx, zy);
+        const b = create_box(box, tl, zx, zy, "",style);
 
         b.id = "node-" + node_id.join("_");  // used in tags
 
@@ -258,7 +258,8 @@ function create_item(item, tl, zoom) {
             && ["top", "bottom"].includes(tip)
             && (Math.abs(a + da) > Math.PI / 2)) {
             const {x: cx, y: cy} = cartesian_shifted(r + dr / 2,
-                                                     a + da / 2, tl, zx);
+                                                     a + da / 2, 
+                                                     tl, zx);
             addRotation(triangle, 180, cx, cy);
         }
 
@@ -279,11 +280,20 @@ function create_item(item, tl, zoom) {
     else if (item[0] === "rect") {
         const [ , box, type, style] = item;
 
-        const rect = create_box(box, tl, zx, zy, type);
+        const rect = create_box(box, tl, zx, zy, type, style);
 
         style_polygon(rect, style);
 
         return rect;
+    }
+    else if (item[0] === "rhombus") {
+        const [ , points, type, style] = item;
+
+        const rhombus = create_polygon(points, tl, zx, zy, "rhombus " + type);
+
+        style_polygon(rhombus, style);
+
+        return rhombus;
     }
     else if (item[0] === "array") {
         const [ , box, array] = item;
@@ -328,25 +338,28 @@ function create_svg_element(name, attrs={}) {
 
 
 // Return a box (rectangle or annular sector).
-function create_box(box, tl, zx, zy, type) {
+function create_box(box, tl, zx, zy, type, style) {
     const b = view.drawer.type === "rect" ?
-                    create_rect(box, tl, zx, zy, type) :
+                    create_rect(box, tl, zx, zy, type, style) :
                     create_asec(box, tl, zx, type);
     b.classList.add("box");
     return b;
 }
 
 
-function create_rect(box, tl, zx, zy, type) {
+function create_rect(box, tl, zx, zy, type, style) {
     let [x, y, w, h] = box;
 
     if (view.drawer.type === "circ")
         ({x, y} = cartesian_shifted(x, y, tl, zx));
 
+    const r = (is_style_property(style.rounded)) ? 4 : 0;
+
     return create_svg_element("rect", {
         "x": zx * (x - tl.x), "y": zy * (y - tl.y),
         "width": zx * w, "height": zy * h,
-        "class": type || null,
+        "rx": r, "ry": r,
+        "class": "rect " + type,
     });
 }
 
@@ -502,6 +515,28 @@ function create_ellipse(center, rx, ry, tl, zx, zy, type="") {
     return create_svg_element("ellipse", {
         "class": "ellipse " + type,
         "cx": x, "cy": y, "rx": rx, "ry": ry,
+    });
+}
+
+
+function create_polygon(points, tl, zx, zy, type="") {
+
+    points.forEach((point, idx, arr) => {
+        if (view.drawer.type === "rect") {
+            const [x, y] = point;
+            point = [zx * (x - tl.x), zy * (y - tl.y)];
+        }
+        else if (view.drawer.type === "circ") {
+            const [r, a] = point;
+            const {x: px, y: py} = cartesian_shifted(r, a, tl, zx);
+            point = [px, py];
+        };
+        arr[idx] = point;
+    });
+
+    return create_svg_element("polygon", {
+        "class": type,
+        "points": points.join(" "),
     });
 }
 

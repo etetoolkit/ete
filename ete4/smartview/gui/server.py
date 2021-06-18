@@ -37,6 +37,7 @@ os.chdir(os.path.abspath(os.path.dirname(__file__)))
 import sys
 sys.path.insert(0, '..')
 
+import random, string # generate random tree name if necessary
 import re
 from math import pi
 from functools import partial
@@ -717,8 +718,7 @@ def del_tree(tid):
     exe('DELETE FROM trees WHERE id=?', tid)
     exe('DELETE FROM user_owns_trees WHERE id_tree=?', tid)
     exe('DELETE FROM user_reads_trees WHERE id_tree=?', tid)
-    if tid in app.trees:
-        del app.trees[tid]
+    app.trees.pop(tid, None)
 
 
 def strip(d):
@@ -780,18 +780,16 @@ def get_fields(required=None, valid_extra=None):
 # App initialization.
 
 def create_example_database():
-    print('\n\ndatabse\n\n')
     db_path = app.config['DATABASE']
 
     os.system(f'sqlite3 {db_path} < create_tables.sql')
     os.system(f'sqlite3 {db_path} < sample_data.sql')
-    print('\n\n../examples/{tfile}\n\n')
 
     for tfile in ['HmuY.aln2.tree', 'aves.tree', 'GTDB_bact_r95.tree']:
         os.system(f'./add_tree.py --db {db_path} ../examples/{tfile}')
 
 
-def initialize():
+def initialize(tree=None):
     "Initialize the database and the flask app"
     global db, serializer
 
@@ -809,9 +807,18 @@ def initialize():
 
     db = sqlalchemy.create_engine('sqlite:///' + app.config['DATABASE'])
 
-    @app.route('/')
-    def index():
-        return redirect(url_for('static', filename='upload_tree.html'))
+    if tree:
+        # If a tree was provided, the entry point is the visualizer
+        # :tree: is only a tree_name. The tree will be added to the db later
+        @app.route('/')
+        def index():
+            return redirect(url_for('static', filename='gui.html', tree=tree))
+    else:
+        # Else, provide a user interface for entering a newick to visualize
+        @app.route('/')
+        def index():
+            return redirect(url_for('static', filename='upload_tree.html'))
+
 
     @app.route('/help')
     def description():
@@ -875,15 +882,37 @@ def add_resources(api):
     add(Id, '/id/<path:path>')
 
 
-def run_smartview(tree_style=None):
+def get_random_string(length):
+    """ Generates random string to nameless trees """
+    letters = string.ascii_lowercase
+    result_str = ''.join(random.choice(letters) for i in range(length))
+    return result_str
+
+
+def run_smartview(newick=None, tree_name=None, tree_style=None):
+    # Set tree_name to None if no newick was provided
+    # Generate tree_name if none was provided
+    tree_name = tree_name or get_random_string(10) if newick else None
+
     global app
-    app = initialize()
+    app = initialize(tree_name)
 
     app.tree_style = tree_style or TreeStyle()
 
     # Create database if not already created
     if not os.path.exists(app.config['DATABASE']):
         create_example_database()
+
+    # Add tree if provided
+    if newick: 
+        tree_data = { 'name': tree_name,
+                      'newick': newick }
+        with app.app_context():
+            g.user_id = 1
+            try:
+                add_tree(tree_data, 1)
+            except:
+                print(f'Tree {tree_name} already stored in database.')
 
     app.run(debug=True, use_reloader=False)
 

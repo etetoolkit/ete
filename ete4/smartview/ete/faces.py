@@ -6,8 +6,11 @@ from ete4.smartview.ete.draw import Box, SBox,\
                                     draw_text, draw_rect,\
                                     draw_circle, draw_ellipse,\
                                     draw_line, draw_outline,\
-                                    clip_angles,\
-                                    draw_triangle
+                                    draw_triangle, draw_rhombus,\
+                                    clip_angles, cartesian
+
+
+CHAR_HEIGHT = 1.4 # char's height to width ratio
 
 _aacolors = {
     'A':"#C8C8C8" ,
@@ -79,6 +82,10 @@ class Face(object):
         self._check_own_variables()
         return self._box
 
+    def compute_fsize(self, dx, dy, drawer):
+        zx, zy = drawer.zoom
+        self._fsize = min([dx * zx * CHAR_HEIGHT, dy * zy, self.max_fsize])
+
     def compute_bounding_box(self, 
             drawer,
             point, size,
@@ -131,7 +138,7 @@ class Face(object):
         else:
             raise InvalidUsage(f'unkown position {pos}')
 
-        padding_x = (self.padding_x) / zx
+        padding_x = self.padding_x / zx
         padding_y = self.padding_y / (zy * r)
 
         self._box = Box(
@@ -202,17 +209,14 @@ class TextFace(Face):
         x, y , dx, dy = box
         r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
 
-        hw_ratio = 1.5
         def fit_fontsize(text, dx, dy):
-            max_dchar = dx * zx * r / len(text) if dx != None else float('inf')
-            max_dy = dy * zy * r
+            dchar = dx / len(text) if dx != None else float('inf')
+            self.compute_fsize(dchar, dy, drawer)
+            dxchar = self._fsize / (zx * CHAR_HEIGHT)
+            dychar = self._fsize / (zy * r)
+            return dxchar * len(text), dychar
 
-            dchar = min(max_dy / hw_ratio, max_dchar) / r
-            dy = dchar * hw_ratio
-            return dchar * len(text) / zx, dy / (zy * r)
-
-        max_dy = min(dy, self.max_fsize / zy)
-        width, height = fit_fontsize(self._content, dx, max_dy)
+        width, height = fit_fontsize(self._content, dx, dy)
 
         if pos == 'branch-top':
             box = (x, y + dy - height, width, height) # container bottom
@@ -222,8 +226,6 @@ class TextFace(Face):
 
         else: # branch-right and aligned
             box = (x, y + (dy - height) / 2, width, height)
-
-        self._fsize = height * zy * r
 
         self._box = Box(*box)
         return self._box
@@ -548,10 +550,6 @@ class SeqFace(Face):
         self.max_fsize = max_fsize
         self._fsize = None
 
-    def compute_fsize(self, dy, r, drawer):
-        zy = drawer.zoom[1]
-        self._fsize = min([self.poswidth / 1.4, dy * zy * r, self.max_fsize])
-
     def compute_bounding_box(self,
             drawer,
             point, size,
@@ -582,7 +580,7 @@ class SeqFace(Face):
 
         if self.draw_text:
             r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
-            self.compute_fsize(dy, r, drawer)
+            self.compute_fsize(self.poswidth / zx, dy, drawer)
 
         self._box = Box(x, y, dx, dy)
         
@@ -620,7 +618,7 @@ class SeqMotifFace(Face):
             gap_format='line', seq_format='[]', 
             width=None, height=None, # max height
             fgcolor='black', bgcolor='#bcc3d0', gapcolor='black',
-            max_fsize=15, ftype='sans-serif',
+            max_fsize=12, ftype='sans-serif',
             padding_x=0, padding_y=0, is_constrained=True):
 
         if not motifs and not seq:
@@ -727,10 +725,6 @@ class SeqMotifFace(Face):
                             self.fgcolor, self.bgcolor, None])
                     pos += len(reg)
 
-    def compute_fsize(self, dy, r, drawer):
-        zy = drawer.zoom[1]
-        self._fsize = min([self.poswidth / 1.4, dy * zy * r, self.max_fsize])
-
     def compute_bounding_box(self,
             drawer,
             point, size,
@@ -758,7 +752,7 @@ class SeqMotifFace(Face):
         zx, zy = drawer.zoom
 
         r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
-        self.compute_fsize(dy, r, drawer)
+        self.compute_fsize(self.poswidth / zx, dy, drawer)
         
         self._box = Box(x, y, self.width / zx, dy)
         return self._box
@@ -768,37 +762,47 @@ class SeqMotifFace(Face):
         zx, zy = drawer.zoom
         pos_dx = dx / len(self.seq)
         x = x0
+        previous_end = -1
         for (start, end, shape, w, h, fg, bg, text) in self.regions:
             w = (w / zx if w else pos_dx) * (end + 1 - start)
             h = min([h or dy * zy, dy * zy, self.height or dy * zy]) / zy
             r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
             box = Box(x, y + (dy - h / r) / 2, w, h / r)
+            style = { 'fill': bg }
 
             # Line
             if shape == 'line':
-                yield draw_line((x, y + dy / 2), (x + w, y + dy / 2))
+                p1 = (x, y + dy / 2)
+                p2 = (x + w, y + dy / 2)
+                if drawer.TYPE == 'circ':
+                    p1 = cartesian(p1)
+                    p2 = cartesian(p2)
+                yield draw_line(p1, p2)
 
             # Rectangle
-            elif shape == '[]':
-                style = {'fill': bg}
+            elif shape in ('[]', '()'):
+                if shape == '()':
+                    style['rounded'] = 1;
                 yield draw_rect(box, '', style=style)
+
+            # Rhombus
+            elif shape == '<>':
+                yield draw_rhombus(box, style=style)
 
             # Triangle
             elif shape in self.triangles.keys():
                 box = Box(x, y + (dy - h / r) / 2, w, h / r)
-                yield draw_triangle(box, self.triangles[shape],
-                        style={'fill': bg})
+                yield draw_triangle(box, self.triangles[shape], style=style)
 
             # Circle/ellipse
             elif shape == 'o':
                 center = (x + w / 2, y + dy / 2)
                 rx = w * zx / 2
                 ry = h * zy / 2
-                ellipse_style = {'fill': bg}
                 if rx == ry:
-                    yield draw_circle(center, rx, style=ellipse_style)
+                    yield draw_circle(center, rx, style=style)
                 else:
-                    yield draw_ellipse(center, rx, ry, style=ellipse_style)
+                    yield draw_ellipse(center, rx, ry, style=style)
 
             # Sequence and compact sequence
             elif shape.endswith('seq'):
@@ -814,15 +818,16 @@ class SeqMotifFace(Face):
                         draw_text=postext, max_fsize=self.max_fsize,
                         ftype=self.ftype, is_constrained=self.is_constrained)
                 seq_face._box = box # assign box manually
-                seq_face.compute_fsize(h, 1, drawer)
+                seq_face.compute_fsize(self.poswidth / zx, h, drawer)
                 yield from seq_face.draw(drawer)
 
             # Text on top of shape
             if text:
-                self.compute_fsize(h, 1, drawer)
+                self.compute_fsize(self.poswidth / zx, h, drawer)
                 text_box = Box(x + w / 2,
                         y + (dy - self._fsize / (zy * r)) / 2,
-                        dx, self._fsize / zy)
+                        self._fsize / (zx * CHAR_HEIGHT),
+                        self._fsize / zy)
                 text_style = {
                     'max_fsize': self._fsize,
                     'text_anchor': 'middle',

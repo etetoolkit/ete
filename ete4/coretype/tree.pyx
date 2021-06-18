@@ -240,12 +240,9 @@ cdef class TreeNode(object):
         self._dist = DEFAULT_DIST
         self._properties = {}
         self._img_style = None
-        self.features = set([])
         self._faces = _FaceAreas()
         self._collapsed_faces = _FaceAreas()
         self._initialized = 0 # Layout fns have not been run on node
-        # Add basic features
-        self.features.update(["dist", "support", "name"])
 
         self.name = name if name is not None else DEFAULT_NAME
         self.size = (0, 0) 
@@ -319,27 +316,19 @@ cdef class TreeNode(object):
         """ Iterator over leaf nodes"""
         return self.iter_leaves()
 
-    def add_feature(self, pr_name, pr_value):
-        """
-        Add or update a node's feature.
-        """
-        setattr(self, pr_name, pr_value)
-        self.features.add(pr_name)
+    def add_property(self, key, value):
+        """ Add or update node's property """
+        if key != None and value != None:
+            self.properties[key] = value
 
-    def add_features(self, **features):
-        """
-        Add or update several features. """
-        for fname, fvalue in six.iteritems(features):
-            setattr(self, fname, fvalue)
-            self.features.add(fname)
+    def add_properties(self, **properties):
+        """ Add or update several properties. """
+        for key, value in six.iteritems(properties):
+            self.add_property(key, value)
 
-    def del_feature(self, pr_name):
-        """
-        Permanently deletes a node's feature.
-        """
-        if hasattr(self, pr_name):
-            delattr(self, pr_name)
-            self.features.remove(pr_name)
+    def del_property(self, key):
+        """ Permanently deletes a node's property. """
+        self.properties.pop(key, None)
 
     # Topology management
     def add_child(self, child=None, name=None, dist=None, support=None):
@@ -1017,7 +1006,8 @@ cdef class TreeNode(object):
         for n in self.traverse():
             conditions_passed = 0
             for key, value in six.iteritems(conditions):
-                if hasattr(n, key) and getattr(n, key) == value:
+                if (hasattr(n, key) and getattr(n, key) == value)\
+                  or n.properties.get(key) == value:
                     conditions_passed +=1
             if conditions_passed == len(conditions):
                 yield n
@@ -1466,6 +1456,17 @@ cdef class TreeNode(object):
             return drawer.render_tree(self, file_name, w=w, h=h,
                                     layout=layout, tree_style=tree_style,
                                       units=units, dpi=dpi)
+
+    def explore(self, tree_name=None, tree_style=None):
+        """
+        Starts an interactive smartview session to visualize current node
+        structure using provided layout and TreeStyle.
+        """
+        from ete4.smartview.gui.server import run_smartview
+
+        properties = list(self.properties.keys()) # include all properties
+        run_smartview(newick=self.write(properties=properties),
+                tree_name=tree_name, tree_style=tree_style)
 
     def copy(self, method="cpickle"):
         """.. versionadded: 2.1

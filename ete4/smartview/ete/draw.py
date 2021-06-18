@@ -953,6 +953,17 @@ def draw_text(box, text, text_type='', style=None):
 def draw_rect(box, rect_type, style=None):
     return ['rect', box, rect_type, style or {}]
 
+def draw_rhombus(box, rhombus_type='', style=None):
+    """ Create rhombus provided a bounding box """
+    # Rotate the box to provide a rhombus (points) to drawing engine
+    x, y, dx, dy = box
+    rhombus = ((x + dx / 2, y),      # top
+               (x + dx, y + dy / 2), # right
+               (x + dx / 2, y + dy), # bottom
+               (x, y + dy / 2))      # left
+    return ['rhombus', rhombus, rhombus_type, style or {}]
+
+
 def draw_array(box, a):
     return ['array', box, a]
 
@@ -981,6 +992,13 @@ def get_rect(element, zoom=(0, 0)):
     elif eid == 'outline':
         x, y, dx_min, dx_max, dy = element[1]
         return Box(x, y, dx_max, dy)
+    elif eid == 'rhombus':
+        points = element[1]
+        x = points[3][0]
+        y = points[0][1]
+        dx = points[2][0] - x
+        dy = points[2][0] - y
+        return  Box(x, y, dx, dy)
     elif eid in ['line', 'arc']:  # not a great approximation for an arc...
         (x1, y1), (x2, y2) = element[1], element[2]
         return Box(min(x1, x2), min(y1, y2), abs(x2 - x1), abs(y2 - y1))
@@ -993,6 +1011,7 @@ def get_rect(element, zoom=(0, 0)):
         (x, y), rx, ry = element[1:4]
         zx, zy = zoom
         rx, ry = rx / zx, ry / zy
+        rx, ry = 0, 0
         return Box(x - rx, y - ry, 2 * rx, 2 * ry)
     else:
         raise ValueError(f'unrecognized element: {element!r}')
@@ -1006,6 +1025,14 @@ def get_asec(element, zoom=(0, 0)):
     elif eid == 'outline':
         r, a, dr_min, dr_max, da = element[1]
         return Box(r, a, dr_max, da)
+    elif eid == 'rhombus':
+        points = element[1]
+        r = points[3][0]
+        a = points[0][1]
+        dr = points[2][0] - r
+        da = points[2][0] - a
+        x, y = cartesian((r, a))
+        return  Box(x, y, dr, da)
     elif eid in ['line', 'arc']:
         (x1, y1), (x2, y2) = element[1], element[2]
         rect = Box(min(x1, x2), min(y1, y2), abs(x2 - x1), abs(y2 - y1))

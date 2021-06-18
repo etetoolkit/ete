@@ -61,7 +61,7 @@ def _parse_species(name):
     return name[:3]
 
 def is_dup(n):
-    return getattr(n, "evoltype", None) == "D"
+    return n.properties.get("evoltype") == "D"
 
 def get_subtrees(tree, full_copy=False, features=None, newick_only=False):
     """Calculate all possible species trees within a gene tree. I
@@ -271,9 +271,6 @@ def _get_subtrees_recursive(node, full_copy=True):
     return sp_trees
 
 def get_subparts(n):
-    def is_dup(n):
-        return getattr(n, "evoltype", None) == "D"
-
     subtrees = []
     if is_dup(n):
         for ch in n.get_children():
@@ -641,7 +638,7 @@ class PhyloNode(TreeNode):
             for node in n2content:
                 sp_subtotal = sum([len(n2species[_ch]) for _ch in node.children])
                 if len(n2species[node]) > 1 and len(n2species[node]) != sp_subtotal:
-                    node.add_features(evoltype="D")
+                    node.properties['evoltype'] = 'D'
 
         sp_trees = get_subtrees(t, features=map_features, newick_only=newick_only)
 
@@ -660,7 +657,7 @@ class PhyloNode(TreeNode):
             for node in n2content:
                 sp_subtotal = sum([len(n2species[_ch]) for _ch in node.children])
                 if  len(n2species[node]) > 1 and len(n2species[node]) != sp_subtotal:
-                    node.add_features(evoltype="D")
+                    node.properties['evoltype'] = 'D'
                     dups += 1
                 elif node.is_leaf():
                     node._leaf = True
@@ -701,7 +698,7 @@ class PhyloNode(TreeNode):
             for node in n2content:
                 sp_subtotal = sum([len(n2species[_ch]) for _ch in node.children])
                 if  len(n2species[node]) > 1 and len(n2species[node]) != sp_subtotal:
-                    node.add_features(evoltype="D")
+                    node.properties['evoltype'] = 'D'
                     dups += 1
                 elif node.is_leaf():
                     node._leaf = True
