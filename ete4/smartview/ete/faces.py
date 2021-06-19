@@ -1,11 +1,56 @@
 import re
 from math import pi
 
+from ete4.smartview.utils import InvalidUsage
 from ete4.smartview.ete.draw import Box, SBox,\
-                                    draw_text, draw_circle, draw_rect,\
-                                    draw_outline,\
-                                    cartesian, clip_angles
+                                    draw_text, draw_rect,\
+                                    draw_circle, draw_ellipse,\
+                                    draw_line, draw_outline,\
+                                    draw_triangle, draw_rhombus,\
+                                    clip_angles, cartesian
 
+
+CHAR_HEIGHT = 1.4 # char's height to width ratio
+
+_aacolors = {
+    'A':"#C8C8C8" ,
+    'R':"#145AFF" ,
+    'N':"#00DCDC" ,
+    'D':"#E60A0A" ,
+    'C':"#E6E600" ,
+    'Q':"#00DCDC" ,
+    'E':"#E60A0A" ,
+    'G':"#EBEBEB" ,
+    'H':"#8282D2" ,
+    'I':"#0F820F" ,
+    'L':"#0F820F" ,
+    'K':"#145AFF" ,
+    'M':"#E6E600" ,
+    'F':"#3232AA" ,
+    'P':"#DC9682" ,
+    'S':"#FA9600" ,
+    'T':"#FA9600" ,
+    'W':"#B45AB4" ,
+    'Y':"#3232AA" ,
+    'V':"#0F820F" ,
+    'B':"#FF69B4" ,
+    'Z':"#FF69B4" ,
+    'X':"#BEA06E",
+    '.':"#FFFFFF",
+    '-':"#FFFFFF",
+    }
+
+_ntcolors = {
+    'A':'#A0A0FF',
+    'G':'#FF7070',
+    'I':'#80FFFF',
+    'C':'#FF8C4B',
+    'T':'#A0FFA0',
+    'U':'#FF8080',
+    '.':"#FFFFFF",
+    '-':"#FFFFFF",
+    ' ':"#FFFFFF"
+    }
 
 def swap_pos(pos, angle):
     if abs(angle) >= pi / 2:
@@ -37,6 +82,10 @@ class Face(object):
         self._check_own_variables()
         return self._box
 
+    def compute_fsize(self, dx, dy, drawer):
+        zx, zy = drawer.zoom
+        self._fsize = min([dx * zx * CHAR_HEIGHT, dy * zy, self.max_fsize])
+
     def compute_bounding_box(self, 
             drawer,
             point, size,
@@ -52,9 +101,6 @@ class Face(object):
         dx, dy = size
         zx, zy = drawer.zoom
         r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
-
-        padding_x = self.padding_x / zx
-        padding_y = self.padding_y / (zy * r)
 
         if pos == 'branch-top':  # above the branch
             avail_dx = dx / n_col
@@ -91,6 +137,9 @@ class Face(object):
                   y + bdy + (row - n_row / 2) * avail_dy)
         else:
             raise InvalidUsage(f'unkown position {pos}')
+
+        padding_x = self.padding_x / zx
+        padding_y = self.padding_y / (zy * r)
 
         self._box = Box(
             xy[0] + padding_x,
@@ -160,17 +209,14 @@ class TextFace(Face):
         x, y , dx, dy = box
         r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
 
-        hw_ratio = 1.5
         def fit_fontsize(text, dx, dy):
-            max_dchar = dx * zx * r / len(text) if dx != None else float('inf')
-            max_dy = dy * zy * r
+            dchar = dx / len(text) if dx != None else float('inf')
+            self.compute_fsize(dchar, dy, drawer)
+            dxchar = self._fsize / (zx * CHAR_HEIGHT)
+            dychar = self._fsize / (zy * r)
+            return dxchar * len(text), dychar
 
-            dchar = min(max_dy / hw_ratio, max_dchar) / r
-            dy = dchar * hw_ratio
-            return dchar * len(text) / zx, dy / (zy * r)
-
-        max_dy = min(dy, self.max_fsize / zy)
-        width, height = fit_fontsize(self._content, dx, max_dy)
+        width, height = fit_fontsize(self._content, dx, dy)
 
         if pos == 'branch-top':
             box = (x, y + dy - height, width, height) # container bottom
@@ -181,19 +227,17 @@ class TextFace(Face):
         else: # branch-right and aligned
             box = (x, y + (dy - height) / 2, width, height)
 
-        self._fsize = height * zy * r
-
         self._box = Box(*box)
         return self._box
 
-    def draw(self):
+    def draw(self, drawer):
         self._check_own_variables()
         style = {
                 'fill': self.color,
                 'max_fsize': self._fsize,
                 'ftype': f'{self.ftype}, sans-serif', # default sans-serif
                 }
-        return draw_text(self._box, 
+        yield draw_text(self._box, 
                 self._content, self.name, style)
 
 
@@ -341,9 +385,9 @@ class CircleFace(Face):
 
         return self._box
         
-    def draw(self):
+    def draw(self, drawer):
         self._check_own_variables()
-        return draw_circle(self._center, self._max_radius,
+        yield draw_circle(self._center, self._max_radius,
                 self.name, style={'fill': self.color})
 
 
@@ -428,9 +472,9 @@ class RectFace(Face):
         self._box = Box(*box)
         return self._box
 
-    def draw(self):
+    def draw(self, drawer):
         self._check_own_variables()
-        return draw_rect(self._box,
+        yield draw_rect(self._box,
                 self.name,
                 style={'fill': self.color})
 
@@ -477,11 +521,323 @@ class OutlineFace(Face):
         x, y, dx_min, dx_max, dy = self.outline
         return Box(x, y, dx_max, dy)
 
-    def draw(self):
+    def draw(self, drawer):
         style = {
                 'stroke': self.stroke_color,
                 'stroke-width': self.stroke_width,
                 'fill': self.color,
                 'fill-opacity': self.opacity,
                 }
-        return draw_outline(self.outline, style)
+        yield draw_outline(self.outline, style)
+
+
+class SeqFace(Face):
+    def __init__(self, seq, seqtype='aa', poswidth=15,
+            draw_text=True, max_fsize=15, ftype='sans-serif',
+            padding_x=0, padding_y=0, is_constrained=True):
+
+        Face.__init__(self, padding_x=padding_x, padding_y=padding_y,
+                is_constrained=is_constrained)
+
+        self.seq = seq
+        self.seqtype = seqtype
+        self.colors = _aacolors if self.seqtype == 'aa' else _ntcolors
+        self.poswidth = poswidth  # width of each nucleotide/aa
+
+        # Text
+        self.draw_text = draw_text
+        self.ftype = ftype
+        self.max_fsize = max_fsize
+        self._fsize = None
+
+    def compute_bounding_box(self,
+            drawer,
+            point, size,
+            dx_to_closest_child,
+            bdx, bdy,
+            bdy0, bdy1,
+            pos, row,
+            n_row, n_col,
+            dx_before, dy_before):
+
+        if pos not in ('branch-right', 'aligned'):
+            raise InvalidUsage(f'Position {pos} not allowed for SeqFace')
+
+        box = super().compute_bounding_box( 
+            drawer,
+            point, size,
+            dx_to_closest_child,
+            bdx, bdy,
+            bdy0, bdy1,
+            pos, row,
+            n_row, n_col,
+            dx_before, dy_before)
+
+        zx, zy = drawer.zoom
+
+        x, y, _, dy = box
+        dx = self.poswidth * len(self.seq) / zx
+
+        if self.draw_text:
+            r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
+            self.compute_fsize(self.poswidth / zx, dy, drawer)
+
+        self._box = Box(x, y, dx, dy)
+        
+        return self._box
+
+    def draw(self, drawer):
+        x0, y, _, dy = self._box
+        zx, zy = drawer.zoom
+        dx = self.poswidth / zx
+        text_style = {
+            'max_fsize': self._fsize,
+            'text_anchor': 'middle',
+            'ftype': f'{self.ftype}, sans-serif', # default sans-serif
+            }
+        for idx, pos in enumerate(self.seq):
+            x = x0 + idx * dx
+            r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
+            # Draw rect
+            box = Box(x, y, dx, dy)
+            if pos != '-':
+                yield draw_rect(box,
+                        self.seqtype + "_" + pos,
+                        style={'fill': self.colors[pos]})
+                # Draw text
+                if self.draw_text:
+                    text_box = Box(x + dx / 2,
+                            y + (dy - self._fsize / (zy * r)) / 2,
+                            dx, dy)
+                    yield draw_text(text_box,
+                            pos,
+                            style=text_style)
+
+
+class SeqMotifFace(Face):
+    def __init__(self, seq=None, motifs=None, seqtype='aa', 
+            gap_format='line', seq_format='[]', 
+            width=None, height=None, # max height
+            fgcolor='black', bgcolor='#bcc3d0', gapcolor='gray',
+            max_fsize=12, ftype='sans-serif',
+            padding_x=0, padding_y=0, is_constrained=True):
+
+        if not motifs and not seq:
+            raise ValueError(
+                    "At least one argument (seq or motifs) should be provided.")
+
+        Face.__init__(self, padding_x=padding_x, padding_y=padding_y,
+                is_constrained=is_constrained)
+
+        self.seq = seq or '-' * max([m[1] for m in motifs])
+        self.seqtype = seqtype
+
+        self.motifs = motifs
+        self.overlaping_motif_opacity = 0.5
+
+        self.seq_format = seq_format
+        self.gap_format = gap_format
+        self.compress_gaps = False
+
+        self.poswidth = 0.5
+        self.w_scale = 1
+        self.width = width    # sum of all regions' width if not provided
+        self.height = height  # dynamically computed if not provided
+
+        self.fg = '#000'
+        self.bg = _aacolors if self.seqtype == 'aa' else _ntcolors
+        self.fgcolor = fgcolor
+        self.bgcolor = bgcolor
+        self.gapcolor = gapcolor
+
+        self.triangles = {'^': 'top', '>': 'right', 'v': 'bottom', '<': 'left'}
+
+        # Text
+        self.ftype = ftype
+        self.max_fsize = max_fsize
+        self._fsize = None
+
+        self.regions = []
+        self.build_regions()
+
+    def build_regions(self):
+        """Build and sort sequence regions: seq representation and motifs"""
+        seq = self.seq
+        motifs = self.motifs
+        
+        # if only sequence is provided, build regions out of gap spaces
+        if not motifs:
+            if self.seq_format == "seq":
+                motifs = [[0, len(seq), "seq", 
+                    15, self.height, None, None, None]]
+            else:
+                motifs = []
+                pos = 0
+                for reg in re.split('([^-]+)', seq):
+                    if reg:
+                        if not reg.startswith("-"):
+                            motifs.append([pos, pos+len(reg)-1,
+                                self.seq_format, 
+                                self.poswidth, self.height, 
+                                self.fgcolor, self.bgcolor, None])
+                        pos += len(reg)
+
+        motifs.sort()
+
+        # complete missing regions
+        current_seq_pos = 0
+        for index, mf in enumerate(motifs):
+            start, end, typ, w, h, fg, bg, name = mf
+            if start > current_seq_pos:
+                pos = current_seq_pos
+                for reg in re.split('([^-]+)', seq[current_seq_pos:start]):
+                    if reg:
+                        if reg.startswith("-") and self.seq_format != "seq":
+                            self.regions.append([pos, pos+len(reg)-1,
+                                self.gap_format, self.poswidth, self.height,
+                                self.gapcolor, None, None])
+                        else:
+                            self.regions.append([pos, pos+len(reg)-1, 
+                                self.seq_format, self.poswidth, self.height,
+                                self.fgcolor, self.bgcolor, None])
+                    pos += len(reg)
+                current_seq_pos = start
+
+            self.regions.append(mf)
+            current_seq_pos = end + 1
+
+        if len(seq) > current_seq_pos:
+            pos = current_seq_pos
+            for reg in re.split('([^-]+)', seq[current_seq_pos:]):
+                if reg:
+                    if reg.startswith("-") and self.seq_format != "seq":
+                        self.regions.append([pos, pos+len(reg)-1,
+                            self.gap_format, 
+                            self.poswidth, 1, 
+                            self.gapcolor, None, None])
+                    else:
+                        self.regions.append([pos, pos+len(reg)-1, 
+                            self.seq_format,
+                            self.poswidth, self.height,
+                            self.fgcolor, self.bgcolor, None])
+                    pos += len(reg)
+
+        # TODO: overlapping motifs...
+        total_width = sum(w * (end + 1 - start) \
+                for start, end, _, w, *_ in motifs)
+        if self.width:
+            self.w_scale = self.width / total_width
+        else:
+            self.width = total_width
+
+    def compute_bounding_box(self,
+            drawer,
+            point, size,
+            dx_to_closest_child,
+            bdx, bdy,
+            bdy0, bdy1,
+            pos, row,
+            n_row, n_col,
+            dx_before, dy_before):
+
+        if pos not in ('branch-right', 'aligned'):
+            raise InvalidUsage(f'Position {pos} not allowed for SeqMotifFace')
+
+        box = super().compute_bounding_box( 
+            drawer,
+            point, size,
+            dx_to_closest_child,
+            bdx, bdy,
+            bdy0, bdy1,
+            pos, row,
+            n_row, n_col,
+            dx_before, dy_before)
+
+        x, y, _, dy = box
+        zx, zy = drawer.zoom
+
+        r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
+        self.compute_fsize(self.poswidth / zx, dy, drawer)
+        
+        self._box = Box(x, y, self.width / zx, dy)
+        return self._box
+
+    def draw(self, drawer):
+        # Only leaf/collapsed branch-right or aligned
+        x0, y, _, dy = self._box
+        zx, zy = drawer.zoom
+        x = x0
+        prev_end = 0
+        for (start, end, shape, posw, h, fg, bg, text) in self.regions:
+            prev_end = end
+            posw = posw * self.w_scale / zx
+            w = posw * (end + 1 - start)
+            h = min([h or dy * zy, dy * zy, self.height or dy * zy]) / zy
+            r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
+            box = Box(x, y + (dy - h / r) / 2, w, h / r)
+            style = { 'fill': bg }
+
+            # Line
+            if shape in ['line', '-']:
+                if self.compress_gaps:
+                    w = posw
+                p1 = (x, y + dy / 2)
+                p2 = (x + w, y + dy / 2)
+                if drawer.TYPE == 'circ':
+                    p1 = cartesian(p1)
+                    p2 = cartesian(p2)
+                yield draw_line(p1, p2, style={'width': 0.5, 'color': fg})
+
+            # Rectangle
+            elif shape in ('[]', '()'):
+                if shape == '()':
+                    style['rounded'] = 1;
+                yield draw_rect(box, '', style=style)
+
+            # Rhombus
+            elif shape == '<>':
+                yield draw_rhombus(box, style=style)
+
+            # Triangle
+            elif shape in self.triangles.keys():
+                box = Box(x, y + (dy - h / r) / 2, w, h / r)
+                yield draw_triangle(box, self.triangles[shape], style=style)
+
+            # Circle/ellipse
+            elif shape == 'o':
+                center = (x + w / 2, y + dy / 2)
+                rx = w * zx / 2
+                ry = h * zy / 2
+                if rx == ry:
+                    yield draw_circle(center, rx, style=style)
+                else:
+                    yield draw_ellipse(center, rx, ry, style=style)
+
+            # Sequence and compact sequence
+            elif shape in ['seq', 'compactseq']:
+                seq = self.seq[start : end + 1]
+                postext = True if shape == 'seq' else False
+                seq_face = SeqFace(seq, self.seqtype, posw * zx,
+                        draw_text=postext, max_fsize=self.max_fsize,
+                        ftype=self.ftype, is_constrained=self.is_constrained)
+                seq_face._box = box # assign box manually
+                seq_face.compute_fsize(self.poswidth / zx, h, drawer)
+                yield from seq_face.draw(drawer)
+
+            # Text on top of shape
+            if text:
+                self.compute_fsize(self.poswidth / zx, h, drawer)
+                text_box = Box(x + w / 2,
+                        y + (dy - self._fsize / (zy * r)) / 2,
+                        self._fsize / (zx * CHAR_HEIGHT),
+                        self._fsize / zy)
+                text_style = {
+                    'max_fsize': self._fsize,
+                    'text_anchor': 'middle',
+                    'ftype': f'{self.ftype}, sans-serif',
+                    'fill': fg or self.fgcolor,
+                    }
+                yield draw_text(text_box, text, style=text_style)
+
+            # Update x to draw consecutive motifs
+            x += w

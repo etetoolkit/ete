@@ -579,7 +579,8 @@ class DrawerRectFaces(DrawerRect):
 
         def it_fits(box):
             _, _, dx, dy = box
-            return dx * zx > self.MIN_SIZE and dy * zy > self.MIN_SIZE
+            return dx * zx > self.MIN_SIZE and dy * zy > self.MIN_SIZE\
+                    and self.in_viewport(box)
 
         def draw_face(face, pos, row, n_row, n_col, dx_before, dy_before):
             if face.get_content():
@@ -589,7 +590,7 @@ class DrawerRectFaces(DrawerRect):
                             pos, row, n_row, n_col,
                             dx_before, dy_before)
                 if it_fits(box) or not face.is_constrained:
-                    return face.draw()
+                    yield from face.draw(self)
 
         def draw_faces_at_pos(node, pos):
             if node.is_collapsed:
@@ -607,15 +608,15 @@ class DrawerRectFaces(DrawerRect):
                 n_row = len(face_list)
                 for row, face in enumerate(face_list):
                     face.node = node
-                    drawn_face = draw_face(face, pos, row, n_row, n_col,
-                            dx_before, dy_before)
+                    drawn_face = list(draw_face(face, pos, row, n_row, n_col,
+                            dx_before, dy_before))
                     if drawn_face:
                         _, _, dx, dy = face.get_box()
                         hz_padding = 2 * face.padding_x / zx
                         vt_padding = 2 * face.padding_y / zy
                         dx_max = max(dx_max, dx + hz_padding)
                         dy_before += dy + vt_padding
-                        yield drawn_face
+                        yield from drawn_face
 
                 # Update dx_before
                 if pos == 'aligned'\
@@ -682,7 +683,8 @@ class DrawerCircFaces(DrawerCirc):
         def it_fits(box):
             r, a, dr, da = box
             return r > 0 and dr * z > self.MIN_SIZE\
-              and (r + dr) * da * z > self.MIN_SIZE
+              and (r + dr) * da * z > self.MIN_SIZE\
+              and self.in_viewport(box)
 
         def draw_face(face, pos, row, n_row, n_col, dr_before, da_before):
             if face.get_content():
@@ -692,7 +694,7 @@ class DrawerCircFaces(DrawerCirc):
                         pos, row, n_row, n_col,
                         dr_before, da_before)
                 if it_fits(box) or not face.is_constrained:
-                    return face.draw()
+                    yield from face.draw(self)
 
         def draw_faces_at_pos(node, pos):
             if node.is_collapsed:
@@ -718,15 +720,15 @@ class DrawerCircFaces(DrawerCirc):
                 n_row = len(face_list)
                 for row, face in enumerate(face_list):
                     face.node = node
-                    drawn_face = draw_face(face, pos, row, n_row, n_col,
-                            dr_before, da_before)
+                    drawn_face = list(draw_face(face, pos, row, n_row, n_col,
+                            dr_before, da_before))
                     if drawn_face:
                         r, a, dr, da = face.get_box()
                         hz_padding = 2 * face.padding_x / z
                         vt_padding = 2 * face.padding_y / (z * r)
                         dr_max = max(dr_max, dr + hz_padding)
                         da_before = da + vt_padding
-                        yield drawn_face
+                        yield from drawn_face
                 
                 # Update dr_before
                 if pos == 'aligned'\
@@ -836,7 +838,6 @@ class DrawerAlignHeatMap(DrawerRectFaces):
     def draw_node(self, node, point, bdy):
         if self.panel == 0:
             yield from super().draw_node(node, point, bdy)
-
             yield from draw_rect_leaf_name(self, node, point)
         elif self.panel == 1 and node.is_leaf():
             x, y = point
@@ -923,9 +924,11 @@ def draw_outline(sbox, style=None):
     return ['outline', sbox, style or {}]
 
 def draw_line(p1, p2, line_type='', parent_of=None, style=None):
-    if style and style['type']:
-        types = ['solid', 'dotted', 'dashed']
+    types = ['solid', 'dotted', 'dashed']
+    if style and style.get('type'):
         style['type'] = types[int(style['type'])]
+    else:
+        style['type'] = types[0]
 
     return ['line', p1, p2, line_type, parent_of or [], style or {}]
 
@@ -935,11 +938,34 @@ def draw_arc(p1, p2, large=False, arc_type='', style=None):
 def draw_circle(center, radius, circle_type='', style=None):
     return ['circle', center, radius, circle_type, style or {}]
 
+def draw_ellipse(center, rx, ry, ellipse_type='', style=None):
+    return ['ellipse', center, rx, ry, ellipse_type, style or {}]
+
+def draw_triangle(box, tip, triangle_type='', style=None):
+    """Returns array with all the information needed to draw a triangle
+    in front end. 
+    :box: bounds triangle
+    :tip: defines tip orientation 'top', 'left' or 'right'.
+    :triangle_type: will label triangle in front end (class)
+    """
+    return ['triangle', box, tip, triangle_type, style or {}]
+
 def draw_text(box, text, text_type='', style=None):
     return ['text', box, text, text_type, style or {}]
 
 def draw_rect(box, rect_type, style=None):
     return ['rect', box, rect_type, style or {}]
+
+def draw_rhombus(box, rhombus_type='', style=None):
+    """ Create rhombus provided a bounding box """
+    # Rotate the box to provide a rhombus (points) to drawing engine
+    x, y, dx, dy = box
+    rhombus = ((x + dx / 2, y),      # top
+               (x + dx, y + dy / 2), # right
+               (x + dx / 2, y + dy), # bottom
+               (x, y + dy / 2))      # left
+    return ['rhombus', rhombus, rhombus_type, style or {}]
+
 
 def draw_array(box, a):
     return ['array', box, a]
@@ -964,11 +990,18 @@ def get_ys(box):
 def get_rect(element, zoom=(0, 0)):
     "Return the rectangle that contains the given graphic element"
     eid = element[0]
-    if eid in ['nodebox', 'rect', 'array', 'text']:
+    if eid in ['nodebox', 'rect', 'array', 'text', 'triangle']:
         return element[1]
     elif eid == 'outline':
         x, y, dx_min, dx_max, dy = element[1]
         return Box(x, y, dx_max, dy)
+    elif eid == 'rhombus':
+        points = element[1]
+        x = points[3][0]
+        y = points[0][1]
+        dx = points[2][0] - x
+        dy = points[2][0] - y
+        return  Box(x, y, dx, dy)
     elif eid in ['line', 'arc']:  # not a great approximation for an arc...
         (x1, y1), (x2, y2) = element[1], element[2]
         return Box(min(x1, x2), min(y1, y2), abs(x2 - x1), abs(y2 - y1))
@@ -977,6 +1010,12 @@ def get_rect(element, zoom=(0, 0)):
         zx, zy = zoom
         rx, ry = r / zx, r / zy
         return Box(x - rx, y - ry, 2 * rx, 2 * ry)
+    elif eid == 'ellipse':
+        (x, y), rx, ry = element[1:4]
+        zx, zy = zoom
+        rx, ry = rx / zx, ry / zy
+        rx, ry = 0, 0
+        return Box(x - rx, y - ry, 2 * rx, 2 * ry)
     else:
         raise ValueError(f'unrecognized element: {element!r}')
 
@@ -984,11 +1023,19 @@ def get_rect(element, zoom=(0, 0)):
 def get_asec(element, zoom=(0, 0)):
     "Return the annular sector that contains the given graphic element"
     eid = element[0]
-    if eid in ['nodebox', 'rect', 'array', 'text']:
+    if eid in ['nodebox', 'rect', 'array', 'text', 'triangle']:
         return element[1]
     elif eid == 'outline':
         r, a, dr_min, dr_max, da = element[1]
         return Box(r, a, dr_max, da)
+    elif eid == 'rhombus':
+        points = element[1]
+        r = points[3][0]
+        a = points[0][1]
+        dr = points[2][0] - r
+        da = points[2][0] - a
+        x, y = cartesian((r, a))
+        return  Box(x, y, dr, da)
     elif eid in ['line', 'arc']:
         (x1, y1), (x2, y2) = element[1], element[2]
         rect = Box(min(x1, x2), min(y1, y2), abs(x2 - x1), abs(y2 - y1))
@@ -997,6 +1044,12 @@ def get_asec(element, zoom=(0, 0)):
         z = zoom[0]
         (x, y), r = cartesian(element[1]), element[2] / z
         rect = Box(x - r, y - r, 2 * r, 2 * r)
+        return circumasec(rect)
+    elif eid == 'ellipse':
+        x, y = cartesian(element[1])
+        zx, zy = zoom
+        rx, ry = element[2] / zx, element[3] / zy
+        rect = Box(x - rx, y - ry, 2 * rx, 2 * ry)
         return circumasec(rect)
     else:
         raise ValueError(f'unrecognized element: {element!r}')

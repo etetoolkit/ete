@@ -176,7 +176,7 @@ function create_item(item, tl, zoom) {
     if (item[0] === "nodebox") {
         const [ , box, name, properties, node_id, result_of, style] = item;
 
-        const b = create_box(box, tl, zx, zy);
+        const b = create_box(box, tl, zx, zy, "",style);
 
         b.id = "node-" + node_id.join("_");  // used in tags
 
@@ -229,9 +229,43 @@ function create_item(item, tl, zoom) {
 
         const circle = create_circle(center, radius, tl, zx, zy, type);
 
-        style_circle(circle, style);
+        style_ellipse(circle, style); // same styling as ellipse
 
         return circle
+    }
+    else if (item[0] === "ellipse") {
+        const [ , center, rx, ry, type, style] = item;
+
+        const ellipse = create_ellipse(center, rx, ry, tl, zx, zy, type);
+
+        if (view.drawer.type == "circ") {
+            const {x: cx, y: cy} = cartesian_shifted(center[0], center[1], tl, zx);
+            const angle = Math.atan2(zy * tl.y + cy, zx * tl.x + cx) * 180 / Math.PI;
+            addRotation(ellipse, angle, cx, cy);
+        }
+        
+        style_ellipse(ellipse, style);
+
+        return ellipse;
+    }
+    else if (item[0] === "triangle") {
+        const [ , box, tip, type, style] = item;
+
+        const triangle = create_triangle(box, tip, tl, zx, zy, type);
+
+        const [r, a, dr, da] = box;
+        if (view.drawer.type === "circ" 
+            && ["top", "bottom"].includes(tip)
+            && (Math.abs(a + da) > Math.PI / 2)) {
+            const {x: cx, y: cy} = cartesian_shifted(r + dr / 2,
+                                                     a + da / 2, 
+                                                     tl, zx);
+            addRotation(triangle, 180, cx, cy);
+        }
+
+        style_polygon(triangle, style);
+
+        return triangle;
     }
     else if (item[0] === "text") {
         const [ , box, txt, type, style] = item;
@@ -246,11 +280,20 @@ function create_item(item, tl, zoom) {
     else if (item[0] === "rect") {
         const [ , box, type, style] = item;
 
-        const rect = create_box(box, tl, zx, zy, type);
+        const rect = create_box(box, tl, zx, zy, type, style);
 
-        style_rect(rect, style);
+        style_polygon(rect, style);
 
         return rect;
+    }
+    else if (item[0] === "rhombus") {
+        const [ , points, type, style] = item;
+
+        const rhombus = create_polygon(points, tl, zx, zy, "rhombus " + type);
+
+        style_polygon(rhombus, style);
+
+        return rhombus;
     }
     else if (item[0] === "array") {
         const [ , box, array] = item;
@@ -295,25 +338,28 @@ function create_svg_element(name, attrs={}) {
 
 
 // Return a box (rectangle or annular sector).
-function create_box(box, tl, zx, zy, type) {
+function create_box(box, tl, zx, zy, type, style) {
     const b = view.drawer.type === "rect" ?
-                    create_rect(box, tl, zx, zy, type) :
+                    create_rect(box, tl, zx, zy, type, style) :
                     create_asec(box, tl, zx, type);
     b.classList.add("box");
     return b;
 }
 
 
-function create_rect(box, tl, zx, zy, type) {
+function create_rect(box, tl, zx, zy, type, style) {
     let [x, y, w, h] = box;
 
     if (view.drawer.type === "circ")
         ({x, y} = cartesian_shifted(x, y, tl, zx));
 
+    const r = (is_style_property(style.rounded)) ? 4 : 0;
+
     return create_svg_element("rect", {
         "x": zx * (x - tl.x), "y": zy * (y - tl.y),
         "width": zx * w, "height": zy * h,
-        "class": type || null,
+        "rx": r, "ry": r,
+        "class": "rect " + type,
     });
 }
 
@@ -337,6 +383,7 @@ function create_asec(box, tl, z, type) {
     });
 }
 
+
 function cartesian_shifted(r, a, tl, z) {
     return {x: z * (r * Math.cos(a) - tl.x),
             y: z * (r * Math.sin(a) - tl.y)};
@@ -354,7 +401,7 @@ function create_outline(sbox, tl, zx, zy) {
 
 // Return a svg horizontal outline.
 function create_rect_outline(sbox, tl, zx, zy) {
-    const [x, y, dx_min, dx_max, dy] = transform(sbox, tl, zx, zy);
+    const [x, y, dx_min, dx_max, dy] = transform_sbox(sbox, tl, zx, zy);
 
     const dx = view.outline.slanted ? dx_min : dx_max;
 
@@ -367,8 +414,14 @@ function create_rect_outline(sbox, tl, zx, zy) {
     });
 }
 
+// Return the box translated (from tl) and scaled.
+function transform_box(box, tl, zx, zy) {
+    const [x, y, dx, dy] = box;
+    return [zx * (x - tl.x), zy * (y - tl.y), zx * dx, zy * dy];
+}
+
 // Return the sbox translated (from tl) and scaled.
-function transform(sbox, tl, zx, zy) {
+function transform_sbox(sbox, tl, zx, zy) {
     const [x, y, dx_min, dx_max, dy] = sbox;
     return [zx * (x - tl.x), zy * (y - tl.y), zx * dx_min, zx * dx_max, zy * dy];
 }
@@ -438,10 +491,12 @@ function create_arc(p1, p2, large, tl, z, type="") {
 
 
 function create_circle(center, radius, tl, zx, zy, type="") {
+    // Could be merged with create_ellipse()
+    const [cx, cy] = center;
     if (view.drawer.type === "rect") 
-        var [x, y] = [zx * (center[0] - tl.x), zy * (center[1] - tl.y)]
+        var [x, y] = [zx * (cx - tl.x), zy * (cy - tl.y)]
     else 
-        var {x, y} = cartesian_shifted(center[0], center[1], tl, zx);
+        var {x, y} = cartesian_shifted(cx, cy, tl, zx);
 
     return create_svg_element("circle", {
         "class": "circle " + type,
@@ -450,8 +505,86 @@ function create_circle(center, radius, tl, zx, zy, type="") {
 }
 
 
+function create_ellipse(center, rx, ry, tl, zx, zy, type="") {
+    const [cx, cy] = center;
+    if (view.drawer.type === "rect") 
+        var [x, y] = [zx * (cx - tl.x), zy * (cy - tl.y)]
+    else 
+        var {x, y} = cartesian_shifted(cx, cy, tl, zx);
+
+    return create_svg_element("ellipse", {
+        "class": "ellipse " + type,
+        "cx": x, "cy": y, "rx": rx, "ry": ry,
+    });
+}
+
+
+function create_polygon(points, tl, zx, zy, type="") {
+    points.forEach((point, idx, arr) => {
+        if (view.drawer.type === "rect") {
+            // Translate and scale
+            const [x, y] = point;
+            point = [zx * (x - tl.x), zy * (y - tl.y)];
+        }
+        else if (view.drawer.type === "circ") {
+            // Polar to translated cartesian coordinates
+            const [r, a] = point;
+            const {x: px, y: py} = cartesian_shifted(r, a, tl, zx);
+            point = [px, py];
+        };
+        arr[idx] = point; // reassign to point in array
+    });
+
+    return create_svg_element("polygon", {
+        "class": type,
+        "points": points.join(" "),
+    });
+}
+
+
+function create_triangle(box, tip, tl, zx, zy, type="") {
+    const points = [];
+    const [x, y, dx, dy] = view.drawer.type === "rect"
+        ? transform_box(box, tl, zx, zy)
+        : box;
+
+    if (tip === "top")
+        points.push(
+            [x + dx/2, y], 
+            [x, y + dy], 
+            [x + dx, y + dy]);
+    if (tip === "right")
+        points.push(
+            [x, y],
+            [x, y + dy],
+            [x + dx, y + dy/2]);
+    if (tip === "bottom")
+        points.push(
+            [x, y],
+            [x + dx/2, y + dy], 
+            [x + dx, y]);
+    if (tip === "left")
+        points.push(
+            [x, y + dy/2], 
+            [x + dx, y + dy],
+            [x + dx, y]);
+
+    if (view.drawer.type === "circ") 
+        points.forEach((point, idx, arr) => {
+            const [r, a] = point;
+            const {x: px, y: py} = cartesian_shifted(r, a, tl, zx);
+            arr[idx] = [px, py];
+        });
+
+    return create_svg_element("polygon", {
+        "class": "triangle " + type,
+        "points": points.join(" "),
+    });
+}
+
+
 function create_text(box, text, fs, tl, zx, zy, type="") {
-    const [x, y, text_anchor] = view.drawer.type === "rect" ?
+    const [x, y] = view.drawer.type === "rect" ?
         get_text_placement_rect(box, text, fs, tl, zx, zy) :
         get_text_placement_circ(box, text, fs, tl, zx);
 
@@ -459,7 +592,6 @@ function create_text(box, text, fs, tl, zx, zy, type="") {
         "class": "text " + type,
         "x": x, "y": y,
         "font-size": `${fs}px`,
-        "text-anchor": text_anchor,
     });
 
     t.appendChild(document.createTextNode(text));
@@ -519,8 +651,8 @@ async function fix_text_orientations() {
     texts.slice(500).forEach(t => flip_with_bbox(t, get_approx_BBox(t)));
 }
 
-function is_upside_down(text) {
-    const angle = text.transform.baseVal[0].angle;
+function is_upside_down(element) {
+    const angle = element.transform.baseVal[0].angle;
     return angle < -90 || angle > 90;
 }
 
@@ -554,19 +686,6 @@ function get_approx_BBox(text) {
     return {x, y, width, height};
 }
 
-
-// Return the font size adjusted for the given type of text.
-function font_adjust(fs, type) {
-    if (type === "leaf_name")
-        return Math.min(view.name.max_size,
-                        (1 - view.name.padding.vertical) * fs);
-
-    for (const expression of Object.keys(view.labels))
-        if (type === get_class_name("label_" + expression))
-            return Math.min(view.labels[expression].max_size, fs);
-    
-    return Math.min(view.font_sizes.max, fs)
-}
 
 // Chech whether style property exists and is not empty
 function is_style_property(property) {
@@ -614,26 +733,30 @@ function style_outline(outline, style) {
 }
 
 
-function style_circle(circle, style) {
-    if (style.fill && style.fill != "")
-        circle.style.fill = style.fill;
-    return circle;
+function style_ellipse(ellipse, style) {
+    if (is_style_property(style.fill))
+        ellipse.style.fill = style.fill;
+    return ellipse;
 }
 
 
 function style_text(text, style) {
-    if (style.fill && style.fill != "")
+    if (is_style_property(style.fill))
         text.style.fill = style.fill;
 
-    if (style.ftype && style.ftype != "")
+    if (is_style_property(style.ftype))
         text.style["font-family"] = style.ftype;
+
+    if (is_style_property(style.text_anchor))
+        text.style["text-anchor"] = style.text_anchor;
 
     return text;
 }
 
 
-function style_rect(rect, style) {
-    if (style.fill && style.fill != "")
-        rect.style.fill = style.fill;
-    return rect;
+function style_polygon(polygon, style) {
+    if (is_style_property(style.fill))
+        polygon.style.fill = style.fill;
+
+    return polygon
 }
