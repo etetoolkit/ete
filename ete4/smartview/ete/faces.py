@@ -600,24 +600,25 @@ class SeqFace(Face):
             r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
             # Draw rect
             box = Box(x, y, dx, dy)
-            yield draw_rect(box,
-                    self.seqtype + "_" + pos,
-                    style={'fill': self.colors[pos]})
-            # Draw text
-            if self.draw_text:
-                text_box = Box(x + dx / 2,
-                        y + (dy - self._fsize / (zy * r)) / 2,
-                        dx, dy)
-                yield draw_text(text_box,
-                        pos,
-                        style=text_style)
+            if pos != '-':
+                yield draw_rect(box,
+                        self.seqtype + "_" + pos,
+                        style={'fill': self.colors[pos]})
+                # Draw text
+                if self.draw_text:
+                    text_box = Box(x + dx / 2,
+                            y + (dy - self._fsize / (zy * r)) / 2,
+                            dx, dy)
+                    yield draw_text(text_box,
+                            pos,
+                            style=text_style)
 
 
 class SeqMotifFace(Face):
     def __init__(self, seq=None, motifs=None, seqtype='aa', 
             gap_format='line', seq_format='[]', 
             width=None, height=None, # max height
-            fgcolor='black', bgcolor='#bcc3d0', gapcolor='black',
+            fgcolor='black', bgcolor='#bcc3d0', gapcolor='gray',
             max_fsize=12, ftype='sans-serif',
             padding_x=0, padding_y=0, is_constrained=True):
 
@@ -636,9 +637,11 @@ class SeqMotifFace(Face):
 
         self.seq_format = seq_format
         self.gap_format = gap_format
+        self.compress_gaps = False
 
-        self.width = width or (len(seq) * 15 if seq else 15)
-        self.poswidth = self.width / len(seq) # 15 if argument width=None
+        self.poswidth = 0.5
+        self.w_scale = 1
+        self.width = width    # sum of all regions' width if not provided
         self.height = height  # dynamically computed if not provided
 
         self.fg = '#000'
@@ -666,24 +669,17 @@ class SeqMotifFace(Face):
         if not motifs:
             if self.seq_format == "seq":
                 motifs = [[0, len(seq), "seq", 
-                    10, self.height, None, None, None]]
+                    15, self.height, None, None, None]]
             else:
                 motifs = []
                 pos = 0
                 for reg in re.split('([^-]+)', seq):
                     if reg:
                         if not reg.startswith("-"):
-                            if self.seq_format == "compactseq":
-                                motifs.append([pos, pos+len(reg)-1,
-                                    "compactseq", 4, self.height,
-                                    None, None, None])
-                            elif self.seq_format == "line":
-                                motifs.append([pos, pos+len(reg)-1,
-                                    "-", 1, 1, self.fgcolor, None, None])
-                            else:
-                                motifs.append([pos, pos+len(reg)-1,
-                                    self.seq_format, None, self.height, 
-                                    self.fgcolor, self.bgcolor, None])
+                            motifs.append([pos, pos+len(reg)-1,
+                                self.seq_format, 
+                                self.poswidth, self.height, 
+                                self.fgcolor, self.bgcolor, None])
                         pos += len(reg)
 
         motifs.sort()
@@ -698,11 +694,11 @@ class SeqMotifFace(Face):
                     if reg:
                         if reg.startswith("-") and self.seq_format != "seq":
                             self.regions.append([pos, pos+len(reg)-1,
-                                self.gap_format, 1, 1,
+                                self.gap_format, self.poswidth, self.height,
                                 self.gapcolor, None, None])
                         else:
                             self.regions.append([pos, pos+len(reg)-1, 
-                                self.seq_format, self.width, self.height,
+                                self.seq_format, self.poswidth, self.height,
                                 self.fgcolor, self.bgcolor, None])
                     pos += len(reg)
                 current_seq_pos = start
@@ -716,14 +712,23 @@ class SeqMotifFace(Face):
                 if reg:
                     if reg.startswith("-") and self.seq_format != "seq":
                         self.regions.append([pos, pos+len(reg)-1,
-                            self.gap_format, 1, 1, 
+                            self.gap_format, 
+                            self.poswidth, 1, 
                             self.gapcolor, None, None])
                     else:
                         self.regions.append([pos, pos+len(reg)-1, 
                             self.seq_format,
-                            self.width, self.height,
+                            self.poswidth, self.height,
                             self.fgcolor, self.bgcolor, None])
                     pos += len(reg)
+
+        # TODO: overlapping motifs...
+        total_width = sum(w * (end + 1 - start) \
+                for start, end, _, w, *_ in motifs)
+        if self.width:
+            self.w_scale = self.width / total_width
+        else:
+            self.width = total_width
 
     def compute_bounding_box(self,
             drawer,
@@ -758,26 +763,30 @@ class SeqMotifFace(Face):
         return self._box
 
     def draw(self, drawer):
-        x0, y, dx, dy = self._box
+        # Only leaf/collapsed branch-right or aligned
+        x0, y, _, dy = self._box
         zx, zy = drawer.zoom
-        pos_dx = dx / len(self.seq)
         x = x0
-        previous_end = -1
-        for (start, end, shape, w, h, fg, bg, text) in self.regions:
-            w = (w / zx if w else pos_dx) * (end + 1 - start)
+        prev_end = 0
+        for (start, end, shape, posw, h, fg, bg, text) in self.regions:
+            prev_end = end
+            posw = posw * self.w_scale / zx
+            w = posw * (end + 1 - start)
             h = min([h or dy * zy, dy * zy, self.height or dy * zy]) / zy
             r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
             box = Box(x, y + (dy - h / r) / 2, w, h / r)
             style = { 'fill': bg }
 
             # Line
-            if shape == 'line':
+            if shape in ['line', '-']:
+                if self.compress_gaps:
+                    w = posw
                 p1 = (x, y + dy / 2)
                 p2 = (x + w, y + dy / 2)
                 if drawer.TYPE == 'circ':
                     p1 = cartesian(p1)
                     p2 = cartesian(p2)
-                yield draw_line(p1, p2)
+                yield draw_line(p1, p2, style={'width': 0.5, 'color': fg})
 
             # Rectangle
             elif shape in ('[]', '()'):
@@ -805,16 +814,10 @@ class SeqMotifFace(Face):
                     yield draw_ellipse(center, rx, ry, style=style)
 
             # Sequence and compact sequence
-            elif shape.endswith('seq'):
-                if shape == 'seq':
-                    postext = True
-                    poswidth = self.poswidth
-                elif shape == 'compactseq':
-                    postext = False
-                    poswidth = w / (end + 1 - start) * zx
-
+            elif shape in ['seq', 'compactseq']:
                 seq = self.seq[start : end + 1]
-                seq_face = SeqFace(seq, self.seqtype, poswidth,
+                postext = True if shape == 'seq' else False
+                seq_face = SeqFace(seq, self.seqtype, posw * zx,
                         draw_text=postext, max_fsize=self.max_fsize,
                         ftype=self.ftype, is_constrained=self.is_constrained)
                 seq_face._box = box # assign box manually

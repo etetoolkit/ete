@@ -579,7 +579,8 @@ class DrawerRectFaces(DrawerRect):
 
         def it_fits(box):
             _, _, dx, dy = box
-            return dx * zx > self.MIN_SIZE and dy * zy > self.MIN_SIZE
+            return dx * zx > self.MIN_SIZE and dy * zy > self.MIN_SIZE\
+                    and self.in_viewport(box)
 
         def draw_face(face, pos, row, n_row, n_col, dx_before, dy_before):
             if face.get_content():
@@ -682,7 +683,8 @@ class DrawerCircFaces(DrawerCirc):
         def it_fits(box):
             r, a, dr, da = box
             return r > 0 and dr * z > self.MIN_SIZE\
-              and (r + dr) * da * z > self.MIN_SIZE
+              and (r + dr) * da * z > self.MIN_SIZE\
+              and self.in_viewport(box)
 
         def draw_face(face, pos, row, n_row, n_col, dr_before, da_before):
             if face.get_content():
@@ -836,7 +838,6 @@ class DrawerAlignHeatMap(DrawerRectFaces):
     def draw_node(self, node, point, bdy):
         if self.panel == 0:
             yield from super().draw_node(node, point, bdy)
-
             yield from draw_rect_leaf_name(self, node, point)
         elif self.panel == 1 and node.is_leaf():
             x, y = point
@@ -923,9 +924,11 @@ def draw_outline(sbox, style=None):
     return ['outline', sbox, style or {}]
 
 def draw_line(p1, p2, line_type='', parent_of=None, style=None):
-    if style and style['type']:
-        types = ['solid', 'dotted', 'dashed']
+    types = ['solid', 'dotted', 'dashed']
+    if style and style.get('type'):
         style['type'] = types[int(style['type'])]
+    else:
+        style['type'] = types[0]
 
     return ['line', p1, p2, line_type, parent_of or [], style or {}]
 

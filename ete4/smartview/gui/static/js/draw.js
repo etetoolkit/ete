@@ -520,18 +520,19 @@ function create_ellipse(center, rx, ry, tl, zx, zy, type="") {
 
 
 function create_polygon(points, tl, zx, zy, type="") {
-
     points.forEach((point, idx, arr) => {
         if (view.drawer.type === "rect") {
+            // Translate and scale
             const [x, y] = point;
             point = [zx * (x - tl.x), zy * (y - tl.y)];
         }
         else if (view.drawer.type === "circ") {
+            // Polar to translated cartesian coordinates
             const [r, a] = point;
             const {x: px, y: py} = cartesian_shifted(r, a, tl, zx);
             point = [px, py];
         };
-        arr[idx] = point;
+        arr[idx] = point; // reassign to point in array
     });
 
     return create_svg_element("polygon", {
@@ -542,7 +543,6 @@ function create_polygon(points, tl, zx, zy, type="") {
 
 
 function create_triangle(box, tip, tl, zx, zy, type="") {
-
     const points = [];
     const [x, y, dx, dy] = view.drawer.type === "rect"
         ? transform_box(box, tl, zx, zy)
