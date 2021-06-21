@@ -54,8 +54,8 @@ from .. import utils
 # the following imports are necessary to set fixed styles and faces
 try:
     from ..treeview.main import NodeStyle, _FaceAreas, FaceContainer, FACE_POSITIONS
-    # from ..treeview.faces import Face
-    from ete4.smartview.ete.faces import Face
+    from ..treeview.faces import Face
+    from ete4.smartview.ete.faces import Face as smartFace
 except ImportError:
     TREEVIEW = False
 else:
@@ -2600,7 +2600,7 @@ cdef class TreeNode(object):
         if position not in FACE_POSITIONS:
             raise ValueError("face position not in %s" %FACE_POSITIONS)
 
-        if isinstance(face, Face):
+        if isinstance(face, Face) or isinstance(face, smartFace):
             if collapsed_only:
                 getattr(self._collapsed_faces, position).add_face(face, column=column)
             else:
