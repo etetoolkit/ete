@@ -1,6 +1,8 @@
 // Functions related to the top-right menus.
 
-import { view, on_tree_change, on_drawer_change, show_minimap } from "./gui.js";
+import { view, on_tree_change, on_drawer_change,
+    on_layout_change, show_minimap 
+} from "./gui.js";
 import { draw_minimap } from "./minimap.js";
 import { update } from "./draw.js";
 
@@ -59,6 +61,8 @@ function create_menu_representation(drawers) {
     folder_circ.add(view.angle, "max", -180, 180).name("angle max").onChange(
         update_with_minimap);
 
+    add_folder_layouts(menu);
+
     add_folder_style(menu);
 
     const folder_labels = menu.addFolder("labels");
@@ -116,6 +120,16 @@ function add_folder_tree(menu, trees) {
 }
 
 
+function add_folder_layouts(menu) {
+    const folder_layout = menu.addFolder("layouts");
+
+    Object.keys(view.layouts).sort().forEach(layout => {
+        folder_layout.add(view.layouts, layout)
+            .onChange(() => on_layout_change(layout))
+    });
+}
+
+
 function add_folder_searches(menu) {
     const folder_searches = menu.addFolder("searches");
 
@@ -159,6 +173,7 @@ function add_folder_view(menu) {
         set_boxes_clickable(!view.select_text);
     });
 }
+
 
 function set_boxes_clickable(clickable) {
     const value = clickable ? "auto" : "none";

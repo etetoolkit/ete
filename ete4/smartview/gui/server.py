@@ -56,6 +56,7 @@ from itsdangerous import TimedJSONWebSignatureSerializer as JSONSigSerializer
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from ete4 import Tree
+from ete4.smartview.ete.layouts import TreeStyle
 from ete4.parser.newick import NewickError
 from ete4.smartview.utils import InvalidUsage
 from ete4.smartview.ete import nexus, draw, gardening as gdn
@@ -202,6 +203,27 @@ class Drawers(Resource):
                         'npanels': drawer_class.NPANELS}
             except StopIteration:
                 raise InvalidUsage(f'not a valid drawer: {name}')
+
+
+class Layouts(Resource):
+    def get(self, name=None):
+        "Toggle layout (if provided) and return updated layouts"
+        rule = request.url_rule.rule  # shortcut
+        if rule == '/layouts':
+            return { name: ly['active'] for name, ly in app.layouts.items() }
+        elif rule == '/layouts/<string:name>':
+            is_active = app.layouts.get(name, {}).get('active', None)
+            if is_active != None:
+                app.layouts[name]['active'] = not is_active  # reverse state
+                # TODO: optimize this step
+                app.trees = {}  # reinitialize trees in memory
+
+            if app.layouts[name]['active'] == True:
+                app.tree_style.layout_fn = app.layouts[name]['fn']
+            elif app.layouts[name]['active'] == False:
+                app.tree_style.del_layout_fn(name)  # remove layout_fn from ts
+
+            return { name: ly['active'] for name, ly in app.layouts.items() }
 
 
 class Trees(Resource):
@@ -863,6 +885,7 @@ def add_resources(api):
     add(Login, '/login')
     add(Users, '/users', '/users/<int:user_id>')
     add(Drawers, '/drawers', '/drawers/<string:name>')
+    add(Layouts, '/layouts', '/layouts/<string:name>')
     add(Trees,
         '/trees',
         '/trees/<string:tree_id>',
@@ -889,7 +912,7 @@ def get_random_string(length):
     return result_str
 
 
-def run_smartview(newick=None, tree_name=None, tree_style=None):
+def run_smartview(newick=None, tree_name=None, tree_style=None, layouts=[]):
     # Set tree_name to None if no newick was provided
     # Generate tree_name if none was provided
     tree_name = tree_name or get_random_string(10) if newick else None
@@ -898,12 +921,16 @@ def run_smartview(newick=None, tree_name=None, tree_style=None):
     app = initialize(tree_name)
 
     app.tree_style = tree_style or TreeStyle()
+    # Store initial layouts, may be replaced by default set of layouts...
+    app.layouts = { ly.__name__: {
+        'active': (ly.__name__ in [ly.__name__ for ly in app.tree_style.layout_fn]),
+        'fn': ly } for ly in layouts if ly.__name__ != '<lambda>' }
 
     # Create database if not already created
     if not os.path.exists(app.config['DATABASE']):
         create_example_database()
 
-    # Add tree if provided
+    # Add tree to database if provided
     if newick: 
         tree_data = { 'name': tree_name,
                       'newick': newick }

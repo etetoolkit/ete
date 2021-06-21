@@ -12,7 +12,8 @@ import { remove_tags } from "./tag.js";
 import { remove_collapsed } from "./collapse.js";
 import { label_expression, label_property } from "./label.js";
 
-export { view, menus, on_tree_change, on_drawer_change, show_minimap,
+export { view, menus, on_tree_change, on_drawer_change,
+         on_layout_change, show_minimap,
          tree_command, get_tid, on_box_click, on_box_wheel, coordinates,
          reset_view, show_help, sort };
 
@@ -53,6 +54,9 @@ const view = {
     angle: {min: -180, max: 180},
     align_bar: 80,  // % of the screen width where the aligned panel starts
     collapsed_ids: {},
+
+    // layouts
+    layouts: await api("/layouts"),
 
     // searches
     search: () => search(),
@@ -252,6 +256,19 @@ async function on_drawer_change() {
     }
 
     update();
+}
+
+
+// What happens when the user toggles a layout function
+async function on_layout_change(layout) {
+    const qs = "/layouts" + (layout ? `/${layout}` : "");;
+    const layouts = await api(qs);
+
+    // Update view layouts
+    if (view.layouts != layouts) {
+        view.layouts = layouts;
+        update();
+    }
 }
 
 

@@ -47,7 +47,7 @@ class Drawer:
 
     COLLAPSE_SIZE = 6  # anything that has less pixels will be outlined
 
-    MIN_SIZE = 2  # anything that has less pixels will not be drawn
+    MIN_SIZE = 1  # anything that has less pixels will not be drawn
 
     TYPE = 'base'  # can be 'rect' or 'circ' for working drawers
 
@@ -63,7 +63,10 @@ class Drawer:
         self.xmin, self.xmax, self.ymin, self.ymax = limits or (0, 0, 0, 0)
         self.collapsed_ids = collapsed_ids or set()  # manually collapsed
         self.searches = searches or {}  # looks like {text: (results, parents)}
-        self.tree_style = tree_style  
+        self.tree_style = tree_style
+        if not self.tree_style:
+            from ete4.smartview.ete.layouts import TreeStyle
+            self.tree_style = TreeStyle()
 
     def draw(self):
         "Yield graphic elements to draw the tree"
@@ -579,7 +582,8 @@ class DrawerRectFaces(DrawerRect):
 
         def it_fits(box):
             _, _, dx, dy = box
-            return dx * zx > self.MIN_SIZE and dy * zy > self.MIN_SIZE\
+            return dx * zx > self.MIN_SIZE\
+                    and dy * zy > self.MIN_SIZE\
                     and self.in_viewport(box)
 
         def draw_face(face, pos, row, n_row, n_col, dx_before, dy_before):
@@ -589,7 +593,7 @@ class DrawerRectFaces(DrawerRect):
                             bdx, bdy, bdy0, bdy1,
                             pos, row, n_row, n_col,
                             dx_before, dy_before)
-                if it_fits(box) or not face.is_constrained:
+                if it_fits(box) and face.fits():
                     yield from face.draw(self)
 
         def draw_faces_at_pos(node, pos):
@@ -612,6 +616,8 @@ class DrawerRectFaces(DrawerRect):
                             dx_before, dy_before))
                     if drawn_face:
                         _, _, dx, dy = face.get_box()
+                        if not dx:
+                            print(drawn_face)
                         hz_padding = 2 * face.padding_x / zx
                         vt_padding = 2 * face.padding_y / zy
                         dx_max = max(dx_max, dx + hz_padding)
@@ -682,9 +688,10 @@ class DrawerCircFaces(DrawerCirc):
 
         def it_fits(box):
             r, a, dr, da = box
-            return r > 0 and dr * z > self.MIN_SIZE\
-              and (r + dr) * da * z > self.MIN_SIZE\
-              and self.in_viewport(box)
+            return r > 0 \
+                    and dr * z > self.MIN_SIZE\
+                    and (r + dr) * da * z > self.MIN_SIZE\
+                    and self.in_viewport(box)
 
         def draw_face(face, pos, row, n_row, n_col, dr_before, da_before):
             if face.get_content():
@@ -693,7 +700,7 @@ class DrawerCircFaces(DrawerCirc):
                         bdr, bda, bda0, bda1,
                         pos, row, n_row, n_col,
                         dr_before, da_before)
-                if it_fits(box) or not face.is_constrained:
+                if it_fits(box) and face.fits():
                     yield from face.draw(self)
 
         def draw_faces_at_pos(node, pos):

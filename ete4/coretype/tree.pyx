@@ -316,19 +316,41 @@ cdef class TreeNode(object):
         """ Iterator over leaf nodes"""
         return self.iter_leaves()
 
-    def add_property(self, key, value):
+    def add_property(self, name, value):
         """ Add or update node's property """
-        if key != None and value != None:
-            self.properties[key] = value
+        if name != None and value != None:
+            self.properties[name] = value
 
     def add_properties(self, **properties):
         """ Add or update several properties. """
-        for key, value in six.iteritems(properties):
-            self.add_property(key, value)
+        for name, value in six.iteritems(properties):
+            self.add_property(name, value)
 
-    def del_property(self, key):
+    def del_property(self, name):
         """ Permanently deletes a node's property. """
-        self.properties.pop(key, None)
+        self.properties.pop(name, None)
+
+    # DEPRECATED #
+    def add_feature(self, pr_name, pr_value):
+        """
+        Add or update a node's feature.
+        """
+        print("\nWARNING! add_feature is DEPRECATED use add_property instead\n")
+        self.add_property(pr_name, pr_value)
+
+    def add_features(self, **features):
+        """
+        Add or update several features. """
+        print("\nWARNING! add_features is DEPRECATED use add_properties instead\n")
+        self.add_properties(**features)
+
+    def del_feature(self, pr_name):
+        """
+        Permanently deletes a node's feature.
+        """
+        print("\nWARNING! del_property is DEPRECATED use del_property instead\n")
+        self.del_property(pr_name)
+    # DEPRECATED #
 
     # Topology management
     def add_child(self, child=None, name=None, dist=None, support=None):
@@ -906,6 +928,9 @@ cdef class TreeNode(object):
                        support_formatter=support_formatter,
                        name_formatter=name_formatter)
 
+        if properties == []:
+            properties = list(self.properties.keys())
+
         nw = write_newick(self, properties=properties)
 
         if outfile is not None:
@@ -1457,16 +1482,39 @@ cdef class TreeNode(object):
                                     layout=layout, tree_style=tree_style,
                                       units=units, dpi=dpi)
 
-    def explore(self, tree_name=None, tree_style=None):
+    def explore(self, tree_name=None, tree_style=None, layouts=[]):
         """
         Starts an interactive smartview session to visualize current node
-        structure using provided layout and TreeStyle.
+        structure using provided TreeStyle.
+
+        :tree_name string: name used to store tree in local database.
+        Autamatically generated if not provided.
+
+        :tree_style TreeStyle: default TreeStyle if not provided.
+
+        :layouts: list of layout functions that will be available from the
+        front end. It is important to name functions (__name__), as they will
+        be adressed by such in the explorer.
+        By default it includes: outline, leaf_name, branch_length 
+        and branch_support.
         """
         from ete4.smartview.gui.server import run_smartview
+        from ete4.smartview.ete.layouts import get_layout_outline,\
+                get_layout_leaf_name, get_layout_branch_length,\
+                get_layout_branch_support
+
+        # Get default layouts from their getters
+        default_layouts = [get_layout_outline(), get_layout_leaf_name(),
+                get_layout_branch_length(), get_layout_branch_support()]
+
+        # Get layouts from TreeStyle
+        ts_layouts = tree_style.layout_fn
+
+        layouts = list(set(default_layouts + ts_layouts + layouts))
 
         properties = list(self.properties.keys()) # include all properties
         run_smartview(newick=self.write(properties=properties),
-                tree_name=tree_name, tree_style=tree_style)
+                tree_name=tree_name, tree_style=tree_style, layouts=layouts)
 
     def copy(self, method="cpickle"):
         """.. versionadded: 2.1

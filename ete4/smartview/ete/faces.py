@@ -63,12 +63,11 @@ def swap_pos(pos, angle):
 
 class Face(object):
 
-    def __init__(self, name="", padding_x=0, padding_y=0, is_constrained=True):
+    def __init__(self, name="", padding_x=0, padding_y=0):
         self.node = None
         self.name = name
         self._content = "Empty"
         self._box = None
-        self.is_constrained = is_constrained
         self.padding_x = padding_x
         self.padding_y = padding_y
 
@@ -84,7 +83,7 @@ class Face(object):
 
     def compute_fsize(self, dx, dy, drawer):
         zx, zy = drawer.zoom
-        self._fsize = min([dx * zx * CHAR_HEIGHT, dy * zy, self.max_fsize])
+        self._fsize = min([dx * zx * CHAR_HEIGHT, abs(dy * zy), self.max_fsize])
 
     def compute_bounding_box(self, 
             drawer,
@@ -150,6 +149,13 @@ class Face(object):
 
         return self._box
 
+    def fits(self):
+        """ 
+        Return True if Face fits in computed box.
+        Method overriden by inheriting classes.
+        """
+        return True
+
     def _check_own_content(self):
         if not self._content:
             raise Exception(f'**Content** has not been computed yet.')
@@ -165,16 +171,15 @@ class Face(object):
 class TextFace(Face):
 
     def __init__(self, text, name='', color='black',
-            max_fsize=15, ftype="sans-serif",
-            padding_x=0, padding_y=0,
-            is_constrained=True):
+            min_fsize=6, max_fsize=15, ftype="sans-serif",
+            padding_x=0, padding_y=0):
 
         Face.__init__(self, name=name,
-                padding_x=padding_x, padding_y=padding_y,
-                is_constrained=is_constrained)
+                padding_x=padding_x, padding_y=padding_y)
 
         self._content = text
         self.color = color
+        self.min_fsize = min_fsize
         self.max_fsize = max_fsize
         self._fsize = max_fsize
         self.ftype = ftype
@@ -216,7 +221,7 @@ class TextFace(Face):
             dychar = self._fsize / (zy * r)
             return dxchar * len(text), dychar
 
-        width, height = fit_fontsize(self._content, dx, dy)
+        width, height = fit_fontsize(self._content, dx, dy * r)
 
         if pos == 'branch-top':
             box = (x, y + dy - height, width, height) # container bottom
@@ -229,6 +234,9 @@ class TextFace(Face):
 
         self._box = Box(*box)
         return self._box
+
+    def fits(self):
+        return self._fsize >= self.min_fsize
 
     def draw(self, drawer):
         self._check_own_variables()
@@ -246,16 +254,16 @@ class AttrFace(TextFace):
     def __init__(self, attr, 
             name=None,
             color="black", 
-            max_fsize=15, ftype="sans-serif",
-            padding_x=0, padding_y=0,
-            is_constrained=True):
+            min_fsize=6, max_fsize=15, 
+            ftype="sans-serif",
+            padding_x=0, padding_y=0):
 
 
         TextFace.__init__(self, text="",
                 name=name, color=color,
-                max_fsize=max_fsize, ftype=ftype,
-                padding_x=padding_x, padding_y=padding_y,
-                is_constrained=is_constrained)
+                min_fsize=min_fsize, max_fsize=max_fsize, 
+                ftype=ftype,
+                padding_x=padding_x, padding_y=padding_y)
 
         self._attr = attr
 
@@ -317,11 +325,10 @@ class LabelFace(AttrFace):
 class CircleFace(Face):
 
     def __init__(self, radius, color, name="",
-            padding_x=0, padding_y=0, is_constrained=True):
+            padding_x=0, padding_y=0):
 
         Face.__init__(self, name=name,
-                padding_x=padding_x, padding_y=padding_y,
-                is_constrained=is_constrained)
+                padding_x=padding_x, padding_y=padding_y)
 
         self.radius = radius
         self.color = color
@@ -393,10 +400,9 @@ class CircleFace(Face):
 
 class RectFace(Face):
     def __init__(self, width, height, color="black",
-            padding_x=0, padding_y=0, is_constrained=True):
+            padding_x=0, padding_y=0):
 
-        Face.__init__(self, padding_x=padding_x, padding_y=padding_y,
-                is_constrained=is_constrained)
+        Face.__init__(self, padding_x=padding_x, padding_y=padding_y)
 
         self.width = width
         self.height = height
@@ -483,10 +489,9 @@ class OutlineFace(Face):
     def __init__(self, 
             stroke_color='black', stroke_width=0.5,
             color="lightgray", opacity=0.3,
-            padding_x=0, padding_y=0, is_constrained=True):
+            padding_x=0, padding_y=0):
 
-        Face.__init__(self, padding_x=padding_x, padding_y=padding_y,
-                is_constrained=is_constrained)
+        Face.__init__(self, padding_x=padding_x, padding_y=padding_y)
 
         self.opacity = opacity
         self.color = color
@@ -521,6 +526,9 @@ class OutlineFace(Face):
         x, y, dx_min, dx_max, dy = self.outline
         return Box(x, y, dx_max, dy)
 
+    def fits(self):
+        return True
+
     def draw(self, drawer):
         style = {
                 'stroke': self.stroke_color,
@@ -534,10 +542,9 @@ class OutlineFace(Face):
 class SeqFace(Face):
     def __init__(self, seq, seqtype='aa', poswidth=15,
             draw_text=True, max_fsize=15, ftype='sans-serif',
-            padding_x=0, padding_y=0, is_constrained=True):
+            padding_x=0, padding_y=0):
 
-        Face.__init__(self, padding_x=padding_x, padding_y=padding_y,
-                is_constrained=is_constrained)
+        Face.__init__(self, padding_x=padding_x, padding_y=padding_y)
 
         self.seq = seq
         self.seqtype = seqtype
@@ -620,14 +627,13 @@ class SeqMotifFace(Face):
             width=None, height=None, # max height
             fgcolor='black', bgcolor='#bcc3d0', gapcolor='gray',
             max_fsize=12, ftype='sans-serif',
-            padding_x=0, padding_y=0, is_constrained=True):
+            padding_x=0, padding_y=0):
 
         if not motifs and not seq:
             raise ValueError(
                     "At least one argument (seq or motifs) should be provided.")
 
-        Face.__init__(self, padding_x=padding_x, padding_y=padding_y,
-                is_constrained=is_constrained)
+        Face.__init__(self, padding_x=padding_x, padding_y=padding_y)
 
         self.seq = seq or '-' * max([m[1] for m in motifs])
         self.seqtype = seqtype
@@ -724,7 +730,7 @@ class SeqMotifFace(Face):
 
         # TODO: overlapping motifs...
         total_width = sum(w * (end + 1 - start) \
-                for start, end, _, w, *_ in motifs)
+                for start, end, _, w, *_ in self.regions)
         if self.width:
             self.w_scale = self.width / total_width
         else:
@@ -761,6 +767,9 @@ class SeqMotifFace(Face):
         
         self._box = Box(x, y, self.width / zx, dy)
         return self._box
+
+    def fits(self):
+        return True
 
     def draw(self, drawer):
         # Only leaf/collapsed branch-right or aligned
@@ -819,14 +828,14 @@ class SeqMotifFace(Face):
                 postext = True if shape == 'seq' else False
                 seq_face = SeqFace(seq, self.seqtype, posw * zx,
                         draw_text=postext, max_fsize=self.max_fsize,
-                        ftype=self.ftype, is_constrained=self.is_constrained)
+                        ftype=self.ftype)
                 seq_face._box = box # assign box manually
-                seq_face.compute_fsize(self.poswidth / zx, h, drawer)
+                seq_face.compute_fsize(posw, h, drawer)
                 yield from seq_face.draw(drawer)
 
             # Text on top of shape
             if text:
-                self.compute_fsize(self.poswidth / zx, h, drawer)
+                self.compute_fsize(w, h, drawer)
                 text_box = Box(x + w / 2,
                         y + (dy - self._fsize / (zy * r)) / 2,
                         self._fsize / (zx * CHAR_HEIGHT),
