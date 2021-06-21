@@ -834,69 +834,10 @@ class DrawerAlignCircFaces(DrawerCircFaces):
     NPANELS = 2
 
 
-
-# NOTE: The next two drawers (DrawerAlignHeatMap and DrawerCircAlignHeatMap)
-#   are only there as an example for how to represent gene array data and so on
-#   with heatmaps, but not really useful now (as opposed to the previous ones!).
-
-class DrawerAlignHeatMap(DrawerRectFaces):
-    NPANELS = 2
-
-    def draw_node(self, node, point, bdy):
-        if self.panel == 0:
-            yield from super().draw_node(node, point, bdy)
-            yield from draw_rect_leaf_name(self, node, point)
-        elif self.panel == 1 and node.is_leaf():
-            x, y = point
-            dx, dy = self.content_size(node)
-            random.seed(node.name)
-            array = [random.randint(1, 360) for i in range(300)]
-            yield draw_array(Box(0, y, 600, dy), array)
-
-    def draw_collapsed(self):
-        if self.panel == 0:
-            yield from draw_rect_collapsed_names(self)
-        elif self.panel == 1:
-            x, y, dx_min, dx_max, dy = self.outline
-            text = ''.join(first_name(node) for node in self.collapsed)
-            random.seed(text)
-            array = [random.randint(1, 360) for i in range(300)]
-            yield draw_array(Box(0, y, 600, dy), array)
-
-
-class DrawerCircAlignHeatMap(DrawerCircFaces):
-    NPANELS = 2
-
-    def draw_node(self, node, point, bda):
-        if self.panel == 0:
-            yield from super().draw_node(node, point, bda)
-
-            yield from draw_circ_leaf_name(self, node, point)
-        elif self.panel == 1 and node.is_leaf():
-            r, a = point
-            dr, da = self.content_size(node)
-            random.seed(node.name)
-            array = [random.randint(1, 360) for i in range(50)]
-            box = Box(1.5 * self.xmin, a, 20 * self.tree.size[0], da)
-            yield draw_array(box, array)
-
-    def draw_collapsed(self):
-        if self.panel == 0:
-            yield from draw_circ_collapsed_names(self)
-        elif self.panel == 1:
-            r, a, dr_min, dr_max, da = self.outline
-            text = ''.join(first_name(node) for node in self.collapsed)
-            random.seed(text)
-            array = [random.randint(1, 360) for i in range(50)]
-            box = Box(1.5 * self.xmin, a, 20 * self.tree.size[0], da)
-            yield draw_array(box, array)
-
-
 def get_drawers():
     return [ DrawerRect, DrawerCirc, 
             DrawerRectFaces, DrawerCircFaces,
             DrawerAlignRectFaces, DrawerAlignCircFaces,
-            DrawerAlignHeatMap, DrawerCircAlignHeatMap,
             ]
 
 
