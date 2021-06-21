@@ -520,8 +520,9 @@ class OutlineFace(Face):
 
     def get_box(self):
         if not self.outline:
-            raise Exception(f'**Outline** has not been computed yet.\
-                    \nPlease run `compute_bounding_box()` first')
+            return Box(0, 0, 0, 0)
+            # raise Exception(f'**Outline** has not been computed yet.\
+                    # \nPlease run `compute_bounding_box()` first')
 
         x, y, dx_min, dx_max, dy = self.outline
         return Box(x, y, dx_max, dy)
