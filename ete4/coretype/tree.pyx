@@ -1328,7 +1328,6 @@ cdef class TreeNode(object):
                 tname = ''.join(next(avail_names))
             n.name = tname
 
-
     def set_outgroup(self, outgroup, branch_properties=None):
         """
         Sets a descendant node as the outgroup of a tree.  This function
@@ -1340,7 +1339,6 @@ cdef class TreeNode(object):
         """
         from ete4.smartview.ete.gardening import root_at
         root_at(outgroup, branch_properties)
-        
 
     def unroot(self, mode='legacy'):
         """
@@ -1369,6 +1367,7 @@ cdef class TreeNode(object):
                 self.children[1].delete()
             else:
                 raise TreeError("Cannot unroot a tree with only two leaves")
+
 
     def show(self, layout=None, tree_style=None, name="ETE"):
         """
@@ -1427,18 +1426,6 @@ cdef class TreeNode(object):
         and branch_support.
         """
         from ete4.smartview.gui.server import run_smartview
-        from ete4.smartview.ete.layouts import get_layout_outline,\
-                get_layout_leaf_name, get_layout_branch_length,\
-                get_layout_branch_support
-
-        # Get default layouts from their getters
-        default_layouts = [get_layout_outline(), get_layout_leaf_name(),
-                get_layout_branch_length(), get_layout_branch_support()]
-
-        # Get layouts from TreeStyle
-        ts_layouts = tree_style.layout_fn
-
-        layouts = list(set(default_layouts + ts_layouts + layouts))
 
         properties = list(self.properties.keys()) # include all properties
         run_smartview(newick=self.write(properties=properties),

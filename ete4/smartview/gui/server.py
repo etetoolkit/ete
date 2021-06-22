@@ -60,6 +60,9 @@ from ete4.smartview.ete.layouts import TreeStyle
 from ete4.parser.newick import NewickError
 from ete4.smartview.utils import InvalidUsage
 from ete4.smartview.ete import nexus, draw, gardening as gdn
+from ete4.smartview.ete.layouts import get_layout_outline,\
+        get_layout_leaf_name, get_layout_branch_length,\
+        get_layout_branch_support
 
 
 db = None  # call initialize() to fill these up
@@ -912,6 +915,23 @@ def get_random_string(length):
     return result_str
 
 
+def get_layouts(layouts=[]):
+    # Get default layouts from their getters
+    default_layouts = [get_layout_outline(), get_layout_leaf_name(),
+            get_layout_branch_length(), get_layout_branch_support()]
+
+    # Get layouts from TreeStyle
+    ts_layouts = app.tree_style.layout_fn
+
+    layouts = list(set(default_layouts + ts_layouts + layouts))
+
+    all_layouts = { ly.__name__: {
+        'active': (ly.__name__ in [ly.__name__ for ly in app.tree_style.layout_fn]),
+        'fn': ly } for ly in layouts if ly.__name__ != '<lambda>' }
+
+    return all_layouts
+
+
 def run_smartview(newick=None, tree_name=None, tree_style=None, layouts=[]):
     # Set tree_name to None if no newick was provided
     # Generate tree_name if none was provided
@@ -921,10 +941,7 @@ def run_smartview(newick=None, tree_name=None, tree_style=None, layouts=[]):
     app = initialize(tree_name)
 
     app.tree_style = tree_style or TreeStyle()
-    # Store initial layouts, may be replaced by default set of layouts...
-    app.layouts = { ly.__name__: {
-        'active': (ly.__name__ in [ly.__name__ for ly in app.tree_style.layout_fn]),
-        'fn': ly } for ly in layouts if ly.__name__ != '<lambda>' }
+    app.layouts = get_layouts(layouts)
 
     # Create database if not already created
     if not os.path.exists(app.config['DATABASE']):
@@ -945,6 +962,7 @@ def run_smartview(newick=None, tree_name=None, tree_style=None, layouts=[]):
 
 
 if __name__ == '__main__':
+    # Get default layouts from their getters
     run_smartview()
 
 

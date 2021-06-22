@@ -55,8 +55,7 @@ const view = {
     align_bar: 80,  // % of the screen width where the aligned panel starts
     collapsed_ids: {},
 
-    // layouts
-    layouts: await api("/layouts"),
+    layouts: {},
 
     // searches
     search: () => search(),
@@ -145,6 +144,8 @@ const trees = {};  // will translate names to ids (trees[tree_name] = tree_id)
 
 async function main() {
     await init_trees();
+
+    view.layouts = await api("/layouts"); // init layouts
 
     await set_query_string_values();
 
@@ -325,6 +326,8 @@ async function set_query_string_values() {
             view.zoom.y = div_tree.offsetHeight / Number(value);
         else if (param === "drawer")
             view.drawer.name = value;
+        else if (param === "layouts")
+            view.layouts = {value};
         else
             unknown_params.push(param);
     }
@@ -448,6 +451,7 @@ function get_url_view(x, y, w, h) {
     const qs = new URLSearchParams({
         x: x, y: y, w: w, h: h,
         tree: view.tree, subtree: view.subtree, drawer: view.drawer.name,
+        layouts: view.layouts,
     }).toString();
     return window.location.origin + window.location.pathname + "?" + qs;
 }
