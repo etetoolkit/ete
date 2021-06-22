@@ -137,6 +137,7 @@ class TreeStyle(object):
         # Set clean node style
         clean = NodeStyle()
         clean['size'] = 0
+        clean['bgcolor'] = 'transparent'
         layouts.append(lambda node: node.set_style(clean))
 
         if self.show_outline:
