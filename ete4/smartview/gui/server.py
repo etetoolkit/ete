@@ -412,7 +412,6 @@ def get_drawer(tree_id, args):
 
         active_layouts = args.get('layouts')
         if active_layouts != None:
-            print(active_layouts)
             update_layouts(active_layouts)
 
         collapsed_ids = set(tuple(int(i) for i in node_id.split(','))
