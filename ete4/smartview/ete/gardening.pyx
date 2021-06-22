@@ -17,18 +17,19 @@ def sort(tree, key=None, reverse=False):
     tree.children.sort(key=key, reverse=reverse)
 
 
-def root_at(node):
+def root_at(node, bprops=None):
     "Return the tree of which node is part of, rerooted at the given node"
+    # bprops is a list of extra branch properties (other than "support").
     if not node.up:
         return node
 
-    future_root = split_branch(node)
+    future_root = split_branch(node, bprops)
 
     old_root, node_id = get_root_id(future_root)
 
     current = old_root  # current root, which will change in each iteration
     for child_pos in node_id:
-        current = rehang(current, child_pos)
+        current = rehang(current, child_pos, bprops)
 
     if len(old_root.children) == 1:
         join_branch(old_root)
@@ -36,7 +37,7 @@ def root_at(node):
     return current # which is now future_root
 
 
-def split_branch(node):
+def split_branch(node, bprops=None):
     "Add an intermediate parent to the given node and return it"
     parent = node.up
 
@@ -51,6 +52,11 @@ def split_branch(node):
 
     if 'support' in node.properties:  # copy support if it has it
         intermediate.properties['support'] = node.properties['support']
+
+    for prop in (bprops or []):  # and copy other branch properties if any
+        if prop in node.properties:
+            intermediate.properties[prop] = node.properties[prop]
+
 
     parent.add_child(intermediate)
 
@@ -71,14 +77,14 @@ def get_root_id(node):
     return current, positions[::-1]
 
 
-def rehang(node, child_pos):
+def rehang(node, child_pos, bprops):
     "Rehang node on its child at position child_pos and return it"
     child = node.pop_child(child_pos)
 
     child.up = node.up # swap parenthood.
     child.add_child(node)
 
-    swap_branch_properties(child, node)  # to reflect the new parenthood
+    swap_branch_properties(child, node, bprops)  # to reflect the new parenthood
 
     update_size(node)   # since their total dist till the furthest leaf and
     update_size(child)  # their total number of leaves will have changed
@@ -86,7 +92,7 @@ def rehang(node, child_pos):
     return child  # which is now the parent of its previous parent
 
 
-def swap_branch_properties(n1, n2):
+def swap_branch_properties(n1, n2, bprops=None):
     "Swap between nodes n1 and n2 their branch-related properties"
     # The branch properties of a node reflect its relation w.r.t. its parent.
 
@@ -95,6 +101,9 @@ def swap_branch_properties(n1, n2):
 
     # "support" (in the properties dictionary) is a branch property -> swap
     swap_property(n1, n2, 'support')
+
+    for prop in (bprops or []):
+        swap_property(n1, n2, prop)
 
 
 def swap_property(n1, n2, pname):

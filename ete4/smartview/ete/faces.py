@@ -281,47 +281,6 @@ class AttrFace(TextFace):
         return self._content
 
 
-class LabelFace(AttrFace):
-
-    def __init__(self, expression):
-        Face.__init__(self)
-        self._code = self.compile_expression(expression)
-        self.name = "label_" + expression
-        self._content = None
-
-    def __name__(self):
-        return "LabelFace"
-    
-    def get_content(self):
-        self._check_own_node()
-        self._content = str(self.safer_eval(self._code))
-        return self._content
-
-    def compile_expression(self, expression):
-        try:
-            code = compile(expression, '<string>', 'eval')
-        except SyntaxError as e:
-            raise InvalidUsage(f'compiling expression: {e}')
-        return code
-
-    def safer_eval(self, code):
-        "Return a safer version of eval(code, context)"
-        context = {
-            'name': self.node.name, 'is_leaf': self.node.is_leaf(),
-            'length': self.node.dist, 'dist': self.node.dist, 'd': self.node.dist,
-            'support': self.node.support,
-            'properties': self.node.properties, 'p': self.node.properties,
-            'get': dict.get, 'split': str.split,
-            'children': self.node.children, 'ch': self.node.children,
-            'regex': re.search,
-            'len': len, 'sum': sum, 'abs': abs, 'float': float, 'pi': pi
-        }
-        for name in code.co_names:
-            if name not in context:
-                raise InvalidUsage('invalid use of %r during evaluation' % name)
-        return eval(code, {'__builtins__': {}}, context)
-
-
 class CircleFace(Face):
 
     def __init__(self, radius, color, name="",
