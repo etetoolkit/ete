@@ -214,19 +214,6 @@ class Layouts(Resource):
         rule = request.url_rule.rule  # shortcut
         if rule == '/layouts':
             return { name: ly['active'] for name, ly in app.layouts.items() }
-        elif rule == '/layouts/<string:name>':
-            is_active = app.layouts.get(name, {}).get('active', None)
-            if is_active != None:
-                app.layouts[name]['active'] = not is_active  # reverse state
-                # TODO: optimize this step
-                app.trees = {}  # reinitialize trees in memory
-
-            if app.layouts[name]['active'] == True:
-                app.tree_style.layout_fn = app.layouts[name]['fn']
-            elif app.layouts[name]['active'] == False:
-                app.tree_style.del_layout_fn(name)  # remove layout_fn from ts
-
-            return { name: ly['active'] for name, ly in app.layouts.items() }
 
 
 class Trees(Resource):
@@ -395,7 +382,7 @@ def load_tree(tree_id):
 def get_drawer(tree_id, args):
     "Return the drawer initialized as specified in the args"
     valid_keys = ['x', 'y', 'w', 'h', 'panel', 'zx', 'zy', 'drawer', 'min_size',
-                  'collapsed_ids', 'rmin', 'amin', 'amax']
+                  'layouts', 'collapsed_ids', 'rmin', 'amin', 'amax']
 
     try:
         assert all(k in valid_keys for k in args.keys()), 'invalid keys'
@@ -422,6 +409,11 @@ def get_drawer(tree_id, args):
         limits = (None if not drawer_name.startswith('Circ') else
             (get('rmin', 0), 0,
              get('amin', -180) * pi/180, get('amax', 180) * pi/180))
+
+        active_layouts = args.get('layouts')
+        if active_layouts != None:
+            print(active_layouts)
+            update_layouts(active_layouts)
 
         collapsed_ids = set(tuple(int(i) for i in node_id.split(','))
             for node_id in json.loads(args.get('collapsed_ids', '[]')))
@@ -648,6 +640,39 @@ def modify_tree_fields(tree_id):
         assert res.rowcount == 1, f'unknown tree'
     except (ValueError, AssertionError) as e:
         raise InvalidUsage(f'for tree id {tree_id}: {e}')
+
+
+# Layout related functions
+def get_layouts(layouts=[]):
+    # Get default layouts from their getters
+    default_layouts = [get_layout_outline(), get_layout_leaf_name(),
+            get_layout_branch_length(), get_layout_branch_support()]
+
+    # Get layouts from TreeStyle
+    ts_layouts = app.tree_style.layout_fn
+
+    layouts = list(set(default_layouts + ts_layouts + layouts))
+
+    all_layouts = { ly.__name__: {
+        'active': (ly.__name__ in [ly.__name__ for ly in app.tree_style.layout_fn]),
+        'fn': ly } for ly in layouts if ly.__name__ != '<lambda>' }
+
+    return all_layouts
+
+
+def update_layouts(active_layouts):
+    """ Update app layouts based on front end status """
+    for name, value in app.layouts.items():
+        status = value['active']
+        new_status = name in active_layouts
+        if status != new_status:
+            app.layouts[name]['active'] = new_status
+            app.trees = {}  # reinitialize trees in memory
+            # Update tree_style layout functions
+            if new_status == True:
+                app.tree_style.layout_fn = app.layouts[name]['fn']
+            elif new_status == False:
+                app.tree_style.del_layout_fn(name)  # remove layout_fn from ts
 
 
 # Database-access functions.
@@ -913,23 +938,6 @@ def get_random_string(length):
     letters = string.ascii_lowercase
     result_str = ''.join(random.choice(letters) for i in range(length))
     return result_str
-
-
-def get_layouts(layouts=[]):
-    # Get default layouts from their getters
-    default_layouts = [get_layout_outline(), get_layout_leaf_name(),
-            get_layout_branch_length(), get_layout_branch_support()]
-
-    # Get layouts from TreeStyle
-    ts_layouts = app.tree_style.layout_fn
-
-    layouts = list(set(default_layouts + ts_layouts + layouts))
-
-    all_layouts = { ly.__name__: {
-        'active': (ly.__name__ in [ly.__name__ for ly in app.tree_style.layout_fn]),
-        'fn': ly } for ly in layouts if ly.__name__ != '<lambda>' }
-
-    return all_layouts
 
 
 def run_smartview(newick=None, tree_name=None, tree_style=None, layouts=[]):

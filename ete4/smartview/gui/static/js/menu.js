@@ -1,8 +1,6 @@
 // Functions related to the top-right menus.
 
-import { view, on_tree_change, on_drawer_change,
-    on_layout_change, show_minimap 
-} from "./gui.js";
+import { view, on_tree_change, on_drawer_change, show_minimap } from "./gui.js";
 import { draw_minimap } from "./minimap.js";
 import { update } from "./draw.js";
 
@@ -125,7 +123,7 @@ function add_folder_layouts(menu) {
 
     Object.keys(view.layouts).sort().forEach(layout => {
         folder_layout.add(view.layouts, layout)
-            .onChange(() => on_layout_change(layout))
+            .onChange(() => update())
     });
 }
 

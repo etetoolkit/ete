@@ -29,15 +29,15 @@ async function draw_tree() {
     const [w, h] = [div_tree.offsetWidth / zx, div_tree.offsetHeight / zy];
 
     div_tree.style.cursor = "wait";
-
-    // Will be replaced by faces
-    const labels = JSON.stringify(Object.keys(view.labels).map(
-        t => [t, view.labels[t].nodetype, view.labels[t].position]));
+    
+    const layouts = JSON.stringify(Object.keys(view.layouts)
+            .filter(l => view.layouts[l] === true));
 
     const params_rect = {  // parameters we have to pass to the drawer
         "drawer": view.drawer.name, "min_size": view.min_size,
         "zx": zx, "zy": zy, "x": x, "y": y, "w": w, "h": h,
         "collapsed_ids": JSON.stringify(Object.keys(view.collapsed_ids)),
+        "layouts": layouts,
     };
 
     const params_circ = {  // parameters to the drawer, in circular mode

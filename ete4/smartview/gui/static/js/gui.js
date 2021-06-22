@@ -12,8 +12,7 @@ import { remove_tags } from "./tag.js";
 import { remove_collapsed } from "./collapse.js";
 import { label_expression, label_property } from "./label.js";
 
-export { view, menus, on_tree_change, on_drawer_change,
-         on_layout_change, show_minimap,
+export { view, menus, on_tree_change, on_drawer_change, show_minimap,
          tree_command, get_tid, on_box_click, on_box_wheel, coordinates,
          reset_view, show_help, sort };
 
@@ -260,19 +259,6 @@ async function on_drawer_change() {
 }
 
 
-// What happens when the user toggles a layout function
-async function on_layout_change(layout) {
-    const qs = "/layouts" + (layout ? `/${layout}` : "");;
-    const layouts = await api(qs);
-
-    // Update view layouts
-    if (view.layouts != layouts) {
-        view.layouts = layouts;
-        update();
-    }
-}
-
-
 // Save the available node properties in view.node_properties and the drop-down
 // list of the menu that allows to label based on properties.
 async function store_node_properties() {
@@ -327,7 +313,7 @@ async function set_query_string_values() {
         else if (param === "drawer")
             view.drawer.name = value;
         else if (param === "layouts")
-            view.layouts = {value};
+            value.split(",").forEach(ly => view.layouts[ly] = true);
         else
             unknown_params.push(param);
     }
@@ -451,7 +437,8 @@ function get_url_view(x, y, w, h) {
     const qs = new URLSearchParams({
         x: x, y: y, w: w, h: h,
         tree: view.tree, subtree: view.subtree, drawer: view.drawer.name,
-        layouts: view.layouts,
+        layouts: Object.keys(view.layouts)
+            .filter(l => view.layouts[l] === true),
     }).toString();
     return window.location.origin + window.location.pathname + "?" + qs;
 }
