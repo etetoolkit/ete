@@ -120,7 +120,7 @@ class Face(object):
             box = (x - (col + 1) * dx/n_col, y + bdy, width, height)
 
         elif pos == 'branch-right':  # right of node
-            avail_dx = dx_to_closest_child / n_col \
+            avail_dx = dx_to_closest_child / n_col\
                     if not (self.node.is_leaf() or self.node.is_collapsed)\
                     else None
             avail_dy = min([bdy, dy - bdy, bdy - bdy0, bdy1 - bdy]) * 2 / n_row
@@ -732,9 +732,6 @@ class SeqMotifFace(Face):
         x, y, _, dy = box
         zx, zy = drawer.zoom
 
-        r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
-        self.compute_fsize(self.poswidth / zx, dy, drawer)
-        
         self._box = Box(x, y, self.width / zx, dy)
         return self._box
 
@@ -746,7 +743,7 @@ class SeqMotifFace(Face):
         x0, y, _, dy = self._box
         zx, zy = drawer.zoom
         x = x0
-        prev_end = 0
+        prev_end = -1
         for (start, end, shape, posw, h, fg, bg, text, opacity) in self.regions:
             posw = posw * self.w_scale / zx
             w = posw * (end + 1 - start)
