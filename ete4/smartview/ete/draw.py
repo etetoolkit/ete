@@ -615,8 +615,6 @@ class DrawerRectFaces(DrawerRect):
                             dx_before, dy_before))
                     if drawn_face:
                         _, _, dx, dy = face.get_box()
-                        if not dx:
-                            print(drawn_face)
                         hz_padding = 2 * face.padding_x / zx
                         vt_padding = 2 * face.padding_y / zy
                         dx_max = max(dx_max, dx + hz_padding)
