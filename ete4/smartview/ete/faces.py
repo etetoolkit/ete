@@ -747,7 +747,6 @@ class SeqMotifFace(Face):
         for (start, end, shape, posw, h, fg, bg, text, opacity) in self.regions:
             posw = posw * self.w_scale / zx
             w = posw * (end + 1 - start)
-            h = min([h or dy * zy, dy * zy, self.height or dy * zy]) / zy
             style = { 'fill': bg, 'opacity': opacity }
 
             # Overlapping
@@ -757,6 +756,8 @@ class SeqMotifFace(Face):
             prev_end = end
 
             r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
+            default_h = dy * zy * r
+            h = min([h or default_h, self.height or default_h, default_h]) / zy
             box = Box(x, y + (dy - h / r) / 2, w, h / r)
 
             # Line

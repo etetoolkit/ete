@@ -981,8 +981,7 @@ def get_asec(element, zoom=(0, 0)):
         a = points[0][1]
         dr = points[2][0] - r
         da = points[2][0] - a
-        x, y = cartesian((r, a))
-        return  Box(x, y, dr, da)
+        return Box(r, a, dr , da)
     elif eid in ['line', 'arc']:
         (x1, y1), (x2, y2) = element[1], element[2]
         rect = Box(min(x1, x2), min(y1, y2), abs(x2 - x1), abs(y2 - y1))
