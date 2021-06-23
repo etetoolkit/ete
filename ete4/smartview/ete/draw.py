@@ -243,7 +243,6 @@ class Drawer:
             self.nodeboxes.append(box)
         else:
             self.flush_outline()
-            ndx -= collapsed_node.dist
 
         self.collapsed = []
         self.node_dxs[-1].append(ndx)
@@ -616,8 +615,6 @@ class DrawerRectFaces(DrawerRect):
                             dx_before, dy_before))
                     if drawn_face:
                         _, _, dx, dy = face.get_box()
-                        if not dx:
-                            print(drawn_face)
                         hz_padding = 2 * face.padding_x / zx
                         vt_padding = 2 * face.padding_y / zy
                         dx_max = max(dx_max, dx + hz_padding)
@@ -822,7 +819,7 @@ class DrawerAlignRectFaces(DrawerRectFaces):
             dx = collapsed_node.dist\
                     if not self.is_fully_collapsed(collapsed_node) else 0
             ndx = drawn_size(collapsed_graphics, self.get_box).dx
-            p1 = (x - dx + ndx, y + dy/2)
+            p1 = (x + ndx, y + dy/2)
             p2 = (self.viewport.x + self.viewport.dx, y + dy/2)
             style = { 'type': 1, # dotted
                       'width': 0.5,
@@ -982,8 +979,7 @@ def get_asec(element, zoom=(0, 0)):
         a = points[0][1]
         dr = points[2][0] - r
         da = points[2][0] - a
-        x, y = cartesian((r, a))
-        return  Box(x, y, dr, da)
+        return Box(r, a, dr , da)
     elif eid in ['line', 'arc']:
         (x1, y1), (x2, y2) = element[1], element[2]
         rect = Box(min(x1, x2), min(y1, y2), abs(x2 - x1), abs(y2 - y1))

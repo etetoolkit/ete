@@ -120,7 +120,7 @@ class Face(object):
             box = (x - (col + 1) * dx/n_col, y + bdy, width, height)
 
         elif pos == 'branch-right':  # right of node
-            avail_dx = dx_to_closest_child / n_col \
+            avail_dx = dx_to_closest_child / n_col\
                     if not (self.node.is_leaf() or self.node.is_collapsed)\
                     else None
             avail_dy = min([bdy, dy - bdy, bdy - bdy0, bdy1 - bdy]) * 2 / n_row
@@ -688,9 +688,19 @@ class SeqMotifFace(Face):
                             self.fgcolor, self.bgcolor, None])
                     pos += len(reg)
 
-        # TODO: overlapping motifs...
-        total_width = sum(w * (end + 1 - start) \
-                for start, end, _, w, *_ in self.regions)
+        # Compute total width and
+        # Detect overlapping, reducing opacity in overlapping elements
+        total_width = 0
+        prev_end = -1
+        for idx, (start, end, _, w, *_) in enumerate(self.regions):
+            overlapping = abs(min(start - 1 - prev_end, 0))
+            total_width += w * (end + 1 - start - overlapping)
+            prev_end = end
+            opacity = self.overlaping_motif_opacity if overlapping else 1
+            self.regions[idx].append(opacity)
+            if overlapping:
+                self.regions[idx - 1][-1] = opacity
+
         if self.width:
             self.w_scale = self.width / total_width
         else:
@@ -722,9 +732,6 @@ class SeqMotifFace(Face):
         x, y, _, dy = box
         zx, zy = drawer.zoom
 
-        r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
-        self.compute_fsize(self.poswidth / zx, dy, drawer)
-        
         self._box = Box(x, y, self.width / zx, dy)
         return self._box
 
@@ -736,15 +743,22 @@ class SeqMotifFace(Face):
         x0, y, _, dy = self._box
         zx, zy = drawer.zoom
         x = x0
-        prev_end = 0
-        for (start, end, shape, posw, h, fg, bg, text) in self.regions:
-            prev_end = end
+        prev_end = -1
+        for (start, end, shape, posw, h, fg, bg, text, opacity) in self.regions:
             posw = posw * self.w_scale / zx
             w = posw * (end + 1 - start)
-            h = min([h or dy * zy, dy * zy, self.height or dy * zy]) / zy
+            style = { 'fill': bg, 'opacity': opacity }
+
+            # Overlapping
+            overlapping = abs(min(start - 1 - prev_end, 0))
+            if overlapping:
+                x -= posw * overlapping
+            prev_end = end
+
             r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
+            default_h = dy * zy * r
+            h = min([h or default_h, self.height or default_h, default_h]) / zy
             box = Box(x, y + (dy - h / r) / 2, w, h / r)
-            style = { 'fill': bg }
 
             # Line
             if shape in ['line', '-']:
