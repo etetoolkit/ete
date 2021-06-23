@@ -688,9 +688,19 @@ class SeqMotifFace(Face):
                             self.fgcolor, self.bgcolor, None])
                     pos += len(reg)
 
-        # TODO: overlapping motifs...
-        total_width = sum(w * (end + 1 - start) \
-                for start, end, _, w, *_ in self.regions)
+        # Compute total width and
+        # Detect overlapping, reducing opacity in overlapping elements
+        total_width = 0
+        prev_end = -1
+        for idx, (start, end, _, w, *_) in enumerate(self.regions):
+            overlapping = abs(min(start - 1 - prev_end, 0))
+            total_width += w * (end + 1 - start - overlapping)
+            prev_end = end
+            opacity = self.overlaping_motif_opacity if overlapping else 1
+            self.regions[idx].append(opacity)
+            if overlapping:
+                self.regions[idx - 1][-1] = opacity
+
         if self.width:
             self.w_scale = self.width / total_width
         else:
@@ -737,14 +747,20 @@ class SeqMotifFace(Face):
         zx, zy = drawer.zoom
         x = x0
         prev_end = 0
-        for (start, end, shape, posw, h, fg, bg, text) in self.regions:
-            prev_end = end
+        for (start, end, shape, posw, h, fg, bg, text, opacity) in self.regions:
             posw = posw * self.w_scale / zx
             w = posw * (end + 1 - start)
             h = min([h or dy * zy, dy * zy, self.height or dy * zy]) / zy
+            style = { 'fill': bg, 'opacity': opacity }
+
+            # Overlapping
+            overlapping = abs(min(start - 1 - prev_end, 0))
+            if overlapping:
+                x -= posw * overlapping
+            prev_end = end
+
             r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
             box = Box(x, y + (dy - h / r) / 2, w, h / r)
-            style = { 'fill': bg }
 
             # Line
             if shape in ['line', '-']:

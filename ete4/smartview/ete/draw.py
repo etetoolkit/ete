@@ -243,7 +243,6 @@ class Drawer:
             self.nodeboxes.append(box)
         else:
             self.flush_outline()
-            ndx -= collapsed_node.dist
 
         self.collapsed = []
         self.node_dxs[-1].append(ndx)
@@ -822,7 +821,7 @@ class DrawerAlignRectFaces(DrawerRectFaces):
             dx = collapsed_node.dist\
                     if not self.is_fully_collapsed(collapsed_node) else 0
             ndx = drawn_size(collapsed_graphics, self.get_box).dx
-            p1 = (x - dx + ndx, y + dy/2)
+            p1 = (x + ndx, y + dy/2)
             p2 = (self.viewport.x + self.viewport.dx, y + dy/2)
             style = { 'type': 1, # dotted
                       'width': 0.5,

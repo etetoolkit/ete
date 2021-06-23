@@ -176,7 +176,7 @@ function create_item(item, tl, zoom) {
     if (item[0] === "nodebox") {
         const [ , box, name, properties, node_id, result_of, style] = item;
 
-        const b = create_box(box, tl, zx, zy, "",style);
+        const b = create_box(box, tl, zx, zy, "", style);
 
         b.id = "node-" + node_id.join("_");  // used in tags
 
@@ -694,8 +694,12 @@ function is_style_property(property) {
 
 // Style created items with information from backend
 function style_nodebox(nodebox, style){
-    if (style.fill && style.fill != "")
+    if (is_style_property(style.fill))
         nodebox.style.fill = style.fill;
+    
+    if (is_style_property(style.opacity))
+        nodebox.style.opacity = style.opacity;
+
     return nodebox;
 }
 
@@ -757,6 +761,9 @@ function style_text(text, style) {
 function style_polygon(polygon, style) {
     if (is_style_property(style.fill))
         polygon.style.fill = style.fill;
+
+    if (is_style_property(style.opacity))
+        polygon.style.opacity = style.opacity;
 
     return polygon
 }
