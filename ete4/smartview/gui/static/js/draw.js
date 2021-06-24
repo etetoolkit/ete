@@ -13,7 +13,7 @@ export { update, draw_tree, draw, get_class_name };
 
 // Update the view of all elements (gui, tree, minimap).
 function update() {
-    menus.main.updateDisplay();  // update the info box on the top-right
+    //menus.pane.refresh();  // update the info box on the top-right
 
     draw_tree();
 

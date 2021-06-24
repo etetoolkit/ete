@@ -59,8 +59,10 @@ function on_keydown(event) {
     else if (key === "m") {
         view.minimap.show = !view.minimap.show;
         show_minimap(view.minimap.show);
-        menus.main.updateDisplay();  // update the info box on the top-right
+        menus.minimap.refresh();
     }
+    else if (key === "c")
+        menus.pane.expanded = !menus.pane.expanded;
     else if (key === "+") {
         const center = {x: div_tree.offsetWidth / 2,
                         y: div_tree.offsetHeight / 2};

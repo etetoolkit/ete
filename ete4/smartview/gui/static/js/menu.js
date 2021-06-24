@@ -1,6 +1,6 @@
 // Functions related to the top-right menus.
 
-import { view, on_tree_change, on_drawer_change, show_minimap } from "./gui.js";
+import { view, menus, on_tree_change, on_drawer_change, show_minimap } from "./gui.js";
 import { draw_minimap } from "./minimap.js";
 import { update } from "./draw.js";
 
@@ -8,17 +8,21 @@ export { init_menus };
 
 
 // Init the menus on the top with all the options we can see and change.
-function init_menus(menus, trees, drawers) {
-    menus.main = create_menu_main(trees);
-    menus.representation = create_menu_representation(drawers);
-    menus.tags_searches = create_menu_tags_searches();
+function init_menus(trees, drawers) {
+    menus.pane = new Tweakpane.Pane()
+        .addFolder({ title: "Control panel" });
+    const tab = menus.pane.addTab({ pages: [
+        { title: "Tree view" },
+        { title: "Representation" },
+        { title: "Selection" },
+    ]});
+    menus.main = create_menu_main(tab.pages[0], trees);
+    menus.representation = create_menu_representation(tab.pages[1], drawers);
+    menus.tags_searches = create_menu_tags_searches(tab.pages[2]);
 }
 
 
-function create_menu_main(trees) {
-    const menu = new dat.GUI({autoPlace: false, closeOnTop: true});
-    div_menu_main.appendChild(menu.domElement);
-
+function create_menu_main(menu, trees) {
     add_folder_tree(menu, trees);
 
     add_folder_info(menu);
@@ -27,67 +31,47 @@ function create_menu_main(trees) {
 
     add_folder_minimap(menu);
 
-    menu.add(view, "smart_zoom").name("smart zoom");
-    menu.add(view, "share_view").name("share view");
-    menu.add(view, "show_help").name("help");
+    menu.addInput(view, "smart_zoom", { label: "smart zoom" });
+    menu.addButton({ title: "share view" }).on("click", view.share_view);
+    menu.addButton({ title: "Help" }).on("click", view.show_help);
 
     return menu;
 }
 
 
-function create_menu_representation(drawers) {
-    const menu = new dat.GUI({autoPlace: false, closeOnTop: true});
-    menu.close();
-    div_menu_representation.appendChild(menu.domElement);
+function create_menu_representation(menu, drawers) {
+    const options = drawers.reduce((opt, t) => ({ ...opt, [t]: t }), {});
+    menu.addInput(view.drawer, "name", { label: "drawer", options: options })
+        .on("change", on_drawer_change);
 
-    menu.add(view.drawer, "name", drawers).name("drawer").onChange(
-        on_drawer_change);
+    menu.addInput(view, "min_size", { label: "collapse", 
+        min: 1, max: 100, step: 1 }).on("change", update);
 
-    menu.add(view, "min_size", 1, 100).name("collapse at").onChange(
-        update);
-
-    const folder_circ = menu.addFolder("circular");
+    const folder_circ = menu.addFolder({ title: "Circular", expanded: false });
 
     function update_with_minimap() {
         draw_minimap();
         update();
     }
-    folder_circ.add(view, "rmin").name("radius min").onChange(
-        update_with_minimap);
-    folder_circ.add(view.angle, "min", -180, 180).name("angle min").onChange(
-        update_with_minimap);
-    folder_circ.add(view.angle, "max", -180, 180).name("angle max").onChange(
-        update_with_minimap);
+    folder_circ.addInput(view, "rmin", { label: "min radius",
+        format: v => v.toFixed(4) }).on("change", update_with_minimap);
+    folder_circ.addInput(view.angle, "min", { label: "min angle", 
+        min: -180, max: 180, step: 1 }).on("change", update_with_minimap);
+    folder_circ.addInput(view.angle, "max", { label: "max angle", 
+        min: -180, max: 180, step: 1 }).on("change", update_with_minimap);
+
+    //add_folder_style(menu);
 
     add_folder_layouts(menu);
-
-    add_folder_style(menu);
-
-    const folder_labels = menu.addFolder("labels");
-
-    const folder_add = folder_labels.addFolder("add");
-
-    const folder_properties = folder_add.addFolder("properties");
-
-    folder_properties.add(view, "current_property", view.node_properties).name("properties");
-    folder_properties.add(view, "label_property").name("add property");
-
-    const folder_expressions = folder_add.addFolder("expressions");
-
-    folder_expressions.add(view, "label_expression").name("add expression");
 
     return menu;
 }
 
 
-function create_menu_tags_searches() {
-    const menu = new dat.GUI({autoPlace: false, closeOnTop: true});
-    menu.close();
-    div_menu_tags_searches.appendChild(menu.domElement);
+function create_menu_tags_searches(menu) {
+    menu.addFolder({ title: "Collapsed" });  // filled dynamically
 
-    menu.addFolder("collapsed");  // filled dynamically
-
-    menu.addFolder("tags");  // filled dynamically with tag_node()
+    menu.addFolder({ title: "Tags" });  // filled dynamically with tag_node()
 
     add_folder_searches(menu);
 
@@ -96,75 +80,82 @@ function create_menu_tags_searches() {
 
 
 function add_folder_tree(menu, trees) {
-    const folder_tree = menu.addFolder("tree");
+    const folder_tree = menu.addFolder({ title: "Tree" });
 
-    folder_tree.add(view, "tree", trees).onChange(() => {
+    const options = trees.reduce((opt, t) => ({ ...opt, [t]: t }), {});
+    folder_tree.addInput(view, "tree", {options: options}).on("change", () => {
         view.subtree = "";
         on_tree_change();
     });
-    folder_tree.add(view, "subtree").onChange(on_tree_change);
+    folder_tree.addInput(view, "subtree").on("change", on_tree_change);
 
-    const folder_sort = folder_tree.addFolder("sort");
-    folder_sort.add(view.sorting, "sort");
-    folder_sort.add(view.sorting, "key");
-    folder_sort.add(view.sorting, "reverse");
+    const folder_sort = folder_tree.addFolder({ title: "Sort",
+                                                expanded: false });
+    folder_sort.addButton({ title: "sort" }).on("click", view.sorting.sort);
+    folder_sort.addInput(view.sorting, "key");
+    folder_sort.addInput(view.sorting, "reverse");
 
-    folder_tree.add(view, "upload");
+    folder_tree.addButton({ title: "upload" }).on("click", view.upload);
 
-    const folder_download = folder_tree.addFolder("download");
-    folder_download.add(view.download, "newick");
-    folder_download.add(view.download, "svg");
-    folder_download.add(view.download, "image");
+    const folder_download = folder_tree.addFolder({ title: "Download",
+                                                    expanded: false });
+    folder_download.addButton({ title: "newick" }).on("click", view.download.newick);
+    folder_download.addButton({ title: "svg" }).on("click", view.download.svg);
+    folder_download.addButton({ title: "image" }).on("click", view.download.image);
 }
 
 
 function add_folder_layouts(menu) {
-    const folder_layout = menu.addFolder("layouts");
+    const folder_layout = menu.addFolder({ title: "Layouts" });
 
-    Object.keys(view.layouts).sort().forEach(layout => {
-        folder_layout.add(view.layouts, layout)
-            .onChange(() => update())
-    });
+    Object.keys(view.layouts).sort().forEach(layout =>
+        folder_layout.addInput(view.layouts, layout).on("change", update));
 }
 
 
 function add_folder_searches(menu) {
-    const folder_searches = menu.addFolder("searches");
+    const folder_searches = menu.addFolder({ title: "Searches" });
 
-    folder_searches.add(view, "search").name("new search");
+    folder_searches.addButton({ title: "new search" }).on("click", view.search);
 }
 
 
 function add_folder_info(menu) {
-    const folder_info = menu.addFolder("info");
+    const folder_info = menu.addFolder({ title: "Info", expanded: false });
+    
+    const folder_nodes = folder_info.addFolder({ title: "Nodes", expanded: true });
+    folder_nodes.addMonitor(view, "nnodes", 
+        { label: "visible", format: v => v.toFixed(0) });
+    folder_nodes.addMonitor(view, "tnodes", 
+        { label: "total", view: "text" });
+    folder_nodes.addMonitor(view, "tleaves", 
+        { label: "leaves", format: v => v.toFixed(0) });
 
-    folder_info.add(view, "nnodes").name("visible nodes").listen();
-    folder_info.add(view, "tnodes").name("total nodes").listen();
-    folder_info.add(view, "tleaves").name("total leaves").listen();
-    folder_info.add(view.pos, "cx").step(0.001).listen();
-    folder_info.add(view.pos, "cy").step(0.001).listen();
-    folder_info.add(view, "show_tree_info").name("show details");
+    folder_info.addButton({ title: "show details" })
+        .on("click", view.show_tree_info);
 }
 
 
 function add_folder_view(menu) {
-    const folder_view = menu.addFolder("view");
+    const folder_view = menu.addFolder({ title: "View", expanded: false });
 
-    folder_view.add(view, "reset_view").name("reset view");
+    folder_view.addButton({ title: "reset view" }).on("click", view.reset_view)
+    const folder_tl = folder_view.addFolder({ title: "Top-left corner" });
+    folder_tl.addMonitor(view.tl, "x", { format: v => v.toFixed(3) });
+    folder_tl.addMonitor(view.tl, "y", { format: v => v.toFixed(3) });
 
-    const folder_tl = folder_view.addFolder("top-left");
-    folder_tl.add(view.tl, "x").step(0.001).onChange(update);
-    folder_tl.add(view.tl, "y").step(0.001).onChange(update);
+    const folder_zoom = folder_view.addFolder({ title: "Zoom" });
+    folder_zoom.addMonitor(view.zoom, "x", { format: v => v.toFixed(3) });
+    folder_zoom.addMonitor(view.zoom, "y", { format: v => v.toFixed(3) });
 
-    const folder_zoom = folder_view.addFolder("zoom");
-    folder_zoom.add(view.zoom, "x").step(0.001).onChange(update);
-    folder_zoom.add(view.zoom, "y").step(0.001).onChange(update);
+    const folder_aligned = folder_view.addFolder({ title: "Aligned panel",
+                                                   expanded: false });
+    folder_aligned.addInput(view, "align_bar", { label: "position", 
+                                                 min: 0, max: 100 })
+        .on("change", value => div_aligned.style.width = `${100 - value}%`);
 
-    const folder_aligned = folder_view.addFolder("align bar");
-    folder_aligned.add(view, "align_bar", 0, 100).name("position").onChange(
-        (value) => div_aligned.style.width = `${100 - value}%`);
-
-    folder_view.add(view, "select_text").name("select text").onChange(() => {
+    folder_view.addInput(view, "select_text", { label: "select text", position: 'left' })
+      .on("change", () => {
         style("font").userSelect = (view.select_text ? "text" : "none");
         div_tree.style.cursor = (view.select_text ? "text" : "auto");
         div_aligned.style.cursor = (view.select_text ? "text" : "ew-resize");
@@ -181,11 +172,12 @@ function set_boxes_clickable(clickable) {
 
 
 function add_folder_style(menu) {
-    const folder_style = menu.addFolder("style");
+    const folder_style = menu.addFolder({ title: "Style", expanded: false });
 
-    const folder_node = folder_style.addFolder("node");
+    const folder_node = folder_style.addFolder({ title: "Node", 
+                                                 expaded: false });
 
-    const folder_box = folder_node.addFolder("box");
+    const folder_box = folder_node.addFolder({ title: "Box", expanded: false });
 
     folder_box.add(view.node.box, "opacity", 0, 0.2).step(0.001).onChange(
         () => style("node").opacity = view.node.box.opacity);
@@ -305,23 +297,23 @@ function style(name) {
 
 
 function add_folder_minimap(menu) {
-    const folder_minimap = menu.addFolder("minimap");
+    const folder_minimap = menu.addFolder({ title: "Minimap", 
+                                            expanded: false });
 
-    folder_minimap.add(view.minimap, "width", 0, 100).onChange(() => {
-        if (view.drawer.type === "circ") {
+    folder_minimap.addInput(view.minimap, "width", { min: 1, max: 100 })
+      .on("change", () => {
+        if (view.drawer.type === "circ")
             view.minimap.height = view.minimap.width * div_tree.offsetWidth
                                                      / div_tree.offsetHeight;
-            menu.updateDisplay();
-        }
         draw_minimap();
     });
-    folder_minimap.add(view.minimap, "height", 0, 100).onChange(() => {
-        if (view.drawer.type === "circ") {
+    folder_minimap.addInput(view.minimap, "height", { min: 1, max: 100 })
+      .on("change", () => {
+        if (view.drawer.type === "circ")
             view.minimap.width = view.minimap.height * div_tree.offsetHeight
                                                      / div_tree.offsetWidth;
-            menu.updateDisplay();
-        }
         draw_minimap();
     });
-    folder_minimap.add(view.minimap, "show").onChange(show_minimap);
+    menus.minimap = folder_minimap.addInput(view.minimap, "show")
+        .on("change", () => show_minimap(view.minimap.show));
 }
