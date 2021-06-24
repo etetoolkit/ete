@@ -1,6 +1,6 @@
 // Functions related to updating (drawing) the view.
 
-import { view, menus, get_tid, on_box_click, on_box_wheel } from "./gui.js";
+import { view, get_tid, on_box_click, on_box_wheel } from "./gui.js";
 import { update_minimap_visible_rect } from "./minimap.js";
 import { colorize_searches, get_search_class } from "./search.js";
 import { on_box_contextmenu } from "./contextmenu.js";
@@ -13,8 +13,6 @@ export { update, draw_tree, draw, get_class_name };
 
 // Update the view of all elements (gui, tree, minimap).
 function update() {
-    //menus.pane.refresh();  // update the info box on the top-right
-
     draw_tree();
 
     if (view.minimap.show)
