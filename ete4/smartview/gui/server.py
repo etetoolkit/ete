@@ -43,6 +43,7 @@ from math import pi
 from functools import partial
 from datetime import datetime
 from contextlib import contextmanager
+from collections import defaultdict
 import gzip
 import json
 
@@ -57,6 +58,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from ete4 import Tree
 from ete4.smartview.ete.layouts import TreeStyle
+from ete4.treeview.main import _FaceAreas
 from ete4.parser.newick import NewickError
 from ete4.smartview.utils import InvalidUsage
 from ete4.smartview.ete import nexus, draw, gardening as gdn
@@ -64,8 +66,9 @@ from ete4.smartview.ete.layouts import get_layout_outline,\
         get_layout_leaf_name, get_layout_branch_length,\
         get_layout_branch_support
 
-
-db = None  # call initialize() to fill these up
+# call initialize() to fill these up
+app = None
+db = None
 serializer = None  # this one is used for the token auth
 
 
@@ -210,10 +213,10 @@ class Drawers(Resource):
 
 class Layouts(Resource):
     def get(self, name=None):
-        "Toggle layout (if provided) and return updated layouts"
         rule = request.url_rule.rule  # shortcut
         if rule == '/layouts':
-            return { name: ly['active'] for name, ly in app.layouts.items() }
+            active = [ l.__name__ for l in app.tree_style['default'].layout_fn ]
+            return { l.__name__: (l.__name__ in active) for l in app.layouts }
 
 
 class Trees(Resource):
@@ -264,6 +267,7 @@ class Trees(Resource):
     def put(self, tree_id):
         "Modify tree"
         rule = request.url_rule.rule  # shortcut
+        user = request.remote_addr  # ip
 
         if rule == '/trees/<string:tree_id>':
             modify_tree_fields(tree_id)
@@ -278,7 +282,7 @@ class Trees(Resource):
                 raise InvalidUsage('operation not allowed with subtree')
             node_id = request.json
             t = load_tree(tid)
-            app.trees[tid] = gdn.root_at(gdn.get_node(t, node_id))
+            app.trees[user][tid] = gdn.root_at(gdn.get_node(t, node_id))
             return {'message': 'ok'}
         elif rule == '/trees/<string:tree_id>/move':
             try:
@@ -308,7 +312,7 @@ class Trees(Resource):
             tid, subtree = get_tid(tree_id)
             if subtree:
                 raise InvalidUsage('operation not allowed with subtree')
-            del app.trees[tid]
+            del app.trees[user][tid]
             load_tree(tid)
             return {'message': 'ok'}
 
@@ -361,18 +365,27 @@ class Id(Resource):
 def load_tree(tree_id):
     "Add tree to app.trees and initialize it if not there, and return it"
     try:
+        user = request.remote_addr
         tid, subtree = get_tid(tree_id)
 
-        if tid in app.trees:
-            return gdn.get_node(app.trees[tid], subtree)
+        if tid in app.trees[user]:
+            tree = gdn.get_node(app.trees[user][tid], subtree)
+            # Reinitialize if layouts have to be reapplied
+            if tid in app.to_be_initialized[user]:
+                app.to_be_initialized[user].remove(tid)
+                for node in tree.traverse():
+                    node.is_initialized = False
+                    node.faces = _FaceAreas()
+                    node.collapsed_faces = _FaceAreas()
+            return tree
 
         newicks = dbget0('newick', 'trees WHERE id=?', tid)
         assert len(newicks) == 1
-
+        
         t = Tree(newicks[0])
         gdn.standardize(t)
 
-        app.trees[tid] = t
+        app.trees[user][tid] = t
 
         return gdn.get_node(t, subtree)
     except (AssertionError, IndexError):
@@ -417,10 +430,12 @@ def get_drawer(tree_id, args):
         collapsed_ids = set(tuple(int(i) for i in node_id.split(','))
             for node_id in json.loads(args.get('collapsed_ids', '[]')))
 
-        searches = app.searches.get(tree_id)
+        user = request.remote_addr
+        searches = app.searches[user].get(tree_id)
+        tree_style = app.tree_style[user]
 
         return drawer_class(load_tree(tree_id), viewport, panel, zoom,
-                    limits, collapsed_ids, searches, app.tree_style)
+                    limits, collapsed_ids, searches, tree_style)
     except StopIteration:
         raise InvalidUsage(f'not a valid drawer: {drawer_name}')
     except (ValueError, AssertionError) as e:
@@ -457,7 +472,8 @@ def store_search(tree_id, args):
                 parents.add(parent)
                 parent = parent.up
 
-        app.searches.setdefault(tree_id, {})[text] = (results, parents)
+        app.searches[request.remote_addr]\
+                .setdefault(tree_id, {})[text] = (results, parents)
 
         return len(results), len(parents)
     except InvalidUsage:
@@ -644,34 +660,37 @@ def modify_tree_fields(tree_id):
 # Layout related functions
 def get_layouts(layouts=[]):
     # Get default layouts from their getters
-    default_layouts = [get_layout_outline(), get_layout_leaf_name(),
-            get_layout_branch_length(), get_layout_branch_support()]
+    default_layouts = [ get_layout_outline(), get_layout_leaf_name(),
+            get_layout_branch_length(), get_layout_branch_support() ]
 
     # Get layouts from TreeStyle
-    ts_layouts = app.tree_style.layout_fn
+    ts_layouts = app.tree_style['default'].layout_fn
 
     layouts = list(set(default_layouts + ts_layouts + layouts))
 
-    all_layouts = { ly.__name__: {
-        'active': (ly.__name__ in [ly.__name__ for ly in app.tree_style.layout_fn]),
-        'fn': ly } for ly in layouts if ly.__name__ != '<lambda>' }
-
-    return all_layouts
+    return [ ly for ly in layouts if ly.__name__ != '<lambda>' ]
 
 
 def update_layouts(active_layouts):
     """ Update app layouts based on front end status """
-    for name, value in app.layouts.items():
-        status = value['active']
+    user = request.remote_addr  # identified by their IP address
+    tree_style = app.tree_style[user]  # specific to each user
+    ts_layouts = [ ly.__name__ for ly in tree_style.layout_fn ]
+    reinit_trees = False
+    for layout in app.layouts:
+        name = layout.__name__
+        status = name in ts_layouts
         new_status = name in active_layouts
         if status != new_status:
-            app.layouts[name]['active'] = new_status
-            app.trees = {}  # reinitialize trees in memory
+            reinit_trees = True
             # Update tree_style layout functions
             if new_status == True:
-                app.tree_style.layout_fn = app.layouts[name]['fn']
+                tree_style.layout_fn = layout
             elif new_status == False:
-                app.tree_style.del_layout_fn(name)  # remove layout_fn from ts
+                tree_style.del_layout_fn(name)  # remove layout_fn from ts
+
+    if reinit_trees:
+        app.to_be_initialized[user] = list(app.trees[user].keys())
 
 
 # Database-access functions.
@@ -767,7 +786,7 @@ def del_tree(tid):
     exe('DELETE FROM trees WHERE id=?', tid)
     exe('DELETE FROM user_owns_trees WHERE id_tree=?', tid)
     exe('DELETE FROM user_reads_trees WHERE id_tree=?', tid)
-    app.trees.pop(tid, None)
+    app.trees[request.remote_addr].pop(tid, None)
 
 
 def strip(d):
@@ -848,9 +867,11 @@ def initialize(tree=None):
     api = Api(app)
     add_resources(api)
 
-    app.trees = {}  # to keep in memory loaded trees
-    app.searches = {}  # to keep in memory the searches
-    app.tree_style = None
+    # These three dict contain info specific to each user (IP address)
+    app.trees = defaultdict(dict)  # to keep in memory loaded trees
+    app.to_be_initialized = defaultdict(list)  # list of trees to be reset
+    app.searches = defaultdict(dict)  # to keep in memory the searches
+    app.tree_style = defaultdict(TreeStyle)
 
     serializer = JSONSigSerializer(app.config['SECRET_KEY'], expires_in=3600)
 
@@ -947,7 +968,7 @@ def run_smartview(newick=None, tree_name=None, tree_style=None, layouts=[]):
     global app
     app = initialize(tree_name)
 
-    app.tree_style = tree_style or TreeStyle()
+    app.tree_style['default'] = tree_style or TreeStyle()
     app.layouts = get_layouts(layouts)
 
     # Create database if not already created

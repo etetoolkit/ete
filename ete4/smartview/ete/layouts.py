@@ -31,11 +31,13 @@ def get_layout_leaf_name(pos='branch-right', color='black',
 
 
 def get_layout_branch_length(pos='branch-top', 
+        formatter='%0.5s',
         color='#8d8d8d', 
         min_fsize=6, max_fsize=15,
         padding_x=2, padding_y=0):
 
     return get_layout_branch_attr(attr='dist',
+                formatter=formatter,
                 name='branch_length',
                 pos=pos,
                 color=color,
@@ -44,21 +46,25 @@ def get_layout_branch_length(pos='branch-top',
 
 
 def get_layout_branch_support(pos='branch-bottom', 
+                              formatter='%0.4s',
                               color='#fa8072', 
                               min_fsize=6, max_fsize=15,
                               padding_x=2,padding_y=0):
 
     return get_layout_branch_attr(attr='support',
+                formatter=formatter,
                 pos=pos,
                 color=color,
                 min_fsize=min_fsize, max_fsize=max_fsize,
                 padding_x=padding_x, padding_y=padding_y)
     
 
-def get_layout_branch_attr(attr, pos, name=None, color='black',
+def get_layout_branch_attr(attr, pos, name=None, 
+                           formatter=None, color='black',
                            min_fsize=6, max_fsize=15,
                            padding_x=0, padding_y=0):
     branch_attr_face = AttrFace(attr,
+            formatter=formatter,
             name=name or f'branch_{attr}',
             color=color,
             min_fsize=min_fsize, max_fsize=max_fsize,
@@ -95,6 +101,8 @@ class TreeStyle(object):
         self.show_leaf_name = True
         self.show_branch_length = False
         self.show_branch_support = False
+        self.default_layouts = ['outline', 'leaf_name', 
+                                'branch_length', 'branch_support']
         
     @property
     def layout_fn(self):
@@ -110,26 +118,33 @@ class TreeStyle(object):
             # Validates layout function (python function)
             # Consider `callable(ly)`
             if type(ly) == FunctionType or type(ly) == MethodType or ly is None:
-                self._layout_handler.append(ly)
+                name = ly.__name__
+                if name in self.default_layouts:
+                    self._update_layout_flags(name, True)
+                else:
+                    self._layout_handler.append(ly)
             else:
                 raise ValueError ("Required layout is not a function pointer nor a valid layout name.")
 
     def del_layout_fn(self, name):
         """ Deletes layout function given its __name__ """
         # Modify flags if name refers to defaults
-        if name in [ly.__name__ for ly in self._get_default_layout()]:
-            if name == 'outline':
-                self.show_outline = False
-            if name == 'leaf_name':
-                self.show_leaf_name = False
-            if name == 'branch_length':
-                self.show_branch_length = False
-            if name == 'branch_support':
-                self.show_branch_support = False
+        if name in self.default_layouts:
+            self._update_layout_flags(name, False)
         else:
             for layout in self.layout_fn:
                 if layout.__name__ == name:
                     self._layout_handler.remove(layout)
+
+    def _update_layout_flags(self, name, status):
+        if name == 'outline':
+            self.show_outline = status
+        if name == 'leaf_name':
+            self.show_leaf_name = status
+        if name == 'branch_length':
+            self.show_branch_length = status
+        if name == 'branch_support':
+            self.show_branch_support = status
 
     def _get_default_layout(self):
         layouts = []

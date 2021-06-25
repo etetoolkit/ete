@@ -133,9 +133,11 @@ const view = {
 };
 
 const menus = {  // will contain the menus on the top
-    main: undefined,
-    representation: undefined,
-    tags_searches: undefined,
+    pane: undefined, // main pane containing different tabs
+    tags: undefined,
+    searches: undefined,
+    collapsed: undefined,
+    minimap: undefined, // minimap toggler
 };
 
 const trees = {};  // will translate names to ids (trees[tree_name] = tree_id)
@@ -163,7 +165,6 @@ async function main() {
     update();
 
     const sample_trees = ["ncbi", "GTDB_bact_r95"];  // hardcoded for the moment
-    console.log(view.tree)
     view.allow_modifications = !sample_trees.includes(view.tree);
 }
 
@@ -217,7 +218,7 @@ async function tree_command(command, params=undefined) {
 
 // What happens when the user selects a new tree in the menu.
 async function on_tree_change() {
-    if (!menus.main)
+    if (!menus.pane)
         return;  // we haven't initialized yet!
 
     div_tree.style.cursor = "wait";
@@ -313,8 +314,11 @@ async function set_query_string_values() {
             view.zoom.y = div_tree.offsetHeight / Number(value);
         else if (param === "drawer")
             view.drawer.name = value;
-        else if (param === "layouts")
-            value.split(",").forEach(ly => view.layouts[ly] = true);
+        else if (param === "layouts") {
+            const active = value.split(",");
+            for (let l in view.layouts)
+                view.layouts[l] = active.includes(l);
+        }
         else
             unknown_params.push(param);
     }

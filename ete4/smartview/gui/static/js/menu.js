@@ -16,9 +16,9 @@ function init_menus(trees, drawers) {
         { title: "Representation" },
         { title: "Selection" },
     ]});
-    menus.main = create_menu_main(tab.pages[0], trees);
-    menus.representation = create_menu_representation(tab.pages[1], drawers);
-    menus.tags_searches = create_menu_tags_searches(tab.pages[2]);
+    create_menu_main(tab.pages[0], trees);
+    create_menu_representation(tab.pages[1], drawers);
+    create_menu_tags_searches(tab.pages[2]);
 }
 
 
@@ -34,8 +34,6 @@ function create_menu_main(menu, trees) {
     menu.addInput(view, "smart_zoom", { label: "smart zoom" });
     menu.addButton({ title: "share view" }).on("click", view.share_view);
     menu.addButton({ title: "Help" }).on("click", view.show_help);
-
-    return menu;
 }
 
 
@@ -63,19 +61,15 @@ function create_menu_representation(menu, drawers) {
     //add_folder_style(menu);
 
     add_folder_layouts(menu);
-
-    return menu;
 }
 
 
 function create_menu_tags_searches(menu) {
-    menu.addFolder({ title: "Collapsed" });  // filled dynamically
-
-    menu.addFolder({ title: "Tags" });  // filled dynamically with tag_node()
+    // filled dynamically in collapsed.js and tag.js
+    menus.collapsed = menu.addFolder({ title: "Collapsed" }); 
+    menus.tags = menu.addFolder({ title: "Tags" });
 
     add_folder_searches(menu);
-
-    return menu;
 }
 
 
@@ -114,9 +108,9 @@ function add_folder_layouts(menu) {
 
 
 function add_folder_searches(menu) {
-    const folder_searches = menu.addFolder({ title: "Searches" });
+    menus.searches = menu.addFolder({ title: "Searches" });
 
-    folder_searches.addButton({ title: "new search" }).on("click", view.search);
+    menus.searches.addButton({ title: "new search" }).on("click", view.search);
 }
 
 
