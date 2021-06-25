@@ -66,8 +66,9 @@ from ete4.smartview.ete.layouts import get_layout_outline,\
         get_layout_leaf_name, get_layout_branch_length,\
         get_layout_branch_support
 
-
-db = None  # call initialize() to fill these up
+# call initialize() to fill these up
+app = None
+db = None
 serializer = None  # this one is used for the token auth
 
 
