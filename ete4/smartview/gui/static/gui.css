@@ -173,3 +173,39 @@ kbd {  /* from https://developer.mozilla.org/en-US/docs/Web/HTML/Element/kbd */
     padding: 2px 4px;
     white-space: nowrap;
 }
+
+/* Tweakpane customization */
+/* Total width */
+.tp-dfwv {
+    width: 330px !important;
+}
+
+.tp-dfwv * {
+    font-size: 0.6rem;
+}
+
+/* Folder padding */
+.tp-fldv.tp-fldv-expanded > .tp-fldv_c, .tp-rotv.tp-rotv-expanded .tp-rotv_c {
+    padding-bottom: 8px !important;
+    padding-right: 2px !important;
+}
+
+.tp-fldv.tp-cntv.tp-fldv-cpl {
+    margin-bottom: 4px;
+}
+
+/* Tab */
+button.tp-tbiv_b {
+    cursor: pointer;
+}
+
+/* Checkbox */
+.tp-lblv_v {
+    width: auto !important;
+    border-radius: 4px;
+}
+
+:root {
+    --tp-input-background-color: black;
+    --tp-input-background-color-focus: black;
+}

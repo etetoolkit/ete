@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", main);
 
 
 // Global variables related to the current view on the tree.
-// Most will be shown on the top-right gui (using dat.gui).
+// Most will be shown on the top-right gui (using Tweakpane).
 const view = {
     // tree
     tree: null,  // string with the current tree name
@@ -151,11 +151,11 @@ async function main() {
     reset_node_count();
 
     const drawers = await api("/drawers");
-    init_menus(menus, Object.keys(trees), drawers);
+    init_menus(Object.keys(trees), drawers);
 
     init_events();
 
-    store_node_properties();
+    //store_node_properties();
 
     draw_minimap();
     show_minimap("visible");
@@ -163,6 +163,7 @@ async function main() {
     update();
 
     const sample_trees = ["ncbi", "GTDB_bact_r95"];  // hardcoded for the moment
+    console.log(view.tree)
     view.allow_modifications = !sample_trees.includes(view.tree);
 }
 
@@ -224,7 +225,7 @@ async function on_tree_change() {
     remove_collapsed();
     remove_tags();
     view.tree_size = await api(`/trees/${get_tid()}/size`);
-    store_node_properties();
+    //store_node_properties();
     reset_node_count();
     reset_zoom();
     reset_position();
@@ -531,6 +532,7 @@ Use the options in the menu at the top right to change the visualization.
 <tr><td><kbd>/</kbd></td><td style="text-align: left">&nbsp; search</td></tr>
 <tr><td><kbd>r</kbd></td><td style="text-align: left">&nbsp; reset view</td></tr>
 <tr><td><kbd>m</kbd></td><td style="text-align: left">&nbsp; toggle minimap</td></tr>
+<tr><td><kbd>c</kbd></td><td style="text-align: left">&nbsp; toggle control panel</td></tr>
 <tr><td><kbd>⬅️</kbd> <kbd>➡️</kbd> <kbd>⬆️</kbd> <kbd>⬇️</kbd></td>
     <td style="text-align: left">&nbsp; move the view</td></tr>
 <tr><td><kbd>+</kbd> <kbd>&ndash;</kbd></td>

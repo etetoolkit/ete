@@ -47,7 +47,6 @@ function drag_move(point) {
     if (dragging.element === div_aligned) {
         view.align_bar += 100 * movement.x / div_tree.offsetWidth;
         view.align_bar = Math.min(Math.max(view.align_bar, 1), 99);  // clip
-        menus.main.updateDisplay();  // update the info box on the top-right
         div_aligned.style.width = `${100 - view.align_bar}%`;
     }
     else if (dragging.element) {
@@ -67,8 +66,6 @@ function drag_move(point) {
 
         Array.from(div_tree.children[0].children).forEach(g =>
             g.setAttribute("transform", `translate(${dx} ${dy})`));
-
-        menus.main.updateDisplay();  // update the info box on the top-right
 
         if (view.minimap.show)
             update_minimap_visible_rect();
