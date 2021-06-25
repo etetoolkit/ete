@@ -16,7 +16,7 @@ function tag_node(node_id, name) {
         return true;
     }
 
-    const folder = menus.tags_searches.__folders.tags.addFolder(name);
+    const folder = menus.tags.addFolder({ title: name, expanded: false });
     const colors = ["#FF0", "#F0F", "#0FF", "#F00", "#0F0", "#00F"].reverse();
     const ntags = Object.keys(view.tags).length;
     view.tags[name] = {
@@ -30,15 +30,15 @@ function tag_node(node_id, name) {
         view.tags[name].color = view.node.box.color;
         colorize_tag(name);
         delete view.tags[name];
-        menus.tags_searches.__folders.tags.removeFolder(folder);
+        folder.dispose();
     }
 
-    folder.add(view.tags[name], "opacity", 0, 1).step(0.01).onChange(
-        () => colorize_tag(name));
-    folder.addColor(view.tags[name], "color").onChange(
-        () => colorize_tag(name));
+    folder.addInput(view.tags[name], "opacity", { min: 0, max: 1, step: 0.1 })
+        .on("change", () => colorize_tag(name));
+    folder.addInput(view.tags[name], "color", { view: "color" })
+        .on("change", () => colorize_tag(name));
 
-    folder.add(view.tags[name], "remove");
+    folder.addButton({ title: "remove" }).on("click", view.tags[name].remove);
 
     colorize_tag(name);
 

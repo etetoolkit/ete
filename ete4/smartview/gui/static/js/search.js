@@ -44,7 +44,8 @@ async function search() {
         const res = result.value;  // shortcut
 
         if (res.message === 'ok') {
-            const colors = ["#FF0", "#F0F", "#0FF", "#F00", "#0F0", "#00F"];
+            // purple, pink, yellow, blue, turquoise
+            const colors = ["#9b5de5", "#f15bb5", "#fee440", "#00bbf9", "#00f5d4"];
             const nsearches = Object.keys(view.searches).length;
 
             view.searches[search_text] = {
@@ -53,7 +54,7 @@ async function search() {
                           color: colors[nsearches % colors.length]},
                 parents: {n: res.nparents,
                           color: "#000",
-                          width: 5},
+                          width: 3},
             };
 
             add_search_to_menu(search_text);
@@ -81,29 +82,32 @@ function get_search_class(text, type="results") {
 // Add a folder to the menu that corresponds to the given search text
 // and lets you change the result nodes color and so on.
 function add_search_to_menu(text) {
-    const folder = menus.tags_searches.__folders.searches.addFolder(text);
+    const folder = menus.searches.addFolder({ title: text, expanded: false });
 
     const search = view.searches[text];
 
     search.remove = function() {
         delete view.searches[text];
-        menus.tags_searches.__folders.searches.removeFolder(folder);
+        folder.dispose();
         draw_tree();
     }
 
-    const folder_results = folder.addFolder(`results (${search.results.n})`);
-    folder_results.add(search.results, "opacity", 0, 1).step(0.01).onChange(
-        () => colorize_search(text));
-    folder_results.addColor(search.results, "color").onChange(
-        () => colorize_search(text));
+    const folder_results = folder.addFolder({ 
+        title: `results (${search.results.n})` });
+    folder_results.addInput(search.results, "opacity", 
+        { min: 0, max: 1, step: 0.1 })
+        .on("change", () => colorize_search(text));
+    folder_results.addInput(search.results, "color", { view: "color" })
+        .on("change", () => colorize_search(text));
 
-    const folder_parents = folder.addFolder(`parents (${search.parents.n})`);
-    folder_parents.addColor(search.parents, "color").onChange(
-        () => colorize_search(text));
-    folder_parents.add(search.parents, "width", 0.1, 20).onChange(
-        () => colorize_search(text));
+    const folder_parents = folder.addFolder({
+        title: `parents (${search.parents.n})` });
+    folder_parents.addInput(search.parents, "color", { view: "color" })
+        .on("change", () => colorize_search(text));
+    folder_parents.addInput(search.parents, "width", { min: 0.1, max: 10 })
+        .on("change", () => colorize_search(text));
 
-    folder.add(search, "remove");
+    folder.addButton({ title: "remove" }).on("click", search.remove);
 }
 
 

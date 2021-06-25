@@ -205,6 +205,11 @@ button.tp-tbiv_b {
     border-radius: 4px;
 }
 
+/* Color picker */
+.tp-colswv {
+    border-radius: 3px !important;
+}
+
 :root {
     --tp-input-background-color: black;
     --tp-input-background-color-focus: black;

@@ -15,23 +15,23 @@ function collapse_node(name, node_id) {
     const fname = `${get_next_number()} - ` +
         (name ? name.slice(0, 20) : "(unnamed)");
 
-    const folder = menus.tags_searches.__folders.collapsed.addFolder(fname);
+    const folder = menus.collapsed.addFolder({ title: fname });
 
     const collapsed_node = view.collapsed_ids[id];
 
     collapsed_node.remove = function() {
         delete view.collapsed_ids[id];
-        menus.tags_searches.__folders.collapsed.removeFolder(folder);
+        folder.dispose();
         draw_tree();
     }
 
-    folder.add(collapsed_node, "remove");
+    folder.addButton({ title: "remove" }).on("click", collapsed_node.remove)
 
     draw_tree();
 }
 
 function get_next_number() {
-    const names = Object.keys(menus.tags_searches.__folders.collapsed.__folders);
+    const names = menus.collapsed.children.map(c => c.title);
     const numbers = names.map(x => Number(x.split(" - ", 1)[0]));
     return Math.max(0, ...numbers) + 1;
 }
