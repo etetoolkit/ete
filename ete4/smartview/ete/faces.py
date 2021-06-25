@@ -252,6 +252,7 @@ class TextFace(Face):
 class AttrFace(TextFace):
 
     def __init__(self, attr, 
+            formatter=None,
             name=None,
             color="black", 
             min_fsize=6, max_fsize=15, 
@@ -266,6 +267,7 @@ class AttrFace(TextFace):
                 padding_x=padding_x, padding_y=padding_y)
 
         self._attr = attr
+        self.formatter = formatter
 
     def __name__(self):
         return "LabelFace"
@@ -276,8 +278,9 @@ class AttrFace(TextFace):
 
     def get_content(self):
         self._check_own_node()
-        self._content = str(getattr(self.node, self._attr, None)\
+        content = str(getattr(self.node, self._attr, None)\
                 or self.node.properties.get(self._attr))
+        self._content = self.formatter % content if self.formatter else content
         return self._content
 
 

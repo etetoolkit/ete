@@ -31,11 +31,13 @@ def get_layout_leaf_name(pos='branch-right', color='black',
 
 
 def get_layout_branch_length(pos='branch-top', 
+        formatter='%0.5s',
         color='#8d8d8d', 
         min_fsize=6, max_fsize=15,
         padding_x=2, padding_y=0):
 
     return get_layout_branch_attr(attr='dist',
+                formatter=formatter,
                 name='branch_length',
                 pos=pos,
                 color=color,
@@ -44,21 +46,25 @@ def get_layout_branch_length(pos='branch-top',
 
 
 def get_layout_branch_support(pos='branch-bottom', 
+                              formatter='%0.4s',
                               color='#fa8072', 
                               min_fsize=6, max_fsize=15,
                               padding_x=2,padding_y=0):
 
     return get_layout_branch_attr(attr='support',
+                formatter=formatter,
                 pos=pos,
                 color=color,
                 min_fsize=min_fsize, max_fsize=max_fsize,
                 padding_x=padding_x, padding_y=padding_y)
     
 
-def get_layout_branch_attr(attr, pos, name=None, color='black',
+def get_layout_branch_attr(attr, pos, name=None, 
+                           formatter=None, color='black',
                            min_fsize=6, max_fsize=15,
                            padding_x=0, padding_y=0):
     branch_attr_face = AttrFace(attr,
+            formatter=formatter,
             name=name or f'branch_{attr}',
             color=color,
             min_fsize=min_fsize, max_fsize=max_fsize,
