@@ -332,9 +332,10 @@ def content_repr(node, format=0, properties=[], quoted_names=False):
         elif not flexible:
             name_str = f'{NAME_FORMATTER}' % 'NoName'
 
-        # Name quotation or remove newick-illegal characters
+        # Quote name or remove newick-illegal characters
         if quoted_names:
-            name_str = quote(name_str)
+            # TO CONSIDER: use quote() instead of quoted_names argument
+            name_str = "'" + name_str + "'"
         else:
             name_str = sub(f'[{_ILLEGAL_NEWICK_CHARS}]', '_', name_str)
 
@@ -369,18 +370,19 @@ def quote(name, escaped_chars=" \t\r\n()[]':;,"):
 
 def write_newick(tree, format=0, properties=[], quoted_names=False):
     "Return newick representation from tree"
-    children_text = ','.join(write_newick(node, format, properties=properties)\
+    children_text = ','.join(write_newick(node, format, properties=properties,
+                                          quoted_names=quoted_names)\
                        .rstrip(';') for node in tree.children)
-    content_text = content_repr(tree, format, properties)
+    content_text = content_repr(tree, format, properties,
+                                quoted_names=quoted_names)
     return (f'({children_text})' if tree.children else '') + content_text + ';'
 
 
 def print_supported_formats():
     from ete4.smartview.ete.gardening import standardize
     t = Tree()
-    standardize(t)
     t.populate(4, "ABCDEFGHI")
     print(t)
     for f in NW_FORMAT:
         print(' '.join(["Format", str(f),"=", 
-            write_newick(t, properties=None, format=f)]))
+            write_newick(t, format=f, properties=None, quoted_names=False)]))
