@@ -38,6 +38,7 @@
 # #END_LICENSE#############################################################
 """ Jordi's newick parser """
 import os
+from re import sub
 
 from ete4 import Tree
 
@@ -57,6 +58,22 @@ FLOAT_FORMATTER = DEFAULT_FLOAT_FORMATTER
 DIST_FORMATTER = FLOAT_FORMATTER
 SUPPORT_FORMATTER = FLOAT_FORMATTER
 NAME_FORMATTER = DEFAULT_NAME_FORMATTER
+
+_ILLEGAL_NEWICK_CHARS = ":;(),\[\]\t\n\r="
+NW_FORMAT = {
+  #       leaf name                 leaf dist             internal support/name          internal dist
+  0: [['name', str, True],    ["dist", float, True],     ['support', float, True],   ["dist", float, True]],  # Flexible with support
+  1: [['name', str, True],    ["dist", float, True],     ['name', str, True],        ["dist", float, True]],  # Flexible with internal node names
+  2: [['name', str, False],   ["dist", float, False],    ['support', float, False],  ["dist", float, False]], # Strict with support values
+  3: [['name', str, False],   ["dist", float, False],    ['name', str, False],       ["dist", float, False]], # Strict with internal node names
+  4: [['name', str, False],   ["dist", float, False],    [None, None, False],        [None, None, False]],
+  5: [['name', str, False],   ["dist", float, False],    [None, None, False],        ["dist", float, False]],
+  6: [['name', str, False],   [None, None, False],       [None, None, False],        ["dist", float, False]],
+  7: [['name', str, False],   ["dist", float, False],    ["name", str, False],       [None, None, False]],    # all names
+  8: [['name', str, False],   [None, None, False],       ["name", str, False],       [None, None, False]],    # leaf names
+  9: [['name', str, False],   [None, None, False],       [None, None, False],        [None, None, False]],    # Only topology with node names
+  100: [[None, None, False],  [None, None, False],       [None, None, False],        [None, None, False]]     # Only Topology
+}
 
 
 def set_formatters(float_formatter=None, dist_formatter=None,
@@ -287,19 +304,54 @@ def get_properties(text):
         raise NewickError('invalid NHX format (%s) in text %r' % (e, text))
 
 
-def content_repr(node, properties=[]):
-    "Return content of a node as represented in newick format"
-    if node.name:
-        name_str = quote(f'{NAME_FORMATTER}' % node.name)
-        support_str = ''
+def content_repr(node, format=0, properties=[], quoted_names=False):
+    "Return content of a node as represented in specified newick format"
+    # Empty list includes all properties
+    properties = list(node.properties.keys())\
+            if properties == [] else (properties or [])
+
+    if node.is_leaf():
+        name = NW_FORMAT[format][0][0]
+        dist = NW_FORMAT[format][1][0]
+        name_type = NW_FORMAT[format][0][1]
+        dist_type = NW_FORMAT[format][1][1]
+        flexible = NW_FORMAT[format][0][2]
     else:
-        name_str = ''
-        support_str = f'{SUPPORT_FORMATTER}' % node.support
+        name = NW_FORMAT[format][2][0]
+        dist = NW_FORMAT[format][3][0]
+        name_type = NW_FORMAT[format][2][1]
+        dist_type = NW_FORMAT[format][3][1]
+        flexible = NW_FORMAT[format][2][2]
+
+    # NAME/SUPPORT FORMATTING
+    name_str = ''
+    support_str = ''
+    if name_type == str:
+        if node.name:
+            name_str = f'{NAME_FORMATTER}' % str(node.name)
+        elif not flexible:
+            name_str = f'{NAME_FORMATTER}' % 'NoName'
+
+        # Quote name or remove newick-illegal characters
+        if quoted_names:
+            # TO CONSIDER: use quote() instead of quoted_names argument
+            name_str = "'" + name_str + "'"
+        else:
+            name_str = sub(f'[{_ILLEGAL_NEWICK_CHARS}]', '_', name_str)
+
+    elif name_type == float:  # support value
+        support_str = f'{SUPPORT_FORMATTER}' % float(node.support)
+        # Do not write redundant information
         if 'support' in properties:
             properties.remove('support')
-        
-    dist_str = f':{DIST_FORMATTER}' % node.dist if node.dist >= 0 else ''
+    else:  # name_type == None
+        name_str = ''
 
+    # DIST FORMATTING
+    dist_str = f':{DIST_FORMATTER}' % float(node.dist) \
+            if (node.dist >= 0 and dist_type != None) else ''
+
+    # PROPERTIES FORMATTING
     pairs_str = ':'.join('%s=%s' % (k, node.properties.get(k)) 
                                     for k in properties
                                     if node.properties.get(k))
@@ -316,9 +368,21 @@ def quote(name, escaped_chars=" \t\r\n()[]':;,"):
         return name
 
 
-def write_newick(tree, properties=[]):
+def write_newick(tree, format=0, properties=[], quoted_names=False):
     "Return newick representation from tree"
-    children_text = ','.join(write_newick(node, properties=properties).rstrip(';')\
-            for node in tree.children)
-    content_text = content_repr(tree, properties)
+    children_text = ','.join(write_newick(node, format, properties=properties,
+                                          quoted_names=quoted_names)\
+                       .rstrip(';') for node in tree.children)
+    content_text = content_repr(tree, format, properties,
+                                quoted_names=quoted_names)
     return (f'({children_text})' if tree.children else '') + content_text + ';'
+
+
+def print_supported_formats():
+    from ete4.smartview.ete.gardening import standardize
+    t = Tree()
+    t.populate(4, "ABCDEFGHI")
+    print(t)
+    for f in NW_FORMAT:
+        print(' '.join(["Format", str(f),"=", 
+            write_newick(t, format=f, properties=None, quoted_names=False)]))
