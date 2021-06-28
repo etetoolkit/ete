@@ -38,6 +38,7 @@
 # #END_LICENSE#############################################################
 """ Jordi's newick parser """
 import os
+from re import sub
 
 from ete4 import Tree
 
@@ -58,6 +59,7 @@ DIST_FORMATTER = FLOAT_FORMATTER
 SUPPORT_FORMATTER = FLOAT_FORMATTER
 NAME_FORMATTER = DEFAULT_NAME_FORMATTER
 
+_ILLEGAL_NEWICK_CHARS = ":;(),\[\]\t\n\r="
 NW_FORMAT = {
   #       leaf name                 leaf dist             internal support/name          internal dist
   0: [['name', str, True],    ["dist", float, True],     ['support', float, True],   ["dist", float, True]],  # Flexible with support
@@ -302,7 +304,7 @@ def get_properties(text):
         raise NewickError('invalid NHX format (%s) in text %r' % (e, text))
 
 
-def content_repr(node, format=0, properties=[]):
+def content_repr(node, format=0, properties=[], quoted_names=False):
     "Return content of a node as represented in specified newick format"
     # Empty list includes all properties
     properties = list(node.properties.keys())\
@@ -326,9 +328,16 @@ def content_repr(node, format=0, properties=[]):
     support_str = ''
     if name_type == str:
         if node.name:
-            name_str = quote(f'{NAME_FORMATTER}' % str(node.name))
+            name_str = f'{NAME_FORMATTER}' % str(node.name)
         elif not flexible:
-            name_str = quote(f'{NAME_FORMATTER}' % 'No name')
+            name_str = f'{NAME_FORMATTER}' % 'NoName'
+
+        # Name quotation or remove newick-illegal characters
+        if quoted_names:
+            name_str = quote(name_str)
+        else:
+            name_str = sub(f'[{_ILLEGAL_NEWICK_CHARS}]', '_', name_str)
+
     elif name_type == float:  # support value
         support_str = f'{SUPPORT_FORMATTER}' % float(node.support)
         # Do not write redundant information
@@ -358,7 +367,7 @@ def quote(name, escaped_chars=" \t\r\n()[]':;,"):
         return name
 
 
-def write_newick(tree, format=0, properties=[]):
+def write_newick(tree, format=0, properties=[], quoted_names=False):
     "Return newick representation from tree"
     children_text = ','.join(write_newick(node, format, properties=properties)\
                        .rstrip(';') for node in tree.children)

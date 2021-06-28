@@ -928,7 +928,8 @@ cdef class TreeNode(object):
                        support_formatter=support_formatter,
                        name_formatter=name_formatter)
 
-        nw = write_newick(self, format=format, properties=properties)
+        nw = write_newick(self, format=format, properties=properties,
+                quoted_names=quoted_node_names)
 
         if outfile is not None:
             with open(outfile, "w") as OUT:
