@@ -92,6 +92,8 @@ class Drawer:
             yield from self.get_outline()
 
         if self.panel == 0:  # draw in preorder the boxes we found in postorder
+            max_dx = max(box[1].dx for box in self.nodeboxes)
+            self.tree_style.aligned_grid_dxs[-1] = max_dx
             yield from self.nodeboxes[::-1]  # (so they overlap nicely)
 
     def on_first_visit(self, point, it, graphics):
@@ -218,15 +220,15 @@ class Drawer:
         uncollapse = len(self.collapsed) == 1 and node0.is_leaf()
 
         x, y, _, _, _ = self.outline
+        collapsed_node = self.get_collapsed_node()
 
         if uncollapse:
             self.bdy_dys.append([])
             graphics += self.draw_content(node0, (x, y))
         else:
             self.bdy_dys[-1].append( (self.outline.dy / 2, self.outline.dy) )
-            graphics += self.draw_collapsed()
+            graphics += self.draw_collapsed(collapsed_node)
 
-        collapsed_node = self.get_collapsed_node()
         is_manually_collapsed = collapsed_node in self.collapsed
         is_small = self.is_small(make_box((x, y),
             self.node_size(collapsed_node)))
@@ -308,7 +310,7 @@ class Drawer:
         # bdy1: last child branch dy (height)
         yield from []  # only drawn if the node's content is visible
 
-    def draw_collapsed(self):
+    def draw_collapsed(self, collapsed_node):
         "Yield graphic elements to draw the list of nodes in self.collapsed"
         yield from []  # they are always drawn (only visible nodes can collapse)
         # Uses self.collapsed and self.outline to extract and place info.
@@ -654,10 +656,8 @@ class DrawerRectFaces(DrawerRect):
             for pos in FACE_POSITIONS:
                 yield from draw_faces_at_pos(node, pos)
 
-    def draw_collapsed(self):
+    def draw_collapsed(self, collapsed_node):
         x, y, dx_min, dx_max, dy = self.outline
-
-        collapsed_node = self.get_collapsed_node()
 
         if self.is_fully_collapsed(collapsed_node):
             bdx = 0
@@ -676,13 +676,9 @@ class DrawerCircFaces(DrawerCirc):
         size = self.content_size(node)
         # Space available for branch-right Face position
         dr_to_closest_child = min(child.dist for child in node.children)\
-                if not node.is_leaf() else node.dist
+                if not (node.is_leaf() or node.is_collapsed) else node.dist
         z = self.zoom[0]  # zx == zy
             
-        r_node = point[0]
-        if r_node == 0:
-            return
-
         def it_fits(box):
             r, a, dr, da = box
             return r > 0 \
@@ -710,7 +706,7 @@ class DrawerCircFaces(DrawerCirc):
             n_col = len(faces.keys())
 
             # Avoid drawing faces very close to center
-            if pos.startswith('branch-') and abs(r_node) < 1e-5:
+            if pos.startswith('branch-') and abs(point[0]) < 1e-5:
                 n_col += 1
                 dr_before = .7 * size[0] / n_col
             elif pos == 'aligned' and self.panel == 1:
@@ -729,7 +725,7 @@ class DrawerCircFaces(DrawerCirc):
                     if drawn_face:
                         r, a, dr, da = face.get_box()
                         hz_padding = 2 * face.padding_x / z
-                        vt_padding = 2 * face.padding_y / (z * r)
+                        vt_padding = 2 * face.padding_y / (z * (r or 1e-10))
                         dr_max = max(dr_max, dr + hz_padding)
                         da_before = da + vt_padding
                         yield from drawn_face
@@ -747,13 +743,6 @@ class DrawerCircFaces(DrawerCirc):
                         dr_before += dr_grid
                 else:
                     dr_before += dr_max
-
-            if pos == 'branch-right'\
-                    and (node.is_leaf() or node.is_collapsed):
-                dr_grid = self.tree_style.aligned_grid_dxs[-1]
-                dr_grid = max(dr_grid, r_node + dr_before)
-                self.tree_style.aligned_grid_dxs[-1] = dr_grid
-
 
         if not node.is_initialized:
             node.is_initialized = True
@@ -774,10 +763,8 @@ class DrawerCircFaces(DrawerCirc):
             for pos in FACE_POSITIONS:
                 yield from draw_faces_at_pos(node, pos)
 
-    def draw_collapsed(self):
+    def draw_collapsed(self, collapsed_node):
         r, a, dr_min, dr_max, da = self.outline
-
-        collapsed_node = self.get_collapsed_node()
 
         if self.is_fully_collapsed(collapsed_node):
             bdr = 0
@@ -807,12 +794,11 @@ class DrawerAlignRectFaces(DrawerRectFaces):
                       'color': 'gray' }
             yield draw_line(p1, p2, 'align-link', style=style)
 
-    def draw_collapsed(self):
-        collapsed_graphics = list(super().draw_collapsed())
+    def draw_collapsed(self, collapsed_node):
+        collapsed_graphics = list(super().draw_collapsed(collapsed_node))
         yield from collapsed_graphics
         if self.panel == 0 and self.viewport:
             x, y, dx_min, dx_max, dy = self.outline
-            collapsed_node = self.get_collapsed_node()
             dx = collapsed_node.dist\
                     if not self.is_fully_collapsed(collapsed_node) else 0
             ndx = drawn_size(collapsed_graphics, self.get_box).dx
