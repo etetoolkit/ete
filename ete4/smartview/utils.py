@@ -1,6 +1,4 @@
-
 import time
-from rich import print
 
 
 def timeit(method):
@@ -8,7 +6,7 @@ def timeit(method):
         ts = time.time()
         result = method(*args, **kw)
         te = time.time()
-        print('[yellow]Time[/yellow] [green] %r [/green] %0.6f s' % (method.__name__, (te - ts)))
+        print(f'Time {method.__name__}   {te-ts}0.6f s')
         return result
     return timed
 
