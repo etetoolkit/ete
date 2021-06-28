@@ -234,7 +234,7 @@ class Drawer:
         ndx = drawn_size(graphics, self.get_box).dx
 
         # Draw collapsed node nodebox when necessary
-        if is_manually_collapsed or is_small:
+        if is_manually_collapsed or is_small or collapsed_node.dist == 0:
             name, properties = collapsed_node.name, collapsed_node.properties
 
             box = draw_nodebox(self.flush_outline(ndx), name, 
@@ -265,14 +265,13 @@ class Drawer:
             return node0
         
         parent = node0.up
-        if all(node.up == parent for node in self.collapsed[1:]):
+        if all(node.up == parent for node in self.collapsed[1:]) and\
+           all(child in self.collapsed for child in parent.children):
             parent.is_collapsed = True
             return parent
 
-        print('\nNo collapsed node found\n')
-        return None
-
-        # Doubtful this code is necesssary
+        # No node inside the tree contains all the collapsed nodes
+        # Create a fictional node whose children are the collapsed nodes
         try:
             node = Tree()
         except:
@@ -280,10 +279,11 @@ class Drawer:
             node = Tree()
 
         node.is_collapsed = True
-        node.add_children(self.collapsed)
-        x, y, dx_min, dx_max, dy = self.outline
-        node.dist = dx_min
-        node.size = (0, dy)
+        node.is_initialized = False
+        node.children = self.collapsed  # add avoiding parent override
+        _, _, dx_min, _, dy = self.outline
+        node.dist = 0 
+        node.size = Size(0, dy)
 
         return node
 
@@ -776,9 +776,6 @@ class DrawerCircFaces(DrawerCirc):
 
     def draw_collapsed(self):
         r, a, dr_min, dr_max, da = self.outline
-        # Render issues in border nodes
-        # if not (-pi <= a <= pi and -pi <= a + da <= pi):
-            # return
 
         collapsed_node = self.get_collapsed_node()
 
