@@ -31,6 +31,13 @@ function create_menu_main(menu, trees) {
 
     add_folder_minimap(menu);
 
+    menu.addInput(view, "select_text", { label: "select text", position: 'left' })
+      .on("change", () => {
+        style("font").userSelect = (view.select_text ? "text" : "none");
+        div_tree.style.cursor = (view.select_text ? "text" : "auto");
+        div_aligned.style.cursor = (view.select_text ? "text" : "ew-resize");
+        set_boxes_clickable(!view.select_text);
+    });
     menu.addInput(view, "smart_zoom", { label: "smart zoom" });
     menu.addButton({ title: "share view" }).on("click", view.share_view);
     menu.addButton({ title: "Help" }).on("click", view.show_help);
@@ -147,20 +154,12 @@ function add_folder_view(menu) {
     folder_aligned.addInput(view, "align_bar", { label: "position", 
                                                  min: 0, max: 100 })
         .on("change", value => div_aligned.style.width = `${100 - value}%`);
-
-    folder_view.addInput(view, "select_text", { label: "select text", position: 'left' })
-      .on("change", () => {
-        style("font").userSelect = (view.select_text ? "text" : "none");
-        div_tree.style.cursor = (view.select_text ? "text" : "auto");
-        div_aligned.style.cursor = (view.select_text ? "text" : "ew-resize");
-        set_boxes_clickable(!view.select_text);
-    });
 }
 
 
 function set_boxes_clickable(clickable) {
     const value = clickable ? "auto" : "none";
-    Array.from(div_tree.getElementsByClassName("box")).forEach(
+    Array.from(div_tree.getElementsByClassName("fg_node")).forEach(
         e => e.style.pointerEvents = value);
 }
 

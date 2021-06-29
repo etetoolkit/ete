@@ -24,3 +24,6 @@ test_tmp/
 # Coverage files
 .coverage
 htmlcov/
+
+# MacOSX
+.DS_Store
