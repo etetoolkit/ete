@@ -316,6 +316,10 @@ cdef class TreeNode(object):
         """ Iterator over leaf nodes"""
         return self.iter_leaves()
 
+    def get(self, property, default=None):
+        """Return node property. Shortcut of node.properties.get()"""
+        return self.properties.get(property, default)
+
     def add_property(self, name, value):
         """ Add or update node's property """
         if name != None and value != None:
