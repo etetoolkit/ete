@@ -201,7 +201,7 @@ button.tp-tbiv_b {
 
 /* Checkbox */
 .tp-lblv_v {
-    width: auto !important;
+    /*width: auto !important;*/
     border-radius: 4px;
 }
 
