@@ -29,7 +29,7 @@ function download_svg() {
 
 // Download a file with the current view of the tree as a png.
 function download_image() {
-    // dom-to-image and FileSaver (saveAs) dependencies
+    // dom-to-image dependency
     domtoimage
         .toPng(div_viz, {
             filter: node =>
@@ -37,7 +37,7 @@ function download_image() {
             // (Background nodes not excluded as they are purposely styled)
             !(node.classList && [...node.classList].includes("fg_node"))
         })
-        .then(blob => window.saveAs(blob, view.tree + ".png"));
+        .then(content => download(view.tree + ".png", content));
 }
 
 
