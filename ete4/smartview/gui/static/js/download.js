@@ -29,9 +29,10 @@ function download_svg() {
 
 // Download a file with the current view of the tree as a png.
 function download_image() {
-    apply_css(svg, document.styleSheets[0]);
+    // dom-to-image and FileSaver (saveAs) dependencies
     domtoimage
-        .toPng(div_viz, { filter: node =>
+        .toPng(div_viz, {
+            filter: node =>
             // Remove foreground nodeboxes for faster rendering
             // (Background nodes not excluded as they are purposely styled)
             !(node.classList && [...node.classList].includes("fg_node"))
