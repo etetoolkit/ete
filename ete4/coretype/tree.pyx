@@ -326,12 +326,12 @@ cdef class TreeNode(object):
             self.properties[name] = value
 
     def add_properties(self, **properties):
-        """ Add or update several properties. """
+        """Add or update several properties."""
         for name, value in six.iteritems(properties):
             self.add_property(name, value)
 
     def del_property(self, name):
-        """ Permanently deletes a node's property. """
+        """Permanently deletes a node's property."""
         self.properties.pop(name, None)
 
     # DEPRECATED #
