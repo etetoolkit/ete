@@ -257,6 +257,7 @@ class Trees(Resource):
                     tleaves += 1
             return {'tnodes': tnodes, 'tleaves': tleaves}
 
+
     @auth.login_required
     def post(self):
         "Add tree(s)"

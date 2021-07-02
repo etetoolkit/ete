@@ -105,6 +105,10 @@ class Drawer:
             it.descend = False  # skip children
             return x, y + box_node.dy
 
+        if not it.node.img_style['draw_descendants']:
+            # Skip descendants => in collapsed_ids
+            self.collapsed_ids.add(it.node_id)
+
         is_manually_collapsed = it.node_id in self.collapsed_ids
 
         if is_manually_collapsed and self.outline:
