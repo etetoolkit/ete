@@ -99,17 +99,18 @@ class Face(object):
         x, y = point
         dx, dy = size
         zx, zy = drawer.zoom
-        r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
 
         if pos == 'branch-top':  # above the branch
             avail_dx = dx / n_col
             avail_dy = bdy / n_row
-            xy = (x + dx_before, y + bdy - avail_dy - dy_before)
+            x = x + dx_before
+            y = y + bdy - avail_dy - dy_before
 
         elif pos == 'branch-bottom':  # below the branch
             avail_dx = dx / n_col
             avail_dy = (dy - bdy) / n_row
-            xy = (x + dx_before, y + bdy + dy_before)
+            x = x + dx_before
+            y = y + bdy + dy_before
 
         elif pos == 'branch-top-left':  # left of branch-top
             width, height = get_dimensions(dx / n_col, bdy)
@@ -124,25 +125,26 @@ class Face(object):
                     if not (self.node.is_leaf() or self.node.is_collapsed)\
                     else None
             avail_dy = min([bdy, dy - bdy, bdy - bdy0, bdy1 - bdy]) * 2 / n_row
-            xy = (x + bdx + dx_before,
-                  y + bdy + (row - n_row / 2) * avail_dy)
+            x = x + bdx + dx_before
+            y = y + bdy + (row - n_row / 2) * avail_dy
 
         elif pos == 'aligned': # right of tree
             avail_dx = None # should be overriden
             avail_dy = dy / n_row
             aligned_x = drawer.node_size(drawer.tree)[0]\
                     if drawer.panel == 0 else drawer.xmin
-            xy = (aligned_x + dx_before,
-                  y + bdy + (row - n_row / 2) * avail_dy)
+            x = aligned_x + dx_before
+            y = y + bdy + (row - n_row / 2) * avail_dy
         else:
             raise InvalidUsage(f'unkown position {pos}')
 
+        r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
         padding_x = self.padding_x / zx
         padding_y = self.padding_y / (zy * r)
 
         self._box = Box(
-            xy[0] + padding_x,
-            xy[1] + padding_y,
+            x + padding_x,
+            y + padding_y,
             # avail_dx may not be initialized for branch-right and aligned
             max(avail_dx - 2 * padding_x, 0) if avail_dx else None,
             max(avail_dy - 2 * padding_y, 0))
@@ -477,7 +479,7 @@ class OutlineFace(Face):
             n_row, n_col,
             dx_before, dy_before):
 
-        self.outline = drawer.outline
+        self.outline = drawer.outline or Box(0, 0, 0, 0)
 
         if drawer.TYPE == 'circ':
             r, a, dr_min, dr_max, da = self.outline
