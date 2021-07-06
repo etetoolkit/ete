@@ -518,7 +518,7 @@ def draw_rect_leaf_name(drawer, node, point):
     dx_fit = dx_fitting_texts([node.name], dy, drawer.zoom)
     box = Box(x_text, y, dx_fit, dy)
 
-    yield draw_text(box, (0, 0.5), node.name, 'name',
+    yield draw_text(box, node.name, 'name',
             style={ 'fill': node.img_style.get('fgcolor') })
 
 
@@ -534,7 +534,7 @@ def draw_circ_leaf_name(drawer, node, point):
         r_text = (r + dr) if drawer.panel == 0 else drawer.xmin
         dr_fit = dx_fitting_texts([node.name], (r + dr) * da, drawer.zoom)
         box = Box(r_text, a, dr_fit, da)
-        yield draw_text(box, (0, 0.5), node.name, 'name',
+        yield draw_text(box, node.name, 'name',
                 style={ 'fill': node.img_style.get('fgcolor') })
 
 
@@ -613,6 +613,12 @@ class DrawerRectFaces(DrawerRect):
 
             dx_before = 0
             for col, face_list in sorted(faces.items()):
+                dx_before = self.tree_style.aligned_grid_dxs[col-1]\
+                        if pos == 'aligned'\
+                            and self.tree_style.aligned_grid\
+                            and self.NPANELS > 1\
+                            and col > 0\
+                        else dx_before
                 dx_max = 0
                 dy_before = 0
                 n_row = len(face_list)
@@ -721,6 +727,12 @@ class DrawerCircFaces(DrawerCirc):
                 dr_before = 0
 
             for col, face_list in sorted(faces.items()):
+                # dr_before = self.tree_style.aligned_grid_dxs[col-1]\
+                        # if pos == 'aligned'\
+                            # and self.tree_style.aligned_grid\
+                            # and self.NPANELS > 1\
+                            # and col > 0\
+                        # else dr_before
                 dr_max = 0
                 da_before = 0
                 n_row = len(face_list)
@@ -884,8 +896,8 @@ def draw_triangle(box, tip, triangle_type='', style=None):
     """
     return ['triangle', box, tip, triangle_type, style or {}]
 
-def draw_text(box, text, text_type='', style=None):
-    return ['text', box, text, text_type, style or {}]
+def draw_text(box, text, text_type='', rotation=0, style=None):
+    return ['text', box, text, text_type, rotation, style or {}]
 
 def draw_rect(box, rect_type, style=None):
     return ['rect', box, rect_type, style or {}]

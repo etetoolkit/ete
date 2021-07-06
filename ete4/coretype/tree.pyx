@@ -2126,47 +2126,14 @@ cdef class TreeNode(object):
         .. versionadded: 2.1
 
         Converts a tree into ultrametric topology (all leaves must have
-        the same distance to root). Note that, for visual inspection
-        of ultrametric trees, node.img_style["size"] should be set to
-        0.
+        the same distance to root).
         """
 
-        # Could something like this replace the old algorithm?
-        #most_distant_leaf, tree_length = self.get_farthest_leaf()
-        #for leaf in self:
-        #    d = leaf.get_distance(self)
-        #    leaf.dist += (tree_length - d)
-        #return
-
-
-
-        # pre-calculate how many splits remain under each node
-        node2max_depth = {}
-        for node in self.traverse("postorder"):
-            if not node.is_leaf():
-                max_depth = max([node2max_depth[c] for c in node.children]) + 1
-                node2max_depth[node] = max_depth
-            else:
-                node2max_depth[node] = 1
-        node2dist = {self: 0.0}
-        if not tree_length:
-            most_distant_leaf, tree_length = self.get_farthest_leaf()
-        else:
-            tree_length = float(tree_length)
-
-
-        step = tree_length / node2max_depth[self]
-        for node in self.iter_descendants("levelorder"):
-            if strategy == "balanced":
-                node.dist = (tree_length - node2dist[node.up]) / node2max_depth[node]
-                node2dist[node] =  node.dist + node2dist[node.up]
-            elif strategy == "fixed":
-                if not node.is_leaf():
-                    node.dist = step
-                else:
-                    node.dist = tree_length - ((node2dist[node.up]) * step)
-                node2dist[node] = node2dist[node.up] + 1
-            node.dist = node.dist
+        most_distant_leaf, tree_length = self.get_farthest_leaf()
+        for leaf in self:
+           d = leaf.get_distance(self)
+           leaf.dist += (tree_length - d)
+        return
 
     def check_monophyly(self, values, target_attr, ignore_missing=False,
                         unrooted=False):

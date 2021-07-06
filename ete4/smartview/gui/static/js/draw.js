@@ -266,9 +266,9 @@ function create_item(item, tl, zoom) {
         return triangle;
     }
     else if (item[0] === "text") {
-        const [ , box, txt, type, style] = item;
+        const [ , box, txt, type, rotation, style] = item;
 
-        const text =  create_text(box, txt, style.max_fsize,
+        const text = create_text(box, rotation, txt, style.max_fsize,
             tl, zx, zy, get_class_name(type));
 
         style_text(text, style);
@@ -581,16 +581,23 @@ function create_triangle(box, tip, tl, zx, zy, type="") {
 }
 
 
-function create_text(box, text, fs, tl, zx, zy, type="") {
+function create_text(box, rotation, text, fs, tl, zx, zy, type="") {
     const [x, y] = view.drawer.type === "rect" ?
         get_text_placement_rect(box, text, fs, tl, zx, zy) :
         get_text_placement_circ(box, text, fs, tl, zx);
 
-    const t = create_svg_element("text", {
+    const element = {
         "class": "text " + type,
         "x": x, "y": y,
         "font-size": `${fs}px`,
-    });
+    }
+    let t;
+    if (rotation) {
+        element.y = y - fs
+        t = create_svg_element("text", element);
+        addRotation(t, rotation, x, y - fs)
+    } else
+        t = create_svg_element("text", element);
 
     t.appendChild(document.createTextNode(text));
 
@@ -751,6 +758,13 @@ function style_text(text, style) {
 
     if (is_style_property(style.text_anchor))
         text.style["text-anchor"] = style.text_anchor;
+
+    if (is_style_property(style.linked_path)) {
+        const textPath = create_svg_element("textPath", {
+            "xlink:href": style.linked_path,
+        })
+        text.appendChild(textPath);
+    }
 
     return text;
 }

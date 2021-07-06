@@ -1,6 +1,8 @@
 // Functions related to the top-right menus.
 
-import { view, menus, on_tree_change, on_drawer_change, show_minimap } from "./gui.js";
+import { api } from "./api.js";
+import { view, menus, on_tree_change,
+         on_drawer_change, show_minimap, get_tid } from "./gui.js";
 import { draw_minimap } from "./minimap.js";
 import { update } from "./draw.js";
 
@@ -51,6 +53,12 @@ function create_menu_representation(menu, drawers) {
 
     menu.addInput(view, "min_size", { label: "collapse", 
         min: 1, max: 100, step: 1 }).on("change", update);
+
+    menu.addInput(view, "ultrametric", { label: "ultrametric" }).on("change", 
+        async () => {
+            await api(`/trees/${get_tid()}/ultrametric`);
+            update();
+    })
 
     const folder_circ = menu.addFolder({ title: "Circular", expanded: false });
 

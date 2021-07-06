@@ -134,7 +134,7 @@ class Face(object):
             aligned_x = drawer.node_size(drawer.tree)[0]\
                     if drawer.panel == 0 else drawer.xmin
             x = aligned_x + dx_before
-            y = y + bdy + (row - n_row / 2) * avail_dy
+            y = y + dy / 2 + (row - n_row / 2) * avail_dy
         else:
             raise InvalidUsage(f'unkown position {pos}')
 
@@ -173,7 +173,7 @@ class Face(object):
 class TextFace(Face):
 
     def __init__(self, text, name='', color='black',
-            min_fsize=6, max_fsize=15, ftype="sans-serif",
+            min_fsize=6, max_fsize=15, ftype='sans-serif',
             padding_x=0, padding_y=0):
 
         Face.__init__(self, name=name,
@@ -248,7 +248,7 @@ class TextFace(Face):
                 'ftype': f'{self.ftype}, sans-serif', # default sans-serif
                 }
         yield draw_text(self._box, 
-                self._content, self.name, style)
+                self._content, self.name, style=style)
 
 
 class AttrFace(TextFace):
@@ -363,7 +363,10 @@ class CircleFace(Face):
 
 
 class RectFace(Face):
-    def __init__(self, width, height, color="black",
+    def __init__(self, width, height, color='gray',
+            text=None, fgcolor='black', # text color
+            min_fsize=6, max_fsize=15,
+            ftype='sans-serif',
             padding_x=0, padding_y=0):
 
         Face.__init__(self, padding_x=padding_x, padding_y=padding_y)
@@ -371,6 +374,13 @@ class RectFace(Face):
         self.width = width
         self.height = height
         self.color = color
+        # Text related
+        self.text = text
+        self.rotate_text = True
+        self.fgcolor = fgcolor
+        self.ftype = ftype
+        self.min_fsize = min_fsize
+        self.max_fsize = max_fsize
 
     def __name__(self):
         return "RectFace"
@@ -447,9 +457,38 @@ class RectFace(Face):
 
     def draw(self, drawer):
         self._check_own_variables()
+
         yield draw_rect(self._box,
                 self.name,
                 style={'fill': self.color})
+
+        if self.text:
+            x, y, dx, dy = self._box
+            zx, zy = drawer.zoom
+            r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
+            if self.rotate_text:
+                rotation = 90
+                self.compute_fsize(dy * zy / (len(self.text) * zx),
+                                   dx * zx / zy, drawer)
+
+                text_box = Box(x + (dx - self._fsize / zx) / 2,
+                        y + dy / 2,
+                        dx, dy)
+            else:
+                rotation = 0
+                self.compute_fsize(dx, dy, drawer)
+                text_box = Box(x + dx / 2,
+                        y + (dy - self._fsize / (zy * r)) / 2,
+                        dx, dy)
+            text_style = {
+                'max_fsize': self._fsize,
+                'text_anchor': 'middle',
+                'ftype': f'{self.ftype}, sans-serif', # default sans-serif
+                }
+            yield draw_text(text_box,
+                    self.text,
+                    rotation=rotation,
+                    style=text_style)
 
 
 class OutlineFace(Face):
@@ -570,7 +609,6 @@ class SeqFace(Face):
         dx = self.poswidth * len(self.seq) / zx
 
         if self.draw_text:
-            r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
             self.compute_fsize(self.poswidth / zx, dy, drawer)
 
         self._box = Box(x, y, dx, dy)
