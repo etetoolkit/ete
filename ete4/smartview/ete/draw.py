@@ -596,7 +596,8 @@ class DrawerRectFaces(DrawerRect):
                             bdx, bdy, bdy0, bdy1,
                             pos, row, n_row, n_col,
                             dx_before, dy_before)
-                if it_fits(box) and face.fits():
+                if it_fits(box) and face.fits()\
+                        or face.__name__() == "OutlineFace":
                     yield from face.draw(self)
 
         def draw_faces_at_pos(node, pos):
@@ -701,7 +702,8 @@ class DrawerCircFaces(DrawerCirc):
                         bdr, bda, bda0, bda1,
                         pos, row, n_row, n_col,
                         dr_before, da_before)
-                if it_fits(box) and face.fits():
+                if it_fits(box) and face.fits()\
+                        or face.__name__() == "OutlineFace":
                     yield from face.draw(self)
 
         def draw_faces_at_pos(node, pos):
@@ -807,8 +809,8 @@ class DrawerAlignRectFaces(DrawerRectFaces):
             p1 = (x + dx + ndx, y + dy/2)
             p2 = (self.viewport.x + self.viewport.dx, y + dy/2)
             style = { 'type': 1, # dotted
-                      'width': 0.5,
-                      'color': 'gray' }
+                      'stroke-width': 0.5,
+                      'stroke': 'gray' }
             yield draw_line(p1, p2, 'align-link', style=style)
 
     def draw_collapsed(self):
@@ -823,8 +825,8 @@ class DrawerAlignRectFaces(DrawerRectFaces):
             p1 = (x + ndx, y + dy/2)
             p2 = (self.viewport.x + self.viewport.dx, y + dy/2)
             style = { 'type': 1, # dotted
-                      'width': 0.5,
-                      'color': 'gray'}
+                      'stroke-width': 0.5,
+                      'stroke': 'gray'}
             yield draw_line(p1, p2, 'align-link', style=style)
 
 

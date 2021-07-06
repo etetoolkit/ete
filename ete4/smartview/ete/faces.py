@@ -72,7 +72,7 @@ class Face(object):
         self.padding_y = padding_y
 
     def __name__(self):
-        return "face"
+        return "Face"
 
     def get_content(self):
         return self._content
@@ -270,7 +270,7 @@ class AttrFace(TextFace):
         self.formatter = formatter
 
     def __name__(self):
-        return "LabelFace"
+        return "AttrFace"
 
     def _check_own_node(self):
         if not self.node:
@@ -370,6 +370,9 @@ class RectFace(Face):
         self.height = height
         self.color = color
 
+    def __name__(self):
+        return "RectFace"
+
     def compute_bounding_box(self, 
             drawer,
             point, size,
@@ -461,6 +464,9 @@ class OutlineFace(Face):
         self.stroke_width = stroke_width
         self.outline = None
 
+    def __name__(self):
+        return "OutlineFace"
+
     def compute_bounding_box(self,
             drawer,
             point, size,
@@ -483,9 +489,6 @@ class OutlineFace(Face):
     def get_box(self):
         if not self.outline:
             return Box(0, 0, 0, 0)
-            # raise Exception(f'**Outline** has not been computed yet.\
-                    # \nPlease run `compute_bounding_box()` first')
-
         x, y, dx_min, dx_max, dy = self.outline
         return Box(x, y, dx_max, dy)
 
@@ -499,7 +502,20 @@ class OutlineFace(Face):
                 'fill': self.color,
                 'fill-opacity': self.opacity,
                 }
-        yield draw_outline(self.outline, style)
+        x, y, dx_min, dx_max, dy = self.outline
+        zx, zy = drawer.zoom
+        circ_drawer = drawer.TYPE == 'circ'
+        r = (x or 1e-10) if circ_drawer else 1
+        if dy * zy * r < 5:
+            # Convert to line if height less than one pixel
+            p1 = (x, y + dy / 2)
+            p2 = (x + dx_max, y + dy / 2)
+            if circ_drawer:
+                p1 = cartesian(p1)
+                p2 = cartesian(p2)
+            yield draw_line(p1, p2, style=style)
+        else:
+            yield draw_outline(self.outline, style)
 
 
 class SeqFace(Face):
@@ -519,6 +535,9 @@ class SeqFace(Face):
         self.ftype = ftype
         self.max_fsize = max_fsize
         self._fsize = None
+
+    def __name__(self):
+        return "SeqFace"
 
     def compute_bounding_box(self,
             drawer,
@@ -628,6 +647,9 @@ class SeqMotifFace(Face):
 
         self.regions = []
         self.build_regions()
+
+    def __name__(self):
+        return "SeqMotifFace"
 
     def build_regions(self):
         """Build and sort sequence regions: seq representation and motifs"""

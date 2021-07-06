@@ -708,11 +708,11 @@ function style_line(line, style) {
             ? null : style.type == "dotted"
             ? 2 : 5;
 
-    if (is_style_property(style.width))
-        line.style["stroke-width"] = style.width;
+    if (is_style_property(style["stroke-width"]))
+        line.style["stroke-width"] = style["stroke-width"];
 
-    if (is_style_property(style.color))
-        line.style.stroke = style.color;
+    if (is_style_property(style.stroke))
+        line.style.stroke = style.stroke;
 
     return line;
 }
