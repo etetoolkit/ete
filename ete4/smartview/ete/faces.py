@@ -1,7 +1,7 @@
 import re
 from math import pi
 
-from ete4.smartview.utils import InvalidUsage
+from ete4.smartview.utils import InvalidUsage, get_random_string
 from ete4.smartview.ete.draw import Box, SBox,\
                                     draw_text, draw_rect,\
                                     draw_circle, draw_ellipse,\
@@ -458,17 +458,23 @@ class RectFace(Face):
     def draw(self, drawer):
         self._check_own_variables()
 
+        circ_drawer = drawer.TYPE == 'circ'
+        style = {'fill': self.color}
+        if self.text and circ_drawer:
+            rect_id = get_random_string(10)
+            style['id'] = rect_id
+
         yield draw_rect(self._box,
                 self.name,
-                style={'fill': self.color})
+                style=style)
 
         if self.text:
             x, y, dx, dy = self._box
             zx, zy = drawer.zoom
-            r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
+            r = (x or 1e-10) if circ_drawer else 1
             if self.rotate_text:
                 rotation = 90
-                self.compute_fsize(dy * zy / (len(self.text) * zx),
+                self.compute_fsize(dy * zy / (len(self.text) * zx) * r,
                                    dx * zx / zy, drawer)
 
                 text_box = Box(x + (dx - self._fsize / (2 * zx)) / 2,
@@ -485,9 +491,16 @@ class RectFace(Face):
                 'text_anchor': 'middle',
                 'ftype': f'{self.ftype}, sans-serif', # default sans-serif
                 }
+            if circ_drawer:
+                offset = dx * zx + dy * zy * r / 2
+                if y + dy / 2 > 0:
+                    offset += dx * zx + dy * zy * r
+                text_style['offset'] = offset
+
             yield draw_text(text_box,
                     self.text,
                     rotation=rotation,
+                    anchor=('#' + str(rect_id)) if circ_drawer else None,
                     style=text_style)
 
 

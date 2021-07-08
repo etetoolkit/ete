@@ -37,7 +37,6 @@ os.chdir(os.path.abspath(os.path.dirname(__file__)))
 import sys
 sys.path.insert(0, '..')
 
-import random, string # generate random tree name if necessary
 import re
 from math import pi
 from functools import partial
@@ -60,7 +59,7 @@ from ete4 import Tree
 from ete4.smartview.ete.layouts import TreeStyle
 from ete4.treeview.main import _FaceAreas
 from ete4.parser.newick import NewickError
-from ete4.smartview.utils import InvalidUsage
+from ete4.smartview.utils import InvalidUsage, get_random_string
 from ete4.smartview.ete import nexus, draw, gardening as gdn
 from ete4.smartview.ete.layouts import get_layout_outline,\
         get_layout_leaf_name, get_layout_branch_length,\
@@ -976,13 +975,6 @@ def add_resources(api):
         '/trees/<string:tree_id>/reload')
     add(Info, '/info')
     add(Id, '/id/<path:path>')
-
-
-def get_random_string(length):
-    """ Generates random string to nameless trees """
-    letters = string.ascii_lowercase
-    result_str = ''.join(random.choice(letters) for i in range(length))
-    return result_str
 
 
 def run_smartview(newick=None, tree_name=None, tree_style=None, layouts=[]):

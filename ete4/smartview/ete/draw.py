@@ -895,8 +895,8 @@ def draw_triangle(box, tip, triangle_type='', style=None):
     """
     return ['triangle', box, tip, triangle_type, style or {}]
 
-def draw_text(box, text, text_type='', rotation=0, style=None):
-    return ['text', box, text, text_type, rotation, style or {}]
+def draw_text(box, text, text_type='', rotation=0, anchor=None, style=None):
+    return ['text', box, text, text_type, rotation, anchor or "",  style or {}]
 
 def draw_rect(box, rect_type, style=None):
     return ['rect', box, rect_type, style or {}]
