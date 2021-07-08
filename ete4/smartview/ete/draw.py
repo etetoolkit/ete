@@ -92,7 +92,7 @@ class Drawer:
             yield from self.get_outline()
 
         if self.panel == 0:  # draw in preorder the boxes we found in postorder
-            max_dx = max(box[1].dx for box in self.nodeboxes)
+            max_dx = max([box[1].dx for box in self.nodeboxes] + [0])
             self.tree_style.aligned_grid_dxs[-1] = max_dx
             yield from self.nodeboxes[::-1]  # (so they overlap nicely)
 
@@ -177,7 +177,7 @@ class Drawer:
         self.bdy_dys[-1].append( (bdy, dy) )
 
         # Collapsed nodes will be drawn from self.draw_collapsed()
-        if not node.is_collapsed:
+        if not node.is_collapsed or node.is_leaf():
             bdy0_, bdy1_ = (0, dy) if node.is_leaf() else (bdy0, bdy1)
             yield from self.draw_node(node, point, dx, bdy, bdy0_, bdy1_)
 
@@ -603,7 +603,7 @@ class DrawerRectFaces(DrawerRect):
                     yield from face.draw(self)
 
         def draw_faces_at_pos(node, pos):
-            if node.is_collapsed:
+            if node.is_collapsed and not node.is_leaf():
                 node_faces = node.collapsed_faces
             else:
                 node_faces = node.faces
@@ -613,12 +613,13 @@ class DrawerRectFaces(DrawerRect):
 
             dx_before = 0
             for col, face_list in sorted(faces.items()):
-                dx_before = self.tree_style.aligned_grid_dxs[col-1]\
-                        if pos == 'aligned'\
+                if pos == 'aligned'\
                             and self.tree_style.aligned_grid\
                             and self.NPANELS > 1\
-                            and col > 0\
-                        else dx_before
+                            and col > 0:
+                    dx_before = sum(
+                        v for k, v in self.tree_style.aligned_grid_dxs.items()\
+                        if k < col and k > 0)
                 dx_max = 0
                 dy_before = 0
                 n_row = len(face_list)
@@ -709,7 +710,7 @@ class DrawerCircFaces(DrawerCirc):
                     yield from face.draw(self)
 
         def draw_faces_at_pos(node, pos):
-            if node.is_collapsed:
+            if node.is_collapsed and not node.is_leaf():
                 node_faces = node.collapsed_faces
             else:
                 node_faces = node.faces
@@ -721,18 +722,16 @@ class DrawerCircFaces(DrawerCirc):
             if pos.startswith('branch-') and abs(point[0]) < 1e-5:
                 n_col += 1
                 dr_before = .7 * size[0] / n_col
-            elif pos == 'aligned' and self.panel == 1:
-                dr_before = self.tree_style.aligned_grid_dxs[-1]
             else:
                 dr_before = 0
 
             for col, face_list in sorted(faces.items()):
-                # dr_before = self.tree_style.aligned_grid_dxs[col-1]\
-                        # if pos == 'aligned'\
-                            # and self.tree_style.aligned_grid\
-                            # and self.NPANELS > 1\
-                            # and col > 0\
-                        # else dr_before
+                if pos == 'aligned'\
+                            and self.tree_style.aligned_grid\
+                            and self.NPANELS > 1:
+                    dr_before = sum(
+                        v for k, v in self.tree_style.aligned_grid_dxs.items()\
+                        if k < col)
                 dr_max = 0
                 da_before = 0
                 n_row = len(face_list)

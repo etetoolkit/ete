@@ -96,6 +96,8 @@ class TreeStyle(object):
         self._layout_handler = []
         self.aligned_grid = True
         self.aligned_grid_dxs = defaultdict(lambda: 0)
+
+        self.ultrametric = False
         
         self.show_outline = True
         self.show_leaf_name = True

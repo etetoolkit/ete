@@ -35,7 +35,7 @@ async function draw_tree() {
         "drawer": view.drawer.name, "min_size": view.min_size,
         "zx": zx, "zy": zy, "x": x, "y": y, "w": w, "h": h,
         "collapsed_ids": JSON.stringify(Object.keys(view.collapsed_ids)),
-        "layouts": layouts,
+        "layouts": layouts, "ultrametric": view.ultrametric,
     };
 
     const params_circ = {  // parameters to the drawer, in circular mode

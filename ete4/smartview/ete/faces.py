@@ -449,7 +449,7 @@ class RectFace(Face):
 
         elif pos == 'aligned':
             width = (self.width - 2 * self.padding_x) / zx
-            height = min(dy, (self.height - 2 * self.padding_y) / zy) / r
+            height = min(dy, (self.height - 2 * self.padding_y) / zy)
             box = (x, y + (dy - height) / 2, width, height)
 
         self._box = Box(*box)
@@ -471,7 +471,7 @@ class RectFace(Face):
                 self.compute_fsize(dy * zy / (len(self.text) * zx),
                                    dx * zx / zy, drawer)
 
-                text_box = Box(x + (dx - self._fsize / zx) / 2,
+                text_box = Box(x + (dx - self._fsize / (2 * zx)) / 2,
                         y + dy / 2,
                         dx, dy)
             else:

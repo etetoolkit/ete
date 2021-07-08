@@ -151,6 +151,8 @@ async function main() {
 
     await set_query_string_values();
 
+    view.ultrametric = await api(`/trees/${get_tid()}/ultrametric`);
+
     reset_node_count();
 
     const drawers = await api("/drawers");
