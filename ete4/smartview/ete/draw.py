@@ -164,9 +164,6 @@ class Drawer:
         x, y = point
         dx, dy = self.content_size(node)
 
-        if not self.in_viewport(Box(x, y, dx, dy)):
-            return
-
         # Find branch dy of first child (bdy0), last (bdy1), and self (bdy).
         bdy_dys = self.bdy_dys.pop()  # bdy_dys[i] == (bdy, dy)
         bdy0 = bdy1 = dy / 2  # branch dys of the first and last children
