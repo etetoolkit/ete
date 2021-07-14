@@ -613,9 +613,14 @@ class DrawerRectFaces(DrawerRect):
                             and self.tree_style.aligned_grid\
                             and self.NPANELS > 1\
                             and col > 0:
-                    dx_before = sum(
-                        v for k, v in self.tree_style.aligned_grid_dxs.items()\
-                        if k < col and k > 0)
+                    # Avoid changing-size error when zooming very quickly
+                    try:
+                        dx_before = sum(
+                            v for k, v\
+                            in self.tree_style.aligned_grid_dxs.items()\
+                            if k < col and k > 0)
+                    except:
+                        dx_before = 0
                 dx_max = 0
                 dy_before = 0
                 n_row = len(face_list)
@@ -725,9 +730,14 @@ class DrawerCircFaces(DrawerCirc):
                 if pos == 'aligned'\
                             and self.tree_style.aligned_grid\
                             and self.NPANELS > 1:
-                    dr_before = sum(
-                        v for k, v in self.tree_style.aligned_grid_dxs.items()\
-                        if k < col)
+                    # Avoid changing-size error when zooming very quickly
+                    try:
+                        dr_before = sum(
+                            v for k, v\
+                            in self.tree_style.aligned_grid_dxs.items()\
+                            if k < col)
+                    except:
+                        dr_before = 0
                 dr_max = 0
                 da_before = 0
                 n_row = len(face_list)
