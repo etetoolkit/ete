@@ -79,8 +79,8 @@ def get_layout_branch_attr(attr, pos, name=None,
     return layout_fn
 
 
-def get_layout_outline():
-    outline_face = OutlineFace()
+def get_layout_outline(collapsing_height=5):
+    outline_face = OutlineFace(collapsing_height=collapsing_height)
     def layout_fn(node):
         if not node.is_leaf():
             node.add_face(outline_face, 
@@ -96,6 +96,8 @@ class TreeStyle(object):
         self._layout_handler = []
         self.aligned_grid = True
         self.aligned_grid_dxs = defaultdict(lambda: 0)
+
+        self.ultrametric = False
         
         self.show_outline = True
         self.show_leaf_name = True

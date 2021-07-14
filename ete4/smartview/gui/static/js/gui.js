@@ -27,6 +27,7 @@ const view = {
     // tree
     tree: null,  // string with the current tree name
     tree_size: {width: 0, height: 0},
+    ultrametric: false,
     node_properties: [],  // existing in the current tree
     subtree: "",  // node id of the current subtree; looks like "0,1,0,0,1"
     sorting: {
@@ -149,6 +150,8 @@ async function main() {
     view.layouts = await api("/layouts"); // init layouts
 
     await set_query_string_values();
+
+    view.ultrametric = await api(`/trees/${get_tid()}/ultrametric`);
 
     reset_node_count();
 

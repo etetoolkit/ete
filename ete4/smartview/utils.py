@@ -1,4 +1,5 @@
 import time
+import random, string # generate random tree name if necessary
 
 
 def timeit(method):
@@ -17,3 +18,11 @@ class InvalidUsage(Exception):
         super().__init__()
         self.message = 'Error: ' + message
         self.status_code = status_code
+
+
+def get_random_string(length):
+    """ Generates random string to nameless trees """
+    letters = string.ascii_lowercase
+    result_str = ''.join(random.choice(letters) for i in range(length))
+    return result_str
+

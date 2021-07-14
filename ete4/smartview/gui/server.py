@@ -37,7 +37,6 @@ os.chdir(os.path.abspath(os.path.dirname(__file__)))
 import sys
 sys.path.insert(0, '..')
 
-import random, string # generate random tree name if necessary
 import re
 from math import pi
 from functools import partial
@@ -60,7 +59,7 @@ from ete4 import Tree
 from ete4.smartview.ete.layouts import TreeStyle
 from ete4.treeview.main import _FaceAreas
 from ete4.parser.newick import NewickError
-from ete4.smartview.utils import InvalidUsage
+from ete4.smartview.utils import InvalidUsage, get_random_string
 from ete4.smartview.ete import nexus, draw, gardening as gdn
 from ete4.smartview.ete.layouts import get_layout_outline,\
         get_layout_leaf_name, get_layout_branch_length,\
@@ -256,7 +255,9 @@ class Trees(Resource):
                 if node.is_leaf():
                     tleaves += 1
             return {'tnodes': tnodes, 'tleaves': tleaves}
-
+        elif rule == '/trees/<string:tree_id>/ultrametric':
+            # Not for now... but it may be tree specific
+            return app.tree_style[request.remote_addr].ultrametric
 
     @auth.login_required
     def post(self):
@@ -368,12 +369,16 @@ def load_tree(tree_id):
     try:
         user = request.remote_addr
         tid, subtree = get_tid(tree_id)
+        ultrametric = app.tree_style[user].ultrametric
 
         if tid in app.trees[user]:
             tree = gdn.get_node(app.trees[user][tid], subtree)
             # Reinitialize if layouts have to be reapplied
             if tid in app.to_be_initialized[user]:
                 app.to_be_initialized[user].remove(tid)
+                if ultrametric:
+                    tree.convert_to_ultrametric()
+                    gdn.standardize(tree)
                 for node in tree.traverse():
                     node.is_initialized = False
                     node.faces = _FaceAreas()
@@ -384,6 +389,7 @@ def load_tree(tree_id):
         assert len(newicks) == 1
         
         t = Tree(newicks[0])
+        if ultrametric: t.convert_to_ultrametric()
         gdn.standardize(t)
 
         app.trees[user][tid] = t
@@ -396,7 +402,8 @@ def load_tree(tree_id):
 def get_drawer(tree_id, args):
     "Return the drawer initialized as specified in the args"
     valid_keys = ['x', 'y', 'w', 'h', 'panel', 'zx', 'zy', 'drawer', 'min_size',
-                  'layouts', 'collapsed_ids', 'rmin', 'amin', 'amax']
+                  'layouts', 'ultrametric', 'collapsed_ids', 
+                  'rmin', 'amin', 'amax']
 
     try:
         assert all(k in valid_keys for k in args.keys()), 'invalid keys'
@@ -428,6 +435,8 @@ def get_drawer(tree_id, args):
         if active_layouts != None:
             update_layouts(active_layouts)
 
+        update_ultrametric(args.get('ultrametric'))
+
         collapsed_ids = set(tuple(int(i) for i in node_id.split(','))
             for node_id in json.loads(args.get('collapsed_ids', '[]')))
 
@@ -435,6 +444,7 @@ def get_drawer(tree_id, args):
         searches = app.searches[user].get(tree_id)
         tree_style = app.tree_style[user]
 
+        
         return drawer_class(load_tree(tree_id), viewport, panel, zoom,
                     limits, collapsed_ids, searches, tree_style)
     except StopIteration:
@@ -693,6 +703,18 @@ def update_layouts(active_layouts):
     if reinit_trees:
         app.to_be_initialized[user] = list(app.trees[user].keys())
 
+def update_ultrametric(ultrametric):
+    """ Update trees if ultrametric option toggled """
+    user = request.remote_addr  # identified by their IP address
+    tree_style = app.tree_style[user]  # specific to each user
+    ultrametric = True if ultrametric == 'true' else False # js boolean
+    if tree_style.ultrametric != ultrametric:
+        tree_style.ultrametric = ultrametric
+        if ultrametric == True:
+            app.to_be_initialized[user] = list(app.trees[user].keys())
+        else:
+            app.trees[user] = {}
+
 
 # Database-access functions.
 
@@ -943,6 +965,7 @@ def add_resources(api):
         '/trees/<string:tree_id>/size',
         '/trees/<string:tree_id>/properties',
         '/trees/<string:tree_id>/nodecount',
+        '/trees/<string:tree_id>/ultrametric',
         '/trees/<string:tree_id>/search',
         '/trees/<string:tree_id>/sort',
         '/trees/<string:tree_id>/root_at',
@@ -952,13 +975,6 @@ def add_resources(api):
         '/trees/<string:tree_id>/reload')
     add(Info, '/info')
     add(Id, '/id/<path:path>')
-
-
-def get_random_string(length):
-    """ Generates random string to nameless trees """
-    letters = string.ascii_lowercase
-    result_str = ''.join(random.choice(letters) for i in range(length))
-    return result_str
 
 
 def run_smartview(newick=None, tree_name=None, tree_style=None, layouts=[]):

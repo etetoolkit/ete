@@ -35,7 +35,7 @@ async function draw_tree() {
         "drawer": view.drawer.name, "min_size": view.min_size,
         "zx": zx, "zy": zy, "x": x, "y": y, "w": w, "h": h,
         "collapsed_ids": JSON.stringify(Object.keys(view.collapsed_ids)),
-        "layouts": layouts,
+        "layouts": layouts, "ultrametric": view.ultrametric,
     };
 
     const params_circ = {  // parameters to the drawer, in circular mode
@@ -266,10 +266,10 @@ function create_item(item, tl, zoom) {
         return triangle;
     }
     else if (item[0] === "text") {
-        const [ , box, txt, type, style] = item;
+        const [ , box, txt, type, rotation, anchor, style] = item;
 
-        const text =  create_text(box, txt, style.max_fsize,
-            tl, zx, zy, get_class_name(type));
+        const text = create_text(box, rotation, txt, style.max_fsize,
+            tl, zx, zy, get_class_name(type), anchor, style);
 
         style_text(text, style);
 
@@ -339,7 +339,7 @@ function create_svg_element(name, attrs={}) {
 function create_box(box, tl, zx, zy, type, style) {
     const b = view.drawer.type === "rect" ?
                     create_rect(box, tl, zx, zy, type, style) :
-                    create_asec(box, tl, zx, type);
+                    create_asec(box, tl, zx, type, style);
     b.classList.add("box");
     return b;
 }
@@ -363,7 +363,7 @@ function create_rect(box, tl, zx, zy, type, style) {
 
 
 // Return a svg annular sector, described by box and with zoom z.
-function create_asec(box, tl, z, type) {
+function create_asec(box, tl, z, type, style) {
     const [r, a, dr, da] = box;
     const large = da > Math.PI ? 1 : 0;
     const p00 = cartesian_shifted(r, a, tl, z),
@@ -371,14 +371,21 @@ function create_asec(box, tl, z, type) {
           p10 = cartesian_shifted(r + dr, a, tl, z),
           p11 = cartesian_shifted(r + dr, a + da, tl, z);
 
-    return create_svg_element("path", {
+    const element =  {
         "d": `M ${p00.x} ${p00.y}
               L ${p10.x} ${p10.y}
               A ${z * (r + dr)} ${z * (r + dr)} 0 ${large} 1 ${p11.x} ${p11.y}
               L ${p01.x} ${p01.y}
               A ${z * r} ${z * r} 0 ${large} 0 ${p00.x} ${p00.y}`,
-        "class": type || null,
-    });
+    };
+
+    if (type)
+        element.class = type;
+
+    if (is_style_property(style.id))
+        element.id = style.id;
+    
+    return create_svg_element("path", element);
 }
 
 
@@ -581,16 +588,40 @@ function create_triangle(box, tip, tl, zx, zy, type="") {
 }
 
 
-function create_text(box, text, fs, tl, zx, zy, type="") {
+function create_text(box, rotation, text, fs, tl, zx, zy, type="", anchor, style) {
+
+    const element = {
+        "class": "text " + type,
+        "text-anchor": (style && style.text_anchor 
+                        ? style.text_anchor : "left"),
+        "font-size": `${fs}px`,
+    }
+
+    if (anchor) {
+        const dr = box[2] * zx;
+        element.dy = dr - (dr - 0.6 * fs) / 2; // place inside rect
+        const t = create_svg_element("text", element);
+        const textPath = create_svg_element("textPath", {
+            "href": anchor,
+            "startOffset": style.offset, // calculated in backend
+        });
+        textPath.appendChild(document.createTextNode(text));
+        t.appendChild(textPath);
+        return t;
+    }
+
     const [x, y] = view.drawer.type === "rect" ?
         get_text_placement_rect(box, text, fs, tl, zx, zy) :
         get_text_placement_circ(box, text, fs, tl, zx);
-
-    const t = create_svg_element("text", {
-        "class": "text " + type,
-        "x": x, "y": y,
-        "font-size": `${fs}px`,
-    });
+    element.x = x;
+    element.y = y;
+    let t;
+    if (rotation) {
+        element.y = y - fs
+        t = create_svg_element("text", element);
+        addRotation(t, rotation, x, y - fs)
+    } else
+        t = create_svg_element("text", element);
 
     t.appendChild(document.createTextNode(text));
 
@@ -650,8 +681,10 @@ async function fix_text_orientations() {
 }
 
 function is_upside_down(element) {
-    const angle = element.transform.baseVal[0].angle;
-    return angle < -90 || angle > 90;
+    try {
+        const angle = element.transform.baseVal[0].angle;
+        return angle < -90 || angle > 90;
+    } catch { return false }; // texts in asec may cause exceptions
 }
 
 function get_font_size(text) {
@@ -749,8 +782,12 @@ function style_text(text, style) {
     if (is_style_property(style.ftype))
         text.style["font-family"] = style.ftype;
 
-    if (is_style_property(style.text_anchor))
-        text.style["text-anchor"] = style.text_anchor;
+    if (is_style_property(style.linked_path)) {
+        const textPath = create_svg_element("textPath", {
+            "xlink:href": style.linked_path,
+        })
+        text.appendChild(textPath);
+    }
 
     return text;
 }

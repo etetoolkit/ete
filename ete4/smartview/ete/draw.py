@@ -92,7 +92,7 @@ class Drawer:
             yield from self.get_outline()
 
         if self.panel == 0:  # draw in preorder the boxes we found in postorder
-            max_dx = max(box[1].dx for box in self.nodeboxes)
+            max_dx = max([box[1].dx for box in self.nodeboxes] + [0])
             self.tree_style.aligned_grid_dxs[-1] = max_dx
             yield from self.nodeboxes[::-1]  # (so they overlap nicely)
 
@@ -174,7 +174,7 @@ class Drawer:
         self.bdy_dys[-1].append( (bdy, dy) )
 
         # Collapsed nodes will be drawn from self.draw_collapsed()
-        if not node.is_collapsed:
+        if not node.is_collapsed or node.is_leaf():
             bdy0_, bdy1_ = (0, dy) if node.is_leaf() else (bdy0, bdy1)
             yield from self.draw_node(node, point, dx, bdy, bdy0_, bdy1_)
 
@@ -235,6 +235,8 @@ class Drawer:
             self.node_size(collapsed_node)))
 
         ndx = drawn_size(graphics, self.get_box).dx
+        self.collapsed = []
+        self.node_dxs[-1].append(ndx)
 
         # Draw collapsed node nodebox when necessary
         if is_manually_collapsed or is_small or collapsed_node.dist == 0:
@@ -246,9 +248,6 @@ class Drawer:
             self.nodeboxes.append(box)
         else:
             self.flush_outline()
-
-        self.collapsed = []
-        self.node_dxs[-1].append(ndx)
 
         yield from graphics
 
@@ -515,7 +514,7 @@ def draw_rect_leaf_name(drawer, node, point):
     dx_fit = dx_fitting_texts([node.name], dy, drawer.zoom)
     box = Box(x_text, y, dx_fit, dy)
 
-    yield draw_text(box, (0, 0.5), node.name, 'name',
+    yield draw_text(box, node.name, 'name',
             style={ 'fill': node.img_style.get('fgcolor') })
 
 
@@ -531,7 +530,7 @@ def draw_circ_leaf_name(drawer, node, point):
         r_text = (r + dr) if drawer.panel == 0 else drawer.xmin
         dr_fit = dx_fitting_texts([node.name], (r + dr) * da, drawer.zoom)
         box = Box(r_text, a, dr_fit, da)
-        yield draw_text(box, (0, 0.5), node.name, 'name',
+        yield draw_text(box, node.name, 'name',
                 style={ 'fill': node.img_style.get('fgcolor') })
 
 
@@ -600,7 +599,7 @@ class DrawerRectFaces(DrawerRect):
                     yield from face.draw(self)
 
         def draw_faces_at_pos(node, pos):
-            if node.is_collapsed:
+            if node.is_collapsed and not node.is_leaf():
                 node_faces = node.collapsed_faces
             else:
                 node_faces = node.faces
@@ -610,6 +609,13 @@ class DrawerRectFaces(DrawerRect):
 
             dx_before = 0
             for col, face_list in sorted(faces.items()):
+                if pos == 'aligned'\
+                            and self.tree_style.aligned_grid\
+                            and self.NPANELS > 1\
+                            and col > 0:
+                    dx_before = sum(
+                        v for k, v in self.tree_style.aligned_grid_dxs.items()\
+                        if k < col and k > 0)
                 dx_max = 0
                 dy_before = 0
                 n_row = len(face_list)
@@ -700,7 +706,7 @@ class DrawerCircFaces(DrawerCirc):
                     yield from face.draw(self)
 
         def draw_faces_at_pos(node, pos):
-            if node.is_collapsed:
+            if node.is_collapsed and not node.is_leaf():
                 node_faces = node.collapsed_faces
             else:
                 node_faces = node.faces
@@ -712,12 +718,16 @@ class DrawerCircFaces(DrawerCirc):
             if pos.startswith('branch-') and abs(point[0]) < 1e-5:
                 n_col += 1
                 dr_before = .7 * size[0] / n_col
-            elif pos == 'aligned' and self.panel == 1:
-                dr_before = self.tree_style.aligned_grid_dxs[-1]
             else:
                 dr_before = 0
 
             for col, face_list in sorted(faces.items()):
+                if pos == 'aligned'\
+                            and self.tree_style.aligned_grid\
+                            and self.NPANELS > 1:
+                    dr_before = sum(
+                        v for k, v in self.tree_style.aligned_grid_dxs.items()\
+                        if k < col)
                 dr_max = 0
                 da_before = 0
                 n_row = len(face_list)
@@ -881,8 +891,8 @@ def draw_triangle(box, tip, triangle_type='', style=None):
     """
     return ['triangle', box, tip, triangle_type, style or {}]
 
-def draw_text(box, text, text_type='', style=None):
-    return ['text', box, text, text_type, style or {}]
+def draw_text(box, text, text_type='', rotation=0, anchor=None, style=None):
+    return ['text', box, text, text_type, rotation, anchor or "",  style or {}]
 
 def draw_rect(box, rect_type, style=None):
     return ['rect', box, rect_type, style or {}]
@@ -985,7 +995,7 @@ def get_asec(element, zoom=(0, 0)):
         raise ValueError(f'unrecognized element: {element!r}')
 
 
-def drawn_size(elements, get_box):
+def drawn_size(elements, get_box, min_x=None):
     "Return the size of a box containing all the elements"
     # The type of size will depend on the kind of boxes that are returned by
     # get_box() for the elements. It is width and height for boxes that are
@@ -1002,6 +1012,14 @@ def drawn_size(elements, get_box):
         x, y, dx, dy = get_box(element)
         x_min, x_max = min(x_min, x), max(x_max, x + dx)
         y_min, y_max = min(y_min, y), max(y_max, y + dy)
+
+    # Constrains x_min
+    # Necessary for collapsed nodes with branch-top/bottom faces
+    if min_x:
+        print(x_max)
+        print(x_min)
+        print(min_x)
+        x_min = max(x_min, min_x)
 
     return Size(x_max - x_min, y_max - y_min)
 
