@@ -316,9 +316,9 @@ cdef class TreeNode(object):
         """ Iterator over leaf nodes"""
         return self.iter_leaves()
 
-    def get(self, property, default=None):
+    def get(self, name, default=None):
         """Return node property. Shortcut of node.properties.get()"""
-        return self.properties.get(property, default)
+        return self.properties.get(name, default)
 
     def add_property(self, name, value):
         """ Add or update node's property """
@@ -1492,7 +1492,7 @@ cdef class TreeNode(object):
         """
         if not attributes:
             attributes = ["name"]
-        node_name = ', '.join(map(str, [getattr(self, v) for v in attributes if hasattr(self, v)]))
+        node_name = ', '.join(map(str, [self.get(v) for v in attributes if self.get(v)]))
 
         LEN = max(3, len(node_name) if not self.children or show_internal else 3)
         PAD = ' ' * LEN
@@ -1643,10 +1643,10 @@ cdef class TreeNode(object):
                 _val = [_n]
             else:
                 if not isinstance(store_attr, six.string_types):
-                    _val = [tuple(getattr(_n, attr, None) for attr in store_attr)]
+                    _val = [tuple(_n.get(attr) for attr in store_attr)]
 
                 else:
-                    _val = [getattr(_n, store_attr, None)]
+                    _val = [_n.get(store_attr)]
 
             return _val
 
@@ -1922,7 +1922,8 @@ cdef class TreeNode(object):
 
                     #if seedid and not use_collateral and (seedid not in subtree_nw):
                     #    continue
-                    subtree = source_tree.__class__(subtree_nw, sp_naming_function = source_tree._speciesFunction)
+                    subtree = source_tree.__class__(subtree_nw,
+                            sp_naming_function = source_tree.get('_speciesFunction'))
                     if not subtree.children:
                         continue
 

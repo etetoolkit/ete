@@ -79,8 +79,8 @@ def get_layout_branch_attr(attr, pos, name=None,
     return layout_fn
 
 
-def get_layout_outline():
-    outline_face = OutlineFace()
+def get_layout_outline(collapsing_height=5):
+    outline_face = OutlineFace(collapsing_height=collapsing_height)
     def layout_fn(node):
         if not node.is_leaf():
             node.add_face(outline_face, 

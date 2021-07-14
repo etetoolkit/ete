@@ -459,7 +459,7 @@ class RectFace(Face):
         self._check_own_variables()
 
         circ_drawer = drawer.TYPE == 'circ'
-        style = {'fill': self.color}
+        style = {'fill': self.color, 'opacity': 0.7}
         if self.text and circ_drawer:
             rect_id = get_random_string(10)
             style['id'] = rect_id
@@ -491,8 +491,10 @@ class RectFace(Face):
                 'text_anchor': 'middle',
                 'ftype': f'{self.ftype}, sans-serif', # default sans-serif
                 }
+
             if circ_drawer:
                 offset = dx * zx + dy * zy * r / 2
+                # Turn text upside down on bottom
                 if y + dy / 2 > 0:
                     offset += dx * zx + dy * zy * r
                 text_style['offset'] = offset
@@ -508,6 +510,7 @@ class OutlineFace(Face):
     def __init__(self, 
             stroke_color='black', stroke_width=0.5,
             color="lightgray", opacity=0.3,
+            collapsing_height=5, # height in px at which outline becomes a line
             padding_x=0, padding_y=0):
 
         Face.__init__(self, padding_x=padding_x, padding_y=padding_y)
@@ -517,6 +520,7 @@ class OutlineFace(Face):
         self.stroke_color = stroke_color
         self.stroke_width = stroke_width
         self.outline = None
+        self.collapsing_height = collapsing_height
 
     def __name__(self):
         return "OutlineFace"
@@ -560,7 +564,7 @@ class OutlineFace(Face):
         zx, zy = drawer.zoom
         circ_drawer = drawer.TYPE == 'circ'
         r = (x or 1e-10) if circ_drawer else 1
-        if dy * zy * r < 5:
+        if dy * zy * r < self.collapsing_height:
             # Convert to line if height less than one pixel
             p1 = (x, y + dy / 2)
             p2 = (x + dx_max, y + dy / 2)

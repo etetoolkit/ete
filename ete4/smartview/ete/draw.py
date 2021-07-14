@@ -238,6 +238,8 @@ class Drawer:
             self.node_size(collapsed_node)))
 
         ndx = drawn_size(graphics, self.get_box).dx
+        self.collapsed = []
+        self.node_dxs[-1].append(ndx)
 
         # Draw collapsed node nodebox when necessary
         if is_manually_collapsed or is_small or collapsed_node.dist == 0:
@@ -249,9 +251,6 @@ class Drawer:
             self.nodeboxes.append(box)
         else:
             self.flush_outline()
-
-        self.collapsed = []
-        self.node_dxs[-1].append(ndx)
 
         yield from graphics
 
@@ -999,7 +998,7 @@ def get_asec(element, zoom=(0, 0)):
         raise ValueError(f'unrecognized element: {element!r}')
 
 
-def drawn_size(elements, get_box):
+def drawn_size(elements, get_box, min_x=None):
     "Return the size of a box containing all the elements"
     # The type of size will depend on the kind of boxes that are returned by
     # get_box() for the elements. It is width and height for boxes that are
@@ -1016,6 +1015,14 @@ def drawn_size(elements, get_box):
         x, y, dx, dy = get_box(element)
         x_min, x_max = min(x_min, x), max(x_max, x + dx)
         y_min, y_max = min(y_min, y), max(y_max, y + dy)
+
+    # Constrains x_min
+    # Necessary for collapsed nodes with branch-top/bottom faces
+    if min_x:
+        print(x_max)
+        print(x_min)
+        print(min_x)
+        x_min = max(x_min, min_x)
 
     return Size(x_max - x_min, y_max - y_min)
 

@@ -598,12 +598,12 @@ function create_text(box, rotation, text, fs, tl, zx, zy, type="", anchor, style
     }
 
     if (anchor) {
-        const dy = box[2] * zx;
-        element.dy = dy - (dy - 0.6 * fs) / 2;
+        const dr = box[2] * zx;
+        element.dy = dr - (dr - 0.6 * fs) / 2; // place inside rect
         const t = create_svg_element("text", element);
         const textPath = create_svg_element("textPath", {
             "href": anchor,
-            "startOffset": style.offset,
+            "startOffset": style.offset, // calculated in backend
         });
         textPath.appendChild(document.createTextNode(text));
         t.appendChild(textPath);
