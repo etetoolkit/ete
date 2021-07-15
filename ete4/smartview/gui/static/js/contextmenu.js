@@ -23,13 +23,12 @@ function on_box_contextmenu(event, box, name, properties, node_id=[]) {
 
         add_label("Node" + (name.length > 0 ? name_text : ""));
 
-        add_button("🔍 Zoom into branch", () => zoom_into_box(box));
+        add_button("Zoom into branch", () => zoom_into_box(box),  "", "search");
 
         if (node_id.length > 0) {
             add_node_options(box, name, properties, node_id);
         }
 
-        add_element("hr");
     }
 
     add_label("Tree");
@@ -45,32 +44,36 @@ function on_box_contextmenu(event, box, name, properties, node_id=[]) {
 
 
 function add_node_options(box, name, properties, node_id) {
-    add_button("📌 Go to subtree at branch", () => {
+    add_button("Go to subtree at branch", () => {
         view.subtree += (view.subtree ? "," : "") + node_id;
         on_tree_change();
-    }, "Explore the subtree starting at the current node.");
-    add_button("❓ Show node id", () => {
+    }, "Explore the subtree starting at the current node.",
+       "map-marker-alt", false);
+    add_button("Show node id", () => {
         Swal.fire({text: `${node_id}`, position: "bottom",
                    showConfirmButton: false});
-    });
-    add_button("📥 Download branch as newick", () => download_newick(node_id),
-               "Download subtree starting at this node as a newick file.");
+    }, "", "fingerprint", false);
+    add_button("Download branch as newick", () => download_newick(node_id),
+               "Download subtree starting at this node as a newick file.",
+               "download", false);
     if ("taxid" in properties) {
         const taxid = properties["taxid"];
-        add_button("📖 Show in taxonomy browser", () => {
+        add_button("Show in taxonomy browser", () => {
             const urlbase = "https://www.ncbi.nlm.nih.gov/Taxonomy/Browser";
             window.open(`${urlbase}/wwwtax.cgi?id=${taxid}`);
-        }, `Open the NCBI Taxonomy Browser on this taxonomy ID: ${taxid}.`);
+        }, `Open the NCBI Taxonomy Browser on this taxonomy ID: ${taxid}.`,
+           "book", false);
     }
-    add_button("🏷️ Tag branch", () => {
+    add_button("Tag branch", () => {
         Swal.fire({
             input: "text",
             inputPlaceholder: "Enter tag",
             preConfirm: name => tag_node(node_id, name),
         });
-    });
-    add_button("🗞️ Collapse branch", () => collapse_node(name, node_id),
-               "Do not show nodes below the current one.");
+    }, "", "tag", false);
+    add_button("Collapse branch", () => collapse_node(name, node_id),
+               "Do not show nodes below the current one.",
+               "compress", false);
 
     if (view.allow_modifications)
         add_node_modifying_options(box, name, properties, node_id);
@@ -78,7 +81,7 @@ function add_node_options(box, name, properties, node_id) {
 
 
 function add_node_modifying_options(box, name, properties, node_id) {
-    add_button("🖊️ Rename node  ⚠️", async () => {
+    add_button("Rename node", async () => {
         const result = await Swal.fire({
             input: "text",
             inputPlaceholder: "Enter new name",
@@ -88,63 +91,82 @@ function add_node_modifying_options(box, name, properties, node_id) {
         });
         if (result.isConfirmed)
             update();
-    }, "Change the name of this node. Changes the tree structure.");
+    }, "Change the name of this node. Changes the tree structure.",
+       "edit", true);
     if (!view.subtree) {
-        add_button("🎯 Root on this node ⚠️", async () => {
+        add_button("Root on this node", async () => {
             await tree_command("root_at", node_id);
             draw_minimap();
             update();
-        }, "Set this node as the root of the tree. Changes the tree structure.");
+        }, "Set this node as the root of the tree. Changes the tree structure.",
+           "anchor", true);
     }
-    add_button("⬆️ Move branch up ⚠️", async () => {
+    add_button("Move branch up", async () => {
         await tree_command("move", [node_id, -1]);
         draw_minimap();
         update();
     }, "Move the current branch one step above its current position. " +
-        "Changes the tree structure.");
-    add_button("⬇️ Move branch down ⚠️", async () => {
+        "Changes the tree structure.",
+        "arrow-up", true);
+    add_button("Move branch down", async () => {
         await tree_command("move", [node_id, +1]);
         draw_minimap();
         update();
     }, "Move the current branch one step below its current position. " +
-        "Changes the tree structure.");
-    add_button("🔃 Sort branch ⚠️", () => sort(node_id),
+        "Changes the tree structure.",
+        "arrow-down", true);
+    add_button("Sort branch", () => sort(node_id),
         "Sort branches below this node according to the current sorting " +
-        "function. Changes the tree structure.");
-    add_button("✂️ Remove branch ⚠️", async () => {
+        "function. Changes the tree structure.",
+        "sort-amount-down-alt", false);
+    add_button("Remove branch", async () => {
         await tree_command("remove", node_id);
         draw_minimap();
         update();
-    }, "Prune this branch from the tree. Changes the tree structure.");
+    }, "Prune this branch from the tree. Changes the tree structure.",
+        "trash-alt", true);
 }
 
 
 function add_tree_options() {
-    add_button("🔭 Reset view", reset_view, "Fit tree to the window.");
+    add_button("Reset view", reset_view,
+               "Fit tree to the window.", "power-off");
     if (view.subtree) {
-        add_button("⬅️ Go back to main tree", () => {
+        add_button("Go back to main tree", () => {
             view.subtree = "";
             on_tree_change();
-        }, "Exit view on current subtree.");
+        }, "Exit view on current subtree.",
+           "backward", false);
     }
 
     if (view.allow_modifications) {
-        add_button("🔃 Sort tree ⚠️", () => sort(),
+        add_button("Sort tree", () => sort(),
             "Sort all branches according to the current sorting function. " +
-            "Changes the tree structure.");
+            "Changes the tree structure.", 
+            "sort-amount-down-alt", true);
         if (!view.subtree) {
-            add_button("🔥 Reload tree ⚠️", async () => {
+            add_button("Reload tree", async () => {
                 await tree_command("reload", get_tid());
                 on_tree_change();
-            }, "Reload current tree. Restores the original tree structure.");
+            }, "Reload current tree. Restores the original tree structure.",
+                "sync-alt", true);
         }
     }
 }
 
+function create_icon(name) {
+    const i = document.createElement("i");
+    i.classList.add("fas", `fa-${name}`);
+    return i;
+}
 
-function add_button(text, fn, tooltip) {
+function add_button(text, fn, tooltip, icon_before, icon_warning=false) {
     const button = document.createElement("button");
+    if (icon_before)
+        button.appendChild(create_icon(icon_before));
     button.appendChild(document.createTextNode(text));
+    if (icon_warning) 
+        button.appendChild(create_icon("exclamation-circle"))
     button.addEventListener("click", event => {
         div_contextmenu.style.visibility = "hidden";
         fn(event);

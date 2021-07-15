@@ -25,7 +25,7 @@ async function draw_minimap() {
 
     const items = await api(`/trees/${get_tid()}/draw?${qs}`);
 
-    const mbw = 3;  // border-width from .minimap css
+    const mbw = 2;  // border-width from .minimap css
     const offset = -(div_minimap.offsetWidth - 2*mbw) / view.minimap.zoom.x / 2;
     const tl = view.drawer.type === "rect" ?
         {x: 0, y: 0} :
@@ -44,7 +44,7 @@ async function draw_minimap() {
 
 function adjust_size_and_zoom() {
     const size = view.tree_size;
-    const mbw = 3;  // border-width from .minimap css
+    const mbw = 2;  // border-width from .minimap css
     const w = (view.minimap.width / 100) * div_tree.offsetWidth,
           h = (view.minimap.height / 100) * div_tree.offsetHeight;
     if (view.drawer.type === "rect") {
@@ -85,7 +85,7 @@ function update_minimap_visible_rect() {
     const [round, min, max] = [Math.round, Math.min, Math.max];  // shortcuts
 
     // Transform all measures into "minimap units" (scaling accordingly).
-    const mbw = 3, rbw = 1;  // border-width from .minimap and .visible_rect css
+    const mbw = 2, rbw = 1;  // border-width from .minimap and .visible_rect css
     const mw = div_minimap.offsetWidth - 2 * (mbw + rbw),    // minimap size
           mh = div_minimap.offsetHeight - 2 * (mbw + rbw);
     const wz = view.zoom, mz = view.minimap.zoom;
@@ -114,7 +114,7 @@ function update_minimap_visible_rect() {
 
 // Move the current tree view to the given point in the minimap.
 function move_minimap_view(point) {
-    const mbw = 3;  // border-width from .minimap css
+    const mbw = 2;  // border-width from .minimap css
 
     // Top-left pixel coordinates of the tree (0, 0) position in the minimap.
     let [x0, y0] = [div_minimap.offsetLeft + mbw, div_minimap.offsetTop + mbw];

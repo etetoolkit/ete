@@ -17,7 +17,7 @@ import sqlite3
 
 from ete4.parser.newick import read_newick, NewickError
 
-TData = namedtuple('TData', 'name description newick owner readers')
+TData = namedtuple('TData', 'name description newick')
 
 
 def main():
@@ -26,14 +26,13 @@ def main():
         print(f'Adding from {args.treefile} to database {args.db} ...')
         newick = get_newick(args.treefile, verify=not args.no_verify)
         tname = args.name or basename(args.treefile).rsplit('.', 1)[0]
-        tdata = TData(tname, args.description, newick, args.owner, args.readers)
+        tdata = TData(tname, args.description, newick)
         with sqlite3.connect(args.db) as connection:
             tree_id, name = update_database(connection, tdata)
         print(f'Added tree {name} with id {tree_id}.')
     except (FileNotFoundError, NewickError,
             sqlite3.OperationalError, sqlite3.IntegrityError) as e:
         sys.exit(e)
-
 
 
 def get_args():
@@ -45,8 +44,6 @@ def get_args():
     add('--db', default='trees.db', help='sqlite database file')
     add('-n', '--name', default='', help='name of the tree')
     add('-d', '--description', default='', help='description of the tree')
-    add('-o', '--owner', type=int, default=1, help='id of the owner')
-    add('-r', '--readers', nargs='*', metavar='READER', type=int, default=[])
     add('--no-verify', action='store_true', help='do not verify newick')
 
     return parser.parse_args()
@@ -75,13 +72,6 @@ def update_database(connection, tdata):
 
     c.execute('INSERT INTO trees VALUES (?, ?, ?, ?, ?)',
         [tree_id, name, tdata.description, datetime.now(), tdata.newick])
-
-    c.execute('INSERT INTO user_owns_trees VALUES (?, ?)',
-        [tdata.owner, tree_id])
-
-    for reader_id in tdata.readers:
-        c.execute('INSERT INTO user_reads_trees VALUES (?, ?)',
-            [reader_id, tree_id])
 
     return tree_id, name
 

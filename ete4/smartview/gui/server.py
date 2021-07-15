@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Keep the data of users and trees, and present a REST api to talk
+Keep the data of trees and present a REST api to talk
 to the world.
 
 REST call examples:
@@ -12,15 +12,7 @@ REST call examples:
   DELETE /users/{id}  Delete user by "id"
 """
 
-# khe structure that we want to follow is:
-#
-# user
-#   id: int
-#   username: str
-#   name: str
-#   password: str
-#   owns: list of ints (tree ids)
-#   reads: list of ints (tree ids)
+# The structure that we want to follow is:
 #
 # tree
 #   id: int
@@ -28,8 +20,6 @@ REST call examples:
 #   description: str
 #   birth: datetime
 #   newick: str
-#   owner: int (user id)
-#   readers: list of ints (user ids)
 
 import os
 os.chdir(os.path.abspath(os.path.dirname(__file__)))
@@ -47,7 +37,6 @@ import gzip
 import json
 
 from flask import Flask, request, jsonify, g, redirect, url_for
-from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth, MultiAuth
 from flask_restful import Resource, Api
 from flask_cors import CORS
 from flask_compress import Compress
@@ -68,131 +57,9 @@ from ete4.smartview.ete.layouts import get_layout_outline,\
 # call initialize() to fill these up
 app = None
 db = None
-serializer = None  # this one is used for the token auth
-
-
-# Set up the authentication (see https://flask-httpauth.readthedocs.io/).
-
-auth_basic = HTTPBasicAuth()
-auth_token = HTTPTokenAuth('Bearer')
-auth = MultiAuth(auth_basic, auth_token)
-
-@auth_basic.verify_password
-def verify_password(username, password):
-    res = dbget('id,password', 'users WHERE username=?', username)
-    if len(res) == 1:
-        g.user_id = res[0]['id']
-        return check_password_hash(res[0]['password'], password)
-    else:
-        return False
-
-@auth_token.verify_token
-def verify_token(token):
-    try:
-        g.user_id = serializer.loads(token)
-        return True
-    except:
-        return False
 
 
 # REST api.
-
-class Login(Resource):
-    def post(self):
-        "Return info about the user if successfully logged"
-        data = get_fields(required=['username', 'password'])
-        username = data['username']
-        fields = 'id,name,password'
-
-        res = dbget(fields, 'users WHERE username=?', username)
-        if len(res) == 0:
-            raise InvalidUsage('bad user/password', 401)
-        r0 = res[0]
-
-        if not check_password_hash(r0['password'], data['password']):
-            raise InvalidUsage('bad user/password', 401)
-
-        token = serializer.dumps(r0['id']).decode('utf8')
-        return {'id': r0['id'],
-                'username': username,
-                'name': r0['name'],
-                'token': token}
-
-
-class Users(Resource):
-    def get(self, user_id=None):
-        "Return info about the user (or all users if no id given)"
-        if user_id is None:
-            return [get_user(uid) for uid in sorted(dbget0('id', 'users'))]
-        else:
-            return get_user(user_id)
-
-    @auth.login_required
-    def post(self):
-        "Add user"
-        admin_id = 1
-        if g.user_id != admin_id:
-            raise InvalidUsage('no permission to add', 403)
-
-        data = get_fields(required=['username', 'password'],
-            valid_extra=['name'])
-
-        data['password'] = generate_password_hash(data['password'])
-        data.setdefault('name', 'Random User')
-
-        cols, vals = zip(*data.items())
-        try:
-            qs = '(%s)' % ','.join('?' * len(vals))
-            dbexe('INSERT INTO users %r VALUES %s' % (tuple(cols), qs), vals)
-        except sqlalchemy.exc.IntegrityError as e:
-            raise InvalidUsage(f'database exception adding user: {e}')
-
-        uid = dbget0('id', 'users WHERE username=?', data['username'])
-        return {'message': 'ok', 'id': uid}, 201
-
-    @auth.login_required
-    def put(self, user_id):
-        "Modify user"
-        admin_id = 1
-        if g.user_id not in [user_id, admin_id]:
-            raise InvalidUsage('no permission to modify', 403)
-
-        data = get_fields(
-            valid_extra=['username', 'name', 'password'])
-
-        if 'password' in data:
-            data['password'] = generate_password_hash(data['password'])
-
-        cols, vals = zip(*data.items())
-        qs = ','.join('%s=?' % x for x in cols)
-        res = dbexe('UPDATE users SET %s WHERE id=%d' % (qs, user_id), vals)
-
-        if res.rowcount != 1:
-            raise InvalidUsage(f'unknown user id {user_id}', 409)
-
-        return {'message': 'ok'}
-
-    @auth.login_required
-    def delete(self, user_id):
-        "Delete user and all references to her"
-        admin_id = 1
-        if g.user_id not in [user_id, admin_id]:
-            raise InvalidUsage('no permission to delete', 403)
-
-        with shared_connection([dbget0, dbexe]) as [get0, exe]:
-            res = exe('DELETE FROM users WHERE id=?', user_id)
-            if res.rowcount != 1:
-                raise InvalidUsage(f'unknown user id {user_id}', 404)
-
-            for tid in get0('id_tree', 'user_owns_trees WHERE id_user=?', user_id):
-                del_tree(tid)
-            # NOTE: we could instead move them to a list of orphaned trees.
-
-            exe('DELETE FROM user_owns_trees WHERE id_user=?', user_id)
-            exe('DELETE FROM user_reads_trees WHERE id_user=?', user_id)
-
-        return {'message': 'ok'}
-
 
 class Drawers(Resource):
     def get(self, name=None):
@@ -219,9 +86,6 @@ class Layouts(Resource):
 
 
 class Trees(Resource):
-    # NOTE: If we wanted to enforce that only the 'readers' (or owner) of a
-    #   tree have access to it, we would need to add  @auth.login_required
-    #   and check that g.user_id is a reader (or the owner, or admin).
     def get(self, tree_id=None):
         "Return data from the tree (or info about all trees if no id given)"
         rule = request.url_rule.rule  # shortcut
@@ -259,13 +123,11 @@ class Trees(Resource):
             # Not for now... but it may be tree specific
             return app.tree_style[request.remote_addr].ultrametric
 
-    @auth.login_required
     def post(self):
         "Add tree(s)"
         ids = add_trees_from_request()
         return {'message': 'ok', 'ids': ids}, 201
 
-    @auth.login_required
     def put(self, tree_id):
         "Modify tree"
         rule = request.url_rule.rule  # shortcut
@@ -318,8 +180,6 @@ class Trees(Resource):
             load_tree(tid)
             return {'message': 'ok'}
 
-
-    @auth.login_required
     def delete(self, tree_id):
         "Delete tree and all references to it"
         try:
@@ -327,38 +187,38 @@ class Trees(Resource):
 
             assert dbcount('trees WHERE id=?', tid) == 1, 'unknown tree'
 
-            admin_id = 1
-            assert g.user_id in [get_owner(tid), admin_id], 'no permission'
-
             del_tree(tid)
             return {'message': 'ok'}
         except (ValueError, AssertionError) as e:
             raise InvalidUsage(f'for tree id {tree_id}: {e}')
 
 
-class Info(Resource):
-    @auth.login_required
-    def get(self):
-        "Return info about the currently logged user"
-        return get_user(g.user_id)
+class Login(Resource):
+    def post(self):
+        "Return info about the user if successfully logged"
+        return {'id': 0,
+                'username': 'guest',
+                'name': 'guest',
+                'token': '1234'}
 
 
 class Id(Resource):
     def get(self, path):
-        if not any(path.startswith(x) for x in ['users/', 'trees/']):
+        if not path.startswith('trees/'):
             raise InvalidUsage('invalid path %r' % path, 404)
 
         name = path.split('/', 1)[-1]
-        if path.startswith('users/'):
-            uids = dbget0('id', 'users WHERE username=?', name)
-            if len(uids) != 1:
-                raise InvalidUsage('unknown username %r' % name)
-            return {'id': uids[0]}
-        elif path.startswith('trees/'):
+        if path.startswith('trees/'):
             pids = dbget0('id', 'trees WHERE name=?', name)
             if len(pids) != 1:
                 raise InvalidUsage('unknown tree name %r' % name)
             return {'id': pids[0]}
+
+
+class Info(Resource):
+    def get(self):
+        "Return info about the currently logged user"
+        return {'message': 'ok'}
 
 
 
@@ -570,14 +430,12 @@ def add_trees_from_request():
     "Add trees to the database and return a dict of {name: id}"
     if request.form:
         trees = get_trees_from_form()
-        owner = g.user_id
     else:
         data = get_fields(required=['name', 'newick'],
-                          valid_extra=['description', 'owner'])
+                          valid_extra=['description'])
         trees = [data]
-        owner = data.pop('owner', g.user_id)
 
-    return {data['name']: add_tree(data, owner) for data in trees}
+    return {data['name']: add_tree(data) for data in trees}
 
 
 def get_trees_from_form():
@@ -608,14 +466,17 @@ def get_file_contents(fp):
         raise InvalidUsage(f'when reading {fp.filename}: {e}')
 
 
-def add_tree(data, owner):
-    "Add tree to the database (with given data and owner) and return its id"
-    admin_id = 1
-    if g.user_id not in [owner, admin_id]:
-        raise InvalidUsage('owner set different from current user')
+def add_tree(data, replace=True):
+    "Add tree to the database with given data and return its id"
 
     if dbcount('trees WHERE name=?', data['name']) != 0:
-        raise InvalidUsage('existing tree name %r' % data['name'])
+        if replace:
+            print(f'Found {data["name"]} in local database. Updating tree...')
+            with shared_connection([dbget0]) as [get0]:
+                tid = get0('id', 'trees WHERE name=?', data['name'])[0]
+                del_tree(tid)
+        else:
+            raise InvalidUsage('existing tree name %r' % data['name'])
 
     try:
         # load it to validate
@@ -635,9 +496,6 @@ def add_tree(data, owner):
             raise InvalidUsage(f'database exception adding tree: {e}')
 
         tid = get0('id', 'trees WHERE name=?', data['name'])[0]
-
-        exe('INSERT INTO user_owns_trees VALUES (%d, %d)' % (owner, tid))
-
     return tid
 
 
@@ -648,14 +506,9 @@ def modify_tree_fields(tree_id):
 
         assert dbcount('trees WHERE id=?', tid) == 1, 'invalid id'
 
-        admin_id = 1
-        assert g.user_id in [get_owner(tid), admin_id], 'no permission'
-
         data = get_fields(valid_extra=[
-            'name', 'description', 'newick', 'addReaders','delReaders'])
+            'name', 'description', 'newick'])
 
-        add_readers(tid, data.pop('addReaders', None))
-        del_readers(tid, data.pop('delReaders', None))
         if not data:
             return {'message': 'ok'}
 
@@ -702,6 +555,7 @@ def update_layouts(active_layouts):
 
     if reinit_trees:
         app.to_be_initialized[user] = list(app.trees[user].keys())
+
 
 def update_ultrametric(ultrametric):
     """ Update trees if ultrametric option toggled """
@@ -751,23 +605,6 @@ def shared_connection(functions):
 
 # Manage basic fields (related to the SQL schema, like users, readers, etc.).
 
-def get_user(uid):
-    "Return all the fields of a given user as a dict"
-    with shared_connection([dbget, dbget0]) as [get, get0]:
-        users = get('id,username,name', 'users WHERE id=?', uid)
-        if len(users) == 0:
-            raise InvalidUsage(f'unknown user id {uid}', 404)
-
-        user = users[0]
-
-        user['trees_owner'] = get0('id_tree',
-                                   'user_owns_trees WHERE id_user=?', uid)
-        user['trees_reader'] = get0('id_tree',
-                                    'user_reads_trees WHERE id_user=?', uid)
-
-    return strip(user)
-
-
 def get_tid(tree_id):
     "Return the tree id and the subtree id, with the appropriate types"
     try:
@@ -790,26 +627,20 @@ def get_tree(tree_id):
             raise InvalidUsage(f'unknown tree id {tid}', 404)
 
         tree = trees[0]
-
-        tree['owner'] = get0('id_user', 'user_owns_trees WHERE id_tree=?', tid)[0]
-        tree['readers'] = get0('id_user', 'user_reads_trees WHERE id_tree=?', tid)
         tree['subtree'] = subtree
 
     return strip(tree)
-
-
-def get_owner(tid):
-    "Return owner id of the given tree"
-    return dbget0('id_user', 'user_owns_trees WHERE id_tree=?', tid)
 
 
 def del_tree(tid):
     "Delete a tree and everywhere where it appears referenced"
     exe = db.connect().execute
     exe('DELETE FROM trees WHERE id=?', tid)
-    exe('DELETE FROM user_owns_trees WHERE id_tree=?', tid)
-    exe('DELETE FROM user_reads_trees WHERE id_tree=?', tid)
-    app.trees[request.remote_addr].pop(tid, None)
+    try:
+        app.trees[request.remote_addr].pop(tid, None)
+    except:
+        # Only deleted from memory if called from HTTP (app already initialized)
+        pass
 
 
 def strip(d):
@@ -819,36 +650,6 @@ def strip(d):
         if v:
             d_stripped[k] = d[k]
     return d_stripped
-
-
-def add_readers(tid, uids):
-    "Add readers (with user id in uids) to a tree (tid)"
-    if not uids:
-        return
-    uids_str = '(%s)' % ','.join('%d' % x for x in uids)  # -> '(u1, u2, ...)'
-
-    if dbcount('users WHERE id IN %s' % uids_str) != len(uids):
-        raise InvalidUsage(f'nonexisting user in {uids_str}')
-    if dbcount('user_reads_trees '
-        'WHERE id_tree=%d AND id_user IN %s' % (tid, uids_str)) != 0:
-        raise InvalidUsage('tried to add an existing reader')
-
-    values = ','.join('(%d, %d)' % (uid, tid) for uid in uids)
-    dbexe('INSERT INTO user_reads_trees (id_user, id_tree) VALUES %s' % values)
-
-
-def del_readers(tid, uids):
-    "Remove readers (with user id in uids) from a tree (tid)"
-    if not uids:
-        return
-    uids_str = '(%s)' % ','.join('%d' % x for x in uids)  # -> '(u1, u2, ...)'
-
-    if dbcount('user_reads_trees '
-        'WHERE id_tree=%d AND id_user IN %s' % (tid, uids_str)) != len(uids):
-        raise InvalidUsage(f'nonexisting user in {uids_str}')
-
-    dbexe('DELETE FROM user_reads_trees WHERE '
-        'id_user IN %s AND id_tree=?' % uids_str, tid)
 
 
 def get_fields(required=None, valid_extra=None):
@@ -882,7 +683,7 @@ def create_example_database():
 
 def initialize(tree=None):
     "Initialize the database and the flask app"
-    global db, serializer
+    global db
 
     app = Flask(__name__, instance_relative_config=True)
     configure(app)
@@ -890,13 +691,11 @@ def initialize(tree=None):
     api = Api(app)
     add_resources(api)
 
-    # These three dict contain info specific to each user (IP address)
+    # These four dict contain info specific to each user (IP address)
     app.trees = defaultdict(dict)  # to keep in memory loaded trees
     app.to_be_initialized = defaultdict(list)  # list of trees to be reset
     app.searches = defaultdict(dict)  # to keep in memory the searches
     app.tree_style = defaultdict(TreeStyle)
-
-    serializer = JSONSigSerializer(app.config['SECRET_KEY'], expires_in=3600)
 
     db = sqlalchemy.create_engine('sqlite:///' + app.config['DATABASE'])
 
@@ -954,7 +753,6 @@ def add_resources(api):
     "Add all the REST endpoints"
     add = api.add_resource  # shortcut
     add(Login, '/login')
-    add(Users, '/users', '/users/<int:user_id>')
     add(Drawers, '/drawers', '/drawers/<string:name>')
     add(Layouts, '/layouts', '/layouts/<string:name>')
     add(Trees,
@@ -977,9 +775,11 @@ def add_resources(api):
     add(Id, '/id/<path:path>')
 
 
-def run_smartview(newick=None, tree_name=None, tree_style=None, layouts=[]):
+def run_smartview(newick=None, tree_name=None, tree_style=None, layouts=[],
+        update_old_tree=True):
     # Set tree_name to None if no newick was provided
     # Generate tree_name if none was provided
+    # update_old_tree: replace tree in local database if identical tree_name
     tree_name = tree_name or get_random_string(10) if newick else None
 
     global app
@@ -994,12 +794,13 @@ def run_smartview(newick=None, tree_name=None, tree_style=None, layouts=[]):
 
     # Add tree to database if provided
     if newick: 
+        print(f'Adding {tree_name} to local database...')
         tree_data = { 'name': tree_name,
                       'newick': newick }
         with app.app_context():
-            g.user_id = 1
             try:
-                add_tree(tree_data, 1)
+                tid = add_tree(tree_data, replace=update_old_tree)
+                print(f'Added tree {tree_name} with id {tid}.')
             except:
                 print(f'Tree {tree_name} already stored in database.')
 
