@@ -473,7 +473,8 @@ def get_trees_from_form():
             'id': form['id'], 
             'name': form['name'], 
             'newick': form['newick'],
-            'description': form.get('description', '')}]
+            'description': form.get('description', '')
+            }]
 
 
 def get_file_contents(fp):
@@ -491,7 +492,7 @@ def add_tree(data, replace=True):
     "Add tree to the database with given data and return its id"
     
     if app.memory_only:
-        tid = int(data['id'])
+        tid = data['id']
         newick = data['newick']
         load_tree_from_newick(tid, newick)
         with open(f'/tmp/{tid}.nwx', 'w') as nw:
