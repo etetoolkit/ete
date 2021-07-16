@@ -139,6 +139,7 @@ const menus = {  // will contain the menus on the top
     searches: undefined,
     collapsed: undefined,
     minimap: undefined, // minimap toggler
+    subtree: undefined,
 };
 
 const trees = {};  // will translate names to ids (trees[tree_name] = tree_id)
@@ -174,9 +175,11 @@ async function main() {
 
 // Fill global var trees, which translates tree names into their database ids.
 async function init_trees() {
-    const trees_info = await api("/trees");
+    try {
+        const trees_info = await api("/trees");
 
-    trees_info.forEach(t => trees[t.name] = t.id);  // like trees["mytree"] = 7
+        trees_info.forEach(t => trees[t.name] = t.id);  // like trees["mytree"] = 7
+    } catch {} // Working in memory_only mode
 }
 
 
@@ -235,6 +238,8 @@ async function on_tree_change() {
     reset_position();
     draw_minimap();
     update();
+
+    menus.subtree.refresh(); // show subtree in control panel
 
     const sample_trees = ["ncbi", "GTDB_bact_r95"];  // hardcoded for the moment
     view.allow_modifications = !sample_trees.includes(view.tree);
@@ -341,6 +346,8 @@ async function set_query_string_values() {
 async function set_consistent_values() {
     if (view.tree === null)
         view.tree = Object.keys(trees)[0];  // select default tree
+    else (trees.length === 0)
+        trees[view.tree] = view.tree;
 
     view.tree_size = await api(`/trees/${get_tid()}/size`);
 

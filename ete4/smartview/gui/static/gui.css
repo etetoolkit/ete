@@ -257,6 +257,8 @@ button.tp-tbiv_b {
     --tp-input-background-color-focus: #eaeaea;
     --tp-input-background-color-hover: #eaeaea;
     --tp-input-foreground-color: gray;
+    --tp-monitor-background-color: var(--tp-input-background-color);
+    --tp-monitor-foreground-color: var(--tp-input-foreground-color);
     --tp-label-foreground-color: gray;
     --tp-button-background-color: #d6d6d6;
     --tp-button-background-color-hover: #ccc;

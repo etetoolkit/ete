@@ -91,12 +91,18 @@ function create_menu_tags_searches(menu) {
 function add_folder_tree(menu, trees) {
     const folder_tree = menu.addFolder({ title: "Tree" });
 
-    const options = trees.reduce((opt, t) => ({ ...opt, [t]: t }), {});
-    folder_tree.addInput(view, "tree", {options: options}).on("change", () => {
-        view.subtree = "";
-        on_tree_change();
-    });
-    folder_tree.addInput(view, "subtree").on("change", on_tree_change);
+    if (trees.length > 1) {
+        const options = trees.reduce((opt, t) => ({ ...opt, [t]: t }), {});
+        folder_tree.addInput(view, "tree", {options: options}).on("change", () => {
+            view.subtree = "";
+            on_tree_change();
+        });
+    } else
+        folder_tree.addMonitor(view, "tree",
+            { label: "tree" })
+
+    menus.subtree = folder_tree.addInput(view, "subtree", 
+        { value: view.subtree }).on("change", on_tree_change);
 
     const folder_sort = folder_tree.addFolder({ title: "Sort",
                                                 expanded: false });
@@ -104,6 +110,7 @@ function add_folder_tree(menu, trees) {
     folder_sort.addInput(view.sorting, "key");
     folder_sort.addInput(view.sorting, "reverse");
 
+    if (trees.length > 1)
     folder_tree.addButton({ title: "upload" }).on("click", view.upload);
 
     const folder_download = folder_tree.addFolder({ title: "Download",
