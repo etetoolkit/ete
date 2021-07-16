@@ -494,6 +494,7 @@ def add_tree(data, replace=True):
     if app.memory_only:
         tid = data['id']
         newick = data['newick']
+        del_tree(tid)  # delete if there is a tree with same id
         load_tree_from_newick(tid, newick)
         with open(f'/tmp/{tid}.nwx', 'w') as nw:
             nw.write(newick)
