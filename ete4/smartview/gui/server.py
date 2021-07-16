@@ -491,7 +491,7 @@ def add_tree(data, replace=True):
     "Add tree to the database with given data and return its id"
     
     if app.memory_only:
-        tid = data['id']
+        tid = int(data['id'])
         newick = data['newick']
         load_tree_from_newick(tid, newick)
         with open(f'/tmp/{tid}.nwx', 'w') as nw:
