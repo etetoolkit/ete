@@ -469,8 +469,11 @@ def get_trees_from_form():
             return [{'name': form['name'], 'newick': text,
                      'description': form.get('description', '')}]
     else:
-        return [{'name': form['name'], 'newick': form['newick'],
-                 'description': form.get('description', '')}]
+        return [{
+            'id': form['id'], 
+            'name': form['name'], 
+            'newick': form['newick'],
+            'description': form.get('description', '')}]
 
 
 def get_file_contents(fp):
