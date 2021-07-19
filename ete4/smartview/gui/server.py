@@ -220,6 +220,18 @@ class Id(Resource):
 
 # Auxiliary functions.
 
+def init_timer(fn):
+    def wrapper(*args, **kwargs):
+        if type(args[0]) == int:
+            tid = args[0]
+            return_val = fn(*args, **kwargs)
+        else:
+            tid = return_val = fn(*args, **kwargs)
+        app.timer[tid] = time()
+        return return_val
+    return wrapper
+
+
 def load_tree(tree_id):
     "Add tree to app.trees and initialize it if not there, and return it"
     try:
@@ -259,6 +271,7 @@ def load_tree_from_newick(tid, newick):
     return t
 
 
+@init_timer
 def retrieve_tree(tid):
     """Retrieve tree from tmp or local db.
     Called when tree has been deleted from memory
@@ -309,7 +322,18 @@ def get_drawer(tree_id, args):
         zoom = (get('zx', 1), get('zy', 1))
         assert zoom[0] > 0 and zoom[1] > 0, 'zoom must be > 0'
 
+        tid, _ = get_tid(tree_id)
+
+        active_layouts = args.get('layouts')
+        if active_layouts != None:
+            update_layouts(active_layouts, tid)
+
         drawer_name = args.get('drawer', 'RectFaces')
+        # Automatically provide aligned drawer when necessary
+        if drawer_name not in ['Rect', 'Circ'] and\
+                any(getattr(ly, 'contains_aligned_face', False)\
+                    for ly in app.tree_style[tid].layout_fn):
+            drawer_name = 'Align' + drawer_name
         drawer_class = next((d for d in draw.get_drawers()
             if d.__name__[len('Drawer'):] == drawer_name), None)
 
@@ -322,12 +346,6 @@ def get_drawer(tree_id, args):
 
         collapsed_ids = set(tuple(int(i) for i in node_id.split(','))
             for node_id in json.loads(args.get('collapsed_ids', '[]')))
-
-        tid, _ = get_tid(tree_id)
-
-        active_layouts = args.get('layouts')
-        if active_layouts != None:
-            update_layouts(active_layouts, tid)
 
         update_ultrametric(args.get('ultrametric'), tid)
 
@@ -499,13 +517,6 @@ def get_file_contents(fp):
         raise InvalidUsage(f'when reading {fp.filename}: {e}')
 
 
-def init_timer(fn):
-    def wrapper(*args, **kwargs):
-        tid = fn(*args, kwargs)
-        app.timer[tid] = time()
-        return tid
-    return wrapper
-
 @init_timer
 def add_tree(data, replace=True):
     "Add tree to the database with given data and return its id"
@@ -514,7 +525,6 @@ def add_tree(data, replace=True):
         tid = data['id']
         newick = data['newick']
         del_tree(tid)  # delete if there is a tree with same id
-        load_tree_from_newick(tid, newick)
         with open(f'/tmp/{tid}.nwx', 'w') as nw:
             nw.write(newick)
         return tid
@@ -703,13 +713,15 @@ def purge(interval=None, max_time=30*60):
         :interval: if set, recursively calls purge after given interval.
         :max_time: maximum inactivity time in seconds. Default 30 min.
     """
-    for tid in app.trees.keys():
-        if time() - app.timer[tid] > max_time: 
+    trees = list(app.trees.keys())
+    for tid in trees:
+        inactivity_time = time() - app.timer.get(tid, time() + max_time + 1)
+        if inactivity_time > max_time: 
             del_tree(tid)
     # Call self after interval
     if interval: # in seconds
         print(f'Current trees in memory: {len(list(app.trees.keys()))}')
-        Timer(interval, purge).start()
+        Timer(interval, purge, [interval, max_time]).start()
 
 
 def strip(d):
@@ -848,7 +860,7 @@ def add_resources(api):
 
 
 def run_smartview(newick=None, tree_name=None, tree_style=None, layouts=[],
-        update_old_tree=True, memory_only=False):
+        update_old_tree=True, memory_only=True):
     # Set tree_name to None if no newick was provided
     # Generate tree_name if none was provided
     # update_old_tree: replace tree in local database if identical tree_name
@@ -856,7 +868,7 @@ def run_smartview(newick=None, tree_name=None, tree_style=None, layouts=[],
 
     global app
     app = initialize(tree_name, memory_only=memory_only)
-    purge(interval=15 * 60) # purge inactive trees every 15 minutes
+    purge(interval=15*60) # purge inactive trees every 15 minutes
 
     if tree_style:
         app.tree_style = defaultdict(lambda: tree_style)
