@@ -88,6 +88,11 @@ class Trees(Resource):
     def get(self, tree_id=None):
         "Return data from the tree (or info about all trees if no id given)"
         rule = request.url_rule.rule  # shortcut
+        
+        # Update tree's timer
+        if rule.startswith('/trees/<string:tree_id>'):
+            app.timer[tree_id] = time.time()
+        
         if rule == '/trees':
             if app.memory_only:
                 raise InvalidUsage(f'invalid path {rule} in memory_only mode', 404)
@@ -134,6 +139,10 @@ class Trees(Resource):
     def put(self, tree_id):
         "Modify tree"
         rule = request.url_rule.rule  # shortcut
+
+        # Update tree's timer
+        if rule.startswith('/trees/<string:tree_id>'):
+            app.timer[tree_id] = time.time()
 
         if rule == '/trees/<string:tree_id>':
             modify_tree_fields(tree_id)
@@ -488,6 +497,14 @@ def get_file_contents(fp):
         raise InvalidUsage(f'when reading {fp.filename}: {e}')
 
 
+def init_timer(fn):
+    def wrapper(*args, **kwargs):
+        tid = fn(*args, kwargs)
+        app.timer[tid] = time.time()
+        return tid
+    return wrapper
+
+@init_timer
 def add_tree(data, replace=True):
     "Add tree to the database with given data and return its id"
     
@@ -674,8 +691,22 @@ def del_tree(tid):
         exe('DELETE FROM trees WHERE id=?', tid)
     app.trees.pop(tid, None)
     app.tree_style.pop(tid, None)
+    app.timer.pop(tid, None)
     if tid in app.to_be_initialized:
         app.to_be_initialized.remove(tid)
+
+
+def purge(interval=None, max_time=30*60):
+    """Delete trees that have been inactive for a certain period of time
+        :interval: if set, recursively calls purge after given interval.
+        :max_time: maximum inactivity time in seconds. Default 30 min.
+    """
+    for tid in app.trees.keys():
+        if time.time() - app.timer[tid] > max_time: 
+            del_tree(tid)
+    # Call self after interval
+    if interval: # in seconds
+        Timer(interval, purge).start()
 
 
 def strip(d):
@@ -727,11 +758,13 @@ def initialize(tree=None, memory_only=False):
     add_resources(api)
 
     app.memory_only = memory_only
-    # These four dict contain info specific to each user (IP address)
+    # These four dict contain info specific to each tree
     app.trees = {}  # to keep in memory loaded trees
     app.to_be_initialized = []  # list of trees to be reset
     app.searches = {}  # to keep in memory the searches
     app.tree_style = defaultdict(TreeStyle)
+    app.timer = {}  # to keep track of how long tree has been inactive
+    purge(interval=15 * 60) # purge inactive trees every 15 minutes
 
     db = sqlalchemy.create_engine('sqlite:///' + app.config['DATABASE'])
 
@@ -741,6 +774,10 @@ def initialize(tree=None, memory_only=False):
         @app.route('/')
         def index():
             return redirect(url_for('static', filename='gui.html', tree=tree))
+    elif app.memory_only:
+        @app.route('/')
+        def index():
+            return redirect(url_for('static', filename='gui.html'))
     else:
         # Else, provide a user interface for entering a newick to visualize
         @app.route('/')
