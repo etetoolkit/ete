@@ -65,19 +65,19 @@ db = None
 # REST api.
 
 class Drawers(Resource):
-    def get(self, name=None):
-        "Return data from the drawer (or info about all drawers if no id given)"
-        rule = request.url_rule.rule  # shortcut
-        if rule == '/drawers':
-            return [d.__name__[len('Drawer'):] for d in draw.get_drawers()]
-        elif rule == '/drawers/<string:name>':
-            try:
-                drawer_class = next(d for d in draw.get_drawers()
-                    if d.__name__[len('Drawer'):] == name)
-                return {'type': drawer_class.TYPE,
-                        'npanels': drawer_class.NPANELS}
-            except StopIteration:
-                raise InvalidUsage(f'not a valid drawer: {name}')
+    def get(self, name=None, tree_id=None):
+        "Return data from the drawer. In aligned mode if aligned faces"
+        try:
+            if name not in ['Rect', 'Circ'] and\
+                    any(getattr(ly, 'contains_aligned_face', False)\
+                        for ly in app.tree_style[tree_id].layout_fn):
+                name = 'Align' + name
+            drawer_class = next(d for d in draw.get_drawers()
+                if d.__name__[len('Drawer'):] == name)
+            return {'type': drawer_class.TYPE,
+                    'npanels': drawer_class.NPANELS}
+        except StopIteration:
+            raise InvalidUsage(f'not a valid drawer: {name}')
 
 
 class Layouts(Resource):
@@ -839,7 +839,7 @@ def configure(app):
 def add_resources(api):
     "Add all the REST endpoints"
     add = api.add_resource  # shortcut
-    add(Drawers, '/drawers', '/drawers/<string:name>')
+    add(Drawers, '/drawers/<string:name>/<string:tree_id>')
     add(Layouts, '/layouts', '/layouts/<string:tree_id>')
     add(Trees,
         '/trees',

@@ -56,8 +56,16 @@ async function draw_tree() {
         colorize_tags();
         colorize_searches();
 
-        if (view.drawer.npanels > 1)
-            await draw_aligned(params);
+        const drawer_info = await api(`/drawers/${view.drawer.name}/${get_tid()}`);
+        view.drawer.npanels = drawer_info.npanels; // type has already been set
+
+        // Toggle aligned panel
+        if (drawer_info.type === "rect" && drawer_info.npanels > 1)
+            div_aligned.style.display = "initial";  // show aligned panel
+        else
+            div_aligned.style.display = "none";  // hide aligned panel
+            if (view.drawer.npanels > 1)
+                await draw_aligned(params);
 
         if (view.drawer.type === "circ") {
             fix_text_orientations();

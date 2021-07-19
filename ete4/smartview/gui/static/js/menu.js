@@ -10,7 +10,7 @@ export { init_menus };
 
 
 // Init the menus on the top with all the options we can see and change.
-function init_menus(trees, drawers) {
+function init_menus(trees) {
     menus.pane = new Tweakpane.Pane()
         .addFolder({ title: "Control panel" });
     const tab = menus.pane.addTab({ pages: [
@@ -19,7 +19,7 @@ function init_menus(trees, drawers) {
         { title: "Selection" },
     ]});
     create_menu_main(tab.pages[0], trees);
-    create_menu_representation(tab.pages[1], drawers);
+    create_menu_representation(tab.pages[1]);
     create_menu_tags_searches(tab.pages[2]);
 }
 
@@ -46,8 +46,8 @@ function create_menu_main(menu, trees) {
 }
 
 
-function create_menu_representation(menu, drawers) {
-    const options = drawers.reduce((opt, t) => ({ ...opt, [t]: t }), {});
+function create_menu_representation(menu) {
+    const options = { "Rectangular": "RectFaces", "Circular": "CircFaces" };
     menu.addInput(view.drawer, "name", { label: "drawer", options: options })
         .on("change", on_drawer_change);
 

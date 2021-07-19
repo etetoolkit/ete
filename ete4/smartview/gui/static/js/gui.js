@@ -156,8 +156,7 @@ async function main() {
 
     reset_node_count();
 
-    const drawers = await api("/drawers");
-    init_menus(Object.keys(trees), drawers);
+    init_menus(Object.keys(trees));
 
     init_events();
 
@@ -250,14 +249,9 @@ async function on_tree_change() {
 async function on_drawer_change() {
     const previous_type = view.drawer.type;
 
-    const drawer_info = await api(`/drawers/${view.drawer.name}`);
+    const drawer_info = await api(`/drawers/${view.drawer.name}/${get_tid()}`);
     view.drawer.type = drawer_info.type;
     view.drawer.npanels = drawer_info.npanels;
-
-    if (drawer_info.type === "rect" && drawer_info.npanels > 1)
-        div_aligned.style.display = "initial";  // show aligned panel
-    else
-        div_aligned.style.display = "none";  // hide aligned panel
 
     if (drawer_info.type !== previous_type) {
         reset_zoom();
@@ -353,7 +347,7 @@ async function set_consistent_values() {
 
     let drawer_info;
     try {
-        drawer_info = await api(`/drawers/${view.drawer.name}`);
+        drawer_info = await api(`/drawers/${view.drawer.name}/${get_tid()}`);
     }
     catch (ex) {
         Swal.fire({
