@@ -703,6 +703,7 @@ def purge(interval=None, max_time=30*60):
         :interval: if set, recursively calls purge after given interval.
         :max_time: maximum inactivity time in seconds. Default 30 min.
     """
+    if app
     for tid in app.trees.keys():
         if time.time() - app.timer[tid] > max_time: 
             del_tree(tid)
@@ -767,7 +768,6 @@ def initialize(tree=None, memory_only=False):
     app.searches = {}  # to keep in memory the searches
     app.tree_style = defaultdict(TreeStyle)
     app.timer = {}  # to keep track of how long tree has been inactive
-    purge(interval=15 * 60) # purge inactive trees every 15 minutes
 
     db = sqlalchemy.create_engine('sqlite:///' + app.config['DATABASE'])
 
@@ -857,6 +857,7 @@ def run_smartview(newick=None, tree_name=None, tree_style=None, layouts=[],
 
     global app
     app = initialize(tree_name, memory_only=memory_only)
+    purge(interval=15 * 60) # purge inactive trees every 15 minutes
 
     if tree_style:
         app.tree_style = defaultdict(lambda: tree_style)
