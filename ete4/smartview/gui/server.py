@@ -708,6 +708,7 @@ def purge(interval=None, max_time=30*60):
             del_tree(tid)
     # Call self after interval
     if interval: # in seconds
+        print(f'Current trees in memory: {len(list(app.trees.keys()))}')
         Timer(interval, purge).start()
 
 
