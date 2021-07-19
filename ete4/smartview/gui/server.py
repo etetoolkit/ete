@@ -93,7 +93,7 @@ class Trees(Resource):
         
         # Update tree's timer
         if rule.startswith('/trees/<string:tree_id>'):
-            app.timer[tree_id] = time.time()
+            app.timer[tree_id] = time()
         
         if rule == '/trees':
             if app.memory_only:
@@ -144,7 +144,7 @@ class Trees(Resource):
 
         # Update tree's timer
         if rule.startswith('/trees/<string:tree_id>'):
-            app.timer[tree_id] = time.time()
+            app.timer[tree_id] = time()
 
         if rule == '/trees/<string:tree_id>':
             modify_tree_fields(tree_id)
@@ -502,7 +502,7 @@ def get_file_contents(fp):
 def init_timer(fn):
     def wrapper(*args, **kwargs):
         tid = fn(*args, kwargs)
-        app.timer[tid] = time.time()
+        app.timer[tid] = time()
         return tid
     return wrapper
 
@@ -704,7 +704,7 @@ def purge(interval=None, max_time=30*60):
         :max_time: maximum inactivity time in seconds. Default 30 min.
     """
     for tid in app.trees.keys():
-        if time.time() - app.timer[tid] > max_time: 
+        if time() - app.timer[tid] > max_time: 
             del_tree(tid)
     # Call self after interval
     if interval: # in seconds
