@@ -703,7 +703,6 @@ def purge(interval=None, max_time=30*60):
         :interval: if set, recursively calls purge after given interval.
         :max_time: maximum inactivity time in seconds. Default 30 min.
     """
-    if app
     for tid in app.trees.keys():
         if time.time() - app.timer[tid] > max_time: 
             del_tree(tid)
