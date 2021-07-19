@@ -225,19 +225,19 @@ def read_newick(newick, root_node=None, format=0, quoted_names=False):
     You can also take advantage from this behaviour to concatenate
     several tree structures.
     """
-   
+
     if root_node is None:
         from ..coretype.tree import TreeNode
         root_node = TreeNode()
 
     if isinstance(newick, six.string_types):
 
-        # try to determine whether the file exists.  
+        # try to determine whether the file exists.
         # For very large trees, if newick contains the content of the tree, rather than a file name,
-        # this may fail, at least on Windows, because the os fails to stat the file content, deeming it 
+        # this may fail, at least on Windows, because the os fails to stat the file content, deeming it
         # too long for testing with os.path.exists.  This raises a ValueError with description
         # "stat: path too long for Windows".  This is described in issue #258
-        try: 
+        try:
             file_exists = os.path.exists(newick)
         except ValueError:      # failed to stat
             file_exists = False
@@ -246,9 +246,11 @@ def read_newick(newick, root_node=None, format=0, quoted_names=False):
         if file_exists:
             if newick.endswith('.gz'):
                 import gzip
-                nw = gzip.open(newick).read()
+                with gzip.open(newick) as INPUT:
+                    nw = INPUT.read()
             else:
-                nw = open(newick, 'rU').read()
+                with open(newick) as INPUT:
+                    nw = INPUT.read()
         else:
             nw = newick
 
@@ -269,7 +271,7 @@ def read_newick(newick, root_node=None, format=0, quoted_names=False):
 def _read_newick_from_string(nw, root_node, matcher, formatcode, quoted_names):
     """ Reads a newick string in the New Hampshire format. """
 
-    if quoted_names: 
+    if quoted_names:
         # Quoted text is mapped to references
         quoted_map = {}
         unquoted_nw = ''
@@ -416,7 +418,7 @@ def _read_node_data(subnw, current_node, node_type, matcher, formatcode):
         node = current_node
 
     subnw = subnw.strip()
-    
+
     if not subnw and node_type == 'leaf' and formatcode != 100:
         raise NewickError('Empty leaf node found')
     elif not subnw:
@@ -507,5 +509,3 @@ def _get_features_string(self, features=None):
         string = "[&&NHX:"+string+"]"
 
     return string
-
-

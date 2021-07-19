@@ -148,8 +148,10 @@ class TreeNode(object):
     def _get_children(self):
         return self._children
     def _set_children(self, value):
-        if type(value) == list and \
-           len(set([type(n)==type(self) for n in value]))<2:
+        if type(value) == list:
+            for n in value:
+                if type(n) != type(self):
+                    raise TreeError("Incorrect child node type")
             self._children = value
         else:
             raise TreeError("Incorrect children type")
@@ -886,10 +888,19 @@ class TreeNode(object):
         # Convert node names into node instances
         target_nodes = _translate_nodes(self, *target_nodes)
 
-        # If only one node is provided, use self as the second target
-        if type(target_nodes) != list:
-            target_nodes = [target_nodes, self]
 
+        if type(target_nodes) != list:
+            # If only one node is provided and is the same as the seed node,
+            # return itself
+            if target_nodes is self:
+                if get_path:
+                    return self, {}
+                else:
+                    return self
+            else:
+                #Otherwise find the common ancestor of current seed node and
+                #the target_node provided
+                target_nodes = [target_nodes, self]
 
         n2path = {}
         reference = []
@@ -1149,6 +1160,11 @@ class TreeNode(object):
                 break
             else:
                 current = current.up
+
+        # if we reached the root, the tree is already at midpoint. Return any child as valid outgroup
+        if current is None:
+            current = self.children[0]
+
         return current
 
     def populate(self, size, names_library=None, reuse_names=False,
@@ -2343,6 +2359,107 @@ class TreeNode(object):
         for n in target:
             _resolve(n)
 
+    def cophenetic_matrix(self):
+        """
+        .. versionadded: 3.1.1
+
+        Generate a cophenetic distance matrix of the treee to standard output
+
+        The `cophenetic matrix <https://en.wikipedia.org/wiki/Cophenetic>` is a matrix representation of the
+        distance between each node.
+
+        if we have a tree like
+
+                                   ----A
+                      _____________|y
+                      |            |
+                      |            ----B
+              ________|z
+                      |            ----C
+                      |            |
+                      |____________|x     -----D
+                                   |      |
+                                   |______|w
+                                          |
+                                          |
+                                          -----E
+
+        Where w,x,y,z are internal nodes.
+        d(A,B) = d(y,A) + d(y,B)
+        and
+        d(A, E) = d(z,A) + d(z, E) = {d(z,y) + d(y,A)} + {d(z,x) + d(x,w) + d(w,E)}
+
+        We use an idea inspired by the ete3 team: https://gist.github.com/jhcepas/279f9009f46bf675e3a890c19191158b :
+
+        For each node find its path to the root.
+
+        e.g.
+
+        A -> A, y, z
+        E -> E, w, x,z
+
+        and make these orderless sets. Then we XOR the two sets to only find the elements
+        that are in one or other sets but not both. In this case A, E, y, x, w.
+
+        The distance between the two nodes is the sum of the distances from each of those nodes
+        to the parent
+
+        One more optimization: since the distances are symmetric, and distance to itself is zero
+        we user itertools.combinations rather than itertools.permutations. This cuts our computes from theta(n^2)
+        1/2n^2 - n (= O(n^2), which is still not great, but in reality speeds things up for large trees).
+
+
+        For this tree, we will return the two dimensional array:
+                         A                  B                   C                   D                     E
+        A                0           d(A-y) + d(B-y)     d(A-z) + d(C-z)     d(A-z) + d(D-z)       d(A-z) + d(E-z)
+        B         d(B-y) + d(A-y)           0            d(B-z) + d(C-z)     d(B-z) + d(D-z)       d(B-z) + d(E-z)
+        C         d(C-z) + d(A-z)    d(C-z) + d(B-z)            0            d(C-x) + d(D-x)       d(C-x) + d(E-x)
+        D         d(D-z) + d(A-z)    d(D-z) + d(B-z)     d(D-x) + d(C-x)            0              d(D-w) + d(E-w)
+        E         d(E-z) + d(A-z)    d(E-z) + d(B-z)     d(E-x) + d(C-x)     d(E-w) + d(D-w)              0
+
+        We will also return the one dimensional array with the leaves in the order in which they appear in the matrix
+        (i.e. the column and/or row headers).
+
+        :param filename: the optional file to write to. If not provided, output will be to standard output
+        :return: two-dimensional array and a one dimensional array
+        """
+
+        leaves = self.get_leaves()
+        paths = {x: set() for x in leaves}
+
+        # get the paths going up the tree
+        # we get all the nodes up to the last one and store them in a set
+
+        for n in leaves:
+            if n.is_root():
+                continue
+            movingnode = n
+            while not movingnode.is_root():
+                paths[n].add(movingnode)
+                movingnode = movingnode.up
+
+        # now we want to get all pairs of nodes using itertools combinations. We need AB AC etc but don't need BA CA
+
+        leaf_distances = {x.name: {} for x in leaves}
+
+        for (leaf1, leaf2) in itertools.combinations(leaves, 2):
+            # figure out the unique nodes in the path
+            uniquenodes = paths[leaf1] ^ paths[leaf2]
+            distance = sum(x.dist for x in uniquenodes)
+            leaf_distances[leaf1.name][leaf2.name] = leaf_distances[leaf2.name][leaf1.name] = distance
+
+        allleaves = sorted(leaf_distances.keys()) # the leaves in order that we will return
+
+        output = [] # the two dimensional array that we will return
+
+        for i, n in enumerate(allleaves):
+            output.append([])
+            for m in allleaves:
+                if m == n:
+                    output[i].append(0) # distance to ourself = 0
+                else:
+                    output[i].append(leaf_distances[n][m])
+        return output, allleaves
 
     def add_face(self, face, column, position="branch-right"):
         """
@@ -2386,14 +2503,14 @@ class TreeNode(object):
 
     @staticmethod
     def from_parent_child_table(parent_child_table):
-        """Converts a parent-child table into an ETE Tree instance. 
-        
+        """Converts a parent-child table into an ETE Tree instance.
+
         :argument parent_child_table: a list of tuples containing parent-child
            relationships. For example: [("A", "B", 0.1), ("A", "C", 0.2), ("C",
            "D", 1), ("C", "E", 1.5)]. Where each tuple represents: [parent, child,
            child-parent-dist]
-        
-        :returns: A new Tree instance 
+
+        :returns: A new Tree instance
 
         :example:
 
@@ -2428,20 +2545,20 @@ class TreeNode(object):
 
     @staticmethod
     def from_skbio(skbio_tree, map_attributes=None):
-        """Converts a scikit-bio TreeNode object into ETE Tree object. 
-        
-        :argument skbio_tree: a scikit bio TreeNode instance 
+        """Converts a scikit-bio TreeNode object into ETE Tree object.
+
+        :argument skbio_tree: a scikit bio TreeNode instance
 
         :argument None map_attributes: A list of attribute nanes in the
            scikit-bio tree that should be mapped into the ETE tree
            instance. (name, id and branch length are always mapped)
 
-        :returns: A new Tree instance 
+        :returns: A new Tree instance
 
         :example:
 
         >>> tree = Tree.from_skibio(skbioTree, map_attributes=["value"])
-        
+
         """
         from skbio import TreeNode as skbioTreeNode
 
@@ -2589,8 +2706,3 @@ def _translate_nodes(root, *nodes):
 # Alias
 #: .. currentmodule:: ete3
 Tree = TreeNode
-
-
-
-
-

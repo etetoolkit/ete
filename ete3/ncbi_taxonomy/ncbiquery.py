@@ -107,7 +107,7 @@ class NCBITaxa(object):
         if taxdump_file:
             self.update_taxonomy_database(taxdump_file)
 
-        if dbfile is None and not os.path.exists(self.dbfile):
+        if dbfile != DEFAULT_TAXADB and not os.path.exists(self.dbfile):
             print('NCBI database not present yet (first time used?)', file=sys.stderr)
             self.update_taxonomy_database(taxdump_file)
 
@@ -219,7 +219,7 @@ class NCBITaxa(object):
 
         return id2lineages
 
-    
+
     def get_lineage(self, taxid):
         """Given a valid taxid number, return its corresponding lineage track as a
         hierarchically sorted list of parent taxids.
@@ -241,7 +241,7 @@ class NCBITaxa(object):
                 raise ValueError("%s taxid not found" %taxid)
             else:
                 warnings.warn("taxid %s was translated into %s" %(taxid, merged_conversion[taxid]))
-                
+
         track = list(map(int, raw_track[0].split(",")))
         return list(reversed(track))
 
@@ -326,7 +326,7 @@ class NCBITaxa(object):
         for sp in taxids:
             names.append(id2name.get(sp, sp))
         return names
-                                
+
 
     def get_descendant_taxa(self, parent, intermediate_nodes=False, rank_limit=None, collapse_subspecies=False, return_tree=False):
         """
@@ -342,6 +342,11 @@ class NCBITaxa(object):
             except KeyError:
                 raise ValueError('%s not found!' %parent)
 
+        # checks if taxid is a deprecated one, and converts into the right one.
+        _, conversion = self._translate_merged([taxid]) #try to find taxid in synonyms table
+        if conversion:
+            taxid = conversion[taxid]
+
         with open(self.dbfile+".traverse.pkl", "rb") as CACHED_TRAVERSE:
             prepostorder = pickle.load(CACHED_TRAVERSE)
         descendants = {}
@@ -353,12 +358,12 @@ class NCBITaxa(object):
                 descendants[tid] = descendants.get(tid, 0) + 1
             elif found == 2:
                 break
-            
+
         if not found:
             raise ValueError("taxid not found:%s" %taxid)
         elif found == 1:
-            return [taxid]        
-            
+            return [taxid]
+
         if rank_limit or collapse_subspecies or return_tree:
             tree = self.get_topology(list(descendants.keys()), intermediate_nodes=intermediate_nodes, collapse_subspecies=collapse_subspecies, rank_limit=rank_limit)
             if return_tree:
@@ -367,7 +372,7 @@ class NCBITaxa(object):
                 return list(map(int, [n.name for n in tree.get_descendants()]))
             else:
                 return map(int, [n.name for n in tree])
-                
+
         elif intermediate_nodes:
             return [tid for tid, count in six.iteritems(descendants)]
         else:
@@ -393,7 +398,7 @@ class NCBITaxa(object):
 
         """
         from .. import PhyloTree
-        taxids, merged_conversion = self._translate_merged(taxids)        
+        taxids, merged_conversion = self._translate_merged(taxids)
         if len(taxids) == 1:
             root_taxid = int(list(taxids)[0])
             with open(self.dbfile+".traverse.pkl", "rb") as CACHED_TRAVERSE:
@@ -402,7 +407,7 @@ class NCBITaxa(object):
             found = 0
             nodes = {}
             hit = 0
-            visited = set()            
+            visited = set()
             start = prepostorder.index(root_taxid)
             try:
             	end = prepostorder.index(root_taxid, start+1)
@@ -430,7 +435,7 @@ class NCBITaxa(object):
             id2lineage = self.get_lineage_translator(taxids)
             all_taxids = set()
             for lineage in id2lineage.values():
-                all_taxids.update(lineage)                
+                all_taxids.update(lineage)
             id2rank = self.get_rank(all_taxids)
             for sp in taxids:
                 track = []
@@ -488,7 +493,7 @@ class NCBITaxa(object):
 
         :param t: a Tree (or Tree derived) instance.
 
-        :param name taxid_attr: Allows to set a custom node attribute 
+        :param name taxid_attr: Allows to set a custom node attribute
             containing the taxid number associated to each node (i.e.
             species in PhyloTree instances).
 
@@ -508,7 +513,7 @@ class NCBITaxa(object):
         merged_conversion = {}
 
         taxids, merged_conversion = self._translate_merged(taxids)
-        
+
         if not tax2name or taxids - set(map(int, list(tax2name.keys()))):
             tax2name = self.get_taxid_translator(taxids)
         if not tax2track or taxids - set(map(int, list(tax2track.keys()))):
@@ -537,9 +542,9 @@ class NCBITaxa(object):
                     node_taxid = merged_conversion[node_taxid]
                 n.add_features(sci_name = tax2name.get(node_taxid, getattr(n, taxid_attr, '')),
                                common_name = tax2common_name.get(node_taxid, ''),
-                               lineage = tax2track[node_taxid],
-                               rank = tax2rank.get(node_taxid, 'Unknown'),                               
-                               named_lineage = [tax2name.get(tax, str(tax)) for tax in tax2track[node_taxid]])
+                               lineage = tax2track.get(node_taxid, []),
+                               rank = tax2rank.get(node_taxid, 'Unknown'),
+                               named_lineage = [tax2name.get(tax, str(tax)) for tax in tax2track.get(node_taxid, [])])
             elif n.is_leaf():
                 n.add_features(sci_name = getattr(n, taxid_attr, 'NA'),
                                common_name = '',
@@ -669,19 +674,30 @@ def load_ncbi_tree_from_dump(tar):
     name2rank = {}
     node2common = {}
     print("Loading node names...")
+    unique_nocase_synonyms = set()
     for line in tar.extractfile("names.dmp"):
         line = str(line.decode())
         fields =  [_f.strip() for _f in line.split("|")]
         nodename = fields[0]
         name_type = fields[3].lower()
         taxname = fields[1]
+
+        # Clean up tax names so we make sure the don't include quotes. See https://github.com/etetoolkit/ete/issues/469
+        taxname = taxname.rstrip('"').lstrip('"')
+
         if name_type == "scientific name":
             node2taxname[nodename] = taxname
         if name_type == "genbank common name":
             node2common[nodename] = taxname
         elif name_type in set(["synonym", "equivalent name", "genbank equivalent name",
                                "anamorph", "genbank synonym", "genbank anamorph", "teleomorph"]):
-            synonyms.add( (nodename, taxname) )
+
+            # Keep track synonyms, but ignore duplicate case-insensitive names. See https://github.com/etetoolkit/ete/issues/469
+            synonym_key = (nodename, taxname.lower())
+            if synonym_key not in unique_nocase_synonyms:
+                unique_nocase_synonyms.add(synonym_key)
+                synonyms.add((nodename, taxname))
+
     print(len(node2taxname), "names loaded.")
     print(len(synonyms), "synonyms loaded.")
 
@@ -744,11 +760,14 @@ def update_db(dbfile, targz_file=None):
             md5_check = md5_file.readline().split()[0]
         targz_file = "taxdump.tar.gz"
         do_download = False
-        
+
         if os.path.exists("taxdump.tar.gz"):
             local_md5 = md5(open("taxdump.tar.gz", "rb").read()).hexdigest()
             if local_md5 != md5_check:
                 do_download = True
+                print('Updating taxdump.tar.gz from NCBI FTP site (via HTTP)...', file=sys.stderr)
+                urlretrieve("http://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz", targz_file)
+                print('Done. Parsing...', file=sys.stderr)
             else:
                 print('Local taxdump.tar.gz seems up-to-date', file=sys.stderr)
         else:
@@ -765,7 +784,8 @@ def update_db(dbfile, targz_file=None):
     print("Updating database: %s ..." %dbfile)
     generate_table(t)
 
-    open("syn.tab", "w").write('\n'.join(["%s\t%s" %(v[0],v[1]) for v in synonyms]))
+    with open("syn.tab", "w") as SYN:
+        SYN.write('\n'.join(["%s\t%s" %(v[0],v[1]) for v in synonyms]))
 
     with open("merged.tab", "w") as merged:
         for line in tar.extractfile("merged.dmp"):
@@ -778,7 +798,7 @@ def update_db(dbfile, targz_file=None):
         raise
     else:
         os.system("rm syn.tab merged.tab taxa.tab")
-        # remove only downloaded taxdump file 
+        # remove only downloaded taxdump file
         if not targz_file:
             os.system("rm taxdump.tar.gz")
 

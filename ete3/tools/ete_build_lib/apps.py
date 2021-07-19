@@ -136,8 +136,7 @@ def get_call(appname, apps_path, exec_path, cores):
     except KeyError:
         return None
 
-    bin_path = os.path.join(apps_path, "bin") #Ziqi
-    #bin_path = apps_path
+    bin_path = apps_path 
     tmp_path = os.path.join(exec_path, "tmp")
     #apps_base = apps_path.rstrip("/x86-64").rstrip("/x86-32")
     cmd = re.sub("%BIN%", bin_path, cmd)

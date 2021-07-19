@@ -3,6 +3,7 @@ from __future__ import print_function
 import unittest
 import random
 import itertools
+import json
 
 import sys
 from six.moves import range
@@ -55,7 +56,9 @@ class Test_Coretype_Tree(unittest.TestCase):
         """ Tests newick support """
         # Read and write newick tree from file (and support for NHX
         # format): newick parser
-        open("/tmp/etetemptree.nw","w").write(nw_full)
+        with open("/tmp/etetemptree.nw","w") as OUT:
+            OUT.write(nw_full)
+
         t = Tree("/tmp/etetemptree.nw")
         t.write(outfile='/tmp/etewritetest.nw')
         self.assertEqual(nw_full, t.write(features=["flag","mood"]))
@@ -469,7 +472,7 @@ class Test_Coretype_Tree(unittest.TestCase):
         # getting nodes, get_childs, get_sisters, get_tree_root,
         # get_common_ancestor, get_nodes_by_name
         # get_descendants_by_name, is_leaf, is_root
-        t = Tree("(((A,B),C)[&&NHX:tag=common],D)[&&NHX:tag=root:name=root];")
+        t = Tree("(((A,B)N1,C)N2[&&NHX:tag=common],D)[&&NHX:tag=root:name=root];", format=1)
         self.assertEqual(t.get_sisters(), [])
 
         A = t.search_nodes(name="A")[0]
@@ -493,12 +496,31 @@ class Test_Coretype_Tree(unittest.TestCase):
         common = A.get_common_ancestor(C)
         self.assertEqual("root", common.get_tree_root().tag)
 
-        self.assert_(common.get_tree_root().is_root())
-        self.assert_(not A.is_root())
-        self.assert_(A.is_leaf())
-        self.assert_(not A.get_tree_root().is_leaf())
+        self.assertTrue(common.get_tree_root().is_root())
+        self.assertTrue(not A.is_root())
+        self.assertTrue(A.is_leaf())
+        self.assertTrue(not A.get_tree_root().is_leaf())
         self.assertRaises(TreeError, A.get_common_ancestor, Tree())
 
+        # Test multiple target nodes and get_path argument
+        common, path = t.get_common_ancestor(['A', 'C'], get_path=True)
+        N1 = t & "N1"
+        N2 = t & "N2"
+        expected_path = {A: set([A, root, N1, N2]), C: set([C, N2, root])}
+        self.assertEqual(common, N2)
+        self.assertEqual(path.keys(), expected_path.keys())
+        for k in path.keys():
+            self.assertEqual(list(sorted(path[k], key=lambda x: x.name)),
+                             list(sorted(expected_path[k], key=lambda x: x.name)))
+
+        # Test common ancestor function using self as single argument (issue #398)
+        common = A.get_common_ancestor(A)
+        self.assertEqual(common, A)
+        common = C.get_common_ancestor("C")
+        self.assertEqual(common, C)
+        common, path = C.get_common_ancestor("C", get_path=True)
+        self.assertEqual(common, C)
+        self.assertDictEqual(path, {})
 
     def test_getters_iters(self):
 
@@ -513,10 +535,10 @@ class Test_Coretype_Tree(unittest.TestCase):
         # Tree magic python features
         t = Tree(nw_dflt)
         self.assertEqual(len(t), 20)
-        self.assert_("Ddi0002240" in t)
-        self.assert_(t.children[0] in t)
+        self.assertTrue("Ddi0002240" in t)
+        self.assertTrue(t.children[0] in t)
         for a in t:
-            self.assert_(a.name)
+            self.assertTrue(a.name)
 
         # Populate
         t = Tree(nw_full)
@@ -535,13 +557,13 @@ class Test_Coretype_Tree(unittest.TestCase):
 
         # Check gettters and itters return the same
         t = Tree(nw2_full)
-        self.assert_(t.get_leaf_names(), [name for name in  t.iter_leaf_names()])
-        self.assert_(t.get_leaves(), [name for name in  t.iter_leaves()])
-        self.assert_(t.get_descendants(), [n for n in  t.iter_descendants()])
+        self.assertEqual(t.get_leaf_names(), [name for name in  t.iter_leaf_names()])
+        self.assertEqual(t.get_leaves(), [name for name in  t.iter_leaves()])
+        self.assertEqual(t.get_descendants(), [n for n in  t.iter_descendants()])
 
         self.assertEqual(set([n for n in t.traverse("preorder")]), \
                              set([n for n in t.traverse("postorder")]))
-        self.assert_(t in set([n for n in t.traverse("preorder")]))
+        self.assertTrue(t in set([n for n in t.traverse("preorder")]))
 
         # Check order or visiting nodes
 
@@ -863,12 +885,12 @@ class Test_Coretype_Tree(unittest.TestCase):
         # RF unrooted in too small trees
         self.assertEqual(_astuple(small.compare(ref1, unrooted=True)),
                          ("NA", "NA", 0.0, "NA", "NA", 2, 1, "NA"))
-        
+
         small = Tree("(A, B);")
         # RF unrooted in too small trees
         self.assertEqual(_astuple(small.compare(ref1, unrooted=False)),
                          ("NA", "NA", 0.0, "NA", "NA", 2, 1, "NA"))
-        
+
         # identical trees, 8 rooted partitions in total (4 an 4), and 6 unrooted
         self.assertEqual(_astuple(s1.compare(ref1)),
                          (0.0, 0.0, 8, 1.0, 1.0, 6, 1, "NA"))
@@ -1296,7 +1318,83 @@ class Test_Coretype_Tree(unittest.TestCase):
         self.assertEqual((t_pkl & "A").complex[0], [0,1])
         self.assertEqual((t_deep & "A").testfn(), "YES")
 
-      
+
+    def test_cophenetic_matrix(self):
+        t = Tree(nw_full)
+        dists, leaves = t.cophenetic_matrix()
+        actualdists = [
+            [0, 2.3662779999999994, 2.350554999999999, 2.7002369999999996, 3.527812, 3.305472, 2.424086, 2.424086,
+             2.432288, 2.483421, 2.3355079999999995, 2.3355079999999995, 2.389350999999999, 2.3812519999999995,
+             2.404005999999999, 2.3945459999999996, 2.4035289999999994, 2.3689599999999995, 2.4048339999999997,
+             2.6487609999999995],
+            [2.3662779999999994, 0, 0.079009, 1.122461, 2.38897, 2.16663, 0.47755000000000003, 0.47755000000000003,
+             0.4857520000000001, 0.5368850000000001, 0.320202, 0.32020200000000004, 0.133729, 0.12563,
+             0.14838400000000002, 0.230406, 0.168047, 0.113338, 0.16935199999999997, 0.633455],
+            [2.350554999999999, 0.079009, 0, 1.106738, 2.373247, 2.150907, 0.461827, 0.461827, 0.47002900000000003,
+             0.521162, 0.304479, 0.30447900000000006, 0.11800599999999999, 0.10990699999999998, 0.132661, 0.214683,
+             0.152324, 0.09761499999999998, 0.153629, 0.617732],
+            [2.7002369999999996, 1.122461, 1.106738, 0, 2.7229289999999997, 2.5005889999999997, 1.180269, 1.180269,
+             1.188471, 1.239604, 1.091691, 1.091691, 1.145534, 1.137435, 1.160189, 1.1507290000000001, 1.159712,
+             1.125143, 1.161017, 1.404944],
+            [3.527812, 2.38897, 2.373247, 2.7229289999999997, 0, 2.6926, 2.446778, 2.446778, 2.45498, 2.506113,
+             2.3581999999999996, 2.3581999999999996, 2.412043, 2.403944, 2.426698, 2.4172379999999998,
+             2.4262209999999995, 2.391652, 2.427526, 2.6714529999999996],
+            [3.305472, 2.16663, 2.150907, 2.5005889999999997, 2.6926, 0, 2.224438, 2.224438, 2.23264, 2.283773, 2.13586,
+             2.13586, 2.189703, 2.181604, 2.204358, 2.194898, 2.2038809999999995, 2.169312, 2.205186, 2.449113],
+            [2.424086, 0.47755000000000003, 0.461827, 1.180269, 2.446778, 2.224438, 0, 0.0, 0.01366,
+             0.30963300000000005, 0.44678, 0.44677999999999995, 0.5006229999999999, 0.49252399999999996, 0.515278,
+             0.505818, 0.5148010000000001, 0.480232, 0.5161060000000001, 0.7600329999999998],
+            [2.424086, 0.47755000000000003, 0.461827, 1.180269, 2.446778, 2.224438, 0.0, 0, 0.01366,
+             0.30963300000000005, 0.44678, 0.44677999999999995, 0.5006229999999999, 0.49252399999999996, 0.515278,
+             0.505818, 0.5148010000000001, 0.480232, 0.5161060000000001, 0.7600329999999998],
+            [2.432288, 0.4857520000000001, 0.47002900000000003, 1.188471, 2.45498, 2.23264, 0.01366, 0.01366, 0,
+             0.317835, 0.45498200000000005, 0.454982, 0.508825, 0.500726, 0.5234800000000001, 0.51402, 0.523003,
+             0.48843400000000003, 0.524308, 0.7682349999999999],
+            [2.483421, 0.5368850000000001, 0.521162, 1.239604, 2.506113, 2.283773, 0.30963300000000005,
+             0.30963300000000005, 0.317835, 0, 0.506115, 0.506115, 0.559958, 0.551859, 0.574613, 0.565153, 0.574136,
+             0.539567, 0.5754410000000001, 0.8193679999999999],
+            [2.3355079999999995, 0.320202, 0.304479, 1.091691, 2.3581999999999996, 2.13586, 0.44678, 0.44678,
+             0.45498200000000005, 0.506115, 0, 0.0, 0.343275, 0.33517600000000003, 0.35793, 0.34847,
+             0.35745299999999997, 0.322884, 0.35875799999999997, 0.531709],
+            [2.3355079999999995, 0.32020200000000004, 0.30447900000000006, 1.091691, 2.3581999999999996, 2.13586,
+             0.44677999999999995, 0.44677999999999995, 0.454982, 0.506115, 0.0, 0, 0.34327500000000005,
+             0.33517600000000003, 0.35793, 0.34847, 0.357453, 0.32288400000000006, 0.358758, 0.531709],
+            [2.389350999999999, 0.133729, 0.11800599999999999, 1.145534, 2.412043, 2.189703, 0.5006229999999999,
+             0.5006229999999999, 0.508825, 0.559958, 0.343275, 0.34327500000000005, 0, 0.013558999999999998, 0.021967,
+             0.25347900000000007, 0.19112, 0.031257, 0.192425, 0.656528],
+            [2.3812519999999995, 0.12563, 0.10990699999999998, 1.137435, 2.403944, 2.181604, 0.49252399999999996,
+             0.49252399999999996, 0.500726, 0.551859, 0.33517600000000003, 0.33517600000000003, 0.013558999999999998, 0,
+             0.028214, 0.24538000000000004, 0.183021, 0.023157999999999998, 0.184326, 0.648429],
+            [2.404005999999999, 0.14838400000000002, 0.132661, 1.160189, 2.426698, 2.204358, 0.515278, 0.515278,
+             0.5234800000000001, 0.574613, 0.35793, 0.35793, 0.021967, 0.028214, 0, 0.26813400000000004,
+             0.20577499999999999, 0.045912, 0.20708, 0.6711830000000001],
+            [2.3945459999999996, 0.230406, 0.214683, 1.1507290000000001, 2.4172379999999998, 2.194898, 0.505818,
+             0.505818, 0.51402, 0.565153, 0.34847, 0.34847, 0.25347900000000007, 0.24538000000000004,
+             0.26813400000000004, 0, 0.267657, 0.233088, 0.268962, 0.661723],
+            [2.4035289999999994, 0.168047, 0.152324, 1.159712, 2.4262209999999995, 2.2038809999999995,
+             0.5148010000000001, 0.5148010000000001, 0.523003, 0.574136, 0.35745299999999997, 0.357453, 0.19112,
+             0.183021, 0.20577499999999999, 0.267657, 0, 0.170729, 0.057269, 0.670706],
+            [2.3689599999999995, 0.113338, 0.09761499999999998, 1.125143, 2.391652, 2.169312, 0.480232, 0.480232,
+             0.48843400000000003, 0.539567, 0.322884, 0.32288400000000006, 0.031257, 0.023157999999999998, 0.045912,
+             0.233088, 0.170729, 0, 0.17203399999999996, 0.636137],
+            [2.4048339999999997, 0.16935199999999997, 0.153629, 1.161017, 2.427526, 2.205186, 0.5161060000000001,
+             0.5161060000000001, 0.524308, 0.5754410000000001, 0.35875799999999997, 0.358758, 0.192425, 0.184326,
+             0.20708, 0.268962, 0.057269, 0.17203399999999996, 0, 0.672011],
+            [2.6487609999999995, 0.633455, 0.617732, 1.404944, 2.6714529999999996, 2.449113, 0.7600329999999998,
+             0.7600329999999998, 0.7682349999999999, 0.8193679999999999, 0.531709, 0.531709, 0.656528, 0.648429,
+             0.6711830000000001, 0.661723, 0.670706, 0.636137, 0.672011, 0]
+        ]
+
+        actualleaves = ['Aga0007658', 'Bta0018700', 'Cfa0016700', 'Cin0011239', 'Ddi0002240', 'Dme0014628',
+                        'Dre0008390', 'Dre0008391', 'Dre0008392', 'Fru0004507', 'Gga0000981', 'Gga0000982',
+                        'Hsa0000001', 'Hsa0010711', 'Hsa0010730', 'Mdo0014718', 'Mms0024821', 'Ptr0000001',
+                        'Rno0030248', 'Xtr0044988']
+
+        for i in range(len(actualdists)):
+            for j in range(len(actualdists[i])):
+                self.assertAlmostEqual(actualdists[i][j], dists[i][j], places=4)
+        self.assertEqual(actualleaves, leaves)
+
 
     # def test_traversing_speed(self):
     #     return

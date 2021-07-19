@@ -9,7 +9,6 @@ source:
 
 build:
     noarch: python
-    string: pyh39e3cac_0
 
 requirements:
   build:

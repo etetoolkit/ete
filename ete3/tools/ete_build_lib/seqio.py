@@ -20,7 +20,7 @@ def iter_fasta_seqs(source):
             import gzip
             _source = gzip.open(source)
         else:
-            _source = open(source, "rU")
+            _source = open(source, "r")
     else:
         _source = iter(source.split("\n"))
 

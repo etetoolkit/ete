@@ -90,7 +90,7 @@ def read_paml (source, obj=None, header_delimiter="\t", fix_duplicates=True):
 
     # Prepares handle from which read sequences
     if os.path.isfile(source):
-        _source = open(source, "rU")
+        _source = open(source, "r")
     else:
         _source = iter(source.split("\n"))
 
