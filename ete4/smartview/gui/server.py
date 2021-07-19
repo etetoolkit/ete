@@ -31,7 +31,7 @@ import re
 from math import pi
 from functools import partial
 from time import time
-from thread import Timer
+from threading import Timer
 from datetime import datetime
 from contextlib import contextmanager
 from collections import defaultdict
