@@ -168,7 +168,7 @@ function add_folder_view(menu) {
                                                    expanded: false });
     folder_aligned.addInput(view, "align_bar", { label: "position", 
                                                  min: 0, max: 100 })
-        .on("change", value => div_aligned.style.width = `${100 - value}%`);
+        .on("change", () => div_aligned.style.width = `${100 - view.align_bar}%`);
 }
 
 

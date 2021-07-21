@@ -594,8 +594,7 @@ class DrawerRectFaces(DrawerRect):
                             bdx, bdy, bdy0, bdy1,
                             pos, row, n_row, n_col,
                             dx_before, dy_before)
-                if it_fits(box) and face.fits()\
-                        or face.__name__() == "OutlineFace":
+                if it_fits(box) and face.fits() or face.always_drawn:
                     yield from face.draw(self)
 
         def draw_faces_at_pos(node, pos):
@@ -706,8 +705,7 @@ class DrawerCircFaces(DrawerCirc):
                         bdr, bda, bda0, bda1,
                         pos, row, n_row, n_col,
                         dr_before, da_before)
-                if it_fits(box) and face.fits()\
-                        or face.__name__() == "OutlineFace":
+                if it_fits(box) and face.fits() or face.always_drawn:
                     yield from face.draw(self)
 
         def draw_faces_at_pos(node, pos):
@@ -803,35 +801,6 @@ class DrawerCircFaces(DrawerCirc):
 class DrawerAlignRectFaces(DrawerRectFaces):
     NPANELS = 2
 
-    def draw_node(self, node, point, bdx, bdy, bdy0, bdy1):
-        node_graphics = list(super().draw_node(node, point, bdx, bdy, bdy0, bdy1))
-        yield from node_graphics
-        if self.panel == 0 and node.is_leaf() and self.viewport:
-            x, y = point
-            dx, dy = self.node_size(node)
-            ndx = drawn_size(node_graphics, self.get_box).dx
-            p1 = (x + dx + ndx, y + dy/2)
-            p2 = (self.viewport.x + self.viewport.dx, y + dy/2)
-            style = { 'type': 1, # dotted
-                      'stroke-width': 0.5,
-                      'stroke': 'gray' }
-            yield draw_line(p1, p2, 'align-link', style=style)
-
-    def draw_collapsed(self, collapsed_node):
-        collapsed_graphics = list(super().draw_collapsed(collapsed_node))
-        yield from collapsed_graphics
-        if self.panel == 0 and self.viewport:
-            x, y, dx_min, dx_max, dy = self.outline
-            dx = collapsed_node.dist\
-                    if not self.is_fully_collapsed(collapsed_node) else 0
-            ndx = drawn_size(collapsed_graphics, self.get_box).dx
-            p1 = (x + ndx, y + dy/2)
-            p2 = (self.viewport.x + self.viewport.dx, y + dy/2)
-            style = { 'type': 1, # dotted
-                      'stroke-width': 0.5,
-                      'stroke': 'gray'}
-            yield draw_line(p1, p2, 'align-link', style=style)
-
 
 class DrawerAlignCircFaces(DrawerCircFaces):
     NPANELS = 2
@@ -840,8 +809,7 @@ class DrawerAlignCircFaces(DrawerCircFaces):
 def get_drawers():
     return [ DrawerRect, DrawerCirc, 
             DrawerRectFaces, DrawerCircFaces,
-            DrawerAlignRectFaces, DrawerAlignCircFaces,
-            ]
+            DrawerAlignRectFaces, DrawerAlignCircFaces, ]
 
 
 def summary(nodes):
@@ -1026,9 +994,6 @@ def drawn_size(elements, get_box, min_x=None):
     # Constrains x_min
     # Necessary for collapsed nodes with branch-top/bottom faces
     if min_x:
-        print(x_max)
-        print(x_min)
-        print(min_x)
         x_min = max(x_min, min_x)
 
     return Size(x_max - x_min, y_max - y_min)

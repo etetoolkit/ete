@@ -340,8 +340,12 @@ async function set_query_string_values() {
 async function set_consistent_values() {
     if (view.tree === null)
         view.tree = Object.keys(trees)[0];  // select default tree
-    else (trees.length === 0)
-        trees[view.tree] = view.tree;
+    else if (Object.keys(trees).length === 0 && !isNaN(+view.tree)) {
+        // Working in memory only mode
+        const name = await api(`/trees/${view.tree}/name`);
+        trees[name] = view.tree;
+        view.tree = name;
+    }
 
     view.tree_size = await api(`/trees/${get_tid()}/size`);
 
