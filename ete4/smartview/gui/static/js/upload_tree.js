@@ -1,7 +1,6 @@
 // Functions for upload_tree.html.
 
-import { escape_html, hash, assert, storage_get, storage_remove,
-         api_post, api_login, is_valid_token } from "./api.js";
+import { escape_html, hash, assert, api_post } from "./api.js";
 
 
 document.addEventListener("DOMContentLoaded", on_load_page);
@@ -9,65 +8,11 @@ document.addEventListener("DOMContentLoaded", on_load_page);
 
 // Setup.
 async function on_load_page() {
-    // Make sure we start by being correctly logged in.
-    const login = storage_get("login");
-    if (!login || !(await is_valid_token(login.token)))
-        await api_login("guest");
-
     if (!check_metadata.checked)  // if we reload the page, it may be checked
         div_metadata.style.display = "none";
 
-    show_upload();
-}
-
-
-// Show the upload section and hide the login one.
-function show_upload() {
-    div_login.style.display = "none";
     div_upload.style.display = "block";
-
-    const login = storage_get("login");
-    div_info.innerHTML = `
-        Logged in as <span title="${login.name}">${login.username}</span><br>
-        <a href="#" onclick="show_login(); return false;">Log out</a>`;
 }
-
-
-// Show the login section and hide the upload one. Remove any login first.
-function show_login() {
-    storage_remove("login");
-
-    div_upload.style.display = "none";
-    div_login.style.display = "block";
-
-    div_info.innerHTML = "";
-}
-window.show_login = show_login;
-
-
-// Login-related functions.
-
-// When the login button is pressed.
-button_login.addEventListener("click", async () => {
-    try {
-        await api_login(input_username.value, input_password.value);
-        show_upload();
-    }
-    catch (ex) {
-        Swal.fire({html: ex.message, icon: "warning", timer: 5000,
-                   toast: true, position: "top-end"});
-    }
-});
-
-div_login.addEventListener("keyup", event => {
-    if (event.key === "Enter")
-        button_login.click();
-});
-
-button_guest.addEventListener("click", async () => {
-    await api_login("guest");
-    show_upload();
-});
 
 
 // Upload-related functions.

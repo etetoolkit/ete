@@ -139,6 +139,7 @@ const menus = {  // will contain the menus on the top
     searches: undefined,
     collapsed: undefined,
     minimap: undefined, // minimap toggler
+    subtree: undefined,
 };
 
 const trees = {};  // will translate names to ids (trees[tree_name] = tree_id)
@@ -155,8 +156,7 @@ async function main() {
 
     reset_node_count();
 
-    const drawers = await api("/drawers");
-    init_menus(Object.keys(trees), drawers);
+    init_menus(Object.keys(trees));
 
     init_events();
 
@@ -174,9 +174,11 @@ async function main() {
 
 // Fill global var trees, which translates tree names into their database ids.
 async function init_trees() {
-    const trees_info = await api("/trees");
+    try {
+        const trees_info = await api("/trees");
 
-    trees_info.forEach(t => trees[t.name] = t.id);  // like trees["mytree"] = 7
+        trees_info.forEach(t => trees[t.name] = t.id);  // like trees["mytree"] = 7
+    } catch {} // Working in memory_only mode
 }
 
 
@@ -236,6 +238,8 @@ async function on_tree_change() {
     draw_minimap();
     update();
 
+    menus.subtree.refresh(); // show subtree in control panel
+
     const sample_trees = ["ncbi", "GTDB_bact_r95"];  // hardcoded for the moment
     view.allow_modifications = !sample_trees.includes(view.tree);
 }
@@ -245,14 +249,9 @@ async function on_tree_change() {
 async function on_drawer_change() {
     const previous_type = view.drawer.type;
 
-    const drawer_info = await api(`/drawers/${view.drawer.name}`);
+    const drawer_info = await api(`/drawers/${view.drawer.name}/${get_tid()}`);
     view.drawer.type = drawer_info.type;
     view.drawer.npanels = drawer_info.npanels;
-
-    if (drawer_info.type === "rect" && drawer_info.npanels > 1)
-        div_aligned.style.display = "initial";  // show aligned panel
-    else
-        div_aligned.style.display = "none";  // hide aligned panel
 
     if (drawer_info.type !== previous_type) {
         reset_zoom();
@@ -341,12 +340,18 @@ async function set_query_string_values() {
 async function set_consistent_values() {
     if (view.tree === null)
         view.tree = Object.keys(trees)[0];  // select default tree
+    else if (Object.keys(trees).length === 0 && !isNaN(+view.tree)) {
+        // Working in memory only mode
+        const name = await api(`/trees/${view.tree}/name`);
+        trees[name] = view.tree;
+        view.tree = name;
+    }
 
     view.tree_size = await api(`/trees/${get_tid()}/size`);
 
     let drawer_info;
     try {
-        drawer_info = await api(`/drawers/${view.drawer.name}`);
+        drawer_info = await api(`/drawers/${view.drawer.name}/${get_tid()}`);
     }
     catch (ex) {
         Swal.fire({

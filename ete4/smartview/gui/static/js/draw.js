@@ -35,7 +35,7 @@ async function draw_tree() {
         "drawer": view.drawer.name, "min_size": view.min_size,
         "zx": zx, "zy": zy, "x": x, "y": y, "w": w, "h": h,
         "collapsed_ids": JSON.stringify(Object.keys(view.collapsed_ids)),
-        "layouts": layouts, "ultrametric": view.ultrametric,
+        "layouts": layouts, "ultrametric": view.ultrametric ? 1 : 0,
     };
 
     const params_circ = {  // parameters to the drawer, in circular mode
@@ -56,8 +56,16 @@ async function draw_tree() {
         colorize_tags();
         colorize_searches();
 
-        if (view.drawer.npanels > 1)
-            await draw_aligned(params);
+        const drawer_info = await api(`/drawers/${view.drawer.name}/${get_tid()}`);
+        view.drawer.npanels = drawer_info.npanels; // type has already been set
+
+        // Toggle aligned panel
+        if (drawer_info.type === "rect" && drawer_info.npanels > 1)
+            div_aligned.style.display = "initial";  // show aligned panel
+        else
+            div_aligned.style.display = "none";  // hide aligned panel
+            if (view.drawer.npanels > 1)
+                await draw_aligned(params);
 
         if (view.drawer.type === "circ") {
             fix_text_orientations();

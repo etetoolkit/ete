@@ -71,6 +71,8 @@ class Face(object):
         self.padding_x = padding_x
         self.padding_y = padding_y
 
+        self.always_drawn = False # Use carefully to avoid overheading...
+
     def __name__(self):
         return "Face"
 
@@ -522,6 +524,8 @@ class OutlineFace(Face):
         self.outline = None
         self.collapsing_height = collapsing_height
 
+        self.always_drawn = True
+        
     def __name__(self):
         return "OutlineFace"
 
@@ -574,6 +578,70 @@ class OutlineFace(Face):
             yield draw_line(p1, p2, style=style)
         else:
             yield draw_outline(self.outline, style)
+
+
+class AlignLinkFace(Face):
+    def __init__(self, 
+            stroke_color='gray', stroke_width=0.5,
+            line_type=1, opacity=0.8):
+        """Line types: 0 solid, 1 dotted, 2 dashed"""
+
+        Face.__init__(self, padding_x=0, padding_y=0)
+
+        self.line = None
+
+        self.stroke_color = stroke_color
+        self.stroke_width = stroke_width
+        self.type = line_type;
+        self.opacity = opacity
+
+        self.always_drawn = True
+
+    def __name__(self):
+        return "AlignLinkFace"
+
+    def compute_bounding_box(self,
+            drawer,
+            point, size,
+            dx_to_closest_child,
+            bdx, bdy,
+            bdy0, bdy1,
+            pos, row,
+            n_row, n_col,
+            dx_before, dy_before):
+
+        if drawer.NPANELS > 1 and drawer.viewport and pos == 'branch-right':
+            x, y = point
+            dx, dy = size
+            p1 = (x + bdx + dx_before, y + dy/2)
+            p2 = (drawer.viewport.x + drawer.viewport.dx, y + dy/2)
+
+            self.line = (p1, p2)
+
+        return Box(0, 0, 0, 0) # Should not take space
+
+    def get_box(self):
+        return Box(0, 0, 0, 0) # Should not take space
+
+    def fits(self):
+        return True
+
+    def draw(self, drawer):
+
+        if drawer.NPANELS < 2:
+            return None
+
+        style = {
+                'type': self.type,
+                'stroke': self.stroke_color,
+                'stroke-width': self.stroke_width,
+                'opacity': self.opacity,
+                }
+        if drawer.panel == 0 and drawer.viewport and\
+          (self.node.is_leaf() or self.node.is_collapsed):
+            p1, p2 = self.line
+            yield draw_line(p1, p2, 'align-link', style=style)
+
 
 
 class SeqFace(Face):

@@ -1429,8 +1429,7 @@ cdef class TreeNode(object):
         """
         from ete4.smartview.gui.server import run_smartview
 
-        properties = list(self.properties.keys()) # include all properties
-        run_smartview(newick=self.write(format=1,properties=properties),
+        run_smartview(newick=self.write(format=1),
                 tree_name=tree_name, tree_style=tree_style, layouts=layouts)
 
     def copy(self, method="cpickle"):

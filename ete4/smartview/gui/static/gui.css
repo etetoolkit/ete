@@ -87,8 +87,10 @@
 
 .minimap {
     position: absolute;
-    border-style: double;
-    border-width: 3px;
+    border-style: solid;
+    border-color: #d6d6d6;
+    border-width: 2px;
+    border-radius: 4px;
     right: 10px;
     bottom: 10px;
     z-index: 1;
@@ -101,9 +103,10 @@
     position: absolute;
     border-style: solid;
     border-width: 1px;
-    border-color: red;
+    border-radius: 3px;
+    border-color: gray;
     z-index: 2;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.1);
     cursor: grab;
     touch-action: none;
 }
@@ -122,29 +125,51 @@
     z-index: 4;
     visibility: hidden;
     border: 1px solid #AAA;
-    background-color: white;
+    border-radius: 4px;
+    background-color: #f7f7f7;
+    padding: 6px;
+    padding-top: 0;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.contextmenu > :first-child {
+    margin-top: 6px;
+}
+
+.contextmenu i {
+    margin-left: 0;
+    margin-right: 7px;
+}
+
+.contextmenu .fa-exclamation-circle {
+    margin-left: 7px;
+    margin-right: 0;
+    color: #890000;
 }
 
 .ctx_button {
     width: 100%;
     cursor: pointer;
+    margin: 1px 0;
     padding: 3px 15px;
-    border-style: hidden;
+    border-width: 0;
+    border-radius: 4px;
     text-align: left;
-    background-color: white;
+    background-color: inherit;
 }
 
 .ctx_button:hover {
-    background-color: #88F;
-    color: white;
+    background-color: #eaeaea;
 }
 
 .ctx_label {
-    padding: 3px 10px;
+    padding: 5px 10px;
     text-align: left;
-    background-color: #EEE;
+    background-color: #d6d6d6;
     font-family: sans-serif;
     font-size: 0.8em;
+    border-radius: 4px;
+    margin-top: 8px;
 }
 
 .negative_xaxis {
@@ -159,7 +184,8 @@ hr {
     background-color: #333;
 }
 
-kbd {  /* from https://developer.mozilla.org/en-US/docs/Web/HTML/Element/kbd */
+/* from https://developer.mozilla.org/en-US/docs/Web/HTML/Element/kbd */
+kbd {
     background-color: #eee;
     border-radius: 3px;
     border: 1px solid #b4b4b4;
@@ -210,7 +236,30 @@ button.tp-tbiv_b {
     border-radius: 3px !important;
 }
 
+/* General tweakpane styling */
+.tp-rotv {
+    font-weight: bold !important;
+}
+
+/*:root {*/
+    /*--tp-font-family: sans-serif;*/
+    /*--tp-input-background-color: black;*/
+    /*--tp-input-background-color-focus: black;*/
+/*}*/
+
+/*Light mode tweakpane*/
 :root {
-    --tp-input-background-color: black;
-    --tp-input-background-color-focus: black;
+    --tp-font-family: sans-serif;
+    --tp-base-background-color: #f7f7f7;
+    --tp-container-foreground-color: black;
+    --tp-container-background-color: #eaeaea;
+    --tp-input-background-color: #eaeaea;
+    --tp-input-background-color-focus: #eaeaea;
+    --tp-input-background-color-hover: #eaeaea;
+    --tp-input-foreground-color: gray;
+    --tp-monitor-background-color: var(--tp-input-background-color);
+    --tp-monitor-foreground-color: var(--tp-input-foreground-color);
+    --tp-label-foreground-color: gray;
+    --tp-button-background-color: #d6d6d6;
+    --tp-button-background-color-hover: #ccc;
 }

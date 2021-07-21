@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Keep the data of users and trees, and present a REST api to talk
+Keep the data of trees and present a REST api to talk
 to the world.
 
 REST call examples:
@@ -12,15 +12,7 @@ REST call examples:
   DELETE /users/{id}  Delete user by "id"
 """
 
-# khe structure that we want to follow is:
-#
-# user
-#   id: int
-#   username: str
-#   name: str
-#   password: str
-#   owns: list of ints (tree ids)
-#   reads: list of ints (tree ids)
+# The structure that we want to follow is:
 #
 # tree
 #   id: int
@@ -28,8 +20,6 @@ REST call examples:
 #   description: str
 #   birth: datetime
 #   newick: str
-#   owner: int (user id)
-#   readers: list of ints (user ids)
 
 import os
 os.chdir(os.path.abspath(os.path.dirname(__file__)))
@@ -40,14 +30,18 @@ sys.path.insert(0, '..')
 import re
 from math import pi
 from functools import partial
+from time import time
+from threading import Timer
 from datetime import datetime
 from contextlib import contextmanager
 from collections import defaultdict
+from copy import deepcopy
+from dataclasses import dataclass
 import gzip
 import json
+import shutil
 
 from flask import Flask, request, jsonify, g, redirect, url_for
-from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth, MultiAuth
 from flask_restful import Resource, Api
 from flask_cors import CORS
 from flask_compress import Compress
@@ -63,172 +57,68 @@ from ete4.smartview.utils import InvalidUsage, get_random_string
 from ete4.smartview.ete import nexus, draw, gardening as gdn
 from ete4.smartview.ete.layouts import get_layout_outline,\
         get_layout_leaf_name, get_layout_branch_length,\
-        get_layout_branch_support
+        get_layout_branch_support, get_layout_align_link
 
 # call initialize() to fill these up
 app = None
 db = None
-serializer = None  # this one is used for the token auth
 
 
-# Set up the authentication (see https://flask-httpauth.readthedocs.io/).
-
-auth_basic = HTTPBasicAuth()
-auth_token = HTTPTokenAuth('Bearer')
-auth = MultiAuth(auth_basic, auth_token)
-
-@auth_basic.verify_password
-def verify_password(username, password):
-    res = dbget('id,password', 'users WHERE username=?', username)
-    if len(res) == 1:
-        g.user_id = res[0]['id']
-        return check_password_hash(res[0]['password'], password)
-    else:
-        return False
-
-@auth_token.verify_token
-def verify_token(token):
-    try:
-        g.user_id = serializer.loads(token)
-        return True
-    except:
-        return False
-
+# Dataclass containing info specific to each tree
+@dataclass
+class AppTree:
+    tree: Tree = None
+    name: str = None
+    style: TreeStyle = None
+    timer: float = None
+    initialized: bool = False
+    searches: dict = None
 
 # REST api.
 
-class Login(Resource):
-    def post(self):
-        "Return info about the user if successfully logged"
-        data = get_fields(required=['username', 'password'])
-        username = data['username']
-        fields = 'id,name,password'
-
-        res = dbget(fields, 'users WHERE username=?', username)
-        if len(res) == 0:
-            raise InvalidUsage('bad user/password', 401)
-        r0 = res[0]
-
-        if not check_password_hash(r0['password'], data['password']):
-            raise InvalidUsage('bad user/password', 401)
-
-        token = serializer.dumps(r0['id']).decode('utf8')
-        return {'id': r0['id'],
-                'username': username,
-                'name': r0['name'],
-                'token': token}
-
-
-class Users(Resource):
-    def get(self, user_id=None):
-        "Return info about the user (or all users if no id given)"
-        if user_id is None:
-            return [get_user(uid) for uid in sorted(dbget0('id', 'users'))]
-        else:
-            return get_user(user_id)
-
-    @auth.login_required
-    def post(self):
-        "Add user"
-        admin_id = 1
-        if g.user_id != admin_id:
-            raise InvalidUsage('no permission to add', 403)
-
-        data = get_fields(required=['username', 'password'],
-            valid_extra=['name'])
-
-        data['password'] = generate_password_hash(data['password'])
-        data.setdefault('name', 'Random User')
-
-        cols, vals = zip(*data.items())
-        try:
-            qs = '(%s)' % ','.join('?' * len(vals))
-            dbexe('INSERT INTO users %r VALUES %s' % (tuple(cols), qs), vals)
-        except sqlalchemy.exc.IntegrityError as e:
-            raise InvalidUsage(f'database exception adding user: {e}')
-
-        uid = dbget0('id', 'users WHERE username=?', data['username'])
-        return {'message': 'ok', 'id': uid}, 201
-
-    @auth.login_required
-    def put(self, user_id):
-        "Modify user"
-        admin_id = 1
-        if g.user_id not in [user_id, admin_id]:
-            raise InvalidUsage('no permission to modify', 403)
-
-        data = get_fields(
-            valid_extra=['username', 'name', 'password'])
-
-        if 'password' in data:
-            data['password'] = generate_password_hash(data['password'])
-
-        cols, vals = zip(*data.items())
-        qs = ','.join('%s=?' % x for x in cols)
-        res = dbexe('UPDATE users SET %s WHERE id=%d' % (qs, user_id), vals)
-
-        if res.rowcount != 1:
-            raise InvalidUsage(f'unknown user id {user_id}', 409)
-
-        return {'message': 'ok'}
-
-    @auth.login_required
-    def delete(self, user_id):
-        "Delete user and all references to her"
-        admin_id = 1
-        if g.user_id not in [user_id, admin_id]:
-            raise InvalidUsage('no permission to delete', 403)
-
-        with shared_connection([dbget0, dbexe]) as [get0, exe]:
-            res = exe('DELETE FROM users WHERE id=?', user_id)
-            if res.rowcount != 1:
-                raise InvalidUsage(f'unknown user id {user_id}', 404)
-
-            for tid in get0('id_tree', 'user_owns_trees WHERE id_user=?', user_id):
-                del_tree(tid)
-            # NOTE: we could instead move them to a list of orphaned trees.
-
-            exe('DELETE FROM user_owns_trees WHERE id_user=?', user_id)
-            exe('DELETE FROM user_reads_trees WHERE id_user=?', user_id)
-
-        return {'message': 'ok'}
-
-
 class Drawers(Resource):
-    def get(self, name=None):
-        "Return data from the drawer (or info about all drawers if no id given)"
-        rule = request.url_rule.rule  # shortcut
-        if rule == '/drawers':
-            return [d.__name__[len('Drawer'):] for d in draw.get_drawers()]
-        elif rule == '/drawers/<string:name>':
-            try:
-                drawer_class = next(d for d in draw.get_drawers()
-                    if d.__name__[len('Drawer'):] == name)
-                return {'type': drawer_class.TYPE,
-                        'npanels': drawer_class.NPANELS}
-            except StopIteration:
-                raise InvalidUsage(f'not a valid drawer: {name}')
+    def get(self, name=None, tree_id=None):
+        "Return data from the drawer. In aligned mode if aligned faces"
+        try:
+            if name not in ['Rect', 'Circ'] and\
+                    any(getattr(ly, 'contains_aligned_face', False)\
+                        for ly in app.trees[int(tree_id)].style.layout_fn):
+                name = 'Align' + name
+            drawer_class = next(d for d in draw.get_drawers()
+                if d.__name__[len('Drawer'):] == name)
+            return {'type': drawer_class.TYPE,
+                    'npanels': drawer_class.NPANELS}
+        except StopIteration:
+            raise InvalidUsage(f'not a valid drawer: {name}')
 
 
 class Layouts(Resource):
-    def get(self, name=None):
-        rule = request.url_rule.rule  # shortcut
-        if rule == '/layouts':
-            active = [ l.__name__ for l in app.tree_style['default'].layout_fn ]
-            return { l.__name__: (l.__name__ in active) for l in app.layouts }
+    def get(self):
+        active = [ l.__name__ for l in app.trees['default'].style.layout_fn ]
+        app.trees.pop('default')
+        return { l.__name__: (l.__name__ in active) for l in app.layouts }
 
 
 class Trees(Resource):
-    # NOTE: If we wanted to enforce that only the 'readers' (or owner) of a
-    #   tree have access to it, we would need to add  @auth.login_required
-    #   and check that g.user_id is a reader (or the owner, or admin).
     def get(self, tree_id=None):
         "Return data from the tree (or info about all trees if no id given)"
         rule = request.url_rule.rule  # shortcut
+        
+        # Update tree's timer
+        if rule.startswith('/trees/<string:tree_id>'):
+            app.trees[int(tree_id)].timer = time()
+
         if rule == '/trees':
+            if app.memory_only:
+                raise InvalidUsage(f'invalid path {rule} in memory_only mode', 404)
             return [get_tree(pid) for pid in dbget0('id', 'trees')]
         elif rule == '/trees/<string:tree_id>':
+            if app.memory_only:
+                raise InvalidUsage(f'invalid path {rule} in memory_only mode', 404)
             return get_tree(tree_id)
+        elif rule == '/trees/<string:tree_id>/name':
+            load_tree(tree_id)
+            return app.trees[int(tree_id)].name
         elif rule == '/trees/<string:tree_id>/newick':
             MAX_MB = 2
             return get_newick(tree_id, MAX_MB)
@@ -257,19 +147,20 @@ class Trees(Resource):
             return {'tnodes': tnodes, 'tleaves': tleaves}
         elif rule == '/trees/<string:tree_id>/ultrametric':
             # Not for now... but it may be tree specific
-            return app.tree_style[request.remote_addr].ultrametric
+            return app.trees[int(tree_id)].style.ultrametric
 
-    @auth.login_required
     def post(self):
         "Add tree(s)"
         ids = add_trees_from_request()
         return {'message': 'ok', 'ids': ids}, 201
 
-    @auth.login_required
     def put(self, tree_id):
         "Modify tree"
         rule = request.url_rule.rule  # shortcut
-        user = request.remote_addr  # ip
+
+        # Update tree's timer
+        if rule.startswith('/trees/<string:tree_id>'):
+            app.trees[int(tree_id)].timer = time()
 
         if rule == '/trees/<string:tree_id>':
             modify_tree_fields(tree_id)
@@ -284,7 +175,7 @@ class Trees(Resource):
                 raise InvalidUsage('operation not allowed with subtree')
             node_id = request.json
             t = load_tree(tid)
-            app.trees[user][tid] = gdn.root_at(gdn.get_node(t, node_id))
+            app.trees[int(tid)].tree = gdn.root_at(gdn.get_node(t, node_id))
             return {'message': 'ok'}
         elif rule == '/trees/<string:tree_id>/move':
             try:
@@ -314,89 +205,118 @@ class Trees(Resource):
             tid, subtree = get_tid(tree_id)
             if subtree:
                 raise InvalidUsage('operation not allowed with subtree')
-            del app.trees[user][tid]
-            load_tree(tid)
+            reload_tree(tid)
             return {'message': 'ok'}
 
-
-    @auth.login_required
     def delete(self, tree_id):
         "Delete tree and all references to it"
-        try:
-            tid = int(tree_id)
+        tid = int(tree_id)
+        if not app.memory_only:
+            try:
+                assert dbcount('trees WHERE id=?', tid) == 1, 'unknown tree'
+            except (ValueError, AssertionError) as e:
+                raise InvalidUsage(f'for tree id {tree_id}: {e}')
 
-            assert dbcount('trees WHERE id=?', tid) == 1, 'unknown tree'
-
-            admin_id = 1
-            assert g.user_id in [get_owner(tid), admin_id], 'no permission'
-
-            del_tree(tid)
-            return {'message': 'ok'}
-        except (ValueError, AssertionError) as e:
-            raise InvalidUsage(f'for tree id {tree_id}: {e}')
-
-
-class Info(Resource):
-    @auth.login_required
-    def get(self):
-        "Return info about the currently logged user"
-        return get_user(g.user_id)
+        del_tree(tid)
+        return {'message': 'ok'}
 
 
 class Id(Resource):
     def get(self, path):
-        if not any(path.startswith(x) for x in ['users/', 'trees/']):
+        if not path.startswith('trees/'):
             raise InvalidUsage('invalid path %r' % path, 404)
 
         name = path.split('/', 1)[-1]
-        if path.startswith('users/'):
-            uids = dbget0('id', 'users WHERE username=?', name)
-            if len(uids) != 1:
-                raise InvalidUsage('unknown username %r' % name)
-            return {'id': uids[0]}
-        elif path.startswith('trees/'):
+        if path.startswith('trees/'):
             pids = dbget0('id', 'trees WHERE name=?', name)
             if len(pids) != 1:
                 raise InvalidUsage('unknown tree name %r' % name)
             return {'id': pids[0]}
 
 
-
 # Auxiliary functions.
+
+def init_timer(fn):
+    def wrapper(*args, **kwargs):
+        if type(args[0]) == int:
+            tid = args[0]
+            return_val = fn(*args, **kwargs)
+        else:
+            tid = return_val = fn(*args, **kwargs)
+        app.trees[int(tid)].timer = time()
+        return return_val
+    return wrapper
+
 
 def load_tree(tree_id):
     "Add tree to app.trees and initialize it if not there, and return it"
     try:
-        user = request.remote_addr
         tid, subtree = get_tid(tree_id)
-        ultrametric = app.tree_style[user].ultrametric
+        tree = app.trees[int(tid)]
+        ultrametric = tree.style.ultrametric
 
-        if tid in app.trees[user]:
-            tree = gdn.get_node(app.trees[user][tid], subtree)
+        if tree.tree:
+            t = gdn.get_node(tree.tree, subtree)
             # Reinitialize if layouts have to be reapplied
-            if tid in app.to_be_initialized[user]:
-                app.to_be_initialized[user].remove(tid)
+            if not tree.initialized:
+                tree.initialized = True
                 if ultrametric:
-                    tree.convert_to_ultrametric()
-                    gdn.standardize(tree)
-                for node in tree.traverse():
+                    t.convert_to_ultrametric()
+                    gdn.standardize(t)
+                for node in t.traverse():
                     node.is_initialized = False
                     node.faces = _FaceAreas()
                     node.collapsed_faces = _FaceAreas()
-            return tree
+            return t
+        else:
+            name, t = retrieve_tree(tid)
+            tree = app.trees[int(tid)]
+            tree.name, tree.tree = name, t
+            return gdn.get_node(t, subtree)
 
-        newicks = dbget0('newick', 'trees WHERE id=?', tid)
-        assert len(newicks) == 1
-        
-        t = Tree(newicks[0])
-        if ultrametric: t.convert_to_ultrametric()
-        gdn.standardize(t)
-
-        app.trees[user][tid] = t
-
-        return gdn.get_node(t, subtree)
     except (AssertionError, IndexError):
         raise InvalidUsage(f'unknown tree id {tree_id}', 404)
+
+
+def load_tree_from_newick(tid, newick):
+    """Load tree into memory from newick"""
+    t = Tree(newick)
+
+    if app.trees[int(tid)].style.ultrametric:
+        t.convert_to_ultrametric()
+
+    gdn.standardize(t)
+    return t
+
+
+@init_timer
+def retrieve_tree(tid):
+    """Retrieve tree from tmp or local db.
+    Called when tree has been deleted from memory
+
+    """
+    if app.memory_only:
+        with open(f'/tmp/{tid}.nwx') as nw:
+            name = nw.readline().strip()
+            newick = nw.readline().strip()
+    else:
+        newicks = dbget('name,newick', 'trees WHERE id=?', tid)
+        assert len(newicks) == 1, "More than one tree with same id"
+        name, newick = newicks[0].values()
+
+    t = load_tree_from_newick(tid, newick)
+    return name, t
+    
+
+def reload_tree(tid):
+    """Delete tree fromm memory and reload it"""
+    app.trees.pop(tid, None) # avoid possible key-error
+    if app.memory_only:
+        name, t = retrieve_tree(tid)
+        app.trees[int(tid)].name = name
+        app.trees[int(tid)].tree = t
+    else:
+        load_tree(tid)
 
 
 def get_drawer(tree_id, args):
@@ -420,7 +340,19 @@ def get_drawer(tree_id, args):
         zoom = (get('zx', 1), get('zy', 1))
         assert zoom[0] > 0 and zoom[1] > 0, 'zoom must be > 0'
 
+        tid, _ = get_tid(tree_id)
+        tree = app.trees[int(tid)]
+
+        active_layouts = args.get('layouts')
+        if active_layouts != None:
+            update_layouts(active_layouts, tid)
+
         drawer_name = args.get('drawer', 'RectFaces')
+        # Automatically provide aligned drawer when necessary
+        if drawer_name not in ['Rect', 'Circ'] and\
+                any(getattr(ly, 'contains_aligned_face', False)\
+                    for ly in tree.style.layout_fn):
+            drawer_name = 'Align' + drawer_name
         drawer_class = next((d for d in draw.get_drawers()
             if d.__name__[len('Drawer'):] == drawer_name), None)
 
@@ -431,22 +363,15 @@ def get_drawer(tree_id, args):
             (get('rmin', 0), 0,
              get('amin', -180) * pi/180, get('amax', 180) * pi/180))
 
-        active_layouts = args.get('layouts')
-        if active_layouts != None:
-            update_layouts(active_layouts)
-
-        update_ultrametric(args.get('ultrametric'))
-
         collapsed_ids = set(tuple(int(i) for i in node_id.split(','))
             for node_id in json.loads(args.get('collapsed_ids', '[]')))
 
-        user = request.remote_addr
-        searches = app.searches[user].get(tree_id)
-        tree_style = app.tree_style[user]
+        update_ultrametric(args.get('ultrametric'), tid)
 
+        searches = tree.searches
         
         return drawer_class(load_tree(tree_id), viewport, panel, zoom,
-                    limits, collapsed_ids, searches, tree_style)
+                    limits, collapsed_ids, searches, tree.style)
     except StopIteration:
         raise InvalidUsage(f'not a valid drawer: {drawer_name}')
     except (ValueError, AssertionError) as e:
@@ -483,8 +408,7 @@ def store_search(tree_id, args):
                 parents.add(parent)
                 parent = parent.up
 
-        app.searches[request.remote_addr]\
-                .setdefault(tree_id, {})[text] = (results, parents)
+        app.trees[int(tree_id)].searches[text] = (results, parents)
 
         return len(results), len(parents)
     except InvalidUsage:
@@ -570,14 +494,12 @@ def add_trees_from_request():
     "Add trees to the database and return a dict of {name: id}"
     if request.form:
         trees = get_trees_from_form()
-        owner = g.user_id
     else:
-        data = get_fields(required=['name', 'newick'],
-                          valid_extra=['description', 'owner'])
+        data = get_fields(required=['name', 'newick'],  # id
+                          valid_extra=['description'])
         trees = [data]
-        owner = data.pop('owner', g.user_id)
 
-    return {data['name']: add_tree(data, owner) for data in trees}
+    return {data['name']: add_tree(data) for data in trees}
 
 
 def get_trees_from_form():
@@ -593,8 +515,12 @@ def get_trees_from_form():
             return [{'name': form['name'], 'newick': text,
                      'description': form.get('description', '')}]
     else:
-        return [{'name': form['name'], 'newick': form['newick'],
-                 'description': form.get('description', '')}]
+        return [{
+            'id': form.get('id'),
+            'name': form['name'], 
+            'newick': form['newick'],
+            'description': form.get('description', '')
+            }]
 
 
 def get_file_contents(fp):
@@ -608,14 +534,27 @@ def get_file_contents(fp):
         raise InvalidUsage(f'when reading {fp.filename}: {e}')
 
 
-def add_tree(data, owner):
-    "Add tree to the database (with given data and owner) and return its id"
-    admin_id = 1
-    if g.user_id not in [owner, admin_id]:
-        raise InvalidUsage('owner set different from current user')
-
+@init_timer
+def add_tree(data, replace=True):
+    "Add tree to the database with given data and return its id"
+    
+    if app.memory_only:
+        tid = data['id']
+        name = data['name']
+        newick = data['newick']
+        del_tree(tid)  # delete if there is a tree with same id
+        with open(f'/tmp/{tid}.nwx', 'w') as nw:
+            nw.writelines([name + '\n', newick])
+        return tid
+    
     if dbcount('trees WHERE name=?', data['name']) != 0:
-        raise InvalidUsage('existing tree name %r' % data['name'])
+        if replace:
+            print(f'Found {data["name"]} in local database. Updating tree...')
+            with shared_connection([dbget0]) as [get0]:
+                tid = get0('id', 'trees WHERE name=?', data['name'])[0]
+                del_tree(tid)
+        else:
+            raise InvalidUsage('existing tree name %r' % data['name'])
 
     try:
         # load it to validate
@@ -626,6 +565,7 @@ def add_tree(data, owner):
     data['birth'] = datetime.now()  # add creation time
 
     tid = None  # will be filled later if it all works
+    data.pop('id', None)  # it will raise an error
     with shared_connection([dbget0, dbexe]) as [get0, exe]:
         cols, vals = zip(*data.items())
         try:
@@ -635,9 +575,6 @@ def add_tree(data, owner):
             raise InvalidUsage(f'database exception adding tree: {e}')
 
         tid = get0('id', 'trees WHERE name=?', data['name'])[0]
-
-        exe('INSERT INTO user_owns_trees VALUES (%d, %d)' % (owner, tid))
-
     return tid
 
 
@@ -648,14 +585,9 @@ def modify_tree_fields(tree_id):
 
         assert dbcount('trees WHERE id=?', tid) == 1, 'invalid id'
 
-        admin_id = 1
-        assert g.user_id in [get_owner(tid), admin_id], 'no permission'
-
         data = get_fields(valid_extra=[
-            'name', 'description', 'newick', 'addReaders','delReaders'])
+            'name', 'description', 'newick'])
 
-        add_readers(tid, data.pop('addReaders', None))
-        del_readers(tid, data.pop('delReaders', None))
         if not data:
             return {'message': 'ok'}
 
@@ -672,20 +604,21 @@ def modify_tree_fields(tree_id):
 def get_layouts(layouts=[]):
     # Get default layouts from their getters
     default_layouts = [ get_layout_outline(), get_layout_leaf_name(),
-            get_layout_branch_length(), get_layout_branch_support() ]
+            get_layout_branch_length(), get_layout_branch_support(),
+            get_layout_align_link(), ]
 
     # Get layouts from TreeStyle
-    ts_layouts = app.tree_style['default'].layout_fn
+    ts_layouts = app.trees['default'].style.layout_fn
+    app.trees.pop('default')
 
     layouts = list(set(default_layouts + ts_layouts + layouts))
 
     return [ ly for ly in layouts if ly.__name__ != '<lambda>' ]
 
 
-def update_layouts(active_layouts):
+def update_layouts(active_layouts, tid):
     """ Update app layouts based on front end status """
-    user = request.remote_addr  # identified by their IP address
-    tree_style = app.tree_style[user]  # specific to each user
+    tree_style = app.trees[int(tid)].style  # specific to each tree
     ts_layouts = [ ly.__name__ for ly in tree_style.layout_fn ]
     reinit_trees = False
     for layout in app.layouts:
@@ -701,19 +634,25 @@ def update_layouts(active_layouts):
                 tree_style.del_layout_fn(name)  # remove layout_fn from ts
 
     if reinit_trees:
-        app.to_be_initialized[user] = list(app.trees[user].keys())
+        if app.memory_only:
+            app.trees[int(tid)].initialized = False
+        else:
+            for t in app.trees.values():
+                t.initialized = False
 
-def update_ultrametric(ultrametric):
+
+def update_ultrametric(ultrametric, tid):
     """ Update trees if ultrametric option toggled """
-    user = request.remote_addr  # identified by their IP address
-    tree_style = app.tree_style[user]  # specific to each user
-    ultrametric = True if ultrametric == 'true' else False # js boolean
+    tree = app.trees[int(tid)]
+    tree_style = tree.style  # specific to each tree
+    # Boolean from front-end 0 or 1
+    ultrametric = True if (ultrametric and int(ultrametric)) else False
     if tree_style.ultrametric != ultrametric:
         tree_style.ultrametric = ultrametric
         if ultrametric == True:
-            app.to_be_initialized[user] = list(app.trees[user].keys())
+            tree.initialized = False
         else:
-            app.trees[user] = {}
+            app.trees.pop(tid, None) # delete from memory
 
 
 # Database-access functions.
@@ -751,23 +690,6 @@ def shared_connection(functions):
 
 # Manage basic fields (related to the SQL schema, like users, readers, etc.).
 
-def get_user(uid):
-    "Return all the fields of a given user as a dict"
-    with shared_connection([dbget, dbget0]) as [get, get0]:
-        users = get('id,username,name', 'users WHERE id=?', uid)
-        if len(users) == 0:
-            raise InvalidUsage(f'unknown user id {uid}', 404)
-
-        user = users[0]
-
-        user['trees_owner'] = get0('id_tree',
-                                   'user_owns_trees WHERE id_user=?', uid)
-        user['trees_reader'] = get0('id_tree',
-                                    'user_reads_trees WHERE id_user=?', uid)
-
-    return strip(user)
-
-
 def get_tid(tree_id):
     "Return the tree id and the subtree id, with the appropriate types"
     try:
@@ -790,26 +712,36 @@ def get_tree(tree_id):
             raise InvalidUsage(f'unknown tree id {tid}', 404)
 
         tree = trees[0]
-
-        tree['owner'] = get0('id_user', 'user_owns_trees WHERE id_tree=?', tid)[0]
-        tree['readers'] = get0('id_user', 'user_reads_trees WHERE id_tree=?', tid)
         tree['subtree'] = subtree
 
     return strip(tree)
 
 
-def get_owner(tid):
-    "Return owner id of the given tree"
-    return dbget0('id_user', 'user_owns_trees WHERE id_tree=?', tid)
-
-
-def del_tree(tid):
+def del_tree(tid, from_db=True):
     "Delete a tree and everywhere where it appears referenced"
-    exe = db.connect().execute
-    exe('DELETE FROM trees WHERE id=?', tid)
-    exe('DELETE FROM user_owns_trees WHERE id_tree=?', tid)
-    exe('DELETE FROM user_reads_trees WHERE id_tree=?', tid)
-    app.trees[request.remote_addr].pop(tid, None)
+    if app.memory_only:
+        shutil.rmtree(f'/tmp/{tid}.nwx', ignore_errors=True)
+    elif from_db:
+        # Delete from local db
+        exe = db.connect().execute
+        exe('DELETE FROM trees WHERE id=?', tid)
+    app.trees.pop(tid, None)
+
+
+def purge(interval=None, max_time=30*60, from_db=True):
+    """Delete trees that have been inactive for a certain period of time
+        :interval: if set, recursively calls purge after given interval.
+        :max_time: maximum inactivity time in seconds. Default 30 min.
+    """
+    trees = list(app.trees.keys())
+    for tid in trees:
+        inactivity_time = time() - app.trees[tid].timer
+        if inactivity_time > max_time: 
+            del_tree(tid, from_db)
+    # Call self after interval
+    if interval: # in seconds
+        print(f'Current trees in memory: {len(list(app.trees.keys()))}')
+        Timer(interval, purge, [interval, max_time, from_db]).start()
 
 
 def strip(d):
@@ -819,36 +751,6 @@ def strip(d):
         if v:
             d_stripped[k] = d[k]
     return d_stripped
-
-
-def add_readers(tid, uids):
-    "Add readers (with user id in uids) to a tree (tid)"
-    if not uids:
-        return
-    uids_str = '(%s)' % ','.join('%d' % x for x in uids)  # -> '(u1, u2, ...)'
-
-    if dbcount('users WHERE id IN %s' % uids_str) != len(uids):
-        raise InvalidUsage(f'nonexisting user in {uids_str}')
-    if dbcount('user_reads_trees '
-        'WHERE id_tree=%d AND id_user IN %s' % (tid, uids_str)) != 0:
-        raise InvalidUsage('tried to add an existing reader')
-
-    values = ','.join('(%d, %d)' % (uid, tid) for uid in uids)
-    dbexe('INSERT INTO user_reads_trees (id_user, id_tree) VALUES %s' % values)
-
-
-def del_readers(tid, uids):
-    "Remove readers (with user id in uids) from a tree (tid)"
-    if not uids:
-        return
-    uids_str = '(%s)' % ','.join('%d' % x for x in uids)  # -> '(u1, u2, ...)'
-
-    if dbcount('user_reads_trees '
-        'WHERE id_tree=%d AND id_user IN %s' % (tid, uids_str)) != len(uids):
-        raise InvalidUsage(f'nonexisting user in {uids_str}')
-
-    dbexe('DELETE FROM user_reads_trees WHERE '
-        'id_user IN %s AND id_tree=?' % uids_str, tid)
 
 
 def get_fields(required=None, valid_extra=None):
@@ -880,9 +782,9 @@ def create_example_database():
         os.system(f'./add_tree.py --db {db_path} ../examples/{tfile}')
 
 
-def initialize(tree=None):
+def initialize(tree=None, tree_style=None, memory_only=False):
     "Initialize the database and the flask app"
-    global db, serializer
+    global db
 
     app = Flask(__name__, instance_relative_config=True)
     configure(app)
@@ -890,13 +792,14 @@ def initialize(tree=None):
     api = Api(app)
     add_resources(api)
 
-    # These three dict contain info specific to each user (IP address)
-    app.trees = defaultdict(dict)  # to keep in memory loaded trees
-    app.to_be_initialized = defaultdict(list)  # list of trees to be reset
-    app.searches = defaultdict(dict)  # to keep in memory the searches
-    app.tree_style = defaultdict(TreeStyle)
-
-    serializer = JSONSigSerializer(app.config['SECRET_KEY'], expires_in=3600)
+    app.memory_only = memory_only
+    # Dict containing AppTree dataclasses with tree info
+    app.trees = defaultdict(lambda: AppTree(
+        name=get_random_string(10),
+        style=deepcopy(tree_style) or TreeStyle(),
+        timer = time(),
+        searches = {},
+    ))
 
     db = sqlalchemy.create_engine('sqlite:///' + app.config['DATABASE'])
 
@@ -906,6 +809,10 @@ def initialize(tree=None):
         @app.route('/')
         def index():
             return redirect(url_for('static', filename='gui.html', tree=tree))
+    elif app.memory_only:
+        @app.route('/')
+        def index():
+            return redirect(url_for('static', filename='gui.html'))
     else:
         # Else, provide a user interface for entering a newick to visualize
         @app.route('/')
@@ -953,13 +860,12 @@ def configure(app):
 def add_resources(api):
     "Add all the REST endpoints"
     add = api.add_resource  # shortcut
-    add(Login, '/login')
-    add(Users, '/users', '/users/<int:user_id>')
-    add(Drawers, '/drawers', '/drawers/<string:name>')
-    add(Layouts, '/layouts', '/layouts/<string:name>')
+    add(Drawers, '/drawers/<string:name>/<string:tree_id>')
+    add(Layouts, '/layouts')
     add(Trees,
         '/trees',
         '/trees/<string:tree_id>',
+        '/trees/<string:tree_id>/name',
         '/trees/<string:tree_id>/newick',
         '/trees/<string:tree_id>/draw',
         '/trees/<string:tree_id>/size',
@@ -973,19 +879,20 @@ def add_resources(api):
         '/trees/<string:tree_id>/remove',
         '/trees/<string:tree_id>/rename',
         '/trees/<string:tree_id>/reload')
-    add(Info, '/info')
-    add(Id, '/id/<path:path>')
 
 
-def run_smartview(newick=None, tree_name=None, tree_style=None, layouts=[]):
+def run_smartview(newick=None, tree_name=None, tree_style=None, layouts=[],
+        update_old_tree=True, memory_only=False, purge_trees=False):
     # Set tree_name to None if no newick was provided
     # Generate tree_name if none was provided
+    # update_old_tree: replace tree in local database if identical tree_name
     tree_name = tree_name or get_random_string(10) if newick else None
 
     global app
-    app = initialize(tree_name)
+    app = initialize(tree_name, tree_style, memory_only=memory_only)
+    # purge inactive trees every 15 minutes
+    purge(interval=15*60, max_time=30*60, from_db=purge_trees)
 
-    app.tree_style['default'] = tree_style or TreeStyle()
     app.layouts = get_layouts(layouts)
 
     # Create database if not already created
@@ -994,21 +901,21 @@ def run_smartview(newick=None, tree_name=None, tree_style=None, layouts=[]):
 
     # Add tree to database if provided
     if newick: 
-        tree_data = { 'name': tree_name,
-                      'newick': newick }
+        print(f'Adding {tree_name} to local database...')
+        tree_data = { 
+            'id': 0,  # id to be replaced by actual hash
+            'name': tree_name,
+            'newick': newick,
+        }
         with app.app_context():
-            g.user_id = 1
-            try:
-                add_tree(tree_data, 1)
-            except:
-                print(f'Tree {tree_name} already stored in database.')
+            tid = add_tree(tree_data, replace=update_old_tree)
+            print(f'Added tree {tree_name} with id {tid}.')
 
     app.run(debug=True, use_reloader=False)
 
 
 if __name__ == '__main__':
-    # Get default layouts from their getters
-    run_smartview()
+    run_smartview(memory_only=False)
 
 
 # But for production it's better if we serve it with something like:

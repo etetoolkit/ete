@@ -3,7 +3,7 @@ from types import FunctionType, MethodType
 from ete4 import NodeStyle
 from ete4.smartview.ete.faces import AttrFace, TextFace,\
                                      CircleFace, RectFace,\
-                                     OutlineFace
+                                     OutlineFace, AlignLinkFace
 from ete4.smartview.ete.draw import summary
 
 
@@ -90,12 +90,33 @@ def get_layout_outline(collapsing_height=5):
     return layout_fn
 
 
+def get_layout_align_link(stroke_color='gray', stroke_width=0.5,
+            line_type=1, opacity=0.8):
+    align_link_face = AlignLinkFace(stroke_color=stroke_color,
+                                    stroke_width=stroke_width,
+                                    line_type=line_type,
+                                    opacity=opacity)
+    def layout_fn(node):
+        if node.is_leaf():
+            node.add_face(align_link_face,
+                          position='branch-right',
+                          column=1e10)
+        else:
+            node.add_face(align_link_face,
+                          position='branch-right',
+                          column=1e10,
+                          collapsed_only=True)
+    layout_fn.__name__ = 'align_link'
+    return layout_fn
+
+
 
 class TreeStyle(object):
     def __init__(self):
         self._layout_handler = []
         self.aligned_grid = True
         self.aligned_grid_dxs = defaultdict(lambda: 0)
+        self.show_align_link = False
 
         self.ultrametric = False
         
@@ -104,7 +125,8 @@ class TreeStyle(object):
         self.show_branch_length = False
         self.show_branch_support = False
         self.default_layouts = ['outline', 'leaf_name', 
-                                'branch_length', 'branch_support']
+                                'branch_length', 'branch_support',
+                                'align_link']
         
     @property
     def layout_fn(self):
@@ -141,6 +163,8 @@ class TreeStyle(object):
     def _update_layout_flags(self, name, status):
         if name == 'outline':
             self.show_outline = status
+        if name == 'align_link':
+            self.show_align_link = status
         if name == 'leaf_name':
             self.show_leaf_name = status
         if name == 'branch_length':
@@ -159,6 +183,8 @@ class TreeStyle(object):
 
         if self.show_outline:
             layouts.append(get_layout_outline())
+        if self.show_align_link:
+            layouts.append(get_layout_align_link())
         if self.show_leaf_name:
             layouts.append(get_layout_leaf_name())
         if self.show_branch_length:
