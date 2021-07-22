@@ -402,11 +402,11 @@ class DrawerCirc(Drawer):
 
         self.dy2da = (self.ymax - self.ymin) / self.tree.size[1]
 
-    def in_viewport(self, box):
+    def in_viewport(self, box, pos=None):
         if not self.viewport:
             return intersects_segment((-pi, +pi), get_ys(box))
 
-        if self.panel == 0:
+        if self.panel == 0 and pos != 'aligned':
             return (intersects_box(self.viewport, circumrect(box)) and
                     intersects_segment((-pi, +pi), get_ys(box)))
         else:
