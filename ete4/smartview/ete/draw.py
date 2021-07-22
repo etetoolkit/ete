@@ -627,9 +627,6 @@ class DrawerRectFaces(DrawerRect):
                         _, _, dx, dy = face.get_box()
                         hz_padding = 2 * face.padding_x / zx
                         vt_padding = 2 * face.padding_y / zy
-                        if pos == 'aligned' and self.panel == 0:
-                            print(dx)
-                            print(hz_padding)
                         dx_max = max(dx_max, (dx or 0) + hz_padding)
                         dy_before += dy + vt_padding
                         yield from drawn_face
