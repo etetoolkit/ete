@@ -322,11 +322,11 @@ class DrawerRect(Drawer):
 
     TYPE = 'rect'
 
-    def in_viewport(self, box):
+    def in_viewport(self, box, pos=None):
         if not self.viewport:
             return True
 
-        if self.panel == 0:
+        if self.panel == 0 and pos != 'aligned':
             return intersects_box(self.viewport, box)
         else:
             return intersects_segment(get_ys(self.viewport), get_ys(box))
@@ -581,11 +581,11 @@ class DrawerRectFaces(DrawerRect):
                 if not node.is_leaf() else node.dist
         zx, zy = self.zoom
 
-        def it_fits(box):
+        def it_fits(box, pos):
             _, _, dx, dy = box
             return dx * zx > self.MIN_SIZE\
                     and dy * zy > self.MIN_SIZE\
-                    and self.in_viewport(box)
+                    and self.in_viewport(box, pos)
 
         def draw_face(face, pos, row, n_row, n_col, dx_before, dy_before):
             if face.get_content():
@@ -594,7 +594,7 @@ class DrawerRectFaces(DrawerRect):
                             bdx, bdy, bdy0, bdy1,
                             pos, row, n_row, n_col,
                             dx_before, dy_before)
-                if it_fits(box) and face.fits() or face.always_drawn:
+                if it_fits(box, pos) and face.fits() or face.always_drawn:
                     yield from face.draw(self)
 
         def draw_faces_at_pos(node, pos):
@@ -611,15 +611,11 @@ class DrawerRectFaces(DrawerRect):
                 if pos == 'aligned'\
                             and self.tree_style.aligned_grid\
                             and self.NPANELS > 1\
+                            and self.panel > 0\
                             and col > 0:
                     # Avoid changing-size error when zooming very quickly
-                    try:
-                        dx_before = sum(
-                            v for k, v\
-                            in self.tree_style.aligned_grid_dxs.items()\
-                            if k < col and k > 0)
-                    except:
-                        dx_before = 0
+                    dxs = list(self.tree_style.aligned_grid_dxs.items())
+                    dx_before = sum(v for k, v in dxs if k < col and k > 0)
                 dx_max = 0
                 dy_before = 0
                 n_row = len(face_list)
@@ -631,6 +627,9 @@ class DrawerRectFaces(DrawerRect):
                         _, _, dx, dy = face.get_box()
                         hz_padding = 2 * face.padding_x / zx
                         vt_padding = 2 * face.padding_y / zy
+                        if pos == 'aligned' and self.panel == 0:
+                            print(dx)
+                            print(hz_padding)
                         dx_max = max(dx_max, (dx or 0) + hz_padding)
                         dy_before += dy + vt_padding
                         yield from drawn_face
@@ -691,12 +690,12 @@ class DrawerCircFaces(DrawerCirc):
                 if not (node.is_leaf() or node.is_collapsed) else node.dist
         z = self.zoom[0]  # zx == zy
             
-        def it_fits(box):
+        def it_fits(box, pos):
             r, a, dr, da = box
             return r > 0 \
                     and dr * z > self.MIN_SIZE\
                     and (r + dr) * da * z > self.MIN_SIZE\
-                    and self.in_viewport(box)
+                    and self.in_viewport(box, pos)
 
         def draw_face(face, pos, row, n_row, n_col, dr_before, da_before):
             if face.get_content():
@@ -705,7 +704,7 @@ class DrawerCircFaces(DrawerCirc):
                         bdr, bda, bda0, bda1,
                         pos, row, n_row, n_col,
                         dr_before, da_before)
-                if it_fits(box) and face.fits() or face.always_drawn:
+                if it_fits(box, pos) and face.fits() or face.always_drawn:
                     yield from face.draw(self)
 
         def draw_faces_at_pos(node, pos):
@@ -729,13 +728,8 @@ class DrawerCircFaces(DrawerCirc):
                             and self.tree_style.aligned_grid\
                             and self.NPANELS > 1:
                     # Avoid changing-size error when zooming very quickly
-                    try:
-                        dr_before = sum(
-                            v for k, v\
-                            in self.tree_style.aligned_grid_dxs.items()\
-                            if k < col)
-                    except:
-                        dr_before = 0
+                    drs = list(self.tree_style.aligned_grid_dxs.items())
+                    dr_before = sum(v for k, v in drs if k < col)
                 dr_max = 0
                 da_before = 0
                 n_row = len(face_list)

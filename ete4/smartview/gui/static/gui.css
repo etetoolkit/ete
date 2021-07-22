@@ -204,6 +204,7 @@ kbd {
 /* Total width */
 .tp-dfwv {
     width: 330px !important;
+    z-index: 2;
 }
 
 .tp-dfwv * {

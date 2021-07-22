@@ -919,7 +919,7 @@ class SeqMotifFace(Face):
                 if drawer.TYPE == 'circ':
                     p1 = cartesian(p1)
                     p2 = cartesian(p2)
-                yield draw_line(p1, p2, style={'width': 0.5, 'color': fg})
+                yield draw_line(p1, p2, style={'stroke-width': 0.5, 'stroke': fg})
 
             # Rectangle
             elif shape in ('[]', '()'):
