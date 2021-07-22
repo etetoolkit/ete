@@ -16,7 +16,7 @@ async function download_newick(node_id) {
 
 // Download a file with the current view of the tree as a svg.
 function download_svg() {
-    const svg = div_tree.children[0].cloneNode(true);
+    const svg = div_viz.cloneNode(true)
     // Remove foreground nodeboxes for faster rendering
     // (Background nodes not excluded as they are purposely styled)
     Array.from(svg.getElementsByClassName("fg_node")).forEach(e => e.remove());
@@ -29,22 +29,15 @@ function download_svg() {
 
 // Download a file with the current view of the tree as a png.
 function download_image() {
-    const canvas = document.createElement("canvas");
-    canvas.width = div_tree.offsetWidth;
-    canvas.height = div_tree.offsetHeight;
-    const svg = div_tree.children[0].cloneNode(true);
-    // Remove foreground nodeboxes for faster rendering
-    // (Background nodes not excluded as they are purposely styled)
-    Array.from(svg.getElementsByClassName("fg_node")).forEach(e => e.remove());
-    apply_css(svg, document.styleSheets[0]);
-    const svg_xml = (new XMLSerializer()).serializeToString(svg);
-    const ctx = canvas.getContext("2d");
-    const img = new Image();
-    img.src = "data:image/svg+xml;base64," + btoa(svg_xml);
-    img.addEventListener("load", () => {
-        ctx.drawImage(img, 0, 0);
-        download(view.tree + ".png", canvas.toDataURL("image/png"));
-    });
+    // dom-to-image dependency
+    domtoimage
+        .toPng(div_viz, {
+            filter: node =>
+            // Remove foreground nodeboxes for faster rendering
+            // (Background nodes not excluded as they are purposely styled)
+            !(node.classList && [...node.classList].includes("fg_node"))
+        })
+        .then(content => download(view.tree + ".png", content));
 }
 
 
