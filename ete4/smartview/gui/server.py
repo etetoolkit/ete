@@ -399,7 +399,7 @@ def store_search(tree_id, args):
     func = get_search_function(text)
 
     try:
-        results = set(node for node in load_tree(tree_id) if func(node))
+        results = set(node for node in load_tree(tree_id).traverse() if func(node))
 
         parents = set()
         for node in results:
