@@ -101,7 +101,11 @@ function draw_negative_xaxis() {
 function draw(element, items, tl, zoom, replace=true) {
     const g = create_svg_element("g");
 
-    items.forEach(item => g.appendChild(create_item(item, tl, zoom)));
+    const svg_items = items.filter(i => i[0] != "alignment");
+    svg_items.forEach(item => g.appendChild(create_item(item, tl, zoom)));
+    
+    const pixi_items = items.filter(i => i[0] == "alignment");
+    g.appendChild(draw_msa(pixi_items, )); /// TODO: SET WIDTH AND HEIGHT
 
     put_nodes_in_background(g);
 
@@ -318,6 +322,11 @@ function create_item(item, tl, zoom) {
         }
 
         return g;
+    }
+    else if (item[0] == "alignment") {
+        const [, box, sequence, sequence_type, draw_text] = item;
+        const alignment = draw_alignment(box, sequence, sequence_type, draw_text)
+        return alignment
     }
 }
 
