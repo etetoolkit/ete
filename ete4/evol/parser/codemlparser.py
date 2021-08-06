@@ -191,12 +191,12 @@ def get_ancestor (pamout, model):
             pamlid, seq = re.sub ('node#([0-9]+)([A-Z]*)\n', '\\1\t\\2',
                                   re.sub (' ', '', line)).split ('\t')
             n = model._tree.get_descendant_by_node_id (int (pamlid))
-            n.add_feature ('nt_sequence', seq)
+            n.add_property ('nt_sequence', seq)
         elif line.startswith ('Node #'):
             pamlid, seq = re.sub ('Node#([0-9]+)([A-Z]*)\n', '\\1\t\\2',
                                   re.sub (' ', '', line)).split ('\t')
             n = model._tree.get_descendant_by_node_id (int (pamlid))
-            n.add_feature ('sequence', seq)
+            n.add_property ('sequence', seq)
         elif line.startswith ('Counts of changes at sites'):
             break
 
@@ -300,7 +300,7 @@ def _check_paml_labels (tree, paml_labels, pamout, model):
     for rel in relations:
         try:
             node = tree.get_descendant_by_node_id(rel[1])
-            if int (node.up.node_id) != int (rel[0]):
+            if int (node.up.get('node_id')) != int (rel[0]):
                 warn('WARNING: labelling does not correspond (bad tree?)!!\n' + \
                      '         Getting them from ' + pamout)
                 _get_labels_from_paml(tree, relations, pamout, model)
@@ -326,18 +326,18 @@ def _get_labels_from_paml (tree, relations, pamout, model):
             nam, paml_id = re.sub ('#([0-9]+): (.*)', '\\2 \\1',
                                    line.strip()).split()
             node = (tree & nam)
-            old2new[node.node_id] = int(paml_id)
-            node.add_feature ('node_id', int(paml_id))
-        if line.startswith ('Sums of codon'):
+            old2new[node.get('node_id')] = int(paml_id)
+            node.add_property('node_id', int(paml_id))
+        if line.startswith('Sums of codon'):
             break
     # label the root
-    tree.add_feature ('node_id', int (len (tree) + 1))
+    tree.add_property ('node_id', int (len (tree) + 1))
     # label other internal nodes
     for node in tree.traverse(strategy='postorder'):
         if node.is_root(): continue
-        paml_id = next(filter(lambda x: x[1]==node.node_id, relations))[0]
-        old2new[node.up.node_id] = paml_id
-        node.up.node_id = paml_id
+        paml_id = next(filter(lambda x: x[1]==node.get('node_id'), relations))[0]
+        old2new[node.up.get('node_id')] = paml_id
+        node.up.add_property('node_id', paml_id)
     ### change keys in branches dict of model
     branches = copy(model.branches)
     for b in model.branches:

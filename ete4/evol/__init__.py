@@ -54,6 +54,3 @@ from .parser.codemlparser import *
 from .evoltree            import *
 from .model               import Model
 __all__ = evoltree.__all__
-
-
-

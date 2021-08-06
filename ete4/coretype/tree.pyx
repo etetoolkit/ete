@@ -83,7 +83,7 @@ cdef class TreeNode(object):
     cdef public double _dist
     cdef public dict _properties
     cdef public set features
-    cdef public list children
+    cdef public list _children
     cdef public object _up
     cdef public object _img_style
     cdef public object _faces
@@ -152,9 +152,9 @@ cdef class TreeNode(object):
         except ValueError:
             raise TreeError('node support must be a float number')
 
-    def _get_properties(self):
+    def _get_props(self):
         return self._properties
-    def _set_properties(self, value):
+    def _set_props(self, value):
         try:
             self._properties = dict(value)
         except ValueError:
@@ -167,6 +167,17 @@ cdef class TreeNode(object):
             self._up = value
         else:
             raise TreeError("bad node_up type")
+
+    def _get_children(self):
+        return self._children
+
+    def _set_children(self, children):
+        if not hasattr(children, '__iter__'):
+            raise TreeError(f'Incorrect children type: {type(children)}. Children should to be iterable')
+        for child in children:
+            if type(child) != type(self):
+                raise TreeError(f'Incorrect child type: {type(child)}')
+
 
     def _get_style(self):
         if self._img_style is None:
@@ -201,9 +212,11 @@ cdef class TreeNode(object):
     #: Branch support for current node
     support = property(fget=_get_support, fset=_set_support)
     #: Properties for current node (support included)
-    properties = property(fget=_get_properties, fset=_set_properties)
+    props = property(fget=_get_props, fset=_set_props)
     #: Pointer to parent node
     up = property(fget=_get_up, fset=_set_up)
+    #: List containing children nodes
+    children = property(fget=_get_children, fset=_set_children)
     #: Whether layout functions have been run on node
     is_initialized = property(fget=_get_initialized, fset=_set_initialized)
     is_collapsed = property(fget=_get_collapsed, fset=_set_collapsed)
@@ -235,7 +248,7 @@ cdef class TreeNode(object):
 
     def __init__(self, newick=None, format=0, dist=None, support=None,
                  name=None, quoted_node_names=False):
-        self.children = []
+        self._children = []
         self._up = None
         self._dist = DEFAULT_DIST
         self._properties = {}
@@ -316,44 +329,40 @@ cdef class TreeNode(object):
         """ Iterator over leaf nodes"""
         return self.iter_leaves()
 
-    def get(self, name, default=None):
-        """Return node property. Shortcut of node.properties.get()"""
-        return self.properties.get(name, default)
-
-    def add_property(self, name, value):
+    def add_prop(self, name, value):
         """ Add or update node's property """
         if name != None and value != None:
-            self.properties[name] = value
+            self.prop[name] = value
 
-    def add_properties(self, **properties):
+    def add_prop(self, **props):
         """Add or update several properties."""
-        for name, value in six.iteritems(properties):
-            self.add_property(name, value)
+        for name, value in six.iteritems(props):
+            self.add_prop(name, value)
 
-    def del_property(self, name):
+    def del_prop(self, name):
         """Permanently deletes a node's property."""
-        self.properties.pop(name, None)
+        self.props.pop(name, None)
 
     # DEPRECATED #
     def add_feature(self, pr_name, pr_value):
         """
         Add or update a node's feature.
         """
-        print("\nWARNING! add_feature is DEPRECATED use add_property instead\n")
-        self.add_property(pr_name, pr_value)
+        print("\nWARNING! add_feature is DEPRECATED use add_prop instead\n")
+        self.add_prop(pr_name, pr_value)
 
     def add_features(self, **features):
         """
         Add or update several features. """
-        print("\nWARNING! add_features is DEPRECATED use add_properties instead\n")
-        self.add_properties(**features)
+        print("\nWARNING! add_features is DEPRECATED use add_props instead\n")
+        self.add_props(**features)
 
     def del_feature(self, pr_name):
         """
         Permanently deletes a node's feature.
         """
-        print("\nWARNING! del_property is DEPRECATED use del_property instead\n")
-        self.del_property(pr_name)
+        print("\nWARNING! del_prop is DEPRECATED use del_prop instead\n")
+        self.del_prop(pr_name)
     # DEPRECATED #
 
     # Topology management
@@ -900,17 +909,17 @@ cdef class TreeNode(object):
         arguments control the way in which extra data is shown for
         every node:
 
-        :argument features: a list of feature names to be exported
-          using the Extended Newick Format (i.e. features=["name",
-          "dist"]). Use an empty list to export all available features
-          in each node (features=[])
+        :argument properties: a list of feature names to be exported
+          using the Extended Newick Format (i.e. properties=["name",
+          "dist"]). Use an empty list to export all available properties
+          in each node (properties=[])
 
         :argument outfile: writes the output to a given file
 
         :argument format: defines the newick standard used to encode the
           tree. See tutorial for details.
 
-        :argument False format_root_node: If True, it allows features
+        :argument False format_root_node: If True, it allows properties
           and branch information from root node to be exported as a
           part of the newick text string. For newick compatibility
           reasons, this is False by default.
@@ -922,7 +931,7 @@ cdef class TreeNode(object):
 
         ::
 
-             t.write(features=["species","name"], format=1)
+             t.write(properties=["species","name"], format=1)
 
         """
 
@@ -1034,7 +1043,7 @@ cdef class TreeNode(object):
             conditions_passed = 0
             for key, value in six.iteritems(conditions):
                 if (hasattr(n, key) and getattr(n, key) == value)\
-                  or n.properties.get(key) == value:
+                  or n.props.get(key) == value:
                     conditions_passed +=1
             if conditions_passed == len(conditions):
                 yield n
@@ -1444,11 +1453,11 @@ cdef class TreeNode(object):
              branch support values will be copied by as represented in
              the newick string (copy by newick string serialisation).
 
-           - "newick-extended": Tree topology and all node features
+           - "newick-extended": Tree topology and all node properties
              will be copied based on the extended newick format
-             representation. Only node features will be copied, thus
+             representation. Only node properties will be copied, thus
              excluding other node attributes. As this method is also
-             based on newick serialisation, features will be converted
+             based on newick serialisation, properties will be converted
              into text strings when making the copy.
 
            - "cpickle": The whole node structure and its content is
@@ -1464,10 +1473,9 @@ cdef class TreeNode(object):
         """
         method = method.lower()
         if method=="newick":
-            new_node = self.__class__(self.write(features=["name"], format_root_node=True))
+            new_node = self.__class__(self.write(properties=["name"], format=1)) #, format_root_node=True))
         elif method=="newick-extended":
-            self.write(features=[], format_root_node=True)
-            new_node = self.__class__(self.write(features=[]))
+            new_node = self.__class__(self.write(properties=[], format=1))
         elif method == "deepcopy":
             parent = self.up
             self.up = None
@@ -2591,13 +2599,13 @@ cdef class TreeNode(object):
 
         def get_ete_node(skbio_node):
             ete_node = all_nodes.get(skbio_node, Tree())
-            if skbio_node.length is not None:
-                ete_node.dist = float(skbio_node.length)
+            if skbio_node.get('length') is not None:
+                ete_node.dist = float(skbio_node.get('length'))
             ete_node.name = skbio_node.name
-            ete_node.add_features(id=skbio_node.id)
+            ete_node.add_props(id=skbio_node.get('id'))
             if map_attributes:
                 for a in map_attributes:
-                    ete_node.add_feature(a, getattr(skbio_node, a, None))
+                    ete_node.add_prop(a, skbio_node.get(a))
             return ete_node
 
         all_nodes = {}

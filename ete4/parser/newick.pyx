@@ -208,7 +208,7 @@ def fill_node_content(node, newick, children=None):
     node.dist = dist
     # Avoid removing preexisting properties
     # while overriding default values
-    node.properties = { **node.properties, **properties }
+    node.props = { **node.props, **properties }
     
     if children:
         node.add_children(children)
@@ -312,7 +312,7 @@ def get_properties(text):
 def content_repr(node, format=0, properties=[], quoted_names=False):
     "Return content of a node as represented in specified newick format"
     # Empty list includes all properties
-    properties = list(node.properties.keys())\
+    properties = list(node.props.keys())\
             if properties == [] else (properties or [])
 
     if node.is_leaf():
@@ -357,9 +357,9 @@ def content_repr(node, format=0, properties=[], quoted_names=False):
             if (node.dist >= 0 and dist_type != None) else ''
 
     # PROPERTIES FORMATTING
-    pairs_str = ':'.join('%s=%s' % (k, node.properties.get(k)) 
+    pairs_str = ':'.join('%s=%s' % (k, node.props.get(k)) 
                                     for k in properties
-                                    if node.properties.get(k))
+                                    if node.props.get(k))
     props_str = f'[&&NHX:{pairs_str}]' if pairs_str else ''
 
     return (name_str or support_str) + dist_str + props_str
@@ -378,7 +378,7 @@ def write_newick(tree, format=0, properties=[], quoted_names=False):
     children_text = ','.join(write_newick(node, format, properties=properties,
                                           quoted_names=quoted_names)\
                        .rstrip(';') for node in tree.children)
-    content_text = content_repr(tree, format, properties,
+    content_text = content_repr(tree, format=format, properties=properties,
                                 quoted_names=quoted_names)
     return (f'({children_text})' if tree.children else '') + content_text + ';'
 

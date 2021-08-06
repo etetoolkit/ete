@@ -109,14 +109,14 @@ class Model:
         str_line = '\n        mark:%-5s, omega: %-10s, node_ids: %-4s, name: %s'
         for i, node in enumerate(self._tree.traverse()):
             if node.is_root():
-                str_mark += str_line % (self.branches[node.node_id]['mark'],
+                str_mark += str_line % (self.branches[node.get('node_id')]['mark'],
                                         'None',
-                                        node.node_id, node.name or 'ROOT')
+                                        node.get('node_id'), node.name or 'ROOT')
             else:
-                str_mark += str_line % (self.branches[node.node_id]['mark'],
-                                        self.branches[node.node_id].get('w',
+                str_mark += str_line % (self.branches[node.get('node_id')]['mark'],
+                                        self.branches[node.get('node_id')].get('w',
                                                                         'None'),
-                                        node.node_id, node.name or 'EDGE')
+                                        node.get('node_id'), node.name or 'EDGE')
         str_site = ''
         str_line = '\n        %-12s: %s '
         if self.classes:
@@ -145,15 +145,15 @@ class Model:
         checks if tree is marked and if model allows marks.
         fill up branches dict with marks
         """
-        has_mark = any([n.mark for n in self._tree.iter_descendants()])
+        has_mark = any(n.get('mark') for n in self._tree.iter_descendants())
         for i, node in enumerate(self._tree.traverse()):
             #if node.is_root(): continue
             if has_mark and self.properties['allow_mark']:
-                self.branches[node.node_id] = {'mark': node.mark or ' #0'}
+                self.branches[node.get('node_id')] = {'mark': node.get('mark') or ' #0'}
             elif 'branch' in self.properties['typ']:
-                self.branches[node.node_id] = {'mark': ' #'+str(i)}
+                self.branches[node.get('node_id')] = {'mark': ' #'+str(i)}
             else:
-                self.branches[node.node_id] = {'mark': ''}
+                self.branches[node.get('node_id')] = {'mark': ''}
 
     def _load(self, path):
         '''

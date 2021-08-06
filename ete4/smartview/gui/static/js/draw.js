@@ -7,6 +7,7 @@ import { on_box_contextmenu } from "./contextmenu.js";
 import { colorize_tags } from "./tag.js";
 import { colorize_labels } from "./label.js";
 import { api } from "./api.js";
+import { draw_msa } from "./pixi.js";
 
 export { update, draw_tree, draw, get_class_name };
 
@@ -101,7 +102,13 @@ function draw_negative_xaxis() {
 function draw(element, items, tl, zoom, replace=true) {
     const g = create_svg_element("g");
 
-    items.forEach(item => g.appendChild(create_item(item, tl, zoom)));
+    // SVG drawing engine
+    const svg_items = items.filter(i => i[0] !== "alignment");
+    svg_items.forEach(item => g.appendChild(create_item(item, tl, zoom)));
+
+    // PIXI.js drawing engine
+    const pixi_items = items.filter(i => i[0] === "alignment");
+    draw_msa(g, pixi_items, "aa", true, tl, zoom);
 
     put_nodes_in_background(g);
 
@@ -177,8 +184,7 @@ async function draw_aligned(params) {
 function create_item(item, tl, zoom) {
     // item looks like ["line", ...] for a line, etc.
 
-    const [zx, zy] = [zoom.x, zoom.y];  // shortcut
-
+    const [zx, zy] = [zoom.x, zoom.y];  // shortcut 
     if (item[0] === "nodebox") {
         const [ , box, name, properties, node_id, result_of, style] = item;
 
@@ -354,10 +360,7 @@ function create_box(box, tl, zx, zy, type, style) {
 
 
 function create_rect(box, tl, zx, zy, type, style) {
-    let [x, y, w, h] = box;
-
-    if (view.drawer.type === "circ")
-        ({x, y} = cartesian_shifted(x, y, tl, zx));
+    const [x, y, w, h] = box;
 
     const r = (is_style_property(style.rounded)) ? 4 : 0;
 
