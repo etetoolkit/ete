@@ -154,7 +154,7 @@ class EvolNode(PhyloNode):
             if node.is_leaf():
                 continue
             nid[0] += 1
-            node.add_property('node_id', nid[0])
+            node.add_prop('node_id', nid[0])
             node._label_internal_nodes(nid)
 
     def _label_as_paml(self):
@@ -171,9 +171,9 @@ class EvolNode(PhyloNode):
             raise Exception('EvolTree require unique names for leaves', duplis)
         # put ids
         for leaf in sorted(self, key=lambda x: x.name):
-            leaf.add_property ('node_id', nid)
+            leaf.add_prop ('node_id', nid)
             nid += 1
-        self.add_property('node_id', nid)
+        self.add_prop('node_id', nid)
         self._label_internal_nodes([nid])
 
     def get_descendant_by_node_id(self, idname):
@@ -182,9 +182,9 @@ class EvolNode(PhyloNode):
         '''
         try:
             for n in self.iter_descendants():
-                if n.get('node_id') == idname:
+                if n.props.get('node_id') == idname:
                     return n
-            if self.get('node_id') == idname:
+            if self.props.get('node_id') == idname:
                 return self
         except AttributeError:
             warn('Should be first labelled as paml ' + \
@@ -196,9 +196,9 @@ class EvolNode(PhyloNode):
         """
         seq_group = SeqGroup()
         for n in self:
-            seq_group.id2seq  [n.get('node_id')] = n.get('nt_sequence')
-            seq_group.id2name [n.get('node_id')] = n.name
-            seq_group.name2id [n.name   ] = n.get('node_id')
+            seq_group.id2seq  [n.props.get('node_id')] = n.props.get('nt_sequence')
+            seq_group.id2name [n.props.get('node_id')] = n.name
+            seq_group.name2id [n.name   ] = n.props.get('node_id')
         seq_group.write(outfile=fullpath, format='paml')
 
 
@@ -302,13 +302,13 @@ class EvolNode(PhyloNode):
                                                 alg_format=alg_format, **kwargs)
         check_len = 0
         for leaf in self.iter_leaves():
-            seq_len = len(str(leaf.get('sequence')))
+            seq_len = len(str(leaf.props.get('sequence')))
             if check_len and check_len != seq_len:
                 warn('WARNING: sequences with different lengths found!')
             check_len = seq_len
-            leaf.add_property('nt_sequence', str(leaf.get('sequence')))
+            leaf.add_prop('nt_sequence', str(leaf.props.get('sequence')))
             if nucleotides:
-                leaf.add_property('sequence', translate(leaf.get('nt_sequence')))
+                leaf.add_prop('sequence', translate(leaf.props.get('nt_sequence')))
 
     def show(self, layout=None, tree_style=None, histfaces=None):
         '''
@@ -395,7 +395,7 @@ class EvolNode(PhyloNode):
 
           t=Tree.mark_tree([2,3], marks=["#1","#2"])
 
-        :argument node_ids: list of node ids (have a look to node.get('node_id'))
+        :argument node_ids: list of node ids (have a look to node.props.get('node_id'))
         :argument False verbose: warn if marks do not correspond to codeml standard
         :argument kwargs: mainly for the marks key-word which needs a list of marks (marks=['#1', '#2'])
 
@@ -407,17 +407,17 @@ class EvolNode(PhyloNode):
         else:
             marks = ['#1'] * len(node_ids)
         for node in self.traverse():
-            if not node.get('node_id'):
+            if not node.props.get('node_id'):
                 continue
-            if node.get('node_id') in node_ids:
-                if ('.' in marks[node_ids.index(node.get('node_id'))] or
+            if node.props.get('node_id') in node_ids:
+                if ('.' in marks[node_ids.index(node.props.get('node_id'))] or
                     match('#[0-9]+',
-                          marks[node_ids.index(node.get('node_id'))]) is None) and verbose:
+                          marks[node_ids.index(node.props.get('node_id'))]) is None) and verbose:
                     warn('WARNING: marks should be "#" sign directly ' +
                          'followed by integer\n' + self.mark_tree.__doc__)
-                node.add_property('mark', ' '+marks[node_ids.index(node.get('node_id'))])
-            elif node.get('mark') == None:
-                node.add_property('mark', '')
+                node.add_prop('mark', ' '+marks[node_ids.index(node.props.get('node_id'))])
+            elif node.props.get('mark') == None:
+                node.add_prop('mark', '')
 
     def link_to_evol_model(self, path, model):
         '''
@@ -558,12 +558,12 @@ class EvolNode(PhyloNode):
         if not model.branches:
             return
         for node in self.iter_descendants():
-            if not evol in model.branches[node.get('node_id')]:
+            if not evol in model.branches[node.props.get('node_id')]:
                 continue
-            node.dist = model.branches[node.get('node_id')][evol]
+            node.dist = model.branches[node.props.get('node_id')][evol]
             if fill:
                 for e in ['dN', 'dS', 'w', 'bL']:
-                    node.add_property(e, model.branches [node.get('node_id')][e])
+                    node.add_prop(e, model.branches [node.props.get('node_id')][e])
 
 
 # cosmetic alias

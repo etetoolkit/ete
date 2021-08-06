@@ -61,7 +61,7 @@ def _parse_species(name):
     return name[:3]
 
 def is_dup(n):
-    return n.properties.get("evoltype") == "D"
+    return n.props.get("evoltype") == "D"
 
 def get_subtrees(tree, full_copy=False, properties=None, newick_only=False):
     """Calculate all possible species trees within a gene tree. I
@@ -122,8 +122,8 @@ def _get_subtrees(tree, full_copy=False, properties=None, newick_only=False):
         fstring = ""
         if properties:
             fstring = "".join(["[&&NHX:",
-                               ':'.join(["%s=%s" %(p, node.get(p))
-                                         for p in properties if node.get(p)])
+                               ':'.join(["%s=%s" %(p, node.props.get(p))
+                                         for p in properties if node.props.get(p)])
                                , "]"])
 
         return ''.join([pre, node.name, fstring, post])
@@ -141,7 +141,7 @@ def _get_subtrees(tree, full_copy=False, properties=None, newick_only=False):
             for leaf in t.iter_leaves():
                 _nid = int(leaf.name)
                 for p in properties:
-                    leaf.add_property(p, getattr(nid2node[_nid], f))
+                    leaf.add_prop(p, getattr(nid2node[_nid], f))
             yield t
 
 def calc_subtrees(tree):
@@ -178,8 +178,8 @@ def iter_sptrees(sptrees, nid2node, properties=None, newick_only=False):
         fstring = ""
         if properties:
             fstring = "".join(["[&&NHX:",
-                               ','.join(["%s=%s" %(p, node.get(p))
-                                         for p in properties if node.get(p)])
+                               ','.join(["%s=%s" %(p, node.props.get(p))
+                                         for p in properties if node.props.get(p)])
                                , "]"])
 
         return ''.join([pre, node.name, fstring, post])
@@ -197,7 +197,7 @@ def iter_sptrees(sptrees, nid2node, properties=None, newick_only=False):
             for leaf in t.iter_leaves():
                 _nid = int(leaf.name)
                 for p in properties:
-                    leaf.add_property(p, getattr(nid2node[_nid], p))
+                    leaf.add_prop(p, getattr(nid2node[_nid], p))
             yield t
 
 def _get_subtrees_recursive(node, full_copy=True):
@@ -351,19 +351,19 @@ class PhyloNode(TreeNode):
     """
 
     def _get_species(self):
-        if self.get('_speciesFunction'):
+        if self.props.get('_speciesFunction'):
             try:
-                return self.get('_speciesFunction')(self.name)
+                return self.props.get('_speciesFunction')(self.name)
             except:
-                return self.get(_speciesFunction)(self)
+                return self.props.get(_speciesFunction)(self)
         else:
-            return self.get('_species')
+            return self.props.get('_species')
 
     def _set_species(self, value):
-        if self.get('_speciesFunction'):
+        if self.props.get('_speciesFunction'):
             pass
         else:
-            self.add_property('_species', value)
+            self.add_prop('_species', value)
 
     # This tweak overwrites the native 'name' attribute to create a
     # property that updates the species code every time name is
@@ -380,8 +380,8 @@ class PhyloNode(TreeNode):
                  sp_naming_function=_parse_species, format=0, **kargs):
 
         # _update names?
-        self.properties = {}
-        self.add_properties(_name="NoName", _species="Unknown",
+        self.props = {}
+        self.add_props(_name="NoName", _species="Unknown",
                             _speciesFunction=None)
         # Caution! native __init__ has to be called after setting
         # _speciesFunction to None!!
@@ -418,7 +418,7 @@ class PhyloNode(TreeNode):
         """
         if fn:
             for n in self.traverse():
-                n.add_property("_speciesFunction", fn)
+                n.add_prop("_speciesFunction", fn)
 
     def link_to_alignment(self, alignment, alg_format="fasta", **kwargs):
         missing_leaves = []
@@ -430,7 +430,7 @@ class PhyloNode(TreeNode):
         # sets the seq of
         for n in self.traverse():
             try:
-                n.add_property("sequence",alg.get_seq(n.name))
+                n.add_prop("sequence",alg.get_seq(n.name))
             except KeyError:
                 if n.is_leaf():
                     missing_leaves.append(n.name)
@@ -447,15 +447,15 @@ class PhyloNode(TreeNode):
 
     def get_species(self):
         """ Returns the set of species covered by its partition. """
-        return set([l.get('species') for l in self.iter_leaves()])
+        return set([l.props.get('species') for l in self.iter_leaves()])
 
     def iter_species(self):
         """ Returns an iterator over the species grouped by this node. """
         spcs = set([])
         for l in self.iter_leaves():
-            if l.get('species') not in spcs:
-                spcs.add(l.get('species'))
-                yield l.get('species')
+            if l.props.get('species') not in spcs:
+                spcs.add(l.props.get('species'))
+                yield l.props.get('species')
 
     def get_age(self, species2age):
         """
@@ -570,8 +570,8 @@ class PhyloNode(TreeNode):
             leaf_seqs = set(leaf.get_leaf_names())
             size = len(leaf_seqs)
 
-            leaf_species =[self.get('_speciesFunction')(s) for s in leaf_seqs]
-            out_species = [self.get('_speciesFunction')(s) for s in all_seqs-leaf_seqs]
+            leaf_species =[self.props.get('_speciesFunction')(s) for s in leaf_seqs]
+            out_species = [self.props.get('_speciesFunction')(s) for s in all_seqs-leaf_seqs]
 
             leaf_age_min = min([species2age[sp] for sp in leaf_species])
             out_age_min = min([species2age[sp] for sp in out_species])
@@ -636,7 +636,7 @@ class PhyloNode(TreeNode):
             for node in n2content:
                 sp_subtotal = sum([len(n2species[_ch]) for _ch in node.children])
                 if len(n2species[node]) > 1 and len(n2species[node]) != sp_subtotal:
-                    node.properties['evoltype'] = 'D'
+                    node.props['evoltype'] = 'D'
 
         sp_trees = get_subtrees(t, features=map_features, newick_only=newick_only)
 
@@ -655,7 +655,7 @@ class PhyloNode(TreeNode):
             for node in n2content:
                 sp_subtotal = sum([len(n2species[_ch]) for _ch in node.children])
                 if  len(n2species[node]) > 1 and len(n2species[node]) != sp_subtotal:
-                    node.properties['evoltype'] = 'D'
+                    node.props['evoltype'] = 'D'
                     dups += 1
                 elif node.is_leaf():
                     node._leaf = True
@@ -696,7 +696,7 @@ class PhyloNode(TreeNode):
             for node in n2content:
                 sp_subtotal = sum([len(n2species[_ch]) for _ch in node.children])
                 if  len(n2species[node]) > 1 and len(n2species[node]) != sp_subtotal:
-                    node.properties['evoltype'] = 'D'
+                    node.props['evoltype'] = 'D'
                     dups += 1
                 elif node.is_leaf():
                     node._leaf = True
@@ -796,7 +796,7 @@ class PhyloNode(TreeNode):
     def ncbi_compare(self, autodetect_duplications=True, cached_content=None):
         if not cached_content:
             cached_content = self.get_cached_content()
-        cached_species = set([n.get('species') for n in cached_content[self]])
+        cached_species = set([n.props.get('species') for n in cached_content[self]])
 
         if len(cached_species) != len(cached_content[self]):
             print(cached_species)

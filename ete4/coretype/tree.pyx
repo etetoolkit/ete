@@ -332,9 +332,9 @@ cdef class TreeNode(object):
     def add_prop(self, name, value):
         """ Add or update node's property """
         if name != None and value != None:
-            self.prop[name] = value
+            self.props[name] = value
 
-    def add_prop(self, **props):
+    def add_props(self, **props):
         """Add or update several properties."""
         for name, value in six.iteritems(props):
             self.add_prop(name, value)
@@ -1499,7 +1499,8 @@ cdef class TreeNode(object):
         """
         if not attributes:
             attributes = ["name"]
-        node_name = ', '.join(map(str, [self.get(v) for v in attributes if self.get(v)]))
+        node_name = ', '.join(map(str, [self.props.get(v) for v in attributes
+                                        if self.props.get(v)]))
 
         LEN = max(3, len(node_name) if not self.children or show_internal else 3)
         PAD = ' ' * LEN
@@ -1650,10 +1651,10 @@ cdef class TreeNode(object):
                 _val = [_n]
             else:
                 if not isinstance(store_attr, six.string_types):
-                    _val = [tuple(_n.get(attr) for attr in store_attr)]
+                    _val = [tuple(_n.props.get(attr) for attr in store_attr)]
 
                 else:
-                    _val = [_n.get(store_attr)]
+                    _val = [_n.props.get(store_attr)]
 
             return _val
 
@@ -1930,7 +1931,7 @@ cdef class TreeNode(object):
                     #if seedid and not use_collateral and (seedid not in subtree_nw):
                     #    continue
                     subtree = source_tree.__class__(subtree_nw,
-                            sp_naming_function = source_tree.get('_speciesFunction'))
+                            sp_naming_function = source_tree.props.get('_speciesFunction'))
                     if not subtree.children:
                         continue
 
@@ -2599,13 +2600,13 @@ cdef class TreeNode(object):
 
         def get_ete_node(skbio_node):
             ete_node = all_nodes.get(skbio_node, Tree())
-            if skbio_node.get('length') is not None:
-                ete_node.dist = float(skbio_node.get('length'))
+            if skbio_node.props.get('length') is not None:
+                ete_node.dist = float(skbio_node.props.get('length'))
             ete_node.name = skbio_node.name
-            ete_node.add_props(id=skbio_node.get('id'))
+            ete_node.add_props(id=skbio_node.props.get('id'))
             if map_attributes:
                 for a in map_attributes:
-                    ete_node.add_prop(a, skbio_node.get(a))
+                    ete_node.add_prop(a, skbio_node.props.get(a))
             return ete_node
 
         all_nodes = {}

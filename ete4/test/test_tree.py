@@ -42,8 +42,8 @@ class Test_Coretype_Tree(unittest.TestCase):
         #The features concept will probably change in future versions. It is
         #very inefficient in larg trees.
         t = Tree()
-        t.add_properties(testf1=1, testf2="1", testf3=[1])
-        t.add_property('testf4', set([1]))
+        t.add_props(testf1=1, testf2="1", testf3=[1])
+        t.add_prop('testf4', set([1]))
         self.assertEqual(t.props.get('testf1'), 1)
         self.assertEqual(t.props.get('testf2'), "1")
         self.assertEqual(t.props.get('testf3'), [1])
@@ -98,7 +98,7 @@ class Test_Coretype_Tree(unittest.TestCase):
         features = list("abcdefghijklmnopqrstuvw0123456789")
         random.shuffle(features)
         for letter in features:
-            (t & "B").add_property(letter, letter)
+            (t & "B").add_prop(letter, letter)
         self.assertEqual(expected_nw, t.write(properties=[]))
 
         # Node instance repr
@@ -1293,7 +1293,7 @@ class Test_Coretype_Tree(unittest.TestCase):
                   "3":"yellow", "1":"white", "5":"red",
                   "june":"yellow"}
         for leaf in t:
-            leaf.add_properties(color=colors.get(leaf.name, "none"))
+            leaf.add_props(color=colors.get(leaf.name, "none"))
         green_yellow_nodes = set([t&"M1", t&"M2"])
         mono_nodes = t.get_monophyletic(values=["green", "yellow"], target_attr="color")
         self.assertEqual(set(mono_nodes), green_yellow_nodes)
@@ -1302,15 +1302,15 @@ class Test_Coretype_Tree(unittest.TestCase):
     def test_copy(self):
         t = Tree("((A, B)Internal_1:0.7, (C, D)Internal_2:0.5)root:1.3;", format=1)
         # we add a custom annotation to the node named A
-        (t & "A").add_properties(label="custom Value")
+        (t & "A").add_props(label="custom Value")
         # we add a complex feature to the A node, consisting of a list of lists
-        (t & "A").add_properties(complex=[[0,1], [2,3], [1,11], [1,0]])
+        (t & "A").add_props(complex=[[0,1], [2,3], [1,11], [1,0]])
 
 
         t_nw  = t.copy("newick")
         t_nwx = t.copy("newick-extended")
         t_pkl = t.copy("cpickle")
-        (t & "A").add_property("testfn", lambda: "YES")
+        (t & "A").add_prop("testfn", lambda: "YES")
         t_deep = t.copy("deepcopy")
 
         print('\n\n\n'+ t_nw.name+ '\n\n')
