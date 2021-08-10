@@ -397,7 +397,7 @@ class NCBITaxa(object):
             node.
 
         """
-        from .. import PhyloTree
+        from ete4 import PhyloTree
         taxids, merged_conversion = self._translate_merged(taxids)
         if len(taxids) == 1:
             root_taxid = int(list(taxids)[0])
@@ -446,7 +446,7 @@ class NCBITaxa(object):
                         node = elem2node.setdefault(elem, PhyloTree())
                         node.name = str(elem)
                         node.taxid = elem
-                        node.add_feature("rank", str(id2rank.get(int(elem), "no rank")))
+                        node.add_prop("rank", str(id2rank.get(int(elem), "no rank")))
                     else:
                         node = elem2node[elem]
                     track.append(node)
@@ -457,7 +457,7 @@ class NCBITaxa(object):
                 for elem in track:
                     if parent and elem not in parent.children:
                         parent.add_child(elem)
-                    if rank_limit and elem.rank == rank_limit:
+                    if rank_limit and elem.props.get('rank') == rank_limit:
                         break
                     parent = elem
             root = elem2node[1]
@@ -476,7 +476,7 @@ class NCBITaxa(object):
         if collapse_subspecies:
             to_detach = []
             for node in tree.traverse():
-                if node.rank == "species":
+                if node.props.get('rank') == "species":
                     to_detach.extend(node.children)
             for n in to_detach:
                 n.detach()
@@ -536,25 +536,25 @@ class NCBITaxa(object):
             except (ValueError, AttributeError):
                 node_taxid = None
 
-            n.add_features(taxid = node_taxid)
+            n.add_prop('taxid', node_taxid)
             if node_taxid:
                 if node_taxid in merged_conversion:
                     node_taxid = merged_conversion[node_taxid]
-                n.add_features(sci_name = tax2name.get(node_taxid, getattr(n, taxid_attr, '')),
+                n.add_props(sci_name = tax2name.get(node_taxid, getattr(n, taxid_attr, '')),
                                common_name = tax2common_name.get(node_taxid, ''),
                                lineage = tax2track.get(node_taxid, []),
                                rank = tax2rank.get(node_taxid, 'Unknown'),
                                named_lineage = [tax2name.get(tax, str(tax)) for tax in tax2track.get(node_taxid, [])])
             elif n.is_leaf():
-                n.add_features(sci_name = getattr(n, taxid_attr, 'NA'),
+                n.add_props(sci_name = getattr(n, taxid_attr, 'NA'),
                                common_name = '',
                                lineage = [],
                                rank = 'Unknown',
                                named_lineage = [])
             else:
-                lineage = self._common_lineage([lf.lineage for lf in n2leaves[n]])
+                lineage = self._common_lineage([lf.props.get('lineage') for lf in n2leaves[n]])
                 ancestor = lineage[-1]
-                n.add_features(sci_name = tax2name.get(ancestor, str(ancestor)),
+                n.add_props(sci_name = tax2name.get(ancestor, str(ancestor)),
                                common_name = tax2common_name.get(ancestor, ''),
                                taxid = ancestor,
                                lineage = lineage,
@@ -709,10 +709,11 @@ def load_ncbi_tree_from_dump(tar):
         parentname = fields[1].strip()
         n = Tree()
         n.name = nodename
-        n.taxname = node2taxname[nodename]
+        #n.taxname = node2taxname[nodename]
+        n.add_prop('taxname', node2taxname[nodename])
         if nodename in node2common:
-            n.common_name = node2common[nodename]
-        n.rank = fields[2].strip()
+            n.add_prop('common_name', node2taxname[nodename])
+        n.add_prop('rank', fields[2].strip())
         parent2child[nodename] = parentname
         name2node[nodename] = n
     print(len(name2node), "nodes loaded.")
@@ -739,9 +740,9 @@ def generate_table(t):
             track.append(temp_node.name)
             temp_node = temp_node.up
         if n.up:
-            print('\t'.join([n.name, n.up.name, n.taxname, getattr(n, "common_name", ""), n.rank, ','.join(track)]), file=OUT)
+            print('\t'.join([n.name, n.up.name, n.props.get('taxname'), n.props.get("common_name", ''), n.props.get("rank"), ','.join(track)]), file=OUT)
         else:
-            print('\t'.join([n.name, "", n.taxname, getattr(n, "common_name", ""), n.rank, ','.join(track)]), file=OUT)
+            print('\t'.join([n.name, "", n.props.get('taxname'), n.props.get("common_name", ''), n.props.get("rank"), ','.join(track)]), file=OUT)
     OUT.close()
 
 def update_db(dbfile, targz_file=None):
