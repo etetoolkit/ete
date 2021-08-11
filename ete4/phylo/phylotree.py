@@ -447,7 +447,8 @@ class PhyloNode(TreeNode):
 
     def get_species(self):
         """ Returns the set of species covered by its partition. """
-        return set([l.props.get('species') for l in self.iter_leaves()])
+        #return set([l.props.get('species') for l in self.iter_leaves()])
+        return set([l.species for l in self.iter_leaves()])
 
     def iter_species(self):
         """ Returns an iterator over the species grouped by this node. """

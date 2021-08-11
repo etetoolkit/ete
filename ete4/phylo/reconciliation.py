@@ -45,20 +45,18 @@ from .evolevents import EvolEvent
 def get_reconciled_tree(node, sptree, events):
     """ Returns the recoliation gene tree with a provided species
     topology """
-
     if len(node.children) == 2:
         # First visit childs
         morphed_childs = []
         for ch in node.children:
             mc, ev = get_reconciled_tree(ch, sptree, events)
             morphed_childs.append(mc)
-
+        
         # morphed childs are the reconciled children. I trust its
         # topology. Remember tree is visited on recursive post-order
         sp_child_0 = morphed_childs[0].get_species()
         sp_child_1 = morphed_childs[1].get_species()
         all_species = sp_child_1 | sp_child_0
-
         # If childs represents a duplication (duplicated species)
         # Check that both are reconciliated to the same species
         if len(sp_child_0 & sp_child_1) > 0:
@@ -72,8 +70,8 @@ def get_reconciled_tree(node, sptree, events):
             newmorphed1, matchnode = _replace_on_template(template, morphed_childs[1])
             newnode.add_child(newmorphed0)
             newnode.add_child(newmorphed1)
-            newnode.add_feature("evoltype", "D")
-            node.add_feature("evoltype", "D")
+            newnode.add_prop("evoltype", "D")
+            node.add_prop("evoltype", "D")
             e = EvolEvent()
             e.etype = "D"
             e.inparalogs = node.children[0].get_leaf_names()
@@ -92,8 +90,8 @@ def get_reconciled_tree(node, sptree, events):
             template, matchnode = _replace_on_template(template, morphed_childs[0] )
             # replaces child1 partition on the template
             template, matchnode = _replace_on_template(template, morphed_childs[1])
-            template.add_feature("evoltype","S")
-            node.add_feature("evoltype","S")
+            template.add_prop("evoltype", "S")
+            node.add_prop("evoltype", "S")
             e = EvolEvent()
             e.etype = "S"
             e.inparalogs = node.children[0].get_leaf_names()
@@ -143,7 +141,7 @@ def _get_expected_topology(t, species):
     template.set_species_naming_function(_get_species_on_TOL)
     template.detach()
     for n in [template]+template.get_descendants():
-        n.add_feature("evoltype","L")
+        n.add_prop("evoltype", "L")
         n.dist = 1
     return template
 
@@ -189,7 +187,7 @@ def get_reconciled_tree_zmasek(gtree, sptree, inplace=False):
     # leaf nodes in the gene tree (see paper for details)
     species = sptree.get_species()
     for node in gtree.get_leaves():
-        node.add_feature("M",sp2node[node.species])
+        node.add_prop("M",sp2node[node.species])
 
     # visit each internal node in the gene tree
     # and detect its event (duplication or speciation)
@@ -202,9 +200,9 @@ def get_reconciled_tree_zmasek(gtree, sptree, inplace=False):
             raise ValueError("Algorithm can only work with binary trees.")
 
         lca = node.children[0].M.get_common_ancestor(node.children[1].M) # LCA in the species tree
-        node.add_feature("M",lca)
+        node.add_prop("M",lca)
 
-        node.add_feature("evoltype","S")
+        node.add_prop("evoltype","S")
         if id(node.children[0].M) == id(node.M) or id(node.children[1].M) == id(node.M):
                 node.evoltype = "D"
 
