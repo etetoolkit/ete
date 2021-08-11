@@ -428,10 +428,8 @@ cdef class TreeNode(object):
             return child
 
     def remove_children(self):
-        removed = []
-        for child in self.children:
-            removed.append(self.remove_child(child))
-        return removed
+        children = list(self.children)
+        return [ self.remove_child(child) for child in children ]
 
     def add_sister(self, sister=None, name=None, dist=None):
         """
