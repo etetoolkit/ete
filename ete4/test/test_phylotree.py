@@ -309,55 +309,54 @@ class Test_phylo_module(unittest.TestCase):
 
         self.assertEqual(recon_tree.write(properties=["evoltype"], format=9), PhyloTree(expected_recon).write(properties=["evoltype"],format=9))
 
-    # def test_miscelaneus(self):
-    #     """ Test several things """
-    #     # Creates a gene phylogeny with several duplication events at
-    #     # different levels.
-    #     t = PhyloTree('((Dme_001,Dme_002),(((Cfa_001,Mms_001),((((Hsa_001,Hsa_003),Ptr_001),Mmu_001),((Hsa_004,Ptr_004),Mmu_004))),(Ptr_002,(Hsa_002,Mmu_002))));')
+    def test_miscelaneus(self):
+        """ Test several things """
+        # Creates a gene phylogeny with several duplication events at
+        # different levels.
+        t = PhyloTree('((Dme_001,Dme_002),(((Cfa_001,Mms_001),((((Hsa_001,Hsa_003),Ptr_001),Mmu_001),((Hsa_004,Ptr_004),Mmu_004))),(Ptr_002,(Hsa_002,Mmu_002))));')
 
-    #     # Create a dictionary with relative ages for the species present in
-    #     # the phylogenetic tree.  Note that ages are only relative numbers to
-    #     # define which species are older, and that different species can
-    #     # belong to the same age.
-    #     sp2age = {
-    #       'Hsa': 1, # Homo sapiens (Hominids)
-    #       'Ptr': 2, # P. troglodytes (primates)
-    #       'Mmu': 2, # Macaca mulata (primates)
-    #       'Mms': 3, # Mus musculus (mammals)
-    #       'Cfa': 3, # Canis familiaris (mammals)
-    #       'Dme': 4  # Drosophila melanogaster (metazoa)
-    #     }
-
-
-    #     # Check that dup ages are correct
-    #     dup1 = t.get_common_ancestor("Hsa_001", "Hsa_004")
-    #     self.assertEqual(dup1.get_age(sp2age), 2)
-    #     dup2 = t.get_common_ancestor("Dme_001", "Dme_002")
-    #     self.assertEqual(dup2.get_age(sp2age), 4)
-    #     dup3 = t.get_common_ancestor("Hsa_001", "Hsa_002")
-    #     self.assertEqual(dup3.get_age(sp2age), 3)
-    #     dup4 = t.get_common_ancestor("Hsa_001", "Hsa_003")
-    #     self.assertEqual(dup4.get_age(sp2age), 1)
-
-    #     # Check rooting options
-    #     expected_root = t.search_nodes(name="Dme_002")[0]
-    #     expected_root.dist += 2.3
-    #     self.assertEqual(t.get_farthest_oldest_leaf(sp2age), expected_root)
-    #     #print t
-    #     #print t.get_farthest_oldest_node(sp2age)
+        # Create a dictionary with relative ages for the species present in
+        # the phylogenetic tree.  Note that ages are only relative numbers to
+        # define which species are older, and that different species can
+        # belong to the same age.
+        sp2age = {
+          'Hsa': 1, # Homo sapiens (Hominids)
+          'Ptr': 2, # P. troglodytes (primates)
+          'Mmu': 2, # Macaca mulata (primates)
+          'Mms': 3, # Mus musculus (mammals)
+          'Cfa': 3, # Canis familiaris (mammals)
+          'Dme': 4  # Drosophila melanogaster (metazoa)
+        }
 
 
-    #     # Check get species functions
-    #     self.assertEqual(t.get_species(), set(sp2age.keys()))
-    #     self.assertEqual(set([sp for sp in t.iter_species()]), set(sp2age.keys()))
+        # Check that dup ages are correct
+        dup1 = t.get_common_ancestor("Hsa_001", "Hsa_004")
+        self.assertEqual(dup1.get_age(sp2age), 2)
+        dup2 = t.get_common_ancestor("Dme_001", "Dme_002")
+        self.assertEqual(dup2.get_age(sp2age), 4)
+        dup3 = t.get_common_ancestor("Hsa_001", "Hsa_002")
+        self.assertEqual(dup3.get_age(sp2age), 3)
+        dup4 = t.get_common_ancestor("Hsa_001", "Hsa_003")
+        self.assertEqual(dup4.get_age(sp2age), 1)
 
-    # def test_colappse(self):
-    #     t = PhyloTree('((Dme_001,Dme_002),(((Cfa_001,Mms_001),((((Hsa_001,Hsa_001),Ptr_001),Mmu_001),((Hsa_004,Ptr_004),Mmu_004))),(Ptr_002,(Hsa_002,Mmu_002))));')
-    #     collapsed_hsa = '((Dme_001:1,Dme_002:1)1:1,(((Cfa_001:1,Mms_001:1)1:1,(((Ptr_001:1,Hsa_001:1)1:1,Mmu_001:1)1:1,((Hsa_004:1,Ptr_004:1)1:1,Mmu_004:1)1:1)1:1)1:1,(Ptr_002:1,(Hsa_002:1,Mmu_002:1)1:1)1:1)1:1);'
-    #     t2 = t.collapse_lineage_specific_expansions(['Hsa'])
-    #     self.assertEqual(str(collapsed_hsa), str(t2.write(properties=["species","name"], format=2)))
-    #     with self.assertRaises(TypeError):
-    #         print(t.collapse_lineage_specific_expansions('Hsa'))
+        # Check rooting options
+        expected_root = t.search_nodes(name="Dme_002")[0]
+        expected_root.dist += 2.3
+        self.assertEqual(t.get_farthest_oldest_leaf(sp2age), expected_root)
+        #print t
+        #print t.get_farthest_oldest_node(sp2age)
+
+        # Check get species functions
+        self.assertEqual(t.get_species(), set(sp2age.keys()))
+        self.assertEqual(set([sp for sp in t.iter_species()]), set(sp2age.keys()))
+
+    def test_colappse(self):
+        t = PhyloTree('((Dme_001,Dme_002),(((Cfa_001,Mms_001),((((Hsa_001,Hsa_001),Ptr_001),Mmu_001),((Hsa_004,Ptr_004),Mmu_004))),(Ptr_002,(Hsa_002,Mmu_002))));')
+        collapsed_hsa = '((Dme_001:1,Dme_002:1)1:1,(((Cfa_001:1,Mms_001:1)1:1,(((Ptr_001:1,Hsa_001:1)1:1,Mmu_001:1)1:1,((Hsa_004:1,Ptr_004:1)1:1,Mmu_004:1)1:1)1:1)1:1,(Ptr_002:1,(Hsa_002:1,Mmu_002:1)1:1)1:1)1:1);'
+        t2 = t.collapse_lineage_specific_expansions(['Hsa'])
+        self.assertEqual(str(collapsed_hsa), str(t2.write(properties=["species"], format=2)))
+        with self.assertRaises(TypeError):
+            print(t.collapse_lineage_specific_expansions('Hsa'))
 
 
 if __name__ == '__main__':

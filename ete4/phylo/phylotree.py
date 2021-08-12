@@ -454,9 +454,9 @@ class PhyloNode(TreeNode):
         """ Returns an iterator over the species grouped by this node. """
         spcs = set([])
         for l in self.iter_leaves():
-            if l.props.get('species') not in spcs:
-                spcs.add(l.props.get('species'))
-                yield l.props.get('species')
+            if l.species not in spcs:
+                spcs.add(l.species)
+                yield l.species
 
     def get_age(self, species2age):
         """

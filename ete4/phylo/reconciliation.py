@@ -62,7 +62,7 @@ def get_reconciled_tree(node, sptree, events):
         if len(sp_child_0 & sp_child_1) > 0:
             newnode = copy.deepcopy(node)
             newnode.up = None
-            newnode.children = []
+            newnode.remove_children()
             template = _get_expected_topology(sptree, all_species)
             # replaces child0 partition on the template
             newmorphed0, matchnode = _replace_on_template(template, morphed_childs[0])

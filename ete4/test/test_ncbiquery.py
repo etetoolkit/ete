@@ -77,7 +77,7 @@ class Test_ncbiquery(unittest.TestCase):
     self.assertEqual(sorted(t2.get_leaf_names()), ["678", "7507", "9606"])
 
     # Test taxid synonyms
-    self.assertEqual(ncbi.get_topology(["42099"]).write(properties=["species","name"], format=5), "1223560:1;")
+    self.assertEqual(ncbi.get_topology(["42099"]).write(properties=["species"], format=5), "1223560:1;")
 
     
     for target in [9604, 9443, "9443"]:
