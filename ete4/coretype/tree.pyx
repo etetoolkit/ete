@@ -79,8 +79,6 @@ class TreeError(Exception):
         return repr(self.value)
 
 cdef class TreeNode(object):
-    cdef public str name
-    cdef public double _dist
     cdef public dict _properties
     cdef public set features
     cdef public list _children
@@ -136,11 +134,16 @@ cdef class TreeNode(object):
         t3 = Tree('/home/user/myNewickFile.txt')
     """
 
+    def _get_name(self):
+        return self._properties.get('name')
+    def _set_name(self, value):
+        self._properties['name'] = value
+
     def _get_dist(self):
-        return self._dist
+        return self._properties.get('dist')
     def _set_dist(self, value):
         try:
-            self._dist = float(value)
+            self._properties['dist'] = float(value)
         except ValueError:
             raise TreeError('node dist must be a float number')
 
@@ -207,6 +210,8 @@ cdef class TreeNode(object):
     #: Node styling properties
     img_style = property(fget=_get_style, fset=_set_style)
 
+    #: Name for current node
+    name = property(fget=_get_name, fset=_set_name)
     #: Branch length distance to parent node. Default = 0.0
     dist = property(fget=_get_dist, fset=_set_dist)
     #: Branch support for current node
@@ -250,14 +255,12 @@ cdef class TreeNode(object):
                  name=None, quoted_node_names=False):
         self._children = []
         self._up = None
-        self._dist = DEFAULT_DIST
         self._properties = {}
         self._img_style = None
         self._faces = _FaceAreas()
         self._collapsed_faces = _FaceAreas()
         self._initialized = 0 # Layout fns have not been run on node
 
-        self.name = name if name is not None else DEFAULT_NAME
         self.size = (0, 0) 
         self.d1 = 0.0
 
@@ -266,12 +269,12 @@ cdef class TreeNode(object):
             from ete4.parser.newick import read_newick
             read_newick(newick, self)
         
-        self.support = self.support or DEFAULT_SUPPORT
-        # Custom values if provided
-        if dist is not None:
-            self.dist = dist
-        if support is not None:
-            self.support = support
+        self.name = name if name is not None else\
+                self.name if self.name is not None else DEFAULT_NAME
+        self.dist = dist if dist is not None else\
+                self.dist if self.dist is not None else DEFAULT_DIST
+        self.support = support if support is not None else\
+                self.support if self.support is not None else DEFAULT_SUPPORT
 
     def __nonzero__(self):
         return True
@@ -425,10 +428,8 @@ cdef class TreeNode(object):
             return child
 
     def remove_children(self):
-        removed = []
-        for child in self.children:
-            removed.append(self.remove_child(child))
-        return removed
+        children = list(self.children)
+        return [ self.remove_child(child) for child in children ]
 
     def add_sister(self, sister=None, name=None, dist=None):
         """
