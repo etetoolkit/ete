@@ -412,15 +412,14 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
                     log.log(28, "Writing final tree for @@13:%s@@1:\n   %s\n   %s",
                             threadname, final_tree_file+".nw",
                             final_tree_file+".nwx (newick extended)")
-                    main_tree.write(outfile=final_tree_file+".nw")
-                    main_tree.write(outfile=final_tree_file+ ".nwx", features=[],
+                    main_tree.write(outfile=final_tree_file+".nw", properties=None)
+                    main_tree.write(outfile=final_tree_file+ ".nwx", properties=None,
                                     format_root_node=True)
-
-                    if hasattr(main_tree, "tree_phylip_alg"):
+                    if (main_tree.props.get('tree_phylip_alg')): 
                         log.log(28, "Writing final tree alignment @@13:%s@@1:\n   %s",
                                 threadname, final_tree_file+".used_alg.fa")
 
-                        alg = SeqGroup(get_stored_data(main_tree.tree_phylip_alg), format="iphylip_relaxed")
+                        alg = SeqGroup(get_stored_data(main_tree.props.get('tree_phylip_alg')), format="iphylip_relaxed")
                         OUT = open(final_tree_file+".used_alg.fa", "w")
                         for name, seq, comments in alg:
                             realname = db.get_seq_name(name)
@@ -428,22 +427,22 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
                         OUT.close()
 
                     
-                    if hasattr(main_tree, "alg_path"):
+                    if (main_tree.props.get('alg_path')): 
                         log.log(28, "Writing root node alignment @@13:%s@@1:\n   %s",
                                 threadname, final_tree_file+".fa")
 
-                        alg = SeqGroup(get_stored_data(main_tree.alg_path))
+                        alg = SeqGroup(get_stored_data(main_tree.props.get('alg_path')))
                         OUT = open(final_tree_file+".fa", "w")
                         for name, seq, comments in alg:
                             realname = db.get_seq_name(name)
                             print(">%s\n%s" %(realname, seq), file=OUT)
                         OUT.close()
 
-                    if hasattr(main_tree, "clean_alg_path"):
+                    if (main_tree.props.get('clean_alg_path')): 
                         log.log(28, "Writing root node trimmed alignment @@13:%s@@1:\n   %s",
                                 threadname, final_tree_file+".trimmed.fa")
 
-                        alg = SeqGroup(get_stored_data(main_tree.clean_alg_path))
+                        alg = SeqGroup(get_stored_data(main_tree.props.get('clean_alg_path')))
                         OUT = open(final_tree_file+".trimmed.fa", "w")
                         for name, seq, comments in alg:
                             realname = db.get_seq_name(name)
@@ -454,7 +453,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
                         log.log(28, "Generating tree image for @@13:%s@@1:\n   %s",
                                 threadname, final_tree_file+".png")
                         for lf in main_tree:
-                            lf.add_feature("sequence", alg.get_seq(lf.safename))
+                            lf.add_feature("sequence", alg.get_seq(lf.props.get('safename')))
                         try:
                             from .visualize import draw_tree
                             draw_tree(main_tree, GLOBALS[configid], final_tree_file+".png")

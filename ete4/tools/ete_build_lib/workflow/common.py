@@ -597,7 +597,6 @@ def distance_matrix_new(target, leaf_only=False, topology_only=False):
 def assembly_tree(runid):
     task_nodes = db.get_runid_nodes(runid)
     task_nodes.reverse()
-
     main_tree = None
     iternumber = 1
     while task_nodes:
@@ -606,11 +605,11 @@ def assembly_tree(runid):
             continue
         tree = db.decode(packtree)
 
-        # print tree.dist
         # Restore original gene names
         for leaf in tree.iter_leaves():
             leaf.add_features(safename=leaf.name)
-            leaf.name = leaf.realname
+            #leaf.name = leaf.realname
+            leaf.name = leaf.props.get('realname')
 
         if main_tree:
             # substitute node in main tree by the optimized one
@@ -623,6 +622,7 @@ def assembly_tree(runid):
         iter_name = "Iter_%04d_%dseqs" %(iternumber, size)
         tree.add_features(iternumber=iternumber)
         iternumber += 1
+    
     return main_tree, iternumber
 
 
