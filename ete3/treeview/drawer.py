@@ -64,7 +64,8 @@ def init_scene(t, layout, ts):
         ts.layout_fn  = layout
 
     if not _QApp:
-        _QApp = QApplication(["ETE"])
+        # _QApp = QApplication(["ETE"])
+        _QApp = QMainWindow()
 
     scene  = _TreeScene()
 	#ts._scale = None
@@ -91,7 +92,7 @@ def show_tree(t, layout=None, tree_style=None, win_name=None):
         signal.signal(signal.SIGALRM, exit_gui)
         signal.alarm(GUI_TIMEOUT)
 
-    _QApp.exec_()
+    # _QApp.exec_()
 
 def render_tree(t, imgName, w=None, h=None, layout=None,
                 tree_style = None, header=None, units="px",
@@ -152,7 +153,8 @@ def get_img(t, w=None, h=None, layout=None, tree_style = None,
             header=None, units="px", dpi=90, return_format="%%return"):
     global _QApp
     if not _QApp:
-        _QApp = QApplication(["ETE"])
+        # _QApp = QApplication(["ETE"])
+        _QApp = QMainWindow()
 
     r = RenderThread(t, layout, tree_style, w, h, dpi, units, return_format)
     r.start()

@@ -68,6 +68,7 @@ DEFAULT_SHOWINTERNAL = False
 DEFAULT_DIST = 1.0
 DEFAULT_SUPPORT = 1.0
 DEFAULT_NAME = ""
+DEFAULT_TEXT_COLOR = "black"
 
 class TreeError(Exception):
     """
@@ -2585,6 +2586,13 @@ class TreeNode(object):
     def phonehome(self):
         from .. import _ph
         _ph.call()
+
+    def add_leaf_text_color(self, color=None):
+        # Added the extra function to use the is_leaf() bool
+        if self.is_leaf():
+            if color == None:
+                color = "#000000"
+            self.add_feature("text_color",color)
 
 def _translate_nodes(root, *nodes):
     name2node = dict([ [n, None] for n in nodes if type(n) is str])

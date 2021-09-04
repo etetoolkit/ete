@@ -369,9 +369,9 @@ class _GUI(QMainWindow):
 
     @QtCore.pyqtSlot()
     def on_actionSave_newick_triggered(self):
-        fname = QFileDialog.getSaveFileName(self ,"Save File",
+        fname = QFileDialog.getSaveFileName(self ,"Save Newick File",
                                                  "/home",
-                                                 "Newick (*.nh *.nhx *.nw )")
+                                                 "Newick (*.nh *.nhx *.nw *.nwk *.newick)")
         nw = self.scene.tree.write()
         try:
             OUT = open(fname,"w")
@@ -383,27 +383,30 @@ class _GUI(QMainWindow):
 
     @QtCore.pyqtSlot()
     def on_actionRenderPDF_triggered(self):
-        F = QFileDialog(self)
-        if F.exec_():
-            imgName = str(F.selectedFiles()[0])
-            if not imgName.endswith(".pdf"):
-                imgName += ".pdf"
-            save(self.scene, imgName)
-
+        file_filter = "PDF file (*.PDF)"
+        response = QFileDialog.getSaveFileName(parent=self,
+        caption = "Save PDF file",
+        filter = file_filter
+        )
+        if response != "":
+            save(self.scene, response[0])
+        else:
+            return
 
     @QtCore.pyqtSlot()
     def on_actionRender_selected_region_triggered(self):
         if not self.scene.selector.isVisible():
             return QMessageBox.information(self, "!",\
                                               "You must select a region first")
-
-        F = QFileDialog(self)
-        if F.exec_():
-            imgName = str(F.selectedFiles()[0])
-            if not imgName.endswith(".pdf"):
-                imgName += ".pdf"
-            save(imgName, take_region=True)
-
+        file_filter = "PDF file (*.PDF)"
+        response = QFileDialog.getSaveFileName(parent=self,
+        caption = "Save PDF file",
+        filter = file_filter
+        )
+        if response != "":
+            save(self.scene, response[0])
+        else:
+            return
 
     @QtCore.pyqtSlot()
     def on_actionPaste_newick_triggered(self):
