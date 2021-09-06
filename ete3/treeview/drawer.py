@@ -56,24 +56,25 @@ GUI_TIMEOUT = None
 def exit_gui(a, b):
     _QApp.exit(0)
 
-def init_scene(t, layout, ts):
+def init_scene(t, layout, ts, child_app = False):
     global _QApp
 
     ts = init_tree_style(t, ts)
     if layout:
         ts.layout_fn  = layout
 
-    if not _QApp:
-        # _QApp = QApplication(["ETE"])
+    if not child_app:
+        _QApp = QApplication(["ETE"])
+    else:
         _QApp = QMainWindow()
 
     scene  = _TreeScene()
 	#ts._scale = None
     return scene, ts
 
-def show_tree(t, layout=None, tree_style=None, win_name=None):
+def show_tree(t, layout=None, tree_style=None, win_name=None, child_app=None):
     """ Interactively shows a tree."""
-    scene, img = init_scene(t, layout, tree_style)
+    scene, img = init_scene(t, layout, tree_style, child_app=child_app)
     tree_item, n2i, n2f = render(t, img)
     scene.init_values(t, img, n2i, n2f)
 
@@ -92,7 +93,10 @@ def show_tree(t, layout=None, tree_style=None, win_name=None):
         signal.signal(signal.SIGALRM, exit_gui)
         signal.alarm(GUI_TIMEOUT)
 
-    # _QApp.exec_()
+    if not child_app:
+        _QApp.exec_()
+    else:
+        pass
 
 def render_tree(t, imgName, w=None, h=None, layout=None,
                 tree_style = None, header=None, units="px",
@@ -150,11 +154,13 @@ class RenderThread(QThread):
 
 
 def get_img(t, w=None, h=None, layout=None, tree_style = None,
-            header=None, units="px", dpi=90, return_format="%%return"):
+            header=None, units="px", dpi=90, return_format="%%return", child_app = False):
     global _QApp
-    if not _QApp:
-        # _QApp = QApplication(["ETE"])
+    if not child_app and not _QApp:
+        _QApp = QApplication(["ETE"])
+    else:
         _QApp = QMainWindow()
+
 
     r = RenderThread(t, layout, tree_style, w, h, dpi, units, return_format)
     r.start()
