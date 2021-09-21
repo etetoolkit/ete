@@ -83,9 +83,9 @@ class Face(object):
         self._check_own_variables()
         return self._box
 
-    def compute_fsize(self, dx, dy, drawer):
+    def compute_fsize(self, dx, dy, drawer, max_fsize=None):
         zx, zy = drawer.zoom
-        self._fsize = min([dx * zx * CHAR_HEIGHT, abs(dy * zy), self.max_fsize])
+        self._fsize = min([dx * zx * CHAR_HEIGHT, abs(dy * zy), max_fsize or self.max_fsize])
 
     def compute_bounding_box(self, 
             drawer,
@@ -844,7 +844,7 @@ class SeqMotifFace(Face):
         prev_end = -1
         for idx, (start, end, _, w, *_) in enumerate(self.regions):
             overlapping = abs(min(start - 1 - prev_end, 0))
-            total_width += w * (end + 1 - start - overlapping)
+            total_width += (w or self.poswidth) * (end + 1 - start - overlapping)
             prev_end = end
             opacity = self.overlaping_motif_opacity if overlapping else 1
             self.regions[idx].append(opacity)
@@ -895,7 +895,7 @@ class SeqMotifFace(Face):
         x = x0
         prev_end = -1
         for (start, end, shape, posw, h, fg, bg, text, opacity) in self.regions:
-            posw = posw * self.w_scale / zx
+            posw = (posw or self.poswidth) * self.w_scale / zx
             w = posw * (end + 1 - start)
             style = { 'fill': bg, 'opacity': opacity }
 
@@ -959,7 +959,12 @@ class SeqMotifFace(Face):
 
             # Text on top of shape
             if text:
-                self.compute_fsize(w, h, drawer)
+                try:
+                    ftype, fsize, color, text = text.split("|")
+                    fsize = int(fsize)
+                except:
+                    ftype, fsize, color = self.ftype, self.max_fsize, (fg or self.fcolor)
+                self.compute_fsize(w / len(text), h, drawer, fsize)
                 text_box = Box(x + w / 2,
                         y + (dy - self._fsize / (zy * r)) / 2,
                         self._fsize / (zx * CHAR_HEIGHT),
@@ -967,8 +972,8 @@ class SeqMotifFace(Face):
                 text_style = {
                     'max_fsize': self._fsize,
                     'text_anchor': 'middle',
-                    'ftype': f'{self.ftype}, sans-serif',
-                    'fill': fg or self.fgcolor,
+                    'ftype': f'{ftype}, sans-serif',
+                    'fill': color,
                     }
                 yield draw_text(text_box, text, style=text_style)
 
