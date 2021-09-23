@@ -162,7 +162,8 @@ class Trees(Resource):
 
         # Update tree's timer
         if rule.startswith('/trees/<string:tree_id>'):
-            app.trees[int(tree_id)].timer = time()
+            tid, subtree = get_tid(tree_id)
+            app.trees[int(tid)].timer = time()
 
         if rule == '/trees/<string:tree_id>':
             modify_tree_fields(tree_id)
