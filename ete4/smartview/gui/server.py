@@ -882,7 +882,7 @@ def add_resources(api):
 
 
 def run_smartview(newick=None, tree_name=None, tree_style=None, layouts=[],
-        update_old_tree=True, memory_only=False, purge_trees=False):
+        update_old_tree=True, memory_only=False, purge_trees=False, port=5000):
     # Set tree_name to None if no newick was provided
     # Generate tree_name if none was provided
     # update_old_tree: replace tree in local database if identical tree_name
@@ -911,7 +911,7 @@ def run_smartview(newick=None, tree_name=None, tree_style=None, layouts=[],
             tid = add_tree(tree_data, replace=update_old_tree)
             print(f'Added tree {tree_name} with id {tid}.')
 
-    app.run(debug=True, use_reloader=False)
+    app.run(debug=True, use_reloader=False, port=port)
 
 
 if __name__ == '__main__':
