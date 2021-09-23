@@ -107,8 +107,8 @@ class Trees(Resource):
         
         # Update tree's timer
         if rule.startswith('/trees/<string:tree_id>'):
-            tree_id, subtree = get_tid(tree_id)
-            app.trees[int(tree_id)].timer = time()
+            tid, subtree = get_tid(tree_id)
+            app.trees[int(tid)].timer = time()
 
         if rule == '/trees':
             if app.memory_only:
@@ -149,7 +149,7 @@ class Trees(Resource):
             return {'tnodes': tnodes, 'tleaves': tleaves}
         elif rule == '/trees/<string:tree_id>/ultrametric':
             # Not for now... but it may be tree specific
-            return app.trees[int(tree_id)].style.ultrametric
+            return app.trees[int(tid)].style.ultrametric
 
     def post(self):
         "Add tree(s)"
