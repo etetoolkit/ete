@@ -80,6 +80,7 @@ class Drawers(Resource):
     def get(self, name=None, tree_id=None):
         "Return data from the drawer. In aligned mode if aligned faces"
         try:
+            tree_id, _ = get_tid(tree_id)
             if name not in ['Rect', 'Circ'] and\
                     any(getattr(ly, 'contains_aligned_face', False)\
                         for ly in app.trees[int(tree_id)].style.layout_fn):
