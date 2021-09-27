@@ -63,6 +63,8 @@ function on_keydown(event) {
     }
     else if (key === "c")
         menus.pane.expanded = !menus.pane.expanded;
+    else if (key === "d")
+        view.download.svg();
     else if (key === "+") {
         const center = {x: div_tree.offsetWidth / 2,
                         y: div_tree.offsetHeight / 2};
