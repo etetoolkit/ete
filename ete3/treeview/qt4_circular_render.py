@@ -39,6 +39,7 @@
 from __future__ import absolute_import
 import math
 import colorsys
+import itertools
 
 from .qt import *
 from .main import _leaf, tracktime
@@ -192,7 +193,7 @@ def get_min_radius(w, h, angle, xoffset):
     return r, off
 
 def render_circular(root_node, n2i, rot_step):
-    max_r = 0.0
+    max_r = max_x = min_x = max_y = min_y = 0.0
     for node in root_node.traverse('preorder', is_leaf_fn=_leaf):
         item = n2i[node]
         w = sum(item.widths[1:5])
@@ -253,9 +254,19 @@ def render_circular(root_node, n2i, rot_step):
                 for i in item.movable_items:
                     i.moveBy(xoffset, 0)
 
+        for qt_item in itertools.chain(item.static_items, item.movable_items):
+            b_rect = qt_item.sceneBoundingRect()
+            if b_rect.top() < min_y:
+                min_y = b_rect.top()
+            if b_rect.bottom() > max_y:
+                max_y = b_rect.bottom()
+            if b_rect.left() < min_x:
+                min_x = b_rect.left()
+            if b_rect.right() > max_x:
+                max_x = b_rect.right()
 
     n2i[root_node].max_r = max_r
-    return max_r
+    return max_r, min_y, max_y, min_x, max_x
 
 def init_circular_leaf_item(node, n2i, n2f, last_rotation, rot_step):
     item = n2i[node]
