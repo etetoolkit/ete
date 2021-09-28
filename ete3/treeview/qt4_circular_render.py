@@ -151,6 +151,7 @@ class _ArcItem(QGraphicsPathItem):
     def paint(self, painter, option, index):
         return QGraphicsPathItem.paint(self, painter, option, index)
 
+
 def rotate_and_displace(item, rotation, height, offset):
     """ Rotates an item of a given height over its own left most edis and moves
     the item offset units in the rotated x axis """
@@ -159,6 +160,78 @@ def rotate_and_displace(item, rotation, height, offset):
     t.translate(0, - (height / 2))
     t.translate(offset, 0)
     item.setTransform(t)
+
+
+def pack_nodes(n2i):
+    '''
+    Shorten extra branch length to bring nodes closer to center
+    '''
+    max_r = max_x = min_x = max_y = min_y = 0.0
+    for node in sorted(n2i, key=lambda x: n2i[x].radius):  # Move closer items first
+        item = n2i[node]
+        # QGraphicsRectItem(item.nodeRegion,  item.content)
+        if node.is_leaf() and item.extra_branch_line and item.extra_branch_line.line().dx() > 0:
+            itemBoundingPoly = item.content.mapToScene(item.nodeRegion)
+
+            intersecting_polys = []
+            for other_item in n2i.values():
+                if item != other_item:
+                    otherItemBoundingPoly = other_item.content.mapToScene(other_item.nodeRegion)
+                    if itemBoundingPoly.intersects(otherItemBoundingPoly):
+                        for part in itertools.chain(other_item.static_items, other_item.movable_items):
+                            intersecting_poly = part.mapToScene(part.boundingRect())
+                            intersecting_polys.append(intersecting_poly)
+
+            def has_intersecting_poly():
+                for movable in item.movable_items:
+                    mpoly = movable.mapToScene(movable.boundingRect())
+                    for intersector in intersecting_polys:
+                        if mpoly.intersects(intersector):
+                            return True
+                return False
+
+            def move_node_towards_center(amount: int):
+                # Update extra branch length
+                old_line = item.extra_branch_line.line()
+                item.extra_branch_line.setLine(old_line.x1(), old_line.y1(), math.floor(old_line.x2() - amount), old_line.y1())
+
+                # Move items closer
+                for movable in item.movable_items:
+                    movable.moveBy(-amount, 0)
+                item.nodeRegion.setWidth(item.nodeRegion.width() - amount)
+                item.radius -= amount
+
+            def binary_search_for_position(low: int, high: int):
+                if high <= low:
+                    return
+
+                mid = (high + low) // 2
+                move_by = math.ceil(item.extra_branch_line.line().dx()) - mid
+                move_node_towards_center(move_by)
+
+                if has_intersecting_poly():
+                    move_node_towards_center(-move_by)
+                    binary_search_for_position(mid+1, high)
+                else:
+                    binary_search_for_position(low, mid)
+
+            binary_search_for_position(0, math.floor(item.extra_branch_line.line().dx()))
+
+        # Update bounding values
+        if max_r < item.radius:
+            max_r = item.radius
+        for movable in item.movable_items:
+            b_rect = movable.sceneBoundingRect()
+            if b_rect.top() < min_y:
+                min_y = b_rect.top()
+            if b_rect.bottom() > max_y:
+                max_y = b_rect.bottom()
+            if b_rect.left() < min_x:
+                min_x = b_rect.left()
+            if b_rect.right() > max_x:
+                max_x = b_rect.right()
+
+    return max_r, min_y, max_y, min_x, max_x
 
 
 def get_min_radius(w, h, angle, xoffset):
@@ -192,7 +265,7 @@ def get_min_radius(w, h, angle, xoffset):
 
     return r, off
 
-def render_circular(root_node, n2i, rot_step):
+def render_circular(root_node, n2i, rot_step, pack_leaves):
     max_r = max_x = min_x = max_y = min_y = 0.0
     for node in root_node.traverse('preorder', is_leaf_fn=_leaf):
         item = n2i[node]
@@ -235,12 +308,10 @@ def render_circular(root_node, n2i, rot_step):
             C.setPath(path)
             item.static_items.append(C)
 
-
         if hasattr(item, "content"):
-
             # If applies, it sets the length of the extra branch length
             if item.extra_branch_line:
-                xtra =  item.extra_branch_line.line().dx()
+                xtra = item.extra_branch_line.line().dx()
                 if xtra > 0:
                     xtra = xoffset + xtra
                 else:
@@ -254,17 +325,20 @@ def render_circular(root_node, n2i, rot_step):
                 for i in item.movable_items:
                     i.moveBy(xoffset, 0)
 
-        for qt_item in itertools.chain(item.static_items, item.movable_items):
-            b_rect = qt_item.sceneBoundingRect()
-            if b_rect.top() < min_y:
-                min_y = b_rect.top()
-            if b_rect.bottom() > max_y:
-                max_y = b_rect.bottom()
-            if b_rect.left() < min_x:
-                min_x = b_rect.left()
-            if b_rect.right() > max_x:
-                max_x = b_rect.right()
+        if not pack_leaves:
+            for qt_item in itertools.chain(item.static_items, item.movable_items):
+                b_rect = qt_item.sceneBoundingRect()
+                if b_rect.top() < min_y:
+                    min_y = b_rect.top()
+                if b_rect.bottom() > max_y:
+                    max_y = b_rect.bottom()
+                if b_rect.left() < min_x:
+                    min_x = b_rect.left()
+                if b_rect.right() > max_x:
+                    max_x = b_rect.right()
 
+    if pack_leaves:
+        max_r, min_y, max_y, min_x, max_x = pack_nodes(n2i)
     n2i[root_node].max_r = max_r
     return max_r, min_y, max_y, min_x, max_x
 

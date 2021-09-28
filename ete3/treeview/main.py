@@ -323,6 +323,9 @@ class TreeStyle(object):
     :param True complete_branch_lines_when_necessary: True or False.
       Draws an extra line (dotted by default) to complete branch lengths when the space to cover is larger than the branch itself.
 
+    :param False pack_leaves: True or False.
+      For circular layouts, pull leaf nodes closer to center while avoiding collisions.
+
     :param 2 extra_branch_line_type:  0=solid, 1=dashed, 2=dotted
 
     :param "gray" extra_branch_line_color: RGB code or name in
@@ -487,6 +490,7 @@ class TreeStyle(object):
         # branch length, branch line can be completed. Also, when
         # circular trees are drawn,
         self.complete_branch_lines_when_necessary = True
+        self.pack_leaves = False
         self.extra_branch_line_type = 2 # 0 solid, 1 dashed, 2 dotted
         self.extra_branch_line_color = "gray"
 

@@ -39,6 +39,7 @@
 import math
 import re
 import six
+import itertools
 
 from .qt import *
 from . import qt4_circular_render as crender
@@ -304,7 +305,7 @@ def render(root_node, img, hide_root=False):
     mainRect = parent.rect()
 
     if mode == "c":
-        tree_radius, min_y, max_y, min_x, max_x = crender.render_circular(root_node, n2i, rot_step)
+        tree_radius, min_y, max_y, min_x, max_x = crender.render_circular(root_node, n2i, rot_step, img.pack_leaves)
         # If semicircle and cropping removes at least 25% of mainRect's area, crop
         full_circle_area = (tree_radius * 2) ** 2
         cropped_area = (max_x - min_x) * (max_y - min_y)
@@ -414,29 +415,6 @@ def add_title(img, mainRect, parent):
         title.setParentItem(parent)
         mainRect.adjust(0, -lg_h, dw, 0)
         title.setPos(mainRect.topLeft())
-
-def add_legend(img, mainRect, parent):
-    if img.legend:
-        legend = _FaceGroupItem(img.legend, None)
-        legend.setup_grid()
-        legend.render()
-        lg_w, lg_h = legend.get_size()
-        dw = max(0, lg_w-mainRect.width())
-        legend.setParentItem(parent)
-        if img.legend_position == 1:
-            mainRect.adjust(0, -lg_h, dw, 0)
-            legend.setPos(mainRect.topLeft())
-        elif img.legend_position == 2:
-            mainRect.adjust(0, -lg_h, dw, 0)
-            pos = mainRect.topRight()
-            legend.setPos(pos.x()-lg_w, pos.y())
-        elif img.legend_position == 3:
-            legend.setPos(mainRect.bottomLeft())
-            mainRect.adjust(0, 0, dw, lg_h)
-        elif img.legend_position == 4:
-            pos = mainRect.bottomRight()
-            legend.setPos(pos.x()-lg_w, pos.y())
-            mainRect.adjust(0, 0, dw, lg_h)
 
 def add_scale(img, mainRect, parent):
     if img.show_scale:
@@ -627,7 +605,6 @@ def render_node_content(node, n2i, n2f, img):
     # Node points
     ball_size = style["size"]
 
-
     vlw = style["vt_line_width"] if not _leaf(node) and len(node.children) > 1 else 0.0
 
     # face_start_x = nodeR.width() - facesR.width() - vlw
@@ -692,6 +669,7 @@ def render_node_content(node, n2i, n2f, img):
         extra_line.setPen(pen)
     else:
         extra_line = None
+        item.extra_branch_line = extra_line
 
     # Attach branch-right faces to child
     fblock_r = n2f[node]["branch-right"]
