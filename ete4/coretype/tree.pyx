@@ -1417,7 +1417,7 @@ cdef class TreeNode(object):
         structure using provided TreeStyle.
 
         :tree_name string: name used to store tree in local database.
-        Autamatically generated if not provided.
+        Automatically generated if not provided.
 
         :tree_style TreeStyle: default TreeStyle if not provided.
 
@@ -1426,6 +1426,8 @@ cdef class TreeNode(object):
         be adressed by such in the explorer.
         By default it includes: outline, leaf_name, branch_length 
         and branch_support.
+
+        :port: port used to run the local server (127.0.0.1). Default 5000
         """
         from ete4.smartview.gui.server import run_smartview
 

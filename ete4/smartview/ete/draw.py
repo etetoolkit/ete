@@ -905,6 +905,9 @@ def get_rect(element, zoom=(0, 0)):
     elif eid == 'outline':
         x, y, dx_min, dx_max, dy = element[1]
         return Box(x, y, dx_max, dy)
+    elif eid.startswith('pixi-'):
+        x, y, dx, dy = element[1]
+        return Box(x, y, dx, dy)
     elif eid == 'rhombus':
         points = element[1]
         x = points[3][0]
@@ -938,6 +941,9 @@ def get_asec(element, zoom=(0, 0)):
     elif eid == 'outline':
         r, a, dr_min, dr_max, da = element[1]
         return Box(r, a, dr_max, da)
+    elif eid.startswith('pixi-'):
+        x, y, dx, dy = element[1]
+        return Box(x, y, dx, dy)
     elif eid == 'rhombus':
         points = element[1]
         r = points[3][0]

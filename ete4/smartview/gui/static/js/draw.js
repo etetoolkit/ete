@@ -7,8 +7,9 @@ import { on_box_contextmenu } from "./contextmenu.js";
 import { colorize_tags } from "./tag.js";
 import { colorize_labels } from "./label.js";
 import { api } from "./api.js";
+import { draw_pixi } from "./pixi.js";
 
-export { update, draw_tree, draw, get_class_name };
+export { update, draw_tree, draw, get_class_name, cartesian_shifted };
 
 
 // Update the view of all elements (gui, tree, minimap).
@@ -20,6 +21,8 @@ function update() {
 }
 
 
+var align_timeout; // Do not constantly render aligned panel (too costly) when scrolling
+var align_drawing = false;
 // Ask the server for a tree in the new defined region, and draw it.
 async function draw_tree() {
     const [zx, zy] = [view.zoom.x, view.zoom.y];
@@ -47,9 +50,13 @@ async function draw_tree() {
     const qs = new URLSearchParams(params).toString();  // "x=...&y=..."
 
     try {
+        clearTimeout(align_timeout);
+
         const items = await api(`/trees/${get_tid()}/draw?${qs}`);
 
         draw(div_tree, items, view.tl, view.zoom);
+
+        clearTimeout(align_timeout);
 
         view.nnodes = div_tree.getElementsByClassName("node").length;
         colorize_labels();
@@ -64,8 +71,14 @@ async function draw_tree() {
             div_aligned.style.display = "initial";  // show aligned panel
         else
             div_aligned.style.display = "none";  // hide aligned panel
-            if (view.drawer.npanels > 1)
-                await draw_aligned(params);
+
+        if (view.drawer.npanels > 1) {
+            align_timeout = setTimeout(async () => { 
+                if (!align_drawing)
+                    await draw_aligned(params);
+                clearTimeout(align_timeout);
+            }, 200);
+        }
 
         if (view.drawer.type === "circ") {
             fix_text_orientations();
@@ -101,11 +114,13 @@ function draw_negative_xaxis() {
 function draw(element, items, tl, zoom, replace=true) {
     const g = create_svg_element("g");
 
-    const svg_items = items.filter(i => i[0] != "alignment");
+    const svg_items = items.filter(i => !i[0].includes("pixi-"));
     svg_items.forEach(item => g.appendChild(create_item(item, tl, zoom)));
     
-    const pixi_items = items.filter(i => i[0] == "alignment");
-    g.appendChild(draw_msa(pixi_items, )); /// TODO: SET WIDTH AND HEIGHT
+    const pixi_items = items.filter(i => i[0].includes("pixi-"));
+    const pixi = draw_pixi(pixi_items, tl, zoom)
+    const pixi_container = view.drawer.type === "rect" ? div_aligned : div_tree;
+    replace_child(pixi_container.querySelector(".div_pixi"), pixi);
 
     put_nodes_in_background(g);
 
@@ -135,6 +150,12 @@ function put_nodes_in_background(g) {
     });
 }
 
+function replace_child(element, child) {
+    if (element.children.length)
+        element.children[0].replaceWith(child);
+    else
+        element.appendChild(child);
+}
 
 // Replace the svg that is a child of the given element (or just add if none).
 function replace_svg(element) {
@@ -155,9 +176,14 @@ async function draw_aligned(params) {
     if (view.drawer.type === "rect") {
         const qs = new URLSearchParams({...params, "panel": 1}).toString();
 
+        align_drawing = true;
+
         const items = await api(`/trees/${get_tid()}/draw?${qs}`);
 
         draw(div_aligned, items, {x: 0, y: view.tl.y}, view.zoom);
+
+        align_drawing = false;
+
         // NOTE: Only implemented for panel=1 for the moment. We just need to
         //   decide where the graphics would go for panel > 1 (another div? ...)
     }
@@ -323,11 +349,11 @@ function create_item(item, tl, zoom) {
 
         return g;
     }
-    else if (item[0] == "alignment") {
-        const [, box, sequence, sequence_type, draw_text] = item;
-        const alignment = draw_alignment(box, sequence, sequence_type, draw_text)
-        return alignment
-    }
+    //else if (item[0] == "alignment") {
+        //const [, box, sequence, sequence_type, draw_text] = item;
+        //const alignment = draw_alignment(box, sequence, sequence_type, draw_text)
+        //return alignment
+    //}
 }
 
 
