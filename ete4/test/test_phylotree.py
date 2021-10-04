@@ -5,6 +5,8 @@ import unittest
 from .. import PhyloTree, SeqGroup
 from .datasets import *
 
+from ete4.smartview.ete.gardening import standardize
+
 class Test_phylo_module(unittest.TestCase):
 
     # ALL TESTS USE THIS EXAMPLE TREE
@@ -353,6 +355,7 @@ class Test_phylo_module(unittest.TestCase):
     def test_colappse(self):
         t = PhyloTree('((Dme_001,Dme_002),(((Cfa_001,Mms_001),((((Hsa_001,Hsa_001),Ptr_001),Mmu_001),((Hsa_004,Ptr_004),Mmu_004))),(Ptr_002,(Hsa_002,Mmu_002))));')
         collapsed_hsa = '((Dme_001:1,Dme_002:1)1:1,(((Cfa_001:1,Mms_001:1)1:1,(((Ptr_001:1,Hsa_001:1)1:1,Mmu_001:1)1:1,((Hsa_004:1,Ptr_004:1)1:1,Mmu_004:1)1:1)1:1)1:1,(Ptr_002:1,(Hsa_002:1,Mmu_002:1)1:1)1:1)1:1);'
+        standardize(t)
         t2 = t.collapse_lineage_specific_expansions(['Hsa'])
         self.assertEqual(str(collapsed_hsa), str(t2.write(properties=["species"], format=2)))
         with self.assertRaises(TypeError):
