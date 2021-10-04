@@ -312,8 +312,8 @@ def get_properties(text):
 def content_repr(node, format=0, properties=[], quoted_names=False):
     "Return content of a node as represented in specified newick format"
     # Empty list includes all properties
-    properties = list(node.props.keys())\
-            if properties == [] else (properties or [])
+    props = list(node.props.keys())\
+            if properties == [] else list(properties or [])
 
     if node.is_leaf():
         name = NW_FORMAT[format][0][0]
@@ -337,6 +337,9 @@ def content_repr(node, format=0, properties=[], quoted_names=False):
         elif not flexible:
             name_str = f'{NAME_FORMATTER}' % 'NoName'
 
+        if 'name' in props:
+            props.remove('name')
+
         # Quote name or remove newick-illegal characters
         if quoted_names:
             # TO CONSIDER: use quote() instead of quoted_names argument
@@ -347,8 +350,8 @@ def content_repr(node, format=0, properties=[], quoted_names=False):
     elif name_type == float:  # support value
         support_str = f'{SUPPORT_FORMATTER}' % float(node.support)
         # Do not write redundant information
-        if 'support' in properties:
-            properties.remove('support')
+        if 'support' in props:
+            props.remove('support')
     else:  # name_type == None
         name_str = ''
 
@@ -356,9 +359,12 @@ def content_repr(node, format=0, properties=[], quoted_names=False):
     dist_str = f':{DIST_FORMATTER}' % float(node.dist) \
             if (node.dist >= 0 and dist_type != None) else ''
 
+    if 'dist' in props and dist_type != None:
+        props.remove('dist')
+
     # PROPERTIES FORMATTING
     pairs_str = ':'.join('%s=%s' % (k, node.props.get(k)) 
-                                    for k in properties
+                                    for k in props
                                     if node.props.get(k))
     props_str = f'[&&NHX:{pairs_str}]' if pairs_str else ''
 
