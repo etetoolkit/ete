@@ -207,8 +207,7 @@ async function draw_aligned(params) {
 function create_item(item, tl, zoom) {
     // item looks like ["line", ...] for a line, etc.
 
-    const [zx, zy] = [zoom.x, zoom.y];  // shortcut
-
+    const [zx, zy] = [zoom.x, zoom.y];  // shortcut 
     if (item[0] === "nodebox") {
         const [ , box, name, properties, node_id, result_of, style] = item;
 
@@ -389,10 +388,7 @@ function create_box(box, tl, zx, zy, type, style) {
 
 
 function create_rect(box, tl, zx, zy, type, style) {
-    let [x, y, w, h] = box;
-
-    if (view.drawer.type === "circ")
-        ({x, y} = cartesian_shifted(x, y, tl, zx));
+    const [x, y, w, h] = box;
 
     const r = (is_style_property(style.rounded)) ? 4 : 0;
 

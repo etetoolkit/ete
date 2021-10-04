@@ -655,7 +655,6 @@ class AlignLinkFace(Face):
             yield draw_line(p1, p2, 'align-link', style=style)
 
 
-
 class SeqFace(Face):
     def __init__(self, seq, seqtype='aa', poswidth=15,
             draw_text=True, max_fsize=15, ftype='sans-serif',

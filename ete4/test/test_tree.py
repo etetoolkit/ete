@@ -38,19 +38,19 @@ class Test_Coretype_Tree(unittest.TestCase):
         self.assertRaises(TreeError, wrong_up)
         self.assertRaises(TreeError, wrong_children)
 
-    def test_add_remove_features(self):
+    def test_add_remove_properties(self):
         #The features concept will probably change in future versions. It is
         #very inefficient in larg trees.
         t = Tree()
-        t.add_features(testf1=1, testf2="1", testf3=[1])
-        t.add_feature('testf4', set([1]))
-        self.assertEqual(t.testf1, 1)
-        self.assertEqual(t.testf2, "1")
-        self.assertEqual(t.testf3, [1])
-        self.assertEqual(t.testf4, set([1]))
+        t.add_props(testf1=1, testf2="1", testf3=[1])
+        t.add_prop('testf4', set([1]))
+        self.assertEqual(t.props.get('testf1'), 1)
+        self.assertEqual(t.props.get('testf2'), "1")
+        self.assertEqual(t.props.get('testf3'), [1])
+        self.assertEqual(t.props.get('testf4'), set([1]))
 
-        t.del_feature('testf4')
-        self.assertTrue('testf4' not in t.features)
+        t.del_property('testf4')
+        self.assertTrue('testf4' not in t.properties.keys())
 
     def test_tree_read_and_write(self):
         """ Tests newick support """
@@ -61,14 +61,14 @@ class Test_Coretype_Tree(unittest.TestCase):
 
         t = Tree("/tmp/etetemptree.nw")
         t.write(outfile='/tmp/etewritetest.nw')
-        self.assertEqual(nw_full, t.write(features=["flag","mood"]))
+        self.assertEqual(nw_full, t.write(properties=["flag","mood"]))
         self.assertEqual(nw_topo,  t.write(format=9))
         self.assertEqual(nw_dist, t.write(format=5))
 
         # Read and write newick tree from *string* (and support for NHX
         # format)
         t = Tree(nw_full)
-        self.assertEqual(nw_full, t.write(features=["flag","mood"]))
+        self.assertEqual(nw_full, t.write(properties=["flag","mood"]))
         self.assertEqual(nw_topo, t.write(format=9))
         self.assertEqual( nw_dist, t.write(format=5))
 
@@ -86,20 +86,20 @@ class Test_Coretype_Tree(unittest.TestCase):
         self.assertEqual(Tree("hola;").write(format=9),  "hola;")
         self.assertEqual(Tree("(hola);").write(format=9),  "(hola);")
 
-        #Test export root features
+        #Test export root properties
         t = Tree("(((A[&&NHX:name=A],B[&&NHX:name=B])[&&NHX:name=NoName],C[&&NHX:name=C])[&&NHX:name=I],(D[&&NHX:name=D],F[&&NHX:name=F])[&&NHX:name=J])[&&NHX:name=root];")
         #print t.get_ascii()
-        self.assertEqual(t.write(format=9, features=["name"], format_root_node=True),
+        self.assertEqual(t.write(format=9, properties=["name"], format_root_node=True),
                          "(((A[&&NHX:name=A],B[&&NHX:name=B])[&&NHX:name=NoName],C[&&NHX:name=C])[&&NHX:name=I],(D[&&NHX:name=D],F[&&NHX:name=F])[&&NHX:name=J])[&&NHX:name=root];")
 
-        #Test exporting ordered features
+        #Test exporting ordered properties
         t = Tree("((A,B),C);")
         expected_nw = "((A:1[&&NHX:dist=1.0:name=A:support=1.0],B:1[&&NHX:0=0:1=1:2=2:3=3:4=4:5=5:6=6:7=7:8=8:9=9:a=a:b=b:c=c:d=d:dist=1.0:e=e:f=f:g=g:h=h:i=i:j=j:k=k:l=l:m=m:n=n:name=B:o=o:p=p:q=q:r=r:s=s:support=1.0:t=t:u=u:v=v:w=w])1:1[&&NHX:dist=1.0:name=:support=1.0],C:1[&&NHX:dist=1.0:name=C:support=1.0]);"
         features = list("abcdefghijklmnopqrstuvw0123456789")
         random.shuffle(features)
         for letter in features:
-            (t & "B").add_feature(letter, letter)
-        self.assertEqual(expected_nw, t.write(features=[]))
+            (t & "B").add_prop(letter, letter)
+        self.assertEqual(expected_nw, t.write(properties=[]))
 
         # Node instance repr
         self.assertTrue(Tree().__repr__().startswith('Tree node'))
@@ -483,18 +483,18 @@ class Test_Coretype_Tree(unittest.TestCase):
         test_not_found = lambda: t&'noffound'
         self.assertRaises(TreeError, test_not_found)
 
-        self.assertEqual("common", A.get_common_ancestor(C).tag)
-        self.assertEqual("common", A.get_common_ancestor([C]).tag)
-        self.assertEqual("common", t.get_common_ancestor(A, C).tag)
-        self.assertEqual("common", A.get_common_ancestor(C, B).tag)
+        self.assertEqual("common", A.get_common_ancestor(C).props.get('tag'))
+        self.assertEqual("common", A.get_common_ancestor([C]).props.get('tag'))
+        self.assertEqual("common", t.get_common_ancestor(A, C).props.get('tag'))
+        self.assertEqual("common", A.get_common_ancestor(C, B).props.get('tag'))
         self.assertEqual(root, t.get_common_ancestor([A, "D"]))
 
-        self.assertEqual("root", A.get_tree_root().tag)
-        self.assertEqual("root", B.get_tree_root().tag)
-        self.assertEqual("root", C.get_tree_root().tag)
+        self.assertEqual("root", A.get_tree_root().props.get('tag'))
+        self.assertEqual("root", B.get_tree_root().props.get('tag'))
+        self.assertEqual("root", C.get_tree_root().props.get('tag'))
 
         common = A.get_common_ancestor(C)
-        self.assertEqual("root", common.get_tree_root().tag)
+        self.assertEqual("root", common.get_tree_root().props.get('tag'))
 
         self.assertTrue(common.get_tree_root().is_root())
         self.assertTrue(not A.is_root())
@@ -532,7 +532,7 @@ class Test_Coretype_Tree(unittest.TestCase):
         self.assertEqual(ancestor_names, ["C", "D", "root"])
 
 
-        # Tree magic python features
+        # Tree magic python properties
         t = Tree(nw_dflt)
         self.assertEqual(len(t), 20)
         self.assertTrue("Ddi0002240" in t)
@@ -1293,7 +1293,7 @@ class Test_Coretype_Tree(unittest.TestCase):
                   "3":"yellow", "1":"white", "5":"red",
                   "june":"yellow"}
         for leaf in t:
-            leaf.add_features(color=colors.get(leaf.name, "none"))
+            leaf.add_props(color=colors.get(leaf.name, "none"))
         green_yellow_nodes = set([t&"M1", t&"M2"])
         mono_nodes = t.get_monophyletic(values=["green", "yellow"], target_attr="color")
         self.assertEqual(set(mono_nodes), green_yellow_nodes)
@@ -1302,21 +1302,24 @@ class Test_Coretype_Tree(unittest.TestCase):
     def test_copy(self):
         t = Tree("((A, B)Internal_1:0.7, (C, D)Internal_2:0.5)root:1.3;", format=1)
         # we add a custom annotation to the node named A
-        (t & "A").add_features(label="custom Value")
+        (t & "A").add_props(label="custom Value")
         # we add a complex feature to the A node, consisting of a list of lists
-        (t & "A").add_features(complex=[[0,1], [2,3], [1,11], [1,0]])
+        (t & "A").add_props(complex=[[0,1], [2,3], [1,11], [1,0]])
 
 
         t_nw  = t.copy("newick")
         t_nwx = t.copy("newick-extended")
         t_pkl = t.copy("cpickle")
-        (t & "A").testfn = lambda: "YES"
+        (t & "A").add_prop("testfn", lambda: "YES")
         t_deep = t.copy("deepcopy")
 
+        print('\n\n\n'+ t_nw.name+ '\n\n')
+        print('\n\n\n'+ t_nw.write()+ '\n\n')
+
         self.assertEqual((t_nw & "root").name, "root")
-        self.assertEqual((t_nwx & "A").label, "custom Value")
-        self.assertEqual((t_pkl & "A").complex[0], [0,1])
-        self.assertEqual((t_deep & "A").testfn(), "YES")
+        self.assertEqual((t_nwx & "A").props.get("label"), "custom Value")
+        self.assertEqual((t_pkl & "A").props.get("complex")[0], [0,1])
+        self.assertEqual((t_deep & "A").props.get("testfn")(), "YES")
 
 
     def test_cophenetic_matrix(self):

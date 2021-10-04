@@ -1,6 +1,3 @@
-import { view } from "./gui.js"
-import { cartesian_shifted } from "./draw.js"
-
 export { draw_pixi }
 
 //Aliases
