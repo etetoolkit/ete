@@ -55,7 +55,7 @@ from .. import utils
 try:
     from ..treeview.main import NodeStyle, _FaceAreas, FaceContainer, FACE_POSITIONS
     from ..treeview.faces import Face
-    from ete4.smartview.ete.faces import Face as smartFace
+    from ete4.smartview import Face as smartFace
 except ImportError:
     TREEVIEW = False
 else:

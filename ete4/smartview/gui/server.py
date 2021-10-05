@@ -50,12 +50,12 @@ from itsdangerous import TimedJSONWebSignatureSerializer as JSONSigSerializer
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from ete4 import Tree
-from ete4.smartview.ete.layouts import TreeStyle
+from ete4.smartview import TreeStyle
 from ete4.treeview.main import _FaceAreas
 from ete4.parser.newick import NewickError
 from ete4.smartview.utils import InvalidUsage, get_random_string
 from ete4.smartview.ete import nexus, draw, gardening as gdn
-from ete4.smartview.ete.layouts import get_layout_outline,\
+from ete4.smartview import get_layout_outline,\
         get_layout_leaf_name, get_layout_branch_length,\
         get_layout_branch_support, get_layout_align_link
 

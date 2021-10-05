@@ -65,7 +65,7 @@ class Drawer:
         self.searches = searches or {}  # looks like {text: (results, parents)}
         self.tree_style = tree_style
         if not self.tree_style:
-            from ete4.smartview.ete.layouts import TreeStyle
+            from ete4.smartview import TreeStyle
             self.tree_style = TreeStyle()
 
     def draw(self):
