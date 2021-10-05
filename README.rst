@@ -58,6 +58,20 @@ Install and Documentation
 - News and announcements are usually posted on twitter:
   http://twitter.com/etetoolkit
 
+
+Installation of ETEv4
+-----------------------------
+- Clone this repo to local computer with git clone
+- Change to ete4 branch `> git checkout ete4`
+- Install dependecies:
+    - Cython: `> mamba install cython`
+    - Additional dependencies `> pip install flask flask-cors flask-httpauth flask-restful flask-compress sqlalchemy numpy PyQt5`
+- Build and install ete4 from repo's root directory: `> pip install -e .`
+- Start using ETEv4!
+
+( In Linux there may be some cases where the gcc library must be installed `> conda install -c conda-forge gcc_linux-64` )
+
+
 Gallery of examples
 --------------------
 
