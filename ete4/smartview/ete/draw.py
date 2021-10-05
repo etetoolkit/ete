@@ -240,7 +240,7 @@ class Drawer:
 
         # Draw collapsed node nodebox when necessary
         if is_manually_collapsed or is_small or collapsed_node.dist == 0:
-            name, properties = collapsed_node.name, collapsed_node.properties
+            name, properties = collapsed_node.name, collapsed_node.props
 
             box = draw_nodebox(self.flush_outline(ndx), name, 
                     properties, [], result_of, 
@@ -379,7 +379,7 @@ class DrawerRect(Drawer):
                 yield draw_rect(box, rect_type='nodedot', style=nodedot_style)
 
     def draw_nodebox(self, node, node_id, box, result_of, style=None):
-        yield draw_nodebox(box, node.name, node.properties,
+        yield draw_nodebox(box, node.name, node.props,
                 node_id, result_of, style)
 
 
@@ -473,7 +473,7 @@ class DrawerCirc(Drawer):
         a1, a2 = clip_angles(a, a + da)
         if a1 < a2:
             yield draw_nodebox(Box(r, a1, dr, a2 - a1),
-                       node.name, node.properties, node_id, result_of, style)
+                       node.name, node.props, node_id, result_of, style)
 
 
 def clip_angles(a1, a2):

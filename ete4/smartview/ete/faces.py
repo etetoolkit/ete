@@ -240,7 +240,7 @@ class TextFace(Face):
         return self._box
 
     def fits(self):
-        return self._fsize >= self.min_fsize
+        return self._content != "None" and self._fsize >= self.min_fsize
 
     def draw(self, drawer):
         self._check_own_variables()
@@ -281,9 +281,8 @@ class AttrFace(TextFace):
             raise Exception(f'An associated **node** must be provided to compute **content**.')
 
     def get_content(self):
-        self._check_own_node()
         content = str(getattr(self.node, self._attr, None)\
-                or self.node.properties.get(self._attr))
+                or self.node.props.get(self._attr))
         self._content = self.formatter % content if self.formatter else content
         return self._content
 
