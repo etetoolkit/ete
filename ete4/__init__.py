@@ -44,6 +44,7 @@ from __future__ import absolute_import
 from warnings import warn
 
 from .ncbi_taxonomy import *
+from .gtdb_taxonomy import *
 from .coretype.tree import *
 from .coretype.seqgroup import *
 from .phylo.phylotree import *
