@@ -59,7 +59,7 @@ Install and Documentation
   http://twitter.com/etetoolkit
 
 
-Installation of ETEv4
+Installation of ETE v4
 -----------------------------
 - Clone this repo to local computer with git clone
 - Change to ete4 branch ``git checkout ete4``
