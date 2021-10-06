@@ -615,7 +615,7 @@ class DrawerRectFaces(DrawerRect):
                             and col > 0:
                     # Avoid changing-size error when zooming very quickly
                     dxs = list(self.tree_style.aligned_grid_dxs.items())
-                    dx_before = sum(v for k, v in dxs if k < col and k > 0)
+                    dx_before = sum(v for k, v in dxs if k < col and k >= 0)
                 dx_max = 0
                 dy_before = 0
                 n_row = len(face_list)
