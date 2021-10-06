@@ -447,15 +447,15 @@ class PhyloNode(TreeNode):
 
     def get_species(self):
         """ Returns the set of species covered by its partition. """
-        return set([l.props.get('species') for l in self.iter_leaves()])
+        return set([l.species for l in self.iter_leaves()])
 
     def iter_species(self):
         """ Returns an iterator over the species grouped by this node. """
         spcs = set([])
         for l in self.iter_leaves():
-            if l.props.get('species') not in spcs:
-                spcs.add(l.props.get('species'))
-                yield l.props.get('species')
+            if l.species not in spcs:
+                spcs.add(l.species)
+                yield l.species
 
     def get_age(self, species2age):
         """
