@@ -117,7 +117,6 @@ function add_folder_tree(menu, trees) {
                                                     expanded: false });
     folder_download.addButton({ title: "newick" }).on("click", view.download.newick);
     folder_download.addButton({ title: "svg" }).on("click", view.download.svg);
-    folder_download.addButton({ title: "image" }).on("click", view.download.image);
 }
 
 
@@ -161,8 +160,15 @@ function add_folder_view(menu) {
     folder_tl.addMonitor(view.tl, "y", { format: v => v.toFixed(3) });
 
     const folder_zoom = folder_view.addFolder({ title: "Zoom" });
-    folder_zoom.addMonitor(view.zoom, "x", { format: v => v.toFixed(3) });
-    folder_zoom.addMonitor(view.zoom, "y", { format: v => v.toFixed(3) });
+
+    folder_zoom.addInput(view.zoom, "x", { label: "x", 
+                                           format: v => v.toFixed(1),
+                                           min: 1, max: div_tree.offsetWidth })
+        .on("change", update)
+    folder_zoom.addInput(view.zoom, "y", { label: "y", 
+                                           format: v => v.toFixed(1),
+                                           min: 1, max: div_tree.offsetHeight })
+        .on("change", update)
 
     const folder_aligned = folder_view.addFolder({ title: "Aligned panel",
                                                    expanded: false });

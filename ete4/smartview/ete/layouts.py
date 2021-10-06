@@ -1,7 +1,6 @@
 from collections import defaultdict
 from types import FunctionType, MethodType
-from ete4 import NodeStyle
-from ete4.smartview.ete.faces import AttrFace, TextFace,\
+from ete4.smartview import AttrFace, TextFace,\
                                      CircleFace, RectFace,\
                                      OutlineFace, AlignLinkFace
 from ete4.smartview.ete.draw import summary
@@ -176,7 +175,12 @@ class TreeStyle(object):
         layouts = []
 
         # Set clean node style
-        clean = NodeStyle()
+        try:
+            clean = NodeStyle()
+        except:
+            from ete4 import NodeStyle
+            clean = NodeStyle()
+
         clean['size'] = 0
         clean['bgcolor'] = 'transparent'
         layouts.append(lambda node: node.set_style(clean))

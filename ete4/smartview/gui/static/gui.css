@@ -81,6 +81,12 @@
     touch-action: none;
 }
 
+.div_pixi {
+    position: absolute;
+    top: 0;
+    pointer-events: none;
+}
+
 .dotted {
     stroke-dasharray: 4;
 }

@@ -50,12 +50,12 @@ from itsdangerous import TimedJSONWebSignatureSerializer as JSONSigSerializer
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from ete4 import Tree
-from ete4.smartview.ete.layouts import TreeStyle
+from ete4.smartview import TreeStyle
 from ete4.treeview.main import _FaceAreas
 from ete4.parser.newick import NewickError
 from ete4.smartview.utils import InvalidUsage, get_random_string
 from ete4.smartview.ete import nexus, draw, gardening as gdn
-from ete4.smartview.ete.layouts import get_layout_outline,\
+from ete4.smartview import get_layout_outline,\
         get_layout_leaf_name, get_layout_branch_length,\
         get_layout_branch_support, get_layout_align_link
 
@@ -80,6 +80,7 @@ class Drawers(Resource):
     def get(self, name=None, tree_id=None):
         "Return data from the drawer. In aligned mode if aligned faces"
         try:
+            tree_id, _ = get_tid(tree_id)
             if name not in ['Rect', 'Circ'] and\
                     any(getattr(ly, 'contains_aligned_face', False)\
                         for ly in app.trees[int(tree_id)].style.layout_fn):
@@ -106,7 +107,8 @@ class Trees(Resource):
         
         # Update tree's timer
         if rule.startswith('/trees/<string:tree_id>'):
-            app.trees[int(tree_id)].timer = time()
+            tid, subtree = get_tid(tree_id)
+            app.trees[int(tid)].timer = time()
 
         if rule == '/trees':
             if app.memory_only:
@@ -135,7 +137,7 @@ class Trees(Resource):
             t = load_tree(tree_id)
             properties = set()
             for node in t.traverse():
-                properties |= node.properties.keys()
+                properties |= node.props.keys()
             return list(properties)
         elif rule == '/trees/<string:tree_id>/nodecount':
             t = load_tree(tree_id)
@@ -147,7 +149,7 @@ class Trees(Resource):
             return {'tnodes': tnodes, 'tleaves': tleaves}
         elif rule == '/trees/<string:tree_id>/ultrametric':
             # Not for now... but it may be tree specific
-            return app.trees[int(tree_id)].style.ultrametric
+            return app.trees[int(tid)].style.ultrametric
 
     def post(self):
         "Add tree(s)"
@@ -160,7 +162,8 @@ class Trees(Resource):
 
         # Update tree's timer
         if rule.startswith('/trees/<string:tree_id>'):
-            app.trees[int(tree_id)].timer = time()
+            tid, subtree = get_tid(tree_id)
+            app.trees[int(tid)].timer = time()
 
         if rule == '/trees/<string:tree_id>':
             modify_tree_fields(tree_id)
@@ -454,7 +457,7 @@ def get_eval_search(expression):
     return lambda node: safer_eval(code, {
         'name': node.name, 'is_leaf': node.is_leaf(),
         'length': node.dist, 'dist': node.dist, 'd': node.dist,
-        'properties': node.properties, 'p': node.properties,
+        'props': node.props, 'p': node.props,
         'get': dict.get,
         'children': node.children, 'ch': node.children,
         'size': node.size, 'dx': node.size[0], 'dy': node.size[1],
@@ -882,7 +885,7 @@ def add_resources(api):
 
 
 def run_smartview(newick=None, tree_name=None, tree_style=None, layouts=[],
-        update_old_tree=True, memory_only=False, purge_trees=False):
+        update_old_tree=True, memory_only=False, purge_trees=False, port=5000):
     # Set tree_name to None if no newick was provided
     # Generate tree_name if none was provided
     # update_old_tree: replace tree in local database if identical tree_name
@@ -911,7 +914,7 @@ def run_smartview(newick=None, tree_name=None, tree_style=None, layouts=[],
             tid = add_tree(tree_data, replace=update_old_tree)
             print(f'Added tree {tree_name} with id {tid}.')
 
-    app.run(debug=True, use_reloader=False)
+    app.run(debug=True, use_reloader=False, port=port)
 
 
 if __name__ == '__main__':

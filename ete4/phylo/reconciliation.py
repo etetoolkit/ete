@@ -169,7 +169,7 @@ def get_reconciled_tree_zmasek(gtree, sptree, inplace=False):
     """
     # some cleanup operations
     def cleanup(tree):
-        for node in tree.traverse(): node.del_feature("M")
+        for node in tree.traverse(): node.del_prop("M")
 
     if not inplace:
         gtree = gtree.copy('deepcopy')
@@ -204,8 +204,7 @@ def get_reconciled_tree_zmasek(gtree, sptree, inplace=False):
 
         node.add_prop("evoltype","S")
         if id(node.children[0].M) == id(node.M) or id(node.children[1].M) == id(node.M):
-                node.evoltype = "D"
+            node.add_prop("evoltype", "D")
 
     cleanup(gtree)
     return gtree
-

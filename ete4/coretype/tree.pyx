@@ -55,7 +55,7 @@ from .. import utils
 try:
     from ..treeview.main import NodeStyle, _FaceAreas, FaceContainer, FACE_POSITIONS
     from ..treeview.faces import Face
-    from ete4.smartview.ete.faces import Face as smartFace
+    from ete4.smartview import Face as smartFace
 except ImportError:
     TREEVIEW = False
 else:
@@ -1421,13 +1421,13 @@ cdef class TreeNode(object):
                                     layout=layout, tree_style=tree_style,
                                       units=units, dpi=dpi)
 
-    def explore(self, tree_name=None, tree_style=None, layouts=[]):
+    def explore(self, tree_name=None, tree_style=None, layouts=[], port=5000):
         """
         Starts an interactive smartview session to visualize current node
         structure using provided TreeStyle.
 
         :tree_name string: name used to store tree in local database.
-        Autamatically generated if not provided.
+        Automatically generated if not provided.
 
         :tree_style TreeStyle: default TreeStyle if not provided.
 
@@ -1436,11 +1436,14 @@ cdef class TreeNode(object):
         be adressed by such in the explorer.
         By default it includes: outline, leaf_name, branch_length 
         and branch_support.
+
+        :port: port used to run the local server (127.0.0.1). Default 5000
         """
         from ete4.smartview.gui.server import run_smartview
 
         run_smartview(newick=self.write(format=1),
-                tree_name=tree_name, tree_style=tree_style, layouts=layouts)
+                tree_name=tree_name, tree_style=tree_style, layouts=layouts,
+                port=port)
 
     def copy(self, method="cpickle"):
         """.. versionadded: 2.1
@@ -1917,7 +1920,7 @@ cdef class TreeNode(object):
             orig_target_size = len(source_tree)
             ntrees, ndups, sp_trees = source_tree.get_speciation_trees(
                 autodetect_duplications=True, newick_only=True,
-                target_attr=source_tree_attr, map_features=[source_tree_attr, "support"])
+                target_attr=source_tree_attr, map_properties=[source_tree_attr, "support"])
 
             if ntrees < max_treeko_splits_to_be_artifact:
                 all_rf = []

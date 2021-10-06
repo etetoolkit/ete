@@ -65,7 +65,7 @@ class Drawer:
         self.searches = searches or {}  # looks like {text: (results, parents)}
         self.tree_style = tree_style
         if not self.tree_style:
-            from ete4.smartview.ete.layouts import TreeStyle
+            from ete4.smartview import TreeStyle
             self.tree_style = TreeStyle()
 
     def draw(self):
@@ -240,7 +240,7 @@ class Drawer:
 
         # Draw collapsed node nodebox when necessary
         if is_manually_collapsed or is_small or collapsed_node.dist == 0:
-            name, properties = collapsed_node.name, collapsed_node.properties
+            name, properties = collapsed_node.name, collapsed_node.props
 
             box = draw_nodebox(self.flush_outline(ndx), name, 
                     properties, [], result_of, 
@@ -379,7 +379,7 @@ class DrawerRect(Drawer):
                 yield draw_rect(box, rect_type='nodedot', style=nodedot_style)
 
     def draw_nodebox(self, node, node_id, box, result_of, style=None):
-        yield draw_nodebox(box, node.name, node.properties,
+        yield draw_nodebox(box, node.name, node.props,
                 node_id, result_of, style)
 
 
@@ -473,7 +473,7 @@ class DrawerCirc(Drawer):
         a1, a2 = clip_angles(a, a + da)
         if a1 < a2:
             yield draw_nodebox(Box(r, a1, dr, a2 - a1),
-                       node.name, node.properties, node_id, result_of, style)
+                       node.name, node.props, node_id, result_of, style)
 
 
 def clip_angles(a1, a2):
@@ -615,7 +615,7 @@ class DrawerRectFaces(DrawerRect):
                             and col > 0:
                     # Avoid changing-size error when zooming very quickly
                     dxs = list(self.tree_style.aligned_grid_dxs.items())
-                    dx_before = sum(v for k, v in dxs if k < col and k > 0)
+                    dx_before = sum(v for k, v in dxs if k < col and k >= 0)
                 dx_max = 0
                 dy_before = 0
                 n_row = len(face_list)
@@ -905,6 +905,9 @@ def get_rect(element, zoom=(0, 0)):
     elif eid == 'outline':
         x, y, dx_min, dx_max, dy = element[1]
         return Box(x, y, dx_max, dy)
+    elif eid.startswith('pixi-'):
+        x, y, dx, dy = element[1]
+        return Box(x, y, dx, dy)
     elif eid == 'rhombus':
         points = element[1]
         x = points[3][0]
@@ -938,6 +941,9 @@ def get_asec(element, zoom=(0, 0)):
     elif eid == 'outline':
         r, a, dr_min, dr_max, da = element[1]
         return Box(r, a, dr_max, da)
+    elif eid.startswith('pixi-'):
+        x, y, dx, dy = element[1]
+        return Box(x, y, dx, dy)
     elif eid == 'rhombus':
         points = element[1]
         r = points[3][0]

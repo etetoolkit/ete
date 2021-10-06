@@ -4,6 +4,7 @@ import unittest
 
 from .. import PhyloTree, SeqGroup
 from .datasets import *
+from ete4.smartview.ete.gardening import standardize
 
 class Test_phylo_module(unittest.TestCase):
 
@@ -103,6 +104,7 @@ class Test_phylo_module(unittest.TestCase):
 
         dup4 = t.get_common_ancestor("Hsa_001", "Hsa_003")
         self.assertEqual(dup4.props.get('evoltype'), "D")
+
 
 
         # All other nodes should be speciation
@@ -307,7 +309,8 @@ class Test_phylo_module(unittest.TestCase):
         # gene loss, duplication, etc.
         expected_recon = "((Dme_001:1,Dme_002:1)1:1[&&NHX:evoltype=D],(((Cfa_001:1,Mms_001:1)1:1[&&NHX:evoltype=S],((Hsa_001:1,Ptr_001:1)1:1[&&NHX:evoltype=S],Mmu_001:1)1:1[&&NHX:evoltype=S])1:1[&&NHX:evoltype=S],((Mms:1[&&NHX:evoltype=L],Cfa:1[&&NHX:evoltype=L])1:1[&&NHX:evoltype=L],(((Hsa:1[&&NHX:evoltype=L],Ptr_002:1)1:1[&&NHX:evoltype=L],Mmu:1[&&NHX:evoltype=L])1:1[&&NHX:evoltype=L],((Ptr:1[&&NHX:evoltype=L],Hsa_002:1)1:1[&&NHX:evoltype=L],Mmu_002:1)1:1[&&NHX:evoltype=S])1:1[&&NHX:evoltype=D])1:1[&&NHX:evoltype=L])1:1[&&NHX:evoltype=D])[&&NHX:evoltype=S];"
 
-        self.assertEqual(recon_tree.write(properties=["evoltype"], format=9), PhyloTree(expected_recon).write(properties=["evoltype"],format=9))
+        self.assertEqual(recon_tree.write(properties=["evoltype"], format=9), 
+                         PhyloTree(expected_recon).write(properties=["evoltype"],format=9))
 
     def test_miscelaneus(self):
         """ Test several things """
@@ -350,8 +353,10 @@ class Test_phylo_module(unittest.TestCase):
         self.assertEqual(t.get_species(), set(sp2age.keys()))
         self.assertEqual(set([sp for sp in t.iter_species()]), set(sp2age.keys()))
 
-    def test_colappse(self):
+    def test_collapse(self):
         t = PhyloTree('((Dme_001,Dme_002),(((Cfa_001,Mms_001),((((Hsa_001,Hsa_001),Ptr_001),Mmu_001),((Hsa_004,Ptr_004),Mmu_004))),(Ptr_002,(Hsa_002,Mmu_002))));')
+        for n in t.traverse():
+            n.dist = 1
         collapsed_hsa = '((Dme_001:1,Dme_002:1)1:1,(((Cfa_001:1,Mms_001:1)1:1,(((Ptr_001:1,Hsa_001:1)1:1,Mmu_001:1)1:1,((Hsa_004:1,Ptr_004:1)1:1,Mmu_004:1)1:1)1:1)1:1,(Ptr_002:1,(Hsa_002:1,Mmu_002:1)1:1)1:1)1:1);'
         t2 = t.collapse_lineage_specific_expansions(['Hsa'])
         self.assertEqual(str(collapsed_hsa), str(t2.write(properties=["species"], format=2)))
