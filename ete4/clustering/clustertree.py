@@ -114,11 +114,11 @@ class ClusterNode(TreeNode):
         self._std_profile = None
 
         # Cluster especific features
-        self.features.add("intercluster_dist")
-        self.features.add("intracluster_dist")
-        self.features.add("silhouette")
-        self.features.add("profile")
-        self.features.add("deviation")
+        # self.features.add("intercluster_dist")
+        # self.features.add("intracluster_dist")
+        # self.features.add("silhouette")
+        # self.features.add("profile")
+        # self.features.add("deviation")
 
         # Initialize tree with array data
         if text_array:

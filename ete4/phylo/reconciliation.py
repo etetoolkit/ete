@@ -45,26 +45,24 @@ from .evolevents import EvolEvent
 def get_reconciled_tree(node, sptree, events):
     """ Returns the recoliation gene tree with a provided species
     topology """
-
     if len(node.children) == 2:
         # First visit childs
         morphed_childs = []
         for ch in node.children:
             mc, ev = get_reconciled_tree(ch, sptree, events)
             morphed_childs.append(mc)
-
+        
         # morphed childs are the reconciled children. I trust its
         # topology. Remember tree is visited on recursive post-order
         sp_child_0 = morphed_childs[0].get_species()
         sp_child_1 = morphed_childs[1].get_species()
         all_species = sp_child_1 | sp_child_0
-
         # If childs represents a duplication (duplicated species)
         # Check that both are reconciliated to the same species
         if len(sp_child_0 & sp_child_1) > 0:
             newnode = copy.deepcopy(node)
             newnode.up = None
-            newnode.children = []
+            newnode.remove_children()
             template = _get_expected_topology(sptree, all_species)
             # replaces child0 partition on the template
             newmorphed0, matchnode = _replace_on_template(template, morphed_childs[0])
@@ -92,8 +90,8 @@ def get_reconciled_tree(node, sptree, events):
             template, matchnode = _replace_on_template(template, morphed_childs[0] )
             # replaces child1 partition on the template
             template, matchnode = _replace_on_template(template, morphed_childs[1])
-            template.add_prop("evoltype","S")
-            node.add_prop("evoltype","S")
+            template.add_prop("evoltype", "S")
+            node.add_prop("evoltype", "S")
             e = EvolEvent()
             e.etype = "S"
             e.inparalogs = node.children[0].get_leaf_names()
@@ -143,7 +141,7 @@ def _get_expected_topology(t, species):
     template.set_species_naming_function(_get_species_on_TOL)
     template.detach()
     for n in [template]+template.get_descendants():
-        n.add_prop("evoltype","L")
+        n.add_prop("evoltype", "L")
         n.dist = 1
     return template
 

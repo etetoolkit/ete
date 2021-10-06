@@ -51,7 +51,7 @@ import os
 import re
 import itertools
 from collections import defaultdict
-from .. import TreeNode, SeqGroup, NCBITaxa
+from .. import TreeNode, SeqGroup, NCBITaxa, GTDBTaxa
 from .reconciliation import get_reconciled_tree
 from . import spoverlap
 
@@ -792,6 +792,9 @@ class PhyloNode(TreeNode):
         ncbi = NCBITaxa(dbfile=dbfile)
         return ncbi.annotate_tree(self, taxid_attr=taxid_attr, tax2name=tax2name, tax2track=tax2track, tax2rank=tax2rank)
 
+    def annotate_gtdb_taxa(self, taxid_attr='species', tax2name=None, tax2track=None, tax2rank=None, dbfile=None):
+        gtdb = GTDBTaxa(dbfile=dbfile)
+        return gtdb.annotate_tree(self, taxid_attr=taxid_attr, tax2name=tax2name, tax2track=tax2track, tax2rank=tax2rank)
 
     def ncbi_compare(self, autodetect_duplications=True, cached_content=None):
         if not cached_content:
@@ -809,7 +812,7 @@ class PhyloNode(TreeNode):
         ncbi = NCBITaxa()
         for t in target_trees:
             ncbi.get_broken_branches(t, cached_content)
-
+    
 
 
 #: .. currentmodule:: ete3
