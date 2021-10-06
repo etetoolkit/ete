@@ -27,3 +27,5 @@ class Test_ClusterTree(unittest.TestCase):
         c3 = t.get_common_ancestor("F", "G", "H")
         print(t.get_dunn([c1, c2, c3]))
 
+if __name__ == '__main__':
+  unittest.main()

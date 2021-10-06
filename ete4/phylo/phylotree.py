@@ -51,7 +51,7 @@ import os
 import re
 import itertools
 from collections import defaultdict
-from .. import TreeNode, SeqGroup, NCBITaxa
+from .. import TreeNode, SeqGroup, NCBITaxa, GTDBTaxa
 from .reconciliation import get_reconciled_tree
 from . import spoverlap
 
@@ -447,15 +447,16 @@ class PhyloNode(TreeNode):
 
     def get_species(self):
         """ Returns the set of species covered by its partition. """
-        return set([l.props.get('species') for l in self.iter_leaves()])
+        #return set([l.props.get('species') for l in self.iter_leaves()])
+        return set([l.species for l in self.iter_leaves()])
 
     def iter_species(self):
         """ Returns an iterator over the species grouped by this node. """
         spcs = set([])
         for l in self.iter_leaves():
-            if l.props.get('species') not in spcs:
-                spcs.add(l.props.get('species'))
-                yield l.props.get('species')
+            if l.species not in spcs:
+                spcs.add(l.species)
+                yield l.species
 
     def get_age(self, species2age):
         """
@@ -792,6 +793,9 @@ class PhyloNode(TreeNode):
         ncbi = NCBITaxa(dbfile=dbfile)
         return ncbi.annotate_tree(self, taxid_attr=taxid_attr, tax2name=tax2name, tax2track=tax2track, tax2rank=tax2rank)
 
+    def annotate_gtdb_taxa(self, taxid_attr='species', tax2name=None, tax2track=None, tax2rank=None, dbfile=None):
+        gtdb = GTDBTaxa(dbfile=dbfile)
+        return gtdb.annotate_tree(self, taxid_attr=taxid_attr, tax2name=tax2name, tax2track=tax2track, tax2rank=tax2rank)
 
     def ncbi_compare(self, autodetect_duplications=True, cached_content=None):
         if not cached_content:
@@ -808,7 +812,7 @@ class PhyloNode(TreeNode):
         ncbi = NCBITaxa()
         for t in target_trees:
             ncbi.get_broken_branches(t, cached_content)
-
+    
 
 
 #: .. currentmodule:: ete3
