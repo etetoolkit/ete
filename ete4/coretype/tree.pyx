@@ -1920,7 +1920,7 @@ cdef class TreeNode(object):
             orig_target_size = len(source_tree)
             ntrees, ndups, sp_trees = source_tree.get_speciation_trees(
                 autodetect_duplications=True, newick_only=True,
-                target_attr=source_tree_attr, map_features=[source_tree_attr, "support"])
+                target_attr=source_tree_attr, map_properties=[source_tree_attr, "support"])
 
             if ntrees < max_treeko_splits_to_be_artifact:
                 all_rf = []
