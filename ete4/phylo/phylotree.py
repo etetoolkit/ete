@@ -604,7 +604,7 @@ class PhyloNode(TreeNode):
 
         return outgroup_node
 
-    def get_speciation_trees(self, map_features=None, autodetect_duplications=True,
+    def get_speciation_trees(self, map_properties=None, autodetect_duplications=True,
                              newick_only=False, target_attr='species'):
         """
         .. versionadded: 2.2
@@ -621,7 +621,7 @@ class PhyloNode(TreeNode):
         False, duplication nodes within the original tree are expected
         to contain the feature "evoltype=D".
 
-        :argument None features: A list of features that should be
+        :argument None properties: A list of properties that should be
         mapped from the original gene family tree to each species
         tree subtree.
 
@@ -638,7 +638,7 @@ class PhyloNode(TreeNode):
                 if len(n2species[node]) > 1 and len(n2species[node]) != sp_subtotal:
                     node.props['evoltype'] = 'D'
 
-        sp_trees = get_subtrees(t, features=map_features, newick_only=newick_only)
+        sp_trees = get_subtrees(t, properties=map_properties, newick_only=newick_only)
 
         return sp_trees
 
@@ -799,8 +799,9 @@ class PhyloNode(TreeNode):
         cached_species = set([n.props.get('species') for n in cached_content[self]])
 
         if len(cached_species) != len(cached_content[self]):
-            print(cached_species)
-            ntrees, ndups, target_trees = self.get_speciation_trees(autodetect_duplications=autodetect_duplications, map_features=["taxid"])
+            ntrees, ndups, target_trees = self.get_speciation_trees(
+                    autodetect_duplications=autodetect_duplications,
+                    map_properties=["taxid"])
         else:
             target_trees = [self]
 
