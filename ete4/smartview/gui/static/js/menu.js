@@ -117,7 +117,6 @@ function add_folder_tree(menu, trees) {
                                                     expanded: false });
     folder_download.addButton({ title: "newick" }).on("click", view.download.newick);
     folder_download.addButton({ title: "svg" }).on("click", view.download.svg);
-    folder_download.addButton({ title: "image" }).on("click", view.download.image);
 }
 
 

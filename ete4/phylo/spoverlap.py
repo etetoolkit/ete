@@ -87,7 +87,7 @@ def get_evol_events_from_leaf(node, sos_thr=0.0):
 
     # Clean previous analysis
     for n in root.get_descendants()+[root]:
-        n.del_property("evoltype")
+        n.del_prop("evoltype")
 
     while current.up:
         # distances control (0.0 distance check)
@@ -125,7 +125,7 @@ def get_evol_events_from_leaf(node, sos_thr=0.0):
             event.etype = "D"
             event.outparalogs = set([n.name for n in sister_leaves  if n.species == ref_spcs])
             event.orthologs   = set([])
-            current.up.add_property("evoltype","D")
+            current.up.add_prop("evoltype","D")
             all_events.append(event)
 
         # If NO species overlap: speciation
@@ -134,7 +134,7 @@ def get_evol_events_from_leaf(node, sos_thr=0.0):
             event.etype = "S"
             event.orthologs = set([n.name for n in sister_leaves if n.species != ref_spcs])
             event.outparalogs = set([])
-            current.up.add_property("evoltype","S")
+            current.up.add_prop("evoltype","S")
             all_events.append(event)
 
         # Updates browsed species
@@ -178,7 +178,7 @@ def get_evol_events_from_root(node, sos_thr):
 
     # Clean data from previous analyses
     for n in root.get_descendants()+[root]:
-        n.del_property("evoltype")
+        n.del_prop("evoltype")
 
     # Gets Prepared to browse the tree from root to leaves
     to_visit = []
@@ -220,14 +220,14 @@ def get_evol_events_from_root(node, sos_thr):
                 event.etype = "D"
                 event.outparalogs = set([n.name for n in sideB_leaves])
                 event.orthologs   = set([])
-                current.add_property("evoltype","D")
+                current.add_prop("evoltype","D")
             # If NO species overlap: speciation
             else:
                 event.node = current
                 event.etype = "S"
                 event.orthologs = set([n.name for n in sideB_leaves])
                 event.outparalogs = set([])
-                current.add_property("evoltype","S")
+                current.add_prop("evoltype","S")
 
             all_events.append(event)
         # Keep visiting nodes

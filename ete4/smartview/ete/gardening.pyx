@@ -43,19 +43,19 @@ def split_branch(node, bprops=None):
 
     parent.remove_child(node)  # detach from parent
 
-    intermediate = Tree('')  # create intermediate node
+    intermediate = node.__class__('')  # create intermediate node
     intermediate.remove_children()
     intermediate.add_child(node)
 
     if node.dist >= 0:  # split dist between the new and old nodes
         node.dist = intermediate.dist = node.dist / 2
 
-    if 'support' in node.properties:  # copy support if it has it
-        intermediate.properties['support'] = node.properties['support']
+    if 'support' in node.props:  # copy support if it has it
+        intermediate.props['support'] = node.props['support']
 
-    for prop in (bprops or []):  # and copy other branch properties if any
-        if prop in node.properties:
-            intermediate.properties[prop] = node.properties[prop]
+    for prop in (bprops or []):  # and copy other branch props if any
+        if prop in node.props:
+            intermediate.props[prop] = node.props[prop]
 
 
     parent.add_child(intermediate)
@@ -108,12 +108,12 @@ def swap_branch_properties(n1, n2, bprops=None):
 
 def swap_property(n1, n2, pname):
     "Swap property pname between nodes n1 and n2"
-    p1 = n1.properties.pop(pname, None)
-    p2 = n2.properties.pop(pname, None)
+    p1 = n1.props.pop(pname, None)
+    p2 = n2.props.pop(pname, None)
     if p1:
-        n2.properties[pname] = p1
+        n2.props[pname] = p1
     if p2:
-        n1.properties[pname] = p2
+        n1.props[pname] = p2
 
 
 def join_branch(node):
@@ -122,8 +122,8 @@ def join_branch(node):
 
     child = node.children[0]
 
-    if 'support' in node.properties or 'support' in child.properties:
-        assert node.properties.get('support') == child.properties.get('support')
+    if 'support' in node.props or 'support' in child.props:
+        assert node.props.get('support') == child.props.get('support')
 
     if node.dist > 0:
         child.dist += node.dist  # restore total dist

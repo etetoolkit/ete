@@ -3,7 +3,7 @@
 import { init_menus } from "./menu.js";
 import { init_events } from "./events.js";
 import { update } from "./draw.js";
-import { download_newick, download_image, download_svg } from "./download.js";
+import { download_newick, download_svg } from "./download.js";
 import { search, remove_searches } from "./search.js";
 import { zoom_into_box, zoom_around, zoom_towards_box } from "./zoom.js";
 import { draw_minimap, update_minimap_visible_rect } from "./minimap.js";
@@ -39,7 +39,6 @@ const view = {
     download: {
         newick: () => download_newick(),
         svg:    () => download_svg(),
-        image:  () => download_image(),
     },
     allow_modifications: true,
 

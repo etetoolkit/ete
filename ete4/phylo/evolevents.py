@@ -70,7 +70,3 @@ class EvolEvent:
         self.famSize       = None
         self.seed          = None   # Seed ID used to start the phylogenetic pipeline
         self.branch_supports  = []
-
-
-
-

@@ -65,7 +65,7 @@ def check_annotation (tree):
     check each node is labelled with a node_id
     '''
     for node in tree.iter_descendants():
-        if not node.get('node_id'):
+        if not node.props.get('node_id'):
             raise Exception ('Error, unable to label with paml ids')
     return True
 
@@ -94,9 +94,9 @@ class TestEvolEvolTree(unittest.TestCase):
         for ali in alignments:
             t = EvolTree('((seq1,seq2),seq3);')
             t.link_to_alignment(ali)
-            self.assertEqual((t & 'seq1').get('nt_sequence'), 'ATGATG')
-            self.assertEqual((t & 'seq2').get('nt_sequence'), 'CTGATG')
-            self.assertEqual((t & 'seq3').get('nt_sequence'), 'ATGTTT')
+            self.assertEqual((t & 'seq1').props.get('nt_sequence'), 'ATGATG')
+            self.assertEqual((t & 'seq2').props.get('nt_sequence'), 'CTGATG')
+            self.assertEqual((t & 'seq3').props.get('nt_sequence'), 'ATGTTT')
 
     def test_load_model(self):
         tree = EvolTree (WRKDIR + 'tree.nw')
@@ -198,7 +198,7 @@ class TestEvolEvolTree(unittest.TestCase):
         tree.mark_tree ([1, 3, 7] + [2, 6], marks=['#1']*3 + ['#2']*2, verbose=True)
         self.assertEqual(tree.write().replace(' ', ''),
                          '((Hylobates_lar#2,(Gorilla_gorilla#1,Pan_troglodytes#1)#1)#2,Papio_cynocephalus);')
-        tree.mark_tree ([x.get('node_id') for x in tree.get_descendants()],
+        tree.mark_tree ([x.props.get('node_id') for x in tree.get_descendants()],
                         marks=[''] * len (tree.get_descendants()), verbose=False)
         self.assertEqual(tree.write().replace(' ', ''),
                          '((Hylobates_lar,(Gorilla_gorilla,Pan_troglodytes)),Papio_cynocephalus);')
