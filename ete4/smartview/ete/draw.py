@@ -192,14 +192,6 @@ class Drawer:
                 yield from self.draw_lengthline((x, y + bdy), (x + dx, y + bdy),
                                 parent_of, hz_line_style)
 
-                nodedot_style = {
-                        'shape': node_style['shape'],
-                        'size': node_style['size'],
-                        'fill': node_style['fgcolor'],
-                }
-                yield from self.draw_nodedot((x + dx, y + bdy),
-                        dy * self.zoom[1], nodedot_style)
-
             if bdy0 != bdy1:
                 vt_line_style = {
                         'type': node_style['vt_line_type'],
@@ -209,6 +201,14 @@ class Drawer:
                 yield from self.draw_childrenline((x + dx, y + bdy0),
                                                   (x + dx, y + bdy1),
                                                   style=vt_line_style)
+
+            nodedot_style = {
+                    'shape': node_style['shape'],
+                    'size': node_style['size'],
+                    'fill': node_style['fgcolor'],
+            }
+            yield from self.draw_nodedot((x + dx, y + bdy),
+                    dy * self.zoom[1], nodedot_style)
 
     def get_outline(self):
         "Yield the outline representation"
