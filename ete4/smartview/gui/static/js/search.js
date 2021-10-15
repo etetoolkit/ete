@@ -54,7 +54,7 @@ async function search() {
                           color: colors[nsearches % colors.length]},
                 parents: {n: res.nparents,
                           color: "#000",
-                          width: 3},
+                          width: 2.5},
             };
 
             add_search_to_menu(search_text);
@@ -92,16 +92,14 @@ function add_search_to_menu(text) {
         draw_tree();
     }
 
-    const folder_results = folder.addFolder({ 
-        title: `results (${search.results.n})` });
+    const folder_results = folder.addFolder({ title: `results (${search.results.n})` });
     folder_results.addInput(search.results, "opacity", 
         { min: 0, max: 1, step: 0.1 })
         .on("change", () => colorize_search(text));
     folder_results.addInput(search.results, "color", { view: "color" })
         .on("change", () => colorize_search(text));
 
-    const folder_parents = folder.addFolder({
-        title: `parents (${search.parents.n})` });
+    const folder_parents = folder.addFolder({ title: `parents (${search.parents.n})` });
     folder_parents.addInput(search.parents, "color", { view: "color" })
         .on("change", () => colorize_search(text));
     folder_parents.addInput(search.parents, "width", { min: 0.1, max: 10 })

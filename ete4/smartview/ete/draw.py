@@ -137,8 +137,14 @@ class Drawer:
 
     def on_last_visit(self, point, it, graphics):
         "Update list of graphics to draw and return new position"
+
         if self.outline:
+            result_of = [text for text,(results,parents) in self.searches.items()
+                    if any(node in results or node in parents for node in self.collapsed)]
             graphics += self.get_outline()
+        else:
+            result_of = [text for text,(results,_) in self.searches.items()
+                    if it.node in results ]
 
         x_after, y_after = point
         dx, dy = self.content_size(it.node)
@@ -152,8 +158,6 @@ class Drawer:
         self.node_dxs[-1].append(ndx)
 
         box = Box(x_before, y_before, ndx, dy)
-        result_of = [text for text,(results,_) in self.searches.items()
-                        if it.node in results]
         self.nodeboxes += self.draw_nodebox(it.node, it.node_id, box,
                 result_of, { 'fill': it.node.img_style.get('bgcolor') })
 

@@ -932,7 +932,7 @@ cdef class TreeNode(object):
 
         ::
 
-             t.write(properties=["species","name"], format=1)
+             t.write(properties=["species","name"], format=1, outfile="mytree.nwx")
 
         """
 
@@ -2380,8 +2380,7 @@ cdef class TreeNode(object):
 
         def _resolve(node):
             if len(node.children) > 2:
-                children = list(node.children)
-                node.children = []
+                children = list(node.remove_children())
                 next_node = root = node
                 for i in range(len(children)-2):
                     next_node = next_node.add_child()

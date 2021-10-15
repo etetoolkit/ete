@@ -947,11 +947,12 @@ class SeqMotifFace(Face):
                 yield draw_line(p1, p2, style={'stroke-width': 0.5, 'stroke': fg})
 
             # Rectangle
-            elif shape in ('[]', '()'):
+            elif shape == '[]':
                 yield [ "pixi-block", box ]
-                # if shape == '()':
-                    # style['rounded'] = 1;
-                # yield draw_rect(box, '', style=style)
+
+            elif shape == '()':
+                style['rounded'] = 1;
+                yield draw_rect(box, '', style=style)
 
             # Rhombus
             elif shape == '<>':
