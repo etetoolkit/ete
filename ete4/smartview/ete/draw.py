@@ -47,7 +47,7 @@ class Drawer:
 
     COLLAPSE_SIZE = 6  # anything that has less pixels will be outlined
 
-    MIN_SIZE = -1  # anything that has less pixels will not be drawn
+    MIN_SIZE = 1  # anything that has less pixels will not be drawn
 
     TYPE = 'base'  # can be 'rect' or 'circ' for working drawers
 
