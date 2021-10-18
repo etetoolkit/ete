@@ -57,7 +57,8 @@ from ete4.smartview.utils import InvalidUsage, get_random_string
 from ete4.smartview.ete import nexus, draw, gardening as gdn
 from ete4.smartview import get_layout_outline,\
         get_layout_leaf_name, get_layout_branch_length,\
-        get_layout_branch_support, get_layout_align_link
+        get_layout_branch_support, get_layout_align_link,\
+        get_layout_nleaves
 
 # call initialize() to fill these up
 app = None
@@ -608,7 +609,7 @@ def get_layouts(layouts=[]):
     # Get default layouts from their getters
     default_layouts = [ get_layout_outline(), get_layout_leaf_name(),
             get_layout_branch_length(), get_layout_branch_support(),
-            get_layout_align_link(), ]
+            get_layout_nleaves(), get_layout_align_link(), ]
 
     # Get layouts from TreeStyle
     ts_layouts = app.trees['default'].style.layout_fn
