@@ -138,13 +138,13 @@ class Drawer:
     def on_last_visit(self, point, it, graphics):
         "Update list of graphics to draw and return new position"
 
+        result_of = set( text for text,(results,_) in self.searches.items()
+                if it.node in results )
         if self.outline:
-            result_of = [text for text,(results,parents) in self.searches.items()
-                    if any(node in results or node in parents for node in self.collapsed)]
+            if all(child in self.collapsed for child in it.node.children):
+                result_of.update( text for text,(results,parents) in self.searches.items()
+                        if any(node in results or node in parents for node in self.collapsed) )
             graphics += self.get_outline()
-        else:
-            result_of = [text for text,(results,_) in self.searches.items()
-                    if it.node in results ]
 
         x_after, y_after = point
         dx, dy = self.content_size(it.node)
@@ -159,7 +159,7 @@ class Drawer:
 
         box = Box(x_before, y_before, ndx, dy)
         self.nodeboxes += self.draw_nodebox(it.node, it.node_id, box,
-                result_of, { 'fill': it.node.img_style.get('bgcolor') })
+                list(result_of), { 'fill': it.node.img_style.get('bgcolor') })
 
         return x_before, y_after
 
@@ -598,7 +598,7 @@ class DrawerRectFaces(DrawerRect):
                             bdx, bdy, bdy0, bdy1,
                             pos, row, n_row, n_col,
                             dx_before, dy_before)
-                if it_fits(box, pos) and face.fits() or face.always_drawn:
+                if (it_fits(box, pos) and face.fits()) or face.always_drawn:
                     yield from face.draw(self)
 
         def draw_faces_at_pos(node, pos):
@@ -705,7 +705,7 @@ class DrawerCircFaces(DrawerCirc):
                         bdr, bda, bda0, bda1,
                         pos, row, n_row, n_col,
                         dr_before, da_before)
-                if it_fits(box, pos) and face.fits() or face.always_drawn:
+                if (it_fits(box, pos) and face.fits()) or face.always_drawn:
                     yield from face.draw(self)
 
         def draw_faces_at_pos(node, pos):

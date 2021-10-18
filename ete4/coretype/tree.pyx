@@ -173,13 +173,11 @@ cdef class TreeNode(object):
 
     def _get_children(self):
         return self._children
-
     def _set_children(self, children):
         if not hasattr(children, '__iter__'):
             raise TreeError(f'Incorrect children type: {type(children)}. Children should to be iterable')
-        for child in children:
-            if type(child) != type(self):
-                raise TreeError(f'Incorrect child type: {type(child)}')
+        self._children = []
+        self.add_children(children)
 
 
     def _get_style(self):

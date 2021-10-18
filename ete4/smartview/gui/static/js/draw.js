@@ -33,6 +33,7 @@ async function draw_tree() {
     
     const layouts = JSON.stringify(Object.keys(view.layouts)
             .filter(l => view.layouts[l] === true));
+    console.log(layouts)
 
     const params_rect = {  // parameters we have to pass to the drawer
         "drawer": view.drawer.name, "min_size": view.min_size,
