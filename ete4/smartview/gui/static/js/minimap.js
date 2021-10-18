@@ -16,10 +16,7 @@ async function draw_minimap() {
 
     adjust_size_and_zoom();
     
-    const outline = JSON.stringify(["outline"]);
-    console.log(outline)
-
-    let qs = `zx=${view.minimap.zoom.x}&zy=${view.minimap.zoom.y}&layouts=${outline}`;
+    let qs = `zx=${view.minimap.zoom.x}&zy=${view.minimap.zoom.y}`;
     if (view.drawer.type === "rect")
         qs += "&drawer=Rect";
     else

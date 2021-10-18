@@ -47,7 +47,7 @@ class Drawer:
 
     COLLAPSE_SIZE = 6  # anything that has less pixels will be outlined
 
-    MIN_SIZE = 1  # anything that has less pixels will not be drawn
+    MIN_SIZE = -1  # anything that has less pixels will not be drawn
 
     TYPE = 'base'  # can be 'rect' or 'circ' for working drawers
 
@@ -386,6 +386,14 @@ class DrawerRect(Drawer):
         yield draw_nodebox(box, node.name, node.props,
                 node_id, result_of, style)
 
+    def draw_collapsed(self, collapsed_node):
+        # Draw line to furthest leaf under collapsed node
+        x, y, dx_min, dx_max, dy = self.outline
+
+        p1 = (x, y + dy / 2)
+        p2 = (x + dx_max, y + dy / 2)
+
+        yield draw_line(p1, p2, 'lengthline')
 
 
 class DrawerCirc(Drawer):
@@ -478,6 +486,15 @@ class DrawerCirc(Drawer):
         if a1 < a2:
             yield draw_nodebox(Box(r, a1, dr, a2 - a1),
                        node.name, node.props, node_id, result_of, style)
+
+    def draw_collapsed(self, collapsed_node):
+        # Draw line to furthest leaf under collapsed node
+        r, a, _, dr_max, da = self.outline
+
+        p1 = (r, a + da / 2)
+        p2 = (r + dr_max, a + da / 2)
+
+        yield draw_line(cartesian(p1), cartesian(p2), 'lengthline')
 
 
 def clip_angles(a1, a2):
@@ -839,12 +856,13 @@ def draw_outline(sbox, style=None):
 
 def draw_line(p1, p2, line_type='', parent_of=None, style=None):
     types = ['solid', 'dotted', 'dashed']
-    if style and style.get('type'):
+    style = style or {}
+    if style.get('type'):
         style['type'] = types[int(style['type'])]
     else:
         style['type'] = types[0]
 
-    return ['line', p1, p2, line_type, parent_of or [], style or {}]
+    return ['line', p1, p2, line_type, parent_of or [], style]
 
 def draw_arc(p1, p2, large=False, arc_type='', style=None):
     return ['arc', p1, p2, int(large), arc_type, style or {}]
