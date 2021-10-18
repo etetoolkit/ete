@@ -387,7 +387,7 @@ class DrawerRect(Drawer):
                 node_id, result_of, style)
 
     def draw_collapsed(self, collapsed_node):
-        # Draw line to furthest leaf under collapsed node
+        # Draw line to farthest leaf under collapsed node
         x, y, dx_min, dx_max, dy = self.outline
 
         p1 = (x, y + dy / 2)
@@ -488,7 +488,7 @@ class DrawerCirc(Drawer):
                        node.name, node.props, node_id, result_of, style)
 
     def draw_collapsed(self, collapsed_node):
-        # Draw line to furthest leaf under collapsed node
+        # Draw line to farthest leaf under collapsed node
         r, a, _, dr_max, da = self.outline
 
         p1 = (r, a + da / 2)
