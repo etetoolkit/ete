@@ -138,13 +138,13 @@ class Drawer:
     def on_last_visit(self, point, it, graphics):
         "Update list of graphics to draw and return new position"
 
+        result_of = set( text for text,(results,_) in self.searches.items()
+                if it.node in results )
         if self.outline:
-            result_of = [text for text,(results,parents) in self.searches.items()
-                    if any(node in results or node in parents for node in self.collapsed)]
+            if all(child in self.collapsed for child in it.node.children):
+                result_of.update( text for text,(results,parents) in self.searches.items()
+                        if any(node in results or node in parents for node in self.collapsed) )
             graphics += self.get_outline()
-        else:
-            result_of = [text for text,(results,_) in self.searches.items()
-                    if it.node in results ]
 
         x_after, y_after = point
         dx, dy = self.content_size(it.node)
@@ -159,7 +159,7 @@ class Drawer:
 
         box = Box(x_before, y_before, ndx, dy)
         self.nodeboxes += self.draw_nodebox(it.node, it.node_id, box,
-                result_of, { 'fill': it.node.img_style.get('bgcolor') })
+                list(result_of), { 'fill': it.node.img_style.get('bgcolor') })
 
         return x_before, y_after
 
@@ -386,6 +386,14 @@ class DrawerRect(Drawer):
         yield draw_nodebox(box, node.name, node.props,
                 node_id, result_of, style)
 
+    def draw_collapsed(self, collapsed_node):
+        # Draw line to farthest leaf under collapsed node
+        x, y, dx_min, dx_max, dy = self.outline
+
+        p1 = (x, y + dy / 2)
+        p2 = (x + dx_max, y + dy / 2)
+
+        yield draw_line(p1, p2, 'lengthline')
 
 
 class DrawerCirc(Drawer):
@@ -478,6 +486,15 @@ class DrawerCirc(Drawer):
         if a1 < a2:
             yield draw_nodebox(Box(r, a1, dr, a2 - a1),
                        node.name, node.props, node_id, result_of, style)
+
+    def draw_collapsed(self, collapsed_node):
+        # Draw line to farthest leaf under collapsed node
+        r, a, _, dr_max, da = self.outline
+
+        p1 = (r, a + da / 2)
+        p2 = (r + dr_max, a + da / 2)
+
+        yield draw_line(cartesian(p1), cartesian(p2), 'lengthline')
 
 
 def clip_angles(a1, a2):
@@ -598,7 +615,7 @@ class DrawerRectFaces(DrawerRect):
                             bdx, bdy, bdy0, bdy1,
                             pos, row, n_row, n_col,
                             dx_before, dy_before)
-                if it_fits(box, pos) and face.fits() or face.always_drawn:
+                if (it_fits(box, pos) and face.fits()) or face.always_drawn:
                     yield from face.draw(self)
 
         def draw_faces_at_pos(node, pos):
@@ -705,7 +722,7 @@ class DrawerCircFaces(DrawerCirc):
                         bdr, bda, bda0, bda1,
                         pos, row, n_row, n_col,
                         dr_before, da_before)
-                if it_fits(box, pos) and face.fits() or face.always_drawn:
+                if (it_fits(box, pos) and face.fits()) or face.always_drawn:
                     yield from face.draw(self)
 
         def draw_faces_at_pos(node, pos):
@@ -839,12 +856,13 @@ def draw_outline(sbox, style=None):
 
 def draw_line(p1, p2, line_type='', parent_of=None, style=None):
     types = ['solid', 'dotted', 'dashed']
-    if style and style.get('type'):
+    style = style or {}
+    if style.get('type'):
         style['type'] = types[int(style['type'])]
     else:
         style['type'] = types[0]
 
-    return ['line', p1, p2, line_type, parent_of or [], style or {}]
+    return ['line', p1, p2, line_type, parent_of or [], style]
 
 def draw_arc(p1, p2, large=False, arc_type='', style=None):
     return ['arc', p1, p2, int(large), arc_type, style or {}]
