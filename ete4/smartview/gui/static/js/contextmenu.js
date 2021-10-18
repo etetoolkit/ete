@@ -74,6 +74,13 @@ function add_node_options(box, name, properties, node_id) {
     add_button("Collapse branch", () => collapse_node(name, node_id),
                "Do not show nodes below the current one.",
                "compress", false);
+    
+    add_button("Select node", () => {
+                    console.log(node_id)
+                    console.log(parent)
+               },
+               "Do not show nodes below the current one.",
+               "compress", false);
 
     if (view.allow_modifications)
         add_node_modifying_options(box, name, properties, node_id);
