@@ -8,7 +8,11 @@ export { select_node };
 // Select node with the given name and return true if things went well.
 function select_node(node_id, name) {
 
-    parent.postMessage({ selected: [node_id] }, "*");
+    parent.postMessage({ 
+        selected: [node_id],
+        name: name,
+        // Maybe also provide the color used to tag it...
+    }, "*");
 
     if (name in view.selected) {
         view.selected[name].nodes.push(node_id);
