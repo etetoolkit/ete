@@ -42,6 +42,8 @@ function init_events() {
         // TODO: we should register allowed origins
         //if (!allowedOrigins.includes(event.origin))
             //return
+        console.log('hi')
+
         const name = event.data.name;
         const nodes = event.data.nodes;
         const selected = event.data.selected;
