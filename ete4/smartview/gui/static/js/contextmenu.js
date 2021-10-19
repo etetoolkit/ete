@@ -43,10 +43,7 @@ function on_box_contextmenu(event, box, name, properties, node_id=[]) {
 }
 
 function select_node(node_id) {
-    if (parent.selectNode)
-        parent.selectNode();
-    console.log(document)
-    console.log(node_id)
+    parent.postMessage({ selected: node_id }, "*");
 }
 
 function add_node_options(box, name, properties, node_id) {
