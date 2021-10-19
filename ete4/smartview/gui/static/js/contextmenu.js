@@ -78,7 +78,7 @@ function add_node_options(box, name, properties, node_id) {
     add_button("Select node", () => {
         Swal.fire({
             input: "text",
-            inputValue: name || node_id,
+            inputValue: name || node_id.join(","),
             preConfirm: name => select_node(node_id, name)
         });
     }, "Select current node...", "hand-pointer", false);
