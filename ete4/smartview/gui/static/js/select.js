@@ -16,7 +16,7 @@ function select_node(node_id, name) {
         return true;
     }
 
-    const folder = menus.selection.addFolder({ title: name, expanded: false });
+    const folder = menus.selected.addFolder({ title: name, expanded: false });
     const colors = ["#FF0", "#F0F", "#0FF", "#F00", "#0F0", "#00F"].reverse();
     const nselected = Object.keys(view.selected).length;
     view.selected[name] = {
