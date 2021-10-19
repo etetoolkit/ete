@@ -8,6 +8,7 @@ import { download_newick } from "./download.js";
 import { zoom_into_box } from "./zoom.js";
 import { tag_node } from "./tag.js";
 import { collapse_node } from "./collapse.js";
+import { select_node } from "./select.js";
 
 export { on_box_contextmenu };
 
@@ -44,6 +45,10 @@ function on_box_contextmenu(event, box, name, properties, node_id=[]) {
 
 function select_node(node_id) {
     parent.postMessage({ selected: node_id }, "*");
+}
+
+function unselect_node(node_id) {
+    parent.postMessage({ unselected: node_id }, "*");
 }
 
 function add_node_options(box, name, properties, node_id) {

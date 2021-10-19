@@ -119,6 +119,10 @@ class Trees(Resource):
             if app.memory_only:
                 raise InvalidUsage(f'invalid path {rule} in memory_only mode', 404)
             return get_tree(tree_id)
+        elif rule == '/trees/<string:tree_id>/info':
+            node = gdn.get_node(t, subtree)
+            print(node.props)
+            return node.props
         elif rule == '/trees/<string:tree_id>/name':
             load_tree(tree_id)
             return app.trees[int(tree_id)].name
@@ -149,7 +153,6 @@ class Trees(Resource):
                     tleaves += 1
             return {'tnodes': tnodes, 'tleaves': tleaves}
         elif rule == '/trees/<string:tree_id>/ultrametric':
-            # Not for now... but it may be tree specific
             return app.trees[int(tid)].style.ultrametric
 
     def post(self):
