@@ -137,6 +137,7 @@ const view = {
 
 const menus = {  // will contain the menus on the top
     pane: undefined, // main pane containing different tabs
+    selected: undefined,
     tags: undefined,
     searches: undefined,
     collapsed: undefined,
