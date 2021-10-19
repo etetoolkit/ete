@@ -43,13 +43,6 @@ function on_box_contextmenu(event, box, name, properties, node_id=[]) {
     div_contextmenu.style.visibility = "visible";
 }
 
-function select_node(node_id) {
-    parent.postMessage({ selected: node_id }, "*");
-}
-
-function unselect_node(node_id) {
-    parent.postMessage({ unselected: node_id }, "*");
-}
 
 function add_node_options(box, name, properties, node_id) {
     add_button("Go to subtree at branch", () => {
