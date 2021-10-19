@@ -119,7 +119,7 @@ class Trees(Resource):
             if app.memory_only:
                 raise InvalidUsage(f'invalid path {rule} in memory_only mode', 404)
             return get_tree(tree_id)
-        elif rule == '/trees/<string:tree_id>/info':
+        elif rule == '/trees/<string:tree_id>/nodeinfo':
             node = gdn.get_node(t, subtree)
             print(node.props)
             return node.props
@@ -872,6 +872,7 @@ def add_resources(api):
     add(Trees,
         '/trees',
         '/trees/<string:tree_id>',
+        '/trees/<string:tree_id>/nodeinfo',
         '/trees/<string:tree_id>/name',
         '/trees/<string:tree_id>/newick',
         '/trees/<string:tree_id>/draw',
