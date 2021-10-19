@@ -42,10 +42,8 @@ function init_events() {
         // TODO: we should register allowed origins
         //if (!allowedOrigins.includes(event.origin))
             //return
-        console.log('hi')
 
         const name = event.data.name;
-        const nodes = event.data.nodes;
         const selected = event.data.selected;
 
         // We so far only allow to unselect
@@ -53,10 +51,8 @@ function init_events() {
         if (selected || !view.selected[name])
             return
 
-        if (nodes.length === 0)
-            delete view.selected[name];
-        else
-            view.selected[name].nodes.filter(node => !nodes.includes(node));
+        console.log("removing")
+        view.selected[name].remove();
 
     })
 }
