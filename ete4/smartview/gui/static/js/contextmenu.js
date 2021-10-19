@@ -43,8 +43,8 @@ function on_box_contextmenu(event, box, name, properties, node_id=[]) {
 }
 
 function select_node(node_id) {
-    //if (parent.selectNode)
-        //parent.selectNode();
+    if (parent.selectNode)
+        parent.selectNode();
     console.log(document)
     console.log(node_id)
 }
