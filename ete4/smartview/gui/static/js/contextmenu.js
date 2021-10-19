@@ -43,7 +43,7 @@ function on_box_contextmenu(event, box, name, properties, node_id=[]) {
 }
 
 function select_node(node_id) {
-    console.log(parent.document)
+    console.log(parent)
     console.log(document)
     console.log(node_id)
 }
