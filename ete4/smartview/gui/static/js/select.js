@@ -7,9 +7,10 @@ export { select_node };
 
 // Select node with the given name and return true if things went well.
 function select_node(node_id, name) {
-
+    // Notify parent window
     parent.postMessage({ 
-        selected: [node_id],
+        selected: true,
+        nodes: [node_id],
         name: name,
         // Maybe also provide the color used to tag it...
     }, "*");
@@ -33,7 +34,12 @@ function select_node(node_id, name) {
         view.selected[name].opacity = view.node.box.opacity;
         view.selected[name].color = view.node.box.color;
         colorize_selection(name);
-        parent.postMessage({ unselected: view.selected[name].nodes }, "*");
+        // Notify parent window
+        parent.postMessage({ 
+            selected: false,
+            nodes: view.selected[name].nodes,
+            name: name,
+        }, "*");
         delete view.selected[name];
         folder.dispose();
     }
