@@ -1340,7 +1340,7 @@ cdef class TreeNode(object):
 
     def set_outgroup(self, outgroup, branch_properties=None):
         """
-        Sets a descendant node as the outgroup of a tree.  This function
+        Returns a descendant node as the outgroup of a tree.  This function
         can be used to root a tree or even an internal node.
 
         :outgroup: a node instance within the same tree
@@ -1348,7 +1348,7 @@ cdef class TreeNode(object):
         :branch_properties: list of branch properties (other than "support").
         """
         from ete4.smartview.ete.gardening import root_at
-        root_at(outgroup, branch_properties)
+        return root_at(outgroup, branch_properties)
 
     def unroot(self, mode='legacy'):
         """

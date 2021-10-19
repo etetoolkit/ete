@@ -23459,7 +23459,7 @@ static PyObject *__pyx_pf_4ete4_8coretype_4tree_8TreeNode_169set_outgroup(CYTHON
  *         :branch_properties: list of branch properties (other than "support").
  *         """
  *         from ete4.smartview.ete.gardening import root_at             # <<<<<<<<<<<<<<
- *         root_at(outgroup, branch_properties)
+ *         return root_at(outgroup, branch_properties)
  * 
  */
   __pyx_t_1 = PyList_New(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 1350, __pyx_L1_error)
@@ -23480,10 +23480,11 @@ static PyObject *__pyx_pf_4ete4_8coretype_4tree_8TreeNode_169set_outgroup(CYTHON
   /* "ete4/coretype/tree.pyx":1351
  *         """
  *         from ete4.smartview.ete.gardening import root_at
- *         root_at(outgroup, branch_properties)             # <<<<<<<<<<<<<<
+ *         return root_at(outgroup, branch_properties)             # <<<<<<<<<<<<<<
  * 
  *     def unroot(self, mode='legacy'):
  */
+  __Pyx_XDECREF(__pyx_r);
   __Pyx_INCREF(__pyx_v_root_at);
   __pyx_t_1 = __pyx_v_root_at; __pyx_t_3 = NULL;
   __pyx_t_4 = 0;
@@ -23530,7 +23531,9 @@ static PyObject *__pyx_pf_4ete4_8coretype_4tree_8TreeNode_169set_outgroup(CYTHON
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_r = __pyx_t_2;
+  __pyx_t_2 = 0;
+  goto __pyx_L0;
 
   /* "ete4/coretype/tree.pyx":1341
  *             n.name = tname
@@ -23541,8 +23544,6 @@ static PyObject *__pyx_pf_4ete4_8coretype_4tree_8TreeNode_169set_outgroup(CYTHON
  */
 
   /* function exit code */
-  __pyx_r = Py_None; __Pyx_INCREF(Py_None);
-  goto __pyx_L0;
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_2);
@@ -23558,7 +23559,7 @@ static PyObject *__pyx_pf_4ete4_8coretype_4tree_8TreeNode_169set_outgroup(CYTHON
 }
 
 /* "ete4/coretype/tree.pyx":1353
- *         root_at(outgroup, branch_properties)
+ *         return root_at(outgroup, branch_properties)
  * 
  *     def unroot(self, mode='legacy'):             # <<<<<<<<<<<<<<
  *         """
@@ -23988,7 +23989,7 @@ static PyObject *__pyx_pf_4ete4_8coretype_4tree_8TreeNode_171unroot(struct __pyx
   }
 
   /* "ete4/coretype/tree.pyx":1353
- *         root_at(outgroup, branch_properties)
+ *         return root_at(outgroup, branch_properties)
  * 
  *     def unroot(self, mode='legacy'):             # <<<<<<<<<<<<<<
  *         """

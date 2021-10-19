@@ -51,7 +51,7 @@ def split_branch(node, bprops=None):
         node.dist = intermediate.dist = node.dist / 2
 
     if 'support' in node.props:  # copy support if it has it
-        intermediate.props['support'] = node.props['support']
+        intermediate.support = node.support
 
     for prop in (bprops or []):  # and copy other branch props if any
         if prop in node.props:
@@ -122,8 +122,10 @@ def join_branch(node):
 
     child = node.children[0]
 
-    if 'support' in node.props or 'support' in child.props:
-        assert node.props.get('support') == child.props.get('support')
+    if 'support' in node.props and 'support' in child.props:
+        assert node.support == child.support, f'{node.support} != {child.support}'
+    child.support = child.support or node.support
+
 
     if node.dist > 0:
         child.dist += node.dist  # restore total dist
