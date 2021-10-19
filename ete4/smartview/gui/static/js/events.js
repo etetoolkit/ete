@@ -33,6 +33,30 @@ function init_events() {
     document.addEventListener("touchmove", on_touchmove);
 
     document.addEventListener("touchend", on_touchend);
+
+    if (self === top)  // ETE is not within an iframe
+        return
+
+    // Selection when placing ETE in iframe
+    window.addEventListener("message", event => {
+        // TODO: we should register allowed origins
+        //if (!allowedOrigins.includes(event.origin))
+            //return
+        const name = event.data.name;
+        const nodes = event.data.nodes;
+        const selected = event.data.selected;
+
+        // We so far only allow to unselect
+        // If it was not selected to begin with, ignore message
+        if (selected || !view.selected[name])
+            return
+
+        if (nodes.length === 0)
+            delete view.selected[name];
+        else
+            view.selected[name].nodes.filter(node => !nodes.includes(node));
+
+    })
 }
 
 
