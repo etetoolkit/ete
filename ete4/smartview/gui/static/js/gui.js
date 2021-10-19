@@ -63,6 +63,9 @@ const view = {
     // tags
     tags: {},  // will contain the tagged nodes
 
+    // selected
+    selected: {},  // will contain the selected nodes
+
     // info
     nnodes: 0,  // number of visible nodeboxes
     tnodes: 0,  // number of total nodeboxes

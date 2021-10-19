@@ -121,7 +121,6 @@ class Trees(Resource):
             return get_tree(tree_id)
         elif rule == '/trees/<string:tree_id>/nodeinfo':
             node = gdn.get_node(app.trees[int(tid)].tree, subtree)
-            print(node.props)
             return node.props
         elif rule == '/trees/<string:tree_id>/name':
             load_tree(tree_id)

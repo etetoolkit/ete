@@ -20,7 +20,7 @@ function init_menus(trees) {
     ]});
     create_menu_main(tab.pages[0], trees);
     create_menu_representation(tab.pages[1]);
-    create_menu_tags_searches(tab.pages[2]);
+    create_menu_selection(tab.pages[2]);
 }
 
 
@@ -79,8 +79,9 @@ function create_menu_representation(menu) {
 }
 
 
-function create_menu_tags_searches(menu) {
+function create_menu_selection(menu) {
     // filled dynamically in collapsed.js and tag.js
+    menus.selection = menu.addFolder({ title: "Selected" });
     menus.collapsed = menu.addFolder({ title: "Collapsed" }); 
     menus.tags = menu.addFolder({ title: "Tags" });
 
