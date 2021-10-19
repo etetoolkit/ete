@@ -120,7 +120,7 @@ class Trees(Resource):
                 raise InvalidUsage(f'invalid path {rule} in memory_only mode', 404)
             return get_tree(tree_id)
         elif rule == '/trees/<string:tree_id>/nodeinfo':
-            node = gdn.get_node(app.trees[int(tid)], subtree)
+            node = gdn.get_node(app.trees[int(tid)].tree, subtree)
             print(node.props)
             return node.props
         elif rule == '/trees/<string:tree_id>/name':
