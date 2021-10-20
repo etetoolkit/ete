@@ -15,7 +15,7 @@ async function draw_minimap() {
     }
 
     adjust_size_and_zoom();
-
+    
     let qs = `zx=${view.minimap.zoom.x}&zy=${view.minimap.zoom.y}`;
     if (view.drawer.type === "rect")
         qs += "&drawer=Rect";
