@@ -3,9 +3,8 @@
 import { view, get_tid, on_box_click, on_box_wheel } from "./gui.js";
 import { update_minimap_visible_rect } from "./minimap.js";
 import { colorize_searches, get_search_class } from "./search.js";
+import { colorize_selections, get_selection_class } from "./search.js";
 import { on_box_contextmenu } from "./contextmenu.js";
-import { colorize_tags } from "./tag.js";
-import { colorize_labels } from "./label.js";
 import { api } from "./api.js";
 import { draw_pixi } from "./pixi.js";
 
@@ -59,9 +58,8 @@ async function draw_tree() {
         clearTimeout(align_timeout);
 
         view.nnodes = div_tree.getElementsByClassName("node").length;
-        colorize_labels();
-        colorize_tags();
         colorize_searches();
+        colorize_selections();
 
         const drawer_info = await api(`/drawers/${view.drawer.name}/${get_tid()}`);
         view.drawer.npanels = drawer_info.npanels; // type has already been set
@@ -213,10 +211,15 @@ function create_item(item, tl, zoom) {
 
         const b = create_box(box, tl, zx, zy, "", style);
 
-        b.id = "node-" + node_id.join("_");  // used in tags
+        b.id = "node-" + node_id.join("_");
 
         b.classList.add("node");
-        result_of.forEach(t => b.classList.add(get_search_class(t, "results")));
+        result_of.forEach(t => {
+            const cnode = Object.keys(view.searches).includes(t) 
+                ? get_search_class(t, "results") 
+                : get_selection_class(t, "result");
+            b.classList.add(cnode);
+        });
 
         style_nodebox(b, style)
 
@@ -508,7 +511,9 @@ function create_line(p1, p2, tl, zx, zy, type="", parent_of=[]) {
           [x2, y2] = [zx * (p2[0] - tl.x), zy * (p2[1] - tl.y)];
 
     const classes = "line " + type + " " +
-        parent_of.map(text => get_search_class(text, "parents")).join(" ");
+        parent_of.map(text => Object.keys(view.searches).includes(text)
+            ? get_search_class(text, "parents")
+            : get_selection_class(text, "parents")).join(" ");
 
     return create_svg_element("line", {
         "class": classes,

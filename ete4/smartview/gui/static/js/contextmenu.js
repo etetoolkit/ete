@@ -75,13 +75,20 @@ function add_node_options(box, name, properties, node_id) {
     add_button("Collapse branch", () => collapse_node(name, node_id),
                "Do not show nodes below the current one.",
                "compress", false);
-    add_button("Select node", () => {
-        Swal.fire({
-            input: "text",
-            inputValue: name || node_id.join(","),
-            preConfirm: name => select_node(node_id, name)
-        });
-    }, "Select current node...", "hand-pointer", false);
+
+    if (Object.keys(view.selected).includes(node_id))
+        add_button("Unselect node", view.selected[node_id].remove,
+                   "Remove current node from selection.",
+                   "trash-alt", false);
+    else
+        add_button("Select node", () => {
+            Swal.fire({
+                input: "text",
+                text: "Enter name to describe selection",
+                inputValue: name || node_id.join(","),
+                preConfirm: name => select_node(node_id, name)
+            });
+        }, "Select current node.", "hand-pointer", false);
 
     if (view.allow_modifications)
         add_node_modifying_options(box, name, properties, node_id);

@@ -2,68 +2,121 @@
 
 import { view, menus } from "./gui.js";
 
-export { select_node };
+export { select_node, colorize_selections, get_selection_class, remove_selections };
 
 
 // Select node with the given name and return true if things went well.
 function select_node(node_id, name) {
-    // Notify parent window
-    parent.postMessage({ 
-        selected: true,
-        nodes: [node_id],
-        name: name,
-        // Maybe also provide the color used to tag it...
-    }, "*");
+    try {
+        const qs = `text=${encodeURIComponent(text)}`;
+        const res = await api(`/trees/${get_tid()}/select?${qs}`);
 
-    if (name in view.selected) {
-        view.selected[name].nodes.push(node_id);
-        colorize_selection(name);
-        return true;
+        if (res.message !== "ok")
+            throw new Error("Something went wrong.");
+
+        if (self !== top)  // notify parent window
+            parent.postMessage({ 
+                selected: true,
+                node: node_id,
+                name: name,
+                // Maybe also provide the color used to tag it...
+            }, "*");
+    
+        // Add to selected dict
+        const colors = ["#FF0", "#F0F", "#0FF", "#F00", "#0F0", "#00F"].reverse();
+        const nselected = Object.keys(view.selected).length;
+        view.selected[node_id] = {
+            result: { name: name,
+                      opacity: 0.4,
+                      color: colors[nselected % colors.length] },
+            parents: { n: res.nparents,
+                       color: "#000",
+                       width: 2.5 },
+        };
+
+        add_selected_to_menu(node_id);
+
+        draw_tree();
     }
-
-    const folder = menus.selected.addFolder({ title: name, expanded: false });
-    const colors = ["#FF0", "#F0F", "#0FF", "#F00", "#0F0", "#00F"].reverse();
-    const nselected = Object.keys(view.selected).length;
-    view.selected[name] = {
-        nodes: [node_id],
-        opacity: 0.4,
-        color: colors[nselected % colors.length],
-    };
-
-    view.selected[name].remove = function() {
-        view.selected[name].opacity = view.node.box.opacity;
-        view.selected[name].color = view.node.box.color;
-        colorize_selection(name);
-        // Notify parent window
-        parent.postMessage({ 
-            selected: false,
-            nodes: view.selected[name].nodes,
-            name: name,
-        }, "*");
-        delete view.selected[name];
-        folder.dispose();
+    catch (exception) {
+        Swal.fire({
+            position: "bottom-start",
+            showConfirmButton: false,
+            html: exception,
+            icon: "error",
+        });
     }
-
-    folder.addInput(view.selected[name], "opacity", { min: 0, max: 1, step: 0.1 })
-        .on("change", () => colorize_selection(name));
-    folder.addInput(view.selected[name], "color", { view: "color" })
-        .on("change", () => colorize_selection(name));
-
-    folder.addButton({ title: "remove" }).on("click", view.selected[name].remove);
-
-    colorize_selection(name);
 
     return true;
 
 }
 
-function colorize_selection(name) {
-    const selection = view.selected[name];
-    selection.nodes.forEach(node_id => {
-        const node = document.getElementById("node-" + node_id.join("_"));
-        if (node) {
-            node.style.opacity = selection.opacity;
-            node.style.fill = selection.color;
-        }
+
+function add_selected_to_menu(node_id) {
+    const selected = view.selected[node_id];
+    const name = selected.result.name;
+
+    const folder = menus.selected.addFolder({
+        title: name,
+        expanded: false 
     });
+
+    selected.remove = function() {
+        if (self !== top)  // notify parent window
+            parent.postMessage({
+                selected: false,
+                node: node_id,
+                name: name,
+            }, "*");
+        delete view.selected[name];
+        folder.dispose();
+        draw_tree();
+    }
+
+    const folder_selected = folder.addFolder({ title: "selected node" });
+    folder_selected.addInput(selected.result, "opacity", 
+        { min: 0, max: 1, step: 0.1 })
+        .on("change", () => colorize_selection(node_id));
+    folder_selected.addInput(selected.results, "color", { view: "color" })
+        .on("change", () => colorize_selection(node_id));
+
+    const folder_parents = folder.addFolder({ title: `parents (${selected.parents.n})` });
+    folder_parents.addInput(selected.parents, "color", { view: "color" })
+        .on("change", () => colorize_selection(node_id));
+    folder_parents.addInput(selected.parents, "width", { min: 0.1, max: 10 })
+        .on("change", () => colorize_selected(node_id));
+
+    folder.addButton({ title: "remove" }).on("click", selected.remove);
+}
+
+
+// Return a class name related to the results of selecting nodes.
+function get_selection_class(text, type="result") {
+    return "selected_" + type + "_" + text.replace(/[^A-Za-z0-9_-]/g, '');
+}
+
+
+function colorize_selection(node_id) {
+    const selected = view.selected[node_id];
+
+    const cresult = get_selection_class(node_id, "result");
+    const result = div_tree.getElementByClassName(cresult);
+    result.style.opacity = selected.result.opacity;
+    result.style.fill = selected.result.color;
+
+    const cparents = get_selection_class(node_id, "parents");
+    Array.from(div_tree.getElementsByClassName(cparents)).forEach(e => {
+        e.style.stroke = selected.parents.color;
+        e.style.strokeWidth = selected.parents.width;
+    });
+}
+
+
+function colorize_selections() {
+    Object.keys(view.selected).forEach(s => colorize_selection(s));
+}
+
+
+function remove_selections() {
+    Object.keys(view.selected).forEach(s => view.selected[s].remove());
 }

@@ -40,20 +40,18 @@ function init_events() {
     // Selection when placing ETE in iframe
     window.addEventListener("message", event => {
         // TODO: we should register allowed origins
-        //if (!allowedOrigins.includes(event.origin))
+        //if (!wiew.allowed_origins.includes(event.origin))
             //return
 
-        const name = event.data.name;
+        const node = event.data.node;
         const selected = event.data.selected;
 
         // We so far only allow to unselect
         // If it was not selected to begin with, ignore message
-        if (selected || !view.selected[name])
+        if (selected || !view.selected[node])
             return
 
-        console.log("removing")
-        view.selected[name].remove();
-
+        view.selected[node].remove();
     })
 }
 

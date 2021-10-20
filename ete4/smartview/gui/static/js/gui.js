@@ -5,10 +5,10 @@ import { init_events } from "./events.js";
 import { update } from "./draw.js";
 import { download_newick, download_svg } from "./download.js";
 import { search, remove_searches } from "./search.js";
+import { remove_selections } from "./select.js";
 import { zoom_into_box, zoom_around, zoom_towards_box } from "./zoom.js";
 import { draw_minimap, update_minimap_visible_rect } from "./minimap.js";
 import { api, api_put, escape_html } from "./api.js";
-import { remove_tags } from "./tag.js";
 import { remove_collapsed } from "./collapse.js";
 import { label_expression, label_property } from "./label.js";
 
@@ -231,8 +231,8 @@ async function on_tree_change() {
 
     div_tree.style.cursor = "wait";
     remove_searches();
+    remove_selections();
     remove_collapsed();
-    remove_tags();
     view.tree_size = await api(`/trees/${get_tid()}/size`);
     //store_node_properties();
     reset_node_count();
