@@ -3,7 +3,7 @@
 import { view, get_tid, on_box_click, on_box_wheel } from "./gui.js";
 import { update_minimap_visible_rect } from "./minimap.js";
 import { colorize_searches, get_search_class } from "./search.js";
-import { colorize_selections, get_selection_class } from "./search.js";
+import { colorize_selections, get_selection_class } from "./select.js";
 import { on_box_contextmenu } from "./contextmenu.js";
 import { api } from "./api.js";
 import { draw_pixi } from "./pixi.js";
