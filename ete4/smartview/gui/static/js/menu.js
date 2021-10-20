@@ -80,10 +80,9 @@ function create_menu_representation(menu) {
 
 
 function create_menu_selection(menu) {
-    // filled dynamically in collapsed.js and tag.js
-    menus.selected = menu.addFolder({ title: "Selected" });
+    // filled dynamically in collapsed.js and select.js
     menus.collapsed = menu.addFolder({ title: "Collapsed" }); 
-    menus.tags = menu.addFolder({ title: "Tags" });
+    menus.selected = menu.addFolder({ title: "Selected" });
 
     add_folder_searches(menu);
 }
