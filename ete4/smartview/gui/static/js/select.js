@@ -73,7 +73,7 @@ function add_selected_to_menu(node_id) {
                 node: node_id,
                 name: name,
             }, "*");
-        delete view.selected[name];
+        delete view.selected[node_id];
         folder.dispose();
         draw_tree();
     }
