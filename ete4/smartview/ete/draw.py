@@ -54,7 +54,7 @@ class Drawer:
     NPANELS = 1 # number of drawing panels (including the aligned ones)
 
     def __init__(self, tree, viewport=None, panel=0, zoom=(1, 1),
-                 limits=None, collapsed_ids=None, searches=None,
+                 limits=None, collapsed_ids=None, selected=None, searches=None,
                  tree_style=None):
         self.tree = tree
         self.viewport = Box(*viewport) if viewport else None
@@ -62,6 +62,7 @@ class Drawer:
         self.zoom = zoom
         self.xmin, self.xmax, self.ymin, self.ymax = limits or (0, 0, 0, 0)
         self.collapsed_ids = collapsed_ids or set()  # manually collapsed
+        self.selected = selected or {}  # looks like {node_id: (node, parents)}
         self.searches = searches or {}  # looks like {text: (results, parents)}
         self.tree_style = tree_style
         if not self.tree_style:
@@ -141,10 +142,14 @@ class Drawer:
         if self.outline:
             result_of = [text for text,(results,parents) in self.searches.items()
                     if any(node in results or node in parents for node in self.collapsed)]
+            result_of += [text for text,(result,parents) in self.selected.items()
+                    if any(node == result or node in parents for node in self.collapsed)]
             graphics += self.get_outline()
         else:
             result_of = [text for text,(results,_) in self.searches.items()
                     if it.node in results ]
+            result_of += [text for text,(result,_) in self.selected.items()
+                    if it.node == result ]
 
         x_after, y_after = point
         dx, dy = self.content_size(it.node)
@@ -218,6 +223,8 @@ class Drawer:
         "Yield the outline representation"
         result_of = [text for text,(results,parents) in self.searches.items()
             if any(node in results or node in parents for node in self.collapsed)]
+        result_of += [text for text,(result,parents) in self.selected.items()
+                if any(node == result or node in parents for node in self.collapsed)]
 
         graphics = []
 
@@ -394,10 +401,10 @@ class DrawerCirc(Drawer):
     TYPE = 'circ'
 
     def __init__(self, tree, viewport=None, panel=0, zoom=(1, 1),
-                 limits=None, collapsed_ids=None, searches=None,
+                 limits=None, collapsed_ids=None, selected=None, searches=None,
                  tree_style=None):
         super().__init__(tree, viewport, panel, zoom,
-                         limits, collapsed_ids, searches, tree_style)
+                         limits, collapsed_ids, selected, searches, tree_style)
 
         assert self.zoom[0] == self.zoom[1], 'zoom must be equal in x and y'
 
@@ -830,8 +837,9 @@ def draw_texts(box, texts, text_type):
 
 def draw_nodebox(box, name='', properties=None, 
         node_id=None, result_of=None, style=None):
+    properties = { k:v for k,v in (properties or {}).items() if not k.startswith('_') }
     return ['nodebox', box, name, 
-            properties or {}, node_id or [], 
+            properties, node_id or [], 
             result_of or [], style or {}]
 
 def draw_outline(sbox, style=None):

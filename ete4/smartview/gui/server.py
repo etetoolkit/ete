@@ -73,6 +73,7 @@ class AppTree:
     style: TreeStyle = None
     timer: float = None
     initialized: bool = False
+    selected: dict = None
     searches: dict = None
 
 # REST api.
@@ -128,6 +129,9 @@ class Trees(Resource):
         elif rule == '/trees/<string:tree_id>/newick':
             MAX_MB = 2
             return get_newick(tree_id, MAX_MB)
+        elif rule == '/trees/<string:tree_id>/select':
+            nparents = store_selection(tid, subtree)
+            return {'message': 'ok', 'nparents': nparents}
         elif rule == '/trees/<string:tree_id>/search':
             nresults, nparents = store_search(tree_id, request.args.copy())
             return {'message': 'ok', 'nresults': nresults, 'nparents': nparents}
@@ -374,10 +378,11 @@ def get_drawer(tree_id, args):
 
         update_ultrametric(args.get('ultrametric'), tid)
 
+        selected = tree.selected
         searches = tree.searches
         
         return drawer_class(load_tree(tree_id), viewport, panel, zoom,
-                    limits, collapsed_ids, searches, tree.style)
+                    limits, collapsed_ids, selected, searches, tree.style)
     except StopIteration:
         raise InvalidUsage(f'not a valid drawer: {drawer_name}')
     except (ValueError, AssertionError) as e:
@@ -421,6 +426,24 @@ def store_search(tree_id, args):
         raise
     except Exception as e:
         raise InvalidUsage(f'evaluating expression: {e}')
+
+
+def store_selection(tid, subtree):
+    "Store the result and parents of a selection and return number of parents"
+
+    app_tree = app.trees[int(tid)]
+    node = gdn.get_node(app_tree.tree, subtree)
+
+    parents = set()
+    parent = node.up
+    while parent and parent not in parents:
+        parents.add(parent)
+        parent = parent.up
+
+    subtree_string = ",".join([ str(i) for i in subtree ])
+    app_tree.selected[subtree_string] = (node, parents)
+
+    return len(parents)
 
 
 def get_search_function(text):
@@ -805,6 +828,7 @@ def initialize(tree=None, tree_style=None, memory_only=False):
         style=deepcopy(tree_style) or TreeStyle(),
         timer = time(),
         searches = {},
+        selected = {},
     ))
 
     db = sqlalchemy.create_engine('sqlite:///' + app.config['DATABASE'])
@@ -879,6 +903,7 @@ def add_resources(api):
         '/trees/<string:tree_id>/properties',
         '/trees/<string:tree_id>/nodecount',
         '/trees/<string:tree_id>/ultrametric',
+        '/trees/<string:tree_id>/select',
         '/trees/<string:tree_id>/search',
         '/trees/<string:tree_id>/sort',
         '/trees/<string:tree_id>/root_at',
