@@ -48,7 +48,6 @@ const view = {
     label_expression: () => label_expression(),
     label_property: () => label_property(),
     current_property: "name",  // pre-selected property in the add label menu
-    labels: {},  // will contain the labels created
     rmin: 0,
     angle: {min: -180, max: 180},
     align_bar: 80,  // % of the screen width where the aligned panel starts
@@ -104,17 +103,9 @@ const view = {
             pattern: "solid",
         },
     },
-    array: {padding: 0.0},
     font_sizes: {auto: true, fixed: 10, max: 15, scroller: {
         fixed: undefined, max: undefined
     }},
-
-    name: {  // this may go away if we can do names nicely with labels
-        color: "#00A",
-        font: "sans-serif",
-        max_size: 25,
-        padding: {left: 30, vertical: 0.20},
-    },
 
     // minimap
     minimap: {
@@ -259,30 +250,6 @@ async function on_drawer_change() {
     }
 
     update();
-}
-
-
-// Save the available node properties in view.node_properties and the drop-down
-// list of the menu that allows to label based on properties.
-async function store_node_properties() {
-    const properties_extra = await api(`/trees/${get_tid()}/properties`);
-
-    view.node_properties = ["name", "length"].concat(properties_extra);
-
-    const select = menus.representation
-        .__folders.labels.__folders.add.__folders.properties
-        .__controllers[0].__select;  // drop-down list
-
-    while (select.length > 0)  // remove properties that may be in the list
-        select.remove(select.length - 1);
-
-    for (const p of view.node_properties) {  // add new properties to the list
-        const opt = document.createElement("option");
-        opt.value = opt.text = p;
-        select.add(opt);
-    }
-
-    view.current_property = "name";
 }
 
 
