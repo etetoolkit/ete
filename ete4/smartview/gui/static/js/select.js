@@ -9,47 +9,47 @@ export { select_node, colorize_selections, get_selection_class, remove_selection
 
 // Select node with the given name and return true if things went well.
 async function select_node(node_id, name) {
-    const tid = get_tid() + "," + node_id;
-    const res = await api(`/trees/${tid}/select`);
 
-    if (res.message !== "ok")
-        throw new Error("Something went wrong.");
-
-    if (self !== top)  // notify parent window
-        parent.postMessage({ 
-            selected: true,
-            node: node_id,
-            name: name,
-            // Maybe also provide the color used to tag it...
-        }, "*");
-
-    // Add to selected dict
-    const colors = ["#FF0", "#F0F", "#0FF", "#F00", "#0F0", "#00F"].reverse();
-    const nselected = Object.keys(view.selected).length;
-    view.selected[node_id] = {
-        result: { name: name,
-                  opacity: 0.4,
-                  color: colors[nselected % colors.length] },
-        parents: { n: res.nparents,
-                   color: "#000",
-                   width: 2.5 },
-    };
-
-    add_selected_to_menu(node_id);
-
-    draw_tree();
     
-    //try {
+    try {
+        const tid = get_tid() + "," + node_id;
+        const res = await api(`/trees/${tid}/select`);
 
-    //}
-    //catch (exception) {
-        //Swal.fire({
-            //position: "bottom-start",
-            //showConfirmButton: false,
-            //html: exception,
-            //icon: "error",
-        //});
-    //}
+        if (res.message !== "ok")
+            throw new Error("Something went wrong.");
+
+        if (self !== top)  // notify parent window
+            parent.postMessage({ 
+                selected: true,
+                node: node_id,
+                name: name,
+                // Maybe also provide the color used to tag it...
+            }, "*");
+
+        // Add to selected dict
+        const colors = ["#FF0", "#F0F", "#0FF", "#F00", "#0F0", "#00F"].reverse();
+        const nselected = Object.keys(view.selected).length;
+        view.selected[node_id] = {
+            result: { name: name,
+                      opacity: 0.4,
+                      color: colors[nselected % colors.length] },
+            parents: { n: res.nparents,
+                       color: "#000",
+                       width: 2.5 },
+        };
+
+        add_selected_to_menu(node_id);
+
+        draw_tree();
+
+    } catch (exception) {
+        Swal.fire({
+            position: "bottom-start",
+            showConfirmButton: false,
+            html: exception,
+            icon: "error",
+        });
+    }
 
     return true;
 
@@ -58,7 +58,6 @@ async function select_node(node_id, name) {
 
 function add_selected_to_menu(node_id) {
     const selected = view.selected[node_id];
-    console.log(selected)
     const name = selected.result.name;
 
     const folder = menus.selected.addFolder({
