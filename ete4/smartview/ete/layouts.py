@@ -218,10 +218,10 @@ class TreeStyle(object):
             layouts.append(get_layout_outline())
         if self.show_align_link:
             layouts.append(get_layout_align_link())
-        if self.show_leaf_name:
-            layouts.append(get_layout_leaf_name())
         if self.show_nleaves:
             layouts.append(get_layout_nleaves())
+        if self.show_leaf_name:
+            layouts.append(get_layout_leaf_name())
         if self.show_branch_length:
             layouts.append(get_layout_branch_length())
         if self.show_branch_support:
