@@ -56,15 +56,12 @@ const view = {
 
     layouts: {},
 
+    // selected
+    selected: {},  // will contain the selected nodes
+
     // searches
     search: () => search(),
     searches: {},  // will contain the searches done
-
-    // tags
-    tags: {},  // will contain the tagged nodes
-
-    // selected
-    selected: {},  // will contain the selected nodes
 
     // info
     nnodes: 0,  // number of visible nodeboxes
@@ -138,7 +135,6 @@ const view = {
 const menus = {  // will contain the menus on the top
     pane: undefined, // main pane containing different tabs
     selected: undefined,
-    tags: undefined,
     searches: undefined,
     collapsed: undefined,
     minimap: undefined, // minimap toggler
