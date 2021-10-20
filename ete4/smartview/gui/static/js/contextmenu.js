@@ -6,7 +6,6 @@ import { draw_minimap } from "./minimap.js";
 import { update } from "./draw.js";
 import { download_newick } from "./download.js";
 import { zoom_into_box } from "./zoom.js";
-import { tag_node } from "./tag.js";
 import { collapse_node } from "./collapse.js";
 import { select_node } from "./select.js";
 
@@ -65,13 +64,6 @@ function add_node_options(box, name, properties, node_id) {
         }, `Open the NCBI Taxonomy Browser on this taxonomy ID: ${taxid}.`,
            "book", false);
     }
-    add_button("Tag branch", () => {
-        Swal.fire({
-            input: "text",
-            inputPlaceholder: "Enter tag",
-            preConfirm: name => tag_node(node_id, name),
-        });
-    }, "", "tag", false);
     add_button("Collapse branch", () => collapse_node(name, node_id),
                "Do not show nodes below the current one.",
                "compress", false);
