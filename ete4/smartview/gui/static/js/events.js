@@ -33,6 +33,26 @@ function init_events() {
     document.addEventListener("touchmove", on_touchmove);
 
     document.addEventListener("touchend", on_touchend);
+
+    if (self === top)  // ETE is not within an iframe
+        return
+
+    // Selection when placing ETE in iframe
+    window.addEventListener("message", event => {
+        // TODO: we should register allowed origins
+        //if (!wiew.allowed_origins.includes(event.origin))
+            //return
+
+        const node = event.data.node;
+        const selected = event.data.selected;
+
+        // We so far only allow to unselect
+        // If it was not selected to begin with, ignore message
+        if (selected || !view.selected[node])
+            return
+
+        view.selected[node].remove();
+    })
 }
 
 
@@ -41,10 +61,7 @@ function on_keydown(event) {
     const key = event.key;  // shortcut
     let is_hotkey = true;  // will set to false if it isn't
 
-    const menu_divs = [
-        div_menu_main, div_menu_representation, div_menu_tags_searches];
-    for (const div of menu_divs)
-        if (div.contains(event.target))
+    if (document.querySelector(".tp-dfwv").contains(event.target))
             return;  // avoid interfering with writing on a field of the menus
 
     if (key === "F1") {
@@ -61,7 +78,7 @@ function on_keydown(event) {
         show_minimap(view.minimap.show);
         menus.minimap.refresh();
     }
-    else if (key === "c")
+    else if (key === "p")
         menus.pane.expanded = !menus.pane.expanded;
     else if (key === "d")
         view.download.svg();

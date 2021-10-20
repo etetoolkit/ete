@@ -880,15 +880,15 @@ struct __pyx_obj_4ete4_6parser_6newick___pyx_scope_struct_1_genexpr {
 struct __pyx_obj_4ete4_6parser_6newick___pyx_scope_struct_2_content_repr {
   PyObject_HEAD
   PyObject *__pyx_v_node;
-  PyObject *__pyx_v_properties;
+  PyObject *__pyx_v_props;
 };
 
 
-/* "ete4/parser/newick.pyx":360
+/* "ete4/parser/newick.pyx":366
  * 
  *     # PROPERTIES FORMATTING
  *     pairs_str = ':'.join('%s=%s' % (k, node.props.get(k))             # <<<<<<<<<<<<<<
- *                                     for k in properties
+ *                                     for k in props
  *                                     if node.props.get(k))
  */
 struct __pyx_obj_4ete4_6parser_6newick___pyx_scope_struct_3_genexpr {
@@ -897,11 +897,10 @@ struct __pyx_obj_4ete4_6parser_6newick___pyx_scope_struct_3_genexpr {
   PyObject *__pyx_v_k;
   PyObject *__pyx_t_0;
   Py_ssize_t __pyx_t_1;
-  PyObject *(*__pyx_t_2)(PyObject *);
 };
 
 
-/* "ete4/parser/newick.pyx":368
+/* "ete4/parser/newick.pyx":374
  * 
  * 
  * def quote(name, escaped_chars=" \t\r\n()[]':;,"):             # <<<<<<<<<<<<<<
@@ -915,7 +914,7 @@ struct __pyx_obj_4ete4_6parser_6newick___pyx_scope_struct_4_quote {
 };
 
 
-/* "ete4/parser/newick.pyx":370
+/* "ete4/parser/newick.pyx":376
  * def quote(name, escaped_chars=" \t\r\n()[]':;,"):
  *     "Return the name quoted if it has any characters that need escaping"
  *     if any(c in name for c in escaped_chars):             # <<<<<<<<<<<<<<
@@ -929,7 +928,7 @@ struct __pyx_obj_4ete4_6parser_6newick___pyx_scope_struct_5_genexpr {
 };
 
 
-/* "ete4/parser/newick.pyx":376
+/* "ete4/parser/newick.pyx":382
  * 
  * 
  * def write_newick(tree, format=0, properties=[], quoted_names=False):             # <<<<<<<<<<<<<<
@@ -945,7 +944,7 @@ struct __pyx_obj_4ete4_6parser_6newick___pyx_scope_struct_6_write_newick {
 };
 
 
-/* "ete4/parser/newick.pyx":380
+/* "ete4/parser/newick.pyx":386
  *     children_text = ','.join(write_newick(node, format, properties=properties,
  *                                           quoted_names=quoted_names)\
  *                        .rstrip(';') for node in tree.children)             # <<<<<<<<<<<<<<
@@ -1418,6 +1417,23 @@ static CYTHON_INLINE PyObject* __Pyx_PyObject_GetSlice(
 
 /* None.proto */
 static CYTHON_INLINE void __Pyx_RaiseClosureNameError(const char *varname);
+
+/* UnpackUnboundCMethod.proto */
+typedef struct {
+    PyObject *type;
+    PyObject **method_name;
+    PyCFunction func;
+    PyObject *method;
+    int flag;
+} __Pyx_CachedCFunction;
+
+/* CallUnboundCMethod1.proto */
+static PyObject* __Pyx__CallUnboundCMethod1(__Pyx_CachedCFunction* cfunc, PyObject* self, PyObject* arg);
+#if CYTHON_COMPILING_IN_CPYTHON
+static CYTHON_INLINE PyObject* __Pyx_CallUnboundCMethod1(__Pyx_CachedCFunction* cfunc, PyObject* self, PyObject* arg);
+#else
+#define __Pyx_CallUnboundCMethod1(cfunc, self, arg)  __Pyx__CallUnboundCMethod1(cfunc, self, arg)
+#endif
 
 /* StringJoin.proto */
 #if PY_MAJOR_VERSION < 3
@@ -2084,6 +2100,7 @@ static PyObject *__pyx_tp_new_4ete4_6parser_6newick___pyx_scope_struct_4_quote(P
 static PyObject *__pyx_tp_new_4ete4_6parser_6newick___pyx_scope_struct_5_genexpr(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_4ete4_6parser_6newick___pyx_scope_struct_6_write_newick(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_4ete4_6parser_6newick___pyx_scope_struct_7_genexpr(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
+static __Pyx_CachedCFunction __pyx_umethod_PyList_Type_remove = {0, &__pyx_n_s_remove, 0, 0, 0};
 static PyObject *__pyx_int_0;
 static PyObject *__pyx_int_1;
 static PyObject *__pyx_int_2;
@@ -7804,11 +7821,11 @@ static PyObject *__pyx_pw_4ete4_6parser_6newick_23content_repr(PyObject *__pyx_s
 }
 static PyObject *__pyx_gb_4ete4_6parser_6newick_12content_repr_2generator1(__pyx_CoroutineObject *__pyx_generator, CYTHON_UNUSED PyThreadState *__pyx_tstate, PyObject *__pyx_sent_value); /* proto */
 
-/* "ete4/parser/newick.pyx":360
+/* "ete4/parser/newick.pyx":366
  * 
  *     # PROPERTIES FORMATTING
  *     pairs_str = ':'.join('%s=%s' % (k, node.props.get(k))             # <<<<<<<<<<<<<<
- *                                     for k in properties
+ *                                     for k in props
  *                                     if node.props.get(k))
  */
 
@@ -7824,7 +7841,7 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_12content_repr_genexpr(PyObject 
   if (unlikely(!__pyx_cur_scope)) {
     __pyx_cur_scope = ((struct __pyx_obj_4ete4_6parser_6newick___pyx_scope_struct_3_genexpr *)Py_None);
     __Pyx_INCREF(Py_None);
-    __PYX_ERR(0, 360, __pyx_L1_error)
+    __PYX_ERR(0, 366, __pyx_L1_error)
   } else {
     __Pyx_GOTREF(__pyx_cur_scope);
   }
@@ -7832,7 +7849,7 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_12content_repr_genexpr(PyObject 
   __Pyx_INCREF(((PyObject *)__pyx_cur_scope->__pyx_outer_scope));
   __Pyx_GIVEREF(__pyx_cur_scope->__pyx_outer_scope);
   {
-    __pyx_CoroutineObject *gen = __Pyx_Generator_New((__pyx_coroutine_body_t) __pyx_gb_4ete4_6parser_6newick_12content_repr_2generator1, NULL, (PyObject *) __pyx_cur_scope, __pyx_n_s_genexpr, __pyx_n_s_content_repr_locals_genexpr, __pyx_n_s_ete4_parser_newick); if (unlikely(!gen)) __PYX_ERR(0, 360, __pyx_L1_error)
+    __pyx_CoroutineObject *gen = __Pyx_Generator_New((__pyx_coroutine_body_t) __pyx_gb_4ete4_6parser_6newick_12content_repr_2generator1, NULL, (PyObject *) __pyx_cur_scope, __pyx_n_s_genexpr, __pyx_n_s_content_repr_locals_genexpr, __pyx_n_s_ete4_parser_newick); if (unlikely(!gen)) __PYX_ERR(0, 366, __pyx_L1_error)
     __Pyx_DECREF(__pyx_cur_scope);
     __Pyx_RefNannyFinishContext();
     return (PyObject *) gen;
@@ -7854,11 +7871,10 @@ static PyObject *__pyx_gb_4ete4_6parser_6newick_12content_repr_2generator1(__pyx
   PyObject *__pyx_r = NULL;
   PyObject *__pyx_t_1 = NULL;
   Py_ssize_t __pyx_t_2;
-  PyObject *(*__pyx_t_3)(PyObject *);
+  PyObject *__pyx_t_3 = NULL;
   PyObject *__pyx_t_4 = NULL;
   PyObject *__pyx_t_5 = NULL;
-  PyObject *__pyx_t_6 = NULL;
-  int __pyx_t_7;
+  int __pyx_t_6;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -7872,137 +7888,110 @@ static PyObject *__pyx_gb_4ete4_6parser_6newick_12content_repr_2generator1(__pyx
     return NULL;
   }
   __pyx_L3_first_run:;
-  if (unlikely(!__pyx_sent_value)) __PYX_ERR(0, 360, __pyx_L1_error)
+  if (unlikely(!__pyx_sent_value)) __PYX_ERR(0, 366, __pyx_L1_error)
 
-  /* "ete4/parser/newick.pyx":361
+  /* "ete4/parser/newick.pyx":367
  *     # PROPERTIES FORMATTING
  *     pairs_str = ':'.join('%s=%s' % (k, node.props.get(k))
- *                                     for k in properties             # <<<<<<<<<<<<<<
+ *                                     for k in props             # <<<<<<<<<<<<<<
  *                                     if node.props.get(k))
  *     props_str = f'[&&NHX:{pairs_str}]' if pairs_str else ''
  */
-  if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_properties)) { __Pyx_RaiseClosureNameError("properties"); __PYX_ERR(0, 361, __pyx_L1_error) }
-  if (likely(PyList_CheckExact(__pyx_cur_scope->__pyx_outer_scope->__pyx_v_properties)) || PyTuple_CheckExact(__pyx_cur_scope->__pyx_outer_scope->__pyx_v_properties)) {
-    __pyx_t_1 = __pyx_cur_scope->__pyx_outer_scope->__pyx_v_properties; __Pyx_INCREF(__pyx_t_1); __pyx_t_2 = 0;
-    __pyx_t_3 = NULL;
-  } else {
-    __pyx_t_2 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_cur_scope->__pyx_outer_scope->__pyx_v_properties); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 361, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_3 = Py_TYPE(__pyx_t_1)->tp_iternext; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 361, __pyx_L1_error)
+  if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_props)) { __Pyx_RaiseClosureNameError("props"); __PYX_ERR(0, 367, __pyx_L1_error) }
+  if (unlikely(__pyx_cur_scope->__pyx_outer_scope->__pyx_v_props == Py_None)) {
+    PyErr_SetString(PyExc_TypeError, "'NoneType' object is not iterable");
+    __PYX_ERR(0, 367, __pyx_L1_error)
   }
+  __pyx_t_1 = __pyx_cur_scope->__pyx_outer_scope->__pyx_v_props; __Pyx_INCREF(__pyx_t_1); __pyx_t_2 = 0;
   for (;;) {
-    if (likely(!__pyx_t_3)) {
-      if (likely(PyList_CheckExact(__pyx_t_1))) {
-        if (__pyx_t_2 >= PyList_GET_SIZE(__pyx_t_1)) break;
-        #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_4 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_2); __Pyx_INCREF(__pyx_t_4); __pyx_t_2++; if (unlikely(0 < 0)) __PYX_ERR(0, 361, __pyx_L1_error)
-        #else
-        __pyx_t_4 = PySequence_ITEM(__pyx_t_1, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 361, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_4);
-        #endif
-      } else {
-        if (__pyx_t_2 >= PyTuple_GET_SIZE(__pyx_t_1)) break;
-        #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_4 = PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_2); __Pyx_INCREF(__pyx_t_4); __pyx_t_2++; if (unlikely(0 < 0)) __PYX_ERR(0, 361, __pyx_L1_error)
-        #else
-        __pyx_t_4 = PySequence_ITEM(__pyx_t_1, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 361, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_4);
-        #endif
-      }
-    } else {
-      __pyx_t_4 = __pyx_t_3(__pyx_t_1);
-      if (unlikely(!__pyx_t_4)) {
-        PyObject* exc_type = PyErr_Occurred();
-        if (exc_type) {
-          if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-          else __PYX_ERR(0, 361, __pyx_L1_error)
-        }
-        break;
-      }
-      __Pyx_GOTREF(__pyx_t_4);
-    }
+    if (__pyx_t_2 >= PyList_GET_SIZE(__pyx_t_1)) break;
+    #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+    __pyx_t_3 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_2); __Pyx_INCREF(__pyx_t_3); __pyx_t_2++; if (unlikely(0 < 0)) __PYX_ERR(0, 367, __pyx_L1_error)
+    #else
+    __pyx_t_3 = PySequence_ITEM(__pyx_t_1, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 367, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
+    #endif
     __Pyx_XGOTREF(__pyx_cur_scope->__pyx_v_k);
-    __Pyx_XDECREF_SET(__pyx_cur_scope->__pyx_v_k, __pyx_t_4);
-    __Pyx_GIVEREF(__pyx_t_4);
-    __pyx_t_4 = 0;
+    __Pyx_XDECREF_SET(__pyx_cur_scope->__pyx_v_k, __pyx_t_3);
+    __Pyx_GIVEREF(__pyx_t_3);
+    __pyx_t_3 = 0;
 
-    /* "ete4/parser/newick.pyx":362
+    /* "ete4/parser/newick.pyx":368
  *     pairs_str = ':'.join('%s=%s' % (k, node.props.get(k))
- *                                     for k in properties
+ *                                     for k in props
  *                                     if node.props.get(k))             # <<<<<<<<<<<<<<
  *     props_str = f'[&&NHX:{pairs_str}]' if pairs_str else ''
  * 
  */
-    if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_node)) { __Pyx_RaiseClosureNameError("node"); __PYX_ERR(0, 362, __pyx_L1_error) }
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_outer_scope->__pyx_v_node, __pyx_n_s_props); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 362, __pyx_L1_error)
+    if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_node)) { __Pyx_RaiseClosureNameError("node"); __PYX_ERR(0, 368, __pyx_L1_error) }
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_outer_scope->__pyx_v_node, __pyx_n_s_props); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 368, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_4);
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_get); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 368, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_get); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 362, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_6);
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = NULL;
-    if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_6))) {
-      __pyx_t_5 = PyMethod_GET_SELF(__pyx_t_6);
-      if (likely(__pyx_t_5)) {
-        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_6);
-        __Pyx_INCREF(__pyx_t_5);
+    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __pyx_t_4 = NULL;
+    if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_5))) {
+      __pyx_t_4 = PyMethod_GET_SELF(__pyx_t_5);
+      if (likely(__pyx_t_4)) {
+        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_5);
+        __Pyx_INCREF(__pyx_t_4);
         __Pyx_INCREF(function);
-        __Pyx_DECREF_SET(__pyx_t_6, function);
+        __Pyx_DECREF_SET(__pyx_t_5, function);
       }
     }
-    __pyx_t_4 = (__pyx_t_5) ? __Pyx_PyObject_Call2Args(__pyx_t_6, __pyx_t_5, __pyx_cur_scope->__pyx_v_k) : __Pyx_PyObject_CallOneArg(__pyx_t_6, __pyx_cur_scope->__pyx_v_k);
-    __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
-    if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 362, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_4); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 362, __pyx_L1_error)
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    if (__pyx_t_7) {
+    __pyx_t_3 = (__pyx_t_4) ? __Pyx_PyObject_Call2Args(__pyx_t_5, __pyx_t_4, __pyx_cur_scope->__pyx_v_k) : __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_cur_scope->__pyx_v_k);
+    __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+    if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 368, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __pyx_t_6 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_6 < 0)) __PYX_ERR(0, 368, __pyx_L1_error)
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    if (__pyx_t_6) {
 
-      /* "ete4/parser/newick.pyx":360
+      /* "ete4/parser/newick.pyx":366
  * 
  *     # PROPERTIES FORMATTING
  *     pairs_str = ':'.join('%s=%s' % (k, node.props.get(k))             # <<<<<<<<<<<<<<
- *                                     for k in properties
+ *                                     for k in props
  *                                     if node.props.get(k))
  */
-      if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_node)) { __Pyx_RaiseClosureNameError("node"); __PYX_ERR(0, 360, __pyx_L1_error) }
-      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_outer_scope->__pyx_v_node, __pyx_n_s_props); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 360, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_6);
-      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_get); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 360, __pyx_L1_error)
+      if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_node)) { __Pyx_RaiseClosureNameError("node"); __PYX_ERR(0, 366, __pyx_L1_error) }
+      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_outer_scope->__pyx_v_node, __pyx_n_s_props); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 366, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
-      __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-      __pyx_t_6 = NULL;
-      if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_5))) {
-        __pyx_t_6 = PyMethod_GET_SELF(__pyx_t_5);
-        if (likely(__pyx_t_6)) {
-          PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_5);
-          __Pyx_INCREF(__pyx_t_6);
+      __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_get); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 366, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_4);
+      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __pyx_t_5 = NULL;
+      if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_4))) {
+        __pyx_t_5 = PyMethod_GET_SELF(__pyx_t_4);
+        if (likely(__pyx_t_5)) {
+          PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_4);
+          __Pyx_INCREF(__pyx_t_5);
           __Pyx_INCREF(function);
-          __Pyx_DECREF_SET(__pyx_t_5, function);
+          __Pyx_DECREF_SET(__pyx_t_4, function);
         }
       }
-      __pyx_t_4 = (__pyx_t_6) ? __Pyx_PyObject_Call2Args(__pyx_t_5, __pyx_t_6, __pyx_cur_scope->__pyx_v_k) : __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_cur_scope->__pyx_v_k);
-      __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
-      if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 360, __pyx_L1_error)
+      __pyx_t_3 = (__pyx_t_5) ? __Pyx_PyObject_Call2Args(__pyx_t_4, __pyx_t_5, __pyx_cur_scope->__pyx_v_k) : __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_cur_scope->__pyx_v_k);
+      __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+      if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 366, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __pyx_t_4 = PyTuple_New(2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 366, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
-      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-      __pyx_t_5 = PyTuple_New(2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 360, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_5);
       __Pyx_INCREF(__pyx_cur_scope->__pyx_v_k);
       __Pyx_GIVEREF(__pyx_cur_scope->__pyx_v_k);
-      PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_cur_scope->__pyx_v_k);
-      __Pyx_GIVEREF(__pyx_t_4);
-      PyTuple_SET_ITEM(__pyx_t_5, 1, __pyx_t_4);
-      __pyx_t_4 = 0;
-      __pyx_t_4 = __Pyx_PyString_Format(__pyx_kp_s_s_s, __pyx_t_5); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 360, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_4);
-      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-      __pyx_r = __pyx_t_4;
-      __pyx_t_4 = 0;
+      PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_cur_scope->__pyx_v_k);
+      __Pyx_GIVEREF(__pyx_t_3);
+      PyTuple_SET_ITEM(__pyx_t_4, 1, __pyx_t_3);
+      __pyx_t_3 = 0;
+      __pyx_t_3 = __Pyx_PyString_Format(__pyx_kp_s_s_s, __pyx_t_4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 366, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __pyx_r = __pyx_t_3;
+      __pyx_t_3 = 0;
       __Pyx_XGIVEREF(__pyx_t_1);
       __pyx_cur_scope->__pyx_t_0 = __pyx_t_1;
       __pyx_cur_scope->__pyx_t_1 = __pyx_t_2;
-      __pyx_cur_scope->__pyx_t_2 = __pyx_t_3;
       __Pyx_XGIVEREF(__pyx_r);
       __Pyx_RefNannyFinishContext();
       __Pyx_Coroutine_ResetAndClearException(__pyx_generator);
@@ -8014,22 +8003,21 @@ static PyObject *__pyx_gb_4ete4_6parser_6newick_12content_repr_2generator1(__pyx
       __pyx_cur_scope->__pyx_t_0 = 0;
       __Pyx_XGOTREF(__pyx_t_1);
       __pyx_t_2 = __pyx_cur_scope->__pyx_t_1;
-      __pyx_t_3 = __pyx_cur_scope->__pyx_t_2;
-      if (unlikely(!__pyx_sent_value)) __PYX_ERR(0, 360, __pyx_L1_error)
+      if (unlikely(!__pyx_sent_value)) __PYX_ERR(0, 366, __pyx_L1_error)
 
-      /* "ete4/parser/newick.pyx":362
+      /* "ete4/parser/newick.pyx":368
  *     pairs_str = ':'.join('%s=%s' % (k, node.props.get(k))
- *                                     for k in properties
+ *                                     for k in props
  *                                     if node.props.get(k))             # <<<<<<<<<<<<<<
  *     props_str = f'[&&NHX:{pairs_str}]' if pairs_str else ''
  * 
  */
     }
 
-    /* "ete4/parser/newick.pyx":361
+    /* "ete4/parser/newick.pyx":367
  *     # PROPERTIES FORMATTING
  *     pairs_str = ':'.join('%s=%s' % (k, node.props.get(k))
- *                                     for k in properties             # <<<<<<<<<<<<<<
+ *                                     for k in props             # <<<<<<<<<<<<<<
  *                                     if node.props.get(k))
  *     props_str = f'[&&NHX:{pairs_str}]' if pairs_str else ''
  */
@@ -8037,11 +8025,11 @@ static PyObject *__pyx_gb_4ete4_6parser_6newick_12content_repr_2generator1(__pyx
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   CYTHON_MAYBE_UNUSED_VAR(__pyx_cur_scope);
 
-  /* "ete4/parser/newick.pyx":360
+  /* "ete4/parser/newick.pyx":366
  * 
  *     # PROPERTIES FORMATTING
  *     pairs_str = ':'.join('%s=%s' % (k, node.props.get(k))             # <<<<<<<<<<<<<<
- *                                     for k in properties
+ *                                     for k in props
  *                                     if node.props.get(k))
  */
 
@@ -8050,9 +8038,9 @@ static PyObject *__pyx_gb_4ete4_6parser_6newick_12content_repr_2generator1(__pyx
   goto __pyx_L0;
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_XDECREF(__pyx_t_3);
   __Pyx_XDECREF(__pyx_t_4);
   __Pyx_XDECREF(__pyx_t_5);
-  __Pyx_XDECREF(__pyx_t_6);
   __Pyx_AddTraceback("genexpr", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_r); __pyx_r = 0;
@@ -8097,6 +8085,7 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_22content_repr(CYTHON_UNUSED PyO
   Py_UCS4 __pyx_t_8;
   PyObject *__pyx_t_9 = NULL;
   int __pyx_t_10;
+  int __pyx_t_11;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -8112,20 +8101,17 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_22content_repr(CYTHON_UNUSED PyO
   __pyx_cur_scope->__pyx_v_node = __pyx_v_node;
   __Pyx_INCREF(__pyx_cur_scope->__pyx_v_node);
   __Pyx_GIVEREF(__pyx_cur_scope->__pyx_v_node);
-  __pyx_cur_scope->__pyx_v_properties = __pyx_v_properties;
-  __Pyx_INCREF(__pyx_cur_scope->__pyx_v_properties);
-  __Pyx_GIVEREF(__pyx_cur_scope->__pyx_v_properties);
 
   /* "ete4/parser/newick.pyx":316
  *     # Empty list includes all properties
- *     properties = list(node.props.keys())\
- *             if properties == [] else (properties or [])             # <<<<<<<<<<<<<<
+ *     props = list(node.props.keys())\
+ *             if properties == [] else list(properties or [])             # <<<<<<<<<<<<<<
  * 
  *     if node.is_leaf():
  */
   __pyx_t_2 = PyList_New(0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 316, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = PyObject_RichCompare(__pyx_cur_scope->__pyx_v_properties, __pyx_t_2, Py_EQ); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 316, __pyx_L1_error)
+  __pyx_t_3 = PyObject_RichCompare(__pyx_v_properties, __pyx_t_2, Py_EQ); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 316, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_4 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 316, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -8134,8 +8120,8 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_22content_repr(CYTHON_UNUSED PyO
     /* "ete4/parser/newick.pyx":315
  *     "Return content of a node as represented in specified newick format"
  *     # Empty list includes all properties
- *     properties = list(node.props.keys())\             # <<<<<<<<<<<<<<
- *             if properties == [] else (properties or [])
+ *     props = list(node.props.keys())\             # <<<<<<<<<<<<<<
+ *             if properties == [] else list(properties or [])
  * 
  */
     __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_v_node, __pyx_n_s_props); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 315, __pyx_L1_error)
@@ -8167,16 +8153,16 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_22content_repr(CYTHON_UNUSED PyO
 
     /* "ete4/parser/newick.pyx":316
  *     # Empty list includes all properties
- *     properties = list(node.props.keys())\
- *             if properties == [] else (properties or [])             # <<<<<<<<<<<<<<
+ *     props = list(node.props.keys())\
+ *             if properties == [] else list(properties or [])             # <<<<<<<<<<<<<<
  * 
  *     if node.is_leaf():
  */
-    __pyx_t_6 = __Pyx_PyObject_IsTrue(__pyx_cur_scope->__pyx_v_properties); if (unlikely(__pyx_t_6 < 0)) __PYX_ERR(0, 316, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_PyObject_IsTrue(__pyx_v_properties); if (unlikely(__pyx_t_6 < 0)) __PYX_ERR(0, 316, __pyx_L1_error)
     if (!__pyx_t_6) {
     } else {
-      __Pyx_INCREF(__pyx_cur_scope->__pyx_v_properties);
-      __pyx_t_5 = __pyx_cur_scope->__pyx_v_properties;
+      __Pyx_INCREF(__pyx_v_properties);
+      __pyx_t_5 = __pyx_v_properties;
       goto __pyx_L3_bool_binop_done;
     }
     __pyx_t_3 = PyList_New(0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 316, __pyx_L1_error)
@@ -8185,38 +8171,40 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_22content_repr(CYTHON_UNUSED PyO
     __pyx_t_5 = __pyx_t_3;
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __pyx_L3_bool_binop_done:;
-    __pyx_t_1 = __pyx_t_5;
-    __pyx_t_5 = 0;
+    __pyx_t_3 = PySequence_List(__pyx_t_5); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 316, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __pyx_t_1 = __pyx_t_3;
+    __pyx_t_3 = 0;
   }
-  __Pyx_GOTREF(__pyx_cur_scope->__pyx_v_properties);
-  __Pyx_DECREF_SET(__pyx_cur_scope->__pyx_v_properties, __pyx_t_1);
   __Pyx_GIVEREF(__pyx_t_1);
+  __pyx_cur_scope->__pyx_v_props = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
   /* "ete4/parser/newick.pyx":318
- *             if properties == [] else (properties or [])
+ *             if properties == [] else list(properties or [])
  * 
  *     if node.is_leaf():             # <<<<<<<<<<<<<<
  *         name = NW_FORMAT[format][0][0]
  *         dist = NW_FORMAT[format][1][0]
  */
-  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_v_node, __pyx_n_s_is_leaf); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 318, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_3 = NULL;
-  if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_5))) {
-    __pyx_t_3 = PyMethod_GET_SELF(__pyx_t_5);
-    if (likely(__pyx_t_3)) {
-      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_5);
-      __Pyx_INCREF(__pyx_t_3);
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_v_node, __pyx_n_s_is_leaf); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 318, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_5 = NULL;
+  if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_3))) {
+    __pyx_t_5 = PyMethod_GET_SELF(__pyx_t_3);
+    if (likely(__pyx_t_5)) {
+      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
+      __Pyx_INCREF(__pyx_t_5);
       __Pyx_INCREF(function);
-      __Pyx_DECREF_SET(__pyx_t_5, function);
+      __Pyx_DECREF_SET(__pyx_t_3, function);
     }
   }
-  __pyx_t_1 = (__pyx_t_3) ? __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_t_3) : __Pyx_PyObject_CallNoArg(__pyx_t_5);
-  __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_t_1 = (__pyx_t_5) ? __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_5) : __Pyx_PyObject_CallNoArg(__pyx_t_3);
+  __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
   if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 318, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __pyx_t_4 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 318, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   if (__pyx_t_4) {
@@ -8230,17 +8218,17 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_22content_repr(CYTHON_UNUSED PyO
  */
     __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_NW_FORMAT); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 319, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_5 = __Pyx_PyObject_GetItem(__pyx_t_1, __pyx_v_format); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 319, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
+    __pyx_t_3 = __Pyx_PyObject_GetItem(__pyx_t_1, __pyx_v_format); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 319, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_t_1 = __Pyx_GetItemInt(__pyx_t_5, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 319, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_GetItemInt(__pyx_t_3, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 319, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = __Pyx_GetItemInt(__pyx_t_1, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 319, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_t_3 = __Pyx_GetItemInt(__pyx_t_1, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 319, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_v_name = __pyx_t_5;
-    __pyx_t_5 = 0;
+    __pyx_v_name = __pyx_t_3;
+    __pyx_t_3 = 0;
 
     /* "ete4/parser/newick.pyx":320
  *     if node.is_leaf():
@@ -8249,17 +8237,17 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_22content_repr(CYTHON_UNUSED PyO
  *         name_type = NW_FORMAT[format][0][1]
  *         dist_type = NW_FORMAT[format][1][1]
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_NW_FORMAT); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 320, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_1 = __Pyx_PyObject_GetItem(__pyx_t_5, __pyx_v_format); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 320, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_NW_FORMAT); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 320, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_1 = __Pyx_PyObject_GetItem(__pyx_t_3, __pyx_v_format); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 320, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = __Pyx_GetItemInt(__pyx_t_1, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 320, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_t_3 = __Pyx_GetItemInt(__pyx_t_1, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 320, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_t_1 = __Pyx_GetItemInt(__pyx_t_5, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 320, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_GetItemInt(__pyx_t_3, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 320, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __pyx_v_dist = __pyx_t_1;
     __pyx_t_1 = 0;
 
@@ -8272,17 +8260,17 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_22content_repr(CYTHON_UNUSED PyO
  */
     __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_NW_FORMAT); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 321, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_5 = __Pyx_PyObject_GetItem(__pyx_t_1, __pyx_v_format); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 321, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
+    __pyx_t_3 = __Pyx_PyObject_GetItem(__pyx_t_1, __pyx_v_format); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 321, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_t_1 = __Pyx_GetItemInt(__pyx_t_5, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 321, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_GetItemInt(__pyx_t_3, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 321, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = __Pyx_GetItemInt(__pyx_t_1, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 321, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_t_3 = __Pyx_GetItemInt(__pyx_t_1, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 321, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_v_name_type = __pyx_t_5;
-    __pyx_t_5 = 0;
+    __pyx_v_name_type = __pyx_t_3;
+    __pyx_t_3 = 0;
 
     /* "ete4/parser/newick.pyx":322
  *         dist = NW_FORMAT[format][1][0]
@@ -8291,17 +8279,17 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_22content_repr(CYTHON_UNUSED PyO
  *         flexible = NW_FORMAT[format][0][2]
  *     else:
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_NW_FORMAT); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 322, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_1 = __Pyx_PyObject_GetItem(__pyx_t_5, __pyx_v_format); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 322, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_NW_FORMAT); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 322, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_1 = __Pyx_PyObject_GetItem(__pyx_t_3, __pyx_v_format); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 322, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = __Pyx_GetItemInt(__pyx_t_1, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 322, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_t_3 = __Pyx_GetItemInt(__pyx_t_1, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 322, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_t_1 = __Pyx_GetItemInt(__pyx_t_5, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 322, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_GetItemInt(__pyx_t_3, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 322, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __pyx_v_dist_type = __pyx_t_1;
     __pyx_t_1 = 0;
 
@@ -8314,20 +8302,20 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_22content_repr(CYTHON_UNUSED PyO
  */
     __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_NW_FORMAT); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 323, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_5 = __Pyx_PyObject_GetItem(__pyx_t_1, __pyx_v_format); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 323, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
+    __pyx_t_3 = __Pyx_PyObject_GetItem(__pyx_t_1, __pyx_v_format); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 323, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_t_1 = __Pyx_GetItemInt(__pyx_t_5, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 323, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_GetItemInt(__pyx_t_3, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 323, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = __Pyx_GetItemInt(__pyx_t_1, 2, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 323, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_t_3 = __Pyx_GetItemInt(__pyx_t_1, 2, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 323, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_v_flexible = __pyx_t_5;
-    __pyx_t_5 = 0;
+    __pyx_v_flexible = __pyx_t_3;
+    __pyx_t_3 = 0;
 
     /* "ete4/parser/newick.pyx":318
- *             if properties == [] else (properties or [])
+ *             if properties == [] else list(properties or [])
  * 
  *     if node.is_leaf():             # <<<<<<<<<<<<<<
  *         name = NW_FORMAT[format][0][0]
@@ -8344,17 +8332,17 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_22content_repr(CYTHON_UNUSED PyO
  *         name_type = NW_FORMAT[format][2][1]
  */
   /*else*/ {
-    __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_NW_FORMAT); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 325, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_1 = __Pyx_PyObject_GetItem(__pyx_t_5, __pyx_v_format); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 325, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_NW_FORMAT); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 325, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_1 = __Pyx_PyObject_GetItem(__pyx_t_3, __pyx_v_format); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 325, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = __Pyx_GetItemInt(__pyx_t_1, 2, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 325, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_t_3 = __Pyx_GetItemInt(__pyx_t_1, 2, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 325, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_t_1 = __Pyx_GetItemInt(__pyx_t_5, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 325, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_GetItemInt(__pyx_t_3, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 325, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __pyx_v_name = __pyx_t_1;
     __pyx_t_1 = 0;
 
@@ -8367,17 +8355,17 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_22content_repr(CYTHON_UNUSED PyO
  */
     __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_NW_FORMAT); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 326, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_5 = __Pyx_PyObject_GetItem(__pyx_t_1, __pyx_v_format); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 326, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
+    __pyx_t_3 = __Pyx_PyObject_GetItem(__pyx_t_1, __pyx_v_format); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 326, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_t_1 = __Pyx_GetItemInt(__pyx_t_5, 3, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 326, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_GetItemInt(__pyx_t_3, 3, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 326, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = __Pyx_GetItemInt(__pyx_t_1, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 326, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_t_3 = __Pyx_GetItemInt(__pyx_t_1, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 326, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_v_dist = __pyx_t_5;
-    __pyx_t_5 = 0;
+    __pyx_v_dist = __pyx_t_3;
+    __pyx_t_3 = 0;
 
     /* "ete4/parser/newick.pyx":327
  *         name = NW_FORMAT[format][2][0]
@@ -8386,17 +8374,17 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_22content_repr(CYTHON_UNUSED PyO
  *         dist_type = NW_FORMAT[format][3][1]
  *         flexible = NW_FORMAT[format][2][2]
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_NW_FORMAT); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 327, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_1 = __Pyx_PyObject_GetItem(__pyx_t_5, __pyx_v_format); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 327, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_NW_FORMAT); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 327, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_1 = __Pyx_PyObject_GetItem(__pyx_t_3, __pyx_v_format); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 327, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = __Pyx_GetItemInt(__pyx_t_1, 2, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 327, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_t_3 = __Pyx_GetItemInt(__pyx_t_1, 2, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 327, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_t_1 = __Pyx_GetItemInt(__pyx_t_5, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 327, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_GetItemInt(__pyx_t_3, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 327, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __pyx_v_name_type = __pyx_t_1;
     __pyx_t_1 = 0;
 
@@ -8409,17 +8397,17 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_22content_repr(CYTHON_UNUSED PyO
  */
     __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_NW_FORMAT); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 328, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_5 = __Pyx_PyObject_GetItem(__pyx_t_1, __pyx_v_format); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 328, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
+    __pyx_t_3 = __Pyx_PyObject_GetItem(__pyx_t_1, __pyx_v_format); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 328, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_t_1 = __Pyx_GetItemInt(__pyx_t_5, 3, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 328, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_GetItemInt(__pyx_t_3, 3, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 328, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = __Pyx_GetItemInt(__pyx_t_1, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 328, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_t_3 = __Pyx_GetItemInt(__pyx_t_1, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 328, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_v_dist_type = __pyx_t_5;
-    __pyx_t_5 = 0;
+    __pyx_v_dist_type = __pyx_t_3;
+    __pyx_t_3 = 0;
 
     /* "ete4/parser/newick.pyx":329
  *         name_type = NW_FORMAT[format][2][1]
@@ -8428,17 +8416,17 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_22content_repr(CYTHON_UNUSED PyO
  * 
  *     # NAME/SUPPORT FORMATTING
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_NW_FORMAT); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 329, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_1 = __Pyx_PyObject_GetItem(__pyx_t_5, __pyx_v_format); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 329, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_NW_FORMAT); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 329, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_1 = __Pyx_PyObject_GetItem(__pyx_t_3, __pyx_v_format); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 329, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = __Pyx_GetItemInt(__pyx_t_1, 2, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 329, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_t_3 = __Pyx_GetItemInt(__pyx_t_1, 2, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 329, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_t_1 = __Pyx_GetItemInt(__pyx_t_5, 2, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 329, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_GetItemInt(__pyx_t_3, 2, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 329, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __pyx_v_flexible = __pyx_t_1;
     __pyx_t_1 = 0;
   }
@@ -8498,18 +8486,18 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_22content_repr(CYTHON_UNUSED PyO
  */
       __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_NAME_FORMATTER); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 336, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
-      __pyx_t_5 = __Pyx_PyObject_FormatSimple(__pyx_t_1, __pyx_empty_unicode); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 336, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_5);
+      __pyx_t_3 = __Pyx_PyObject_FormatSimple(__pyx_t_1, __pyx_empty_unicode); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 336, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_v_node, __pyx_n_s_name); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 336, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
-      __pyx_t_3 = __Pyx_PyObject_CallOneArg(((PyObject *)(&PyString_Type)), __pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 336, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_3);
+      __pyx_t_5 = __Pyx_PyObject_CallOneArg(((PyObject *)(&PyString_Type)), __pyx_t_1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 336, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_5);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      __pyx_t_1 = __Pyx_PyUnicode_FormatSafe(__pyx_t_5, __pyx_t_3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 336, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyUnicode_FormatSafe(__pyx_t_3, __pyx_t_5); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 336, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
-      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       __Pyx_DECREF_SET(__pyx_v_name_str, __pyx_t_1);
       __pyx_t_1 = 0;
 
@@ -8539,16 +8527,16 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_22content_repr(CYTHON_UNUSED PyO
  *         elif not flexible:
  *             name_str = f'{NAME_FORMATTER}' % 'NoName'             # <<<<<<<<<<<<<<
  * 
- *         # Quote name or remove newick-illegal characters
+ *         if 'name' in props:
  */
       __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_NAME_FORMATTER); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 338, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
-      __pyx_t_3 = __Pyx_PyObject_FormatSimple(__pyx_t_1, __pyx_empty_unicode); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 338, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_3);
+      __pyx_t_5 = __Pyx_PyObject_FormatSimple(__pyx_t_1, __pyx_empty_unicode); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 338, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_5);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      __pyx_t_1 = PyUnicode_Format(__pyx_t_3, __pyx_n_s_NoName); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 338, __pyx_L1_error)
+      __pyx_t_1 = PyUnicode_Format(__pyx_t_5, __pyx_n_s_NoName); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 338, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
-      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       __Pyx_DECREF_SET(__pyx_v_name_str, __pyx_t_1);
       __pyx_t_1 = 0;
 
@@ -8562,42 +8550,73 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_22content_repr(CYTHON_UNUSED PyO
     }
     __pyx_L7:;
 
-    /* "ete4/parser/newick.pyx":341
+    /* "ete4/parser/newick.pyx":340
+ *             name_str = f'{NAME_FORMATTER}' % 'NoName'
+ * 
+ *         if 'name' in props:             # <<<<<<<<<<<<<<
+ *             props.remove('name')
+ * 
+ */
+    __pyx_t_6 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_name, __pyx_cur_scope->__pyx_v_props, Py_EQ)); if (unlikely(__pyx_t_6 < 0)) __PYX_ERR(0, 340, __pyx_L1_error)
+    __pyx_t_4 = (__pyx_t_6 != 0);
+    if (__pyx_t_4) {
+
+      /* "ete4/parser/newick.pyx":341
+ * 
+ *         if 'name' in props:
+ *             props.remove('name')             # <<<<<<<<<<<<<<
+ * 
+ *         # Quote name or remove newick-illegal characters
+ */
+      __pyx_t_1 = __Pyx_CallUnboundCMethod1(&__pyx_umethod_PyList_Type_remove, __pyx_cur_scope->__pyx_v_props, __pyx_n_s_name); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 341, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_1);
+      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+
+      /* "ete4/parser/newick.pyx":340
+ *             name_str = f'{NAME_FORMATTER}' % 'NoName'
+ * 
+ *         if 'name' in props:             # <<<<<<<<<<<<<<
+ *             props.remove('name')
+ * 
+ */
+    }
+
+    /* "ete4/parser/newick.pyx":344
  * 
  *         # Quote name or remove newick-illegal characters
  *         if quoted_names:             # <<<<<<<<<<<<<<
  *             # TO CONSIDER: use quote() instead of quoted_names argument
  *             name_str = "'" + name_str + "'"
  */
-    __pyx_t_6 = __Pyx_PyObject_IsTrue(__pyx_v_quoted_names); if (unlikely(__pyx_t_6 < 0)) __PYX_ERR(0, 341, __pyx_L1_error)
-    if (__pyx_t_6) {
+    __pyx_t_4 = __Pyx_PyObject_IsTrue(__pyx_v_quoted_names); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 344, __pyx_L1_error)
+    if (__pyx_t_4) {
 
-      /* "ete4/parser/newick.pyx":343
+      /* "ete4/parser/newick.pyx":346
  *         if quoted_names:
  *             # TO CONSIDER: use quote() instead of quoted_names argument
  *             name_str = "'" + name_str + "'"             # <<<<<<<<<<<<<<
  *         else:
  *             name_str = sub(f'[{_ILLEGAL_NEWICK_CHARS}]', '_', name_str)
  */
-      __pyx_t_1 = PyNumber_Add(__pyx_kp_s__11, __pyx_v_name_str); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 343, __pyx_L1_error)
+      __pyx_t_1 = PyNumber_Add(__pyx_kp_s__11, __pyx_v_name_str); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 346, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
-      __pyx_t_3 = PyNumber_Add(__pyx_t_1, __pyx_kp_s__11); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 343, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_3);
+      __pyx_t_5 = PyNumber_Add(__pyx_t_1, __pyx_kp_s__11); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 346, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_5);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      __Pyx_DECREF_SET(__pyx_v_name_str, __pyx_t_3);
-      __pyx_t_3 = 0;
+      __Pyx_DECREF_SET(__pyx_v_name_str, __pyx_t_5);
+      __pyx_t_5 = 0;
 
-      /* "ete4/parser/newick.pyx":341
+      /* "ete4/parser/newick.pyx":344
  * 
  *         # Quote name or remove newick-illegal characters
  *         if quoted_names:             # <<<<<<<<<<<<<<
  *             # TO CONSIDER: use quote() instead of quoted_names argument
  *             name_str = "'" + name_str + "'"
  */
-      goto __pyx_L8;
+      goto __pyx_L9;
     }
 
-    /* "ete4/parser/newick.pyx":345
+    /* "ete4/parser/newick.pyx":348
  *             name_str = "'" + name_str + "'"
  *         else:
  *             name_str = sub(f'[{_ILLEGAL_NEWICK_CHARS}]', '_', name_str)             # <<<<<<<<<<<<<<
@@ -8605,40 +8624,40 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_22content_repr(CYTHON_UNUSED PyO
  *     elif name_type == float:  # support value
  */
     /*else*/ {
-      __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_sub); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 345, __pyx_L1_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_sub); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 348, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
-      __pyx_t_5 = PyTuple_New(3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 345, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_5);
+      __pyx_t_3 = PyTuple_New(3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 348, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
       __pyx_t_7 = 0;
       __pyx_t_8 = 127;
       __Pyx_INCREF(__pyx_kp_u__7);
       __pyx_t_7 += 1;
       __Pyx_GIVEREF(__pyx_kp_u__7);
-      PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_kp_u__7);
-      __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_ILLEGAL_NEWICK_CHARS); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 345, __pyx_L1_error)
+      PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_kp_u__7);
+      __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_ILLEGAL_NEWICK_CHARS); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 348, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
-      __pyx_t_9 = __Pyx_PyObject_FormatSimple(__pyx_t_2, __pyx_empty_unicode); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 345, __pyx_L1_error)
+      __pyx_t_9 = __Pyx_PyObject_FormatSimple(__pyx_t_2, __pyx_empty_unicode); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 348, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_9);
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       __pyx_t_8 = (__Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_9) > __pyx_t_8) ? __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_9) : __pyx_t_8;
       __pyx_t_7 += __Pyx_PyUnicode_GET_LENGTH(__pyx_t_9);
       __Pyx_GIVEREF(__pyx_t_9);
-      PyTuple_SET_ITEM(__pyx_t_5, 1, __pyx_t_9);
+      PyTuple_SET_ITEM(__pyx_t_3, 1, __pyx_t_9);
       __pyx_t_9 = 0;
       __Pyx_INCREF(__pyx_kp_u__9);
       __pyx_t_7 += 1;
       __Pyx_GIVEREF(__pyx_kp_u__9);
-      PyTuple_SET_ITEM(__pyx_t_5, 2, __pyx_kp_u__9);
-      __pyx_t_9 = __Pyx_PyUnicode_Join(__pyx_t_5, 3, __pyx_t_7, __pyx_t_8); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 345, __pyx_L1_error)
+      PyTuple_SET_ITEM(__pyx_t_3, 2, __pyx_kp_u__9);
+      __pyx_t_9 = __Pyx_PyUnicode_Join(__pyx_t_3, 3, __pyx_t_7, __pyx_t_8); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 348, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_9);
-      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-      __pyx_t_5 = NULL;
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __pyx_t_3 = NULL;
       __pyx_t_10 = 0;
       if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_1))) {
-        __pyx_t_5 = PyMethod_GET_SELF(__pyx_t_1);
-        if (likely(__pyx_t_5)) {
+        __pyx_t_3 = PyMethod_GET_SELF(__pyx_t_1);
+        if (likely(__pyx_t_3)) {
           PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_1);
-          __Pyx_INCREF(__pyx_t_5);
+          __Pyx_INCREF(__pyx_t_3);
           __Pyx_INCREF(function);
           __Pyx_DECREF_SET(__pyx_t_1, function);
           __pyx_t_10 = 1;
@@ -8646,27 +8665,27 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_22content_repr(CYTHON_UNUSED PyO
       }
       #if CYTHON_FAST_PYCALL
       if (PyFunction_Check(__pyx_t_1)) {
-        PyObject *__pyx_temp[4] = {__pyx_t_5, __pyx_t_9, __pyx_n_s__21, __pyx_v_name_str};
-        __pyx_t_3 = __Pyx_PyFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_10, 3+__pyx_t_10); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 345, __pyx_L1_error)
-        __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
-        __Pyx_GOTREF(__pyx_t_3);
+        PyObject *__pyx_temp[4] = {__pyx_t_3, __pyx_t_9, __pyx_n_s__21, __pyx_v_name_str};
+        __pyx_t_5 = __Pyx_PyFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_10, 3+__pyx_t_10); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 348, __pyx_L1_error)
+        __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
+        __Pyx_GOTREF(__pyx_t_5);
         __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
       } else
       #endif
       #if CYTHON_FAST_PYCCALL
       if (__Pyx_PyFastCFunction_Check(__pyx_t_1)) {
-        PyObject *__pyx_temp[4] = {__pyx_t_5, __pyx_t_9, __pyx_n_s__21, __pyx_v_name_str};
-        __pyx_t_3 = __Pyx_PyCFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_10, 3+__pyx_t_10); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 345, __pyx_L1_error)
-        __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
-        __Pyx_GOTREF(__pyx_t_3);
+        PyObject *__pyx_temp[4] = {__pyx_t_3, __pyx_t_9, __pyx_n_s__21, __pyx_v_name_str};
+        __pyx_t_5 = __Pyx_PyCFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_10, 3+__pyx_t_10); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 348, __pyx_L1_error)
+        __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
+        __Pyx_GOTREF(__pyx_t_5);
         __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
       } else
       #endif
       {
-        __pyx_t_2 = PyTuple_New(3+__pyx_t_10); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 345, __pyx_L1_error)
+        __pyx_t_2 = PyTuple_New(3+__pyx_t_10); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 348, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
-        if (__pyx_t_5) {
-          __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_5); __pyx_t_5 = NULL;
+        if (__pyx_t_3) {
+          __Pyx_GIVEREF(__pyx_t_3); PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_3); __pyx_t_3 = NULL;
         }
         __Pyx_GIVEREF(__pyx_t_9);
         PyTuple_SET_ITEM(__pyx_t_2, 0+__pyx_t_10, __pyx_t_9);
@@ -8677,15 +8696,15 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_22content_repr(CYTHON_UNUSED PyO
         __Pyx_GIVEREF(__pyx_v_name_str);
         PyTuple_SET_ITEM(__pyx_t_2, 2+__pyx_t_10, __pyx_v_name_str);
         __pyx_t_9 = 0;
-        __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_2, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 345, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_3);
+        __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_2, NULL); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 348, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_5);
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       }
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      __Pyx_DECREF_SET(__pyx_v_name_str, __pyx_t_3);
-      __pyx_t_3 = 0;
+      __Pyx_DECREF_SET(__pyx_v_name_str, __pyx_t_5);
+      __pyx_t_5 = 0;
     }
-    __pyx_L8:;
+    __pyx_L9:;
 
     /* "ete4/parser/newick.pyx":334
  *     name_str = ''
@@ -8697,89 +8716,74 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_22content_repr(CYTHON_UNUSED PyO
     goto __pyx_L6;
   }
 
-  /* "ete4/parser/newick.pyx":347
+  /* "ete4/parser/newick.pyx":350
  *             name_str = sub(f'[{_ILLEGAL_NEWICK_CHARS}]', '_', name_str)
  * 
  *     elif name_type == float:  # support value             # <<<<<<<<<<<<<<
  *         support_str = f'{SUPPORT_FORMATTER}' % float(node.support)
  *         # Do not write redundant information
  */
-  __pyx_t_3 = PyObject_RichCompare(__pyx_v_name_type, ((PyObject *)(&PyFloat_Type)), Py_EQ); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 347, __pyx_L1_error)
-  __pyx_t_6 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_6 < 0)) __PYX_ERR(0, 347, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  if (__pyx_t_6) {
+  __pyx_t_5 = PyObject_RichCompare(__pyx_v_name_type, ((PyObject *)(&PyFloat_Type)), Py_EQ); __Pyx_XGOTREF(__pyx_t_5); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 350, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 350, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  if (__pyx_t_4) {
 
-    /* "ete4/parser/newick.pyx":348
+    /* "ete4/parser/newick.pyx":351
  * 
  *     elif name_type == float:  # support value
  *         support_str = f'{SUPPORT_FORMATTER}' % float(node.support)             # <<<<<<<<<<<<<<
  *         # Do not write redundant information
- *         if 'support' in properties:
+ *         if 'support' in props:
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_SUPPORT_FORMATTER); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 348, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_1 = __Pyx_PyObject_FormatSimple(__pyx_t_3, __pyx_empty_unicode); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 348, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_SUPPORT_FORMATTER); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 351, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_5);
+    __pyx_t_1 = __Pyx_PyObject_FormatSimple(__pyx_t_5, __pyx_empty_unicode); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 351, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_v_node, __pyx_n_s_support); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 348, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_2 = __Pyx_PyNumber_Float(__pyx_t_3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 348, __pyx_L1_error)
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_v_node, __pyx_n_s_support); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 351, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_5);
+    __pyx_t_2 = __Pyx_PyNumber_Float(__pyx_t_5); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 351, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __pyx_t_3 = __Pyx_PyUnicode_FormatSafe(__pyx_t_1, __pyx_t_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 348, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_3);
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __pyx_t_5 = __Pyx_PyUnicode_FormatSafe(__pyx_t_1, __pyx_t_2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 351, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __Pyx_DECREF_SET(__pyx_v_support_str, __pyx_t_3);
-    __pyx_t_3 = 0;
+    __Pyx_DECREF_SET(__pyx_v_support_str, __pyx_t_5);
+    __pyx_t_5 = 0;
 
-    /* "ete4/parser/newick.pyx":350
+    /* "ete4/parser/newick.pyx":353
  *         support_str = f'{SUPPORT_FORMATTER}' % float(node.support)
  *         # Do not write redundant information
- *         if 'support' in properties:             # <<<<<<<<<<<<<<
- *             properties.remove('support')
+ *         if 'support' in props:             # <<<<<<<<<<<<<<
+ *             props.remove('support')
  *     else:  # name_type == None
  */
-    __pyx_t_6 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_support, __pyx_cur_scope->__pyx_v_properties, Py_EQ)); if (unlikely(__pyx_t_6 < 0)) __PYX_ERR(0, 350, __pyx_L1_error)
-    __pyx_t_4 = (__pyx_t_6 != 0);
-    if (__pyx_t_4) {
+    __pyx_t_4 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_support, __pyx_cur_scope->__pyx_v_props, Py_EQ)); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 353, __pyx_L1_error)
+    __pyx_t_6 = (__pyx_t_4 != 0);
+    if (__pyx_t_6) {
 
-      /* "ete4/parser/newick.pyx":351
+      /* "ete4/parser/newick.pyx":354
  *         # Do not write redundant information
- *         if 'support' in properties:
- *             properties.remove('support')             # <<<<<<<<<<<<<<
+ *         if 'support' in props:
+ *             props.remove('support')             # <<<<<<<<<<<<<<
  *     else:  # name_type == None
  *         name_str = ''
  */
-      __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_v_properties, __pyx_n_s_remove); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 351, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_2);
-      __pyx_t_1 = NULL;
-      if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_2))) {
-        __pyx_t_1 = PyMethod_GET_SELF(__pyx_t_2);
-        if (likely(__pyx_t_1)) {
-          PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_2);
-          __Pyx_INCREF(__pyx_t_1);
-          __Pyx_INCREF(function);
-          __Pyx_DECREF_SET(__pyx_t_2, function);
-        }
-      }
-      __pyx_t_3 = (__pyx_t_1) ? __Pyx_PyObject_Call2Args(__pyx_t_2, __pyx_t_1, __pyx_n_s_support) : __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_n_s_support);
-      __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
-      if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 351, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_3);
-      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __pyx_t_5 = __Pyx_CallUnboundCMethod1(&__pyx_umethod_PyList_Type_remove, __pyx_cur_scope->__pyx_v_props, __pyx_n_s_support); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 354, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_5);
+      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-      /* "ete4/parser/newick.pyx":350
+      /* "ete4/parser/newick.pyx":353
  *         support_str = f'{SUPPORT_FORMATTER}' % float(node.support)
  *         # Do not write redundant information
- *         if 'support' in properties:             # <<<<<<<<<<<<<<
- *             properties.remove('support')
+ *         if 'support' in props:             # <<<<<<<<<<<<<<
+ *             props.remove('support')
  *     else:  # name_type == None
  */
     }
 
-    /* "ete4/parser/newick.pyx":347
+    /* "ete4/parser/newick.pyx":350
  *             name_str = sub(f'[{_ILLEGAL_NEWICK_CHARS}]', '_', name_str)
  * 
  *     elif name_type == float:  # support value             # <<<<<<<<<<<<<<
@@ -8789,8 +8793,8 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_22content_repr(CYTHON_UNUSED PyO
     goto __pyx_L6;
   }
 
-  /* "ete4/parser/newick.pyx":353
- *             properties.remove('support')
+  /* "ete4/parser/newick.pyx":356
+ *             props.remove('support')
  *     else:  # name_type == None
  *         name_str = ''             # <<<<<<<<<<<<<<
  * 
@@ -8802,110 +8806,151 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_22content_repr(CYTHON_UNUSED PyO
   }
   __pyx_L6:;
 
-  /* "ete4/parser/newick.pyx":357
+  /* "ete4/parser/newick.pyx":360
  *     # DIST FORMATTING
  *     dist_str = f':{DIST_FORMATTER}' % float(node.dist) \
  *             if (node.dist >= 0 and dist_type != None) else ''             # <<<<<<<<<<<<<<
  * 
- *     # PROPERTIES FORMATTING
+ *     if 'dist' in props and dist_type != None:
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_v_node, __pyx_n_s_dist); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 357, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_v_node, __pyx_n_s_dist); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 360, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_1 = PyObject_RichCompare(__pyx_t_2, __pyx_int_0, Py_GE); __Pyx_XGOTREF(__pyx_t_1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 357, __pyx_L1_error)
+  __pyx_t_1 = PyObject_RichCompare(__pyx_t_2, __pyx_int_0, Py_GE); __Pyx_XGOTREF(__pyx_t_1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 360, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_6 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_6 < 0)) __PYX_ERR(0, 357, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 360, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  if (__pyx_t_6) {
-  } else {
-    __pyx_t_4 = __pyx_t_6;
-    goto __pyx_L10_bool_binop_done;
-  }
-  __pyx_t_1 = PyObject_RichCompare(__pyx_v_dist_type, Py_None, Py_NE); __Pyx_XGOTREF(__pyx_t_1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 357, __pyx_L1_error)
-  __pyx_t_6 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_6 < 0)) __PYX_ERR(0, 357, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_4 = __pyx_t_6;
-  __pyx_L10_bool_binop_done:;
   if (__pyx_t_4) {
+  } else {
+    __pyx_t_6 = __pyx_t_4;
+    goto __pyx_L11_bool_binop_done;
+  }
+  __pyx_t_1 = PyObject_RichCompare(__pyx_v_dist_type, Py_None, Py_NE); __Pyx_XGOTREF(__pyx_t_1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 360, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 360, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_6 = __pyx_t_4;
+  __pyx_L11_bool_binop_done:;
+  if (__pyx_t_6) {
 
-    /* "ete4/parser/newick.pyx":356
+    /* "ete4/parser/newick.pyx":359
  * 
  *     # DIST FORMATTING
  *     dist_str = f':{DIST_FORMATTER}' % float(node.dist) \             # <<<<<<<<<<<<<<
  *             if (node.dist >= 0 and dist_type != None) else ''
  * 
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_DIST_FORMATTER); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 356, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_DIST_FORMATTER); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 359, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_2 = __Pyx_PyObject_FormatSimple(__pyx_t_1, __pyx_empty_unicode); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 356, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_FormatSimple(__pyx_t_1, __pyx_empty_unicode); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 359, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_t_1 = __Pyx_PyUnicode_Concat(__pyx_kp_u__17, __pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 356, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyUnicode_Concat(__pyx_kp_u__17, __pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 359, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_v_node, __pyx_n_s_dist); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 356, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_v_node, __pyx_n_s_dist); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 359, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_9 = __Pyx_PyNumber_Float(__pyx_t_2); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 356, __pyx_L1_error)
+    __pyx_t_9 = __Pyx_PyNumber_Float(__pyx_t_2); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 359, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_9);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __pyx_t_2 = __Pyx_PyUnicode_FormatSafe(__pyx_t_1, __pyx_t_9); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 356, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyUnicode_FormatSafe(__pyx_t_1, __pyx_t_9); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 359, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-    __pyx_t_3 = __pyx_t_2;
+    __pyx_t_5 = __pyx_t_2;
     __pyx_t_2 = 0;
   } else {
     __Pyx_INCREF(__pyx_kp_s_);
-    __pyx_t_3 = __pyx_kp_s_;
+    __pyx_t_5 = __pyx_kp_s_;
   }
-  __pyx_v_dist_str = __pyx_t_3;
-  __pyx_t_3 = 0;
+  __pyx_v_dist_str = __pyx_t_5;
+  __pyx_t_5 = 0;
 
-  /* "ete4/parser/newick.pyx":360
+  /* "ete4/parser/newick.pyx":362
+ *             if (node.dist >= 0 and dist_type != None) else ''
+ * 
+ *     if 'dist' in props and dist_type != None:             # <<<<<<<<<<<<<<
+ *         props.remove('dist')
+ * 
+ */
+  __pyx_t_4 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_dist, __pyx_cur_scope->__pyx_v_props, Py_EQ)); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 362, __pyx_L1_error)
+  __pyx_t_11 = (__pyx_t_4 != 0);
+  if (__pyx_t_11) {
+  } else {
+    __pyx_t_6 = __pyx_t_11;
+    goto __pyx_L14_bool_binop_done;
+  }
+  __pyx_t_5 = PyObject_RichCompare(__pyx_v_dist_type, Py_None, Py_NE); __Pyx_XGOTREF(__pyx_t_5); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 362, __pyx_L1_error)
+  __pyx_t_11 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely(__pyx_t_11 < 0)) __PYX_ERR(0, 362, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __pyx_t_6 = __pyx_t_11;
+  __pyx_L14_bool_binop_done:;
+  if (__pyx_t_6) {
+
+    /* "ete4/parser/newick.pyx":363
+ * 
+ *     if 'dist' in props and dist_type != None:
+ *         props.remove('dist')             # <<<<<<<<<<<<<<
+ * 
+ *     # PROPERTIES FORMATTING
+ */
+    __pyx_t_5 = __Pyx_CallUnboundCMethod1(&__pyx_umethod_PyList_Type_remove, __pyx_cur_scope->__pyx_v_props, __pyx_n_s_dist); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 363, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_5);
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+
+    /* "ete4/parser/newick.pyx":362
+ *             if (node.dist >= 0 and dist_type != None) else ''
+ * 
+ *     if 'dist' in props and dist_type != None:             # <<<<<<<<<<<<<<
+ *         props.remove('dist')
+ * 
+ */
+  }
+
+  /* "ete4/parser/newick.pyx":366
  * 
  *     # PROPERTIES FORMATTING
  *     pairs_str = ':'.join('%s=%s' % (k, node.props.get(k))             # <<<<<<<<<<<<<<
- *                                     for k in properties
+ *                                     for k in props
  *                                     if node.props.get(k))
  */
-  __pyx_t_3 = __pyx_pf_4ete4_6parser_6newick_12content_repr_genexpr(((PyObject*)__pyx_cur_scope)); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 360, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_2 = __Pyx_PyString_Join(__pyx_kp_s__17, __pyx_t_3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 360, __pyx_L1_error)
+  __pyx_t_5 = __pyx_pf_4ete4_6parser_6newick_12content_repr_genexpr(((PyObject*)__pyx_cur_scope)); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 366, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_5);
+  __pyx_t_2 = __Pyx_PyString_Join(__pyx_kp_s__17, __pyx_t_5); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 366, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   __pyx_v_pairs_str = ((PyObject*)__pyx_t_2);
   __pyx_t_2 = 0;
 
-  /* "ete4/parser/newick.pyx":363
- *                                     for k in properties
+  /* "ete4/parser/newick.pyx":369
+ *                                     for k in props
  *                                     if node.props.get(k))
  *     props_str = f'[&&NHX:{pairs_str}]' if pairs_str else ''             # <<<<<<<<<<<<<<
  * 
  *     return (name_str or support_str) + dist_str + props_str
  */
-  __pyx_t_4 = __Pyx_PyObject_IsTrue(__pyx_v_pairs_str); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 363, __pyx_L1_error)
-  if (__pyx_t_4) {
-    __pyx_t_3 = PyTuple_New(3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 363, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_6 = __Pyx_PyObject_IsTrue(__pyx_v_pairs_str); if (unlikely(__pyx_t_6 < 0)) __PYX_ERR(0, 369, __pyx_L1_error)
+  if (__pyx_t_6) {
+    __pyx_t_5 = PyTuple_New(3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 369, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_5);
     __pyx_t_7 = 0;
     __pyx_t_8 = 127;
     __Pyx_INCREF(__pyx_kp_u_NHX_2);
     __pyx_t_7 += 7;
     __Pyx_GIVEREF(__pyx_kp_u_NHX_2);
-    PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_kp_u_NHX_2);
-    __pyx_t_9 = __Pyx_PyObject_FormatSimple(__pyx_v_pairs_str, __pyx_empty_unicode); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 363, __pyx_L1_error)
+    PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_kp_u_NHX_2);
+    __pyx_t_9 = __Pyx_PyObject_FormatSimple(__pyx_v_pairs_str, __pyx_empty_unicode); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 369, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_9);
     __pyx_t_8 = (__Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_9) > __pyx_t_8) ? __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_9) : __pyx_t_8;
     __pyx_t_7 += __Pyx_PyUnicode_GET_LENGTH(__pyx_t_9);
     __Pyx_GIVEREF(__pyx_t_9);
-    PyTuple_SET_ITEM(__pyx_t_3, 1, __pyx_t_9);
+    PyTuple_SET_ITEM(__pyx_t_5, 1, __pyx_t_9);
     __pyx_t_9 = 0;
     __Pyx_INCREF(__pyx_kp_u__9);
     __pyx_t_7 += 1;
     __Pyx_GIVEREF(__pyx_kp_u__9);
-    PyTuple_SET_ITEM(__pyx_t_3, 2, __pyx_kp_u__9);
-    __pyx_t_9 = __Pyx_PyUnicode_Join(__pyx_t_3, 3, __pyx_t_7, __pyx_t_8); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 363, __pyx_L1_error)
+    PyTuple_SET_ITEM(__pyx_t_5, 2, __pyx_kp_u__9);
+    __pyx_t_9 = __Pyx_PyUnicode_Join(__pyx_t_5, 3, __pyx_t_7, __pyx_t_8); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 369, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_9);
-    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     __pyx_t_2 = __pyx_t_9;
     __pyx_t_9 = 0;
   } else {
@@ -8915,7 +8960,7 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_22content_repr(CYTHON_UNUSED PyO
   __pyx_v_props_str = __pyx_t_2;
   __pyx_t_2 = 0;
 
-  /* "ete4/parser/newick.pyx":365
+  /* "ete4/parser/newick.pyx":371
  *     props_str = f'[&&NHX:{pairs_str}]' if pairs_str else ''
  * 
  *     return (name_str or support_str) + dist_str + props_str             # <<<<<<<<<<<<<<
@@ -8923,20 +8968,20 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_22content_repr(CYTHON_UNUSED PyO
  * 
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_4 = __Pyx_PyObject_IsTrue(__pyx_v_name_str); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 365, __pyx_L1_error)
-  if (!__pyx_t_4) {
+  __pyx_t_6 = __Pyx_PyObject_IsTrue(__pyx_v_name_str); if (unlikely(__pyx_t_6 < 0)) __PYX_ERR(0, 371, __pyx_L1_error)
+  if (!__pyx_t_6) {
   } else {
     __Pyx_INCREF(__pyx_v_name_str);
     __pyx_t_2 = __pyx_v_name_str;
-    goto __pyx_L12_bool_binop_done;
+    goto __pyx_L16_bool_binop_done;
   }
   __Pyx_INCREF(__pyx_v_support_str);
   __pyx_t_2 = __pyx_v_support_str;
-  __pyx_L12_bool_binop_done:;
-  __pyx_t_9 = PyNumber_Add(__pyx_t_2, __pyx_v_dist_str); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 365, __pyx_L1_error)
+  __pyx_L16_bool_binop_done:;
+  __pyx_t_9 = PyNumber_Add(__pyx_t_2, __pyx_v_dist_str); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 371, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_9);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = PyNumber_Add(__pyx_t_9, __pyx_v_props_str); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 365, __pyx_L1_error)
+  __pyx_t_2 = PyNumber_Add(__pyx_t_9, __pyx_v_props_str); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 371, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
   __pyx_r = __pyx_t_2;
@@ -8977,7 +9022,7 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_22content_repr(CYTHON_UNUSED PyO
   return __pyx_r;
 }
 
-/* "ete4/parser/newick.pyx":368
+/* "ete4/parser/newick.pyx":374
  * 
  * 
  * def quote(name, escaped_chars=" \t\r\n()[]':;,"):             # <<<<<<<<<<<<<<
@@ -9026,7 +9071,7 @@ static PyObject *__pyx_pw_4ete4_6parser_6newick_25quote(PyObject *__pyx_self, Py
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "quote") < 0)) __PYX_ERR(0, 368, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "quote") < 0)) __PYX_ERR(0, 374, __pyx_L3_error)
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
@@ -9042,7 +9087,7 @@ static PyObject *__pyx_pw_4ete4_6parser_6newick_25quote(PyObject *__pyx_self, Py
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("quote", 0, 1, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 368, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("quote", 0, 1, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 374, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("ete4.parser.newick.quote", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -9056,7 +9101,7 @@ static PyObject *__pyx_pw_4ete4_6parser_6newick_25quote(PyObject *__pyx_self, Py
 }
 static PyObject *__pyx_gb_4ete4_6parser_6newick_5quote_2generator2(__pyx_CoroutineObject *__pyx_generator, CYTHON_UNUSED PyThreadState *__pyx_tstate, PyObject *__pyx_sent_value); /* proto */
 
-/* "ete4/parser/newick.pyx":370
+/* "ete4/parser/newick.pyx":376
  * def quote(name, escaped_chars=" \t\r\n()[]':;,"):
  *     "Return the name quoted if it has any characters that need escaping"
  *     if any(c in name for c in escaped_chars):             # <<<<<<<<<<<<<<
@@ -9076,7 +9121,7 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_5quote_genexpr(PyObject *__pyx_s
   if (unlikely(!__pyx_cur_scope)) {
     __pyx_cur_scope = ((struct __pyx_obj_4ete4_6parser_6newick___pyx_scope_struct_5_genexpr *)Py_None);
     __Pyx_INCREF(Py_None);
-    __PYX_ERR(0, 370, __pyx_L1_error)
+    __PYX_ERR(0, 376, __pyx_L1_error)
   } else {
     __Pyx_GOTREF(__pyx_cur_scope);
   }
@@ -9084,7 +9129,7 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_5quote_genexpr(PyObject *__pyx_s
   __Pyx_INCREF(((PyObject *)__pyx_cur_scope->__pyx_outer_scope));
   __Pyx_GIVEREF(__pyx_cur_scope->__pyx_outer_scope);
   {
-    __pyx_CoroutineObject *gen = __Pyx_Generator_New((__pyx_coroutine_body_t) __pyx_gb_4ete4_6parser_6newick_5quote_2generator2, NULL, (PyObject *) __pyx_cur_scope, __pyx_n_s_genexpr, __pyx_n_s_quote_locals_genexpr, __pyx_n_s_ete4_parser_newick); if (unlikely(!gen)) __PYX_ERR(0, 370, __pyx_L1_error)
+    __pyx_CoroutineObject *gen = __Pyx_Generator_New((__pyx_coroutine_body_t) __pyx_gb_4ete4_6parser_6newick_5quote_2generator2, NULL, (PyObject *) __pyx_cur_scope, __pyx_n_s_genexpr, __pyx_n_s_quote_locals_genexpr, __pyx_n_s_ete4_parser_newick); if (unlikely(!gen)) __PYX_ERR(0, 376, __pyx_L1_error)
     __Pyx_DECREF(__pyx_cur_scope);
     __Pyx_RefNannyFinishContext();
     return (PyObject *) gen;
@@ -9122,32 +9167,32 @@ static PyObject *__pyx_gb_4ete4_6parser_6newick_5quote_2generator2(__pyx_Corouti
     return NULL;
   }
   __pyx_L3_first_run:;
-  if (unlikely(!__pyx_sent_value)) __PYX_ERR(0, 370, __pyx_L1_error)
-  if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_escaped_chars)) { __Pyx_RaiseClosureNameError("escaped_chars"); __PYX_ERR(0, 370, __pyx_L1_error) }
+  if (unlikely(!__pyx_sent_value)) __PYX_ERR(0, 376, __pyx_L1_error)
+  if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_escaped_chars)) { __Pyx_RaiseClosureNameError("escaped_chars"); __PYX_ERR(0, 376, __pyx_L1_error) }
   if (likely(PyList_CheckExact(__pyx_cur_scope->__pyx_outer_scope->__pyx_v_escaped_chars)) || PyTuple_CheckExact(__pyx_cur_scope->__pyx_outer_scope->__pyx_v_escaped_chars)) {
     __pyx_t_1 = __pyx_cur_scope->__pyx_outer_scope->__pyx_v_escaped_chars; __Pyx_INCREF(__pyx_t_1); __pyx_t_2 = 0;
     __pyx_t_3 = NULL;
   } else {
-    __pyx_t_2 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_cur_scope->__pyx_outer_scope->__pyx_v_escaped_chars); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 370, __pyx_L1_error)
+    __pyx_t_2 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_cur_scope->__pyx_outer_scope->__pyx_v_escaped_chars); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 376, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_3 = Py_TYPE(__pyx_t_1)->tp_iternext; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 370, __pyx_L1_error)
+    __pyx_t_3 = Py_TYPE(__pyx_t_1)->tp_iternext; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 376, __pyx_L1_error)
   }
   for (;;) {
     if (likely(!__pyx_t_3)) {
       if (likely(PyList_CheckExact(__pyx_t_1))) {
         if (__pyx_t_2 >= PyList_GET_SIZE(__pyx_t_1)) break;
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_4 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_2); __Pyx_INCREF(__pyx_t_4); __pyx_t_2++; if (unlikely(0 < 0)) __PYX_ERR(0, 370, __pyx_L1_error)
+        __pyx_t_4 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_2); __Pyx_INCREF(__pyx_t_4); __pyx_t_2++; if (unlikely(0 < 0)) __PYX_ERR(0, 376, __pyx_L1_error)
         #else
-        __pyx_t_4 = PySequence_ITEM(__pyx_t_1, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 370, __pyx_L1_error)
+        __pyx_t_4 = PySequence_ITEM(__pyx_t_1, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 376, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_4);
         #endif
       } else {
         if (__pyx_t_2 >= PyTuple_GET_SIZE(__pyx_t_1)) break;
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_4 = PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_2); __Pyx_INCREF(__pyx_t_4); __pyx_t_2++; if (unlikely(0 < 0)) __PYX_ERR(0, 370, __pyx_L1_error)
+        __pyx_t_4 = PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_2); __Pyx_INCREF(__pyx_t_4); __pyx_t_2++; if (unlikely(0 < 0)) __PYX_ERR(0, 376, __pyx_L1_error)
         #else
-        __pyx_t_4 = PySequence_ITEM(__pyx_t_1, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 370, __pyx_L1_error)
+        __pyx_t_4 = PySequence_ITEM(__pyx_t_1, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 376, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_4);
         #endif
       }
@@ -9157,7 +9202,7 @@ static PyObject *__pyx_gb_4ete4_6parser_6newick_5quote_2generator2(__pyx_Corouti
         PyObject* exc_type = PyErr_Occurred();
         if (exc_type) {
           if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-          else __PYX_ERR(0, 370, __pyx_L1_error)
+          else __PYX_ERR(0, 376, __pyx_L1_error)
         }
         break;
       }
@@ -9167,8 +9212,8 @@ static PyObject *__pyx_gb_4ete4_6parser_6newick_5quote_2generator2(__pyx_Corouti
     __Pyx_XDECREF_SET(__pyx_cur_scope->__pyx_v_c, __pyx_t_4);
     __Pyx_GIVEREF(__pyx_t_4);
     __pyx_t_4 = 0;
-    if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_name)) { __Pyx_RaiseClosureNameError("name"); __PYX_ERR(0, 370, __pyx_L1_error) }
-    __pyx_t_5 = (__Pyx_PySequence_ContainsTF(__pyx_cur_scope->__pyx_v_c, __pyx_cur_scope->__pyx_outer_scope->__pyx_v_name, Py_EQ)); if (unlikely(__pyx_t_5 < 0)) __PYX_ERR(0, 370, __pyx_L1_error)
+    if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_name)) { __Pyx_RaiseClosureNameError("name"); __PYX_ERR(0, 376, __pyx_L1_error) }
+    __pyx_t_5 = (__Pyx_PySequence_ContainsTF(__pyx_cur_scope->__pyx_v_c, __pyx_cur_scope->__pyx_outer_scope->__pyx_v_name, Py_EQ)); if (unlikely(__pyx_t_5 < 0)) __PYX_ERR(0, 376, __pyx_L1_error)
     __pyx_t_6 = (__pyx_t_5 != 0);
     if (__pyx_t_6) {
       __Pyx_XDECREF(__pyx_r);
@@ -9205,7 +9250,7 @@ static PyObject *__pyx_gb_4ete4_6parser_6newick_5quote_2generator2(__pyx_Corouti
   return __pyx_r;
 }
 
-/* "ete4/parser/newick.pyx":368
+/* "ete4/parser/newick.pyx":374
  * 
  * 
  * def quote(name, escaped_chars=" \t\r\n()[]':;,"):             # <<<<<<<<<<<<<<
@@ -9228,7 +9273,7 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_24quote(CYTHON_UNUSED PyObject *
   if (unlikely(!__pyx_cur_scope)) {
     __pyx_cur_scope = ((struct __pyx_obj_4ete4_6parser_6newick___pyx_scope_struct_4_quote *)Py_None);
     __Pyx_INCREF(Py_None);
-    __PYX_ERR(0, 368, __pyx_L1_error)
+    __PYX_ERR(0, 374, __pyx_L1_error)
   } else {
     __Pyx_GOTREF(__pyx_cur_scope);
   }
@@ -9239,23 +9284,23 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_24quote(CYTHON_UNUSED PyObject *
   __Pyx_INCREF(__pyx_cur_scope->__pyx_v_escaped_chars);
   __Pyx_GIVEREF(__pyx_cur_scope->__pyx_v_escaped_chars);
 
-  /* "ete4/parser/newick.pyx":370
+  /* "ete4/parser/newick.pyx":376
  * def quote(name, escaped_chars=" \t\r\n()[]':;,"):
  *     "Return the name quoted if it has any characters that need escaping"
  *     if any(c in name for c in escaped_chars):             # <<<<<<<<<<<<<<
  *         return "'%s'" % name.replace("'", "''")  # ' escapes to '' in newicks
  *     else:
  */
-  __pyx_t_1 = __pyx_pf_4ete4_6parser_6newick_5quote_genexpr(((PyObject*)__pyx_cur_scope)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 370, __pyx_L1_error)
+  __pyx_t_1 = __pyx_pf_4ete4_6parser_6newick_5quote_genexpr(((PyObject*)__pyx_cur_scope)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 376, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_Generator_Next(__pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 370, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_Generator_Next(__pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 376, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_3 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely(__pyx_t_3 < 0)) __PYX_ERR(0, 370, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely(__pyx_t_3 < 0)) __PYX_ERR(0, 376, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   if (__pyx_t_3) {
 
-    /* "ete4/parser/newick.pyx":371
+    /* "ete4/parser/newick.pyx":377
  *     "Return the name quoted if it has any characters that need escaping"
  *     if any(c in name for c in escaped_chars):
  *         return "'%s'" % name.replace("'", "''")  # ' escapes to '' in newicks             # <<<<<<<<<<<<<<
@@ -9263,19 +9308,19 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_24quote(CYTHON_UNUSED PyObject *
  *         return name
  */
     __Pyx_XDECREF(__pyx_r);
-    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_v_name, __pyx_n_s_replace); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 371, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_v_name, __pyx_n_s_replace); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 377, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_tuple__23, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 371, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_tuple__23, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 377, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __pyx_t_2 = __Pyx_PyString_FormatSafe(__pyx_kp_s_s, __pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 371, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyString_FormatSafe(__pyx_kp_s_s, __pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 377, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __pyx_r = __pyx_t_2;
     __pyx_t_2 = 0;
     goto __pyx_L0;
 
-    /* "ete4/parser/newick.pyx":370
+    /* "ete4/parser/newick.pyx":376
  * def quote(name, escaped_chars=" \t\r\n()[]':;,"):
  *     "Return the name quoted if it has any characters that need escaping"
  *     if any(c in name for c in escaped_chars):             # <<<<<<<<<<<<<<
@@ -9284,7 +9329,7 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_24quote(CYTHON_UNUSED PyObject *
  */
   }
 
-  /* "ete4/parser/newick.pyx":373
+  /* "ete4/parser/newick.pyx":379
  *         return "'%s'" % name.replace("'", "''")  # ' escapes to '' in newicks
  *     else:
  *         return name             # <<<<<<<<<<<<<<
@@ -9298,7 +9343,7 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_24quote(CYTHON_UNUSED PyObject *
     goto __pyx_L0;
   }
 
-  /* "ete4/parser/newick.pyx":368
+  /* "ete4/parser/newick.pyx":374
  * 
  * 
  * def quote(name, escaped_chars=" \t\r\n()[]':;,"):             # <<<<<<<<<<<<<<
@@ -9319,7 +9364,7 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_24quote(CYTHON_UNUSED PyObject *
   return __pyx_r;
 }
 
-/* "ete4/parser/newick.pyx":376
+/* "ete4/parser/newick.pyx":382
  * 
  * 
  * def write_newick(tree, format=0, properties=[], quoted_names=False):             # <<<<<<<<<<<<<<
@@ -9388,7 +9433,7 @@ static PyObject *__pyx_pw_4ete4_6parser_6newick_27write_newick(PyObject *__pyx_s
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "write_newick") < 0)) __PYX_ERR(0, 376, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "write_newick") < 0)) __PYX_ERR(0, 382, __pyx_L3_error)
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
@@ -9410,7 +9455,7 @@ static PyObject *__pyx_pw_4ete4_6parser_6newick_27write_newick(PyObject *__pyx_s
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("write_newick", 0, 1, 4, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 376, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("write_newick", 0, 1, 4, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 382, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("ete4.parser.newick.write_newick", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -9424,7 +9469,7 @@ static PyObject *__pyx_pw_4ete4_6parser_6newick_27write_newick(PyObject *__pyx_s
 }
 static PyObject *__pyx_gb_4ete4_6parser_6newick_12write_newick_2generator3(__pyx_CoroutineObject *__pyx_generator, CYTHON_UNUSED PyThreadState *__pyx_tstate, PyObject *__pyx_sent_value); /* proto */
 
-/* "ete4/parser/newick.pyx":380
+/* "ete4/parser/newick.pyx":386
  *     children_text = ','.join(write_newick(node, format, properties=properties,
  *                                           quoted_names=quoted_names)\
  *                        .rstrip(';') for node in tree.children)             # <<<<<<<<<<<<<<
@@ -9444,7 +9489,7 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_12write_newick_genexpr(PyObject 
   if (unlikely(!__pyx_cur_scope)) {
     __pyx_cur_scope = ((struct __pyx_obj_4ete4_6parser_6newick___pyx_scope_struct_7_genexpr *)Py_None);
     __Pyx_INCREF(Py_None);
-    __PYX_ERR(0, 380, __pyx_L1_error)
+    __PYX_ERR(0, 386, __pyx_L1_error)
   } else {
     __Pyx_GOTREF(__pyx_cur_scope);
   }
@@ -9452,7 +9497,7 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_12write_newick_genexpr(PyObject 
   __Pyx_INCREF(((PyObject *)__pyx_cur_scope->__pyx_outer_scope));
   __Pyx_GIVEREF(__pyx_cur_scope->__pyx_outer_scope);
   {
-    __pyx_CoroutineObject *gen = __Pyx_Generator_New((__pyx_coroutine_body_t) __pyx_gb_4ete4_6parser_6newick_12write_newick_2generator3, NULL, (PyObject *) __pyx_cur_scope, __pyx_n_s_genexpr, __pyx_n_s_write_newick_locals_genexpr, __pyx_n_s_ete4_parser_newick); if (unlikely(!gen)) __PYX_ERR(0, 380, __pyx_L1_error)
+    __pyx_CoroutineObject *gen = __Pyx_Generator_New((__pyx_coroutine_body_t) __pyx_gb_4ete4_6parser_6newick_12write_newick_2generator3, NULL, (PyObject *) __pyx_cur_scope, __pyx_n_s_genexpr, __pyx_n_s_write_newick_locals_genexpr, __pyx_n_s_ete4_parser_newick); if (unlikely(!gen)) __PYX_ERR(0, 386, __pyx_L1_error)
     __Pyx_DECREF(__pyx_cur_scope);
     __Pyx_RefNannyFinishContext();
     return (PyObject *) gen;
@@ -9493,17 +9538,17 @@ static PyObject *__pyx_gb_4ete4_6parser_6newick_12write_newick_2generator3(__pyx
     return NULL;
   }
   __pyx_L3_first_run:;
-  if (unlikely(!__pyx_sent_value)) __PYX_ERR(0, 380, __pyx_L1_error)
-  if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_tree)) { __Pyx_RaiseClosureNameError("tree"); __PYX_ERR(0, 380, __pyx_L1_error) }
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_outer_scope->__pyx_v_tree, __pyx_n_s_children); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 380, __pyx_L1_error)
+  if (unlikely(!__pyx_sent_value)) __PYX_ERR(0, 386, __pyx_L1_error)
+  if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_tree)) { __Pyx_RaiseClosureNameError("tree"); __PYX_ERR(0, 386, __pyx_L1_error) }
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_outer_scope->__pyx_v_tree, __pyx_n_s_children); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 386, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (likely(PyList_CheckExact(__pyx_t_1)) || PyTuple_CheckExact(__pyx_t_1)) {
     __pyx_t_2 = __pyx_t_1; __Pyx_INCREF(__pyx_t_2); __pyx_t_3 = 0;
     __pyx_t_4 = NULL;
   } else {
-    __pyx_t_3 = -1; __pyx_t_2 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 380, __pyx_L1_error)
+    __pyx_t_3 = -1; __pyx_t_2 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 386, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_4 = Py_TYPE(__pyx_t_2)->tp_iternext; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 380, __pyx_L1_error)
+    __pyx_t_4 = Py_TYPE(__pyx_t_2)->tp_iternext; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 386, __pyx_L1_error)
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   for (;;) {
@@ -9511,17 +9556,17 @@ static PyObject *__pyx_gb_4ete4_6parser_6newick_12write_newick_2generator3(__pyx
       if (likely(PyList_CheckExact(__pyx_t_2))) {
         if (__pyx_t_3 >= PyList_GET_SIZE(__pyx_t_2)) break;
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_1 = PyList_GET_ITEM(__pyx_t_2, __pyx_t_3); __Pyx_INCREF(__pyx_t_1); __pyx_t_3++; if (unlikely(0 < 0)) __PYX_ERR(0, 380, __pyx_L1_error)
+        __pyx_t_1 = PyList_GET_ITEM(__pyx_t_2, __pyx_t_3); __Pyx_INCREF(__pyx_t_1); __pyx_t_3++; if (unlikely(0 < 0)) __PYX_ERR(0, 386, __pyx_L1_error)
         #else
-        __pyx_t_1 = PySequence_ITEM(__pyx_t_2, __pyx_t_3); __pyx_t_3++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 380, __pyx_L1_error)
+        __pyx_t_1 = PySequence_ITEM(__pyx_t_2, __pyx_t_3); __pyx_t_3++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 386, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_1);
         #endif
       } else {
         if (__pyx_t_3 >= PyTuple_GET_SIZE(__pyx_t_2)) break;
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_1 = PyTuple_GET_ITEM(__pyx_t_2, __pyx_t_3); __Pyx_INCREF(__pyx_t_1); __pyx_t_3++; if (unlikely(0 < 0)) __PYX_ERR(0, 380, __pyx_L1_error)
+        __pyx_t_1 = PyTuple_GET_ITEM(__pyx_t_2, __pyx_t_3); __Pyx_INCREF(__pyx_t_1); __pyx_t_3++; if (unlikely(0 < 0)) __PYX_ERR(0, 386, __pyx_L1_error)
         #else
-        __pyx_t_1 = PySequence_ITEM(__pyx_t_2, __pyx_t_3); __pyx_t_3++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 380, __pyx_L1_error)
+        __pyx_t_1 = PySequence_ITEM(__pyx_t_2, __pyx_t_3); __pyx_t_3++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 386, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_1);
         #endif
       }
@@ -9531,7 +9576,7 @@ static PyObject *__pyx_gb_4ete4_6parser_6newick_12write_newick_2generator3(__pyx
         PyObject* exc_type = PyErr_Occurred();
         if (exc_type) {
           if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-          else __PYX_ERR(0, 380, __pyx_L1_error)
+          else __PYX_ERR(0, 386, __pyx_L1_error)
         }
         break;
       }
@@ -9542,17 +9587,17 @@ static PyObject *__pyx_gb_4ete4_6parser_6newick_12write_newick_2generator3(__pyx
     __Pyx_GIVEREF(__pyx_t_1);
     __pyx_t_1 = 0;
 
-    /* "ete4/parser/newick.pyx":378
+    /* "ete4/parser/newick.pyx":384
  * def write_newick(tree, format=0, properties=[], quoted_names=False):
  *     "Return newick representation from tree"
  *     children_text = ','.join(write_newick(node, format, properties=properties,             # <<<<<<<<<<<<<<
  *                                           quoted_names=quoted_names)\
  *                        .rstrip(';') for node in tree.children)
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_write_newick); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 378, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_write_newick); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 384, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_format)) { __Pyx_RaiseClosureNameError("format"); __PYX_ERR(0, 378, __pyx_L1_error) }
-    __pyx_t_6 = PyTuple_New(2); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 378, __pyx_L1_error)
+    if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_format)) { __Pyx_RaiseClosureNameError("format"); __PYX_ERR(0, 384, __pyx_L1_error) }
+    __pyx_t_6 = PyTuple_New(2); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 384, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
     __Pyx_INCREF(__pyx_cur_scope->__pyx_v_node);
     __Pyx_GIVEREF(__pyx_cur_scope->__pyx_v_node);
@@ -9560,42 +9605,42 @@ static PyObject *__pyx_gb_4ete4_6parser_6newick_12write_newick_2generator3(__pyx
     __Pyx_INCREF(__pyx_cur_scope->__pyx_outer_scope->__pyx_v_format);
     __Pyx_GIVEREF(__pyx_cur_scope->__pyx_outer_scope->__pyx_v_format);
     PyTuple_SET_ITEM(__pyx_t_6, 1, __pyx_cur_scope->__pyx_outer_scope->__pyx_v_format);
-    __pyx_t_7 = __Pyx_PyDict_NewPresized(2); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 378, __pyx_L1_error)
+    __pyx_t_7 = __Pyx_PyDict_NewPresized(2); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 384, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
-    if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_properties)) { __Pyx_RaiseClosureNameError("properties"); __PYX_ERR(0, 378, __pyx_L1_error) }
-    if (PyDict_SetItem(__pyx_t_7, __pyx_n_s_properties, __pyx_cur_scope->__pyx_outer_scope->__pyx_v_properties) < 0) __PYX_ERR(0, 378, __pyx_L1_error)
+    if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_properties)) { __Pyx_RaiseClosureNameError("properties"); __PYX_ERR(0, 384, __pyx_L1_error) }
+    if (PyDict_SetItem(__pyx_t_7, __pyx_n_s_properties, __pyx_cur_scope->__pyx_outer_scope->__pyx_v_properties) < 0) __PYX_ERR(0, 384, __pyx_L1_error)
 
-    /* "ete4/parser/newick.pyx":379
+    /* "ete4/parser/newick.pyx":385
  *     "Return newick representation from tree"
  *     children_text = ','.join(write_newick(node, format, properties=properties,
  *                                           quoted_names=quoted_names)\             # <<<<<<<<<<<<<<
  *                        .rstrip(';') for node in tree.children)
  *     content_text = content_repr(tree, format=format, properties=properties,
  */
-    if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_quoted_names)) { __Pyx_RaiseClosureNameError("quoted_names"); __PYX_ERR(0, 379, __pyx_L1_error) }
-    if (PyDict_SetItem(__pyx_t_7, __pyx_n_s_quoted_names, __pyx_cur_scope->__pyx_outer_scope->__pyx_v_quoted_names) < 0) __PYX_ERR(0, 378, __pyx_L1_error)
+    if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_quoted_names)) { __Pyx_RaiseClosureNameError("quoted_names"); __PYX_ERR(0, 385, __pyx_L1_error) }
+    if (PyDict_SetItem(__pyx_t_7, __pyx_n_s_quoted_names, __pyx_cur_scope->__pyx_outer_scope->__pyx_v_quoted_names) < 0) __PYX_ERR(0, 384, __pyx_L1_error)
 
-    /* "ete4/parser/newick.pyx":378
+    /* "ete4/parser/newick.pyx":384
  * def write_newick(tree, format=0, properties=[], quoted_names=False):
  *     "Return newick representation from tree"
  *     children_text = ','.join(write_newick(node, format, properties=properties,             # <<<<<<<<<<<<<<
  *                                           quoted_names=quoted_names)\
  *                        .rstrip(';') for node in tree.children)
  */
-    __pyx_t_8 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_6, __pyx_t_7); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 378, __pyx_L1_error)
+    __pyx_t_8 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_6, __pyx_t_7); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 384, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_8);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-    /* "ete4/parser/newick.pyx":380
+    /* "ete4/parser/newick.pyx":386
  *     children_text = ','.join(write_newick(node, format, properties=properties,
  *                                           quoted_names=quoted_names)\
  *                        .rstrip(';') for node in tree.children)             # <<<<<<<<<<<<<<
  *     content_text = content_repr(tree, format=format, properties=properties,
  *                                 quoted_names=quoted_names)
  */
-    __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_rstrip); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 380, __pyx_L1_error)
+    __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_rstrip); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 386, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
     __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
     __pyx_t_8 = NULL;
@@ -9610,7 +9655,7 @@ static PyObject *__pyx_gb_4ete4_6parser_6newick_12write_newick_2generator3(__pyx
     }
     __pyx_t_1 = (__pyx_t_8) ? __Pyx_PyObject_Call2Args(__pyx_t_7, __pyx_t_8, __pyx_kp_s__4) : __Pyx_PyObject_CallOneArg(__pyx_t_7, __pyx_kp_s__4);
     __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 380, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 386, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
     __pyx_r = __pyx_t_1;
@@ -9631,7 +9676,7 @@ static PyObject *__pyx_gb_4ete4_6parser_6newick_12write_newick_2generator3(__pyx
     __Pyx_XGOTREF(__pyx_t_2);
     __pyx_t_3 = __pyx_cur_scope->__pyx_t_1;
     __pyx_t_4 = __pyx_cur_scope->__pyx_t_2;
-    if (unlikely(!__pyx_sent_value)) __PYX_ERR(0, 380, __pyx_L1_error)
+    if (unlikely(!__pyx_sent_value)) __PYX_ERR(0, 386, __pyx_L1_error)
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   CYTHON_MAYBE_UNUSED_VAR(__pyx_cur_scope);
@@ -9658,7 +9703,7 @@ static PyObject *__pyx_gb_4ete4_6parser_6newick_12write_newick_2generator3(__pyx
   return __pyx_r;
 }
 
-/* "ete4/parser/newick.pyx":376
+/* "ete4/parser/newick.pyx":382
  * 
  * 
  * def write_newick(tree, format=0, properties=[], quoted_names=False):             # <<<<<<<<<<<<<<
@@ -9687,7 +9732,7 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_26write_newick(CYTHON_UNUSED PyO
   if (unlikely(!__pyx_cur_scope)) {
     __pyx_cur_scope = ((struct __pyx_obj_4ete4_6parser_6newick___pyx_scope_struct_6_write_newick *)Py_None);
     __Pyx_INCREF(Py_None);
-    __PYX_ERR(0, 376, __pyx_L1_error)
+    __PYX_ERR(0, 382, __pyx_L1_error)
   } else {
     __Pyx_GOTREF(__pyx_cur_scope);
   }
@@ -9704,65 +9749,65 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_26write_newick(CYTHON_UNUSED PyO
   __Pyx_INCREF(__pyx_cur_scope->__pyx_v_quoted_names);
   __Pyx_GIVEREF(__pyx_cur_scope->__pyx_v_quoted_names);
 
-  /* "ete4/parser/newick.pyx":380
+  /* "ete4/parser/newick.pyx":386
  *     children_text = ','.join(write_newick(node, format, properties=properties,
  *                                           quoted_names=quoted_names)\
  *                        .rstrip(';') for node in tree.children)             # <<<<<<<<<<<<<<
  *     content_text = content_repr(tree, format=format, properties=properties,
  *                                 quoted_names=quoted_names)
  */
-  __pyx_t_1 = __pyx_pf_4ete4_6parser_6newick_12write_newick_genexpr(((PyObject*)__pyx_cur_scope)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 380, __pyx_L1_error)
+  __pyx_t_1 = __pyx_pf_4ete4_6parser_6newick_12write_newick_genexpr(((PyObject*)__pyx_cur_scope)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 386, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
 
-  /* "ete4/parser/newick.pyx":378
+  /* "ete4/parser/newick.pyx":384
  * def write_newick(tree, format=0, properties=[], quoted_names=False):
  *     "Return newick representation from tree"
  *     children_text = ','.join(write_newick(node, format, properties=properties,             # <<<<<<<<<<<<<<
  *                                           quoted_names=quoted_names)\
  *                        .rstrip(';') for node in tree.children)
  */
-  __pyx_t_2 = __Pyx_PyString_Join(__pyx_kp_s__25, __pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 378, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyString_Join(__pyx_kp_s__25, __pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 384, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_children_text = ((PyObject*)__pyx_t_2);
   __pyx_t_2 = 0;
 
-  /* "ete4/parser/newick.pyx":381
+  /* "ete4/parser/newick.pyx":387
  *                                           quoted_names=quoted_names)\
  *                        .rstrip(';') for node in tree.children)
  *     content_text = content_repr(tree, format=format, properties=properties,             # <<<<<<<<<<<<<<
  *                                 quoted_names=quoted_names)
  *     return (f'({children_text})' if tree.children else '') + content_text + ';'
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_content_repr); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 381, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_content_repr); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 387, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 381, __pyx_L1_error)
+  __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 387, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_INCREF(__pyx_cur_scope->__pyx_v_tree);
   __Pyx_GIVEREF(__pyx_cur_scope->__pyx_v_tree);
   PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_cur_scope->__pyx_v_tree);
-  __pyx_t_3 = __Pyx_PyDict_NewPresized(3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 381, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyDict_NewPresized(3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 387, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_format, __pyx_cur_scope->__pyx_v_format) < 0) __PYX_ERR(0, 381, __pyx_L1_error)
-  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_properties, __pyx_cur_scope->__pyx_v_properties) < 0) __PYX_ERR(0, 381, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_format, __pyx_cur_scope->__pyx_v_format) < 0) __PYX_ERR(0, 387, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_properties, __pyx_cur_scope->__pyx_v_properties) < 0) __PYX_ERR(0, 387, __pyx_L1_error)
 
-  /* "ete4/parser/newick.pyx":382
+  /* "ete4/parser/newick.pyx":388
  *                        .rstrip(';') for node in tree.children)
  *     content_text = content_repr(tree, format=format, properties=properties,
  *                                 quoted_names=quoted_names)             # <<<<<<<<<<<<<<
  *     return (f'({children_text})' if tree.children else '') + content_text + ';'
  * 
  */
-  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_quoted_names, __pyx_cur_scope->__pyx_v_quoted_names) < 0) __PYX_ERR(0, 381, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_quoted_names, __pyx_cur_scope->__pyx_v_quoted_names) < 0) __PYX_ERR(0, 387, __pyx_L1_error)
 
-  /* "ete4/parser/newick.pyx":381
+  /* "ete4/parser/newick.pyx":387
  *                                           quoted_names=quoted_names)\
  *                        .rstrip(';') for node in tree.children)
  *     content_text = content_repr(tree, format=format, properties=properties,             # <<<<<<<<<<<<<<
  *                                 quoted_names=quoted_names)
  *     return (f'({children_text})' if tree.children else '') + content_text + ';'
  */
-  __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_1, __pyx_t_3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 381, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_1, __pyx_t_3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 387, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -9770,7 +9815,7 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_26write_newick(CYTHON_UNUSED PyO
   __pyx_v_content_text = __pyx_t_4;
   __pyx_t_4 = 0;
 
-  /* "ete4/parser/newick.pyx":383
+  /* "ete4/parser/newick.pyx":389
  *     content_text = content_repr(tree, format=format, properties=properties,
  *                                 quoted_names=quoted_names)
  *     return (f'({children_text})' if tree.children else '') + content_text + ';'             # <<<<<<<<<<<<<<
@@ -9778,12 +9823,12 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_26write_newick(CYTHON_UNUSED PyO
  * 
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_v_tree, __pyx_n_s_children); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 383, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_v_tree, __pyx_n_s_children); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 389, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_5 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_5 < 0)) __PYX_ERR(0, 383, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_5 < 0)) __PYX_ERR(0, 389, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   if (__pyx_t_5) {
-    __pyx_t_3 = PyTuple_New(3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 383, __pyx_L1_error)
+    __pyx_t_3 = PyTuple_New(3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 389, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __pyx_t_6 = 0;
     __pyx_t_7 = 127;
@@ -9791,7 +9836,7 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_26write_newick(CYTHON_UNUSED PyO
     __pyx_t_6 += 1;
     __Pyx_GIVEREF(__pyx_kp_u__3);
     PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_kp_u__3);
-    __pyx_t_1 = __Pyx_PyObject_FormatSimple(__pyx_v_children_text, __pyx_empty_unicode); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 383, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_FormatSimple(__pyx_v_children_text, __pyx_empty_unicode); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 389, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __pyx_t_7 = (__Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_1) > __pyx_t_7) ? __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_1) : __pyx_t_7;
     __pyx_t_6 += __Pyx_PyUnicode_GET_LENGTH(__pyx_t_1);
@@ -9802,7 +9847,7 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_26write_newick(CYTHON_UNUSED PyO
     __pyx_t_6 += 1;
     __Pyx_GIVEREF(__pyx_kp_u__5);
     PyTuple_SET_ITEM(__pyx_t_3, 2, __pyx_kp_u__5);
-    __pyx_t_1 = __Pyx_PyUnicode_Join(__pyx_t_3, 3, __pyx_t_6, __pyx_t_7); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 383, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyUnicode_Join(__pyx_t_3, 3, __pyx_t_6, __pyx_t_7); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 389, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __pyx_t_4 = __pyx_t_1;
@@ -9811,17 +9856,17 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_26write_newick(CYTHON_UNUSED PyO
     __Pyx_INCREF(__pyx_kp_s_);
     __pyx_t_4 = __pyx_kp_s_;
   }
-  __pyx_t_1 = PyNumber_Add(__pyx_t_4, __pyx_v_content_text); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 383, __pyx_L1_error)
+  __pyx_t_1 = PyNumber_Add(__pyx_t_4, __pyx_v_content_text); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 389, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = PyNumber_Add(__pyx_t_1, __pyx_kp_s__4); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 383, __pyx_L1_error)
+  __pyx_t_4 = PyNumber_Add(__pyx_t_1, __pyx_kp_s__4); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 389, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_r = __pyx_t_4;
   __pyx_t_4 = 0;
   goto __pyx_L0;
 
-  /* "ete4/parser/newick.pyx":376
+  /* "ete4/parser/newick.pyx":382
  * 
  * 
  * def write_newick(tree, format=0, properties=[], quoted_names=False):             # <<<<<<<<<<<<<<
@@ -9846,7 +9891,7 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_26write_newick(CYTHON_UNUSED PyO
   return __pyx_r;
 }
 
-/* "ete4/parser/newick.pyx":386
+/* "ete4/parser/newick.pyx":392
  * 
  * 
  * def print_supported_formats():             # <<<<<<<<<<<<<<
@@ -9887,36 +9932,36 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_28print_supported_formats(CYTHON
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("print_supported_formats", 0);
 
-  /* "ete4/parser/newick.pyx":387
+  /* "ete4/parser/newick.pyx":393
  * 
  * def print_supported_formats():
  *     from ete4.smartview.ete.gardening import standardize             # <<<<<<<<<<<<<<
  *     t = Tree()
  *     t.populate(4, "ABCDEFGHI")
  */
-  __pyx_t_1 = PyList_New(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 387, __pyx_L1_error)
+  __pyx_t_1 = PyList_New(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 393, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_INCREF(__pyx_n_s_standardize);
   __Pyx_GIVEREF(__pyx_n_s_standardize);
   PyList_SET_ITEM(__pyx_t_1, 0, __pyx_n_s_standardize);
-  __pyx_t_2 = __Pyx_Import(__pyx_n_s_ete4_smartview_ete_gardening, __pyx_t_1, -1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 387, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_Import(__pyx_n_s_ete4_smartview_ete_gardening, __pyx_t_1, -1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 393, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_ImportFrom(__pyx_t_2, __pyx_n_s_standardize); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 387, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_ImportFrom(__pyx_t_2, __pyx_n_s_standardize); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 393, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_INCREF(__pyx_t_1);
   __pyx_v_standardize = __pyx_t_1;
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "ete4/parser/newick.pyx":388
+  /* "ete4/parser/newick.pyx":394
  * def print_supported_formats():
  *     from ete4.smartview.ete.gardening import standardize
  *     t = Tree()             # <<<<<<<<<<<<<<
  *     t.populate(4, "ABCDEFGHI")
  *     print(t)
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_Tree); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 388, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_Tree); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 394, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_t_3 = NULL;
   if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_1))) {
@@ -9930,51 +9975,51 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_28print_supported_formats(CYTHON
   }
   __pyx_t_2 = (__pyx_t_3) ? __Pyx_PyObject_CallOneArg(__pyx_t_1, __pyx_t_3) : __Pyx_PyObject_CallNoArg(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-  if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 388, __pyx_L1_error)
+  if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 394, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_t = __pyx_t_2;
   __pyx_t_2 = 0;
 
-  /* "ete4/parser/newick.pyx":389
+  /* "ete4/parser/newick.pyx":395
  *     from ete4.smartview.ete.gardening import standardize
  *     t = Tree()
  *     t.populate(4, "ABCDEFGHI")             # <<<<<<<<<<<<<<
  *     print(t)
  *     for f in NW_FORMAT:
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_t, __pyx_n_s_populate); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 389, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_t, __pyx_n_s_populate); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 395, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_tuple__26, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 389, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_tuple__26, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 395, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "ete4/parser/newick.pyx":390
+  /* "ete4/parser/newick.pyx":396
  *     t = Tree()
  *     t.populate(4, "ABCDEFGHI")
  *     print(t)             # <<<<<<<<<<<<<<
  *     for f in NW_FORMAT:
  *         print(' '.join(["Format", str(f),"=",
  */
-  if (__Pyx_PrintOne(0, __pyx_v_t) < 0) __PYX_ERR(0, 390, __pyx_L1_error)
+  if (__Pyx_PrintOne(0, __pyx_v_t) < 0) __PYX_ERR(0, 396, __pyx_L1_error)
 
-  /* "ete4/parser/newick.pyx":391
+  /* "ete4/parser/newick.pyx":397
  *     t.populate(4, "ABCDEFGHI")
  *     print(t)
  *     for f in NW_FORMAT:             # <<<<<<<<<<<<<<
  *         print(' '.join(["Format", str(f),"=",
  *             write_newick(t, format=f, properties=None, quoted_names=False)]))
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_NW_FORMAT); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 391, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_NW_FORMAT); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 397, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (likely(PyList_CheckExact(__pyx_t_1)) || PyTuple_CheckExact(__pyx_t_1)) {
     __pyx_t_2 = __pyx_t_1; __Pyx_INCREF(__pyx_t_2); __pyx_t_4 = 0;
     __pyx_t_5 = NULL;
   } else {
-    __pyx_t_4 = -1; __pyx_t_2 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 391, __pyx_L1_error)
+    __pyx_t_4 = -1; __pyx_t_2 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 397, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_5 = Py_TYPE(__pyx_t_2)->tp_iternext; if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 391, __pyx_L1_error)
+    __pyx_t_5 = Py_TYPE(__pyx_t_2)->tp_iternext; if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 397, __pyx_L1_error)
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   for (;;) {
@@ -9982,17 +10027,17 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_28print_supported_formats(CYTHON
       if (likely(PyList_CheckExact(__pyx_t_2))) {
         if (__pyx_t_4 >= PyList_GET_SIZE(__pyx_t_2)) break;
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_1 = PyList_GET_ITEM(__pyx_t_2, __pyx_t_4); __Pyx_INCREF(__pyx_t_1); __pyx_t_4++; if (unlikely(0 < 0)) __PYX_ERR(0, 391, __pyx_L1_error)
+        __pyx_t_1 = PyList_GET_ITEM(__pyx_t_2, __pyx_t_4); __Pyx_INCREF(__pyx_t_1); __pyx_t_4++; if (unlikely(0 < 0)) __PYX_ERR(0, 397, __pyx_L1_error)
         #else
-        __pyx_t_1 = PySequence_ITEM(__pyx_t_2, __pyx_t_4); __pyx_t_4++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 391, __pyx_L1_error)
+        __pyx_t_1 = PySequence_ITEM(__pyx_t_2, __pyx_t_4); __pyx_t_4++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 397, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_1);
         #endif
       } else {
         if (__pyx_t_4 >= PyTuple_GET_SIZE(__pyx_t_2)) break;
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_1 = PyTuple_GET_ITEM(__pyx_t_2, __pyx_t_4); __Pyx_INCREF(__pyx_t_1); __pyx_t_4++; if (unlikely(0 < 0)) __PYX_ERR(0, 391, __pyx_L1_error)
+        __pyx_t_1 = PyTuple_GET_ITEM(__pyx_t_2, __pyx_t_4); __Pyx_INCREF(__pyx_t_1); __pyx_t_4++; if (unlikely(0 < 0)) __PYX_ERR(0, 397, __pyx_L1_error)
         #else
-        __pyx_t_1 = PySequence_ITEM(__pyx_t_2, __pyx_t_4); __pyx_t_4++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 391, __pyx_L1_error)
+        __pyx_t_1 = PySequence_ITEM(__pyx_t_2, __pyx_t_4); __pyx_t_4++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 397, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_1);
         #endif
       }
@@ -10002,7 +10047,7 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_28print_supported_formats(CYTHON
         PyObject* exc_type = PyErr_Occurred();
         if (exc_type) {
           if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-          else __PYX_ERR(0, 391, __pyx_L1_error)
+          else __PYX_ERR(0, 397, __pyx_L1_error)
         }
         break;
       }
@@ -10011,45 +10056,45 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_28print_supported_formats(CYTHON
     __Pyx_XDECREF_SET(__pyx_v_f, __pyx_t_1);
     __pyx_t_1 = 0;
 
-    /* "ete4/parser/newick.pyx":392
+    /* "ete4/parser/newick.pyx":398
  *     print(t)
  *     for f in NW_FORMAT:
  *         print(' '.join(["Format", str(f),"=",             # <<<<<<<<<<<<<<
  *             write_newick(t, format=f, properties=None, quoted_names=False)]))
  */
-    __pyx_t_1 = __Pyx_PyObject_CallOneArg(((PyObject *)(&PyString_Type)), __pyx_v_f); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 392, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(((PyObject *)(&PyString_Type)), __pyx_v_f); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 398, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
 
-    /* "ete4/parser/newick.pyx":393
+    /* "ete4/parser/newick.pyx":399
  *     for f in NW_FORMAT:
  *         print(' '.join(["Format", str(f),"=",
  *             write_newick(t, format=f, properties=None, quoted_names=False)]))             # <<<<<<<<<<<<<<
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_write_newick); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 393, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_write_newick); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 399, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_6 = PyTuple_New(1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 393, __pyx_L1_error)
+    __pyx_t_6 = PyTuple_New(1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 399, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
     __Pyx_INCREF(__pyx_v_t);
     __Pyx_GIVEREF(__pyx_v_t);
     PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_v_t);
-    __pyx_t_7 = __Pyx_PyDict_NewPresized(3); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 393, __pyx_L1_error)
+    __pyx_t_7 = __Pyx_PyDict_NewPresized(3); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 399, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
-    if (PyDict_SetItem(__pyx_t_7, __pyx_n_s_format, __pyx_v_f) < 0) __PYX_ERR(0, 393, __pyx_L1_error)
-    if (PyDict_SetItem(__pyx_t_7, __pyx_n_s_properties, Py_None) < 0) __PYX_ERR(0, 393, __pyx_L1_error)
-    if (PyDict_SetItem(__pyx_t_7, __pyx_n_s_quoted_names, Py_False) < 0) __PYX_ERR(0, 393, __pyx_L1_error)
-    __pyx_t_8 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_6, __pyx_t_7); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 393, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_t_7, __pyx_n_s_format, __pyx_v_f) < 0) __PYX_ERR(0, 399, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_t_7, __pyx_n_s_properties, Py_None) < 0) __PYX_ERR(0, 399, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_t_7, __pyx_n_s_quoted_names, Py_False) < 0) __PYX_ERR(0, 399, __pyx_L1_error)
+    __pyx_t_8 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_6, __pyx_t_7); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 399, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_8);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-    /* "ete4/parser/newick.pyx":392
+    /* "ete4/parser/newick.pyx":398
  *     print(t)
  *     for f in NW_FORMAT:
  *         print(' '.join(["Format", str(f),"=",             # <<<<<<<<<<<<<<
  *             write_newick(t, format=f, properties=None, quoted_names=False)]))
  */
-    __pyx_t_7 = PyList_New(4); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 392, __pyx_L1_error)
+    __pyx_t_7 = PyList_New(4); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 398, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
     __Pyx_INCREF(__pyx_n_s_Format);
     __Pyx_GIVEREF(__pyx_n_s_Format);
@@ -10063,13 +10108,13 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_28print_supported_formats(CYTHON
     PyList_SET_ITEM(__pyx_t_7, 3, __pyx_t_8);
     __pyx_t_1 = 0;
     __pyx_t_8 = 0;
-    __pyx_t_8 = __Pyx_PyString_Join(__pyx_kp_s__27, __pyx_t_7); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 392, __pyx_L1_error)
+    __pyx_t_8 = __Pyx_PyString_Join(__pyx_kp_s__27, __pyx_t_7); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 398, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_8);
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-    if (__Pyx_PrintOne(0, __pyx_t_8) < 0) __PYX_ERR(0, 392, __pyx_L1_error)
+    if (__Pyx_PrintOne(0, __pyx_t_8) < 0) __PYX_ERR(0, 398, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
 
-    /* "ete4/parser/newick.pyx":391
+    /* "ete4/parser/newick.pyx":397
  *     t.populate(4, "ABCDEFGHI")
  *     print(t)
  *     for f in NW_FORMAT:             # <<<<<<<<<<<<<<
@@ -10079,7 +10124,7 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_28print_supported_formats(CYTHON
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "ete4/parser/newick.pyx":386
+  /* "ete4/parser/newick.pyx":392
  * 
  * 
  * def print_supported_formats():             # <<<<<<<<<<<<<<
@@ -10358,7 +10403,7 @@ static void __pyx_tp_dealloc_4ete4_6parser_6newick___pyx_scope_struct_2_content_
   struct __pyx_obj_4ete4_6parser_6newick___pyx_scope_struct_2_content_repr *p = (struct __pyx_obj_4ete4_6parser_6newick___pyx_scope_struct_2_content_repr *)o;
   PyObject_GC_UnTrack(o);
   Py_CLEAR(p->__pyx_v_node);
-  Py_CLEAR(p->__pyx_v_properties);
+  Py_CLEAR(p->__pyx_v_props);
   if (CYTHON_COMPILING_IN_CPYTHON && ((__pyx_freecount_4ete4_6parser_6newick___pyx_scope_struct_2_content_repr < 8) & (Py_TYPE(o)->tp_basicsize == sizeof(struct __pyx_obj_4ete4_6parser_6newick___pyx_scope_struct_2_content_repr)))) {
     __pyx_freelist_4ete4_6parser_6newick___pyx_scope_struct_2_content_repr[__pyx_freecount_4ete4_6parser_6newick___pyx_scope_struct_2_content_repr++] = ((struct __pyx_obj_4ete4_6parser_6newick___pyx_scope_struct_2_content_repr *)o);
   } else {
@@ -10372,8 +10417,8 @@ static int __pyx_tp_traverse_4ete4_6parser_6newick___pyx_scope_struct_2_content_
   if (p->__pyx_v_node) {
     e = (*v)(p->__pyx_v_node, a); if (e) return e;
   }
-  if (p->__pyx_v_properties) {
-    e = (*v)(p->__pyx_v_properties, a); if (e) return e;
+  if (p->__pyx_v_props) {
+    e = (*v)(p->__pyx_v_props, a); if (e) return e;
   }
   return 0;
 }
@@ -10384,8 +10429,8 @@ static int __pyx_tp_clear_4ete4_6parser_6newick___pyx_scope_struct_2_content_rep
   tmp = ((PyObject*)p->__pyx_v_node);
   p->__pyx_v_node = Py_None; Py_INCREF(Py_None);
   Py_XDECREF(tmp);
-  tmp = ((PyObject*)p->__pyx_v_properties);
-  p->__pyx_v_properties = Py_None; Py_INCREF(Py_None);
+  tmp = ((PyObject*)p->__pyx_v_props);
+  p->__pyx_v_props = ((PyObject*)Py_None); Py_INCREF(Py_None);
   Py_XDECREF(tmp);
   return 0;
 }
@@ -11327,25 +11372,25 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__15);
   __Pyx_GIVEREF(__pyx_tuple__15);
 
-  /* "ete4/parser/newick.pyx":371
+  /* "ete4/parser/newick.pyx":377
  *     "Return the name quoted if it has any characters that need escaping"
  *     if any(c in name for c in escaped_chars):
  *         return "'%s'" % name.replace("'", "''")  # ' escapes to '' in newicks             # <<<<<<<<<<<<<<
  *     else:
  *         return name
  */
-  __pyx_tuple__23 = PyTuple_Pack(2, __pyx_kp_s__11, __pyx_kp_s__13); if (unlikely(!__pyx_tuple__23)) __PYX_ERR(0, 371, __pyx_L1_error)
+  __pyx_tuple__23 = PyTuple_Pack(2, __pyx_kp_s__11, __pyx_kp_s__13); if (unlikely(!__pyx_tuple__23)) __PYX_ERR(0, 377, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__23);
   __Pyx_GIVEREF(__pyx_tuple__23);
 
-  /* "ete4/parser/newick.pyx":389
+  /* "ete4/parser/newick.pyx":395
  *     from ete4.smartview.ete.gardening import standardize
  *     t = Tree()
  *     t.populate(4, "ABCDEFGHI")             # <<<<<<<<<<<<<<
  *     print(t)
  *     for f in NW_FORMAT:
  */
-  __pyx_tuple__26 = PyTuple_Pack(2, __pyx_int_4, __pyx_n_s_ABCDEFGHI); if (unlikely(!__pyx_tuple__26)) __PYX_ERR(0, 389, __pyx_L1_error)
+  __pyx_tuple__26 = PyTuple_Pack(2, __pyx_int_4, __pyx_n_s_ABCDEFGHI); if (unlikely(!__pyx_tuple__26)) __PYX_ERR(0, 395, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__26);
   __Pyx_GIVEREF(__pyx_tuple__26);
 
@@ -11500,46 +11545,46 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *     "Return content of a node as represented in specified newick format"
  *     # Empty list includes all properties
  */
-  __pyx_tuple__53 = PyTuple_Pack(16, __pyx_n_s_node, __pyx_n_s_format, __pyx_n_s_properties, __pyx_n_s_quoted_names, __pyx_n_s_name, __pyx_n_s_dist, __pyx_n_s_name_type, __pyx_n_s_dist_type, __pyx_n_s_flexible, __pyx_n_s_name_str, __pyx_n_s_support_str, __pyx_n_s_dist_str, __pyx_n_s_pairs_str, __pyx_n_s_props_str, __pyx_n_s_genexpr, __pyx_n_s_genexpr); if (unlikely(!__pyx_tuple__53)) __PYX_ERR(0, 312, __pyx_L1_error)
+  __pyx_tuple__53 = PyTuple_Pack(17, __pyx_n_s_node, __pyx_n_s_format, __pyx_n_s_properties, __pyx_n_s_quoted_names, __pyx_n_s_props, __pyx_n_s_name, __pyx_n_s_dist, __pyx_n_s_name_type, __pyx_n_s_dist_type, __pyx_n_s_flexible, __pyx_n_s_name_str, __pyx_n_s_support_str, __pyx_n_s_dist_str, __pyx_n_s_pairs_str, __pyx_n_s_props_str, __pyx_n_s_genexpr, __pyx_n_s_genexpr); if (unlikely(!__pyx_tuple__53)) __PYX_ERR(0, 312, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__53);
   __Pyx_GIVEREF(__pyx_tuple__53);
-  __pyx_codeobj__54 = (PyObject*)__Pyx_PyCode_New(4, 0, 16, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__53, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_ete4_parser_newick_pyx, __pyx_n_s_content_repr, 312, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__54)) __PYX_ERR(0, 312, __pyx_L1_error)
+  __pyx_codeobj__54 = (PyObject*)__Pyx_PyCode_New(4, 0, 17, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__53, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_ete4_parser_newick_pyx, __pyx_n_s_content_repr, 312, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__54)) __PYX_ERR(0, 312, __pyx_L1_error)
 
-  /* "ete4/parser/newick.pyx":368
+  /* "ete4/parser/newick.pyx":374
  * 
  * 
  * def quote(name, escaped_chars=" \t\r\n()[]':;,"):             # <<<<<<<<<<<<<<
  *     "Return the name quoted if it has any characters that need escaping"
  *     if any(c in name for c in escaped_chars):
  */
-  __pyx_tuple__55 = PyTuple_Pack(4, __pyx_n_s_name, __pyx_n_s_escaped_chars, __pyx_n_s_genexpr, __pyx_n_s_genexpr); if (unlikely(!__pyx_tuple__55)) __PYX_ERR(0, 368, __pyx_L1_error)
+  __pyx_tuple__55 = PyTuple_Pack(4, __pyx_n_s_name, __pyx_n_s_escaped_chars, __pyx_n_s_genexpr, __pyx_n_s_genexpr); if (unlikely(!__pyx_tuple__55)) __PYX_ERR(0, 374, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__55);
   __Pyx_GIVEREF(__pyx_tuple__55);
-  __pyx_codeobj__56 = (PyObject*)__Pyx_PyCode_New(2, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__55, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_ete4_parser_newick_pyx, __pyx_n_s_quote, 368, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__56)) __PYX_ERR(0, 368, __pyx_L1_error)
+  __pyx_codeobj__56 = (PyObject*)__Pyx_PyCode_New(2, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__55, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_ete4_parser_newick_pyx, __pyx_n_s_quote, 374, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__56)) __PYX_ERR(0, 374, __pyx_L1_error)
 
-  /* "ete4/parser/newick.pyx":376
+  /* "ete4/parser/newick.pyx":382
  * 
  * 
  * def write_newick(tree, format=0, properties=[], quoted_names=False):             # <<<<<<<<<<<<<<
  *     "Return newick representation from tree"
  *     children_text = ','.join(write_newick(node, format, properties=properties,
  */
-  __pyx_tuple__57 = PyTuple_Pack(8, __pyx_n_s_tree, __pyx_n_s_format, __pyx_n_s_properties, __pyx_n_s_quoted_names, __pyx_n_s_children_text, __pyx_n_s_content_text, __pyx_n_s_genexpr, __pyx_n_s_genexpr); if (unlikely(!__pyx_tuple__57)) __PYX_ERR(0, 376, __pyx_L1_error)
+  __pyx_tuple__57 = PyTuple_Pack(8, __pyx_n_s_tree, __pyx_n_s_format, __pyx_n_s_properties, __pyx_n_s_quoted_names, __pyx_n_s_children_text, __pyx_n_s_content_text, __pyx_n_s_genexpr, __pyx_n_s_genexpr); if (unlikely(!__pyx_tuple__57)) __PYX_ERR(0, 382, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__57);
   __Pyx_GIVEREF(__pyx_tuple__57);
-  __pyx_codeobj__58 = (PyObject*)__Pyx_PyCode_New(4, 0, 8, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__57, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_ete4_parser_newick_pyx, __pyx_n_s_write_newick, 376, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__58)) __PYX_ERR(0, 376, __pyx_L1_error)
+  __pyx_codeobj__58 = (PyObject*)__Pyx_PyCode_New(4, 0, 8, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__57, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_ete4_parser_newick_pyx, __pyx_n_s_write_newick, 382, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__58)) __PYX_ERR(0, 382, __pyx_L1_error)
 
-  /* "ete4/parser/newick.pyx":386
+  /* "ete4/parser/newick.pyx":392
  * 
  * 
  * def print_supported_formats():             # <<<<<<<<<<<<<<
  *     from ete4.smartview.ete.gardening import standardize
  *     t = Tree()
  */
-  __pyx_tuple__59 = PyTuple_Pack(3, __pyx_n_s_standardize, __pyx_n_s_t, __pyx_n_s_f); if (unlikely(!__pyx_tuple__59)) __PYX_ERR(0, 386, __pyx_L1_error)
+  __pyx_tuple__59 = PyTuple_Pack(3, __pyx_n_s_standardize, __pyx_n_s_t, __pyx_n_s_f); if (unlikely(!__pyx_tuple__59)) __PYX_ERR(0, 392, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__59);
   __Pyx_GIVEREF(__pyx_tuple__59);
-  __pyx_codeobj__60 = (PyObject*)__Pyx_PyCode_New(0, 0, 3, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__59, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_ete4_parser_newick_pyx, __pyx_n_s_print_supported_formats, 386, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__60)) __PYX_ERR(0, 386, __pyx_L1_error)
+  __pyx_codeobj__60 = (PyObject*)__Pyx_PyCode_New(0, 0, 3, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__59, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_ete4_parser_newick_pyx, __pyx_n_s_print_supported_formats, 392, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__60)) __PYX_ERR(0, 392, __pyx_L1_error)
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -11548,6 +11593,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
 }
 
 static CYTHON_SMALL_CODE int __Pyx_InitGlobals(void) {
+  __pyx_umethod_PyList_Type_remove.type = (PyObject*)&PyList_Type;
   if (__Pyx_InitStrings(__pyx_string_tab) < 0) __PYX_ERR(0, 1, __pyx_L1_error);
   __pyx_int_0 = PyInt_FromLong(0); if (unlikely(!__pyx_int_0)) __PYX_ERR(0, 1, __pyx_L1_error)
   __pyx_int_1 = PyInt_FromLong(1); if (unlikely(!__pyx_int_1)) __PYX_ERR(0, 1, __pyx_L1_error)
@@ -11628,7 +11674,7 @@ static int __Pyx_modinit_type_init_code(void) {
     __pyx_type_4ete4_6parser_6newick___pyx_scope_struct_2_content_repr.tp_getattro = __Pyx_PyObject_GenericGetAttrNoDict;
   }
   __pyx_ptype_4ete4_6parser_6newick___pyx_scope_struct_2_content_repr = &__pyx_type_4ete4_6parser_6newick___pyx_scope_struct_2_content_repr;
-  if (PyType_Ready(&__pyx_type_4ete4_6parser_6newick___pyx_scope_struct_3_genexpr) < 0) __PYX_ERR(0, 360, __pyx_L1_error)
+  if (PyType_Ready(&__pyx_type_4ete4_6parser_6newick___pyx_scope_struct_3_genexpr) < 0) __PYX_ERR(0, 366, __pyx_L1_error)
   #if PY_VERSION_HEX < 0x030800B1
   __pyx_type_4ete4_6parser_6newick___pyx_scope_struct_3_genexpr.tp_print = 0;
   #endif
@@ -11636,7 +11682,7 @@ static int __Pyx_modinit_type_init_code(void) {
     __pyx_type_4ete4_6parser_6newick___pyx_scope_struct_3_genexpr.tp_getattro = __Pyx_PyObject_GenericGetAttrNoDict;
   }
   __pyx_ptype_4ete4_6parser_6newick___pyx_scope_struct_3_genexpr = &__pyx_type_4ete4_6parser_6newick___pyx_scope_struct_3_genexpr;
-  if (PyType_Ready(&__pyx_type_4ete4_6parser_6newick___pyx_scope_struct_4_quote) < 0) __PYX_ERR(0, 368, __pyx_L1_error)
+  if (PyType_Ready(&__pyx_type_4ete4_6parser_6newick___pyx_scope_struct_4_quote) < 0) __PYX_ERR(0, 374, __pyx_L1_error)
   #if PY_VERSION_HEX < 0x030800B1
   __pyx_type_4ete4_6parser_6newick___pyx_scope_struct_4_quote.tp_print = 0;
   #endif
@@ -11644,7 +11690,7 @@ static int __Pyx_modinit_type_init_code(void) {
     __pyx_type_4ete4_6parser_6newick___pyx_scope_struct_4_quote.tp_getattro = __Pyx_PyObject_GenericGetAttrNoDict;
   }
   __pyx_ptype_4ete4_6parser_6newick___pyx_scope_struct_4_quote = &__pyx_type_4ete4_6parser_6newick___pyx_scope_struct_4_quote;
-  if (PyType_Ready(&__pyx_type_4ete4_6parser_6newick___pyx_scope_struct_5_genexpr) < 0) __PYX_ERR(0, 370, __pyx_L1_error)
+  if (PyType_Ready(&__pyx_type_4ete4_6parser_6newick___pyx_scope_struct_5_genexpr) < 0) __PYX_ERR(0, 376, __pyx_L1_error)
   #if PY_VERSION_HEX < 0x030800B1
   __pyx_type_4ete4_6parser_6newick___pyx_scope_struct_5_genexpr.tp_print = 0;
   #endif
@@ -11652,7 +11698,7 @@ static int __Pyx_modinit_type_init_code(void) {
     __pyx_type_4ete4_6parser_6newick___pyx_scope_struct_5_genexpr.tp_getattro = __Pyx_PyObject_GenericGetAttrNoDict;
   }
   __pyx_ptype_4ete4_6parser_6newick___pyx_scope_struct_5_genexpr = &__pyx_type_4ete4_6parser_6newick___pyx_scope_struct_5_genexpr;
-  if (PyType_Ready(&__pyx_type_4ete4_6parser_6newick___pyx_scope_struct_6_write_newick) < 0) __PYX_ERR(0, 376, __pyx_L1_error)
+  if (PyType_Ready(&__pyx_type_4ete4_6parser_6newick___pyx_scope_struct_6_write_newick) < 0) __PYX_ERR(0, 382, __pyx_L1_error)
   #if PY_VERSION_HEX < 0x030800B1
   __pyx_type_4ete4_6parser_6newick___pyx_scope_struct_6_write_newick.tp_print = 0;
   #endif
@@ -11660,7 +11706,7 @@ static int __Pyx_modinit_type_init_code(void) {
     __pyx_type_4ete4_6parser_6newick___pyx_scope_struct_6_write_newick.tp_getattro = __Pyx_PyObject_GenericGetAttrNoDict;
   }
   __pyx_ptype_4ete4_6parser_6newick___pyx_scope_struct_6_write_newick = &__pyx_type_4ete4_6parser_6newick___pyx_scope_struct_6_write_newick;
-  if (PyType_Ready(&__pyx_type_4ete4_6parser_6newick___pyx_scope_struct_7_genexpr) < 0) __PYX_ERR(0, 380, __pyx_L1_error)
+  if (PyType_Ready(&__pyx_type_4ete4_6parser_6newick___pyx_scope_struct_7_genexpr) < 0) __PYX_ERR(0, 386, __pyx_L1_error)
   #if PY_VERSION_HEX < 0x030800B1
   __pyx_type_4ete4_6parser_6newick___pyx_scope_struct_7_genexpr.tp_print = 0;
   #endif
@@ -12980,45 +13026,45 @@ if (!__Pyx_RefNanny) {
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_content_repr, __pyx_t_1) < 0) __PYX_ERR(0, 312, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "ete4/parser/newick.pyx":368
+  /* "ete4/parser/newick.pyx":374
  * 
  * 
  * def quote(name, escaped_chars=" \t\r\n()[]':;,"):             # <<<<<<<<<<<<<<
  *     "Return the name quoted if it has any characters that need escaping"
  *     if any(c in name for c in escaped_chars):
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_4ete4_6parser_6newick_25quote, NULL, __pyx_n_s_ete4_parser_newick); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 368, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_4ete4_6parser_6newick_25quote, NULL, __pyx_n_s_ete4_parser_newick); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 374, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_quote, __pyx_t_1) < 0) __PYX_ERR(0, 368, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_quote, __pyx_t_1) < 0) __PYX_ERR(0, 374, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "ete4/parser/newick.pyx":376
+  /* "ete4/parser/newick.pyx":382
  * 
  * 
  * def write_newick(tree, format=0, properties=[], quoted_names=False):             # <<<<<<<<<<<<<<
  *     "Return newick representation from tree"
  *     children_text = ','.join(write_newick(node, format, properties=properties,
  */
-  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 376, __pyx_L1_error)
+  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 382, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_k__24 = __pyx_t_1;
   __Pyx_GIVEREF(__pyx_t_1);
   __pyx_t_1 = 0;
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_4ete4_6parser_6newick_27write_newick, NULL, __pyx_n_s_ete4_parser_newick); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 376, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_4ete4_6parser_6newick_27write_newick, NULL, __pyx_n_s_ete4_parser_newick); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 382, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_write_newick, __pyx_t_1) < 0) __PYX_ERR(0, 376, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_write_newick, __pyx_t_1) < 0) __PYX_ERR(0, 382, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "ete4/parser/newick.pyx":386
+  /* "ete4/parser/newick.pyx":392
  * 
  * 
  * def print_supported_formats():             # <<<<<<<<<<<<<<
  *     from ete4.smartview.ete.gardening import standardize
  *     t = Tree()
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_4ete4_6parser_6newick_29print_supported_formats, NULL, __pyx_n_s_ete4_parser_newick); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 386, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_4ete4_6parser_6newick_29print_supported_formats, NULL, __pyx_n_s_ete4_parser_newick); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 392, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_print_supported_formats, __pyx_t_1) < 0) __PYX_ERR(0, 386, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_print_supported_formats, __pyx_t_1) < 0) __PYX_ERR(0, 392, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "ete4/parser/newick.pyx":1
@@ -14869,6 +14915,78 @@ bad:
 /* None */
 static CYTHON_INLINE void __Pyx_RaiseClosureNameError(const char *varname) {
     PyErr_Format(PyExc_NameError, "free variable '%s' referenced before assignment in enclosing scope", varname);
+}
+
+/* UnpackUnboundCMethod */
+static int __Pyx_TryUnpackUnboundCMethod(__Pyx_CachedCFunction* target) {
+    PyObject *method;
+    method = __Pyx_PyObject_GetAttrStr(target->type, *target->method_name);
+    if (unlikely(!method))
+        return -1;
+    target->method = method;
+#if CYTHON_COMPILING_IN_CPYTHON
+    #if PY_MAJOR_VERSION >= 3
+    if (likely(__Pyx_TypeCheck(method, &PyMethodDescr_Type)))
+    #endif
+    {
+        PyMethodDescrObject *descr = (PyMethodDescrObject*) method;
+        target->func = descr->d_method->ml_meth;
+        target->flag = descr->d_method->ml_flags & ~(METH_CLASS | METH_STATIC | METH_COEXIST | METH_STACKLESS);
+    }
+#endif
+    return 0;
+}
+
+/* CallUnboundCMethod1 */
+#if CYTHON_COMPILING_IN_CPYTHON
+static CYTHON_INLINE PyObject* __Pyx_CallUnboundCMethod1(__Pyx_CachedCFunction* cfunc, PyObject* self, PyObject* arg) {
+    if (likely(cfunc->func)) {
+        int flag = cfunc->flag;
+        if (flag == METH_O) {
+            return (*(cfunc->func))(self, arg);
+        } else if (PY_VERSION_HEX >= 0x030600B1 && flag == METH_FASTCALL) {
+            if (PY_VERSION_HEX >= 0x030700A0) {
+                return (*(__Pyx_PyCFunctionFast)(void*)(PyCFunction)cfunc->func)(self, &arg, 1);
+            } else {
+                return (*(__Pyx_PyCFunctionFastWithKeywords)(void*)(PyCFunction)cfunc->func)(self, &arg, 1, NULL);
+            }
+        } else if (PY_VERSION_HEX >= 0x030700A0 && flag == (METH_FASTCALL | METH_KEYWORDS)) {
+            return (*(__Pyx_PyCFunctionFastWithKeywords)(void*)(PyCFunction)cfunc->func)(self, &arg, 1, NULL);
+        }
+    }
+    return __Pyx__CallUnboundCMethod1(cfunc, self, arg);
+}
+#endif
+static PyObject* __Pyx__CallUnboundCMethod1(__Pyx_CachedCFunction* cfunc, PyObject* self, PyObject* arg){
+    PyObject *args, *result = NULL;
+    if (unlikely(!cfunc->func && !cfunc->method) && unlikely(__Pyx_TryUnpackUnboundCMethod(cfunc) < 0)) return NULL;
+#if CYTHON_COMPILING_IN_CPYTHON
+    if (cfunc->func && (cfunc->flag & METH_VARARGS)) {
+        args = PyTuple_New(1);
+        if (unlikely(!args)) goto bad;
+        Py_INCREF(arg);
+        PyTuple_SET_ITEM(args, 0, arg);
+        if (cfunc->flag & METH_KEYWORDS)
+            result = (*(PyCFunctionWithKeywords)(void*)(PyCFunction)cfunc->func)(self, args, NULL);
+        else
+            result = (*cfunc->func)(self, args);
+    } else {
+        args = PyTuple_New(2);
+        if (unlikely(!args)) goto bad;
+        Py_INCREF(self);
+        PyTuple_SET_ITEM(args, 0, self);
+        Py_INCREF(arg);
+        PyTuple_SET_ITEM(args, 1, arg);
+        result = __Pyx_PyObject_Call(cfunc->method, args, NULL);
+    }
+#else
+    args = PyTuple_Pack(2, self, arg);
+    if (unlikely(!args)) goto bad;
+    result = __Pyx_PyObject_Call(cfunc->method, args, NULL);
+#endif
+bad:
+    Py_XDECREF(args);
+    return result;
 }
 
 /* StringJoin */

@@ -57,7 +57,8 @@ from ete4.smartview.utils import InvalidUsage, get_random_string
 from ete4.smartview.ete import nexus, draw, gardening as gdn
 from ete4.smartview import get_layout_outline,\
         get_layout_leaf_name, get_layout_branch_length,\
-        get_layout_branch_support, get_layout_align_link
+        get_layout_branch_support, get_layout_align_link,\
+        get_layout_nleaves
 
 # call initialize() to fill these up
 app = None
@@ -72,6 +73,7 @@ class AppTree:
     style: TreeStyle = None
     timer: float = None
     initialized: bool = False
+    selected: dict = None
     searches: dict = None
 
 # REST api.
@@ -118,12 +120,18 @@ class Trees(Resource):
             if app.memory_only:
                 raise InvalidUsage(f'invalid path {rule} in memory_only mode', 404)
             return get_tree(tree_id)
+        elif rule == '/trees/<string:tree_id>/nodeinfo':
+            node = gdn.get_node(app.trees[int(tid)].tree, subtree)
+            return node.props
         elif rule == '/trees/<string:tree_id>/name':
             load_tree(tree_id)
             return app.trees[int(tree_id)].name
         elif rule == '/trees/<string:tree_id>/newick':
             MAX_MB = 2
             return get_newick(tree_id, MAX_MB)
+        elif rule == '/trees/<string:tree_id>/select':
+            nparents = store_selection(tid, subtree)
+            return {'message': 'ok', 'nparents': nparents}
         elif rule == '/trees/<string:tree_id>/search':
             nresults, nparents = store_search(tree_id, request.args.copy())
             return {'message': 'ok', 'nresults': nresults, 'nparents': nparents}
@@ -148,7 +156,6 @@ class Trees(Resource):
                     tleaves += 1
             return {'tnodes': tnodes, 'tleaves': tleaves}
         elif rule == '/trees/<string:tree_id>/ultrametric':
-            # Not for now... but it may be tree specific
             return app.trees[int(tid)].style.ultrametric
 
     def post(self):
@@ -371,10 +378,11 @@ def get_drawer(tree_id, args):
 
         update_ultrametric(args.get('ultrametric'), tid)
 
+        selected = tree.selected
         searches = tree.searches
         
         return drawer_class(load_tree(tree_id), viewport, panel, zoom,
-                    limits, collapsed_ids, searches, tree.style)
+                    limits, collapsed_ids, selected, searches, tree.style)
     except StopIteration:
         raise InvalidUsage(f'not a valid drawer: {drawer_name}')
     except (ValueError, AssertionError) as e:
@@ -418,6 +426,24 @@ def store_search(tree_id, args):
         raise
     except Exception as e:
         raise InvalidUsage(f'evaluating expression: {e}')
+
+
+def store_selection(tid, subtree):
+    "Store the result and parents of a selection and return number of parents"
+
+    app_tree = app.trees[int(tid)]
+    node = gdn.get_node(app_tree.tree, subtree)
+
+    parents = set()
+    parent = node.up
+    while parent and parent not in parents:
+        parents.add(parent)
+        parent = parent.up
+
+    subtree_string = ",".join([ str(i) for i in subtree ])
+    app_tree.selected[subtree_string] = (node, parents)
+
+    return len(parents)
 
 
 def get_search_function(text):
@@ -608,7 +634,7 @@ def get_layouts(layouts=[]):
     # Get default layouts from their getters
     default_layouts = [ get_layout_outline(), get_layout_leaf_name(),
             get_layout_branch_length(), get_layout_branch_support(),
-            get_layout_align_link(), ]
+            get_layout_nleaves(), get_layout_align_link(), ]
 
     # Get layouts from TreeStyle
     ts_layouts = app.trees['default'].style.layout_fn
@@ -802,6 +828,7 @@ def initialize(tree=None, tree_style=None, memory_only=False):
         style=deepcopy(tree_style) or TreeStyle(),
         timer = time(),
         searches = {},
+        selected = {},
     ))
 
     db = sqlalchemy.create_engine('sqlite:///' + app.config['DATABASE'])
@@ -868,6 +895,7 @@ def add_resources(api):
     add(Trees,
         '/trees',
         '/trees/<string:tree_id>',
+        '/trees/<string:tree_id>/nodeinfo',
         '/trees/<string:tree_id>/name',
         '/trees/<string:tree_id>/newick',
         '/trees/<string:tree_id>/draw',
@@ -875,6 +903,7 @@ def add_resources(api):
         '/trees/<string:tree_id>/properties',
         '/trees/<string:tree_id>/nodecount',
         '/trees/<string:tree_id>/ultrametric',
+        '/trees/<string:tree_id>/select',
         '/trees/<string:tree_id>/search',
         '/trees/<string:tree_id>/sort',
         '/trees/<string:tree_id>/root_at',
