@@ -14,7 +14,7 @@ def get_layout_leaf_name(pos='branch-right', color='black',
             color=color, padding_x=padding_x, padding_y=padding_y)
     def layout_fn(node):
         if node.is_leaf():
-            node.add_face(leaf_name_face, position=pos, column=0)
+            node.add_face(leaf_name_face, position=pos, column=1)
         else:
             # Collapsed face
             names = summary(node.children)
@@ -24,7 +24,7 @@ def get_layout_leaf_name(pos='branch-right', color='black',
                                 color=color, 
                                 min_fsize=min_fsize, max_fsize=max_fsize,
                                 padding_x=padding_x, padding_y=padding_y),
-                        position=pos, column=1, collapsed_only=True)
+                        position=pos, column=2, collapsed_only=True)
     layout_fn.__name__ = 'Leaf name'
     layout_fn.contains_aligned_face = pos == "aligned"
     return layout_fn
@@ -40,10 +40,10 @@ def get_layout_nleaves(pos='branch-right', collapsed_only=True,
             nleaves_face = TextFace(f'{formatter}' % nleaves, color=color,
                     min_fsize=min_fsize, max_fsize=max_fsize, ftype=ftype,
                     padding_x=padding_x, padding_y=padding_y)
-            node.add_face(nleaves_face, position=pos, column=2,
+            node.add_face(nleaves_face, position=pos, column=1,
                     collapsed_only=True)
             if not collapsed_only:
-                node.add_face(nleaves_face, position=pos, column=1)
+                node.add_face(nleaves_face, position=pos, column=0)
 
     layout_fn.__name__ = "Number of leaves"
     layout_fn.contains_aligned_face = pos == "aligned"
