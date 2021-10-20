@@ -89,7 +89,7 @@ function add_selected_to_menu(node_id) {
     folder_parents.addInput(selected.parents, "color", { view: "color" })
         .on("change", () => colorize_selection(node_id));
     folder_parents.addInput(selected.parents, "width", { min: 0.1, max: 10 })
-        .on("change", () => colorize_selected(node_id));
+        .on("change", () => colorize_selection(node_id));
 
     folder.addButton({ title: "remove" }).on("click", selected.remove);
 }
@@ -97,7 +97,7 @@ function add_selected_to_menu(node_id) {
 
 // Return a class name related to the results of selecting nodes.
 function get_selection_class(text, type="result") {
-    return "selected_" + type + "_" + text.replace(/[^A-Za-z0-9_-]/g, '');
+    return "selected_" + type + "_" + String(text).replace(/[^A-Za-z0-9_-]/g, '');
 }
 
 
@@ -105,10 +105,11 @@ function colorize_selection(node_id) {
     const selected = view.selected[node_id];
 
     const cresult = get_selection_class(node_id, "result");
-    console.log("." + cresult)
-    const result = div_tree.querySelector("." + cresult);
-    result.style.opacity = selected.result.opacity;
-    result.style.fill = selected.result.color;
+    // There should be just one result (avoid error when not in viewport)
+    Array.from(div_tree.getElementsByClassName(cresult)).forEach(e => {
+        e.style.opacity = selected.result.opacity;
+        e.style.fill = selected.result.color;
+    });
 
     const cparents = get_selection_class(node_id, "parents");
     Array.from(div_tree.getElementsByClassName(cparents)).forEach(e => {

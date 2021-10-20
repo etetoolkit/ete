@@ -76,8 +76,7 @@ function add_node_options(box, name, properties, node_id) {
                "Do not show nodes below the current one.",
                "compress", false);
 
-    console.log(Object.keys(view.selected), node_id)
-    if (Object.keys(view.selected).includes(node_id))
+    if (Object.keys(view.selected).includes(String(node_id)))
         add_button("Unselect node", view.selected[node_id].remove,
                    "Remove current node from selection.",
                    "trash-alt", false);
