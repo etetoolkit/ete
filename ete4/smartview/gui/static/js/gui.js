@@ -10,7 +10,6 @@ import { zoom_into_box, zoom_around, zoom_towards_box } from "./zoom.js";
 import { draw_minimap, update_minimap_visible_rect } from "./minimap.js";
 import { api, api_put, escape_html } from "./api.js";
 import { remove_collapsed } from "./collapse.js";
-import { label_expression, label_property } from "./label.js";
 
 export { view, menus, on_tree_change, on_drawer_change, show_minimap,
          tree_command, get_tid, on_box_click, on_box_wheel, coordinates,
@@ -45,8 +44,6 @@ const view = {
     // representation
     drawer: {name: "RectFaces", type: "rect", npanels: 1},  // default drawer
     min_size: 15,  // for less pixels, the drawer will collapse things
-    label_expression: () => label_expression(),
-    label_property: () => label_property(),
     current_property: "name",  // pre-selected property in the add label menu
     rmin: 0,
     angle: {min: -180, max: 180},
