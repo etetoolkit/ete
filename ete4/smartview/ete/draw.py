@@ -139,26 +139,18 @@ class Drawer:
     def on_last_visit(self, point, it, graphics):
         "Update list of graphics to draw and return new position"
 
-<<<<<<< HEAD
         # Searches
         result_of = set( text for text,(results,_) in self.searches.items()
                 if it.node in results )
         # Selection
         result_of.update( text for text,(result,_) in self.selected.items()
                     if it.node == result )
-=======
-        result_of = set( text for text,(results,_) in self.searches.items()
-                if it.node in results )
->>>>>>> ete4
         if self.outline:
             if all(child in self.collapsed for child in it.node.children):
                 result_of.update( text for text,(results,parents) in self.searches.items()
                         if any(node in results or node in parents for node in self.collapsed) )
-<<<<<<< HEAD
                 result_of.update( text for text,(result,parents) in self.selected.items()
                         if any(node == result or node in parents for node in self.collapsed) )
-=======
->>>>>>> ete4
             graphics += self.get_outline()
 
         x_after, y_after = point
