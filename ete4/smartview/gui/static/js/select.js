@@ -6,7 +6,7 @@ export { select_node, colorize_selections, get_selection_class, remove_selection
 
 
 // Select node with the given name and return true if things went well.
-function select_node(node_id, name) {
+async function select_node(node_id, name) {
     try {
         const qs = `text=${encodeURIComponent(text)}`;
         const res = await api(`/trees/${get_tid()}/select?${qs}`);
