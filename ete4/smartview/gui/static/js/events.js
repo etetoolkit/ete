@@ -78,7 +78,7 @@ function on_keydown(event) {
         show_minimap(view.minimap.show);
         menus.minimap.refresh();
     }
-    else if (key === "c")
+    else if (key === "p")
         menus.pane.expanded = !menus.pane.expanded;
     else if (key === "d")
         view.download.svg();
