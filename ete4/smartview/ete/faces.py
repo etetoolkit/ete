@@ -359,8 +359,9 @@ class CircleFace(Face):
         
     def draw(self, drawer):
         self._check_own_variables()
+        style = {'fill': self.color} if self.color else {}
         yield draw_circle(self._center, self._max_radius,
-                self.name, style={'fill': self.color})
+                self.name, style=style)
 
 
 class RectFace(Face):
@@ -505,6 +506,22 @@ class RectFace(Face):
                     rotation=rotation,
                     anchor=('#' + str(rect_id)) if circ_drawer else None,
                     style=text_style)
+
+
+class SearchFace(CircleFace):
+
+    def __init__(self, search, radius=10,
+            padding_x=0, padding_y=0):
+
+        search = re.sub(r'[^A-Za-z0-9_-]', '',  search)
+        CircleFace.__init__(self, radius=radius, color=None,
+                name=f'search_results_{search}',
+                padding_x=padding_x, padding_y=padding_y)
+
+        self.search = search
+
+    def __name__(self):
+        return "SearchFace"
 
 
 class OutlineFace(Face):

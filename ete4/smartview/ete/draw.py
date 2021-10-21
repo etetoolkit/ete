@@ -68,6 +68,9 @@ class Drawer:
         if not self.tree_style:
             from ete4.smartview import TreeStyle
             self.tree_style = TreeStyle()
+        # Avoid circular import exception
+        from ete4.smartview import SearchFace
+        self.search_face = { "pos": "branch-right", "face": SearchFace }
 
     def draw(self):
         "Yield graphic elements to draw the tree"
@@ -140,14 +143,14 @@ class Drawer:
         "Update list of graphics to draw and return new position"
 
         # Searches
-        result_of = set( text for text,(results,_) in self.searches.items()
+        search_of = set( text for text,(results,_) in self.searches.items()
                 if it.node in results )
         # Selection
-        result_of.update( text for text,(result,_) in self.selected.items()
+        result_of = set( text for text,(result,_) in self.selected.items()
                     if it.node == result )
         if self.outline:
             if all(child in self.collapsed for child in it.node.children):
-                result_of.update( text for text,(results,parents) in self.searches.items()
+                search_of.update( text for text,(results,parents) in self.searches.items()
                         if any(node in results or node in parents for node in self.collapsed) )
                 result_of.update( text for text,(result,parents) in self.selected.items()
                         if any(node == result or node in parents for node in self.collapsed) )
@@ -157,7 +160,7 @@ class Drawer:
         dx, dy = self.content_size(it.node)
         x_before, y_before = x_after - dx, y_after - dy
 
-        content_graphics = list(self.draw_content(it.node, (x_before, y_before)))
+        content_graphics = list(self.draw_content(it.node, (x_before, y_before), search_of))
         graphics += content_graphics
 
         ndx = (drawn_size(content_graphics, self.get_box).dx if it.node.is_leaf()
@@ -170,7 +173,7 @@ class Drawer:
 
         return x_before, y_after
 
-    def draw_content(self, node, point):
+    def draw_content(self, node, point, search_of=set()):
         "Yield the node content's graphic elements"
         x, y = point
         dx, dy = self.content_size(node)
@@ -187,7 +190,7 @@ class Drawer:
         # Collapsed nodes will be drawn from self.draw_collapsed()
         if not node.is_collapsed or node.is_leaf():
             bdy0_, bdy1_ = (0, dy) if node.is_leaf() else (bdy0, bdy1)
-            yield from self.draw_node(node, point, dx, bdy, bdy0_, bdy1_)
+            yield from self.draw_node(node, point, dx, bdy, bdy0_, bdy1_, search_of)
 
         # Draw the branch line ("lengthline") and a line spanning all children.
         if self.panel == 0:
@@ -225,10 +228,10 @@ class Drawer:
 
     def get_outline(self):
         "Yield the outline representation"
-        result_of = [text for text,(results,parents) in self.searches.items()
-            if any(node in results or node in parents for node in self.collapsed)]
-        result_of += [text for text,(result,parents) in self.selected.items()
-            if any(node == result or node in parents for node in self.collapsed)]
+        search_of = set( text for text,(results,parents) in self.searches.items()
+            if any(node in results or node in parents for node in self.collapsed) )
+        result_of = [ text for text,(result,parents) in self.selected.items()
+            if any(node == result or node in parents for node in self.collapsed) ]
 
         graphics = []
 
@@ -240,10 +243,10 @@ class Drawer:
 
         if uncollapse:
             self.bdy_dys.append([])
-            graphics += self.draw_content(node0, (x, y))
+            graphics += self.draw_content(node0, (x, y), search_of)
         else:
             self.bdy_dys[-1].append( (self.outline.dy / 2, self.outline.dy) )
-            graphics += self.draw_collapsed(collapsed_node)
+            graphics += self.draw_collapsed(collapsed_node, search_of)
 
         is_manually_collapsed = collapsed_node in self.collapsed
         is_small = self.is_small(make_box((x, y),
@@ -317,15 +320,16 @@ class Drawer:
     # These are the 2 functions that the user overloads to choose what to draw
     # when representing a node and a group of collapsed nodes:
 
-    def draw_node(self, node, point, bdx, bdy, bdy0, bdy1):
+    def draw_node(self, node, point, bdx, bdy, bdy0, bdy1, search_of=set()):
         "Yield graphic elements to draw the contents of the node"
         # bdx: branch dx (width)
         # bdy: branch dy (height)
         # bdy0: fist child branch dy (height)
         # bdy1: last child branch dy (height)
+        # search_of: set of text searches (to be tagged in front end)
         yield from []  # only drawn if the node's content is visible
 
-    def draw_collapsed(self, collapsed_node):
+    def draw_collapsed(self, collapsed_node, search_of=set()):
         "Yield graphic elements to draw the list of nodes in self.collapsed"
         yield from []  # they are always drawn (only visible nodes can collapse)
         # Uses self.collapsed and self.outline to extract and place info.
@@ -397,7 +401,7 @@ class DrawerRect(Drawer):
         yield draw_nodebox(box, node.name, node.props,
                 node_id, result_of, style)
 
-    def draw_collapsed(self, collapsed_node):
+    def draw_collapsed(self, collapsed_node, search_of=set()):
         # Draw line to farthest leaf under collapsed node
         x, y, dx_min, dx_max, dy = self.outline
 
@@ -498,7 +502,7 @@ class DrawerCirc(Drawer):
             yield draw_nodebox(Box(r, a1, dr, a2 - a1),
                        node.name, node.props, node_id, result_of, style)
 
-    def draw_collapsed(self, collapsed_node):
+    def draw_collapsed(self, collapsed_node, search_of=set()):
         # Draw line to farthest leaf under collapsed node
         r, a, _, dr_max, da = self.outline
 
@@ -606,7 +610,7 @@ def draw_circ_collapsed_names(drawer):
 
 class DrawerRectFaces(DrawerRect):
 
-    def draw_node(self, node, point, bdx, bdy, bdy0, bdy1):
+    def draw_node(self, node, point, bdx, bdy, bdy0, bdy1, search_of=set()):
         size = self.content_size(node)
         # Space available for branch-right Face position
         dx_to_closest_child = min(child.dist for child in node.children)\
@@ -637,6 +641,11 @@ class DrawerRectFaces(DrawerRect):
                 
             faces = dict(getattr(node_faces, pos, {}))
             n_col = max(faces.keys(), default = -1) + 1
+
+            # Add SearchFace for each search this node is a result of
+            if pos == self.search_face['pos'] and len(search_of):
+                faces[n_col] = [ self.search_face['face'](s) for s in search_of ]
+                n_col += 1
 
             dx_before = 0
             for col, face_list in sorted(faces.items()):
@@ -682,6 +691,8 @@ class DrawerRectFaces(DrawerRect):
             for layout_fn in self.tree_style.layout_fn:
                 layout_fn(node)
 
+        
+
         # Render Faces in different panels
         if self.NPANELS > 1:
             if self.panel == 0:
@@ -696,7 +707,7 @@ class DrawerRectFaces(DrawerRect):
             for pos in FACE_POSITIONS:
                 yield from draw_faces_at_pos(node, pos)
 
-    def draw_collapsed(self, collapsed_node):
+    def draw_collapsed(self, collapsed_node, search_of=set()):
         x, y, dx_min, dx_max, dy = self.outline
 
         if self.is_fully_collapsed(collapsed_node):
@@ -707,12 +718,13 @@ class DrawerRectFaces(DrawerRect):
 
         x = x if self.panel == 0 else self.xmin
 
-        yield from self.draw_node(collapsed_node, (x, y), bdx, dy/2, 0, dy)
+        yield from self.draw_node(collapsed_node, 
+                (x, y), bdx, dy/2, 0, dy, search_of)
 
 
 class DrawerCircFaces(DrawerCirc):
 
-    def draw_node(self, node, point, bdr, bda, bda0, bda1):
+    def draw_node(self, node, point, bdr, bda, bda0, bda1, search_of=set()):
         size = self.content_size(node)
         # Space available for branch-right Face position
         dr_to_closest_child = min(child.dist for child in node.children)\
@@ -744,6 +756,11 @@ class DrawerCircFaces(DrawerCirc):
                 
             faces = dict(getattr(node_faces, pos, {}))
             n_col = len(faces.keys())
+
+            # Add SearchFace for each search this node is a result of
+            if pos == self.search_face['pos'] and len(search_of):
+                faces[n_col] = [ self.search_face['face'](s) for s in search_of ]
+                n_col += 1
 
             # Avoid drawing faces very close to center
             if pos.startswith('branch-') and abs(point[0]) < 1e-5:
@@ -807,7 +824,7 @@ class DrawerCircFaces(DrawerCirc):
             for pos in FACE_POSITIONS:
                 yield from draw_faces_at_pos(node, pos)
 
-    def draw_collapsed(self, collapsed_node):
+    def draw_collapsed(self, collapsed_node, search_of=set()):
         r, a, dr_min, dr_max, da = self.outline
 
         if self.is_fully_collapsed(collapsed_node):
@@ -818,7 +835,8 @@ class DrawerCircFaces(DrawerCirc):
 
         r = r if self.panel == 0 else self.xmin
 
-        yield from self.draw_node(collapsed_node, (r, a), bdr, da/2, 0, da)
+        yield from self.draw_node(collapsed_node, 
+                (r, a), bdr, da/2, 0, da, search_of)
 
 
 class DrawerAlignRectFaces(DrawerRectFaces):

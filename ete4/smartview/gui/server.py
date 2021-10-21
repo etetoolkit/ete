@@ -110,7 +110,9 @@ class Trees(Resource):
         # Update tree's timer
         if rule.startswith('/trees/<string:tree_id>'):
             tid, subtree = get_tid(tree_id)
-            app.trees[int(tid)].timer = time()
+            load_tree(tree_id)  # load if it was not loaded in memory
+            tree = app.trees[int(tid)]
+            tree.timer = time()
 
         if rule == '/trees':
             if app.memory_only:
@@ -121,20 +123,36 @@ class Trees(Resource):
                 raise InvalidUsage(f'invalid path {rule} in memory_only mode', 404)
             return get_tree(tree_id)
         elif rule == '/trees/<string:tree_id>/nodeinfo':
-            node = gdn.get_node(app.trees[int(tid)].tree, subtree)
+            node = gdn.get_node(tree.tree, subtree)
             return node.props
         elif rule == '/trees/<string:tree_id>/name':
-            load_tree(tree_id)
-            return app.trees[int(tree_id)].name
+            return tree.name
         elif rule == '/trees/<string:tree_id>/newick':
             MAX_MB = 2
             return get_newick(tree_id, MAX_MB)
+        elif rule == '/trees/<string:tree_id>/selected':
+            selected = {  text: { 'nparents': len(parents) }
+                for text, (_, parents) in (tree.selected or {}).items() }
+            return { 'selected': selected }
         elif rule == '/trees/<string:tree_id>/select':
             nparents = store_selection(tid, subtree)
             return {'message': 'ok', 'nparents': nparents}
+        elif rule == '/trees/<string:tree_id>/remove_selection':
+            removed = remove_selection(tid, subtree)
+            message = 'ok' if removed else 'search not found'
+            return {'message': message}
+        elif rule == '/trees/<string:tree_id>/searches':
+            searches = { 
+                text: { 'nresults' : len(results), 'nparents': len(parents) }
+                for text, (results, parents) in (tree.searches or {}).items() }
+            return { 'searches': searches }
         elif rule == '/trees/<string:tree_id>/search':
             nresults, nparents = store_search(tree_id, request.args.copy())
             return {'message': 'ok', 'nresults': nresults, 'nparents': nparents}
+        elif rule == '/trees/<string:tree_id>/remove_search':
+            removed = remove_search(tid, request.args.copy())
+            message = 'ok' if removed else 'search not found'
+            return {'message': message}
         elif rule == '/trees/<string:tree_id>/draw':
             drawer = get_drawer(tree_id, request.args.copy())
             return list(drawer.draw())
@@ -156,7 +174,7 @@ class Trees(Resource):
                     tleaves += 1
             return {'tnodes': tnodes, 'tleaves': tleaves}
         elif rule == '/trees/<string:tree_id>/ultrametric':
-            return app.trees[int(tid)].style.ultrametric
+            return tree.style.ultrametric
 
     def post(self):
         "Add tree(s)"
@@ -401,6 +419,16 @@ def get_newick(tree_id, max_mb):
     return newick
 
 
+def remove_search(tid, args):
+    "Remove search"
+    if 'text' not in args:
+        raise InvalidUsage('missing search text')
+
+    searches = app.trees[int(tid)].searches
+    text = args.pop('text').strip()
+    return searches.pop(text, None)
+
+
 def store_search(tree_id, args):
     "Store the results and parents of a search and return their numbers"
     if 'text' not in args:
@@ -419,13 +447,20 @@ def store_search(tree_id, args):
                 parents.add(parent)
                 parent = parent.up
 
-        app.trees[int(tree_id)].searches[text] = (results, parents)
+        tid = get_tid(tree_id)[0]
+        app.trees[int(tid)].searches[text] = (results, parents)
 
         return len(results), len(parents)
     except InvalidUsage:
         raise
     except Exception as e:
         raise InvalidUsage(f'evaluating expression: {e}')
+
+
+def remove_selection(tid, subtree):
+    "Remove selection"
+    subtree_string = ",".join([ str(i) for i in subtree ])
+    return app.trees[int(tid)].selected.pop(subtree_string, None)
 
 
 def store_selection(tid, subtree):
@@ -904,7 +939,11 @@ def add_resources(api):
         '/trees/<string:tree_id>/nodecount',
         '/trees/<string:tree_id>/ultrametric',
         '/trees/<string:tree_id>/select',
+        '/trees/<string:tree_id>/selected',
+        '/trees/<string:tree_id>/remove_selection',
         '/trees/<string:tree_id>/search',
+        '/trees/<string:tree_id>/searches',
+        '/trees/<string:tree_id>/remove_search',
         '/trees/<string:tree_id>/sort',
         '/trees/<string:tree_id>/root_at',
         '/trees/<string:tree_id>/move',
