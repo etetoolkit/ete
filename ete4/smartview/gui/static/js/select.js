@@ -42,6 +42,7 @@ async function select_node(node_id, name) {
 function store_selection(node_id, name, res) {
     if (self !== top)  // notify parent window
         parent.postMessage({ 
+            tid: get_tid(),
             selected: true,
             node: node_id,
             name: name,
