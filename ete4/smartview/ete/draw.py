@@ -297,7 +297,7 @@ class Drawer:
 
         node.is_collapsed = True
         node.is_initialized = False
-        node.children = self.collapsed  # add avoiding parent override
+        node._children = self.collapsed  # add avoiding parent override
         _, _, dx_min, _, dy = self.outline
         node.dist = 0 
         node.size = Size(0, dy)
