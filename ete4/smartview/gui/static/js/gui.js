@@ -147,7 +147,8 @@ async function main() {
 
     init_events();
 
-    //store_node_properties();
+    get_searches();
+    get_selections();
 
     draw_minimap();
     show_minimap("visible");
@@ -218,10 +219,11 @@ async function on_tree_change() {
     remove_selections();
     remove_collapsed();
     view.tree_size = await api(`/trees/${get_tid()}/size`);
-    console.log("hi")
-    get_searches();
-    get_selections();
-    //store_node_properties();
+    // Get searches and selections if any are stored in backend
+    if (Object.keys(view.searches).length === 0)
+        get_searches();
+    if (Object.keys(view.selected).length === 0)
+        get_selections();
     reset_node_count();
     reset_zoom();
     reset_position();

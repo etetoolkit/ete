@@ -131,11 +131,11 @@ class Trees(Resource):
             MAX_MB = 2
             return get_newick(tree_id, MAX_MB)
         elif rule == '/trees/<string:tree_id>/selected':
-            selected = {  text: { 'nparents': len(parents) }
-                for text, (_, parents) in (tree.selected or {}).items() }
+            selected = {  node_id: { 'name': name, 'nparents': len(parents) }
+                for node_id, (name, _, parents) in (tree.selected or {}).items() }
             return { 'selected': selected }
         elif rule == '/trees/<string:tree_id>/select':
-            nparents = store_selection(tid, subtree)
+            nparents = store_selection(tid, subtree, request.args.copy())
             return {'message': 'ok', 'nparents': nparents}
         elif rule == '/trees/<string:tree_id>/remove_selection':
             removed = remove_selection(tid, subtree)
@@ -463,7 +463,7 @@ def remove_selection(tid, subtree):
     return app.trees[int(tid)].selected.pop(subtree_string, None)
 
 
-def store_selection(tid, subtree):
+def store_selection(tid, subtree, args):
     "Store the result and parents of a selection and return number of parents"
 
     app_tree = app.trees[int(tid)]
@@ -476,7 +476,8 @@ def store_selection(tid, subtree):
         parent = parent.up
 
     subtree_string = ",".join([ str(i) for i in subtree ])
-    app_tree.selected[subtree_string] = (node, parents)
+    name = args.pop('name').strip()
+    app_tree.selected[subtree_string] = (name, node, parents)
 
     return len(parents)
 

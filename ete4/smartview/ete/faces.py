@@ -52,6 +52,11 @@ _ntcolors = {
     ' ':"#FFFFFF"
     }
 
+
+def clean_text(text):
+    return re.sub(r'[^A-Za-z0-9_-]', '',  text)
+
+
 def swap_pos(pos, angle):
     if abs(angle) >= pi / 2:
         if pos == 'branch-top':
@@ -369,9 +374,10 @@ class RectFace(Face):
             text=None, fgcolor='black', # text color
             min_fsize=6, max_fsize=15,
             ftype='sans-serif',
+            name="",
             padding_x=0, padding_y=0):
 
-        Face.__init__(self, padding_x=padding_x, padding_y=padding_y)
+        Face.__init__(self, name=name, padding_x=padding_x, padding_y=padding_y)
 
         self.width = width
         self.height = height
@@ -421,8 +427,14 @@ class RectFace(Face):
                (type(max_height) in (int, float) and max_height <= 0):
                 return 0, 0
 
-            width = self.width / zx
-            height = self.height / zy
+            width = self.width / zx if self.width is not None else None
+            height = self.height / zy if self.height is not None else None
+
+            if width is None:
+                return max_width or 0, min(height or float('inf'), max_height)
+            if height is None:
+                return min(width, max_width or float('inf')), max_height
+
             hw_ratio = height / width
 
             if max_width and width > max_width:
@@ -508,20 +520,41 @@ class RectFace(Face):
                     style=text_style)
 
 
-class SearchFace(CircleFace):
+# Search faces
+class SearchFace(Face):
+    def __init__(self, search):
+        self.search = clean_text(search)
+
+    def __name__(self):
+        return "SearchFace"
+
+class SearchCircleFace(SearchFace, CircleFace):
 
     def __init__(self, search, radius=10,
             padding_x=0, padding_y=0):
 
-        search = re.sub(r'[^A-Za-z0-9_-]', '',  search)
+        SearchFace.__init__(self, search=search)
+
         CircleFace.__init__(self, radius=radius, color=None,
-                name=f'search_results_{search}',
+                name=f'search_results_{self.search}',
                 padding_x=padding_x, padding_y=padding_y)
 
-        self.search = search
+    def __name__(self):
+        return "SearchCircleFace"
+
+class SearchRectFace(SearchFace, RectFace):
+
+    def __init__(self, search, width=10, height=10,
+            padding_x=1, padding_y=0):
+
+        SearchFace.__init__(self, search);
+
+        RectFace.__init__(self, width=width, height=height, color=None,
+                name=f'search_results_{self.search}',
+                padding_x=padding_x, padding_y=padding_y)
 
     def __name__(self):
-        return "SearchFace"
+        return "SearchRectFace"
 
 
 class OutlineFace(Face):

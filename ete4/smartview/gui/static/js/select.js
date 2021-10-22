@@ -8,12 +8,14 @@ export { select_node, get_selections, remove_selections, get_selection_class, co
 
 
 // Select node with the given name and return true if things went well.
-async function select_node(node_id, name) {
-
-    
+async function select_node(node_id, name) {    
     try {
+        if (!name)
+            return false;  // prevent popup from closing
+
         const tid = get_tid() + "," + node_id;
-        const res = await api(`/trees/${tid}/select`);
+        const qs = `name=${encodeURIComponent(name)}`;
+        const res = await api(`/trees/${tid}/select?${qs}`);
 
         if (res.message !== "ok")
             throw new Error("Something went wrong.");
@@ -79,6 +81,7 @@ function add_selected_to_menu(node_id) {
 
         if (self !== top)  // notify parent window
             parent.postMessage({
+                tid: get_tid(),
                 selected: false,
                 node: node_id,
                 name: name,
@@ -138,7 +141,7 @@ function colorize_selections() {
 async function get_selections() {
     const selected = await api(`/trees/${get_tid()}/selected`);
     Object.entries(selected.selected)
-        .forEach(([node_id, res]) => store_selection(node_id, node_id, res));
+        .forEach(([node_id, res]) => store_selection(node_id, res.name, res));
 }
 
 function remove_selections() {

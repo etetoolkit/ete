@@ -68,9 +68,6 @@ class Drawer:
         if not self.tree_style:
             from ete4.smartview import TreeStyle
             self.tree_style = TreeStyle()
-        # Avoid circular import exception
-        from ete4.smartview import SearchFace
-        self.search_face = { "pos": "branch-right", "face": SearchFace }
 
     def draw(self):
         "Yield graphic elements to draw the tree"
@@ -146,13 +143,13 @@ class Drawer:
         search_of = set( text for text,(results,_) in self.searches.items()
                 if it.node in results )
         # Selection
-        result_of = set( text for text,(result,_) in self.selected.items()
+        result_of = set( text for text,(_,result,_) in self.selected.items()
                     if it.node == result )
         if self.outline:
             if all(child in self.collapsed for child in it.node.children):
                 search_of.update( text for text,(results,parents) in self.searches.items()
                         if any(node in results or node in parents for node in self.collapsed) )
-                result_of.update( text for text,(result,parents) in self.selected.items()
+                result_of.update( text for text,(_,result,parents) in self.selected.items()
                         if any(node == result or node in parents for node in self.collapsed) )
             graphics += self.get_outline()
 
@@ -198,7 +195,7 @@ class Drawer:
             if dx > 0:
                 parent_of = [text for text,(_,parents) in self.searches.items()
                                 if node in parents]
-                parent_of += [text for text,(_,parents) in self.selected.items()
+                parent_of += [text for text,(_,_,parents) in self.selected.items()
                                 if node in parents]
                 hz_line_style = {
                         'type': node_style['hz_line_type'],
@@ -230,7 +227,7 @@ class Drawer:
         "Yield the outline representation"
         search_of = set( text for text,(results,parents) in self.searches.items()
             if any(node in results or node in parents for node in self.collapsed) )
-        result_of = [ text for text,(result,parents) in self.selected.items()
+        result_of = [ text for text,(_,result,parents) in self.selected.items()
             if any(node == result or node in parents for node in self.collapsed) ]
 
         graphics = []
@@ -643,8 +640,8 @@ class DrawerRectFaces(DrawerRect):
             n_col = max(faces.keys(), default = -1) + 1
 
             # Add SearchFace for each search this node is a result of
-            if pos == self.search_face['pos'] and len(search_of):
-                faces[n_col] = [ self.search_face['face'](s) for s in search_of ]
+            if pos == self.tree_style.search_face_pos and len(search_of):
+                faces[n_col] = [ self.tree_style.search_face(s) for s in search_of ]
                 n_col += 1
 
             dx_before = 0
@@ -758,8 +755,8 @@ class DrawerCircFaces(DrawerCirc):
             n_col = len(faces.keys())
 
             # Add SearchFace for each search this node is a result of
-            if pos == self.search_face['pos'] and len(search_of):
-                faces[n_col] = [ self.search_face['face'](s) for s in search_of ]
+            if pos == self.tree_style.search_face_pos and len(search_of):
+                faces[n_col] = [ self.tree_style.search_face(s) for s in search_of ]
                 n_col += 1
 
             # Avoid drawing faces very close to center
