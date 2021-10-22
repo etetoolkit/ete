@@ -44,7 +44,7 @@ function store_selection(node_id, name, res) {
         parent.postMessage({ 
             tid: get_tid(),
             selected: true,
-            node: node_id,
+            node: String(node_id),
             name: name,
             // Maybe also provide the color used to tag it...
         }, "*");
@@ -84,7 +84,7 @@ function add_selected_to_menu(node_id) {
             parent.postMessage({
                 tid: get_tid(),
                 selected: false,
-                node: node_id,
+                node: String(node_id),
                 name: name,
             }, "*");
         delete view.selected[node_id];
