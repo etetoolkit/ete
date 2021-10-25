@@ -4,7 +4,7 @@ import { view, menus, get_tid } from "./gui.js";
 import { draw_tree } from "./draw.js";
 import { api } from "./api.js";
 
-export { search, remove_searches, get_search_class, colorize_searches };
+export { search, get_searches, remove_searches, get_search_class, colorize_searches };
 
 
 // Search nodes in the server and redraw the tree (with the results too).
@@ -28,8 +28,7 @@ async function search() {
 
                 const qs = `text=${encodeURIComponent(text)}`;
                 return await api(`/trees/${get_tid()}/search?${qs}`);
-            }
-            catch (exception) {
+            } catch (exception) {
                 Swal.fire({
                     position: "bottom-start",
                     showConfirmButton: false,
@@ -43,41 +42,44 @@ async function search() {
     if (result.isConfirmed) {
         const res = result.value;  // shortcut
 
-        if (res.message === 'ok') {
-            // purple, pink, yellow, blue, turquoise
-            const colors = ["#9b5de5", "#f15bb5", "#fee440", "#00bbf9", "#00f5d4"];
-            const nsearches = Object.keys(view.searches).length;
+        try {
+            if (res.message !== 'ok')
+                throw new Error(res.message);
 
-            view.searches[search_text] = {
-                results: {n: res.nresults,
-                          opacity: 0.4,
-                          color: colors[nsearches % colors.length]},
-                parents: {n: res.nparents,
-                          color: "#000",
-                          width: 2.5},
-            };
+            if (res.nresults === 0)
+                throw new Error(`No results found by: ${search_text}`);
 
-            add_search_to_menu(search_text);
-
+            store_search(search_text, res);
             draw_tree();
-        }
-        else {
+
+        } catch (exception) {
             Swal.fire({
                 position: "bottom-start",
                 showConfirmButton: false,
-                text: res.message,
+                text: exception.message,
                 icon: "error",
             });
         }
     }
 }
 
+// Store search with info from backend (number of results and parents)
+function store_search(search_text, res) {
+    // purple, pink, yellow, blue, turquoise
+    const colors = ["#9b5de5", "#f15bb5", "#fee440", "#00bbf9", "#00f5d4"];
+    const nsearches = Object.keys(view.searches).length;
 
-// Return a class name related to the results of searching for text.
-function get_search_class(text, type="results") {
-    return "search_" + type + "_" + text.replace(/[^A-Za-z0-9_-]/g, '');
+    view.searches[search_text] = {
+        results: {n: res.nresults,
+                  opacity: 0.4,
+                  color: colors[nsearches % colors.length]},
+        parents: {n: res.nparents,
+                  color: "#000",
+                  width: 2.5},
+    };
+
+    add_search_to_menu(search_text);
 }
-
 
 // Add a folder to the menu that corresponds to the given search text
 // and lets you change the result nodes color and so on.
@@ -86,7 +88,11 @@ function add_search_to_menu(text) {
 
     const search = view.searches[text];
 
-    search.remove = function() {
+    search.remove = async function(purge=true) {
+        if (purge) {
+            const qs = `text=${encodeURIComponent(text)}`;
+            await api(`/trees/${get_tid()}/remove_search?${qs}`);
+        }
         delete view.searches[text];
         folder.dispose();
         draw_tree();
@@ -106,6 +112,11 @@ function add_search_to_menu(text) {
         .on("change", () => colorize_search(text));
 
     folder.addButton({ title: "remove" }).on("click", search.remove);
+}
+
+// Return a class name related to the results of searching for text.
+function get_search_class(text, type="results") {
+    return "search_" + type + "_" + text.replace(/[^A-Za-z0-9_-]/g, '');
 }
 
 
@@ -131,9 +142,14 @@ function colorize_searches() {
     Object.keys(view.searches).forEach(text => colorize_search(text));
 }
 
+// Get searches from api and fill view.searches
+async function get_searches() {
+    const searches = await api(`/trees/${get_tid()}/searches`);
+    Object.entries(searches.searches).forEach(([text, res]) => store_search(text, res));
+}
 
 // Empty view.searches.
 function remove_searches() {
     const texts = Object.keys(view.searches);
-    texts.forEach(text => view.searches[text].remove());
+    texts.forEach(text => view.searches[text].remove(false));
 }

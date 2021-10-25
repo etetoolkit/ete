@@ -4,8 +4,8 @@ import { init_menus } from "./menu.js";
 import { init_events } from "./events.js";
 import { update } from "./draw.js";
 import { download_newick, download_svg } from "./download.js";
-import { search, remove_searches } from "./search.js";
-import { remove_selections } from "./select.js";
+import { search, get_searches, remove_searches } from "./search.js";
+import { get_selections, remove_selections } from "./select.js";
 import { zoom_into_box, zoom_around, zoom_towards_box } from "./zoom.js";
 import { draw_minimap, update_minimap_visible_rect } from "./minimap.js";
 import { api, api_put, escape_html } from "./api.js";
@@ -147,7 +147,8 @@ async function main() {
 
     init_events();
 
-    //store_node_properties();
+    get_searches();
+    get_selections();
 
     draw_minimap();
     show_minimap("visible");
@@ -218,7 +219,11 @@ async function on_tree_change() {
     remove_selections();
     remove_collapsed();
     view.tree_size = await api(`/trees/${get_tid()}/size`);
-    //store_node_properties();
+    // Get searches and selections if any are stored in backend
+    if (Object.keys(view.searches).length === 0)
+        get_searches();
+    if (Object.keys(view.selected).length === 0)
+        get_selections();
     reset_node_count();
     reset_zoom();
     reset_position();

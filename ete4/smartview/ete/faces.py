@@ -52,6 +52,11 @@ _ntcolors = {
     ' ':"#FFFFFF"
     }
 
+
+def clean_text(text):
+    return re.sub(r'[^A-Za-z0-9_-]', '',  text)
+
+
 def swap_pos(pos, angle):
     if abs(angle) >= pi / 2:
         if pos == 'branch-top':
@@ -359,8 +364,9 @@ class CircleFace(Face):
         
     def draw(self, drawer):
         self._check_own_variables()
+        style = {'fill': self.color} if self.color else {}
         yield draw_circle(self._center, self._max_radius,
-                self.name, style={'fill': self.color})
+                self.name, style=style)
 
 
 class RectFace(Face):
@@ -368,9 +374,10 @@ class RectFace(Face):
             text=None, fgcolor='black', # text color
             min_fsize=6, max_fsize=15,
             ftype='sans-serif',
+            name="",
             padding_x=0, padding_y=0):
 
-        Face.__init__(self, padding_x=padding_x, padding_y=padding_y)
+        Face.__init__(self, name=name, padding_x=padding_x, padding_y=padding_y)
 
         self.width = width
         self.height = height
@@ -420,8 +427,14 @@ class RectFace(Face):
                (type(max_height) in (int, float) and max_height <= 0):
                 return 0, 0
 
-            width = self.width / zx
-            height = self.height / zy
+            width = self.width / zx if self.width is not None else None
+            height = self.height / zy if self.height is not None else None
+
+            if width is None:
+                return max_width or 0, min(height or float('inf'), max_height)
+            if height is None:
+                return min(width, max_width or float('inf')), max_height
+
             hw_ratio = height / width
 
             if max_width and width > max_width:
@@ -505,6 +518,42 @@ class RectFace(Face):
                     rotation=rotation,
                     anchor=('#' + str(rect_id)) if circ_drawer else None,
                     style=text_style)
+
+
+# Selected faces
+class SelectedFace(Face):
+    def __init__(self, node_id):
+        self.node_id = clean_text(node_id)
+        self.name = f'selected_result_{self.node_id}'
+
+    def __name__(self):
+        return "SelectedFace"
+
+class SelectedCircleFace(SelectedFace, CircleFace):
+    def __init__(self, node_id, radius=15,
+            padding_x=0, padding_y=0):
+
+        SelectedFace.__init__(self, node_id)
+
+        CircleFace.__init__(self, radius=radius, color=None,
+                name=self.name,
+                padding_x=padding_x, padding_y=padding_y)
+
+    def __name__(self):
+        return "SelectedCircleFace"
+
+class SelectedRectFace(SelectedFace, RectFace):
+    def __init__(self, node_id, width=15, height=15,
+            padding_x=1, padding_y=0):
+
+        SelectedFace.__init__(self, node_id);
+
+        RectFace.__init__(self, width=width, height=height, color=None,
+                name=self.name,
+                padding_x=padding_x, padding_y=padding_y)
+
+    def __name__(self):
+        return "SelectedRectFace"
 
 
 class OutlineFace(Face):

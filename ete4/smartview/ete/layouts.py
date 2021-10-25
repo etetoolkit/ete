@@ -1,10 +1,11 @@
 from collections import defaultdict
 from types import FunctionType, MethodType
-from ete4.smartview import AttrFace, TextFace,\
-                                     CircleFace, RectFace,\
-                                     OutlineFace, AlignLinkFace
+from ete4.smartview import Face, AttrFace, TextFace,\
+        CircleFace, RectFace,\
+        SelectedRectFace, OutlineFace, AlignLinkFace
 from ete4.smartview.ete.draw import summary
 
+FACE_POSITIONS = ["branch-top", "branch-bottom", "branch-right", "aligned"]
 
 def get_layout_leaf_name(pos='branch-right', color='black', 
                          min_fsize=4, max_fsize=15,
@@ -153,6 +154,9 @@ class TreeStyle(object):
         self.default_layouts = ['Outline', 'Leaf name', 'Number of leaves',
                                 'Branch length', 'Branch support',
                                 'Aligned panel link']
+        # Selected face
+        self._selected_face = SelectedRectFace
+        self._selected_face_pos = "branch-right"
         
     @property
     def layout_fn(self):
@@ -175,6 +179,30 @@ class TreeStyle(object):
                     self._layout_handler.append(ly)
             else:
                 raise ValueError ("Required layout is not a function pointer nor a valid layout name.")
+
+    @property
+    def selected_face(self):
+        return self._selected_face
+
+    @selected_face.setter
+    def selected_face(self, face):
+        if isinstance(face, Face):
+            self._selected_face = face
+        else:
+            raise ValueError(f'{type(face)} is not a valid Face instance')
+
+    @property
+    def selected_face_pos(self):
+        return self._selected_face_pos
+
+    @selected_face_pos.setter
+    def selected_face_pos(self, pos):
+        if pos in FACE_POSITIONS:
+            self._selected_face_pos = pos
+        else:
+            raise ValueError(f'{pos} is not a valid Face position. ' +
+                    'Please provide one of the following values' + 
+                    ', '.join(FACE_POSITIONS + '.'))
 
     def del_layout_fn(self, name):
         """ Deletes layout function given its __name__ """

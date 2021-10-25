@@ -34,25 +34,8 @@ function init_events() {
 
     document.addEventListener("touchend", on_touchend);
 
-    if (self === top)  // ETE is not within an iframe
-        return
-
-    // Selection when placing ETE in iframe
-    window.addEventListener("message", event => {
-        // TODO: we should register allowed origins
-        //if (!wiew.allowed_origins.includes(event.origin))
-            //return
-
-        const node = event.data.node;
-        const selected = event.data.selected;
-
-        // We so far only allow to unselect
-        // If it was not selected to begin with, ignore message
-        if (selected || !view.selected[node])
-            return
-
-        view.selected[node].remove();
-    })
+    if (self !== top)  // ETE is not within an iframe
+        window.addEventListener("message", on_postMessage)
 }
 
 
@@ -266,4 +249,23 @@ function on_touchend(event) {
         event.preventDefault();
     else
         on_mouseup(event.touches[0]);
+}
+
+
+function on_postMessage(event) {
+    // Selection when placing ETE in iframe
+    
+    // TODO: we should register allowed origins
+    //if (!wiew.allowed_origins.includes(event.origin))
+        //return
+
+    const node = event.data.node;
+    const selected = event.data.selected;
+
+    // We so far only allow to unselect
+    // If it was not selected to begin with, ignore message
+    if (selected || !view.selected[node])
+        return
+
+    view.selected[node].remove();
 }

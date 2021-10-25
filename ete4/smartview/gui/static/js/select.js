@@ -4,41 +4,23 @@ import { view, menus, get_tid } from "./gui.js";
 import { draw_tree } from "./draw.js";
 import { api } from "./api.js";
 
-export { select_node, colorize_selections, get_selection_class, remove_selections };
+export { select_node, get_selections, remove_selections, get_selection_class, colorize_selections };
 
 
 // Select node with the given name and return true if things went well.
-async function select_node(node_id, name) {
-
-    
+async function select_node(node_id, name) {    
     try {
+        if (!name)
+            return false;  // prevent popup from closing
+
         const tid = get_tid() + "," + node_id;
-        const res = await api(`/trees/${tid}/select`);
+        const qs = `name=${encodeURIComponent(name)}`;
+        const res = await api(`/trees/${tid}/select?${qs}`);
 
         if (res.message !== "ok")
             throw new Error("Something went wrong.");
 
-        if (self !== top)  // notify parent window
-            parent.postMessage({ 
-                selected: true,
-                node: node_id,
-                name: name,
-                // Maybe also provide the color used to tag it...
-            }, "*");
-
-        // Add to selected dict
-        const colors = ["#FF0", "#F0F", "#0FF", "#F00", "#0F0", "#00F"].reverse();
-        const nselected = Object.keys(view.selected).length;
-        view.selected[node_id] = {
-            result: { name: name,
-                      opacity: 0.4,
-                      color: colors[nselected % colors.length] },
-            parents: { n: res.nparents,
-                       color: "#000",
-                       width: 2.5 },
-        };
-
-        add_selected_to_menu(node_id);
+        store_selection(node_id, name, res);
 
         draw_tree();
 
@@ -55,6 +37,33 @@ async function select_node(node_id, name) {
 
 }
 
+// Store selection with info from backend (number of parents)
+// Notify parent window if encapsulated in iframe
+function store_selection(node_id, name, res) {
+    if (self !== top)  // notify parent window
+        parent.postMessage({ 
+            tid: get_tid(),
+            selected: true,
+            node: String(node_id),
+            name: name,
+            // Maybe also provide the color used to tag it...
+        }, "*");
+
+    // Add to selected dict
+    const colors = ["#FF0", "#F0F", "#0FF", "#F00", "#0F0", "#00F"].reverse();
+    const nselected = Object.keys(view.selected).length;
+    view.selected[node_id] = {
+        result: { name: name,
+                  opacity: 0.4,
+                  color: colors[nselected % colors.length] },
+        parents: { n: res.nparents,
+                   color: "#000",
+                   width: 2.5 },
+    };
+
+    add_selected_to_menu(node_id);
+}
+
 
 function add_selected_to_menu(node_id) {
     const selected = view.selected[node_id];
@@ -65,11 +74,17 @@ function add_selected_to_menu(node_id) {
         expanded: false 
     });
 
-    selected.remove = function() {
+    selected.remove = async function(purge=true) {
+        if (purge) {
+            const tid = get_tid() + "," + node_id;
+            await api(`/trees/${tid}/remove_selection`);
+        }
+
         if (self !== top)  // notify parent window
             parent.postMessage({
+                tid: get_tid(),
                 selected: false,
-                node: node_id,
+                node: String(node_id),
                 name: name,
             }, "*");
         delete view.selected[node_id];
@@ -123,6 +138,13 @@ function colorize_selections() {
 }
 
 
+// Get selections from api and fill view.selections
+async function get_selections() {
+    const selected = await api(`/trees/${get_tid()}/selected`);
+    Object.entries(selected.selected)
+        .forEach(([node_id, res]) => store_selection(node_id, res.name, res));
+}
+
 function remove_selections() {
-    Object.keys(view.selected).forEach(s => view.selected[s].remove());
+    Object.keys(view.selected).forEach(s => view.selected[s].remove(false));
 }

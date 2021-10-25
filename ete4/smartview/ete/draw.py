@@ -140,24 +140,27 @@ class Drawer:
         "Update list of graphics to draw and return new position"
 
         # Searches
-        result_of = set( text for text,(results,_) in self.searches.items()
+        searched_by = set( text for text,(results,_) in self.searches.items()
                 if it.node in results )
         # Selection
-        result_of.update( text for text,(result,_) in self.selected.items()
-                    if it.node == result )
+        selected_by = next((text for text,(_,result,_) in self.selected.items()
+                if it.node == result), None)
+        selected_by = [ selected_by ] if selected_by else []
+        # Only if node is collapsed
+        selected_children = []
         if self.outline:
             if all(child in self.collapsed for child in it.node.children):
-                result_of.update( text for text,(results,parents) in self.searches.items()
+                searched_by.update( text for text,(results,parents) in self.searches.items()
                         if any(node in results or node in parents for node in self.collapsed) )
-                result_of.update( text for text,(result,parents) in self.selected.items()
-                        if any(node == result or node in parents for node in self.collapsed) )
+                selected_children = [ text for text,(_,result,parents) in self.selected.items()
+                        if any(node == result or node in parents for node in self.collapsed) ]
             graphics += self.get_outline()
 
         x_after, y_after = point
         dx, dy = self.content_size(it.node)
         x_before, y_before = x_after - dx, y_after - dy
 
-        content_graphics = list(self.draw_content(it.node, (x_before, y_before)))
+        content_graphics = list(self.draw_content(it.node, (x_before, y_before), selected_children))
         graphics += content_graphics
 
         ndx = (drawn_size(content_graphics, self.get_box).dx if it.node.is_leaf()
@@ -166,11 +169,11 @@ class Drawer:
 
         box = Box(x_before, y_before, ndx, dy)
         self.nodeboxes += self.draw_nodebox(it.node, it.node_id, box,
-                list(result_of), { 'fill': it.node.img_style.get('bgcolor') })
+                list(searched_by) + selected_by, { 'fill': it.node.img_style.get('bgcolor') })
 
         return x_before, y_after
 
-    def draw_content(self, node, point):
+    def draw_content(self, node, point, selected_children=[]):
         "Yield the node content's graphic elements"
         x, y = point
         dx, dy = self.content_size(node)
@@ -187,7 +190,7 @@ class Drawer:
         # Collapsed nodes will be drawn from self.draw_collapsed()
         if not node.is_collapsed or node.is_leaf():
             bdy0_, bdy1_ = (0, dy) if node.is_leaf() else (bdy0, bdy1)
-            yield from self.draw_node(node, point, dx, bdy, bdy0_, bdy1_)
+            yield from self.draw_node(node, point, dx, bdy, bdy0_, bdy1_, selected_children)
 
         # Draw the branch line ("lengthline") and a line spanning all children.
         if self.panel == 0:
@@ -195,7 +198,7 @@ class Drawer:
             if dx > 0:
                 parent_of = [text for text,(_,parents) in self.searches.items()
                                 if node in parents]
-                parent_of += [text for text,(_,parents) in self.selected.items()
+                parent_of += [text for text,(_,_,parents) in self.selected.items()
                                 if node in parents]
                 hz_line_style = {
                         'type': node_style['hz_line_type'],
@@ -225,11 +228,6 @@ class Drawer:
 
     def get_outline(self):
         "Yield the outline representation"
-        result_of = [text for text,(results,parents) in self.searches.items()
-            if any(node in results or node in parents for node in self.collapsed)]
-        result_of += [text for text,(result,parents) in self.selected.items()
-            if any(node == result or node in parents for node in self.collapsed)]
-
         graphics = []
 
         node0 = self.collapsed[0]
@@ -238,12 +236,21 @@ class Drawer:
         x, y, _, _, _ = self.outline
         collapsed_node = self.get_collapsed_node()
 
+        searched_by = [ text for text,(results,parents) in self.searches.items()
+            if collapsed_node in results\
+            or any(node in results or node in parents for node in self.collapsed) ]
+        selected_by = next((text for text,(_,result,parents) in self.selected.items()
+            if collapsed_node == result), None)
+        selected_by = [ selected_by ] if selected_by else []
+        selected_children = [ text for text,(_,result,parents) in self.selected.items()
+            if any(node == result or node in parents for node in self.collapsed) ]
+
         if uncollapse:
             self.bdy_dys.append([])
-            graphics += self.draw_content(node0, (x, y))
+            graphics += self.draw_content(node0, (x, y), selected_children)
         else:
             self.bdy_dys[-1].append( (self.outline.dy / 2, self.outline.dy) )
-            graphics += self.draw_collapsed(collapsed_node)
+            graphics += self.draw_collapsed(collapsed_node, selected_children)
 
         is_manually_collapsed = collapsed_node in self.collapsed
         is_small = self.is_small(make_box((x, y),
@@ -258,7 +265,7 @@ class Drawer:
             name, properties = collapsed_node.name, collapsed_node.props
 
             box = draw_nodebox(self.flush_outline(ndx), name, 
-                    properties, [], result_of, 
+                    properties, [], searched_by + selected_by,
                     { 'fill': collapsed_node.img_style.get('bgcolor') })
             self.nodeboxes.append(box)
         else:
@@ -297,7 +304,7 @@ class Drawer:
 
         node.is_collapsed = True
         node.is_initialized = False
-        node.children = self.collapsed  # add avoiding parent override
+        node._children = self.collapsed  # add avoiding parent override
         _, _, dx_min, _, dy = self.outline
         node.dist = 0 
         node.size = Size(0, dy)
@@ -317,16 +324,19 @@ class Drawer:
     # These are the 2 functions that the user overloads to choose what to draw
     # when representing a node and a group of collapsed nodes:
 
-    def draw_node(self, node, point, bdx, bdy, bdy0, bdy1):
+    def draw_node(self, node, point, bdx, bdy, bdy0, bdy1, selected_children=[]):
         "Yield graphic elements to draw the contents of the node"
         # bdx: branch dx (width)
         # bdy: branch dy (height)
         # bdy0: fist child branch dy (height)
         # bdy1: last child branch dy (height)
+        # selected_children: list of selected nodes (under this node if collapsed or
+        #              this node if not collapsed) (to be tagged in front end)
         yield from []  # only drawn if the node's content is visible
 
-    def draw_collapsed(self, collapsed_node):
+    def draw_collapsed(self, collapsed_node, selected_children=[]):
         "Yield graphic elements to draw the list of nodes in self.collapsed"
+        # selected_children: list of selected nodes under this node
         yield from []  # they are always drawn (only visible nodes can collapse)
         # Uses self.collapsed and self.outline to extract and place info.
 
@@ -393,11 +403,11 @@ class DrawerRect(Drawer):
                 box = (x - dx/2, y - dy/2, dx, dy)
                 yield draw_rect(box, rect_type='nodedot', style=nodedot_style)
 
-    def draw_nodebox(self, node, node_id, box, result_of, style=None):
+    def draw_nodebox(self, node, node_id, box, searched_by, style=None):
         yield draw_nodebox(box, node.name, node.props,
-                node_id, result_of, style)
+                node_id, searched_by, style)
 
-    def draw_collapsed(self, collapsed_node):
+    def draw_collapsed(self, collapsed_node, selected_children=[]):
         # Draw line to farthest leaf under collapsed node
         x, y, dx_min, dx_max, dy = self.outline
 
@@ -491,14 +501,14 @@ class DrawerCirc(Drawer):
                 box = Box(r - dr / 2, a - da / 2, dr, da)
                 yield draw_rect(box, rect_type='nodedot', style=nodedot_style)
 
-    def draw_nodebox(self, node, node_id, box, result_of, style=None):
+    def draw_nodebox(self, node, node_id, box, searched_by, style=None):
         r, a, dr, da = box
         a1, a2 = clip_angles(a, a + da)
         if a1 < a2:
             yield draw_nodebox(Box(r, a1, dr, a2 - a1),
-                       node.name, node.props, node_id, result_of, style)
+                       node.name, node.props, node_id, searched_by, style)
 
-    def draw_collapsed(self, collapsed_node):
+    def draw_collapsed(self, collapsed_node, selected_children=[]):
         # Draw line to farthest leaf under collapsed node
         r, a, _, dr_max, da = self.outline
 
@@ -606,7 +616,7 @@ def draw_circ_collapsed_names(drawer):
 
 class DrawerRectFaces(DrawerRect):
 
-    def draw_node(self, node, point, bdx, bdy, bdy0, bdy1):
+    def draw_node(self, node, point, bdx, bdy, bdy0, bdy1, selected_children=[]):
         size = self.content_size(node)
         # Space available for branch-right Face position
         dx_to_closest_child = min(child.dist for child in node.children)\
@@ -637,6 +647,11 @@ class DrawerRectFaces(DrawerRect):
                 
             faces = dict(getattr(node_faces, pos, {}))
             n_col = max(faces.keys(), default = -1) + 1
+
+            # Add SelectedFace for each search this node is a result of
+            if pos == self.tree_style.selected_face_pos and len(selected_children):
+                faces[n_col] = [ self.tree_style.selected_face(s) for s in selected_children ]
+                n_col += 1
 
             dx_before = 0
             for col, face_list in sorted(faces.items()):
@@ -682,6 +697,8 @@ class DrawerRectFaces(DrawerRect):
             for layout_fn in self.tree_style.layout_fn:
                 layout_fn(node)
 
+        
+
         # Render Faces in different panels
         if self.NPANELS > 1:
             if self.panel == 0:
@@ -696,7 +713,7 @@ class DrawerRectFaces(DrawerRect):
             for pos in FACE_POSITIONS:
                 yield from draw_faces_at_pos(node, pos)
 
-    def draw_collapsed(self, collapsed_node):
+    def draw_collapsed(self, collapsed_node, selected_children=[]):
         x, y, dx_min, dx_max, dy = self.outline
 
         if self.is_fully_collapsed(collapsed_node):
@@ -707,12 +724,13 @@ class DrawerRectFaces(DrawerRect):
 
         x = x if self.panel == 0 else self.xmin
 
-        yield from self.draw_node(collapsed_node, (x, y), bdx, dy/2, 0, dy)
+        yield from self.draw_node(collapsed_node, 
+                (x, y), bdx, dy/2, 0, dy, selected_children)
 
 
 class DrawerCircFaces(DrawerCirc):
 
-    def draw_node(self, node, point, bdr, bda, bda0, bda1):
+    def draw_node(self, node, point, bdr, bda, bda0, bda1, selected_children=[]):
         size = self.content_size(node)
         # Space available for branch-right Face position
         dr_to_closest_child = min(child.dist for child in node.children)\
@@ -744,6 +762,11 @@ class DrawerCircFaces(DrawerCirc):
                 
             faces = dict(getattr(node_faces, pos, {}))
             n_col = len(faces.keys())
+
+            # Add SelectedFace for each search this node is a result of
+            if pos == self.tree_style.selected_face_pos and len(selected_children):
+                faces[n_col] = [ self.tree_style.selected_face(s) for s in selected_children ]
+                n_col += 1
 
             # Avoid drawing faces very close to center
             if pos.startswith('branch-') and abs(point[0]) < 1e-5:
@@ -807,7 +830,7 @@ class DrawerCircFaces(DrawerCirc):
             for pos in FACE_POSITIONS:
                 yield from draw_faces_at_pos(node, pos)
 
-    def draw_collapsed(self, collapsed_node):
+    def draw_collapsed(self, collapsed_node, selected_children=[]):
         r, a, dr_min, dr_max, da = self.outline
 
         if self.is_fully_collapsed(collapsed_node):
@@ -818,7 +841,8 @@ class DrawerCircFaces(DrawerCirc):
 
         r = r if self.panel == 0 else self.xmin
 
-        yield from self.draw_node(collapsed_node, (r, a), bdr, da/2, 0, da)
+        yield from self.draw_node(collapsed_node, 
+                (r, a), bdr, da/2, 0, da, selected_children)
 
 
 class DrawerAlignRectFaces(DrawerRectFaces):
@@ -857,11 +881,11 @@ def draw_texts(box, texts, text_type):
 # Basic drawing elements.
 
 def draw_nodebox(box, name='', properties=None, 
-        node_id=None, result_of=None, style=None):
+        node_id=None, searched_by=None, style=None):
     properties = { k:v for k,v in (properties or {}).items() if not k.startswith('_') }
     return ['nodebox', box, name, 
             properties, node_id or [], 
-            result_of or [], style or {}]
+            searched_by or [], style or {}]
 
 def draw_outline(sbox, style=None):
     return ['outline', sbox, style or {}]

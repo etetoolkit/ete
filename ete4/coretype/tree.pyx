@@ -2140,7 +2140,7 @@ cdef class TreeNode(object):
         the same distance to root).
         """
 
-                # pre-calculate how many splits remain under each node
+        # pre-calculate how many splits remain under each node
         node2max_depth = {}
         for node in self.traverse("postorder"):
             if not node.is_leaf():
