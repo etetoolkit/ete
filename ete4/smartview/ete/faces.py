@@ -520,41 +520,40 @@ class RectFace(Face):
                     style=text_style)
 
 
-# Search faces
-class SearchFace(Face):
-    def __init__(self, search):
-        self.search = clean_text(search)
+# Selected faces
+class SelectedFace(Face):
+    def __init__(self, node_id):
+        self.node_id = clean_text(node_id)
+        self.name = f'selected_result_{self.node_id}'
 
     def __name__(self):
-        return "SearchFace"
+        return "SelectedFace"
 
-class SearchCircleFace(SearchFace, CircleFace):
-
-    def __init__(self, search, radius=10,
+class SelectedCircleFace(SelectedFace, CircleFace):
+    def __init__(self, node_id, radius=15,
             padding_x=0, padding_y=0):
 
-        SearchFace.__init__(self, search=search)
+        SelectedFace.__init__(self, node_id)
 
         CircleFace.__init__(self, radius=radius, color=None,
-                name=f'search_results_{self.search}',
+                name=self.name,
                 padding_x=padding_x, padding_y=padding_y)
 
     def __name__(self):
-        return "SearchCircleFace"
+        return "SelectedCircleFace"
 
-class SearchRectFace(SearchFace, RectFace):
-
-    def __init__(self, search, width=10, height=10,
+class SelectedRectFace(SelectedFace, RectFace):
+    def __init__(self, node_id, width=15, height=15,
             padding_x=1, padding_y=0):
 
-        SearchFace.__init__(self, search);
+        SelectedFace.__init__(self, node_id);
 
         RectFace.__init__(self, width=width, height=height, color=None,
-                name=f'search_results_{self.search}',
+                name=self.name,
                 padding_x=padding_x, padding_y=padding_y)
 
     def __name__(self):
-        return "SearchRectFace"
+        return "SelectedRectFace"
 
 
 class OutlineFace(Face):
