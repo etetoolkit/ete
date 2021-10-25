@@ -2,7 +2,7 @@ from collections import defaultdict
 from types import FunctionType, MethodType
 from ete4.smartview import Face, AttrFace, TextFace,\
         CircleFace, RectFace,\
-        SearchRectFace, SearchCircleFace, OutlineFace, AlignLinkFace
+        SelectedRectFace, OutlineFace, AlignLinkFace
 from ete4.smartview.ete.draw import summary
 
 FACE_POSITIONS = ["branch-top", "branch-bottom", "branch-right", "aligned"]
@@ -154,9 +154,9 @@ class TreeStyle(object):
         self.default_layouts = ['Outline', 'Leaf name', 'Number of leaves',
                                 'Branch length', 'Branch support',
                                 'Aligned panel link']
-        # Search face
-        self._search_face = SearchRectFace
-        self._search_face_pos = "branch-right"
+        # Selected face
+        self._selected_face = SelectedRectFace
+        self._selected_face_pos = "branch-right"
         
     @property
     def layout_fn(self):
@@ -181,24 +181,24 @@ class TreeStyle(object):
                 raise ValueError ("Required layout is not a function pointer nor a valid layout name.")
 
     @property
-    def search_face(self):
-        return self._search_face
+    def selected_face(self):
+        return self._selected_face
 
-    @search_face.setter
-    def search_face(self, face):
+    @selected_face.setter
+    def selected_face(self, face):
         if isinstance(face, Face):
-            self._search_face = face
+            self._selected_face = face
         else:
             raise ValueError(f'{type(face)} is not a valid Face instance')
 
     @property
-    def search_face_pos(self):
-        return self._search_face_pos
+    def selected_face_pos(self):
+        return self._selected_face_pos
 
-    @search_face_pos.setter
-    def search_face_pos(self, pos):
+    @selected_face_pos.setter
+    def selected_face_pos(self, pos):
         if pos in FACE_POSITIONS:
-            self._search_face_pos = pos
+            self._selected_face_pos = pos
         else:
             raise ValueError(f'{pos} is not a valid Face position. ' +
                     'Please provide one of the following values' + 

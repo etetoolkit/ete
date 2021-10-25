@@ -71,7 +71,7 @@ function store_search(search_text, res) {
 
     view.searches[search_text] = {
         results: {n: res.nresults,
-                  opacity: 1,
+                  opacity: 0.4,
                   color: colors[nsearches % colors.length]},
         parents: {n: res.nparents,
                   color: "#000",
