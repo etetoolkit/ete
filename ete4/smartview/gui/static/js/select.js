@@ -30,6 +30,8 @@ async function select_node(node_id, name) {
             showConfirmButton: false,
             html: exception,
             icon: "error",
+            timer: 3000,
+            timerProgressBar: true,
         });
     }
 

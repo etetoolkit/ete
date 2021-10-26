@@ -6,14 +6,28 @@ import { api } from "./api.js";
 
 export { search, get_searches, remove_searches, get_search_class, colorize_searches };
 
+const searchError = Swal.mixin({
+    position: "bottom-start",
+    showConfirmButton: false,
+    icon: "error",
+    timer: 3000,
+    timerProgressBar: true,
+    didOpen: el => {
+        el.addEventListener('mouseenter', Swal.stopTimer)
+        el.addEventListener('mouseleave', Swal.resumeTimer)
+    }
+});
 
 // Search nodes in the server and redraw the tree (with the results too).
 async function search() {
     let search_text;
 
+    const inputValue = view.search_cache ?
+        { inputValue: view.search_cache } : {};
     const result = await Swal.fire({
         input: "text",
         position: "bottom-start",
+        ...inputValue,
         inputPlaceholder: "Enter name or /r <regex> or /e <exp>",
         showConfirmButton: false,
         preConfirm: async text => {
@@ -29,12 +43,11 @@ async function search() {
                 const qs = `text=${encodeURIComponent(text)}`;
                 return await api(`/trees/${get_tid()}/search?${qs}`);
             } catch (exception) {
-                Swal.fire({
-                    position: "bottom-start",
-                    showConfirmButton: false,
-                    html: exception,
-                    icon: "error",
-                });
+                searchError
+                    .fire({ html: exception.message })
+                    .then(() => search());
+                // Store in cache to allow for correction
+                view.search_cache = search_text;
             }
         },
     });
@@ -50,17 +63,19 @@ async function search() {
                 throw new Error(`No results found by: ${search_text}`);
 
             store_search(search_text, res);
+            // Search was successful
+            view.search_cache = undefined;
             draw_tree();
 
         } catch (exception) {
-            Swal.fire({
-                position: "bottom-start",
-                showConfirmButton: false,
-                text: exception.message,
-                icon: "error",
-            });
+            searchError
+                .fire({ html: exception.message })
+                .then(() => search());
+            // Store in cache to allow for correction
+            view.search_cache = search_text;
         }
     }
+    return search_text;
 }
 
 // Store search with info from backend (number of results and parents)
@@ -86,9 +101,9 @@ function store_search(search_text, res) {
 function add_search_to_menu(text) {
     const folder = menus.searches.addFolder({ title: text, expanded: false });
 
-    const search = view.searches[text];
+    const vsearch = view.searches[text];
 
-    search.remove = async function(purge=true) {
+    vsearch.remove = async function(purge=true) {
         if (purge) {
             const qs = `text=${encodeURIComponent(text)}`;
             await api(`/trees/${get_tid()}/remove_search?${qs}`);
@@ -98,20 +113,27 @@ function add_search_to_menu(text) {
         draw_tree();
     }
 
-    const folder_results = folder.addFolder({ title: `results (${search.results.n})` });
-    folder_results.addInput(search.results, "opacity", 
+    folder.addButton({ title: "edit search" }).on("click", async () => {
+        view.search_cache = text;
+        const new_search = await search();
+        if (view.searches[new_search])
+            view.searches[text].remove();
+    })
+
+    const folder_results = folder.addFolder({ title: `results (${vsearch.results.n})` });
+    folder_results.addInput(vsearch.results, "opacity", 
         { min: 0, max: 1, step: 0.1 })
         .on("change", () => colorize_search(text));
-    folder_results.addInput(search.results, "color", { view: "color" })
+    folder_results.addInput(vsearch.results, "color", { view: "color" })
         .on("change", () => colorize_search(text));
 
-    const folder_parents = folder.addFolder({ title: `parents (${search.parents.n})` });
-    folder_parents.addInput(search.parents, "color", { view: "color" })
+    const folder_parents = folder.addFolder({ title: `parents (${vsearch.parents.n})` });
+    folder_parents.addInput(vsearch.parents, "color", { view: "color" })
         .on("change", () => colorize_search(text));
-    folder_parents.addInput(search.parents, "width", { min: 0.1, max: 10 })
+    folder_parents.addInput(vsearch.parents, "width", { min: 0.1, max: 10 })
         .on("change", () => colorize_search(text));
 
-    folder.addButton({ title: "remove" }).on("click", search.remove);
+    folder.addButton({ title: "remove" }).on("click", vsearch.remove);
 }
 
 // Return a class name related to the results of searching for text.

@@ -440,6 +440,9 @@ def store_search(tree_id, args):
     try:
         results = set(node for node in load_tree(tree_id).traverse() if func(node))
 
+        if len(results) == 0:
+            return 0, 0
+
         parents = set()
         for node in results:
             parent = node.up
