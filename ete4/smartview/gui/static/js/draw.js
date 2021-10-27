@@ -113,7 +113,7 @@ function draw(element, items, tl, zoom, replace=true) {
     const g = create_svg_element("g");
 
     const svg_items = items.filter(i => !i[0].includes("pixi-"));
-    svg_items.forEach(item => g.appendChild(create_item(item, tl, zoom)));
+    svg_items.forEach(item => g.appendChild(create_item(g, item, tl, zoom)));
     
     const pixi_items = items.filter(i => i[0].includes("pixi-"));
     const pixi = draw_pixi(pixi_items, tl, zoom)
@@ -146,6 +146,7 @@ function put_nodes_in_background(g) {
         e.style.fill = null;
         g.insertBefore(bg_node, first);
     });
+    Array.from(g.getElementsByClassName("box")).forEach(e => g.insertBefore(e, first));
 }
 
 function replace_child(element, child) {
@@ -202,7 +203,7 @@ async function draw_aligned(params) {
 
 
 // Return the graphical (svg) element corresponding to a drawer item.
-function create_item(item, tl, zoom) {
+function create_item(g, item, tl, zoom) {
     // item looks like ["line", ...] for a line, etc.
 
     const [zx, zy] = [zoom.x, zoom.y];  // shortcut 
@@ -214,14 +215,27 @@ function create_item(item, tl, zoom) {
         b.id = "node-" + node_id.join("_");
 
         b.classList.add("node");
-        result_of.forEach(t => {
-            const cnode = Object.keys(view.searches).includes(t) 
-                ? get_search_class(t, "results") 
-                : get_selection_class(t, "result");
-            b.classList.add(cnode);
-        });
 
-        style_nodebox(b, style)
+        if (result_of.length === 1) {
+            const t = result_of[0];
+            const cnode = Object.keys(view.searches).includes(t)
+                ? get_search_class(t) : get_selection_class(t);
+            b.classList.add(cnode);
+        } else if (result_of.length > 1) {
+            const [ x, y, width, dy ] = box;
+            const dx = width / result_of.length;
+            result_of.forEach((t, i) => {
+                const box = [ x + dx * i, y, dx, dy ];
+                const b = create_box(box, tl, zx, zy, "", style);
+                style_nodebox(b, style);
+                const cnode = Object.keys(view.searches).includes(t) 
+                    ? get_search_class(t) : get_selection_class(t);
+                b.classList.add(cnode);
+                g.appendChild(b);
+            })
+        }
+
+        style_nodebox(b, style);
 
         b.addEventListener("click", event =>
             on_box_click(event, box, node_id));

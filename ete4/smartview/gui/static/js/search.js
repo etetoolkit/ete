@@ -3,6 +3,7 @@
 import { view, menus, get_tid } from "./gui.js";
 import { draw_tree } from "./draw.js";
 import { api } from "./api.js";
+import { store_selection } from "./select.js";
 
 export { search, get_searches, remove_searches, get_search_class, colorize_searches };
 
@@ -119,6 +120,17 @@ function add_search_to_menu(text) {
         if (view.searches[new_search])
             view.searches[text].remove();
     })
+
+    if (!Object.keys(view.selected).includes(text))
+        folder.addButton({ title: "convert search to selection" })
+            .on("click", async () => {
+                const qs = `text=${encodeURIComponent(text)}`;
+                await api(`/trees/${get_tid()}/search_to_selection?${qs}`);
+                store_selection(text, { 
+                    nresults: vsearch.results.n, nparents: vsearch.parents.n,
+                })
+                vsearch.remove();
+            })
 
     const folder_results = folder.addFolder({ title: `results (${vsearch.results.n})` });
     folder_results.addInput(vsearch.results, "opacity", 

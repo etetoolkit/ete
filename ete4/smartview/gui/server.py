@@ -131,16 +131,26 @@ class Trees(Resource):
             MAX_MB = 2
             return get_newick(tree_id, MAX_MB)
         elif rule == '/trees/<string:tree_id>/selected':
-            selected = {  node_id: { 'name': name, 'nparents': len(parents) }
-                for node_id, (name, _, parents) in (tree.selected or {}).items() }
+            selected = {  
+                name: { 'nresults': len(results), 'nparents': len(parents) }
+                for name, (results, parents) in (tree.selected or {}).items() }
             return { 'selected': selected }
+        elif rule == '/trees/<string:tree_id>/is_selected':
+            return 'true' if is_selected(tree_id) else 'false'
         elif rule == '/trees/<string:tree_id>/select':
-            nparents = store_selection(tid, subtree, request.args.copy())
-            return {'message': 'ok', 'nparents': nparents}
-        elif rule == '/trees/<string:tree_id>/remove_selection':
-            removed = remove_selection(tid, subtree)
-            message = 'ok' if removed else 'search not found'
+            nresults, nparents = store_selection(tree_id, request.args.copy())
+            return {'message': 'ok', 'nresults': nresults, 'nparents': nparents}
+        elif rule == '/trees/<string:tree_id>/unselect':
+            removed = unselect_node(tree_id, request.args.copy())
+            message = 'ok' if removed else 'selection not found'
             return {'message': message}
+        elif rule == '/trees/<string:tree_id>/remove_selection':
+            removed = remove_selection(tid, request.args.copy())
+            message = 'ok' if removed else 'selection not found'
+            return {'message': message}
+        elif rule == '/trees/<string:tree_id>/change_selection_name':
+            change_selection_name(tid, request.args.copy())
+            return {'message': 'ok'}
         elif rule == '/trees/<string:tree_id>/searches':
             searches = { 
                 text: { 'nresults' : len(results), 'nparents': len(parents) }
@@ -153,6 +163,9 @@ class Trees(Resource):
             removed = remove_search(tid, request.args.copy())
             message = 'ok' if removed else 'search not found'
             return {'message': message}
+        elif rule == '/trees/<string:tree_id>/search_to_selection':
+            search_to_selection(tid, request.args.copy())
+            return { 'message': 'ok' }
         elif rule == '/trees/<string:tree_id>/draw':
             drawer = get_drawer(tree_id, request.args.copy())
             return list(drawer.draw())
@@ -419,6 +432,17 @@ def get_newick(tree_id, max_mb):
     return newick
 
 
+def get_parents(results):
+    "Return a set of parents given a set of results"
+    parents = set()
+    for node in results:
+        parent = node.up
+        while parent and parent not in parents:
+            parents.add(parent)
+            parent = parent.up
+    return parents
+
+
 def remove_search(tid, args):
     "Remove search"
     if 'text' not in args:
@@ -443,12 +467,7 @@ def store_search(tree_id, args):
         if len(results) == 0:
             return 0, 0
 
-        parents = set()
-        for node in results:
-            parent = node.up
-            while parent and parent not in parents:
-                parents.add(parent)
-                parent = parent.up
+        parents = get_parents(results)
 
         tid = get_tid(tree_id)[0]
         app.trees[int(tid)].searches[text] = (results, parents)
@@ -460,15 +479,86 @@ def store_search(tree_id, args):
         raise InvalidUsage(f'evaluating expression: {e}')
 
 
-def remove_selection(tid, subtree):
+def is_selected(tree_id):
+    tid, subtree = get_tid(tree_id)
+    tree = app.trees[int(tid)]
+    node = gdn.get_node(tree.tree, subtree)
+    for results, _ in tree.selected.values():
+        if node in results:
+            return True
+    return False
+
+
+def remove_selection(tid, args):
     "Remove selection"
-    subtree_string = ",".join([ str(i) for i in subtree ])
-    return app.trees[int(tid)].selected.pop(subtree_string, None)
+    if 'text' not in args:
+        raise InvalidUsage('missing selection text')
+    name = args.pop('text').strip()
+    return app.trees[int(tid)].selected.pop(name, None)
 
 
-def store_selection(tid, subtree, args):
-    "Store the result and parents of a selection and return number of parents"
+def change_selection_name(tid, args):
+    if 'name' not in args or 'newname' not in args:
+        raise InvalidUsage('missing renaming parameters')
 
+    name = args.pop('name').strip()
+    selected = app.trees[int(tid)].selected
+
+    if name not in selected.keys():
+        raise InvalidUsage(f'selection {name} does not exist')
+
+    new_name = args.pop('newname').strip()
+    selected[new_name] = selected[name]
+    selected.pop(name)
+
+
+def unselect_node(tree_id, args):
+    tid, subtree = get_tid(tree_id)
+    tree = app.trees[int(tid)]
+    node = gdn.get_node(tree.tree, subtree)
+    name = args.pop('text', '').strip()
+
+    if name in tree.selected.keys():
+        selections = { name: tree.selected[name] }
+    else:
+        selections = dict(tree.selected)
+
+    removed = False
+    for name, (results, parents) in selections.items():
+        nresults = len(results)
+        results.discard(node)
+        if len(results) == 0:
+            removed = True
+            tree.selected.pop(name)
+        elif nresults > len(results):
+            removed = True
+            parents = get_parents(results)
+            tree.selected[name] = (results, parents)
+
+    return removed
+
+
+def search_to_selection(tid, args):
+    "Store search as selection"
+    if 'text' not in args:
+        raise InvalidUsage('missing selection text')
+
+    text = args.copy().pop('text').strip()
+    selected = app.trees[int(tid)].selected
+
+    if text in selected.keys():
+        raise InvalidUsage('selection already exists')
+
+    search = remove_search(tid, args)
+    selected[text] = search
+
+
+def store_selection(tree_id, args):
+    "Store the results and parents of a selection and return their numbers"
+    if 'text' not in args:
+        raise InvalidUsage('missing selection text')
+
+    tid, subtree = get_tid(tree_id)
     app_tree = app.trees[int(tid)]
     node = gdn.get_node(app_tree.tree, subtree)
 
@@ -478,11 +568,17 @@ def store_selection(tid, subtree, args):
         parents.add(parent)
         parent = parent.up
 
-    subtree_string = ",".join([ str(i) for i in subtree ])
-    name = args.pop('name').strip()
-    app_tree.selected[subtree_string] = (name, node, parents)
+    name = args.pop('text').strip()
+    if name in app_tree.selected.keys():
+        all_results, all_parents = app_tree.selected[name]
+        all_results.add(node)
+        all_parents.update(parents)
+        app_tree.selected[name] = (all_results, all_parents)
+    else:
+        app_tree.selected[name] = (set([node]), parents)
 
-    return len(parents)
+    results, parents = app_tree.selected[name]
+    return len(results), len(parents)
 
 
 def get_search_function(text):
@@ -943,8 +1039,12 @@ def add_resources(api):
         '/trees/<string:tree_id>/nodecount',
         '/trees/<string:tree_id>/ultrametric',
         '/trees/<string:tree_id>/select',
+        '/trees/<string:tree_id>/unselect',
+        '/trees/<string:tree_id>/is_selected',
         '/trees/<string:tree_id>/selected',
         '/trees/<string:tree_id>/remove_selection',
+        '/trees/<string:tree_id>/change_selection_name',
+        '/trees/<string:tree_id>/search_to_selection',
         '/trees/<string:tree_id>/search',
         '/trees/<string:tree_id>/searches',
         '/trees/<string:tree_id>/remove_search',

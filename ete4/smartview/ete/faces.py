@@ -522,18 +522,18 @@ class RectFace(Face):
 
 # Selected faces
 class SelectedFace(Face):
-    def __init__(self, node_id):
-        self.node_id = clean_text(node_id)
-        self.name = f'selected_result_{self.node_id}'
+    def __init__(self, name):
+        self.name = clean_text(name)
+        self.name = f'selected_results_{self.name}'
 
     def __name__(self):
         return "SelectedFace"
 
 class SelectedCircleFace(SelectedFace, CircleFace):
-    def __init__(self, node_id, radius=15,
+    def __init__(self, name, radius=15,
             padding_x=0, padding_y=0):
 
-        SelectedFace.__init__(self, node_id)
+        SelectedFace.__init__(self, name)
 
         CircleFace.__init__(self, radius=radius, color=None,
                 name=self.name,
@@ -543,10 +543,10 @@ class SelectedCircleFace(SelectedFace, CircleFace):
         return "SelectedCircleFace"
 
 class SelectedRectFace(SelectedFace, RectFace):
-    def __init__(self, node_id, width=15, height=15,
+    def __init__(self, name, width=15, height=15,
             padding_x=1, padding_y=0):
 
-        SelectedFace.__init__(self, node_id);
+        SelectedFace.__init__(self, name);
 
         RectFace.__init__(self, width=width, height=height, color=None,
                 name=self.name,

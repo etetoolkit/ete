@@ -143,17 +143,16 @@ class Drawer:
         searched_by = set( text for text,(results,_) in self.searches.items()
                 if it.node in results )
         # Selection
-        selected_by = next((text for text,(_,result,_) in self.selected.items()
-                if it.node == result), None)
-        selected_by = [ selected_by ] if selected_by else []
+        selected_by = [ text for text,(results,_) in self.selected.items()
+                if it.node in results ]
         # Only if node is collapsed
         selected_children = []
         if self.outline:
             if all(child in self.collapsed for child in it.node.children):
                 searched_by.update( text for text,(results,parents) in self.searches.items()
                         if any(node in results or node in parents for node in self.collapsed) )
-                selected_children = [ text for text,(_,result,parents) in self.selected.items()
-                        if any(node == result or node in parents for node in self.collapsed) ]
+                selected_children = [ text for text,(results,parents) in self.selected.items()
+                        if any(node in results or node in parents for node in self.collapsed) ]
             graphics += self.get_outline()
 
         x_after, y_after = point
@@ -196,17 +195,17 @@ class Drawer:
         if self.panel == 0:
             node_style = node.img_style
             if dx > 0:
-                parent_of = [text for text,(_,parents) in self.searches.items()
-                                if node in parents]
-                parent_of += [text for text,(_,_,parents) in self.selected.items()
-                                if node in parents]
+                parent_of = set(text for text,(_,parents) in self.searches.items()
+                                if node in parents)
+                parent_of.update(text for text,(_,parents) in self.selected.items()
+                                if node in parents)
                 hz_line_style = {
                         'type': node_style['hz_line_type'],
                         'width': node_style['hz_line_width'],
                         'color': node_style['hz_line_color'],
                 }
                 yield from self.draw_lengthline((x, y + bdy), (x + dx, y + bdy),
-                                parent_of, hz_line_style)
+                                list(parent_of), hz_line_style)
 
             if bdy0 != bdy1:
                 vt_line_style = {
@@ -239,11 +238,10 @@ class Drawer:
         searched_by = [ text for text,(results,parents) in self.searches.items()
             if collapsed_node in results\
             or any(node in results or node in parents for node in self.collapsed) ]
-        selected_by = next((text for text,(_,result,parents) in self.selected.items()
-            if collapsed_node == result), None)
-        selected_by = [ selected_by ] if selected_by else []
-        selected_children = [ text for text,(_,result,parents) in self.selected.items()
-            if any(node == result or node in parents for node in self.collapsed) ]
+        selected_by = [ text for text,(results,parents) in self.selected.items()
+            if collapsed_node in results ]
+        selected_children = [ text for text,(results,parents) in self.selected.items()
+            if any(node in results or node in parents for node in self.collapsed) ]
 
         if uncollapse:
             self.bdy_dys.append([])
