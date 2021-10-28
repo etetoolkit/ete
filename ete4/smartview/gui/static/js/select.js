@@ -159,7 +159,7 @@ function add_selected_to_menu(name) {
         draw_tree();
     }
 
-    folder.addButton({ title: "edit name" }).on("click", () => change_name(name, folder));
+    folder.addButton({ title: "edit name" }).on("click", () => change_name(folder.title, folder));
 
     const folder_results = folder.addFolder({ title: `results (${selected.results.n})` });
     folder_results.addInput(selected.results, "opacity", 

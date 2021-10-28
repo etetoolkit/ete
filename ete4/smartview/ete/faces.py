@@ -383,7 +383,7 @@ class RectFace(Face):
         self.height = height
         self.color = color
         # Text related
-        self.text = text
+        self.text = str(text)
         self.rotate_text = True
         self.fgcolor = fgcolor
         self.ftype = ftype

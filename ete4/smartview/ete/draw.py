@@ -245,7 +245,7 @@ class Drawer:
 
         if uncollapse:
             self.bdy_dys.append([])
-            graphics += self.draw_content(node0, (x, y), selected_children)
+            graphics += self.draw_content(node0, (x, y))
         else:
             self.bdy_dys[-1].append( (self.outline.dy / 2, self.outline.dy) )
             graphics += self.draw_collapsed(collapsed_node, selected_children)
