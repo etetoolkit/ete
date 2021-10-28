@@ -4,7 +4,7 @@ import { api } from "./api.js";
 import { view, menus, on_tree_change,
          on_drawer_change, show_minimap, get_tid } from "./gui.js";
 import { draw_minimap } from "./minimap.js";
-import { update } from "./draw.js";
+import { update, draw_tree_scale } from "./draw.js";
 
 export { init_menus };
 
@@ -32,6 +32,8 @@ function create_menu_main(menu, trees) {
     add_folder_view(menu);
 
     add_folder_minimap(menu);
+
+    add_folder_tree_scale(menu);
 
     menu.addInput(view, "select_text", { label: "select text", position: 'left' })
       .on("change", () => {
@@ -311,8 +313,8 @@ function style(name) {
 
 
 function add_folder_minimap(menu) {
-    const folder_minimap = menu.addFolder({ title: "Minimap", 
-                                            expanded: false });
+    const folder_minimap = menu.addFolder(
+        { title: "Minimap", expanded: false });
 
     folder_minimap.addInput(view.minimap, "width", { min: 1, max: 100 })
       .on("change", () => {
@@ -330,4 +332,21 @@ function add_folder_minimap(menu) {
     });
     menus.minimap = folder_minimap.addInput(view.minimap, "show")
         .on("change", () => show_minimap(view.minimap.show));
+}
+
+
+function add_folder_tree_scale(menu) {
+    const folder_scale = menu.addFolder(
+        { title: "Tree scale", expanded: false });
+
+    folder_scale.addInput(view.tree_scale, "length", 
+        { label: "width (px)", min: 10, max: 300 })
+        .on("change", draw_tree_scale);
+
+    folder_scale.addInput(view.tree_scale, "color", { view: "color" })
+        .on("change", draw_tree_scale);
+
+    folder_scale.addInput(view.tree_scale, "show", { view: "color" })
+        .on("change", draw_tree_scale);
+    
 }

@@ -3,6 +3,10 @@
     margin: 0;
 }
 
+body {
+    overflow: hidden;
+}
+
 .line {
     stroke: #000;
     fill-opacity: 0;
@@ -93,16 +97,16 @@
 
 .minimap {
     position: absolute;
-    border-style: solid;
-    border-color: #d6d6d6;
-    border-width: 2px;
-    border-radius: 4px;
     right: 10px;
     bottom: 10px;
     z-index: 1;
     background: #FFF;
     visibility: hidden;
     touch-action: none;
+    border-style: solid;
+    border-color: #d6d6d6;
+    border-width: 2px;
+    border-radius: 4px;
 }
 
 .visible_rect {
@@ -115,6 +119,22 @@
     background: rgba(0, 0, 0, 0.1);
     cursor: grab;
     touch-action: none;
+}
+
+.tree_scale {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 30px;
+    background: #FFF;
+    padding-left: 10px;
+}
+
+.tree_scale svg {
+    width: 500px;
+    height: 30px;
+    font-family: sans-serif;
+    font-weight: bold;
 }
 
 .menu_main,.menu_representation,.menu_tags_searches {
