@@ -233,12 +233,12 @@ def read_content(str text, int pos, endings=',);'):
     start = pos
     if pos < len(text) and text[pos] == "'":
         _, pos = read_quoted_name(text, pos)
-    stop = True
-    while pos < len(text) and (not stop or text[pos] not in endings):
+    keep_reading = []
+    while pos < len(text) and not (len(keep_reading) == 0 and text[pos] in endings):
         if text[pos] == '[':
-            stop = False
-        elif text[pos] == ']':
-            stop = True
+            keep_reading.append(1)
+        elif keep_reading and text[pos] == ']':
+            keep_reading.pop()
         pos += 1
     return text[start:pos], pos
 
