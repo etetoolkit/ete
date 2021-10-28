@@ -113,6 +113,15 @@ const view = {
         zoom: {x: 1, y: 1},
     },
 
+    tree_scale: {
+        show: true,
+        length: 100,
+        width: 1.5,
+        height: 10,
+        color: "#000",
+        fsize: 12,
+    },
+
     smart_zoom: true,
 
     share_view: () => share_view(),

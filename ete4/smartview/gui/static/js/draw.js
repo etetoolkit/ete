@@ -8,7 +8,7 @@ import { on_box_contextmenu } from "./contextmenu.js";
 import { api } from "./api.js";
 import { draw_pixi } from "./pixi.js";
 
-export { update, draw_tree, draw, get_class_name, cartesian_shifted };
+export { update, draw_tree, draw_tree_scale, draw, get_class_name, cartesian_shifted };
 
 
 // Update the view of all elements (gui, tree, minimap).
@@ -84,6 +84,8 @@ async function draw_tree() {
             if (view.angle.min < -180 || view.angle.max > 180)
                 draw_negative_xaxis();
         }
+
+        draw_tree_scale();
     }
     catch (ex) {
         Swal.fire({
@@ -93,6 +95,68 @@ async function draw_tree() {
     }
 
     div_tree.style.cursor = "auto";
+}
+
+
+// Draw tree scale depending on the horizontal zoom level
+function draw_tree_scale() {
+    function create_hz_line() {
+        const [ x1, y1 ] = [ x0, y0 ];
+        const [ x2, y2 ] = [ x1 + length, y1 ];
+        return create_svg_element("line", {
+            "x1": x1, "y1": y1,
+            "x2": x2, "y2": y2,
+            "stroke": view.tree_scale.color,
+            "stroke-width": view.tree_scale.width,
+        });
+    }
+
+    function create_vt_line(pos="right") {
+        const x = x0 + ( pos === "right" ? length : 0 );
+        const [ x1, y1 ] = [ x, y0 - height / 2];
+        const [ x2, y2 ] = [ x, y0 + height / 2 ];
+        return create_svg_element("line", {
+            "x1": x1, "y1": y1,
+            "x2": x2, "y2": y2,
+            "stroke": view.tree_scale.color,
+            "stroke-width": view.tree_scale.width,
+        });
+    }
+    
+    function create_text(text) {
+        const t = create_svg_element("text", { 
+            "font-size": view.tree_scale.fsize,
+            "fill": view.tree_scale.color,
+            x: x0 + length + 10,
+            y: y0 + height / 2,
+        });
+        t.appendChild(document.createTextNode(text));
+        return t;
+    }
+
+    // Only show when required
+    if (view.tree_scale.show)
+        tree_scale.style.display = "block";
+    else {
+        tree_scale.style.display = "none";
+        return
+    }
+
+    const length = view.tree_scale.length;
+    const height = view.tree_scale.height;
+    const [ x0, y0 ] = [ 15, 15 ];
+
+    const g = create_svg_element("g");
+    g.appendChild(create_hz_line());
+    g.appendChild(create_vt_line("left"));
+    g.appendChild(create_vt_line("right"));
+
+    // Text
+    const text = String((view.tree_scale.length / view.zoom.x).toFixed(3));
+    g.appendChild(create_text(text));
+
+
+    replace_child(tree_scale.children[0], g);
 }
 
 
@@ -351,11 +415,6 @@ function create_item(item, tl, zoom) {
 
         return g;
     }
-    //else if (item[0] == "alignment") {
-        //const [, box, sequence, sequence_type, draw_text] = item;
-        //const alignment = draw_alignment(box, sequence, sequence_type, draw_text)
-        //return alignment
-    //}
 }
 
 
