@@ -911,7 +911,8 @@ cdef class TreeNode(object):
         :argument properties: a list of feature names to be exported
           using the Extended Newick Format (i.e. properties=["name",
           "dist"]). Use an empty list to export all available properties
-          in each node (properties=[])
+          in each node (properties=[]), assign it None to mute all the 
+          properties (properties=None)
 
         :argument outfile: writes the output to a given file
 
