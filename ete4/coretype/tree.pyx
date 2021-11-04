@@ -52,14 +52,14 @@ from six.moves import (cPickle, map, range, zip)
 from .. import utils
 
 # the following imports are necessary to set fixed styles and faces
-try:
-    from ..treeview.main import NodeStyle, _FaceAreas, FaceContainer, FACE_POSITIONS
-    from ..treeview.faces import Face
-    from ete4.smartview import Face as smartFace
-except ImportError:
-    TREEVIEW = False
-else:
-    TREEVIEW = True
+# try:
+from ..treeview.main import NodeStyle, _FaceAreas, FaceContainer, FACE_POSITIONS
+from ..treeview.faces import Face
+from ete4.smartview import Face as smartFace
+# except ImportError:
+    # TREEVIEW = False
+# else:
+TREEVIEW = True
 
 __all__ = ["Tree", "TreeNode"]
 
@@ -1439,9 +1439,8 @@ cdef class TreeNode(object):
         """
         from ete4.smartview.gui.server import run_smartview
 
-        run_smartview(newick=self.write(format=1),
-                tree_name=tree_name, tree_style=tree_style, layouts=layouts,
-                port=port)
+        run_smartview(tree=self, tree_name=tree_name, 
+                tree_style=tree_style, layouts=layouts, port=port)
 
     def copy(self, method="cpickle"):
         """.. versionadded: 2.1

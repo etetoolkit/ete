@@ -144,7 +144,7 @@ const trees = {};  // will translate names to ids (trees[tree_name] = tree_id)
 async function main() {
     await init_trees();
 
-    view.layouts = await api("/layouts"); // init layouts
+    view.layouts = await api(`/layouts`); // init layouts
 
     await set_query_string_values();
 
@@ -228,12 +228,15 @@ async function on_tree_change() {
     remove_selections();
     remove_collapsed();
     view.tree_size = await api(`/trees/${get_tid()}/size`);
+
     // Get searches and selections if any are stored in backend
     if (Object.keys(view.searches).length === 0)
         get_searches();
     if (Object.keys(view.selected).length === 0)
         get_selections();
+
     reset_node_count();
+    //reset_layouts();
     reset_zoom();
     reset_position();
     draw_minimap();
@@ -378,6 +381,11 @@ function reset_node_count() {
         view.tnodes = n.tnodes;
         view.tleaves = n.tleaves;
     });
+}
+
+
+function reset_layouts() {
+    view.layouts = api(`/layouts/${get_tid()}`);
 }
 
 

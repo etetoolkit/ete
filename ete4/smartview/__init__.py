@@ -39,4 +39,6 @@
 
 
 from .ete.faces import *
-from .ete.layouts import *
+from .ete.treestyle import TreeStyle
+from .ete.layouts.default_layouts import *
+from .ete import layouts as layout_modules

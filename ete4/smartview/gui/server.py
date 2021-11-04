@@ -12,15 +12,6 @@ REST call examples:
   DELETE /users/{id}  Delete user by "id"
 """
 
-# The structure that we want to follow is:
-#
-# tree
-#   id: int
-#   name: str
-#   description: str
-#   birth: datetime
-#   newick: str
-
 import os
 os.chdir(os.path.abspath(os.path.dirname(__file__)))
 
@@ -39,13 +30,14 @@ from copy import deepcopy
 from dataclasses import dataclass
 import gzip
 import json
+import pickle
+from types import FunctionType
 import shutil
 
 from flask import Flask, request, jsonify, g, redirect, url_for
 from flask_restful import Resource, Api
 from flask_cors import CORS
 from flask_compress import Compress
-import sqlalchemy
 from itsdangerous import TimedJSONWebSignatureSerializer as JSONSigSerializer
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -55,14 +47,11 @@ from ete4.treeview.main import _FaceAreas
 from ete4.parser.newick import NewickError
 from ete4.smartview.utils import InvalidUsage, get_random_string
 from ete4.smartview.ete import nexus, draw, gardening as gdn
-from ete4.smartview import get_layout_outline,\
-        get_layout_leaf_name, get_layout_branch_length,\
-        get_layout_branch_support, get_layout_align_link,\
-        get_layout_nleaves
+
+from ete4.smartview import layout_modules
 
 # call initialize() to fill these up
 app = None
-db = None
 
 
 # Dataclass containing info specific to each tree
@@ -71,6 +60,7 @@ class AppTree:
     tree: Tree = None
     name: str = None
     style: TreeStyle = None
+    layouts: list = None
     timer: float = None
     initialized: bool = False
     selected: dict = None
@@ -96,10 +86,20 @@ class Drawers(Resource):
 
 
 class Layouts(Resource):
-    def get(self):
-        active = [ l.__name__ for l in app.trees['default'].style.layout_fn ]
-        app.trees.pop('default')
-        return { l.__name__: (l.__name__ in active) for l in app.layouts }
+    def get(self, tree_id=None):
+        rule = request.url_rule.rule  # shortcut
+
+        if rule == '/layouts':
+            active = [ l.__name__ for l in app.trees['default'].style.layout_fn ]
+            app.trees.pop('default')
+            avail_layouts = app.default_layouts
+        elif rule == '/layouts/<string:tree_id>':
+            tid = get_tid(tree_id)[0]
+            tree = app.trees[int(tid)]
+            active = [ l.__name__ for l in tree.style.layout_fn ]
+            avail_layouts = tree.layouts
+
+        return { l.__name__: (l.__name__ in active) for l in avail_layouts }
 
 
 class Trees(Resource):
@@ -110,18 +110,21 @@ class Trees(Resource):
         # Update tree's timer
         if rule.startswith('/trees/<string:tree_id>'):
             tid, subtree = get_tid(tree_id)
-            load_tree(tree_id)  # load if it was not loaded in memory
+            print('loading')
+            start = time()
+            t = load_tree(tree_id)  # load if it was not loaded in memory
+            print(f'Loading tree: {time() - start}')
             tree = app.trees[int(tid)]
             tree.timer = time()
 
         if rule == '/trees':
-            if app.memory_only:
-                raise InvalidUsage(f'invalid path {rule} in memory_only mode', 404)
-            return [get_tree(pid) for pid in dbget0('id', 'trees')]
-        elif rule == '/trees/<string:tree_id>':
-            if app.memory_only:
-                raise InvalidUsage(f'invalid path {rule} in memory_only mode', 404)
-            return get_tree(tree_id)
+            return
+            # if app.memory_only:
+                # raise InvalidUsage(f'invalid path {rule} in memory_only mode', 404)
+            # return [get_tree(pid) for pid in dbget0('id', 'trees')]
+        # elif rule == '/trees/<string:tree_id>':
+            # if app.memory_only:
+                # raise InvalidUsage(f'invalid path {rule} in memory_only mode', 404)
         elif rule == '/trees/<string:tree_id>/nodeinfo':
             node = gdn.get_node(tree.tree, subtree)
             return node.props
@@ -155,18 +158,23 @@ class Trees(Resource):
             return {'message': message}
         elif rule == '/trees/<string:tree_id>/draw':
             drawer = get_drawer(tree_id, request.args.copy())
-            return list(drawer.draw())
+            start = time()
+            graphics = drawer.draw()
+            print(f'Getting graphics: {time() - start}')
+            start = time()
+            g_list = list(graphics)
+            print(f'Graphics to list ({len(g_list)}): {time() - start}')
+            return g_list
         elif rule == '/trees/<string:tree_id>/size':
-            width, height = load_tree(tree_id).size
+            print(t.size)
+            width, height = t.size
             return {'width': width, 'height': height}
         elif rule == '/trees/<string:tree_id>/properties':
-            t = load_tree(tree_id)
             properties = set()
             for node in t.traverse():
                 properties |= node.props.keys()
             return list(properties)
         elif rule == '/trees/<string:tree_id>/nodecount':
-            t = load_tree(tree_id)
             tnodes = tleaves = 0
             for node in t.traverse():
                 tnodes += 1
@@ -188,6 +196,7 @@ class Trees(Resource):
         # Update tree's timer
         if rule.startswith('/trees/<string:tree_id>'):
             tid, subtree = get_tid(tree_id)
+            t = load_tree(tid)
             app.trees[int(tid)].timer = time()
 
         if rule == '/trees/<string:tree_id>':
@@ -202,12 +211,10 @@ class Trees(Resource):
             if subtree:
                 raise InvalidUsage('operation not allowed with subtree')
             node_id = request.json
-            t = load_tree(tid)
             app.trees[int(tid)].tree = gdn.root_at(gdn.get_node(t, node_id))
             return {'message': 'ok'}
         elif rule == '/trees/<string:tree_id>/move':
             try:
-                t = load_tree(tree_id)
                 node_id, shift = request.json
                 gdn.move(gdn.get_node(t, node_id), shift)
                 return {'message': 'ok'}
@@ -215,7 +222,6 @@ class Trees(Resource):
                 raise InvalidUsage(f'cannot move ${node_id}: {e}')
         elif rule == '/trees/<string:tree_id>/remove':
             try:
-                t = load_tree(tree_id)
                 node_id = request.json
                 gdn.remove(gdn.get_node(t, node_id))
                 return {'message': 'ok'}
@@ -223,7 +229,6 @@ class Trees(Resource):
                 raise InvalidUsage(f'cannot remove ${node_id}: {e}')
         elif rule == '/trees/<string:tree_id>/rename':
             try:
-                t = load_tree(tree_id)
                 node_id, name = request.json
                 gdn.get_node(t, node_id).name = name
                 return {'message': 'ok'}
@@ -233,20 +238,17 @@ class Trees(Resource):
             tid, subtree = get_tid(tree_id)
             if subtree:
                 raise InvalidUsage('operation not allowed with subtree')
-            reload_tree(tid)
+
+            app.trees.pop(tid, None) # avoid possible key-error
+            load_tree(tid)
+
             return {'message': 'ok'}
 
     def delete(self, tree_id):
         "Delete tree and all references to it"
         tid = int(tree_id)
-        if not app.memory_only:
-            try:
-                assert dbcount('trees WHERE id=?', tid) == 1, 'unknown tree'
-            except (ValueError, AssertionError) as e:
-                raise InvalidUsage(f'for tree id {tree_id}: {e}')
-
-        del_tree(tid)
-        return {'message': 'ok'}
+        tree = del_tree(tid)
+        return {'message': 'ok' if tree else f'tree with id {tid} not found.'}
 
 
 class Id(Resource):
@@ -255,11 +257,11 @@ class Id(Resource):
             raise InvalidUsage('invalid path %r' % path, 404)
 
         name = path.split('/', 1)[-1]
-        if path.startswith('trees/'):
-            pids = dbget0('id', 'trees WHERE name=?', name)
-            if len(pids) != 1:
-                raise InvalidUsage('unknown tree name %r' % name)
-            return {'id': pids[0]}
+        # if path.startswith('trees/'):
+            # pids = dbget0('id', 'trees WHERE name=?', name)
+            # if len(pids) != 1:
+                # raise InvalidUsage('unknown tree name %r' % name)
+            # return {'id': pids[0]}
 
 
 # Auxiliary functions.
@@ -284,8 +286,11 @@ def load_tree(tree_id):
         ultrametric = tree.style.ultrametric
 
         if tree.tree:
+            print('tree found')
             t = gdn.get_node(tree.tree, subtree)
             # Reinitialize if layouts have to be reapplied
+            print('initializing')
+            start = time()
             if not tree.initialized:
                 tree.initialized = True
                 if ultrametric:
@@ -295,12 +300,12 @@ def load_tree(tree_id):
                     node.is_initialized = False
                     node.faces = _FaceAreas()
                     node.collapsed_faces = _FaceAreas()
+            print(f'Initialize: {time() - start}')
             return t
         else:
-            name, t = retrieve_tree(tid)
-            tree = app.trees[int(tid)]
-            tree.name, tree.tree = name, t
-            return gdn.get_node(t, subtree)
+            print('tree not found')
+            tree.name, tree.tree, tree.layouts = retrieve_tree(tid)
+            return gdn.get_node(tree.tree, subtree)
 
     except (AssertionError, IndexError):
         raise InvalidUsage(f'unknown tree id {tree_id}', 404)
@@ -317,35 +322,25 @@ def load_tree_from_newick(tid, newick):
     return t
 
 
+def retrieve_layouts(layouts):
+    layouts = layouts or []
+    tree_layouts = [ ly for ly in app.avail_layouts if ly.__name__ in layouts ]
+    all_layouts = list(set(tree_layouts + app.default_layouts))
+    return all_layouts
+
 @init_timer
 def retrieve_tree(tid):
-    """Retrieve tree from tmp or local db.
+    """Retrieve tree from tmp pickle file.
     Called when tree has been deleted from memory
-
     """
-    if app.memory_only:
-        with open(f'/tmp/{tid}.nwx') as nw:
-            name = nw.readline().strip()
-            newick = nw.readline().strip()
-    else:
-        newicks = dbget('name,newick', 'trees WHERE id=?', tid)
-        assert len(newicks) == 1, "More than one tree with same id"
-        name, newick = newicks[0].values()
+    with open(f'/tmp/{tid}.pickle', 'rb') as handle:
+        data = pickle.load(handle)
 
-    t = load_tree_from_newick(tid, newick)
-    return name, t
-    
-
-def reload_tree(tid):
-    """Delete tree fromm memory and reload it"""
-    app.trees.pop(tid, None) # avoid possible key-error
-    if app.memory_only:
-        name, t = retrieve_tree(tid)
-        app.trees[int(tid)].name = name
-        app.trees[int(tid)].tree = t
-    else:
-        load_tree(tid)
-
+    name = data["name"]
+    tree = data["tree"]
+    layouts = retrieve_layouts(data["layouts"])
+    return name, tree, layouts
+   
 
 def get_drawer(tree_id, args):
     "Return the drawer initialized as specified in the args"
@@ -561,7 +556,7 @@ def add_trees_from_request():
         trees = get_trees_from_form()
     else:
         data = get_fields(required=['name', 'newick'],  # id
-                          valid_extra=['description'])
+                          valid_extra=['layouts', 'description'])
         trees = [data]
 
     return {data['name']: add_tree(data) for data in trees}
@@ -584,7 +579,8 @@ def get_trees_from_form():
             'id': form.get('id'),
             'name': form['name'], 
             'newick': form['newick'],
-            'description': form.get('description', '')
+            'description': form.get('description', ''),
+            'layouts': form.get('layouts', [])
             }]
 
 
@@ -600,107 +596,121 @@ def get_file_contents(fp):
 
 
 @init_timer
-def add_tree(data, replace=True):
+def add_tree(data):
     "Add tree to the database with given data and return its id"
+    tid = int(data['id'])
+    name = data['name']
+    newick = data.get('newick', None)
+    layouts = data.get('layouts', [])
+
+    del_tree(tid)  # delete if there is a tree with same id
+
+    if newick:
+        tree = load_tree_from_newick(tid, newick)
+    else:
+        tree = data.get('tree', None)
+        if not tree:
+            raise InvalidUsage('Either Newick or Tree object has to be provided.')
     
-    if app.memory_only:
-        tid = data['id']
-        name = data['name']
-        newick = data['newick']
-        del_tree(tid)  # delete if there is a tree with same id
-        with open(f'/tmp/{tid}.nwx', 'w') as nw:
-            nw.writelines([name + '\n', newick])
-        return tid
-    
-    if dbcount('trees WHERE name=?', data['name']) != 0:
-        if replace:
-            print(f'Found {data["name"]} in local database. Updating tree...')
-            with shared_connection([dbget0]) as [get0]:
-                tid = get0('id', 'trees WHERE name=?', data['name'])[0]
-                del_tree(tid)
-        else:
-            raise InvalidUsage('existing tree name %r' % data['name'])
+    app_tree = app.trees[int(tid)]
+    app_tree.name = name
+    app_tree.tree = tree
+    app_tree.layoutname = retrieve_layouts(layouts)
 
-    try:
-        # load it to validate
-        Tree(data['newick']) 
-    except NewickError as e:
-        raise InvalidUsage(f'malformed tree - {e}')
+    print("Tree added to app.trees")
 
-    data['birth'] = datetime.now()  # add creation time
+    # start = time()
+    # print('dumping')
+    # # Write tree data as a temporary pickle file
+    # obj = { 'name': name, 'layouts': layouts, 'tree': tree }
+    # with open(f'/tmp/{tid}.pickle', 'wb') as handle:
+        # pickle.dump(obj, handle)
 
-    tid = None  # will be filled later if it all works
-    data.pop('id', None)  # it will raise an error
-    with shared_connection([dbget0, dbexe]) as [get0, exe]:
-        cols, vals = zip(*data.items())
-        try:
-            qs = '(%s)' % ','.join('?' * len(vals))
-            exe('INSERT INTO trees %r VALUES %s' % (tuple(cols), qs), vals)
-        except sqlalchemy.exc.IntegrityError as e:
-            raise InvalidUsage(f'database exception adding tree: {e}')
+    # print(f'Dump: {time() - start}')
 
-        tid = get0('id', 'trees WHERE name=?', data['name'])[0]
     return tid
 
 
 def modify_tree_fields(tree_id):
     "Modify in the database the tree fields that appear in a request"
-    try:
-        tid = int(tree_id)
+    tid = int(tree_id)
 
-        assert dbcount('trees WHERE id=?', tid) == 1, 'invalid id'
+    data = get_fields(valid_extra=[
+        'name', 'description', 'newick'])
 
-        data = get_fields(valid_extra=[
-            'name', 'description', 'newick'])
+    if not data:
+        return {'message': 'ok'}
 
-        if not data:
-            return {'message': 'ok'}
 
-        cols, vals = zip(*data.items())
-        qs = ','.join('%s=?' % x for x in cols)
-        res = dbexe('UPDATE trees SET %s WHERE id=%d' % (qs, tid), vals)
+def get_layouts_from_getters():
+    def get_modules(ly_modules):
+        return ( getattr(ly_modules, module) for module in dir(ly_modules)\
+                if not module.startswith("__")) # and module != "default_layouts")
+    def get_layouts(module):
+        return ( getattr(module, getter)() for getter in dir(module)\
+                if not getter.startswith("_")\
+                and getter.startswith("get_layout_") )
 
-        assert res.rowcount == 1, f'unknown tree'
-    except (ValueError, AssertionError) as e:
-        raise InvalidUsage(f'for tree id {tree_id}: {e}')
+    all_layouts = {}
+    all_modules = get_modules(layout_modules)
+    for module in all_modules:
+        layouts = get_layouts(module)
+        name = module.__name__.split(".")[-1]
+        all_layouts[name] = list(layouts)
+
+        # if type(next(layouts, None)) == FunctionType:
+            # Simple file with layout function getters
+            # all_layouts[name] = list(layouts)
+        # else:
+            # # Module of layout function getters
+            # all_layouts[module.__name__] = []
+            # for inner_mod in get_modules(module):
+                # all_layouts[module.__name__].extend(get_layouts(inner_mod))
+
+    return all_layouts
 
 
 # Layout related functions
-def get_layouts(layouts=[]):
-    # Get default layouts from their getters
-    default_layouts = [ get_layout_outline(), get_layout_leaf_name(),
-            get_layout_branch_length(), get_layout_branch_support(),
-            get_layout_nleaves(), get_layout_align_link(), ]
+def get_layouts(layouts=[], tree_style=TreeStyle()):
+    # Get layouts from their getters in layouts module:
+    # ete4/smartview/ete/layouts
+    layouts_from_module = get_layouts_from_getters()
+
+    # Get default layouts
+    default_layouts = layouts_from_module.pop("default_layouts")
+
+    avail_layouts = set()
+    for lys in layouts_from_module.values():
+        avail_layouts.update(lys)
 
     # Get layouts from TreeStyle
-    ts_layouts = app.trees['default'].style.layout_fn
-    app.trees.pop('default')
+    ts_layouts = tree_style.layout_fn
 
     layouts = list(set(default_layouts + ts_layouts + layouts))
 
-    return [ ly for ly in layouts if ly.__name__ != '<lambda>' ]
+    return [ ly for ly in layouts if ly.__name__ != '<lambda>' ], avail_layouts
 
 
 def update_layouts(active_layouts, tid):
     """ Update app layouts based on front end status """
-    tree_style = app.trees[int(tid)].style  # specific to each tree
-    ts_layouts = [ ly.__name__ for ly in tree_style.layout_fn ]
+    tree = app.trees[int(tid)]
+    ts_layouts = [ ly.__name__ for ly in tree.style.layout_fn ]
     reinit_trees = False
-    for layout in app.layouts:
+    for layout in tree.layouts:
         name = layout.__name__
         status = name in ts_layouts
         new_status = name in active_layouts
         if status != new_status:
             reinit_trees = True
-            # Update tree_style layout functions
+            # Update tree.style layout functions
             if new_status == True:
-                tree_style.layout_fn = layout
+                tree.style.layout_fn = layout
             elif new_status == False:
-                tree_style.del_layout_fn(name)  # remove layout_fn from ts
+                tree.style.del_layout_fn(name)  # remove layout_fn from ts
 
     if reinit_trees:
         if app.memory_only:
-            app.trees[int(tid)].initialized = False
+            tree.initialized = False
         else:
             for t in app.trees.values():
                 t.initialized = False
@@ -720,41 +730,6 @@ def update_ultrametric(ultrametric, tid):
             app.trees.pop(tid, None) # delete from memory
 
 
-# Database-access functions.
-
-def dbexe(command, *args, conn=None):
-    "Execute a sql command (using a given connection if given)"
-    conn = conn or db.connect()
-    return conn.execute(command, *args)
-
-
-def dbcount(where, *args, conn=None):
-    "Return the number of rows from the given table (and given conditions)"
-    res = dbexe('SELECT COUNT(*) FROM %s' % where, *args, conn=conn)
-    return res.fetchone()[0]
-
-
-def dbget(what, where, *args, conn=None):
-    "Return result of the query 'select what from where' as a list of dicts"
-    res = dbexe('SELECT %s FROM %s' % (what, where), *args, conn=conn)
-    return [dict(zip(what.split(','), x)) for x in res.fetchall()]
-
-
-def dbget0(what, where, *args, conn=None):
-    "Return a list of the single column of values from get()"
-    assert ',' not in what, 'Use this function to select a single column only'
-    return [x[what] for x in dbget(what, where, *args, conn=conn)]
-
-
-@contextmanager
-def shared_connection(functions):
-    "Create a connection and yield the given functions but working with it"
-    with db.connect() as conn:
-        yield [partial(f, conn=conn) for f in functions]
-
-
-# Manage basic fields (related to the SQL schema, like users, readers, etc.).
-
 def get_tid(tree_id):
     "Return the tree id and the subtree id, with the appropriate types"
     try:
@@ -767,33 +742,13 @@ def get_tid(tree_id):
         raise InvalidUsage(f'invalid tree id {tree_id}', 404)
 
 
-def get_tree(tree_id):
-    "Return all the fields of a given tree"
-    tid, subtree = get_tid(tree_id)
-
-    with shared_connection([dbget, dbget0]) as [get, get0]:
-        trees = get('id,name,description,birth', 'trees WHERE id=?', tid)
-        if len(trees) == 0:
-            raise InvalidUsage(f'unknown tree id {tid}', 404)
-
-        tree = trees[0]
-        tree['subtree'] = subtree
-
-    return strip(tree)
-
-
-def del_tree(tid, from_db=True):
+def del_tree(tid):
     "Delete a tree and everywhere where it appears referenced"
-    if app.memory_only:
-        shutil.rmtree(f'/tmp/{tid}.nwx', ignore_errors=True)
-    elif from_db:
-        # Delete from local db
-        exe = db.connect().execute
-        exe('DELETE FROM trees WHERE id=?', tid)
-    app.trees.pop(tid, None)
+    shutil.rmtree(f'/tmp/{tid}.pickle', ignore_errors=True)
+    return app.trees.pop(tid, None)
 
 
-def purge(interval=None, max_time=30*60, from_db=True):
+def purge(interval=None, max_time=30*60):
     """Delete trees that have been inactive for a certain period of time
         :interval: if set, recursively calls purge after given interval.
         :max_time: maximum inactivity time in seconds. Default 30 min.
@@ -802,11 +757,11 @@ def purge(interval=None, max_time=30*60, from_db=True):
     for tid in trees:
         inactivity_time = time() - app.trees[tid].timer
         if inactivity_time > max_time: 
-            del_tree(tid, from_db)
+            del_tree(tid)
     # Call self after interval
     if interval: # in seconds
         print(f'Current trees in memory: {len(list(app.trees.keys()))}')
-        Timer(interval, purge, [interval, max_time, from_db]).start()
+        Timer(interval, purge, [interval, max_time]).start()
 
 
 def strip(d):
@@ -837,20 +792,8 @@ def get_fields(required=None, valid_extra=None):
 
 # App initialization.
 
-def create_example_database():
-    db_path = app.config['DATABASE']
-
-    os.system(f'sqlite3 {db_path} < create_tables.sql')
-    os.system(f'sqlite3 {db_path} < sample_data.sql')
-
-    for tfile in ['HmuY.aln2.tree', 'aves.tree', 'GTDB_bact_r95.tree']:
-        os.system(f'./add_tree.py --db {db_path} ../examples/{tfile}')
-
-
-def initialize(tree=None, tree_style=None, memory_only=False):
+def initialize(tree=None, tree_style=None, layouts=[], memory_only=False):
     "Initialize the database and the flask app"
-    global db
-
     app = Flask(__name__, instance_relative_config=True)
     configure(app)
 
@@ -858,16 +801,21 @@ def initialize(tree=None, tree_style=None, memory_only=False):
     add_resources(api)
 
     app.memory_only = memory_only
+
+    tree_style = deepcopy(tree_style) or TreeStyle()
+
+    # App associated layouts
+    # Layouts will be accessible for each tree independently
+    app.default_layouts, app.avail_layouts = get_layouts(layouts, tree_style)
     # Dict containing AppTree dataclasses with tree info
     app.trees = defaultdict(lambda: AppTree(
         name=get_random_string(10),
-        style=deepcopy(tree_style) or TreeStyle(),
+        style=tree_style,
+        layouts = app.default_layouts,
         timer = time(),
         searches = {},
         selected = {},
     ))
-
-    db = sqlalchemy.create_engine('sqlite:///' + app.config['DATABASE'])
 
     if tree:
         # If a tree was provided, the entry point is the visualizer
@@ -916,7 +864,6 @@ def configure(app):
 
     app.config.from_mapping(
         SEND_FILE_MAX_AGE_DEFAULT=0,  # do not cache static files
-        DATABASE=f'{app.instance_path}/trees.db',
         SECRET_KEY=' '.join(os.uname()))  # for testing, or else use config.py
 
     if os.path.exists(f'{app.instance_path}/config.py'):
@@ -927,7 +874,7 @@ def add_resources(api):
     "Add all the REST endpoints"
     add = api.add_resource  # shortcut
     add(Drawers, '/drawers/<string:name>/<string:tree_id>')
-    add(Layouts, '/layouts')
+    add(Layouts, '/layouts', '/layouts/<string:tree_id>')
     add(Trees,
         '/trees',
         '/trees/<string:tree_id>',
@@ -953,37 +900,36 @@ def add_resources(api):
         '/trees/<string:tree_id>/reload')
 
 
-def run_smartview(newick=None, tree_name=None, tree_style=None, layouts=[],
-        update_old_tree=True, memory_only=False, purge_trees=False, port=5000):
-    # Set tree_name to None if no newick was provided
+def run_smartview(tree=None, tree_name=None, tree_style=None, layouts=[],
+        memory_only=False, port=5000, run=True):
+    # Set tree_name to None if no tree was provided
     # Generate tree_name if none was provided
-    # update_old_tree: replace tree in local database if identical tree_name
-    tree_name = tree_name or get_random_string(10) if newick else None
+    tree_name = tree_name or get_random_string(10) if tree else None
 
     global app
-    app = initialize(tree_name, tree_style, memory_only=memory_only)
+    app = initialize(tree_name, tree_style, layouts, memory_only=memory_only)
     # purge inactive trees every 15 minutes
-    purge(interval=15*60, max_time=30*60, from_db=purge_trees)
+    purge(interval=15*60, max_time=30*60)
 
-    app.layouts = get_layouts(layouts)
-
-    # Create database if not already created
-    if not os.path.exists(app.config['DATABASE']):
-        create_example_database()
+    # TODO: Create app.recent_trees with paths to recently viewed trees
 
     # Add tree to database if provided
-    if newick: 
-        print(f'Adding {tree_name} to local database...')
+    if tree: 
+        gdn.standardize(tree)
         tree_data = { 
             'id': 0,  # id to be replaced by actual hash
             'name': tree_name,
-            'newick': newick,
+            'tree': tree,
+            'layouts': []
         }
         with app.app_context():
-            tid = add_tree(tree_data, replace=update_old_tree)
+            tid = add_tree(tree_data)
             print(f'Added tree {tree_name} with id {tid}.')
 
-    app.run(debug=True, use_reloader=False, port=port)
+    if run:
+        app.run(debug=True, use_reloader=False, port=port)
+    else:
+        return app
 
 
 if __name__ == '__main__':
@@ -992,3 +938,6 @@ if __name__ == '__main__':
 
 # But for production it's better if we serve it with something like:
 #   gunicorn server:app
+
+# To do so, uncomment the following line
+# app = run_smartview(memory_only=True, run=False)

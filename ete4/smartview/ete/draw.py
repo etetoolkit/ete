@@ -81,13 +81,22 @@ class Drawer:
             self.tree_style.aligned_grid_dxs = defaultdict(lambda: 0)
 
         point = self.xmin, self.ymin
+        first_counter = last_counter = descend_counter = 0
         for it in walk(self.tree):
             graphics = []
             if it.first_visit:
+                first_counter += 1
                 point = self.on_first_visit(point, it, graphics)
+                if not it.descend:
+                    descend_counter += 1
             else:
+                last_counter += 1
                 point = self.on_last_visit(point, it, graphics)
             yield from graphics
+
+        print(f'First visit: {first_counter}')
+        print(f'Descend: {descend_counter}')
+        print(f'Last visit: {last_counter}')
 
         if self.outline:
             yield from self.get_outline()
