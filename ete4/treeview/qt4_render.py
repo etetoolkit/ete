@@ -770,8 +770,8 @@ def set_style(n, layout_func):
     #    print "Style of", n.name ,"is None"
     #    n.set_style()
     #    n.img_style = NodeStyle()
+    n.add_prop("_temp_faces", _FaceAreas())
 
-    n.props["_temp_faces"] = _FaceAreas()
 
     for func in layout_func:
         func(n)
@@ -924,8 +924,7 @@ def get_tree_img_map(n2i, x_scale=1, y_scale=1):
     node_areas = {}
     #nid = 0
     for n, main_item in six.iteritems(n2i):
-        #n.add_feature("_nid", str(nid))
-        nid = n.props['_nid']
+        nid = n.props.get('_nid')
 
         rect = main_item.mapToScene(main_item.fullRegion).boundingRect()
         x1 = x_scale * rect.x()

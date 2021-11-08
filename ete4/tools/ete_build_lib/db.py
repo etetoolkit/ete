@@ -45,6 +45,14 @@ from collections import defaultdict
 import sqlite3
 import six.moves.cPickle
 import base64
+
+try:
+    from base64 import encodebytes
+    from base64 import decodebytes
+except ImportError:
+    from base64 import encodestring as encodebytes
+    from base64 import decodestring as decodebytes
+
 import zlib
 import gzip
 import logging
@@ -69,13 +77,13 @@ def autocommit(targetconn = conn):
         targetconn.commit()
 
 def encode(x):
-    return bytes.decode(base64.encodestring(six.moves.cPickle.dumps(x, 2)))
+    return bytes.decode(encodebytes(six.moves.cPickle.dumps(x, 2)))
 
 def decode(x):
     if six.PY3:
         x = str.encode(x)
         
-    return six.moves.cPickle.loads(base64.decodestring(x))
+    return six.moves.cPickle.loads(decodebytes(x))
 
 # SQLITE_MAX_LENGTH issue: files larger than ~1GB cannot be stored. limit cannot
 # be changed at runtime. Big files are then stored in disk instead
@@ -96,14 +104,14 @@ def zencode(x, data_id):
         six.moves.cPickle.dump(x, open(pjoin(GLOBALS['db_dir'], data_id+".pkl"), "wb"), protocol=1)
         return "__DBDIR__:%s" %data_id
     else:
-        return base64.encodestring(zlib.compress(pdata))
+        return encodebytes(zlib.compress(pdata))
 
 def zdecode(x):
     if x.startswith("__DBDIR__:"):
         data_id = x.split(':', 1)[1]
         data = six.moves.cPickle.load(open(pjoin(GLOBALS['db_dir'], data_id+".pkl"), "rb"))
     else:
-        data = six.moves.cPickle.loads(zlib.decompress(base64.decodestring(x)))
+        data = six.moves.cPickle.loads(zlib.decompress(decodebytes(x)))
     return data
 
 def prevent_sqlite_umask_bug(fname):

@@ -61,12 +61,12 @@ def annotate_node(t, final_task):
         if n.is_leaf():
             n.add_feature("realname", db.get_seq_name(n.name))
             #n.name = n.realname
-        if hasattr(n, "cladeid"):
-            cladeid2node[n.cladeid] = n
+        if n.props.get("cladeid"):
+            cladeid2node[n.props.get("cladeid")] = n
 
     alltasks = GLOBALS[final_task.configid]["_nodeinfo"][final_task.nodeid]["tasks"]
     npr_iter = get_iternumber(final_task.threadid)
-    n = cladeid2node[t.cladeid]
+    n = cladeid2node[t.props.get("cladeid")]
     n.add_features(size=final_task.size)
     for task in alltasks:
         params = ["%s %s" %(k,v) for k,v in  six.iteritems(task.args)
