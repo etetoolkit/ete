@@ -95,7 +95,11 @@ class Layouts(Resource):
             tree = app.trees[int(tid)]
             tree_style = tree.style
             avail_layouts = tree.layouts
+        elif rule == '/layouts/list':
+            return { module: [ [ ly.__name__, ly.__doc__ ] for ly in layouts ]
+                    for module, layouts in app.avail_layouts.items() }
 
+        # For layouts and tree specific layouts (first two if statements)
         active = [ f'{l._module}:{l.__name__}' for l in tree_style.layout_fn\
                 if l.__name__ != '<lambda>' ]
 
@@ -684,7 +688,7 @@ def update_app_available_layouts():
         from ete4.smartview import layout_modules
         avail_layouts = get_layouts_from_getters(layout_modules)
     except Exception as e:
-        raise "Error while updating app layouts:\n{e}"
+        raise "Error while updating app layouts.\n{e}"
     else:
         avail_layouts.pop("default_layouts", None)
         app.avail_layouts = avail_layouts
@@ -708,7 +712,6 @@ def get_layouts_from_getters(layout_modules):
         # Set _module attr for future reference (update_layouts)
         for ly in all_layouts[name]:
             ly._module = name
-            print(name, ly.__name__, ly._module)
 
         # if type(next(layouts, None)) == FunctionType:
             # Simple file with layout function getters
@@ -928,7 +931,7 @@ def add_resources(api):
     "Add all the REST endpoints"
     add = api.add_resource  # shortcut
     add(Drawers, '/drawers/<string:name>/<string:tree_id>')
-    add(Layouts, '/layouts', '/layouts/<string:tree_id>', '/layouts/update')
+    add(Layouts, '/layouts', '/layouts/<string:tree_id>','/layouts/list', '/layouts/update')
     add(Trees,
         '/trees',
         '/trees/<string:tree_id>',

@@ -43,11 +43,8 @@ def get_layout_sciname():
             node.add_face(TextFace(name_seq, color = 'grey', padding_x=2),
                 column=1, position="branch-right")
 
-            
-
         else:
             # Collapsed face
-            
             names = summary(node.children)
             texts = names if len(names) < 6 else (names[:3] + ['...'] + names[-2:])
             for i, text in enumerate(texts):
