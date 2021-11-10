@@ -118,7 +118,6 @@ def get_layout_evoltype():
                 else:
                     color = node.props.get('Lca_color')
                 node.img_style["fgcolor"] = color
-                
 
     layout_fn.__name__ = 'Evolution events'
     return layout_fn

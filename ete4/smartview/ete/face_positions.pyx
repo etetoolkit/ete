@@ -37,9 +37,31 @@
 #
 # #END_LICENSE#############################################################
 
+from collections import namedtuple, OrderedDict
 
-from .ete.faces import *
-from .ete.face_positions import *
-from .ete.treestyle import TreeStyle
-from .ete.layouts.default_layouts import *
-from .ete import layouts as layout_modules
+
+
+FACE_POSITIONS = set(["branch_right", "branch_top", "branch_bottom", "aligned"])
+
+
+_FaceAreas = namedtuple('_FaceAreas', FACE_POSITIONS)
+
+
+def get_FaceAreas(branch_top=None, branch_bottom=None,
+        branch_right=None, aligned=None):
+    return _FaceAreas(
+            branch_top or _FaceContainer(), 
+            branch_bottom or _FaceContainer(), 
+            branch_right or _FaceContainer(), 
+            aligned or _FaceContainer())
+
+
+cdef class _FaceContainer(dict):
+    """
+    Use this object to create a grid of faces. You can add faces to different columns.
+    """
+    def add_face(self, object face, int column):
+        """
+        add the face **face** to the specified **column**
+        """
+        self.setdefault(column, []).append(face)

@@ -10,7 +10,7 @@ __all__ = [ "get_layout_leaf_name", "get_layout_nleaves",
         "get_layout_outline", "get_layout_align_link" ]
 
 
-def get_layout_leaf_name(pos='branch-right', color='black', 
+def get_layout_leaf_name(pos='branch_right', color='black', 
                          min_fsize=4, max_fsize=15,
                          padding_x=5, padding_y=0):
     leaf_name_face = AttrFace(attr='name', name='leaf_name',
@@ -31,10 +31,11 @@ def get_layout_leaf_name(pos='branch-right', color='black',
                         position=pos, column=2, collapsed_only=True)
     layout_fn.__name__ = 'Leaf name'
     layout_fn.contains_aligned_face = pos == "aligned"
+    layout_fn._module = 'default'
     return layout_fn
 
 
-def get_layout_nleaves(pos='branch-right', collapsed_only=True,
+def get_layout_nleaves(pos='branch_right', collapsed_only=True,
         formatter='(%s)', color="black",
         min_fsize=4, max_fsize=15, ftype="sans-serif", 
         padding_x=5, padding_y=0):
@@ -51,10 +52,11 @@ def get_layout_nleaves(pos='branch-right', collapsed_only=True,
 
     layout_fn.__name__ = "Number of leaves"
     layout_fn.contains_aligned_face = pos == "aligned"
+    layout_fn._module = 'default'
     return layout_fn
 
 
-def get_layout_branch_length(pos='branch-top', 
+def get_layout_branch_length(pos='branch_top', 
         formatter='%0.5s',
         color='#8d8d8d', 
         min_fsize=6, max_fsize=15,
@@ -69,7 +71,7 @@ def get_layout_branch_length(pos='branch-top',
                 padding_x=padding_x, padding_y=padding_y)
 
 
-def get_layout_branch_support(pos='branch-bottom', 
+def get_layout_branch_support(pos='branch_bottom', 
                               formatter='%0.4s',
                               color='#fa8072', 
                               min_fsize=6, max_fsize=15,
@@ -101,7 +103,8 @@ def _get_layout_branch_attr(attr, pos, name=None,
             node.add_face(branch_attr_face, position=pos, column=0,
                     collapsed_only=True)
     layout_fn.__name__ = name or 'branch_' + str(attr)
-    layout_fn.contain = pos == "aligned"
+    layout_fn.contains_aligned_face = pos == "aligned"
+    layout_fn._module = 'default'
     return layout_fn
 
 
@@ -113,9 +116,10 @@ def get_layout_outline(stroke_color="black", stroke_width=0.5,
     def layout_fn(node):
         if not node.is_leaf():
             node.add_face(outline_face, 
-                    position='branch-right', column=0,
+                    position='branch_right', column=0,
                     collapsed_only=True)
     layout_fn.__name__ = 'Outline'
+    layout_fn._module = 'default'
     return layout_fn
 
 
@@ -128,12 +132,13 @@ def get_layout_align_link(stroke_color='gray', stroke_width=0.5,
     def layout_fn(node):
         if node.is_leaf():
             node.add_face(align_link_face,
-                          position='branch-right',
-                          column=1e10)
+                          position='branch_right',
+                          column=1e9)
         else:
             node.add_face(align_link_face,
-                          position='branch-right',
-                          column=1e10,
+                          position='branch_right',
+                          column=1e9,
                           collapsed_only=True)
     layout_fn.__name__ = 'Aligned panel link'
+    layout_fn._module = 'default'
     return layout_fn

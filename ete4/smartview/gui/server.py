@@ -25,12 +25,12 @@ from time import time
 from threading import Timer
 from datetime import datetime
 from contextlib import contextmanager
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 from copy import deepcopy
 from dataclasses import dataclass
 import gzip
 import json
-import pickle
+import _pickle as pickle
 from types import FunctionType
 import shutil
 
@@ -42,15 +42,12 @@ from itsdangerous import TimedJSONWebSignatureSerializer as JSONSigSerializer
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from ete4 import Tree
-from ete4.smartview import TreeStyle
-from ete4.treeview.main import _FaceAreas
+from ete4.smartview import TreeStyle, FACE_POSITIONS, layout_modules
 from ete4.parser.newick import NewickError
 from ete4.smartview.utils import InvalidUsage, get_random_string
 from ete4.smartview.ete import nexus, draw, gardening as gdn
 
-from ete4.smartview import layout_modules
-
-# call initialize() to fill these up
+# call initialize() to fill it up
 app = None
 
 
@@ -60,7 +57,7 @@ class AppTree:
     tree: Tree = None
     name: str = None
     style: TreeStyle = None
-    layouts: list = None
+    layouts: dict = None
     timer: float = None
     initialized: bool = False
     selected: dict = None
@@ -90,16 +87,31 @@ class Layouts(Resource):
         rule = request.url_rule.rule  # shortcut
 
         if rule == '/layouts':
-            active = [ l.__name__ for l in app.trees['default'].style.layout_fn ]
+            tree_style = app.trees['default'].style
             app.trees.pop('default')
-            avail_layouts = app.default_layouts
+            avail_layouts = { 'default': app.default_layouts }
         elif rule == '/layouts/<string:tree_id>':
             tid = get_tid(tree_id)[0]
             tree = app.trees[int(tid)]
-            active = [ l.__name__ for l in tree.style.layout_fn ]
+            tree_style = tree.style
             avail_layouts = tree.layouts
 
-        return { l.__name__: (l.__name__ in active) for l in avail_layouts }
+        active = [ f'{l._module}:{l.__name__}' for l in tree_style.layout_fn\
+                if l.__name__ != '<lambda>' ]
+
+        layouts = {}
+        for module, lys in avail_layouts.items():
+            layouts[module] = { l.__name__: (f'{module}:{l.__name__}' in active) for l in lys }
+
+        return layouts
+
+    def put(self):
+        rule = request.url_rule.rule  # shortcut
+
+        if rule == '/layouts/update':
+            update_app_available_layouts()
+
+        
 
 
 class Trees(Resource):
@@ -166,7 +178,6 @@ class Trees(Resource):
             print(f'Graphics to list ({len(g_list)}): {time() - start}')
             return g_list
         elif rule == '/trees/<string:tree_id>/size':
-            print(t.size)
             width, height = t.size
             return {'width': width, 'height': height}
         elif rule == '/trees/<string:tree_id>/properties':
@@ -286,24 +297,27 @@ def load_tree(tree_id):
         ultrametric = tree.style.ultrametric
 
         if tree.tree:
-            print('tree found')
             t = gdn.get_node(tree.tree, subtree)
             # Reinitialize if layouts have to be reapplied
-            print('initializing')
-            start = time()
             if not tree.initialized:
+
+                print('initializing')
+                start = time()
+
                 tree.initialized = True
                 if ultrametric:
                     t.convert_to_ultrametric()
                     gdn.standardize(t)
+
+                print('Traversing')
                 for node in t.traverse():
                     node.is_initialized = False
-                    node.faces = _FaceAreas()
-                    node.collapsed_faces = _FaceAreas()
-            print(f'Initialize: {time() - start}')
+                    node._faces = None
+                    node._collapsed_faces = None
+
+                print(f'Initialize: {time() - start}')
             return t
         else:
-            print('tree not found')
             tree.name, tree.tree, tree.layouts = retrieve_tree(tid)
             return gdn.get_node(tree.tree, subtree)
 
@@ -324,17 +338,38 @@ def load_tree_from_newick(tid, newick):
 
 def retrieve_layouts(layouts):
     layouts = layouts or []
-    tree_layouts = [ ly for ly in app.avail_layouts if ly.__name__ in layouts ]
-    all_layouts = list(set(tree_layouts + app.default_layouts))
-    return all_layouts
+    tree_layouts = defaultdict(list)
+
+    for ly in layouts:
+        name_split = ly.split(':')
+
+        if len(name_split) != 2:
+            continue
+
+        key, ly_name = name_split
+        avail = app.avail_layouts.get(key, [])
+        if ly_name == '*':
+            tree_layouts[key] = avail
+        else:
+            match = next((ly for ly in avail if ly.__name__ == ly_name ), None)
+            if match:
+                tree_layouts[key].append(match)
+
+    # Add default layouts
+    tree_layouts["default"] = app.default_layouts
+
+    return dict(tree_layouts)
 
 @init_timer
 def retrieve_tree(tid):
     """Retrieve tree from tmp pickle file.
     Called when tree has been deleted from memory
     """
+    start = time()
     with open(f'/tmp/{tid}.pickle', 'rb') as handle:
         data = pickle.load(handle)
+
+    print(f'Unpickle: {time() - start}')
 
     name = data["name"]
     tree = data["tree"]
@@ -602,6 +637,8 @@ def add_tree(data):
     name = data['name']
     newick = data.get('newick', None)
     layouts = data.get('layouts', [])
+    if type(layouts) == str:
+        layouts = layouts.split(",")
 
     del_tree(tid)  # delete if there is a tree with same id
 
@@ -615,18 +652,18 @@ def add_tree(data):
     app_tree = app.trees[int(tid)]
     app_tree.name = name
     app_tree.tree = tree
-    app_tree.layoutname = retrieve_layouts(layouts)
+    app_tree.layouts = retrieve_layouts(layouts)
 
     print("Tree added to app.trees")
 
-    # start = time()
-    # print('dumping')
-    # # Write tree data as a temporary pickle file
-    # obj = { 'name': name, 'layouts': layouts, 'tree': tree }
-    # with open(f'/tmp/{tid}.pickle', 'wb') as handle:
-        # pickle.dump(obj, handle)
+    start = time()
+    print('dumping')
+    # Write tree data as a temporary pickle file
+    obj = { 'name': name, 'layouts': layouts, 'tree': tree }
+    with open(f'/tmp/{tid}.pickle', 'wb') as handle:
+        pickle.dump(obj, handle)
 
-    # print(f'Dump: {time() - start}')
+    print(f'Dump: {time() - start}')
 
     return tid
 
@@ -642,7 +679,18 @@ def modify_tree_fields(tree_id):
         return {'message': 'ok'}
 
 
-def get_layouts_from_getters():
+def update_app_available_layouts():
+    try:
+        from ete4.smartview import layout_modules
+        avail_layouts = get_layouts_from_getters(layout_modules)
+    except Exception as e:
+        raise "Error while updating app layouts:\n{e}"
+    else:
+        avail_layouts.pop("default_layouts", None)
+        app.avail_layouts = avail_layouts
+
+
+def get_layouts_from_getters(layout_modules):
     def get_modules(ly_modules):
         return ( getattr(ly_modules, module) for module in dir(ly_modules)\
                 if not module.startswith("__")) # and module != "default_layouts")
@@ -657,6 +705,10 @@ def get_layouts_from_getters():
         layouts = get_layouts(module)
         name = module.__name__.split(".")[-1]
         all_layouts[name] = list(layouts)
+        # Set _module attr for future reference (update_layouts)
+        for ly in all_layouts[name]:
+            ly._module = name
+            print(name, ly.__name__, ly._module)
 
         # if type(next(layouts, None)) == FunctionType:
             # Simple file with layout function getters
@@ -669,24 +721,24 @@ def get_layouts_from_getters():
 
     return all_layouts
 
-
 # Layout related functions
 def get_layouts(layouts=[], tree_style=TreeStyle()):
     # Get layouts from their getters in layouts module:
     # ete4/smartview/ete/layouts
-    layouts_from_module = get_layouts_from_getters()
+    layouts_from_module = get_layouts_from_getters(layout_modules)
 
     # Get default layouts
     default_layouts = layouts_from_module.pop("default_layouts")
 
-    avail_layouts = set()
-    for lys in layouts_from_module.values():
-        avail_layouts.update(lys)
+    avail_layouts = layouts_from_module
 
     # Get layouts from TreeStyle
     ts_layouts = tree_style.layout_fn
 
     layouts = list(set(default_layouts + ts_layouts + layouts))
+
+    for ly in layouts:
+        ly._module = "default"
 
     return [ ly for ly in layouts if ly.__name__ != '<lambda>' ], avail_layouts
 
@@ -694,19 +746,21 @@ def get_layouts(layouts=[], tree_style=TreeStyle()):
 def update_layouts(active_layouts, tid):
     """ Update app layouts based on front end status """
     tree = app.trees[int(tid)]
-    ts_layouts = [ ly.__name__ for ly in tree.style.layout_fn ]
+    ts_layouts = [ f'{ly._module}:{ly.__name__}' for ly in tree.style.layout_fn\
+                if ly.__name__ != '<lambda>' ]
     reinit_trees = False
-    for layout in tree.layouts:
-        name = layout.__name__
-        status = name in ts_layouts
-        new_status = name in active_layouts
-        if status != new_status:
-            reinit_trees = True
-            # Update tree.style layout functions
-            if new_status == True:
-                tree.style.layout_fn = layout
-            elif new_status == False:
-                tree.style.del_layout_fn(name)  # remove layout_fn from ts
+    for module, layouts in tree.layouts.items():
+        for layout in layouts:
+            name = f'{module}:{layout.__name__}'
+            status = name in ts_layouts
+            new_status = name in active_layouts
+            if status != new_status:
+                reinit_trees = True
+                # Update tree.style layout functions
+                if new_status == True:
+                    tree.style.layout_fn = layout
+                elif new_status == False:
+                    tree.style.del_layout_fn(name)  # remove layout_fn from ts
 
     if reinit_trees:
         if app.memory_only:
@@ -874,7 +928,7 @@ def add_resources(api):
     "Add all the REST endpoints"
     add = api.add_resource  # shortcut
     add(Drawers, '/drawers/<string:name>/<string:tree_id>')
-    add(Layouts, '/layouts', '/layouts/<string:tree_id>')
+    add(Layouts, '/layouts', '/layouts/<string:tree_id>', '/layouts/update')
     add(Trees,
         '/trees',
         '/trees/<string:tree_id>',
@@ -933,7 +987,7 @@ def run_smartview(tree=None, tree_name=None, tree_style=None, layouts=[],
 
 
 if __name__ == '__main__':
-    run_smartview(memory_only=False)
+    run_smartview(memory_only=True)
 
 
 # But for production it's better if we serve it with something like:

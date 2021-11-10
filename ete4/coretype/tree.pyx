@@ -42,7 +42,7 @@ from __future__ import print_function
 import random
 import copy
 import itertools
-from collections import deque
+from collections import deque, namedtuple
 from hashlib import md5
 from functools import cmp_to_key
 
@@ -53,9 +53,10 @@ from .. import utils
 
 # the following imports are necessary to set fixed styles and faces
 # try:
-from ..treeview.main import NodeStyle, _FaceAreas, FaceContainer, FACE_POSITIONS
+from ..treeview.main import NodeStyle
 from ..treeview.faces import Face
 from ete4.smartview import Face as smartFace
+from ete4.smartview.ete.face_positions import FACE_POSITIONS, _FaceAreas, get_FaceAreas
 # except ImportError:
     # TREEVIEW = False
 # else:
@@ -231,7 +232,7 @@ cdef class TreeNode(object):
             raise ValueError("[%s] is not a valid FaceAreas instance" %type(value))
     def _get_face_areas(self):
         if not hasattr(self, "_faces"):
-            self._faces = _FaceAreas()
+            self._faces = get_FaceAreas()
         return self._faces
 
     def _set__collapsed_face_areas(self, value):
@@ -241,7 +242,7 @@ cdef class TreeNode(object):
             raise ValueError("[%s] is not a valid FaceAreas instance" %type(value))
     def _get_collapsed_face_areas(self):
         if not hasattr(self, "_collapsed_faces"):
-            self._collapsed_faces = _FaceAreas()
+            self._collapsed_faces = get_FaceAreas()
         return self._collapsed_faces
 
     faces = property(fget=_get_face_areas, \
@@ -255,8 +256,8 @@ cdef class TreeNode(object):
         self._up = None
         self._properties = {}
         self._img_style = None
-        self._faces = _FaceAreas()
-        self._collapsed_faces = _FaceAreas()
+        # Do not initialize _faces and _collapsed_faces
+        # for performance reasons (pickling)
         self._initialized = 0 # Layout fns have not been run on node
 
         self.size = (0, 0) 
@@ -2517,9 +2518,9 @@ cdef class TreeNode(object):
 
         if isinstance(face, Face) or isinstance(face, smartFace):
             if collapsed_only:
-                getattr(self._collapsed_faces, position).add_face(face, column=column)
+                getattr(self.collapsed_faces, position).add_face(face, column=column)
             else:
-                getattr(self._faces, position).add_face(face, column=column)
+                getattr(self.faces, position).add_face(face, column=column)
         else:
             raise ValueError("not a Face instance")
 

@@ -81,13 +81,15 @@ class TreeStyle(object):
                     ', '.join(FACE_POSITIONS + '.'))
 
     def del_layout_fn(self, name):
-        """ Deletes layout function given its __name__ """
+        """ Deletes layout function given its _module:__name__ """
         # Modify flags if name refers to defaults
-        if name in self.default_layouts:
+        module, name = name.split(":")
+        if module == "default" and name in self.default_layouts:
             self._update_layout_flags(name, False)
         else:
             for layout in self.layout_fn:
-                if layout.__name__ == name:
+                if layout.__name__ != "<lambda>" and\
+                  layout._module == module and layout.__name__ == name:
                     self._layout_handler.remove(layout)
 
     def _update_layout_flags(self, name, status):
