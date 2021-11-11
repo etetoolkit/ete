@@ -231,7 +231,7 @@ cdef class TreeNode(object):
         else:
             raise ValueError("[%s] is not a valid FaceAreas instance" %type(value))
     def _get_face_areas(self):
-        if not hasattr(self, "_faces"):
+        if not hasattr(self, "_faces") or self._faces is None:
             self._faces = get_FaceAreas()
         return self._faces
 
@@ -241,7 +241,7 @@ cdef class TreeNode(object):
         else:
             raise ValueError("[%s] is not a valid FaceAreas instance" %type(value))
     def _get_collapsed_face_areas(self):
-        if not hasattr(self, "_collapsed_faces"):
+        if not hasattr(self, "_collapsed_faces") or self._collapsed_faces is None:
             self._collapsed_faces = get_FaceAreas()
         return self._collapsed_faces
 

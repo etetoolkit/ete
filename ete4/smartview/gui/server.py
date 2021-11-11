@@ -298,7 +298,6 @@ def load_tree(tree_id):
     try:
         tid, subtree = get_tid(tree_id)
         tree = app.trees[int(tid)]
-        ultrametric = tree.style.ultrametric
 
         if tree.tree:
             t = gdn.get_node(tree.tree, subtree)
@@ -309,9 +308,6 @@ def load_tree(tree_id):
                 start = time()
 
                 tree.initialized = True
-                if ultrametric:
-                    t.convert_to_ultrametric()
-                    gdn.standardize(t)
 
                 print('Traversing')
                 for node in t.traverse():
@@ -323,6 +319,9 @@ def load_tree(tree_id):
             return t
         else:
             tree.name, tree.tree, tree.layouts = retrieve_tree(tid)
+            if tree.style.ultrametric:
+                tree.tree.convert_to_ultrametric()
+                gdn.standardize(tree.tree)
             return gdn.get_node(tree.tree, subtree)
 
     except (AssertionError, IndexError):
@@ -335,6 +334,7 @@ def load_tree_from_newick(tid, newick):
 
     if app.trees[int(tid)].style.ultrametric:
         t.convert_to_ultrametric()
+        gdn.standardize(t)
 
     gdn.standardize(t)
     return t
@@ -776,13 +776,13 @@ def update_layouts(active_layouts, tid):
 def update_ultrametric(ultrametric, tid):
     """ Update trees if ultrametric option toggled """
     tree = app.trees[int(tid)]
-    tree_style = tree.style  # specific to each tree
     # Boolean from front-end 0 or 1
     ultrametric = True if (ultrametric and int(ultrametric)) else False
-    if tree_style.ultrametric != ultrametric:
-        tree_style.ultrametric = ultrametric
+    if tree.style.ultrametric != ultrametric:
+        tree.style.ultrametric = ultrametric
         if ultrametric == True:
-            tree.initialized = False
+            tree.tree.convert_to_ultrametric()
+            gdn.standardize(tree.tree)
         else:
             app.trees.pop(tid, None) # delete from memory
 
