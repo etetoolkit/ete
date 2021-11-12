@@ -1369,6 +1369,52 @@ static CYTHON_INLINE int __Pyx_PySequence_ContainsTF(PyObject* item, PyObject* s
         __Pyx__ArgTypeTest(obj, type, name, exact))
 static int __Pyx__ArgTypeTest(PyObject *obj, PyTypeObject *type, const char *name, int exact);
 
+/* PyObjectGetMethod.proto */
+static int __Pyx_PyObject_GetMethod(PyObject *obj, PyObject *name, PyObject **method);
+
+/* PyObjectCallMethod0.proto */
+static PyObject* __Pyx_PyObject_CallMethod0(PyObject* obj, PyObject* method_name);
+
+/* pop.proto */
+static CYTHON_INLINE PyObject* __Pyx__PyObject_Pop(PyObject* L);
+#if CYTHON_USE_PYLIST_INTERNALS && CYTHON_ASSUME_SAFE_MACROS
+static CYTHON_INLINE PyObject* __Pyx_PyList_Pop(PyObject* L);
+#define __Pyx_PyObject_Pop(L) (likely(PyList_CheckExact(L)) ?\
+    __Pyx_PyList_Pop(L) : __Pyx__PyObject_Pop(L))
+#else
+#define __Pyx_PyList_Pop(L)  __Pyx__PyObject_Pop(L)
+#define __Pyx_PyObject_Pop(L)  __Pyx__PyObject_Pop(L)
+#endif
+
+/* UnpackUnboundCMethod.proto */
+typedef struct {
+    PyObject *type;
+    PyObject **method_name;
+    PyCFunction func;
+    PyObject *method;
+    int flag;
+} __Pyx_CachedCFunction;
+
+/* CallUnboundCMethod0.proto */
+static PyObject* __Pyx__CallUnboundCMethod0(__Pyx_CachedCFunction* cfunc, PyObject* self);
+#if CYTHON_COMPILING_IN_CPYTHON
+#define __Pyx_CallUnboundCMethod0(cfunc, self)\
+    (likely((cfunc)->func) ?\
+        (likely((cfunc)->flag == METH_NOARGS) ?  (*((cfunc)->func))(self, NULL) :\
+         (PY_VERSION_HEX >= 0x030600B1 && likely((cfunc)->flag == METH_FASTCALL) ?\
+            (PY_VERSION_HEX >= 0x030700A0 ?\
+                (*(__Pyx_PyCFunctionFast)(void*)(PyCFunction)(cfunc)->func)(self, &__pyx_empty_tuple, 0) :\
+                (*(__Pyx_PyCFunctionFastWithKeywords)(void*)(PyCFunction)(cfunc)->func)(self, &__pyx_empty_tuple, 0, NULL)) :\
+          (PY_VERSION_HEX >= 0x030700A0 && (cfunc)->flag == (METH_FASTCALL | METH_KEYWORDS) ?\
+            (*(__Pyx_PyCFunctionFastWithKeywords)(void*)(PyCFunction)(cfunc)->func)(self, &__pyx_empty_tuple, 0, NULL) :\
+            (likely((cfunc)->flag == (METH_VARARGS | METH_KEYWORDS)) ?  ((*(PyCFunctionWithKeywords)(void*)(PyCFunction)(cfunc)->func)(self, __pyx_empty_tuple, NULL)) :\
+               ((cfunc)->flag == METH_VARARGS ?  (*((cfunc)->func))(self, __pyx_empty_tuple) :\
+               __Pyx__CallUnboundCMethod0(cfunc, self)))))) :\
+        __Pyx__CallUnboundCMethod0(cfunc, self))
+#else
+#define __Pyx_CallUnboundCMethod0(cfunc, self)  __Pyx__CallUnboundCMethod0(cfunc, self)
+#endif
+
 /* GCCDiagnostics.proto */
 #if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
 #define __Pyx_HAS_GCC_DIAGNOSTIC
@@ -1417,15 +1463,6 @@ static CYTHON_INLINE PyObject* __Pyx_PyObject_GetSlice(
 
 /* None.proto */
 static CYTHON_INLINE void __Pyx_RaiseClosureNameError(const char *varname);
-
-/* UnpackUnboundCMethod.proto */
-typedef struct {
-    PyObject *type;
-    PyObject **method_name;
-    PyCFunction func;
-    PyObject *method;
-    int flag;
-} __Pyx_CachedCFunction;
 
 /* CallUnboundCMethod1.proto */
 static PyObject* __Pyx__CallUnboundCMethod1(__Pyx_CachedCFunction* cfunc, PyObject* self, PyObject* arg);
@@ -1615,9 +1652,6 @@ static CYTHON_INLINE void __Pyx__ExceptionSwap(PyThreadState *tstate, PyObject *
 static CYTHON_INLINE void __Pyx_ExceptionSwap(PyObject **type, PyObject **value, PyObject **tb);
 #endif
 
-/* PyObjectGetMethod.proto */
-static int __Pyx_PyObject_GetMethod(PyObject *obj, PyObject *name, PyObject **method);
-
 /* PyObjectCallMethod1.proto */
 static PyObject* __Pyx_PyObject_CallMethod1(PyObject* obj, PyObject* method_name, PyObject* arg);
 
@@ -1753,6 +1787,7 @@ static const char __pyx_k__30[] = ":;(),\\[\\]\t\n\r=";
 static const char __pyx_k_doc[] = "__doc__";
 static const char __pyx_k_end[] = "end";
 static const char __pyx_k_get[] = "get";
+static const char __pyx_k_pop[] = "pop";
 static const char __pyx_k_pos[] = "pos";
 static const char __pyx_k_s_2[] = "%s";
 static const char __pyx_k_s_s[] = "%s=%s";
@@ -1777,7 +1812,6 @@ static const char __pyx_k_path[] = "path";
 static const char __pyx_k_read[] = "read";
 static const char __pyx_k_self[] = "self";
 static const char __pyx_k_send[] = "send";
-static const char __pyx_k_stop[] = "stop";
 static const char __pyx_k_test[] = "__test__";
 static const char __pyx_k_text[] = "text";
 static const char __pyx_k_tree[] = "tree";
@@ -1844,6 +1878,7 @@ static const char __pyx_k_support_str[] = "support_str";
 static const char __pyx_k_add_children[] = "add_children";
 static const char __pyx_k_content_repr[] = "content_repr";
 static const char __pyx_k_content_text[] = "content_text";
+static const char __pyx_k_keep_reading[] = "keep_reading";
 static const char __pyx_k_quoted_names[] = "quoted_names";
 static const char __pyx_k_read_content[] = "read_content";
 static const char __pyx_k_write_newick[] = "write_newick";
@@ -1996,6 +2031,7 @@ static PyObject *__pyx_kp_s_invalid_NHX_format_s_in_text_r;
 static PyObject *__pyx_kp_s_invalid_number_r_in_r;
 static PyObject *__pyx_n_s_is_leaf;
 static PyObject *__pyx_n_s_join;
+static PyObject *__pyx_n_s_keep_reading;
 static PyObject *__pyx_n_s_keys;
 static PyObject *__pyx_n_s_main;
 static PyObject *__pyx_kp_s_malformed_content_r;
@@ -2017,6 +2053,7 @@ static PyObject *__pyx_n_s_open;
 static PyObject *__pyx_n_s_os;
 static PyObject *__pyx_n_s_pairs_str;
 static PyObject *__pyx_n_s_path;
+static PyObject *__pyx_n_s_pop;
 static PyObject *__pyx_n_s_populate;
 static PyObject *__pyx_n_s_pos;
 static PyObject *__pyx_n_s_pos_end;
@@ -2053,7 +2090,6 @@ static PyObject *__pyx_n_s_split;
 static PyObject *__pyx_n_s_standardize;
 static PyObject *__pyx_n_s_start;
 static PyObject *__pyx_n_s_startswith;
-static PyObject *__pyx_n_s_stop;
 static PyObject *__pyx_n_s_strip;
 static PyObject *__pyx_n_s_sub;
 static PyObject *__pyx_n_s_support;
@@ -2100,6 +2136,7 @@ static PyObject *__pyx_tp_new_4ete4_6parser_6newick___pyx_scope_struct_4_quote(P
 static PyObject *__pyx_tp_new_4ete4_6parser_6newick___pyx_scope_struct_5_genexpr(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_4ete4_6parser_6newick___pyx_scope_struct_6_write_newick(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_4ete4_6parser_6newick___pyx_scope_struct_7_genexpr(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
+static __Pyx_CachedCFunction __pyx_umethod_PyList_Type_pop = {0, &__pyx_n_s_pop, 0, 0, 0};
 static __Pyx_CachedCFunction __pyx_umethod_PyList_Type_remove = {0, &__pyx_n_s_remove, 0, 0, 0};
 static PyObject *__pyx_int_0;
 static PyObject *__pyx_int_1;
@@ -5636,7 +5673,7 @@ static PyObject *__pyx_pw_4ete4_6parser_6newick_15read_content(PyObject *__pyx_s
 static PyObject *__pyx_pf_4ete4_6parser_6newick_14read_content(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_text, int __pyx_v_pos, PyObject *__pyx_v_endings) {
   int __pyx_v_start;
   CYTHON_UNUSED PyObject *__pyx_v__ = NULL;
-  int __pyx_v_stop;
+  PyObject *__pyx_v_keep_reading = NULL;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   int __pyx_t_1;
@@ -5650,6 +5687,8 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_14read_content(CYTHON_UNUSED PyO
   PyObject *__pyx_t_9 = NULL;
   PyObject *(*__pyx_t_10)(PyObject *);
   int __pyx_t_11;
+  int __pyx_t_12;
+  int __pyx_t_13;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -5669,7 +5708,7 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_14read_content(CYTHON_UNUSED PyO
  *     start = pos
  *     if pos < len(text) and text[pos] == "'":             # <<<<<<<<<<<<<<
  *         _, pos = read_quoted_name(text, pos)
- *     stop = True
+ *     keep_reading = []
  */
   __pyx_t_2 = PyObject_Length(__pyx_v_text); if (unlikely(__pyx_t_2 == ((Py_ssize_t)-1))) __PYX_ERR(0, 234, __pyx_L1_error)
   __pyx_t_3 = ((__pyx_v_pos < __pyx_t_2) != 0);
@@ -5690,8 +5729,8 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_14read_content(CYTHON_UNUSED PyO
  *     start = pos
  *     if pos < len(text) and text[pos] == "'":
  *         _, pos = read_quoted_name(text, pos)             # <<<<<<<<<<<<<<
- *     stop = True
- *     while pos < len(text) and (not stop or text[pos] not in endings):
+ *     keep_reading = []
+ *     while pos < len(text) and not (len(keep_reading) == 0 and text[pos] in endings):
  */
     __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_read_quoted_name); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 235, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
@@ -5801,25 +5840,28 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_14read_content(CYTHON_UNUSED PyO
  *     start = pos
  *     if pos < len(text) and text[pos] == "'":             # <<<<<<<<<<<<<<
  *         _, pos = read_quoted_name(text, pos)
- *     stop = True
+ *     keep_reading = []
  */
   }
 
   /* "ete4/parser/newick.pyx":236
  *     if pos < len(text) and text[pos] == "'":
  *         _, pos = read_quoted_name(text, pos)
- *     stop = True             # <<<<<<<<<<<<<<
- *     while pos < len(text) and (not stop or text[pos] not in endings):
+ *     keep_reading = []             # <<<<<<<<<<<<<<
+ *     while pos < len(text) and not (len(keep_reading) == 0 and text[pos] in endings):
  *         if text[pos] == '[':
  */
-  __pyx_v_stop = 1;
+  __pyx_t_4 = PyList_New(0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 236, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_4);
+  __pyx_v_keep_reading = ((PyObject*)__pyx_t_4);
+  __pyx_t_4 = 0;
 
   /* "ete4/parser/newick.pyx":237
  *         _, pos = read_quoted_name(text, pos)
- *     stop = True
- *     while pos < len(text) and (not stop or text[pos] not in endings):             # <<<<<<<<<<<<<<
+ *     keep_reading = []
+ *     while pos < len(text) and not (len(keep_reading) == 0 and text[pos] in endings):             # <<<<<<<<<<<<<<
  *         if text[pos] == '[':
- *             stop = False
+ *             keep_reading.append(1)
  */
   while (1) {
     __pyx_t_2 = PyObject_Length(__pyx_v_text); if (unlikely(__pyx_t_2 == ((Py_ssize_t)-1))) __PYX_ERR(0, 237, __pyx_L1_error)
@@ -5829,27 +5871,31 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_14read_content(CYTHON_UNUSED PyO
       __pyx_t_1 = __pyx_t_3;
       goto __pyx_L10_bool_binop_done;
     }
-    __pyx_t_3 = ((!(__pyx_v_stop != 0)) != 0);
-    if (!__pyx_t_3) {
+    __pyx_t_2 = PyList_GET_SIZE(__pyx_v_keep_reading); if (unlikely(__pyx_t_2 == ((Py_ssize_t)-1))) __PYX_ERR(0, 237, __pyx_L1_error)
+    __pyx_t_11 = ((__pyx_t_2 == 0) != 0);
+    if (__pyx_t_11) {
     } else {
-      __pyx_t_1 = __pyx_t_3;
-      goto __pyx_L10_bool_binop_done;
+      __pyx_t_3 = __pyx_t_11;
+      goto __pyx_L12_bool_binop_done;
     }
     __pyx_t_4 = __Pyx_GetItemInt(__pyx_v_text, __pyx_v_pos, int, 1, __Pyx_PyInt_From_int, 0, 1, 1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 237, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_3 = (__Pyx_PySequence_ContainsTF(__pyx_t_4, __pyx_v_endings, Py_NE)); if (unlikely(__pyx_t_3 < 0)) __PYX_ERR(0, 237, __pyx_L1_error)
+    __pyx_t_11 = (__Pyx_PySequence_ContainsTF(__pyx_t_4, __pyx_v_endings, Py_EQ)); if (unlikely(__pyx_t_11 < 0)) __PYX_ERR(0, 237, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_11 = (__pyx_t_3 != 0);
-    __pyx_t_1 = __pyx_t_11;
+    __pyx_t_12 = (__pyx_t_11 != 0);
+    __pyx_t_3 = __pyx_t_12;
+    __pyx_L12_bool_binop_done:;
+    __pyx_t_12 = ((!__pyx_t_3) != 0);
+    __pyx_t_1 = __pyx_t_12;
     __pyx_L10_bool_binop_done:;
     if (!__pyx_t_1) break;
 
     /* "ete4/parser/newick.pyx":238
- *     stop = True
- *     while pos < len(text) and (not stop or text[pos] not in endings):
+ *     keep_reading = []
+ *     while pos < len(text) and not (len(keep_reading) == 0 and text[pos] in endings):
  *         if text[pos] == '[':             # <<<<<<<<<<<<<<
- *             stop = False
- *         elif text[pos] == ']':
+ *             keep_reading.append(1)
+ *         elif keep_reading and text[pos] == ']':
  */
     __pyx_t_4 = __Pyx_GetItemInt(__pyx_v_text, __pyx_v_pos, int, 1, __Pyx_PyInt_From_int, 0, 1, 1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 238, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
@@ -5858,59 +5904,69 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_14read_content(CYTHON_UNUSED PyO
     if (__pyx_t_1) {
 
       /* "ete4/parser/newick.pyx":239
- *     while pos < len(text) and (not stop or text[pos] not in endings):
+ *     while pos < len(text) and not (len(keep_reading) == 0 and text[pos] in endings):
  *         if text[pos] == '[':
- *             stop = False             # <<<<<<<<<<<<<<
- *         elif text[pos] == ']':
- *             stop = True
+ *             keep_reading.append(1)             # <<<<<<<<<<<<<<
+ *         elif keep_reading and text[pos] == ']':
+ *             keep_reading.pop()
  */
-      __pyx_v_stop = 0;
+      __pyx_t_13 = __Pyx_PyList_Append(__pyx_v_keep_reading, __pyx_int_1); if (unlikely(__pyx_t_13 == ((int)-1))) __PYX_ERR(0, 239, __pyx_L1_error)
 
       /* "ete4/parser/newick.pyx":238
- *     stop = True
- *     while pos < len(text) and (not stop or text[pos] not in endings):
+ *     keep_reading = []
+ *     while pos < len(text) and not (len(keep_reading) == 0 and text[pos] in endings):
  *         if text[pos] == '[':             # <<<<<<<<<<<<<<
- *             stop = False
- *         elif text[pos] == ']':
+ *             keep_reading.append(1)
+ *         elif keep_reading and text[pos] == ']':
  */
-      goto __pyx_L13;
+      goto __pyx_L14;
     }
 
     /* "ete4/parser/newick.pyx":240
  *         if text[pos] == '[':
- *             stop = False
- *         elif text[pos] == ']':             # <<<<<<<<<<<<<<
- *             stop = True
+ *             keep_reading.append(1)
+ *         elif keep_reading and text[pos] == ']':             # <<<<<<<<<<<<<<
+ *             keep_reading.pop()
  *         pos += 1
  */
+    __pyx_t_12 = (PyList_GET_SIZE(__pyx_v_keep_reading) != 0);
+    if (__pyx_t_12) {
+    } else {
+      __pyx_t_1 = __pyx_t_12;
+      goto __pyx_L15_bool_binop_done;
+    }
     __pyx_t_4 = __Pyx_GetItemInt(__pyx_v_text, __pyx_v_pos, int, 1, __Pyx_PyInt_From_int, 0, 1, 1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 240, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_1 = (__Pyx_PyString_Equals(__pyx_t_4, __pyx_kp_s__9, Py_EQ)); if (unlikely(__pyx_t_1 < 0)) __PYX_ERR(0, 240, __pyx_L1_error)
+    __pyx_t_12 = (__Pyx_PyString_Equals(__pyx_t_4, __pyx_kp_s__9, Py_EQ)); if (unlikely(__pyx_t_12 < 0)) __PYX_ERR(0, 240, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __pyx_t_1 = __pyx_t_12;
+    __pyx_L15_bool_binop_done:;
     if (__pyx_t_1) {
 
       /* "ete4/parser/newick.pyx":241
- *             stop = False
- *         elif text[pos] == ']':
- *             stop = True             # <<<<<<<<<<<<<<
+ *             keep_reading.append(1)
+ *         elif keep_reading and text[pos] == ']':
+ *             keep_reading.pop()             # <<<<<<<<<<<<<<
  *         pos += 1
  *     return text[start:pos], pos
  */
-      __pyx_v_stop = 1;
+      __pyx_t_4 = __Pyx_PyList_Pop(__pyx_v_keep_reading); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 241, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_4);
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
       /* "ete4/parser/newick.pyx":240
  *         if text[pos] == '[':
- *             stop = False
- *         elif text[pos] == ']':             # <<<<<<<<<<<<<<
- *             stop = True
+ *             keep_reading.append(1)
+ *         elif keep_reading and text[pos] == ']':             # <<<<<<<<<<<<<<
+ *             keep_reading.pop()
  *         pos += 1
  */
     }
-    __pyx_L13:;
+    __pyx_L14:;
 
     /* "ete4/parser/newick.pyx":242
- *         elif text[pos] == ']':
- *             stop = True
+ *         elif keep_reading and text[pos] == ']':
+ *             keep_reading.pop()
  *         pos += 1             # <<<<<<<<<<<<<<
  *     return text[start:pos], pos
  * 
@@ -5919,7 +5975,7 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_14read_content(CYTHON_UNUSED PyO
   }
 
   /* "ete4/parser/newick.pyx":243
- *             stop = True
+ *             keep_reading.pop()
  *         pos += 1
  *     return text[start:pos], pos             # <<<<<<<<<<<<<<
  * 
@@ -5965,6 +6021,7 @@ static PyObject *__pyx_pf_4ete4_6parser_6newick_14read_content(CYTHON_UNUSED PyO
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v__);
+  __Pyx_XDECREF(__pyx_v_keep_reading);
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
@@ -11248,6 +11305,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_kp_s_invalid_number_r_in_r, __pyx_k_invalid_number_r_in_r, sizeof(__pyx_k_invalid_number_r_in_r), 0, 0, 1, 0},
   {&__pyx_n_s_is_leaf, __pyx_k_is_leaf, sizeof(__pyx_k_is_leaf), 0, 0, 1, 1},
   {&__pyx_n_s_join, __pyx_k_join, sizeof(__pyx_k_join), 0, 0, 1, 1},
+  {&__pyx_n_s_keep_reading, __pyx_k_keep_reading, sizeof(__pyx_k_keep_reading), 0, 0, 1, 1},
   {&__pyx_n_s_keys, __pyx_k_keys, sizeof(__pyx_k_keys), 0, 0, 1, 1},
   {&__pyx_n_s_main, __pyx_k_main, sizeof(__pyx_k_main), 0, 0, 1, 1},
   {&__pyx_kp_s_malformed_content_r, __pyx_k_malformed_content_r, sizeof(__pyx_k_malformed_content_r), 0, 0, 1, 0},
@@ -11269,6 +11327,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_os, __pyx_k_os, sizeof(__pyx_k_os), 0, 0, 1, 1},
   {&__pyx_n_s_pairs_str, __pyx_k_pairs_str, sizeof(__pyx_k_pairs_str), 0, 0, 1, 1},
   {&__pyx_n_s_path, __pyx_k_path, sizeof(__pyx_k_path), 0, 0, 1, 1},
+  {&__pyx_n_s_pop, __pyx_k_pop, sizeof(__pyx_k_pop), 0, 0, 1, 1},
   {&__pyx_n_s_populate, __pyx_k_populate, sizeof(__pyx_k_populate), 0, 0, 1, 1},
   {&__pyx_n_s_pos, __pyx_k_pos, sizeof(__pyx_k_pos), 0, 0, 1, 1},
   {&__pyx_n_s_pos_end, __pyx_k_pos_end, sizeof(__pyx_k_pos_end), 0, 0, 1, 1},
@@ -11305,7 +11364,6 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_standardize, __pyx_k_standardize, sizeof(__pyx_k_standardize), 0, 0, 1, 1},
   {&__pyx_n_s_start, __pyx_k_start, sizeof(__pyx_k_start), 0, 0, 1, 1},
   {&__pyx_n_s_startswith, __pyx_k_startswith, sizeof(__pyx_k_startswith), 0, 0, 1, 1},
-  {&__pyx_n_s_stop, __pyx_k_stop, sizeof(__pyx_k_stop), 0, 0, 1, 1},
   {&__pyx_n_s_strip, __pyx_k_strip, sizeof(__pyx_k_strip), 0, 0, 1, 1},
   {&__pyx_n_s_sub, __pyx_k_sub, sizeof(__pyx_k_sub), 0, 0, 1, 1},
   {&__pyx_n_s_support, __pyx_k_support, sizeof(__pyx_k_support), 0, 0, 1, 1},
@@ -11497,7 +11555,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *     "Return content starting at position pos in the text, and where it ends"
  *     start = pos
  */
-  __pyx_tuple__45 = PyTuple_Pack(6, __pyx_n_s_text, __pyx_n_s_pos, __pyx_n_s_endings, __pyx_n_s_start, __pyx_n_s__21, __pyx_n_s_stop); if (unlikely(!__pyx_tuple__45)) __PYX_ERR(0, 231, __pyx_L1_error)
+  __pyx_tuple__45 = PyTuple_Pack(6, __pyx_n_s_text, __pyx_n_s_pos, __pyx_n_s_endings, __pyx_n_s_start, __pyx_n_s__21, __pyx_n_s_keep_reading); if (unlikely(!__pyx_tuple__45)) __PYX_ERR(0, 231, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__45);
   __Pyx_GIVEREF(__pyx_tuple__45);
   __pyx_codeobj__46 = (PyObject*)__Pyx_PyCode_New(3, 0, 6, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__45, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_ete4_parser_newick_pyx, __pyx_n_s_read_content, 231, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__46)) __PYX_ERR(0, 231, __pyx_L1_error)
@@ -11593,6 +11651,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
 }
 
 static CYTHON_SMALL_CODE int __Pyx_InitGlobals(void) {
+  __pyx_umethod_PyList_Type_pop.type = (PyObject*)&PyList_Type;
   __pyx_umethod_PyList_Type_remove.type = (PyObject*)&PyList_Type;
   if (__Pyx_InitStrings(__pyx_string_tab) < 0) __PYX_ERR(0, 1, __pyx_L1_error);
   __pyx_int_0 = PyInt_FromLong(0); if (unlikely(!__pyx_int_0)) __PYX_ERR(0, 1, __pyx_L1_error)
@@ -14434,6 +14493,174 @@ static int __Pyx__ArgTypeTest(PyObject *obj, PyTypeObject *type, const char *nam
     return 0;
 }
 
+/* PyObjectGetMethod */
+static int __Pyx_PyObject_GetMethod(PyObject *obj, PyObject *name, PyObject **method) {
+    PyObject *attr;
+#if CYTHON_UNPACK_METHODS && CYTHON_COMPILING_IN_CPYTHON && CYTHON_USE_PYTYPE_LOOKUP
+    PyTypeObject *tp = Py_TYPE(obj);
+    PyObject *descr;
+    descrgetfunc f = NULL;
+    PyObject **dictptr, *dict;
+    int meth_found = 0;
+    assert (*method == NULL);
+    if (unlikely(tp->tp_getattro != PyObject_GenericGetAttr)) {
+        attr = __Pyx_PyObject_GetAttrStr(obj, name);
+        goto try_unpack;
+    }
+    if (unlikely(tp->tp_dict == NULL) && unlikely(PyType_Ready(tp) < 0)) {
+        return 0;
+    }
+    descr = _PyType_Lookup(tp, name);
+    if (likely(descr != NULL)) {
+        Py_INCREF(descr);
+#if PY_MAJOR_VERSION >= 3
+        #ifdef __Pyx_CyFunction_USED
+        if (likely(PyFunction_Check(descr) || (Py_TYPE(descr) == &PyMethodDescr_Type) || __Pyx_CyFunction_Check(descr)))
+        #else
+        if (likely(PyFunction_Check(descr) || (Py_TYPE(descr) == &PyMethodDescr_Type)))
+        #endif
+#else
+        #ifdef __Pyx_CyFunction_USED
+        if (likely(PyFunction_Check(descr) || __Pyx_CyFunction_Check(descr)))
+        #else
+        if (likely(PyFunction_Check(descr)))
+        #endif
+#endif
+        {
+            meth_found = 1;
+        } else {
+            f = Py_TYPE(descr)->tp_descr_get;
+            if (f != NULL && PyDescr_IsData(descr)) {
+                attr = f(descr, obj, (PyObject *)Py_TYPE(obj));
+                Py_DECREF(descr);
+                goto try_unpack;
+            }
+        }
+    }
+    dictptr = _PyObject_GetDictPtr(obj);
+    if (dictptr != NULL && (dict = *dictptr) != NULL) {
+        Py_INCREF(dict);
+        attr = __Pyx_PyDict_GetItemStr(dict, name);
+        if (attr != NULL) {
+            Py_INCREF(attr);
+            Py_DECREF(dict);
+            Py_XDECREF(descr);
+            goto try_unpack;
+        }
+        Py_DECREF(dict);
+    }
+    if (meth_found) {
+        *method = descr;
+        return 1;
+    }
+    if (f != NULL) {
+        attr = f(descr, obj, (PyObject *)Py_TYPE(obj));
+        Py_DECREF(descr);
+        goto try_unpack;
+    }
+    if (descr != NULL) {
+        *method = descr;
+        return 0;
+    }
+    PyErr_Format(PyExc_AttributeError,
+#if PY_MAJOR_VERSION >= 3
+                 "'%.50s' object has no attribute '%U'",
+                 tp->tp_name, name);
+#else
+                 "'%.50s' object has no attribute '%.400s'",
+                 tp->tp_name, PyString_AS_STRING(name));
+#endif
+    return 0;
+#else
+    attr = __Pyx_PyObject_GetAttrStr(obj, name);
+    goto try_unpack;
+#endif
+try_unpack:
+#if CYTHON_UNPACK_METHODS
+    if (likely(attr) && PyMethod_Check(attr) && likely(PyMethod_GET_SELF(attr) == obj)) {
+        PyObject *function = PyMethod_GET_FUNCTION(attr);
+        Py_INCREF(function);
+        Py_DECREF(attr);
+        *method = function;
+        return 1;
+    }
+#endif
+    *method = attr;
+    return 0;
+}
+
+/* PyObjectCallMethod0 */
+static PyObject* __Pyx_PyObject_CallMethod0(PyObject* obj, PyObject* method_name) {
+    PyObject *method = NULL, *result = NULL;
+    int is_method = __Pyx_PyObject_GetMethod(obj, method_name, &method);
+    if (likely(is_method)) {
+        result = __Pyx_PyObject_CallOneArg(method, obj);
+        Py_DECREF(method);
+        return result;
+    }
+    if (unlikely(!method)) goto bad;
+    result = __Pyx_PyObject_CallNoArg(method);
+    Py_DECREF(method);
+bad:
+    return result;
+}
+
+/* UnpackUnboundCMethod */
+static int __Pyx_TryUnpackUnboundCMethod(__Pyx_CachedCFunction* target) {
+    PyObject *method;
+    method = __Pyx_PyObject_GetAttrStr(target->type, *target->method_name);
+    if (unlikely(!method))
+        return -1;
+    target->method = method;
+#if CYTHON_COMPILING_IN_CPYTHON
+    #if PY_MAJOR_VERSION >= 3
+    if (likely(__Pyx_TypeCheck(method, &PyMethodDescr_Type)))
+    #endif
+    {
+        PyMethodDescrObject *descr = (PyMethodDescrObject*) method;
+        target->func = descr->d_method->ml_meth;
+        target->flag = descr->d_method->ml_flags & ~(METH_CLASS | METH_STATIC | METH_COEXIST | METH_STACKLESS);
+    }
+#endif
+    return 0;
+}
+
+/* CallUnboundCMethod0 */
+static PyObject* __Pyx__CallUnboundCMethod0(__Pyx_CachedCFunction* cfunc, PyObject* self) {
+    PyObject *args, *result = NULL;
+    if (unlikely(!cfunc->method) && unlikely(__Pyx_TryUnpackUnboundCMethod(cfunc) < 0)) return NULL;
+#if CYTHON_ASSUME_SAFE_MACROS
+    args = PyTuple_New(1);
+    if (unlikely(!args)) goto bad;
+    Py_INCREF(self);
+    PyTuple_SET_ITEM(args, 0, self);
+#else
+    args = PyTuple_Pack(1, self);
+    if (unlikely(!args)) goto bad;
+#endif
+    result = __Pyx_PyObject_Call(cfunc->method, args, NULL);
+    Py_DECREF(args);
+bad:
+    return result;
+}
+
+/* pop */
+static CYTHON_INLINE PyObject* __Pyx__PyObject_Pop(PyObject* L) {
+    if (Py_TYPE(L) == &PySet_Type) {
+        return PySet_Pop(L);
+    }
+    return __Pyx_PyObject_CallMethod0(L, __pyx_n_s_pop);
+}
+#if CYTHON_USE_PYLIST_INTERNALS && CYTHON_ASSUME_SAFE_MACROS
+static CYTHON_INLINE PyObject* __Pyx_PyList_Pop(PyObject* L) {
+    if (likely(PyList_GET_SIZE(L) > (((PyListObject*)L)->allocated >> 1))) {
+        __Pyx_SET_SIZE(L, Py_SIZE(L) - 1);
+        return PyList_GET_ITEM(L, PyList_GET_SIZE(L));
+    }
+    return __Pyx_CallUnboundCMethod0(&__pyx_umethod_PyList_Type_pop, L);
+}
+#endif
+
 /* CIntToDigits */
 static const char DIGIT_PAIRS_10[2*10*10+1] = {
     "00010203040506070809"
@@ -14915,26 +15142,6 @@ bad:
 /* None */
 static CYTHON_INLINE void __Pyx_RaiseClosureNameError(const char *varname) {
     PyErr_Format(PyExc_NameError, "free variable '%s' referenced before assignment in enclosing scope", varname);
-}
-
-/* UnpackUnboundCMethod */
-static int __Pyx_TryUnpackUnboundCMethod(__Pyx_CachedCFunction* target) {
-    PyObject *method;
-    method = __Pyx_PyObject_GetAttrStr(target->type, *target->method_name);
-    if (unlikely(!method))
-        return -1;
-    target->method = method;
-#if CYTHON_COMPILING_IN_CPYTHON
-    #if PY_MAJOR_VERSION >= 3
-    if (likely(__Pyx_TypeCheck(method, &PyMethodDescr_Type)))
-    #endif
-    {
-        PyMethodDescrObject *descr = (PyMethodDescrObject*) method;
-        target->func = descr->d_method->ml_meth;
-        target->flag = descr->d_method->ml_flags & ~(METH_CLASS | METH_STATIC | METH_COEXIST | METH_STACKLESS);
-    }
-#endif
-    return 0;
 }
 
 /* CallUnboundCMethod1 */
@@ -16786,102 +16993,6 @@ static CYTHON_INLINE void __Pyx_ExceptionSwap(PyObject **type, PyObject **value,
     *tb = tmp_tb;
 }
 #endif
-
-/* PyObjectGetMethod */
-static int __Pyx_PyObject_GetMethod(PyObject *obj, PyObject *name, PyObject **method) {
-    PyObject *attr;
-#if CYTHON_UNPACK_METHODS && CYTHON_COMPILING_IN_CPYTHON && CYTHON_USE_PYTYPE_LOOKUP
-    PyTypeObject *tp = Py_TYPE(obj);
-    PyObject *descr;
-    descrgetfunc f = NULL;
-    PyObject **dictptr, *dict;
-    int meth_found = 0;
-    assert (*method == NULL);
-    if (unlikely(tp->tp_getattro != PyObject_GenericGetAttr)) {
-        attr = __Pyx_PyObject_GetAttrStr(obj, name);
-        goto try_unpack;
-    }
-    if (unlikely(tp->tp_dict == NULL) && unlikely(PyType_Ready(tp) < 0)) {
-        return 0;
-    }
-    descr = _PyType_Lookup(tp, name);
-    if (likely(descr != NULL)) {
-        Py_INCREF(descr);
-#if PY_MAJOR_VERSION >= 3
-        #ifdef __Pyx_CyFunction_USED
-        if (likely(PyFunction_Check(descr) || (Py_TYPE(descr) == &PyMethodDescr_Type) || __Pyx_CyFunction_Check(descr)))
-        #else
-        if (likely(PyFunction_Check(descr) || (Py_TYPE(descr) == &PyMethodDescr_Type)))
-        #endif
-#else
-        #ifdef __Pyx_CyFunction_USED
-        if (likely(PyFunction_Check(descr) || __Pyx_CyFunction_Check(descr)))
-        #else
-        if (likely(PyFunction_Check(descr)))
-        #endif
-#endif
-        {
-            meth_found = 1;
-        } else {
-            f = Py_TYPE(descr)->tp_descr_get;
-            if (f != NULL && PyDescr_IsData(descr)) {
-                attr = f(descr, obj, (PyObject *)Py_TYPE(obj));
-                Py_DECREF(descr);
-                goto try_unpack;
-            }
-        }
-    }
-    dictptr = _PyObject_GetDictPtr(obj);
-    if (dictptr != NULL && (dict = *dictptr) != NULL) {
-        Py_INCREF(dict);
-        attr = __Pyx_PyDict_GetItemStr(dict, name);
-        if (attr != NULL) {
-            Py_INCREF(attr);
-            Py_DECREF(dict);
-            Py_XDECREF(descr);
-            goto try_unpack;
-        }
-        Py_DECREF(dict);
-    }
-    if (meth_found) {
-        *method = descr;
-        return 1;
-    }
-    if (f != NULL) {
-        attr = f(descr, obj, (PyObject *)Py_TYPE(obj));
-        Py_DECREF(descr);
-        goto try_unpack;
-    }
-    if (descr != NULL) {
-        *method = descr;
-        return 0;
-    }
-    PyErr_Format(PyExc_AttributeError,
-#if PY_MAJOR_VERSION >= 3
-                 "'%.50s' object has no attribute '%U'",
-                 tp->tp_name, name);
-#else
-                 "'%.50s' object has no attribute '%.400s'",
-                 tp->tp_name, PyString_AS_STRING(name));
-#endif
-    return 0;
-#else
-    attr = __Pyx_PyObject_GetAttrStr(obj, name);
-    goto try_unpack;
-#endif
-try_unpack:
-#if CYTHON_UNPACK_METHODS
-    if (likely(attr) && PyMethod_Check(attr) && likely(PyMethod_GET_SELF(attr) == obj)) {
-        PyObject *function = PyMethod_GET_FUNCTION(attr);
-        Py_INCREF(function);
-        Py_DECREF(attr);
-        *method = function;
-        return 1;
-    }
-#endif
-    *method = attr;
-    return 0;
-}
 
 /* PyObjectCallMethod1 */
 static PyObject* __Pyx__PyObject_CallMethod1(PyObject* method, PyObject* arg) {
