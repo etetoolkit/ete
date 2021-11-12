@@ -65,19 +65,24 @@ async function unselect_node(node_id) {
 
 // Store selection with info from backend (number of results and parents)
 // Notify parent window if encapsulated in iframe
+const colors = ["#FF0", "#F0F", "#0FF", "#F00", "#0F0", "#00F"].reverse();
 function store_selection(name, res) {
+
+    // Assign color
+    const nselected = Object.keys(view.selected).length;
+    const color = colors[nselected % colors.length]
+
     if (self !== top)  // notify parent window
         parent.postMessage({ 
             tid: get_tid(),
             selected: true,
             //node: String(name),
             name: name,
+            color: color,
             // Maybe also provide the color used to tag it...
         }, "*");
 
     // Add to selected dict
-    const colors = ["#FF0", "#F0F", "#0FF", "#F00", "#0F0", "#00F"].reverse();
-    const nselected = Object.keys(view.selected).length;
     const selected = view.selected[name];
     if (selected)
         update_selected_folder(name, res)
@@ -85,7 +90,7 @@ function store_selection(name, res) {
         view.selected[name] = {
             results: { n: res.nresults,
                       opacity: 0.4,
-                      color: colors[nselected % colors.length] },
+                      color: color },
             parents: { n: res.nparents,
                        color: "#000",
                        width: 2.5 },};
