@@ -6,13 +6,14 @@ from math import sin, cos, pi, sqrt, atan2
 from collections import namedtuple, OrderedDict, defaultdict, deque
 import random
 
+from time import time
+
 from ete4.smartview.ete.walk import walk
+from ete4.smartview.ete.face_positions import FACE_POSITIONS, get_FaceAreas
 
 Size = namedtuple('Size', 'dx dy')  # size of a 2D shape (sizes are always >= 0)
 Box = namedtuple('Box', 'x y dx dy')  # corner and size of a 2D shape
 SBox = namedtuple('SBox', 'x y dx_min dx_max dy')  # slanted box
-
-FACE_POSITIONS = ["branch-top", "branch-bottom", "branch-right", "aligned"]
 
 # They are all "generalized coordinates" (can be radius and angle, say).
 
@@ -81,13 +82,27 @@ class Drawer:
             self.tree_style.aligned_grid_dxs = defaultdict(lambda: 0)
 
         point = self.xmin, self.ymin
+        first_counter = last_counter = descend_counter = 0
+        first_time = 0
         for it in walk(self.tree):
             graphics = []
             if it.first_visit:
+                start = time()
+
                 point = self.on_first_visit(point, it, graphics)
+
+                if not it.descend:
+                    descend_counter += 1
+                first_counter += 1
+                first_time += time() - start
             else:
+                last_counter += 1
                 point = self.on_last_visit(point, it, graphics)
             yield from graphics
+
+        print(f'First visit ({first_counter}): {first_time}')
+        print(f'Descend: {descend_counter}')
+        print(f'Last visit: {last_counter}')
 
         if self.outline:
             yield from self.get_outline()
@@ -692,6 +707,8 @@ class DrawerRectFaces(DrawerRect):
 
         if not node.is_initialized:
             node.is_initialized = True
+            node.faces = get_FaceAreas()
+            node.collapsed_faces = get_FaceAreas()
             for layout_fn in self.tree_style.layout_fn:
                 layout_fn(node)
 

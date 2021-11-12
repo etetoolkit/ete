@@ -1,6 +1,6 @@
 // Functions related to updating (drawing) the view.
 
-import { view, get_tid, on_box_click, on_box_wheel } from "./gui.js";
+import { view, get_tid, on_box_click, on_box_wheel, get_active_layouts } from "./gui.js";
 import { update_minimap_visible_rect } from "./minimap.js";
 import { colorize_searches, get_search_class } from "./search.js";
 import { colorize_selections, get_selection_class } from "./select.js";
@@ -12,7 +12,7 @@ export { update, draw_tree, draw_tree_scale, draw, get_class_name, cartesian_shi
 
 
 // Update the view of all elements (gui, tree, minimap).
-function update() {
+async function update() {
     draw_tree();
 
     if (view.minimap.show)
@@ -30,8 +30,7 @@ async function draw_tree() {
 
     div_tree.style.cursor = "wait";
     
-    const layouts = JSON.stringify(Object.keys(view.layouts)
-            .filter(l => view.layouts[l] === true));
+    const layouts = JSON.stringify(get_active_layouts());
 
     const params_rect = {  // parameters we have to pass to the drawer
         "drawer": view.drawer.name, "min_size": view.min_size,

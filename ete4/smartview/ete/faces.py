@@ -59,10 +59,10 @@ def clean_text(text):
 
 def swap_pos(pos, angle):
     if abs(angle) >= pi / 2:
-        if pos == 'branch-top':
-            pos = 'branch-bottom'
-        elif pos == 'branch-bottom':
-            pos = 'branch-top'
+        if pos == 'branch_top':
+            pos = 'branch_bottom'
+        elif pos == 'branch_bottom':
+            pos = 'branch_top'
     return pos
 
 
@@ -107,27 +107,27 @@ class Face(object):
         dx, dy = size
         zx, zy = drawer.zoom
 
-        if pos == 'branch-top':  # above the branch
+        if pos == 'branch_top':  # above the branch
             avail_dx = dx / n_col
             avail_dy = bdy / n_row
             x = x + dx_before
             y = y + bdy - avail_dy - dy_before
 
-        elif pos == 'branch-bottom':  # below the branch
+        elif pos == 'branch_bottom':  # below the branch
             avail_dx = dx / n_col
             avail_dy = (dy - bdy) / n_row
             x = x + dx_before
             y = y + bdy + dy_before
 
-        elif pos == 'branch-top-left':  # left of branch-top
+        elif pos == 'branch_top-left':  # left of branch_top
             width, height = get_dimensions(dx / n_col, bdy)
             box = (x - (col + 1) * dx/n_col, y, width, height)
 
-        elif pos == 'branch-bottom-left':  # left of branch-bottom
+        elif pos == 'branch_bottom-left':  # left of branch_bottom
             width, height = get_dimensions(dx / n_col, dy - bdy)
             box = (x - (col + 1) * dx/n_col, y + bdy, width, height)
 
-        elif pos == 'branch-right':  # right of node
+        elif pos == 'branch_right':  # right of node
             avail_dx = dx_to_closest_child / n_col\
                     if not (self.node.is_leaf() or self.node.is_collapsed)\
                     else None
@@ -152,7 +152,7 @@ class Face(object):
         self._box = Box(
             x + padding_x,
             y + padding_y,
-            # avail_dx may not be initialized for branch-right and aligned
+            # avail_dx may not be initialized for branch_right and aligned
             max(avail_dx - 2 * padding_x, 0) if avail_dx else None,
             max(avail_dy - 2 * padding_y, 0))
 
@@ -232,13 +232,13 @@ class TextFace(Face):
 
         width, height = fit_fontsize(self._content, dx, dy * r)
 
-        if pos == 'branch-top':
+        if pos == 'branch_top':
             box = (x, y + dy - height, width, height) # container bottom
 
-        elif pos == 'branch-bottom':
+        elif pos == 'branch_bottom':
             box = (x, y, width, height) # container top
 
-        else: # branch-right and aligned
+        else: # branch_right and aligned
             box = (x, y + (dy - height) / 2, width, height)
 
         self._box = Box(*box)
@@ -343,13 +343,13 @@ class CircleFace(Face):
 
         cx = x + self._max_radius / zx - padding_x
 
-        if pos == 'branch-top':
+        if pos == 'branch_top':
             cy = y + dy - self._max_radius / (zy * r) # container bottom
 
-        elif pos == 'branch-bottom':
+        elif pos == 'branch_bottom':
             cy = y + self._max_radius / (zy * r) # container top
 
-        else: # branch-right and aligned
+        else: # branch_right and aligned
             if pos == 'aligned':
                 self._max_radius = min(dy * zy * r / 2, self.radius)
             cx = x + self._max_radius / zx - padding_x # centered
@@ -449,15 +449,15 @@ class RectFace(Face):
 
         max_dy = dy * r  # take into account circular mode
 
-        if pos == 'branch-top':
+        if pos == 'branch_top':
             width, height = get_dimensions(dx, max_dy)
             box = (x, y + dy - height, width, height) # container bottom
 
-        elif pos == 'branch-bottom':
+        elif pos == 'branch_bottom':
             width, height = get_dimensions(dx, max_dy)
             box = (x, y, width, height) # container top
 
-        elif pos == 'branch-right':
+        elif pos == 'branch_right':
             width, height = get_dimensions(dx, max_dy)
             box = (x, y + (dy - height) / 2, width, height)
 
@@ -659,7 +659,7 @@ class AlignLinkFace(Face):
             n_row, n_col,
             dx_before, dy_before):
 
-        if drawer.NPANELS > 1 and drawer.viewport and pos == 'branch-right':
+        if drawer.NPANELS > 1 and drawer.viewport and pos == 'branch_right':
             x, y = point
             dx, dy = size
             p1 = (x + bdx + dx_before, y + dy/2)
@@ -734,7 +734,7 @@ class SeqFace(Face):
             n_row, n_col,
             dx_before, dy_before):
 
-        if pos not in ('branch-right', 'aligned'):
+        if pos not in ('branch_right', 'aligned'):
             raise InvalidUsage(f'Position {pos} not allowed for SeqFace')
 
         box = super().compute_bounding_box( 
@@ -926,7 +926,7 @@ class SeqMotifFace(Face):
             n_row, n_col,
             dx_before, dy_before):
 
-        if pos not in ('branch-right', 'aligned'):
+        if pos not in ('branch_right', 'aligned'):
             raise InvalidUsage(f'Position {pos} not allowed for SeqMotifFace')
 
         box = super().compute_bounding_box( 
@@ -949,7 +949,7 @@ class SeqMotifFace(Face):
         return True
 
     def draw(self, drawer):
-        # Only leaf/collapsed branch-right or aligned
+        # Only leaf/collapsed branch_right or aligned
         x0, y, _, dy = self._box
         zx, zy = drawer.zoom
         x = x0

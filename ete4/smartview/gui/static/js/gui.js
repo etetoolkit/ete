@@ -1,6 +1,6 @@
 // Main file for the gui.
 
-import { init_menus } from "./menu.js";
+import { init_menus, update_folder_layouts } from "./menu.js";
 import { init_events } from "./events.js";
 import { update } from "./draw.js";
 import { download_newick, download_svg } from "./download.js";
@@ -13,7 +13,7 @@ import { remove_collapsed } from "./collapse.js";
 
 export { view, menus, on_tree_change, on_drawer_change, show_minimap,
          tree_command, get_tid, on_box_click, on_box_wheel, coordinates,
-         reset_view, show_help, sort };
+         reset_view, show_help, sort, get_active_layouts };
 
 
 // Run main() when the page is loaded.
@@ -135,6 +135,7 @@ const menus = {  // will contain the menus on the top
     selected: undefined,
     searches: undefined,
     collapsed: undefined,
+    layouts: undefined,
     minimap: undefined, // minimap toggler
     subtree: undefined,
 };
@@ -145,7 +146,7 @@ const trees = {};  // will translate names to ids (trees[tree_name] = tree_id)
 async function main() {
     await init_trees();
 
-    view.layouts = await api("/layouts"); // init layouts
+    view.layouts = await api(`/layouts`); // init layouts
 
     await set_query_string_values();
 
@@ -154,6 +155,8 @@ async function main() {
     reset_node_count();
 
     init_menus(Object.keys(trees));
+
+    await reset_layouts();
 
     init_events();
 
@@ -229,16 +232,19 @@ async function on_tree_change() {
     remove_selections();
     remove_collapsed();
     view.tree_size = await api(`/trees/${get_tid()}/size`);
+
     // Get searches and selections if any are stored in backend
     if (Object.keys(view.searches).length === 0)
         get_searches();
     if (Object.keys(view.selected).length === 0)
         get_selections();
+
     reset_node_count();
+    await reset_layouts();
     reset_zoom();
     reset_position();
     draw_minimap();
-    update();
+    await update();
 
     menus.subtree.refresh(); // show subtree in control panel
 
@@ -296,8 +302,17 @@ async function set_query_string_values() {
             view.drawer.name = value;
         else if (param === "layouts") {
             const active = value.split(",");
-            for (let l in view.layouts)
-                view.layouts[l] = active.includes(l);
+            active.forEach(a => {
+                const [ key, ly ] = a.split(":");
+                const layouts = view.layouts[key];
+                if (layouts) {
+                    if (ly === "all")
+                        for (let l in layouts)
+                            layouts[l] = true;
+                    else if ([...Object.keys(layouts)].includes(ly))
+                        layouts[ly] = true;
+                }
+            })
         }
         else
             unknown_params.push(param);
@@ -382,6 +397,22 @@ function reset_node_count() {
 }
 
 
+function get_active_layouts() {
+    return  Object.entries(view.layouts).reduce((all, [key, lys]) => {
+        Object.entries(lys).forEach(([ly, val]) => { 
+            if (val === true) 
+                all.push(`${key}:${ly}`) 
+        });
+        return all;
+    }, []);
+}
+
+async function reset_layouts() {
+    view.layouts = await api(`/layouts/${get_tid()}`);
+    update_folder_layouts()
+}
+
+
 // Set the zoom so the full tree fits comfortably on the screen.
 function reset_zoom(reset_zx=true, reset_zy=true) {
     if (!(reset_zx || reset_zy))
@@ -428,8 +459,7 @@ function get_url_view(x, y, w, h) {
     const qs = new URLSearchParams({
         x: x, y: y, w: w, h: h,
         tree: view.tree, subtree: view.subtree, drawer: view.drawer.name,
-        layouts: Object.keys(view.layouts)
-            .filter(l => view.layouts[l] === true),
+        layouts: get_active_layouts(),
     }).toString();
     return window.location.origin + window.location.pathname + "?" + qs;
 }

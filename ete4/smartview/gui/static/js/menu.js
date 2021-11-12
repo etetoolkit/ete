@@ -6,7 +6,7 @@ import { view, menus, on_tree_change,
 import { draw_minimap } from "./minimap.js";
 import { update, draw_tree_scale } from "./draw.js";
 
-export { init_menus };
+export { init_menus, update_folder_layouts };
 
 
 // Init the menus on the top with all the options we can see and change.
@@ -122,11 +122,26 @@ function add_folder_tree(menu, trees) {
 }
 
 
-function add_folder_layouts(menu) {
-    const folder_layout = menu.addFolder({ title: "Layouts" });
+function update_folder_layouts (){
+    // Remove previous layout folders
+    menus.layouts.children.forEach(ch => ch.dispose());
 
-    Object.keys(view.layouts).sort().forEach(layout =>
-        folder_layout.addInput(view.layouts, layout).on("change", update));
+    // Place default layouts as first element
+    const sorted_layouts = [...Object.keys(view.layouts)].sort();
+    sorted_layouts.splice(sorted_layouts.indexOf("default"), 1);
+    sorted_layouts.unshift("default");
+
+    sorted_layouts.forEach(name => {
+        const layout_folder = menus.layouts.addFolder({ title: name, expanded: name === "default" })
+        const layouts = view.layouts[name];
+        Object.keys(layouts).sort().forEach(layout =>
+            layout_folder.addInput(view.layouts[name], layout).on("change", update))
+    });
+}
+
+function add_folder_layouts(menu) {
+    menus.layouts = menu.addFolder({ title: "Layouts" });
+    update_folder_layouts();
 }
 
 

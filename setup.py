@@ -95,6 +95,7 @@ extensions = [
         Extension('ete4.coretype.tree', ['ete4/coretype/tree.pyx']), 
         Extension('ete4.parser.newick', ['ete4/parser/newick.pyx']), 
         Extension('ete4.smartview.ete.gardening', ['ete4/smartview/ete/gardening.pyx']), 
+        Extension('ete4.smartview.ete.face_positions', ['ete4/smartview/ete/face_positions.pyx']), 
             ],
 
 try:
