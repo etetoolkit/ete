@@ -21,6 +21,23 @@ const selectError = Swal.mixin({
     }
 });
 
+
+function notifyParent(name, eventType) {
+    if (self === top)  // only notify when encapsulated in iframe
+        return
+
+    const selected = view.selected[name];
+
+    parent.postMessage({ 
+        tid: get_tid(),
+        eventType: eventType,  // selection, unselection, modification, colorChange
+        name: name,
+        color: selected.results.color,
+    }, "*");
+
+}
+
+
 // Select node with the given name and return true if things went well.
 async function select_node(node_id, name) {
     try {
@@ -48,16 +65,19 @@ async function select_node(node_id, name) {
 
 async function unselect_node(node_id) {
     const tid = get_tid() + "," + node_id;
-    await api(`/trees/${tid}/unselect`);
 
-    const selected = await api(`/trees/${get_tid()}/selected`);
-    const selected_in_back = Array.from(Object.keys(selected.selected));
-    const selected_in_view = Array.from(Object.keys(view.selected));
-    selected_in_view.forEach(name => {
-        if (!selected_in_back.includes(name))
+    const old_selections = await api(`/trees/${tid}/selections`);
+    await api(`/trees/${tid}/unselect`);
+    const selections = await api(`/trees/${tid}/selections`);
+
+    old_selections.selections.forEach(name => {
+        if (!selections.selections.includes(name)) {
             view.selected[name].remove();
-        else
+            notifyParent(name, "unselection");
+        } else {
             update_selected_folder(name, selected.selected[name]);
+            notifyParent(name, "modification");
+        }
     });
     draw_tree();
 }
@@ -68,21 +88,8 @@ async function unselect_node(node_id) {
 const colors = ["#FF0", "#F0F", "#0FF", "#F00", "#0F0", "#00F"].reverse();
 function store_selection(name, res) {
 
-    // Assign color
-    const nselected = Object.keys(view.selected).length;
-    const color = colors[nselected % colors.length]
-
-    if (self !== top)  // notify parent window
-        parent.postMessage({ 
-            tid: get_tid(),
-            selected: true,
-            //node: String(name),
-            name: name,
-            color: color,
-            // Maybe also provide the color used to tag it...
-        }, "*");
-
     // Add to selected dict
+    const nselected = Object.keys(view.selected).length;
     const selected = view.selected[name];
     if (selected)
         update_selected_folder(name, res)
@@ -90,12 +97,14 @@ function store_selection(name, res) {
         view.selected[name] = {
             results: { n: res.nresults,
                       opacity: 0.4,
-                      color: color },
+                      color: colors[nselected % colors.length] },
             parents: { n: res.nparents,
                        color: "#000",
                        width: 2.5 },};
         add_selected_to_menu(name);
     }
+
+    notifyParent(name, "selection");
 }
 
 
@@ -152,13 +161,8 @@ function add_selected_to_menu(name) {
             await api(`/trees/${get_tid()}/remove_selection?${qs}`);
         }
 
-        if (self !== top)  // notify parent window
-            parent.postMessage({
-                tid: get_tid(),
-                selected: false,
-                //node: String(name),
-                name: name,
-            }, "*");
+        notifyParent(name, "unselection");
+
         delete view.selected[name];
         folder.dispose();
         draw_tree();
@@ -196,6 +200,9 @@ function get_selection_class(text, type="results") {
 
 function colorize_selection(name) {
     const selected = view.selected[name];
+
+    if (self !== top)
+        notifyParent(name, "colorChange");
 
     const cresults = get_selection_class(name, "results");
     Array.from(div_tree.getElementsByClassName(cresults)).forEach(e => {

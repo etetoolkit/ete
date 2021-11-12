@@ -154,8 +154,8 @@ class Trees(Resource):
                 name: { 'nresults': len(results), 'nparents': len(parents) }
                 for name, (results, parents) in (tree.selected or {}).items() }
             return { 'selected': selected }
-        elif rule == '/trees/<string:tree_id>/is_selected':
-            return 'true' if is_selected(tree_id) else 'false'
+        elif rule == '/trees/<string:tree_id>/selections':
+            return { 'selections': get_selections(tree_id) }
         elif rule == '/trees/<string:tree_id>/select':
             nresults, nparents = store_selection(tree_id, request.args.copy())
             return {'message': 'ok', 'nresults': nresults, 'nparents': nparents}
@@ -513,14 +513,11 @@ def store_search(tree_id, args):
         raise InvalidUsage(f'evaluating expression: {e}')
 
 
-def is_selected(tree_id):
+def get_selections(tree_id):
     tid, subtree = get_tid(tree_id)
     tree = app.trees[int(tid)]
     node = gdn.get_node(tree.tree, subtree)
-    for results, _ in tree.selected.values():
-        if node in results:
-            return True
-    return False
+    return [ name for name, (results, _) in tree.selected.items() if node in results ]
 
 
 def remove_selection(tid, args):
@@ -1042,13 +1039,13 @@ def add_resources(api):
         '/trees/<string:tree_id>/properties',
         '/trees/<string:tree_id>/nodecount',
         '/trees/<string:tree_id>/ultrametric',
-        '/trees/<string:tree_id>/select',
-        '/trees/<string:tree_id>/unselect',
-        '/trees/<string:tree_id>/is_selected',
-        '/trees/<string:tree_id>/selected',
+        '/trees/<string:tree_id>/select',  # select node
+        '/trees/<string:tree_id>/unselect',  # unselect node
+        '/trees/<string:tree_id>/selections', # selections perfomed on a node
+        '/trees/<string:tree_id>/selected',  # name and nresults, nparents for each selection
         '/trees/<string:tree_id>/remove_selection',
         '/trees/<string:tree_id>/change_selection_name',
-        '/trees/<string:tree_id>/search_to_selection',
+        '/trees/<string:tree_id>/search_to_selection',  # convert search to selection
         '/trees/<string:tree_id>/search',
         '/trees/<string:tree_id>/searches',
         '/trees/<string:tree_id>/remove_search',

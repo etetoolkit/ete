@@ -70,8 +70,8 @@ async function add_node_options(box, name, properties, node_id) {
                "compress", false);
 
     const tid = get_tid() + "," + node_id;
-    if (await api(`/trees/${tid}/is_selected`) === "true")
-        // is_selected arrives as a string from backend
+    const selections = await api(`/trees/${tid}/selections`);
+    if (selections.selections.length)
         add_button("Unselect node", () => unselect_node(node_id),
                    "Remove current node from selection.",
                    "trash-alt", false);
