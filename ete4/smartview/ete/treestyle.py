@@ -6,11 +6,7 @@ from ete4.smartview.ete.layouts.default_layouts import get_layout_leaf_name, get
         get_layout_branch_length, get_layout_branch_support,\
         get_layout_outline, get_layout_align_link
 
-from ete4.smartview import SelectedRectFace
-
-
-FACE_POSITIONS = ["branch-top", "branch-bottom", "branch-right", "aligned"]
-
+from ete4.smartview import SelectedRectFace, FACE_POSITIONS
 
 
 class TreeStyle(object):
@@ -32,7 +28,7 @@ class TreeStyle(object):
                                 'Aligned panel link']
         # Selected face
         self._selected_face = SelectedRectFace
-        self._selected_face_pos = "branch-right"
+        self._selected_face_pos = "branch_right"
         
     @property
     def layout_fn(self):
