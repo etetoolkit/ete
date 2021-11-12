@@ -686,7 +686,7 @@ def sort(tree_id, node_id, key_text, reverse):
 
 
 def add_trees_from_request():
-    "Add trees to the database and return a dict of {name: id}"
+    "Add trees to the app dict return a dict of {name: id}"
     if request.form:
         trees = get_trees_from_form()
     else:
@@ -732,7 +732,7 @@ def get_file_contents(fp):
 
 @init_timer
 def add_tree(data):
-    "Add tree to the database with given data and return its id"
+    "Add tree with given data and return its id"
     tid = int(data['id'])
     name = data['name']
     newick = data.get('newick', None)
@@ -1070,7 +1070,6 @@ def run_smartview(tree=None, tree_name=None, tree_style=None, layouts=[],
 
     # TODO: Create app.recent_trees with paths to recently viewed trees
 
-    # Add tree to database if provided
     if tree: 
         gdn.standardize(tree)
         tree_data = { 
