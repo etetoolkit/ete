@@ -57,6 +57,7 @@ const view = {
 
     // searches
     search: () => search(),
+    search_cache: undefined,  // last search if not successful
     searches: {},  // will contain the searches done
 
     // info
