@@ -38,10 +38,10 @@ def get_layout_sciname():
             name_seq = node.name.split('.',1)[1]
 
             node.add_face(TextFace(sci_name, color = 'black', padding_x=2),
-                column=0, position="branch-right")
+                column=0, position="branch_right")
 
             node.add_face(TextFace(name_seq, color = 'grey', padding_x=2),
-                column=1, position="branch-right")
+                column=1, position="branch_right")
 
         else:
             # Collapsed face
@@ -49,7 +49,7 @@ def get_layout_sciname():
             texts = names if len(names) < 6 else (names[:3] + ['...'] + names[-2:])
             for i, text in enumerate(texts):
                 node.add_face(TextFace(text, padding_x=2),
-                        position="branch-right", column=1, collapsed_only=True)
+                        position="branch_right", column=1, collapsed_only=True)
 
     layout_fn.__name__ = 'Scientific name'
     layout_fn.contains_aligned_face = True
