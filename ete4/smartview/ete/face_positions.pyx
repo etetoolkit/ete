@@ -41,7 +41,7 @@ from collections import namedtuple, OrderedDict
 
 
 
-FACE_POSITIONS = set(["branch_right", "branch_top", "branch_bottom", "aligned"])
+FACE_POSITIONS = ["branch_right", "branch_top", "branch_bottom", "aligned"]
 
 
 _FaceAreas = namedtuple('_FaceAreas', FACE_POSITIONS)
