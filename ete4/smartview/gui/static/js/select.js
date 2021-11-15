@@ -26,13 +26,11 @@ function notifyParent(name, eventType) {
     if (self === top)  // only notify when encapsulated in iframe
         return
 
-    const selected = view.selected[name];
-
     parent.postMessage({ 
         tid: get_tid(),
         eventType: eventType,  // selection, unselection, modification, colorChange
         name: name,
-        color: selected.results.color,
+        color: view.selected[name].results.color,
     }, "*");
 
 }
@@ -66,16 +64,17 @@ async function select_node(node_id, name) {
 async function unselect_node(node_id) {
     const tid = get_tid() + "," + node_id;
 
-    const old_selections = await api(`/trees/${tid}/selections`);
+    const old_selections = await api(`/trees/${tid}/selections`); // just names for specific node
     await api(`/trees/${tid}/unselect`);
-    const selections = await api(`/trees/${tid}/selections`);
+    const selections = await api(`/trees/${tid}/selected`);  // names and nresults/nparents for whole tree
+    const selection_names = [...Object.keys(selections.selected)];
 
     old_selections.selections.forEach(name => {
-        if (!selections.selections.includes(name)) {
+        if (!selection_names.includes(name)) {
             view.selected[name].remove();
             notifyParent(name, "unselection");
         } else {
-            update_selected_folder(name, selected.selected[name]);
+            update_selected_folder(name, selections.selected[name]);
             notifyParent(name, "modification");
         }
     });
@@ -198,10 +197,10 @@ function get_selection_class(text, type="results") {
 }
 
 
-function colorize_selection(name) {
+function colorize_selection(name, notify=true) {
     const selected = view.selected[name];
 
-    if (self !== top)
+    if (notify)
         notifyParent(name, "colorChange");
 
     const cresults = get_selection_class(name, "results");
@@ -219,7 +218,7 @@ function colorize_selection(name) {
 
 
 function colorize_selections() {
-    Object.keys(view.selected).forEach(s => colorize_selection(s));
+    Object.keys(view.selected).forEach(s => colorize_selection(s, false));
 }
 
 

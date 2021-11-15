@@ -135,9 +135,9 @@ class Trees(Resource):
 
         if rule == '/trees':
             return
-            # if app.memory_only:
-                # raise InvalidUsage(f'invalid path {rule} in memory_only mode', 404)
-            # return [get_tree(pid) for pid in dbget0('id', 'trees')]
+            if app.memory_only:
+                raise InvalidUsage(f'invalid path {rule} in memory_only mode', 404)
+            return [{ 'id': i, 'name', v.name } for i, v in app.trees]
         # elif rule == '/trees/<string:tree_id>':
             # if app.memory_only:
                 # raise InvalidUsage(f'invalid path {rule} in memory_only mode', 404)
@@ -150,7 +150,7 @@ class Trees(Resource):
             MAX_MB = 2
             return get_newick(tree_id, MAX_MB)
         elif rule == '/trees/<string:tree_id>/selected':
-            selected = {  
+            selected = {
                 name: { 'nresults': len(results), 'nparents': len(parents) }
                 for name, (results, parents) in (tree.selected or {}).items() }
             return { 'selected': selected }
@@ -170,6 +170,9 @@ class Trees(Resource):
         elif rule == '/trees/<string:tree_id>/change_selection_name':
             change_selection_name(tid, request.args.copy())
             return {'message': 'ok'}
+        elif rule == '/trees/<string:tree_id>/nodes_in_selection':
+            nodes = get_nodes_in_selection(tid, request.args.copy())
+            return { 'nodes': nodes }
         elif rule == '/trees/<string:tree_id>/searches':
             searches = { 
                 text: { 'nresults' : len(results), 'nparents': len(parents) }
@@ -518,6 +521,13 @@ def get_selections(tree_id):
     tree = app.trees[int(tid)]
     node = gdn.get_node(tree.tree, subtree)
     return [ name for name, (results, _) in tree.selected.items() if node in results ]
+
+def get_nodes_in_selection(tid, args):
+    "Remove selection"
+    if 'text' not in args:
+        raise InvalidUsage('missing selection text')
+    name = args.pop('text').strip()
+    selected = app.trees[int(tid)].selected.get(name, [])
 
 
 def remove_selection(tid, args):
