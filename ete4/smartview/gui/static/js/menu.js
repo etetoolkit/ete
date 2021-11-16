@@ -181,11 +181,11 @@ function add_folder_view(menu) {
     folder_zoom.addInput(view.zoom, "x", { label: "x", 
                                            format: v => v.toFixed(1),
                                            min: 1, max: div_tree.offsetWidth })
-        .on("change", update)
+        .on("change", update);
     folder_zoom.addInput(view.zoom, "y", { label: "y", 
-                                           format: v => v.toFixed(1),
-                                           min: 1, max: div_tree.offsetHeight })
-        .on("change", update)
+                                           format: v => v.toFixed(3),
+                                           min: 10**(-6), max: div_tree.offsetHeight, step: 10**(-3) })
+        .on("change", update);
 
     const folder_aligned = folder_view.addFolder({ title: "Aligned panel",
                                                    expanded: false });

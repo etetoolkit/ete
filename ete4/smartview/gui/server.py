@@ -115,8 +115,6 @@ class Layouts(Resource):
         if rule == '/layouts/update':
             update_app_available_layouts()
 
-        
-
 
 class Trees(Resource):
     def get(self, tree_id=None):
@@ -134,10 +132,9 @@ class Trees(Resource):
             tree.timer = time()
 
         if rule == '/trees':
-            return
             if app.memory_only:
                 raise InvalidUsage(f'invalid path {rule} in memory_only mode', 404)
-            return [{ 'id': i, 'name', v.name } for i, v in app.trees]
+            return [{ 'id': i, 'name': v.name } for i, v in app.trees.items()]
         # elif rule == '/trees/<string:tree_id>':
             # if app.memory_only:
                 # raise InvalidUsage(f'invalid path {rule} in memory_only mode', 404)

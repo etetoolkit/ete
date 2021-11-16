@@ -13,7 +13,7 @@ export { update, draw_tree, draw_tree_scale, draw, get_class_name, cartesian_shi
 
 // Update the view of all elements (gui, tree, minimap).
 async function update() {
-    draw_tree();
+    await draw_tree();
 
     if (view.minimap.show)
         update_minimap_visible_rect();
@@ -409,6 +409,15 @@ function create_item(g, item, tl, zoom) {
         style_polygon(rhombus, style);
 
         return rhombus;
+    }
+    else if (item[0] === "polygon") {
+        const [ , points, type, style] = item;
+
+        const polygon = create_polygon(points, tl, zx, zy, "polygon " + type);
+
+        style_polygon(polygon, style);
+
+        return polygon;
     }
     else if (item[0] === "array") {
         const [ , box, array] = item;

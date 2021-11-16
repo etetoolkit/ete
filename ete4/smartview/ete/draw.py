@@ -555,76 +555,6 @@ def dx_fitting_texts(texts, dy, zoom):
     max_len = max(len(t) for t in texts)  # number of chars of the longest
     return max_len * dx_char / zx  # in tree units
 
-# Drawing generators.
-
-def draw_rect_leaf_name(drawer, node, point):
-    "Yield name to the right of the leaf"
-    if not node.is_leaf() or not node.name:
-        return
-
-    x, y = point
-    dx, dy = drawer.content_size(node)
-
-    x_text = (x + dx) if drawer.panel == 0 else drawer.xmin
-    dx_fit = dx_fitting_texts([node.name], dy, drawer.zoom)
-    box = Box(x_text, y, dx_fit, dy)
-
-    yield draw_text(box, node.name, 'name',
-            style={ 'fill': node.img_style.get('fgcolor') })
-
-
-def draw_circ_leaf_name(drawer, node, point):
-    "Yield name at the end of the leaf"
-    if not node.is_leaf() or not node.name:
-        return
-
-    r, a = point
-    dr, da = drawer.content_size(node)
-
-    if is_good_angle_interval(a, a + da) and r + dr > 0:
-        r_text = (r + dr) if drawer.panel == 0 else drawer.xmin
-        dr_fit = dx_fitting_texts([node.name], (r + dr) * da, drawer.zoom)
-        box = Box(r_text, a, dr_fit, da)
-        yield draw_text(box, node.name, 'name',
-                style={ 'fill': node.img_style.get('fgcolor') })
-
-
-def draw_rect_collapsed_names(drawer):
-    "Yield names of collapsed nodes after their outline"
-    x, y, dx_min, dx_max, dy = drawer.outline
-
-    names = summary(drawer.collapsed)
-    if all(name == '' for name in names):
-        return
-
-    texts = names if len(names) < 6 else (names[:3] + ['...'] + names[-2:])
-
-    x_text = (x + dx_max) if drawer.panel == 0 else drawer.xmin
-    dx_fit = dx_fitting_texts(texts, dy, drawer.zoom)
-    box = Box(x_text, y, dx_fit, dy)
-
-    yield from draw_texts(box, (0, 0.5), texts, 'name')
-
-
-def draw_circ_collapsed_names(drawer):
-    "Yield names of collapsed nodes after their outline"
-    r, a, dr_min, dr_max, da = drawer.outline
-    if not (-pi <= a <= pi and -pi <= a + da <= pi):
-        return
-
-    names = summary(drawer.collapsed)
-    if all(name == '' for name in names):
-        return
-
-    texts = names if len(names) < 6 else (names[:3] + ['...'] + names[-2:])
-
-    r_text = (r + dr_max) if drawer.panel == 0 else drawer.xmin
-    dr_fit = dx_fitting_texts(texts, (r + dr_max) * da, drawer.zoom)
-    box = Box(r_text, a, dr_fit, da)
-
-    yield from draw_texts(box, (0, 0.5), texts, 'name')
-
-
 # The actual drawers.
 
 class DrawerRectFaces(DrawerRect):
@@ -950,6 +880,25 @@ def draw_rhombus(box, rhombus_type='', style=None):
     return ['rhombus', rhombus, rhombus_type, style or {}]
 
 
+def draw_arrow(box, tip, orientation='right', arrow_type='', style=None):
+    """ Create arrow provided a bounding box """
+    x, y, dx, dy = box
+
+    if orientation == 'right':
+        arrow = ((x, y),
+                 (x + dx - tip, y),
+                 (x + dx, y + dy / 2),
+                 (x + dx - tip, y + dy),
+                 (x, y + dy))
+    elif orientation == 'left':
+        arrow = ((x, y + dy / 2),
+                 (x + tip, y),
+                 (x + dx, y),
+                 (x + dx, y + dy),
+                 (x + tip, y + dy))
+    return ['polygon', arrow, arrow_type, style or {}]
+
+
 def draw_array(box, a):
     return ['array', box, a]
 
@@ -988,6 +937,12 @@ def get_rect(element, zoom=(0, 0)):
         dx = points[2][0] - x
         dy = points[2][0] - y
         return  Box(x, y, dx, dy)
+    elif eid == 'polygon':
+        min_x = min(p[0] for p in element[1])
+        max_x = max(p[0] for p in element[1])
+        min_y = min(p[1] for p in element[1])
+        max_y = max(p[1] for p in element[1])
+        return Box(min_x, min_y, max_x - min_x, max_y - min_y)
     elif eid in ['line', 'arc']:  # not a great approximation for an arc...
         (x1, y1), (x2, y2) = element[1], element[2]
         return Box(min(x1, x2), min(y1, y2), abs(x2 - x1), abs(y2 - y1))
@@ -1024,6 +979,12 @@ def get_asec(element, zoom=(0, 0)):
         dr = points[2][0] - r
         da = points[2][0] - a
         return Box(r, a, dr , da)
+    elif eid == 'polygon':
+        min_x = min(p[0] for p in element[1])
+        max_x = max(p[0] for p in element[1])
+        min_y = min(p[1] for p in element[1])
+        max_y = max(p[1] for p in element[1])
+        return Box(min_x, min_y, max_x - min_x, max_y - min_y)
     elif eid in ['line', 'arc']:
         (x1, y1), (x2, y2) = element[1], element[2]
         rect = Box(min(x1, x2), min(y1, y2), abs(x2 - x1), abs(y2 - y1))
