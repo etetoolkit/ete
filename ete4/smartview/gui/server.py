@@ -167,9 +167,8 @@ class Trees(Resource):
         elif rule == '/trees/<string:tree_id>/change_selection_name':
             change_selection_name(tid, request.args.copy())
             return {'message': 'ok'}
-        elif rule == '/trees/<string:tree_id>/nodes_in_selection':
-            nodes = get_nodes_in_selection(tid, request.args.copy())
-            return { 'nodes': nodes }
+        elif rule == '/trees/<string:tree_id>/selection/info':
+            return get_selection_info(tid, request.args.copy())
         elif rule == '/trees/<string:tree_id>/searches':
             searches = { 
                 text: { 'nresults' : len(results), 'nparents': len(parents) }
@@ -519,12 +518,38 @@ def get_selections(tree_id):
     node = gdn.get_node(tree.tree, subtree)
     return [ name for name, (results, _) in tree.selected.items() if node in results ]
 
-def get_nodes_in_selection(tid, args):
-    "Remove selection"
+
+def get_node_id(tree, node, node_id=[]):
+    parent = node.up
+    if not parent:
+        node_id.reverse()
+        return node_id
+    node_id.append(parent.children.index(node))
+    return get_node_id(tree, parent, node_id)
+
+
+def get_selection_info(tid, args):
+    "Get selection info from their nodes"
     if 'text' not in args:
         raise InvalidUsage('missing selection text')
+    tree = app.trees[int(tid)]
     name = args.pop('text').strip()
-    selected = app.trees[int(tid)].selected.get(name, [])
+    nodes = tree.selected.get(name, [[]])[0]
+    node_ids = [ ",".join(map(str, get_node_id(tree.tree, node))) for node in nodes ]
+
+    props = args.pop('props', '').strip().split(',')
+    if len(props) == 1 and props[0] == '':
+        return node_ids
+
+    node_props = {}
+    for idx, node in enumerate(nodes):
+        node_id = node_ids[idx]
+        if props[0] == "*":
+            node_props[node_id] = node.props
+        else:
+            node_props[node_id] = { p: node.props.get(p) for p in props }
+
+    return node_props
 
 
 def remove_selection(tid, args):
@@ -1050,6 +1075,7 @@ def add_resources(api):
         '/trees/<string:tree_id>/unselect',  # unselect node
         '/trees/<string:tree_id>/selections', # selections perfomed on a node
         '/trees/<string:tree_id>/selected',  # name and nresults, nparents for each selection
+        '/trees/<string:tree_id>/selection/info',  # get selection info: list of node_ids or dict with their desired properties
         '/trees/<string:tree_id>/remove_selection',
         '/trees/<string:tree_id>/change_selection_name',
         '/trees/<string:tree_id>/search_to_selection',  # convert search to selection
