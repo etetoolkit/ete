@@ -90,8 +90,10 @@ function store_selection(name, res) {
     // Add to selected dict
     const nselected = Object.keys(view.selected).length;
     const selected = view.selected[name];
-    if (selected)
+    if (selected) {
         update_selected_folder(name, res)
+        notifyParent(name, "modification");
+    }
     else {
         view.selected[name] = {
             results: { n: res.nresults,
@@ -101,9 +103,9 @@ function store_selection(name, res) {
                        color: "#000",
                        width: 2.5 },};
         add_selected_to_menu(name);
+        notifyParent(name, "selection");
     }
 
-    notifyParent(name, "selection");
 }
 
 
