@@ -970,7 +970,7 @@ def initialize(tree=None, tree_style=None, layouts=[], memory_only=False):
     # Dict containing AppTree dataclasses with tree info
     app.trees = defaultdict(lambda: AppTree(
         name=get_random_string(10),
-        style=tree_style,
+        style=deepcopy(tree_style),
         layouts = app.default_layouts,
         timer = time(),
         searches = {},
