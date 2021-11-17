@@ -175,7 +175,7 @@ def read_nodes(nodes_text, NewNode, int pos=0):
         raise NewickError('nodes text starts with no "("')
 
     nodes = []
-    while nodes_text[pos] != ')':
+    while pos < len(nodes_text) and nodes_text[pos] != ')':
         pos += 1
         if pos >= len(nodes_text):
             raise NewickError('nodes text ends missing a matching ")"')
@@ -216,6 +216,15 @@ def fill_node_content(node, newick, children=None):
     return node
 
 
+def find_bracket(text, pos):
+    pos_list = text.find('[', pos)
+    pos_end = text.find(']', pos)
+    while pos_list < pos_end:
+        pos_list = text.find('[', pos_end+1)
+        pos_end = text.find(']', pos_end+1)
+    return pos_end
+
+
 def skip_spaces_and_comments(text, int pos):
     "Return position in text after pos and after all whitespaces and comments"
     while pos < len(text) and text[pos] in ' \t\r\n[':
@@ -223,7 +232,7 @@ def skip_spaces_and_comments(text, int pos):
             if text[pos+1] == '&':  # special annotation
                 return pos
             else:
-                pos = text.find(']', pos+1)  # skip comment
+                pos = find_bracket(text, pos+1)  # skip comment
         pos += 1  # skip whitespace and comment endings
     return pos
 
@@ -287,7 +296,7 @@ def get_content_fields(content):
         dist = -1
 
     if pos < len(content) and content[pos] == '[':
-        pos_end = content.find(']', pos+1)
+        pos_end = find_bracket(content, pos)
         properties = get_properties(content[pos+1:pos_end])
     elif pos >= len(content):
         properties = {}
@@ -312,7 +321,7 @@ def get_properties(text):
 def content_repr(node, format=0, properties=[], quoted_names=False):
     "Return content of a node as represented in specified newick format"
     # Empty list includes all properties
-    props = list(node.props.keys())\
+    props = [p for p in node.props.keys() if not p.startswith("_")]\
             if properties == [] else list(properties or [])
 
     if node.is_leaf():
