@@ -154,8 +154,6 @@ async function main() {
 
     reset_node_count();
 
-    console.log(view.zoom)
-
     init_menus(Object.keys(trees));
 
     await reset_layouts();
@@ -167,8 +165,6 @@ async function main() {
 
     draw_minimap();
     show_minimap("visible");
-
-    console.log(view.zoom)
 
     await update();
 

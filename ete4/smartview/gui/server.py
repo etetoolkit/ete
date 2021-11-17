@@ -535,19 +535,27 @@ def get_selection_info(tid, args):
     tree = app.trees[int(tid)]
     name = args.pop('text').strip()
     nodes = tree.selected.get(name, [[]])[0]
-    node_ids = [ ",".join(map(str, get_node_id(tree.tree, node))) for node in nodes ]
 
     props = args.pop('props', '').strip().split(',')
-    if len(props) == 1 and props[0] == '':
+    no_props = len(props) == 1 and props[0] == ''
+
+    if 'node_id' in props or no_props or '*' in props:
+        node_ids = [ ",".join(map(str, get_node_id(tree.tree, node))) 
+                for node in nodes ]
+    if no_props:
         return node_ids
 
-    node_props = {}
+    node_props = []
     for idx, node in enumerate(nodes):
-        node_id = node_ids[idx]
         if props[0] == "*":
-            node_props[node_id] = node.props
+            node_id = node_ids[idx]
+            node_props.append({ **node.props, 'node_id': node_id })
         else:
-            node_props[node_id] = { p: node.props.get(p) for p in props }
+            node_p = { p: node.props.get(p) for p in props }
+            if 'node_id' in props:
+                node_p['node_id'] = node_ids[idx]
+            node_props.append(node_p)
+
 
     return node_props
 
@@ -1091,7 +1099,7 @@ def add_resources(api):
 
 
 def run_smartview(tree=None, tree_name=None, tree_style=None, layouts=[],
-        memory_only=False, port=5000, run=True):
+        memory_only=True, port=5000, run=True):
     # Set tree_name to None if no tree was provided
     # Generate tree_name if none was provided
     tree_name = tree_name or get_random_string(10) if tree else None
