@@ -151,8 +151,9 @@ function draw_tree_scale() {
     g.appendChild(create_vt_line("right"));
 
     // Text
-    const text = String((view.tree_scale.length / view.zoom.x).toFixed(3));
-    g.appendChild(create_text(text));
+    const value = view.tree_scale.length / view.zoom.x;
+    const rounded = value < 0.001 ? value.toExponential(1) : value.toFixed(3);
+    g.appendChild(create_text(String(rounded)));
 
 
     replace_child(tree_scale.children[0], g);
