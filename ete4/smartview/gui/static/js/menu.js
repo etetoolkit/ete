@@ -139,6 +139,7 @@ function update_folder_layouts (){
     });
 }
 
+
 function add_folder_layouts(menu) {
     menus.layouts = menu.addFolder({ title: "Layouts" });
     update_folder_layouts();
@@ -176,15 +177,20 @@ function add_folder_view(menu) {
     folder_tl.addMonitor(view.tl, "x", { format: v => v.toFixed(3) });
     folder_tl.addMonitor(view.tl, "y", { format: v => v.toFixed(3) });
 
-    const folder_zoom = folder_view.addFolder({ title: "Zoom" });
 
-    folder_zoom.addInput(view.zoom, "x", { label: "x", 
+    folder_view.addInput(view.zoom, "x", { label: "Adjust zoom x", 
                                            format: v => v.toFixed(1),
-                                           min: 1, max: div_tree.offsetWidth })
-        .on("change", update);
-    folder_zoom.addInput(view.zoom, "y", { label: "y", 
-                                           format: v => v.toFixed(3),
-                                           min: 10**(-6), max: div_tree.offsetHeight, step: 10**(-3) })
+                                           min: 1, max: div_tree.offsetWidth / view.tree_size.width })
+
+    //const folder_zoom = folder_view.addFolder({ title: "Zoom" });
+
+    //folder_zoom.addInput(view.zoom, "x", { label: "x", 
+                                           //format: v => v.toFixed(1),
+                                           //min: 1, max: div_tree.offsetWidth })
+        //.on("change", update);
+    //folder_zoom.addInput(view.zoom, "y", { label: "y", 
+                                           //format: v => v.toFixed(3),
+                                           //min: 10**(-10), max: div_tree.offsetHeight, step: 10**(-10) })
         .on("change", update);
 
     const folder_aligned = folder_view.addFolder({ title: "Aligned panel",

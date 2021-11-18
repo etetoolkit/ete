@@ -33,7 +33,6 @@ function notifyParent(name, eventType) {
         name: name,
         color: view.selected[name].results.color,
     }, "*");
-
 }
 
 
@@ -159,13 +158,13 @@ function add_selected_to_menu(name) {
 
     selected.remove = async function(purge=true) {
         if (purge) {
-            const qs = `text=${encodeURIComponent(name)}`;
+            const qs = `text=${encodeURIComponent(folder.title)}`;
             await api(`/trees/${get_tid()}/remove_selection?${qs}`);
         }
 
-        notifyParent(name, "unselection");
+        notifyParent(folder.title, "unselection");
 
-        delete view.selected[name];
+        delete view.selected[folder.title];
         folder.dispose();
         draw_tree();
     }
@@ -231,6 +230,7 @@ async function get_selections() {
     Object.entries(selected.selected)
         .forEach(([name, res]) => store_selection(name, res));
 }
+
 
 function remove_selections() {
     Object.keys(view.selected).forEach(s => view.selected[s].remove(false));
