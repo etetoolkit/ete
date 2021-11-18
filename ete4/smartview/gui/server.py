@@ -1099,7 +1099,7 @@ def add_resources(api):
 
 
 def run_smartview(tree=None, tree_name=None, tree_style=None, layouts=[],
-        memory_only=True, port=5000, run=True):
+        memory_only=False, port=5000, run=True):
     # Set tree_name to None if no tree was provided
     # Generate tree_name if none was provided
     tree_name = tree_name or get_random_string(10) if tree else None
