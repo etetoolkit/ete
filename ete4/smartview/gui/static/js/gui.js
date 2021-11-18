@@ -166,7 +166,7 @@ async function main() {
     draw_minimap();
     show_minimap("visible");
 
-    update();
+    await update();
 
     const sample_trees = ["ncbi", "GTDB_bact_r95"];  // hardcoded for the moment
     view.allow_modifications = !sample_trees.includes(view.tree);
@@ -287,7 +287,7 @@ async function set_query_string_values() {
 
     for (const [param, value] of params) {
         if (param === "tree")
-            view.tree = value;
+            view.tree = trees[value] || value;
         else if (param === "subtree")
             view.subtree = value;
         else if (param === "x")

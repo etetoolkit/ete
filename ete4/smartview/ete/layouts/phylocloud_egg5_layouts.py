@@ -1,9 +1,6 @@
 from ete4.treeview.main import NodeStyle
-from ete4 import NCBITaxa
-from ete4.smartview.ete.faces import RectFace, CircleFace, SeqMotifFace, TextFace
-from ete4.treeview import random_color
-from collections import Counter, OrderedDict, defaultdict
-import json
+from ete4.smartview.ete.faces import RectFace, TextFace
+from collections import OrderedDict
 
 __all__ = [ "get_layout_sciname", "get_layout_gnames", "get_layout_ogs_egg5",
         "get_layout_evoltype", "get_layout_lca_rects" ]

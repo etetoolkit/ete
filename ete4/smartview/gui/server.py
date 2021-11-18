@@ -115,8 +115,6 @@ class Layouts(Resource):
         if rule == '/layouts/update':
             update_app_available_layouts()
 
-        
-
 
 class Trees(Resource):
     def get(self, tree_id=None):
@@ -134,10 +132,9 @@ class Trees(Resource):
             tree.timer = time()
 
         if rule == '/trees':
-            return
-            # if app.memory_only:
-                # raise InvalidUsage(f'invalid path {rule} in memory_only mode', 404)
-            # return [get_tree(pid) for pid in dbget0('id', 'trees')]
+            if app.memory_only:
+                raise InvalidUsage(f'invalid path {rule} in memory_only mode', 404)
+            return [{ 'id': i, 'name': v.name } for i, v in app.trees.items()]
         # elif rule == '/trees/<string:tree_id>':
             # if app.memory_only:
                 # raise InvalidUsage(f'invalid path {rule} in memory_only mode', 404)
@@ -150,12 +147,12 @@ class Trees(Resource):
             MAX_MB = 2
             return get_newick(tree_id, MAX_MB)
         elif rule == '/trees/<string:tree_id>/selected':
-            selected = {  
+            selected = {
                 name: { 'nresults': len(results), 'nparents': len(parents) }
                 for name, (results, parents) in (tree.selected or {}).items() }
             return { 'selected': selected }
-        elif rule == '/trees/<string:tree_id>/is_selected':
-            return 'true' if is_selected(tree_id) else 'false'
+        elif rule == '/trees/<string:tree_id>/selections':
+            return { 'selections': get_selections(tree_id) }
         elif rule == '/trees/<string:tree_id>/select':
             nresults, nparents = store_selection(tree_id, request.args.copy())
             return {'message': 'ok', 'nresults': nresults, 'nparents': nparents}
@@ -170,6 +167,8 @@ class Trees(Resource):
         elif rule == '/trees/<string:tree_id>/change_selection_name':
             change_selection_name(tid, request.args.copy())
             return {'message': 'ok'}
+        elif rule == '/trees/<string:tree_id>/selection/info':
+            return get_selection_info(tid, request.args.copy())
         elif rule == '/trees/<string:tree_id>/searches':
             searches = { 
                 text: { 'nresults' : len(results), 'nparents': len(parents) }
@@ -513,14 +512,52 @@ def store_search(tree_id, args):
         raise InvalidUsage(f'evaluating expression: {e}')
 
 
-def is_selected(tree_id):
+def get_selections(tree_id):
     tid, subtree = get_tid(tree_id)
     tree = app.trees[int(tid)]
     node = gdn.get_node(tree.tree, subtree)
-    for results, _ in tree.selected.values():
-        if node in results:
-            return True
-    return False
+    return [ name for name, (results, _) in tree.selected.items() if node in results ]
+
+
+def get_node_id(tree, node, node_id=[]):
+    parent = node.up
+    if not parent:
+        node_id.reverse()
+        return node_id
+    node_id.append(parent.children.index(node))
+    return get_node_id(tree, parent, node_id)
+
+
+def get_selection_info(tid, args):
+    "Get selection info from their nodes"
+    if 'text' not in args:
+        raise InvalidUsage('missing selection text')
+    tree = app.trees[int(tid)]
+    name = args.pop('text').strip()
+    nodes = tree.selected.get(name, [[]])[0]
+
+    props = args.pop('props', '').strip().split(',')
+    no_props = len(props) == 1 and props[0] == ''
+
+    if 'node_id' in props or no_props or '*' in props:
+        node_ids = [ ",".join(map(str, get_node_id(tree.tree, node))) 
+                for node in nodes ]
+    if no_props:
+        return node_ids
+
+    node_props = []
+    for idx, node in enumerate(nodes):
+        if props[0] == "*":
+            node_id = node_ids[idx]
+            node_props.append({ **node.props, 'node_id': node_id })
+        else:
+            node_p = { p: node.props.get(p) for p in props }
+            if 'node_id' in props:
+                node_p['node_id'] = node_ids[idx]
+            node_props.append(node_p)
+
+
+    return node_props
 
 
 def remove_selection(tid, args):
@@ -689,7 +726,7 @@ def sort(tree_id, node_id, key_text, reverse):
 
 
 def add_trees_from_request():
-    "Add trees to the database and return a dict of {name: id}"
+    "Add trees to the app dict return a dict of {name: id}"
     if request.form:
         trees = get_trees_from_form()
     else:
@@ -735,7 +772,7 @@ def get_file_contents(fp):
 
 @init_timer
 def add_tree(data):
-    "Add tree to the database with given data and return its id"
+    "Add tree with given data and return its id"
     tid = int(data['id'])
     name = data['name']
     newick = data.get('newick', None)
@@ -966,7 +1003,7 @@ def initialize(tree=None, tree_style=None, layouts=[], memory_only=False):
     # Dict containing AppTree dataclasses with tree info
     app.trees = defaultdict(lambda: AppTree(
         name=get_random_string(10),
-        style=tree_style,
+        style=deepcopy(tree_style),
         layouts = app.default_layouts,
         timer = time(),
         searches = {},
@@ -1042,13 +1079,14 @@ def add_resources(api):
         '/trees/<string:tree_id>/properties',
         '/trees/<string:tree_id>/nodecount',
         '/trees/<string:tree_id>/ultrametric',
-        '/trees/<string:tree_id>/select',
-        '/trees/<string:tree_id>/unselect',
-        '/trees/<string:tree_id>/is_selected',
-        '/trees/<string:tree_id>/selected',
+        '/trees/<string:tree_id>/select',  # select node
+        '/trees/<string:tree_id>/unselect',  # unselect node
+        '/trees/<string:tree_id>/selections', # selections perfomed on a node
+        '/trees/<string:tree_id>/selected',  # name and nresults, nparents for each selection
+        '/trees/<string:tree_id>/selection/info',  # get selection info: list of node_ids or dict with their desired properties
         '/trees/<string:tree_id>/remove_selection',
         '/trees/<string:tree_id>/change_selection_name',
-        '/trees/<string:tree_id>/search_to_selection',
+        '/trees/<string:tree_id>/search_to_selection',  # convert search to selection
         '/trees/<string:tree_id>/search',
         '/trees/<string:tree_id>/searches',
         '/trees/<string:tree_id>/remove_search',
@@ -1073,7 +1111,6 @@ def run_smartview(tree=None, tree_name=None, tree_style=None, layouts=[],
 
     # TODO: Create app.recent_trees with paths to recently viewed trees
 
-    # Add tree to database if provided
     if tree: 
         gdn.standardize(tree)
         tree_data = { 

@@ -3,11 +3,12 @@ from math import pi
 
 from ete4.smartview.utils import InvalidUsage, get_random_string
 from ete4.smartview.ete.draw import Box, SBox,\
+                                    clip_angles, cartesian,\
                                     draw_text, draw_rect,\
                                     draw_circle, draw_ellipse,\
                                     draw_line, draw_outline,\
                                     draw_triangle, draw_rhombus,\
-                                    clip_angles, cartesian
+                                    draw_arrow
 
 
 CHAR_HEIGHT = 1.4 # char's height to width ratio
@@ -518,6 +519,173 @@ class RectFace(Face):
                     rotation=rotation,
                     anchor=('#' + str(rect_id)) if circ_drawer else None,
                     style=text_style)
+
+
+class ArrowFace(Face):
+    def __init__(self, width, height, orientation='right',
+            color='gray',
+            text=None, fgcolor='black', # text color
+            min_fsize=6, max_fsize=15,
+            ftype='sans-serif',
+            name="",
+            padding_x=0, padding_y=0):
+
+        Face.__init__(self, name=name, padding_x=padding_x, padding_y=padding_y)
+
+        self.width = width
+        self.height = height
+        self.orientation = orientation
+        self.color = color
+        # Text related
+        self.text = str(text) if text is not None else None
+        self.rotate_text = False
+        self.fgcolor = fgcolor
+        self.ftype = ftype
+        self.min_fsize = min_fsize
+        self.max_fsize = max_fsize
+
+    def __name__(self):
+        return "ArrowFace"
+
+    def compute_bounding_box(self, 
+            drawer,
+            point, size,
+            dx_to_closest_child,
+            bdx, bdy,
+            bdy0, bdy1,
+            pos, row,
+            n_row, n_col,
+            dx_before, dy_before):
+
+        if drawer.TYPE == 'circ':
+            pos = swap_pos(pos, point[1])
+
+        box = super().compute_bounding_box( 
+            drawer,
+            point, size,
+            dx_to_closest_child,
+            bdx, bdy,
+            bdy0, bdy1,
+            pos, row,
+            n_row, n_col,
+            dx_before, dy_before)
+
+        x, y, dx, dy = box
+        zx, zy = drawer.zoom
+        r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
+
+        def get_dimensions(max_width, max_height):
+            if not (max_width or max_height):
+                return 0, 0
+            if (type(max_width) in (int, float) and max_width <= 0) or\
+               (type(max_height) in (int, float) and max_height <= 0):
+                return 0, 0
+
+            width = self.width / zx if self.width is not None else None
+            height = self.height / zy if self.height is not None else None
+
+            if width is None:
+                return max_width or 0, min(height or float('inf'), max_height)
+            if height is None:
+                return min(width, max_width or float('inf')), max_height
+
+            hw_ratio = height / width
+
+            if max_width and width > max_width:
+                width = max_width
+                height = width * hw_ratio
+            if max_height and height > max_height:
+                height = max_height
+                width = height / hw_ratio
+
+            height /= r  # in circular drawer
+            return width, height
+
+        max_dy = dy * r  # take into account circular mode
+
+        if pos == 'branch_top':
+            width, height = get_dimensions(dx, max_dy)
+            box = (x, y + dy - height, width, height) # container bottom
+
+        elif pos == 'branch_bottom':
+            width, height = get_dimensions(dx, max_dy)
+            box = (x, y, width, height) # container top
+
+        elif pos == 'branch_right':
+            width, height = get_dimensions(dx, max_dy)
+            box = (x, y + (dy - height) / 2, width, height)
+
+        elif pos == 'aligned':
+            width = (self.width - 2 * self.padding_x) / zx
+            height = min(dy, (self.height - 2 * self.padding_y) / zy)
+            box = (x, y + (dy - height) / 2, width, height)
+
+        self._box = Box(*box)
+        return self._box
+
+    @property
+    def orientation(self):
+        return self._orientation
+    @orientation.setter
+    def orientation(self, value):
+        if value not in ('right', 'left'):
+            raise InvalidUsage('Wrong ArrowFace orientation {value}. Set value to "right" or "left"')
+        else:
+            self._orientation = value
+
+    def draw(self, drawer):
+        self._check_own_variables()
+
+        circ_drawer = drawer.TYPE == 'circ'
+        style = {'fill': self.color, 'opacity': 0.7}
+        if self.text and circ_drawer:
+            rect_id = get_random_string(10)
+            style['id'] = rect_id
+
+        x, y, dx, dy = self._box
+        zx, zy = drawer.zoom
+
+        tip = min(15, dx * zx * 0.9) / zx
+        yield draw_arrow(self._box, 
+                tip, self.orientation,
+                self.name,
+                style=style)
+
+        if self.text:
+            r = (x or 1e-10) if circ_drawer else 1
+            if self.rotate_text:
+                rotation = 90
+                self.compute_fsize(dy * zy / (len(self.text) * zx) * r,
+                                   dx * zx / zy, drawer)
+
+                text_box = Box(x + (dx - self._fsize / (2 * zx)) / 2,
+                        y + dy / 2,
+                        dx, dy)
+            else:
+                rotation = 0
+                self.compute_fsize(dx, dy, drawer)
+                text_box = Box(x + dx / 2,
+                        y + (dy - self._fsize / (zy * r)) / 2,
+                        dx, dy)
+            text_style = {
+                'max_fsize': self._fsize,
+                'text_anchor': 'middle',
+                'ftype': f'{self.ftype}, sans-serif', # default sans-serif
+                }
+
+            if circ_drawer:
+                offset = dx * zx + dy * zy * r / 2
+                # Turn text upside down on bottom
+                if y + dy / 2 > 0:
+                    offset += dx * zx + dy * zy * r
+                text_style['offset'] = offset
+
+            yield draw_text(text_box,
+                    self.text,
+                    rotation=rotation,
+                    anchor=('#' + str(rect_id)) if circ_drawer else None,
+                    style=text_style)
+
 
 
 # Selected faces
