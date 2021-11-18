@@ -97,7 +97,7 @@ class NCBITaxa(object):
     Provides a local transparent connector to the NCBI taxonomy database.
     """
 
-    def __init__(self, dbfile=None, taxdump_file=None):
+    def __init__(self, dbfile=None, taxdump_file=None, update=True):
 
         if not dbfile:
             self.dbfile = DEFAULT_TAXADB
@@ -109,7 +109,8 @@ class NCBITaxa(object):
 
         if dbfile != DEFAULT_TAXADB and not os.path.exists(self.dbfile):
             print('NCBI database not present yet (first time used?)', file=sys.stderr)
-            self.update_taxonomy_database(taxdump_file)
+            if update:
+                self.update_taxonomy_database(taxdump_file)
 
         if not os.path.exists(self.dbfile):
             raise ValueError("Cannot open taxonomy database: %s" % self.dbfile)
