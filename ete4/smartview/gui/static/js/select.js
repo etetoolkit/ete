@@ -3,6 +3,7 @@
 import { view, menus, get_tid } from "./gui.js";
 import { draw_tree } from "./draw.js";
 import { api } from "./api.js";
+import { colors } from "./colors.js"
 
 export { 
     select_node, unselect_node, store_selection,
@@ -84,7 +85,7 @@ async function unselect_node(node_id) {
 
 // Store selection with info from backend (number of results and parents)
 // Notify parent window if encapsulated in iframe
-const colors = ["#FF0", "#F0F", "#0FF", "#F00", "#0F0", "#00F"].reverse();
+//const colors = ["#FF0", "#F0F", "#0FF", "#F00", "#0F0", "#00F"].reverse();
 function store_selection(name, res) {
 
     // Add to selected dict
