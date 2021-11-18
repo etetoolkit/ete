@@ -26,20 +26,41 @@ database (~300MB) and will store a parsed version of it in your home directory:
 local database and will skip this step.
 
 ::
+
    from ete3 import NCBITaxa
    ncbi = NCBITaxa()
 
-Upgrading the local database
-------------------------------
-
-Use the method :NCBITaxa:`update_taxonomy_database` to download and parse the
-latest database from the NCBI ftp site. Your current local database will be
-overwritten.
+Further the class provides the option to set a specific path for the data base
+location,
 
 ::
 
    from ete3 import NCBITaxa
-   ncbi = NCBITaxa()
+   ncbi = NCBITaxa(dbfile="/path/to/.etetoolkit/taxa.sqlite")
+
+
+and an option to specify a local taxdump file. If you wish to make your script
+reproducible. 
+
+::
+
+   from ete3 import NCBITaxa
+   ncbi = NCBITaxa(taxdump_file="/path/to/.etetoolkit/taxa.sqlite")
+
+
+Upgrading the local database
+------------------------------
+
+Every time :class:`NCBITaxa` is initialized the data base is updated if needed.
+If the user wants to manage the update by hand :class:`NCBITaxa` can be
+initialized without updating by setting the appropriate option.  Use the method
+:NCBITaxa:`update_taxonomy_database` to download and parse the latest database
+from the NCBI ftp site. Your current local database will be overwritten.
+
+::
+
+   from ete3 import NCBITaxa
+   ncbi = NCBITaxa(update=False)
    ncbi.update_taxonomy_database()
 
 

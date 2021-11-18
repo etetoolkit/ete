@@ -109,8 +109,7 @@ class NCBITaxa(object):
 
         if dbfile != DEFAULT_TAXADB and not os.path.exists(self.dbfile):
             print('NCBI database not present yet (first time used?)', file=sys.stderr)
-            if update:
-                self.update_taxonomy_database(taxdump_file)
+            self.update_taxonomy_database(taxdump_file)
 
         if not os.path.exists(self.dbfile):
             raise ValueError("Cannot open taxonomy database: %s" % self.dbfile)
@@ -118,7 +117,7 @@ class NCBITaxa(object):
         self.db = None
         self._connect()
 
-        if not is_taxadb_up_to_date(self.dbfile):
+        if not is_taxadb_up_to_date(self.dbfile) and update:
             print('NCBI database format is outdated. Upgrading', file=sys.stderr)
             self.update_taxonomy_database(taxdump_file)
 
