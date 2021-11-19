@@ -112,6 +112,14 @@ class Drawer:
             self.tree_style.aligned_grid_dxs[-1] = max_dx
             yield from self.nodeboxes[::-1]  # (so they overlap nicely)
 
+        # Draw aligned panel headers
+        if self.panel == 2:
+            if tree_style.aligned_panel_headers.top:
+                pass
+
+            if tree_style.aligned_panel_headers.bottom:
+                pass
+
     def on_first_visit(self, point, it, graphics):
         "Update list of graphics to draw and return new position"
         box_node = make_box(point, self.node_size(it.node))
@@ -652,7 +660,7 @@ class DrawerRectFaces(DrawerRect):
                 # Only run function to compute aligned grid
                 if self.tree_style.aligned_grid: 
                     deque(draw_faces_at_pos(node, 'aligned'))
-            else:
+            elif self.panel == 1:
                 yield from draw_faces_at_pos(node, 'aligned')
         else:
             for pos in FACE_POSITIONS:
@@ -769,7 +777,7 @@ class DrawerCircFaces(DrawerCirc):
                 # Only run function to compute aligned grid
                 if self.tree_style.aligned_grid: 
                     deque(draw_faces_at_pos(node, 'aligned'))
-            else:
+            elif self.panel == 1:
                 yield from draw_faces_at_pos(node, 'aligned')
         else:
             for pos in FACE_POSITIONS:
@@ -791,7 +799,7 @@ class DrawerCircFaces(DrawerCirc):
 
 
 class DrawerAlignRectFaces(DrawerRectFaces):
-    NPANELS = 2
+    NPANELS = 3
 
 
 class DrawerAlignCircFaces(DrawerCircFaces):

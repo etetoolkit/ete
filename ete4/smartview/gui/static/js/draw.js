@@ -236,19 +236,28 @@ function replace_svg(element) {
 
 // Draw elements that belong to panels above 0.
 async function draw_aligned(params) {
+    const panels = { 
+        1: div_aligned, 
+        2: div_aligned_header_top, 
+        3: div_aligned_header_bottomn 
+    };
+
     if (view.drawer.type === "rect") {
-        const qs = new URLSearchParams({...params, "panel": 1}).toString();
+        for (let panel = 1; panel < view.drawer.npanels; panel++) {
+            const qs = new URLSearchParams({...params, "panel": panel}).toString();
 
-        align_drawing = true;
+            align_drawing = true;
 
-        const items = await api(`/trees/${get_tid()}/draw?${qs}`);
+            const items = await api(`/trees/${get_tid()}/draw?${qs}`);
 
-        draw(div_aligned, items, {x: 0, y: view.tl.y}, view.zoom);
+            draw(panels[panel], items, {x: 0, y: view.tl.y}, view.zoom);
 
-        align_drawing = false;
+            align_drawing = false;
 
-        // NOTE: Only implemented for panel=1 for the moment. We just need to
-        //   decide where the graphics would go for panel > 1 (another div? ...)
+            // NOTE: Only implemented for panel=1 for the moment. We just need to
+            //   decide where the graphics would go for panel > 1 (another div? ...)
+            
+        }
     }
     else {
         for (let panel = 1; panel < view.drawer.npanels; panel++) {
