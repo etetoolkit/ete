@@ -53,8 +53,12 @@ from .. import utils
 
 # the following imports are necessary to set fixed styles and faces
 # try:
-from ..treeview.main import NodeStyle
-from ..treeview.faces import Face
+try: 
+    from ..treeview.main import NodeStyle
+    from ..treeview.faces import Face
+except ImportError: 
+    pass # Treeview is now an optional dependency
+
 from ete4.smartview import Face as smartFace
 from ete4.smartview.ete.face_positions import FACE_POSITIONS, _FaceAreas, get_FaceAreas
 # except ImportError:
