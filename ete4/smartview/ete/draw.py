@@ -174,8 +174,6 @@ class Drawer:
             if all(child in self.collapsed for child in it.node.children):
                 searched_by.update( text for text,(results,parents) in self.searches.items()
                         if any(node in results or node in parents.keys() for node in self.collapsed) )
-                # selected_children = [ text for text,(results,parents) in self.selected.items()
-                        # if any(node in results or node in parents.keys() for node in self.collapsed) ]
                 selected_children = self.get_selected_children()
             graphics += self.get_outline()
 
@@ -265,8 +263,6 @@ class Drawer:
         selected_by = [ text for text,(results,parents) in self.selected.items()
             if collapsed_node in results ]
         selected_children = self.get_selected_children()
-        # selected_children = [ text for text,(results,parents) in self.selected.items()
-            # if any(node in results or node in parents.keys() for node in self.collapsed) ]
 
         if uncollapse:
             self.bdy_dys.append([])
