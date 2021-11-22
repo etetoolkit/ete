@@ -238,8 +238,8 @@ function replace_svg(element) {
 async function draw_aligned(params) {
     const panels = { 
         1: div_aligned, 
-        2: div_aligned_header_top, 
-        3: div_aligned_header_bottomn 
+        //2: div_aligned_header_top, 
+        //3: div_aligned_header_bottom
     };
 
     if (view.drawer.type === "rect") {
