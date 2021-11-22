@@ -130,6 +130,7 @@ def get_layout_lca_rects():
                     text=lca,
                     fgcolor="white",
                     padding_x=1, padding_y=1)
+            lca_face.rotate_text = True
             node.add_face(lca_face, position='aligned', column=level)
             node.add_face(lca_face, position='aligned', column=level,
                     collapsed_only=True)

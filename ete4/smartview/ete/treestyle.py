@@ -3,7 +3,7 @@ from collections import defaultdict, namedtuple
 
 
 from ete4.smartview import SelectedRectFace
-from ete4.smartview.ete.face_positions import FACE_POSITIONS, _HeaderFaceContainer
+from ete4.smartview.ete.face_positions import FACE_POSITIONS, _FaceContainer
 from ete4.smartview.utils import InvalidUsage
 from ete4.smartview.ete.layouts.default_layouts import get_layout_leaf_name, get_layout_nleaves,\
         get_layout_branch_length, get_layout_branch_support,\
@@ -11,7 +11,7 @@ from ete4.smartview.ete.layouts.default_layouts import get_layout_leaf_name, get
 
 
 aligned_panel_header = namedtuple("aligned_panel_header", ["top", "bottom"],
-                                  defaults=(_HeaderFaceContainer(), _HeaderFaceContainer()))
+                                  defaults=(_FaceContainer(), _FaceContainer()))
 
 
 class TreeStyle(object):

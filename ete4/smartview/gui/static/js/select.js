@@ -1,6 +1,6 @@
 // Functions related to selecting nodes.
 
-import { view, menus, get_tid } from "./gui.js";
+import { view, menus, get_tid, on_tree_change } from "./gui.js";
 import { draw_tree } from "./draw.js";
 import { api } from "./api.js";
 import { colors } from "./colors.js"
@@ -9,7 +9,7 @@ export {
     select_node, unselect_node, store_selection,
     get_selections, remove_selections, 
     get_selection_class, colorize_selections,
-    select_by_command };
+    select_by_command, prune_by_selection };
 
 const selectError = Swal.mixin({
     position: "bottom-start",
@@ -67,7 +67,7 @@ async function unselect_node(node_id) {
 
     const old_selections = await api(`/trees/${tid}/selections`); // just names for specific node
     await api(`/trees/${tid}/unselect`);
-    const selections = await api(`/trees/${tid}/selected`);  // names and nresults/nparents for whole tree
+    const selections = await api(`/trees/${tid}/all_selections`);  // names and nresults/nparents for whole tree
     const selection_names = [...Object.keys(selections.selected)];
 
     old_selections.selections.forEach(name => {
@@ -229,7 +229,7 @@ function colorize_selections() {
 
 // Get selections from api and fill view.selections
 async function get_selections() {
-    const selected = await api(`/trees/${get_tid()}/selected`);
+    const selected = await api(`/trees/${get_tid()}/all_selections`);
     Object.entries(selected.selected)
         .forEach(([name, res]) => store_selection(name, res));
 }
@@ -263,4 +263,13 @@ async function select_by_command(select_command, name) {
     store_selection(name, { nresults: res.nresults, nparents: res.nparents });
 
     draw_tree();
+}
+
+
+async function prune_by_selection(names) {
+    const qs = `names=${encodeURIComponent(names)}`;
+    const res = await api(`/trees/${get_tid()}/prune_by_selection?${qs}`);
+
+    if (res.message === 'ok')
+        on_tree_change()
 }

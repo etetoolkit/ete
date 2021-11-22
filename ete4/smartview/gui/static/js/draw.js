@@ -429,6 +429,15 @@ function create_item(g, item, tl, zoom) {
 
         return polygon;
     }
+    else if (item[0] === "slice") {
+        const [ , box, type, style] = item;
+
+        const slice = create_slice(...box, tl, zx, zy, type, style);
+
+        style_polygon(slice, style);
+
+        return slice;
+    }
     else if (item[0] === "array") {
         const [ , box, array] = item;
         const [x0, y0, dx0, dy0] = box;
@@ -656,6 +665,34 @@ function create_ellipse(center, rx, ry, tl, zx, zy, type="") {
         "class": "ellipse " + type,
         "cx": x, "cy": y, "rx": rx, "ry": ry,
     });
+}
+
+
+function create_slice(center, r, a, da, tl, zx, zy, type="", style) {
+    
+    // Calculate center to translate slice
+    const c = view.drawer.type === "rect"
+        ? { x: zx * (center[0] - tl.x), y: zy * (center[1] - tl.y) }
+        : cartesian_shifted(...center, tl, zx);
+
+    const large = da > Math.PI ? 1 : 0;
+    const p10 = { x: c.x + r * Math.cos(a), y: c.y + r * Math.sin(a) },
+          p11 = { x: c.x + r * Math.cos(a + da), y: c.y + r * Math.sin(a + da) };
+
+    const element =  {
+        "d": `M ${c.x} ${c.y}
+              L ${p10.x} ${p10.y}
+              A ${r} ${r} 0 ${large} 1 ${p11.x} ${p11.y}
+              Z`,
+    };
+
+    if (type)
+        element.class = type;
+
+    if (is_style_property(style.id))
+        element.id = style.id;
+    
+    return create_svg_element("path", element);
 }
 
 

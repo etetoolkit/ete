@@ -173,9 +173,10 @@ class Drawer:
         if self.outline:
             if all(child in self.collapsed for child in it.node.children):
                 searched_by.update( text for text,(results,parents) in self.searches.items()
-                        if any(node in results or node in parents for node in self.collapsed) )
-                selected_children = [ text for text,(results,parents) in self.selected.items()
-                        if any(node in results or node in parents for node in self.collapsed) ]
+                        if any(node in results or node in parents.keys() for node in self.collapsed) )
+                # selected_children = [ text for text,(results,parents) in self.selected.items()
+                        # if any(node in results or node in parents.keys() for node in self.collapsed) ]
+                selected_children = self.get_selected_children()
             graphics += self.get_outline()
 
         x_after, y_after = point
@@ -219,9 +220,9 @@ class Drawer:
             node_style = node.img_style
             if dx > 0:
                 parent_of = set(text for text,(_,parents) in self.searches.items()
-                                if node in parents)
+                                if node in parents.keys())
                 parent_of.update(text for text,(_,parents) in self.selected.items()
-                                if node in parents)
+                                if node in parents.keys())
                 hz_line_style = {
                         'type': node_style['hz_line_type'],
                         'width': node_style['hz_line_width'],
@@ -260,11 +261,12 @@ class Drawer:
 
         searched_by = [ text for text,(results,parents) in self.searches.items()
             if collapsed_node in results\
-            or any(node in results or node in parents for node in self.collapsed) ]
+            or any(node in results or node in parents.keys() for node in self.collapsed) ]
         selected_by = [ text for text,(results,parents) in self.selected.items()
             if collapsed_node in results ]
-        selected_children = [ text for text,(results,parents) in self.selected.items()
-            if any(node in results or node in parents for node in self.collapsed) ]
+        selected_children = self.get_selected_children()
+        # selected_children = [ text for text,(results,parents) in self.selected.items()
+            # if any(node in results or node in parents.keys() for node in self.collapsed) ]
 
         if uncollapse:
             self.bdy_dys.append([])
@@ -340,6 +342,15 @@ class Drawer:
         box_node = make_box((x, y), self.node_size(collapsed_node))
 
         return is_manually_collapsed or self.is_small(box_node)
+
+    def get_selected_children(self):
+        selected_children = []
+        for text,(results, parents) in self.selected.items():
+            hits = sum(1 for node in self.collapsed if node in results)
+            hits += sum(parents.get(node, 0) for node in self.collapsed)
+            if hits:
+                selected_children.append((text, hits))
+        return selected_children
 
 
     # These are the 2 functions that the user overloads to choose what to draw
@@ -601,7 +612,7 @@ class DrawerRectFaces(DrawerRect):
 
             # Add SelectedFace for each search this node is a result of
             if pos == self.tree_style.selected_face_pos and len(selected_children):
-                faces[n_col] = [ self.tree_style.selected_face(s) for s in selected_children ]
+                faces[n_col] = [ self.tree_style.selected_face(s, text=v) for s,v in selected_children ]
                 n_col += 1
 
             dx_before = 0
@@ -862,6 +873,9 @@ def draw_circle(center, radius, circle_type='', style=None):
 def draw_ellipse(center, rx, ry, ellipse_type='', style=None):
     return ['ellipse', center, rx, ry, ellipse_type, style or {}]
 
+def draw_slice(center, r, a, da, slice_type='', style=None):
+    return ['slice', (center, r, a, da), slice_type, style or {}]
+
 def draw_triangle(box, tip, triangle_type='', style=None):
     """Returns array with all the information needed to draw a triangle
     in front end. 
@@ -963,6 +977,11 @@ def get_rect(element, zoom=(0, 0)):
         rx, ry = rx / zx, ry / zy
         rx, ry = 0, 0
         return Box(x - rx, y - ry, 2 * rx, 2 * ry)
+    elif eid == 'slice':
+        (x, y), r = element[1][0], element[1][1]
+        zx, zy = zoom
+        rx, ry = r / zx, r / zy
+        return Box(x - rx, y - ry, 2 * rx, 2 * ry)
     else:
         raise ValueError(f'unrecognized element: {element!r}')
 
@@ -1005,6 +1024,11 @@ def get_asec(element, zoom=(0, 0)):
         zx, zy = zoom
         rx, ry = element[2] / zx, element[3] / zy
         rect = Box(x - rx, y - ry, 2 * rx, 2 * ry)
+        return circumasec(rect)
+    elif eid == 'slice':
+        z = zoom[0]
+        (x, y), r = cartesian(element[1][0]), element[1][1] / z
+        rect = Box(x - r, y - r, 2 * r, 2 * r)
         return circumasec(rect)
     else:
         raise ValueError(f'unrecognized element: {element!r}')

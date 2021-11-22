@@ -6,7 +6,7 @@ import { zoom_around } from "./zoom.js";
 import { move_minimap_view } from "./minimap.js";
 import { drag_start, drag_stop, drag_move } from "./drag.js";
 import { search } from "./search.js";
-import { select_by_command, remove_selections } from "./select.js";
+import { select_by_command, prune_by_selection, remove_selections } from "./select.js";
 import { update } from "./draw.js";
 import { on_box_contextmenu } from "./contextmenu.js";
 
@@ -274,7 +274,12 @@ async function on_postMessage(event) {
             remove_selections(true); // purge from backend as well
         else if (view.selected[name])
             view.selected[name].remove();
-    }
+    } 
+
+    // Prune based on selection names
+    else if (eventType === "prune" && name)
+        prune_by_selection(name.trim().split(","));
+
 
     div_tree.style.cursor = "auto";
 }
