@@ -6,6 +6,7 @@ import { zoom_around } from "./zoom.js";
 import { move_minimap_view } from "./minimap.js";
 import { drag_start, drag_stop, drag_move } from "./drag.js";
 import { search } from "./search.js";
+import { select_by_command, prune_by_selection, remove_selections } from "./select.js";
 import { update } from "./draw.js";
 import { on_box_contextmenu } from "./contextmenu.js";
 
@@ -252,20 +253,33 @@ function on_touchend(event) {
 }
 
 
-function on_postMessage(event) {
+async function on_postMessage(event) {
     // Selection when placing ETE in iframe
     
     // TODO: we should register allowed origins
     //if (!wiew.allowed_origins.includes(event.origin))
         //return
+    
+    const { eventType, name, selectCommand } = event.data;
 
-    const node = event.data.node;
-    const selected = event.data.selected;
+    div_tree.style.cursor = "wait";
 
-    // We so far only allow to unselect
-    // If it was not selected to begin with, ignore message
-    if (selected || !view.selected[node])
-        return
+    // Selection
+    if (eventType === "selection" && selectCommand)
+        try { await select_by_command(selectCommand, name) } catch {}
 
-    view.selected[node].remove();
+    // Remove selection
+    else if (eventType === "unselection" && name) {
+        if (name === "*")
+            remove_selections(true); // purge from backend as well
+        else if (view.selected[name])
+            view.selected[name].remove();
+    } 
+
+    // Prune based on selection names
+    else if (eventType === "prune" && name)
+        prune_by_selection(name.trim().split(","));
+
+
+    div_tree.style.cursor = "auto";
 }

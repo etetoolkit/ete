@@ -242,6 +242,7 @@ def read_content(str text, int pos, endings=',);'):
     start = pos
     if pos < len(text) and text[pos] == "'":
         _, pos = read_quoted_name(text, pos)
+
     keep_reading = []
     while pos < len(text) and not (len(keep_reading) == 0 and text[pos] in endings):
         if text[pos] == '[':
@@ -254,10 +255,10 @@ def read_content(str text, int pos, endings=',);'):
 
 def read_quoted_name(str text, int pos):
     "Return quoted name and the position where it ends"
+
     if pos >= len(text) or text[pos] not in ("'", '"'):
         raise NewickError(f'text at position {pos} does not start with "\'"\
                             nor "\"')
-
     pos += 1
     start = pos
     while pos < len(text):

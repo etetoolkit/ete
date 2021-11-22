@@ -146,7 +146,7 @@ class Trees(Resource):
         elif rule == '/trees/<string:tree_id>/newick':
             MAX_MB = 2
             return get_newick(tree_id, MAX_MB)
-        elif rule == '/trees/<string:tree_id>/selected':
+        elif rule == '/trees/<string:tree_id>/all_selections':
             selected = {
                 name: { 'nresults': len(results), 'nparents': len(parents) }
                 for name, (results, parents) in (tree.selected or {}).items() }
@@ -183,6 +183,9 @@ class Trees(Resource):
             return {'message': message}
         elif rule == '/trees/<string:tree_id>/search_to_selection':
             search_to_selection(tid, request.args.copy())
+            return { 'message': 'ok' }
+        elif rule == '/trees/<string:tree_id>/prune_by_selection':
+            prune_by_selection(tid, request.args.copy())
             return { 'message': 'ok' }
         elif rule == '/trees/<string:tree_id>/draw':
             drawer = get_drawer(tree_id, request.args.copy())
@@ -467,11 +470,11 @@ def get_newick(tree_id, max_mb):
 
 def get_parents(results):
     "Return a set of parents given a set of results"
-    parents = set()
+    parents = defaultdict(lambda: 0)
     for node in results:
         parent = node.up
-        while parent and parent not in parents:
-            parents.add(parent)
+        while parent:
+            parents[parent] += 1
             parent = parent.up
     return parents
 
@@ -624,6 +627,30 @@ def search_to_selection(tid, args):
     selected[text] = search
 
 
+def prune_by_selection(tid, args):
+    "Prune tree by keeping selections identified by their names"
+
+    if 'names' not in args:
+        raise InvalidUsage('missing selection names')
+
+    names = set(args.pop('names').strip().split(','))
+    tree = app.trees[int(tid)]
+
+    selected = set()
+    for name,(results,_) in tree.selected.items():
+        if name in names:
+            selected.update(results)
+
+    if len(selected) == 0:
+        raise InvalidUsage('selection does not exist')
+
+    tree.tree.prune(selected)
+
+    gdn.standardize(tree.tree)
+
+    tree.initialized = False
+
+
 def store_selection(tree_id, args):
     "Store the results and parents of a selection and return their numbers"
     if 'text' not in args:
@@ -633,17 +660,14 @@ def store_selection(tree_id, args):
     app_tree = app.trees[int(tid)]
     node = gdn.get_node(app_tree.tree, subtree)
 
-    parents = set()
-    parent = node.up
-    while parent and parent not in parents:
-        parents.add(parent)
-        parent = parent.up
+    parents = get_parents([node])
 
     name = args.pop('text').strip()
     if name in app_tree.selected.keys():
         all_results, all_parents = app_tree.selected[name]
         all_results.add(node)
-        all_parents.update(parents)
+        for p, v in parents.items():  # update parents defaultdict
+            all_parents[p] += v
         app_tree.selected[name] = (all_results, all_parents)
     else:
         app_tree.selected[name] = (set([node]), parents)
@@ -1082,11 +1106,12 @@ def add_resources(api):
         '/trees/<string:tree_id>/select',  # select node
         '/trees/<string:tree_id>/unselect',  # unselect node
         '/trees/<string:tree_id>/selections', # selections perfomed on a node
-        '/trees/<string:tree_id>/selected',  # name and nresults, nparents for each selection
+        '/trees/<string:tree_id>/all_selections',  # name and nresults, nparents for each selection
         '/trees/<string:tree_id>/selection/info',  # get selection info: list of node_ids or dict with their desired properties
         '/trees/<string:tree_id>/remove_selection',
         '/trees/<string:tree_id>/change_selection_name',
         '/trees/<string:tree_id>/search_to_selection',  # convert search to selection
+        '/trees/<string:tree_id>/prune_by_selection',  # prune based on selection
         '/trees/<string:tree_id>/search',
         '/trees/<string:tree_id>/searches',
         '/trees/<string:tree_id>/remove_search',
@@ -1099,7 +1124,7 @@ def add_resources(api):
 
 
 def run_smartview(tree=None, tree_name=None, tree_style=None, layouts=[],
-        memory_only=False, port=5000, run=True):
+        memory_only=True, port=5000, run=True):
     # Set tree_name to None if no tree was provided
     # Generate tree_name if none was provided
     tree_name = tree_name or get_random_string(10) if tree else None
