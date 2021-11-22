@@ -806,7 +806,7 @@ class DrawerCircFaces(DrawerCirc):
 
 
 class DrawerAlignRectFaces(DrawerRectFaces):
-    NPANELS = 3
+    NPANELS = 2
 
 
 class DrawerAlignCircFaces(DrawerCircFaces):
