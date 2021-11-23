@@ -91,6 +91,29 @@ body {
     pointer-events: none;
 }
 
+.div_aligned_top {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    background-color: inherit;
+    cursor: auto;
+}
+
+.div_aligned_bottom {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background-color: inherit;
+    cursor: auto;
+}
+
+.div_html {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 100%;
+}
+
 .dotted {
     stroke-dasharray: 4;
 }

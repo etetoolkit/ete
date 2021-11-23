@@ -174,15 +174,28 @@ function draw_negative_xaxis() {
 // Append a svg to the given element, with all the items in the list drawn.
 // The first child of element will be used or replaced as a svg.
 function draw(element, items, tl, zoom, replace=true) {
+    const is_svg = item => {
+        const name = item[0];
+        return !(name.includes("pixi-") || name === "html")
+    }
+
     const g = create_svg_element("g");
 
-    const svg_items = items.filter(i => !i[0].includes("pixi-"));
+    const svg_items = items.filter(is_svg);
     svg_items.forEach(item => g.appendChild(create_item(g, item, tl, zoom)));
     
     const pixi_items = items.filter(i => i[0].includes("pixi-"));
     const pixi = draw_pixi(pixi_items, tl, zoom)
     const pixi_container = view.drawer.type === "rect" ? div_aligned : div_tree;
     replace_child(pixi_container.querySelector(".div_pixi"), pixi);
+
+    const html_container = element.querySelector(".div_html")
+    if (html_container) {
+        html_container.querySelectorAll("*").forEach(child => child.remove());
+        const html_items = items.filter(i => i[0] === "html");
+        html_items.forEach(item => create_html(html_container, item, tl, zoom))
+    }
+
 
     put_nodes_in_background(g);
 
@@ -227,30 +240,45 @@ function replace_svg(element) {
         "height": element.offsetHeight,
     });
 
-    if (element.children.length > 0)
-        element.children[0].replaceWith(svg);
-    else
-        element.appendChild(svg);
+    replace_child(element, svg);
 }
 
 
 // Draw elements that belong to panels above 0.
 async function draw_aligned(params) {
+    const zy = view.zoom.y;
     const panels = { 
-        1: div_aligned, 
-        //2: div_aligned_header_top, 
-        //3: div_aligned_header_bottom
+        1: { div: div_aligned, params: { x:0, y: view.tl.y } }, 
+        2: { div: div_aligned_top, params: { x:0, y:0, 
+            h: Math.max(-view.tl.y, view.aligned_header.top.height / zy) } }, 
+        3: { div: div_aligned_bottom, params: { x:0, y:0,
+            h: Math.max(div_tree.offsetHeight / zy + view.tl.y - view.tree_size.height,
+                        view.aligned_header.bottom.height / zy) } }
     };
 
     if (view.drawer.type === "rect") {
-        for (let panel = 1; panel < view.drawer.npanels; panel++) {
-            const qs = new URLSearchParams({...params, "panel": panel}).toString();
+        for (let panel_n = 1; panel_n < view.drawer.npanels; panel_n++) {
+            const panel = panels[panel_n];
+            const qs = new URLSearchParams({
+                ...params, ...panel.params, "panel": panel_n
+            }).toString();
 
             align_drawing = true;
 
+            const div = panel.div;
+
             const items = await api(`/trees/${get_tid()}/draw?${qs}`);
 
-            draw(panels[panel], items, {x: 0, y: view.tl.y}, view.zoom);
+            // Resize headers accordingly or remove them in no items
+            if (panel_n === 2 || panel_n === 3) {
+                if (items.length > 0) {
+                    div.style.display = "block";
+                    div.style.height = panel.params.h * zy + "px";
+                } else
+                    div.style.display = "none";
+            }
+
+            draw(div, items, {x: 0, y: panel.params.y}, view.zoom);
 
             align_drawing = false;
 
@@ -456,6 +484,28 @@ function create_item(g, item, tl, zoom) {
 
         return g;
     }
+}
+
+function create_html(container, item, tl, zoom) {
+    const range = document.createRange();
+    range.selectNode(container);
+    const html = range.createContextualFragment(item[2]);
+
+    container.appendChild(html)
+    const element = container.lastElementChild;
+
+    const [x, y, dx, dy] = item[1];
+    const [zx, zy] = [zoom.x, zoom.y];
+    const style = { 
+        position: "absolute",
+        overflow: "hidden",
+        top: zy * (y - tl.y) + "px",
+        left: zx * (x - tl.x) + "px",
+        width: dx * zx + "px", 
+        height: dy * zy + "px"
+    };
+
+    style_html(element, style);
 }
 
 
@@ -973,4 +1023,31 @@ function style_polygon(polygon, style) {
         polygon.style.opacity = style.opacity;
 
     return polygon
+}
+
+
+function style_html(html, style) {
+    if (is_style_property(style.position))
+        html.style.position = style.position;
+
+    if (is_style_property(style.overflow))
+        html.style.overflow = style.overflow;
+
+    if (is_style_property(style.top))
+        html.style.top = style.top;
+
+    if (is_style_property(style.bottom))
+        html.style.bottom = style.bottom;
+
+    if (is_style_property(style.left))
+        html.style.left = style.left;
+
+    if (is_style_property(style.right))
+        html.style.right = style.right;
+
+    if (is_style_property(style.width))
+        html.style.width = style.width;
+
+    if (is_style_property(style.height))
+        html.style.height = style.height;
 }

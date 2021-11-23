@@ -42,7 +42,8 @@ from itsdangerous import TimedJSONWebSignatureSerializer as JSONSigSerializer
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from ete4 import Tree
-from ete4.smartview import TreeStyle, FACE_POSITIONS, layout_modules
+from ete4.smartview import TreeStyle, layout_modules, TextFace
+from ete4.smartview.ete.face_positions import FACE_POSITIONS, _HeaderFaceContainer
 from ete4.parser.newick import NewickError
 from ete4.smartview.utils import InvalidUsage, get_random_string
 from ete4.smartview.ete import nexus, draw, gardening as gdn
@@ -1007,6 +1008,24 @@ def get_fields(required=None, valid_extra=None):
     return data
 
 
+def copy_style(tree_style):
+    def add_faces_to_header(header, facecontainer):
+        for column, face_list in facecontainer.items():
+            for face in face_list:
+                header.add_face(face, column=column)
+
+    header = tree_style.aligned_panel_header
+
+    top = deepcopy(dict(header.top))
+    bottom = deepcopy(dict(header.bottom))
+
+    ts = deepcopy(tree_style)
+    add_faces_to_header(ts.aligned_panel_header.top, top)
+    add_faces_to_header(ts.aligned_panel_header.bottom, bottom)
+
+    return ts
+
+
 # App initialization.
 
 def initialize(tree=None, tree_style=None, layouts=[], memory_only=False):
@@ -1019,7 +1038,7 @@ def initialize(tree=None, tree_style=None, layouts=[], memory_only=False):
 
     app.memory_only = memory_only
 
-    tree_style = deepcopy(tree_style) or TreeStyle()
+    tree_style = copy_style(tree_style) or TreeStyle()
 
     # App associated layouts
     # Layouts will be accessible for each tree independently
@@ -1027,7 +1046,7 @@ def initialize(tree=None, tree_style=None, layouts=[], memory_only=False):
     # Dict containing AppTree dataclasses with tree info
     app.trees = defaultdict(lambda: AppTree(
         name=get_random_string(10),
-        style=deepcopy(tree_style),
+        style=copy_style(tree_style),
         layouts = app.default_layouts,
         timer = time(),
         searches = {},

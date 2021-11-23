@@ -81,44 +81,40 @@ class Drawer:
         if self.panel == 0:
             self.tree_style.aligned_grid_dxs = defaultdict(lambda: 0)
 
-        point = self.xmin, self.ymin
-        first_counter = last_counter = descend_counter = 0
-        first_time = 0
-        for it in walk(self.tree):
-            graphics = []
-            if it.first_visit:
-                start = time()
+        if self.panel in (2, 3):
+            yield from self.draw_aligned_headers()
 
-                point = self.on_first_visit(point, it, graphics)
+        else:
+            point = self.xmin, self.ymin
+            first_counter = last_counter = descend_counter = 0
+            first_time = 0
+            for it in walk(self.tree):
+                graphics = []
+                if it.first_visit:
+                    start = time()
 
-                if not it.descend:
-                    descend_counter += 1
-                first_counter += 1
-                first_time += time() - start
-            else:
-                last_counter += 1
-                point = self.on_last_visit(point, it, graphics)
-            yield from graphics
+                    point = self.on_first_visit(point, it, graphics)
 
-        print(f'First visit ({first_counter}): {first_time}')
-        print(f'Descend: {descend_counter}')
-        print(f'Last visit: {last_counter}')
+                    if not it.descend:
+                        descend_counter += 1
+                    first_counter += 1
+                    first_time += time() - start
+                else:
+                    last_counter += 1
+                    point = self.on_last_visit(point, it, graphics)
+                yield from graphics
 
-        if self.outline:
-            yield from self.get_outline()
+            print(f'First visit ({first_counter}): {first_time}')
+            print(f'Descend: {descend_counter}')
+            print(f'Last visit: {last_counter}')
 
-        if self.panel == 0:  # draw in preorder the boxes we found in postorder
-            max_dx = max([box[1].dx for box in self.nodeboxes] + [0])
-            self.tree_style.aligned_grid_dxs[-1] = max_dx
-            yield from self.nodeboxes[::-1]  # (so they overlap nicely)
+            if self.outline:
+                yield from self.get_outline()
 
-        # Draw aligned panel headers
-        if self.panel == 2:
-            if tree_style.aligned_panel_headers.top:
-                pass
-
-            if tree_style.aligned_panel_headers.bottom:
-                pass
+            if self.panel == 0:  # draw in preorder the boxes we found in postorder
+                max_dx = max([box[1].dx for box in self.nodeboxes] + [0])
+                self.tree_style.aligned_grid_dxs[-1] = max_dx
+                yield from self.nodeboxes[::-1]  # (so they overlap nicely)
 
     def on_first_visit(self, point, it, graphics):
         "Update list of graphics to draw and return new position"
@@ -246,6 +242,70 @@ class Drawer:
             }
             yield from self.draw_nodedot((x + dx, y + bdy),
                     dy * self.zoom[1], nodedot_style)
+
+    def draw_aligned_headers(self):
+        # Draw aligned panel headers
+        def it_fits(box, pos):
+            _, _, dx, dy = box
+            return dx * zx > self.MIN_SIZE\
+                    and dy * zy > self.MIN_SIZE
+
+        def draw_face(face, pos, row, n_row, n_col, dx_before, dy_before):
+            if face.get_content():
+                box = face.compute_bounding_box(self, (0, 0), size, 
+                            None, None, None, None, None,
+                            pos, row, n_row, n_col,
+                            dx_before, dy_before)
+                if (it_fits(box, pos) and face.fits()) or face.always_drawn:
+                    yield from face.draw(self)
+
+        def draw_faces_at_pos(faces, pos, iteration):
+            n_col = max(faces.keys(), default = -1) + 1
+            dx_before = 0
+            for col, face_list in sorted(faces.items()):
+                if col > 0:
+                    # Avoid changing-size error when zooming very quickly
+                    dxs = list(faces._grid_dxs.items())
+                    dx_before = sum(v for k, v in dxs if k < col and k >= 0)
+                dx_max = 0
+                dy_before = 0
+                n_row = len(face_list)
+                for row, face in enumerate(face_list):
+                    drawn_face = list(draw_face(face, pos, row, n_row, n_col,
+                            dx_before, dy_before))
+                    if drawn_face:
+                        _, _, dx, dy = face.get_box()
+                        hz_padding = 2 * face.padding_x / zx
+                        vt_padding = 2 * face.padding_y / zy
+                        dx_max = max(dx_max, (dx or 0) + hz_padding)
+                        dy_before += dy + vt_padding
+                        yield from drawn_face
+                # Update dx_before
+                dx_grid = faces._grid_dxs.get(col, 0)
+                if iteration == 0:
+                    # Compute aligned grid
+                    dx_grid = max(dx_grid, dx_max)
+                    faces._grid_dxs[col] = dx_grid
+                else:
+                    dx_before += dx_grid
+
+        size = ( self.viewport.dx, self.viewport.dy )
+        zx, zy = self.zoom
+        graphics = []
+
+        if self.panel == 2:
+            deque(draw_faces_at_pos(self.tree_style.aligned_panel_header.top,
+                    "aligned_bottom", 0))
+            graphics += draw_faces_at_pos(self.tree_style.aligned_panel_header.top,
+                    "aligned_bottom", 1)
+
+        if self.panel == 3:
+            deque(draw_faces_at_pos(self.tree_style.aligned_panel_header.bottom,
+                    "aligned_top", 0))
+            graphics += draw_faces_at_pos(self.tree_style.aligned_panel_header.bottom,
+                    "aligned_top", 1)
+
+        return graphics
 
     def get_outline(self):
         "Yield the outline representation"
@@ -806,7 +866,7 @@ class DrawerCircFaces(DrawerCirc):
 
 
 class DrawerAlignRectFaces(DrawerRectFaces):
-    NPANELS = 2
+    NPANELS = 4
 
 
 class DrawerAlignCircFaces(DrawerCircFaces):
@@ -918,6 +978,9 @@ def draw_arrow(box, tip, orientation='right', arrow_type='', style=None):
 def draw_array(box, a):
     return ['array', box, a]
 
+def draw_html(box, html, html_type='', style=None):
+    return ['html', box, html, html_type, style or {}]
+
 
 # Box-related functions.
 
@@ -938,7 +1001,7 @@ def get_ys(box):
 def get_rect(element, zoom=(0, 0)):
     "Return the rectangle that contains the given graphic element"
     eid = element[0]
-    if eid in ['nodebox', 'rect', 'array', 'text', 'triangle']:
+    if eid in ['nodebox', 'rect', 'array', 'text', 'triangle', 'html']:
         return element[1]
     elif eid == 'outline':
         x, y, dx_min, dx_max, dy = element[1]
@@ -985,7 +1048,7 @@ def get_rect(element, zoom=(0, 0)):
 def get_asec(element, zoom=(0, 0)):
     "Return the annular sector that contains the given graphic element"
     eid = element[0]
-    if eid in ['nodebox', 'rect', 'array', 'text', 'triangle']:
+    if eid in ['nodebox', 'rect', 'array', 'text', 'triangle', 'html']:
         return element[1]
     elif eid == 'outline':
         r, a, dr_min, dr_max, da = element[1]

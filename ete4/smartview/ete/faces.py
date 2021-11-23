@@ -8,7 +8,7 @@ from ete4.smartview.ete.draw import Box, SBox,\
                                     draw_circle, draw_ellipse, draw_slice,\
                                     draw_line, draw_outline,\
                                     draw_triangle, draw_rhombus,\
-                                    draw_arrow
+                                    draw_arrow, draw_html
 
 
 CHAR_HEIGHT = 1.4 # char's height to width ratio
@@ -136,13 +136,20 @@ class Face(object):
             x = x + bdx + dx_before
             y = y + bdy + (row - n_row / 2) * avail_dy
 
-        elif pos == 'aligned': # right of tree
+        elif pos.startswith('aligned'): # right of tree
             avail_dx = None # should be overriden
             avail_dy = dy / n_row
             aligned_x = drawer.node_size(drawer.tree)[0]\
                     if drawer.panel == 0 else drawer.xmin
             x = aligned_x + dx_before
-            y = y + dy / 2 + (row - n_row / 2) * avail_dy
+        
+            if pos == 'aligned_bottom':
+                y = y + dy - avail_dy - dy_before
+            elif pos == 'aligned_top':
+                y = y + dy_before
+            else:
+                y = y + dy / 2 + (row - n_row / 2) * avail_dy
+
         else:
             raise InvalidUsage(f'unkown position {pos}')
 
@@ -238,6 +245,12 @@ class TextFace(Face):
 
         elif pos == 'branch_bottom':
             box = (x, y, width, height) # container top
+
+        elif pos == 'aligned_bottom':
+            box = (x, y + dy - height, width, height)
+
+        elif pos == 'aligned_top':
+            box = (x, y, width, height)
 
         else: # branch_right and aligned
             box = (x, y + (dy - height) / 2, width, height)
@@ -353,8 +366,17 @@ class CircleFace(Face):
         else: # branch_right and aligned
             if pos == 'aligned':
                 self._max_radius = min(dy * zy * r / 2, self.radius)
+
             cx = x + self._max_radius / zx - padding_x # centered
-            cy = y + dy / 2 # centered
+
+            if pos == 'aligned_bottom':
+                cy = y + dy - self._max_radius / zy
+
+            elif pos == 'aligned_top':
+                cy = y + self._max_radius / zy
+
+            else:
+                cy = y + dy / 2 # centered
 
         self._center = (cx, cy)
         self._box = Box(cx, cy, 
@@ -462,10 +484,18 @@ class RectFace(Face):
             width, height = get_dimensions(dx, max_dy)
             box = (x, y + (dy - height) / 2, width, height)
 
-        elif pos == 'aligned':
+        elif pos.startswith('aligned'):
             width = (self.width - 2 * self.padding_x) / zx
             height = min(dy, (self.height - 2 * self.padding_y) / zy)
-            box = (x, y + (dy - height) / 2, width, height)
+
+            if pos == 'aligned_bottom':
+                y = y + dy - height
+            elif pos == 'aligned_top':
+                y = y
+            else:
+                y = y + (dy - height) / 2
+
+            box = (x, y, width, height)
 
         self._box = Box(*box)
         return self._box
@@ -521,7 +551,7 @@ class RectFace(Face):
                     style=text_style)
 
 
-class ArrowFace(Face):
+class ArrowFace(RectFace):
     def __init__(self, width, height, orientation='right',
             color='gray',
             text=None, fgcolor='black', # text color
@@ -530,98 +560,15 @@ class ArrowFace(Face):
             name="",
             padding_x=0, padding_y=0):
 
-        Face.__init__(self, name=name, padding_x=padding_x, padding_y=padding_y)
+        RectFace.__init__(self, width=width, height=height,
+                color=color, text=text, fgcolor=fgcolor,
+                min_fsize=min_fsize, max_fsize=max_fsize, ftype=ftype,
+                name=name, padding_x=padding_x, padding_y=padding_y)
 
-        self.width = width
-        self.height = height
         self.orientation = orientation
-        self.color = color
-        # Text related
-        self.text = str(text) if text is not None else None
-        self.rotate_text = False
-        self.fgcolor = fgcolor
-        self.ftype = ftype
-        self.min_fsize = min_fsize
-        self.max_fsize = max_fsize
 
     def __name__(self):
         return "ArrowFace"
-
-    def compute_bounding_box(self, 
-            drawer,
-            point, size,
-            dx_to_closest_child,
-            bdx, bdy,
-            bdy0, bdy1,
-            pos, row,
-            n_row, n_col,
-            dx_before, dy_before):
-
-        if drawer.TYPE == 'circ':
-            pos = swap_pos(pos, point[1])
-
-        box = super().compute_bounding_box( 
-            drawer,
-            point, size,
-            dx_to_closest_child,
-            bdx, bdy,
-            bdy0, bdy1,
-            pos, row,
-            n_row, n_col,
-            dx_before, dy_before)
-
-        x, y, dx, dy = box
-        zx, zy = drawer.zoom
-        r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
-
-        def get_dimensions(max_width, max_height):
-            if not (max_width or max_height):
-                return 0, 0
-            if (type(max_width) in (int, float) and max_width <= 0) or\
-               (type(max_height) in (int, float) and max_height <= 0):
-                return 0, 0
-
-            width = self.width / zx if self.width is not None else None
-            height = self.height / zy if self.height is not None else None
-
-            if width is None:
-                return max_width or 0, min(height or float('inf'), max_height)
-            if height is None:
-                return min(width, max_width or float('inf')), max_height
-
-            hw_ratio = height / width
-
-            if max_width and width > max_width:
-                width = max_width
-                height = width * hw_ratio
-            if max_height and height > max_height:
-                height = max_height
-                width = height / hw_ratio
-
-            height /= r  # in circular drawer
-            return width, height
-
-        max_dy = dy * r  # take into account circular mode
-
-        if pos == 'branch_top':
-            width, height = get_dimensions(dx, max_dy)
-            box = (x, y + dy - height, width, height) # container bottom
-
-        elif pos == 'branch_bottom':
-            width, height = get_dimensions(dx, max_dy)
-            box = (x, y, width, height) # container top
-
-        elif pos == 'branch_right':
-            width, height = get_dimensions(dx, max_dy)
-            box = (x, y + (dy - height) / 2, width, height)
-
-        elif pos == 'aligned':
-            width = (self.width - 2 * self.padding_x) / zx
-            height = min(dy, (self.height - 2 * self.padding_y) / zy)
-            box = (x, y + (dy - height) / 2, width, height)
-
-        self._box = Box(*box)
-        return self._box
 
     @property
     def orientation(self):
@@ -1262,13 +1209,28 @@ class PieChartFace(CircleFace):
         assert a >= 2 * pi - 1e-5 and a <= 2 * pi + 1e-5, "Incorrect pie"
 
     def draw(self, drawer):
-
         # Draw circle if only one datum
         if len(self.data) == 1:
             self.color = self.data[0][2]
-            return CircleFace.draw(self, drawer)
-        
-        for (name, value, color, a, da) in self.data:
-            style = { 'fill': color }
-            yield draw_slice(self._center, self._max_radius, a, da, 
-                    "", style=style)
+            yield from CircleFace.draw(self, drawer)
+
+        else:
+            for (name, value, color, a, da) in self.data:
+                style = { 'fill': color }
+                yield draw_slice(self._center, self._max_radius, a, da, 
+                        "", style=style)
+
+
+class HTMLFace(RectFace):
+    def __init__(self, html, width, height, name="", padding_x=0, padding_y=0):
+
+        RectFace.__init__(self, width=width, height=height,
+                name=name, padding_x=padding_x, padding_y=padding_y)
+
+        self.content = html
+
+    def __name__(self):
+        return "HTMLFace"
+
+    def draw(self, drawer):
+        yield draw_html(self._box, self.content)

@@ -48,6 +48,9 @@ const view = {
     rmin: 0,
     angle: {min: -180, max: 180},
     align_bar: 80,  // % of the screen width where the aligned panel starts
+    aligned_header: { 
+        top: { show: true, height: 150 }, 
+        bottom: { show: true, height: 150 } },
     collapsed_ids: {},
 
     layouts: {},

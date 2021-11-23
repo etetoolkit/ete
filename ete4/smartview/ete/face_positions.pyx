@@ -66,11 +66,15 @@ cdef class _FaceContainer(dict):
         """
         self.setdefault(column, []).append(face)
 
+
 cdef class _HeaderFaceContainer(_FaceContainer):
     """
     Use this object to create a grid of faces for a header. You can add faces to different columns.
     """
-    def __init__(self):
+
+    cdef public dict _grid_dxs
+
+    def __init__(self, facecontainer=None):
         _FaceContainer.__init__(self)
 
         self._grid_dxs = {}
