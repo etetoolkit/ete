@@ -50,6 +50,16 @@ async function select_node(node_id, name) {
 }
 
 
+function notifySelection(modification, name) {
+    if (view.selected[name])
+        notifyParent("named", {
+            modification: modification,
+            name: name,
+            color: view.selected[name].results.color,
+        })
+}
+
+
 async function unselect_node(node_id) {
     const tid = get_tid() + "," + node_id;
 
@@ -63,7 +73,7 @@ async function unselect_node(node_id) {
             view.selected[name].remove();
         } else {
             update_selected_folder(name, selections.selected[name]);
-            notifyParent("modification", name);
+            notifySelection("modification", name);
         }
     });
     draw_tree();
@@ -80,7 +90,7 @@ function store_selection(name, res) {
     const selected = view.selected[name];
     if (selected) {
         update_selected_folder(name, res)
-        notifyParent("modification", name);
+        notifySelection("modification", name);
     }
     else {
         view.selected[name] = {
@@ -91,7 +101,7 @@ function store_selection(name, res) {
                        color: "#000",
                        width: 2.5 },};
         add_selected_to_menu(name);
-        notifyParent("selection", name);
+        notifySelection("selection", name);
     }
 
 }
@@ -151,7 +161,7 @@ function add_selected_to_menu(name) {
             await api(`/trees/${get_tid()}/remove_selection?${qs}`);
         }
 
-        notifyParent("unselection", folder.title);
+        notifySelection("unselection", folder.title);
 
         delete view.selected[folder.title];
         folder.dispose();
@@ -193,7 +203,7 @@ function colorize_selection(name, notify=true) {
     const selected = view.selected[name];
 
     if (notify)
-        notifyParent("colorChange", folder.title);
+        notifySelection("colorChange", folder.title);
 
     const cresults = get_selection_class(name, "results");
     Array.from(div_tree.getElementsByClassName(cresults)).forEach(e => {

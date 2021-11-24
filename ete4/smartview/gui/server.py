@@ -825,8 +825,8 @@ def add_tree(data):
     print('dumping')
     # Write tree data as a temporary pickle file
     obj = { 'name': name, 'layouts': layouts, 'tree': tree }
-    with open(f'/tmp/{tid}.pickle', 'wb') as handle:
-        pickle.dump(obj, handle)
+    # with open(f'/tmp/{tid}.pickle', 'wb') as handle:
+        # pickle.dump(obj, handle)
 
     print(f'Dump: {time() - start}')
 
@@ -1038,7 +1038,7 @@ def initialize(tree=None, tree_style=None, layouts=[], memory_only=False):
 
     app.memory_only = memory_only
 
-    tree_style = copy_style(tree_style) or TreeStyle()
+    tree_style = copy_style(tree_style) if tree_style else TreeStyle()
 
     # App associated layouts
     # Layouts will be accessible for each tree independently

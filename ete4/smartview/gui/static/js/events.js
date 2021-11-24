@@ -1,6 +1,6 @@
 // Handle gui events.
 
-import { view, menus, coordinates, reset_view, show_minimap, show_help }
+import { view, get_tid, menus, coordinates, reset_view, show_minimap, show_help }
     from "./gui.js";
 import { zoom_around } from "./zoom.js";
 import { move_minimap_view } from "./minimap.js";
@@ -256,11 +256,11 @@ function on_touchend(event) {
 
 
 function sendPostMessage(props) {
-    parent.postMessage(props, "*");
+    parent.postMessage({ tid: get_tid(), ...props }, "*");
 }
 
 
-function notifyParent(selectionMode, { modification, name, node }) {
+function notifyParent(selectionMode, { modification, name, color, node }) {
     if (self === top)  // only notify when encapsulated in iframe
         return
 
@@ -273,6 +273,7 @@ function notifyParent(selectionMode, { modification, name, node }) {
             selectionMode: selectionMode,
             modification: modification,
             name: name,
+            color: color,
         })
 
     else if (selectionMode === "active")
@@ -280,15 +281,6 @@ function notifyParent(selectionMode, { modification, name, node }) {
             selectionMode: selectionMode,
             nodes: view.active_nodes,
         })
-
-
-    if (view.selected[name])
-        parent.postMessage({ 
-            tid: get_tid(),
-            selectionMode: selectionMode,  // selection, unselection, modification, colorChange
-            name: name,
-            color: view.selected[name].results.color,
-        }, "*");
 }
 
 async function on_postMessage(event) {
