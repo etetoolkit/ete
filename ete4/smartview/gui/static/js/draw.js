@@ -1,6 +1,8 @@
 // Functions related to updating (drawing) the view.
 
-import { view, get_tid, on_box_click, on_box_wheel, get_active_layouts } from "./gui.js";
+import { view, get_tid, on_box_click, on_box_wheel,
+         on_box_mouseover, on_box_mouseleave,
+         get_active_layouts } from "./gui.js";
 import { update_minimap_visible_rect } from "./minimap.js";
 import { colorize_searches, get_search_class } from "./search.js";
 import { colorize_selections, get_selection_class } from "./select.js";
@@ -344,6 +346,10 @@ function create_item(g, item, tl, zoom) {
             on_box_contextmenu(event, box, name, properties, node_id));
         b.addEventListener("wheel", event =>
             on_box_wheel(event, box), {passive: false});
+        b.addEventListener("mouseover", _ =>
+            on_box_mouseover(node_id, properties));
+        b.addEventListener("mouseleave", _ =>
+            on_box_mouseleave(node_id));
 
         if (name.length > 0 || Object.entries(properties).length > 0)
             b.appendChild(create_tooltip(name, properties));
@@ -449,9 +455,16 @@ function create_item(g, item, tl, zoom) {
         return rhombus;
     }
     else if (item[0] === "polygon") {
-        const [ , points, type, style] = item;
+        const [ , points, type, style, props] = item;
 
         const polygon = create_polygon(points, tl, zx, zy, "polygon " + type);
+
+        if (props) {
+            const name = props["name"];
+            if (name)
+                delete props["name"];
+            polygon.appendChild(create_tooltip(name, props))
+        }
 
         style_polygon(polygon, style);
 
@@ -1010,6 +1023,9 @@ function style_text(text, style) {
         })
         text.appendChild(textPath);
     }
+
+    if (is_style_property(style["pointer-events"]))
+        text.style["pointer-events"] = style["pointer-events"];
 
     return text;
 }

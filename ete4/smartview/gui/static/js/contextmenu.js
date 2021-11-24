@@ -85,6 +85,12 @@ async function add_node_options(box, name, properties, node_id) {
             });
         }, "Select current node.", "hand-pointer", false);
 
+    if ("hyperlink" in properties) {
+        const [ label, url ] = properties["hyperlink"];
+        add_button("Go to " + label, () => window.open(url), 
+            url, "external-link-alt");
+    }
+
     if (view.allow_modifications)
         add_node_modifying_options(box, name, properties, node_id);
 }

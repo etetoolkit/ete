@@ -553,7 +553,7 @@ class RectFace(Face):
 
 class ArrowFace(RectFace):
     def __init__(self, width, height, orientation='right',
-            color='gray',
+            color='gray', props={},
             text=None, fgcolor='black', # text color
             min_fsize=6, max_fsize=15,
             ftype='sans-serif',
@@ -566,6 +566,7 @@ class ArrowFace(RectFace):
                 name=name, padding_x=padding_x, padding_y=padding_y)
 
         self.orientation = orientation
+        self.props = props
 
     def __name__(self):
         return "ArrowFace"
@@ -596,7 +597,8 @@ class ArrowFace(RectFace):
         yield draw_arrow(self._box, 
                 tip, self.orientation,
                 self.name,
-                style=style)
+                style=style,
+                props=self.props)
 
         if self.text:
             r = (x or 1e-10) if circ_drawer else 1
@@ -618,6 +620,7 @@ class ArrowFace(RectFace):
                 'max_fsize': self._fsize,
                 'text_anchor': 'middle',
                 'ftype': f'{self.ftype}, sans-serif', # default sans-serif
+                'pointer-events': 'none',
                 }
 
             if circ_drawer:

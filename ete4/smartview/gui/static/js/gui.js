@@ -1,7 +1,7 @@
 // Main file for the gui.
 
 import { init_menus, update_folder_layouts } from "./menu.js";
-import { init_events } from "./events.js";
+import { init_events, notifyParent } from "./events.js";
 import { update } from "./draw.js";
 import { download_newick, download_svg } from "./download.js";
 import { search, get_searches, remove_searches } from "./search.js";
@@ -12,7 +12,8 @@ import { api, api_put, escape_html } from "./api.js";
 import { remove_collapsed } from "./collapse.js";
 
 export { view, menus, on_tree_change, on_drawer_change, show_minimap,
-         tree_command, get_tid, on_box_click, on_box_wheel, coordinates,
+         tree_command, get_tid, on_box_click, on_box_wheel, 
+         on_box_mouseover, on_box_mouseleave, coordinates,
          reset_view, show_help, sort, get_active_layouts };
 
 
@@ -634,6 +635,16 @@ function on_box_wheel(event, box) {
         zoom_towards_box(box, point, zoom_in, do_zoom);
     else
         zoom_around(point, zoom_in, do_zoom);
+}
+
+
+function on_box_mouseover(node_id, properties) {
+    notifyParent("mouseover", { id: node_id, ...properties })
+}
+
+
+function on_box_mouseleave(node_id, properties) {
+    notifyParent("mouseleave", { id: node_id, ...properties })
 }
 
 

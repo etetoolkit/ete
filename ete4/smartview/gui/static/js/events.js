@@ -10,7 +10,7 @@ import { select_by_command, prune_by_selection, remove_selections } from "./sele
 import { update } from "./draw.js";
 import { on_box_contextmenu } from "./contextmenu.js";
 
-export { init_events };
+export { init_events, notifyParent };
 
 
 function init_events() {
@@ -255,6 +255,42 @@ function on_touchend(event) {
 }
 
 
+function sendPostMessage(props) {
+    parent.postMessage(props, "*");
+}
+
+
+function notifyParent(selectionMode, { modification, name, node }) {
+    if (self === top)  // only notify when encapsulated in iframe
+        return
+
+    // Hovering over a node
+    if (["mouseover", "mouseleave"].includes(selectionMode))
+        sendPostMessage({ selectionMode: selectionMode, node: node })
+
+    else if (selectionMode === "named")
+        sendPostMessage({ 
+            selectionMode: selectionMode,
+            modification: modification,
+            name: name,
+        })
+
+    else if (selectionMode === "active")
+        sendPostMessage({
+            selectionMode: selectionMode,
+            nodes: view.active_nodes,
+        })
+
+
+    if (view.selected[name])
+        parent.postMessage({ 
+            tid: get_tid(),
+            selectionMode: selectionMode,  // selection, unselection, modification, colorChange
+            name: name,
+            color: view.selected[name].results.color,
+        }, "*");
+}
+
 async function on_postMessage(event) {
     // Selection when placing ETE in iframe
     
@@ -262,16 +298,16 @@ async function on_postMessage(event) {
     //if (!wiew.allowed_origins.includes(event.origin))
         //return
     
-    const { eventType, name, selectCommand } = event.data;
+    const { selectionMode, name, selectCommand } = event.data;
 
     div_tree.style.cursor = "wait";
 
     // Selection
-    if (eventType === "selection" && selectCommand)
+    if (selectionMode === "selection" && selectCommand)
         try { await select_by_command(selectCommand, name) } catch {}
 
     // Remove selection
-    else if (eventType === "unselection" && name) {
+    else if (selectionMode === "unselection" && name) {
         if (name === "*")
             remove_selections(true); // purge from backend as well
         else if (view.selected[name])
@@ -279,7 +315,7 @@ async function on_postMessage(event) {
     } 
 
     // Prune based on selection names
-    else if (eventType === "prune" && name)
+    else if (selectionMode === "prune" && name)
         prune_by_selection(name.trim().split(","));
 
 
