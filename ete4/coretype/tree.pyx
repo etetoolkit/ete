@@ -50,6 +50,7 @@ import six
 from six.moves import (cPickle, map, range, zip)
 
 from .. import utils
+from ..parser.newick import read_newick, write_newick 
 
 # the following imports are necessary to set fixed styles and faces
 # try:
@@ -59,8 +60,8 @@ try:
 except ImportError: 
     pass # Treeview is now an optional dependency
 
-from ete4.smartview import Face as smartFace
-from ete4.smartview.ete.face_positions import FACE_POSITIONS, _FaceAreas, get_FaceAreas
+from ..smartview import Face as smartFace
+from ..smartview.ete.face_positions import FACE_POSITIONS, _FaceAreas, get_FaceAreas
 # except ImportError:
     # TREEVIEW = False
 # else:
@@ -139,13 +140,19 @@ cdef class TreeNode(object):
         t3 = Tree('/home/user/myNewickFile.txt')
     """
 
+    # def __getattr__(self, item):
+    #     try:
+    #         return super(TreeNode, self).__getattr__(item)
+    #     except AttributeError:
+    #         return self._properties[item]
+
     def _get_name(self):
-        return self._properties.get('name')
+        return self._properties.get('name', DEFAULT_NAME)
     def _set_name(self, value):
         self._properties['name'] = value
 
     def _get_dist(self):
-        return self._properties.get('dist')
+        return self._properties.get('dist', DEFAULT_DIST)
     def _set_dist(self, value):
         try:
             self._properties['dist'] = float(value)
@@ -153,7 +160,7 @@ cdef class TreeNode(object):
             raise TreeError('node dist must be a float number')
 
     def _get_support(self):
-        return self._properties.get('support')
+        return self._properties.get('support', DEFAULT_SUPPORT)
     def _set_support(self, value):
         try:
             self._properties['support'] = float(value)
@@ -269,8 +276,7 @@ cdef class TreeNode(object):
 
         # Initialize tree
         if newick is not None:
-            from ete4.parser.newick import read_newick
-            read_newick(newick, self)
+            read_newick(newick, self, format=format, quoted_names=quoted_node_names)
         
         self.name = name if name is not None else\
                 self.name if self.name is not None else DEFAULT_NAME
@@ -367,7 +373,7 @@ cdef class TreeNode(object):
         """
         Permanently deletes a node's feature.
         """
-        print("\nWARNING! del_prop is DEPRECATED use del_prop instead\n")
+        print("\nWARNING! del_feature is DEPRECATED use del_prop instead\n")
         self.del_prop(pr_name)
     # DEPRECATED #
 
@@ -905,7 +911,7 @@ cdef class TreeNode(object):
         print("Most distant node:\t%s" %max_node.name)
         print("Max. distance:\t%f" %max_dist)
 
-    def write(self, properties=[], outfile=None, format=0, is_leaf_fn=None,
+    def write(self, properties=None, outfile=None, format=0, is_leaf_fn=None,
               format_root_node=False, dist_formatter=None, support_formatter=None,
               name_formatter=None, quoted_node_names=False):
         """
@@ -913,18 +919,17 @@ cdef class TreeNode(object):
         arguments control the way in which extra data is shown for
         every node:
 
-        :argument properties: a list of feature names to be exported
-          using the Extended Newick Format (i.e. properties=["name",
-          "dist"]). Use an empty list to export all available properties
-          in each node (properties=[]), assign it None to mute all the 
-          properties (properties=None)
+        :argument features: a list of feature names to be exported
+          using the Extended Newick Format (i.e. features=["name",
+          "dist"]). Use an empty list to export all available features
+          in each node (features=[])
 
         :argument outfile: writes the output to a given file
 
         :argument format: defines the newick standard used to encode the
           tree. See tutorial for details.
 
-        :argument False format_root_node: If True, it allows properties
+        :argument False format_root_node: If True, it allows features
           and branch information from root node to be exported as a
           part of the newick text string. For newick compatibility
           reasons, this is False by default.
@@ -936,18 +941,17 @@ cdef class TreeNode(object):
 
         ::
 
-             t.write(properties=["species","name"], format=1, outfile="mytree.nwx")
+             t.write(features=["species","name"], format=1)
 
         """
 
-        from ete4.parser.newick import set_formatters, write_newick
-        # Set dist, support and name formatters
-        set_formatters(dist_formatter=dist_formatter,
-                       support_formatter=support_formatter,
-                       name_formatter=name_formatter)
-
-        nw = write_newick(self, format=format, properties=properties,
-                quoted_names=quoted_node_names)
+        nw = write_newick(self, properties=properties, format=format,
+                          is_leaf_fn=is_leaf_fn,
+                          format_root_node=format_root_node,
+                          dist_formatter=dist_formatter,
+                          support_formatter=support_formatter,
+                          name_formatter=name_formatter,
+                          quoted_names=quoted_node_names)
 
         if outfile is not None:
             with open(outfile, "w") as OUT:
@@ -1344,7 +1348,8 @@ cdef class TreeNode(object):
                 tname = ''.join(next(avail_names))
             n.name = tname
 
-    def set_outgroup(self, outgroup, branch_properties=None):
+    
+    def set_outgroup_jordi(self, outgroup, branch_properties=None):
         """
         Returns a descendant node as the outgroup of a tree.  This function
         can be used to root a tree or even an internal node.
@@ -1353,8 +1358,97 @@ cdef class TreeNode(object):
           structure that will be used as a basal node.
         :branch_properties: list of branch properties (other than "support").
         """
-        from ete4.smartview.ete.gardening import root_at
+        from ..smartview.ete.gardening import root_at
         return root_at(outgroup, branch_properties)
+
+
+
+    def set_outgroup(self, outgroup):
+        """
+        Sets a descendant node as the outgroup of a tree.  This function
+        can be used to root a tree or even an internal node.
+
+        :argument outgroup: a node instance within the same tree
+          structure that will be used as a basal node.
+
+        """
+        from ..smartview.ete.gardening import update_all_sizes
+        outgroup = _translate_nodes(self, outgroup)
+
+        if self == outgroup:
+            raise TreeError("Cannot set the tree root as outgroup")
+
+        parent_outgroup = outgroup.up
+
+        # Detects (sub)tree root
+        n = outgroup
+        while n.up is not self:
+            n = n.up
+
+        # If outgroup is a child from root, but with more than one
+        # sister nodes, creates a new node to group them
+        self.children.remove(n)
+        if len(self.children) != 1:
+            down_branch_connector = self.__class__()
+            down_branch_connector.dist = 0.0
+            down_branch_connector.support = n.support
+            for ch in self.get_children():
+                down_branch_connector.children.append(ch)
+                ch.up = down_branch_connector
+                self.children.remove(ch)
+        else:
+            down_branch_connector = self.children[0]
+
+        # Connects down branch to myself or to outgroup
+        quien_va_ser_padre = parent_outgroup
+        if quien_va_ser_padre is not self:
+            # Parent-child swapping
+            quien_va_ser_hijo = quien_va_ser_padre.up
+            quien_fue_padre = None
+            buffered_dist = quien_va_ser_padre.dist
+            buffered_support = quien_va_ser_padre.support
+
+            while quien_va_ser_hijo is not self:
+                quien_va_ser_padre.children.append(quien_va_ser_hijo)
+                quien_va_ser_hijo.children.remove(quien_va_ser_padre)
+
+                buffered_dist2 = quien_va_ser_hijo.dist
+                buffered_support2 = quien_va_ser_hijo.support
+                quien_va_ser_hijo.dist = buffered_dist
+                quien_va_ser_hijo.support = buffered_support
+                buffered_dist = buffered_dist2
+                buffered_support = buffered_support2
+
+                quien_va_ser_padre.up = quien_fue_padre
+                quien_fue_padre = quien_va_ser_padre
+
+                quien_va_ser_padre = quien_va_ser_hijo
+                quien_va_ser_hijo = quien_va_ser_padre.up
+
+            quien_va_ser_padre.children.append(down_branch_connector)
+            down_branch_connector.up = quien_va_ser_padre
+            quien_va_ser_padre.up = quien_fue_padre
+
+            down_branch_connector.dist += buffered_dist
+            outgroup2 = parent_outgroup
+            parent_outgroup.children.remove(outgroup)
+            outgroup2.dist = 0
+
+        else:
+            outgroup2 = down_branch_connector
+
+        outgroup.up = self
+        outgroup2.up = self
+        # outgroup is always the first children. Some function my
+        # trust on this fact, so do no change this.
+        self.children = [outgroup,outgroup2]
+        middist = (outgroup2.dist + outgroup.dist)/2
+        outgroup.dist = middist
+        outgroup2.dist = middist
+        outgroup2.support = outgroup.support
+
+        update_all_sizes(self)
+
 
     def unroot(self, mode='legacy'):
         """
@@ -1443,7 +1537,7 @@ cdef class TreeNode(object):
 
         :port: port used to run the local server (127.0.0.1). Default 5000
         """
-        from ete4.smartview.gui.server import run_smartview
+        from ..smartview.gui.server import run_smartview
 
         run_smartview(tree=self, tree_name=tree_name, 
                 tree_style=tree_style, layouts=layouts, port=port)
@@ -1480,9 +1574,9 @@ cdef class TreeNode(object):
         """
         method = method.lower()
         if method=="newick":
-            new_node = self.__class__(self.write(properties=["name"], format=1)) #, format_root_node=True))
+            new_node = self.__class__(self.write(properties=None, format=1, format_root_node=True), format=1)
         elif method=="newick-extended":
-            new_node = self.__class__(self.write(properties=[], format=1))
+            new_node = self.__class__(self.write(properties=[], format=1), format=1)
         elif method == "deepcopy":
             parent = self.up
             self.up = None
