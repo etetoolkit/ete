@@ -224,7 +224,8 @@ class Trees(Resource):
         if rule.startswith('/trees/<string:tree_id>'):
             tid, subtree = get_tid(tree_id)
             t = load_tree(tid)
-            app.trees[int(tid)].timer = time()
+            tree = app.trees[int(tid)]
+            tree.timer = time()
 
         if rule == '/trees/<string:tree_id>':
             modify_tree_fields(tree_id)
@@ -238,7 +239,8 @@ class Trees(Resource):
             if subtree:
                 raise InvalidUsage('operation not allowed with subtree')
             node_id = request.json
-            app.trees[int(tid)].tree = gdn.root_at(gdn.get_node(t, node_id))
+            tree.tree.set_outgroup(gdn.get_node(t, node_id))
+            # app.trees[int(tid)].tree = gdn.root_at(gdn.get_node(t, node_id))
             return {'message': 'ok'}
         elif rule == '/trees/<string:tree_id>/move':
             try:
