@@ -4,7 +4,7 @@ import { view, menus, get_tid, on_tree_change } from "./gui.js";
 import { draw_tree } from "./draw.js";
 import { api } from "./api.js";
 import { colors } from "./colors.js";
-import { notifyParent } from "./events.js";
+import { notify_parent } from "./events.js";
 
 export { 
     select_node, unselect_node, store_selection,
@@ -52,7 +52,7 @@ async function select_node(node_id, name) {
 
 function notifySelection(modification, name) {
     if (view.selected[name])
-        notifyParent("named", {
+        notify_parent("named", {
             modification: modification,
             name: name,
             color: view.selected[name].results.color,

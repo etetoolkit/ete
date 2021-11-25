@@ -1,9 +1,10 @@
 // Functions related to updating (drawing) the view.
 
 import { view, get_tid, on_box_click, on_box_wheel,
-         on_box_mouseover, on_box_mouseleave,
+         on_box_mouseenter, on_box_mouseleave,
          get_active_layouts } from "./gui.js";
 import { update_minimap_visible_rect } from "./minimap.js";
+import { colorize_active, get_active_class } from "./active.js";
 import { colorize_searches, get_search_class } from "./search.js";
 import { colorize_selections, get_selection_class } from "./select.js";
 import { on_box_contextmenu } from "./contextmenu.js";
@@ -59,6 +60,7 @@ async function draw_tree() {
         clearTimeout(align_timeout);
 
         view.nnodes = div_tree.getElementsByClassName("node").length;
+        colorize_active();
         colorize_searches();
         colorize_selections();
 
@@ -321,7 +323,8 @@ function create_item(g, item, tl, zoom) {
 
         if (result_of.length === 1) {
             const t = result_of[0];
-            const cnode = Object.keys(view.searches).includes(t)
+            const cnode = t === "active" ? get_active_class()
+                : Object.keys(view.searches).includes(t)
                 ? get_search_class(t) : get_selection_class(t);
             b.classList.add(cnode);
         } else if (result_of.length > 1) {
@@ -331,7 +334,8 @@ function create_item(g, item, tl, zoom) {
                 const box = [ x + dx * i, y, dx, dy ];
                 const b = create_box(box, tl, zx, zy, "", style);
                 style_nodebox(b, style);
-                const cnode = Object.keys(view.searches).includes(t) 
+                const cnode = t === "active" ? get_active_class()
+                    : Object.keys(view.searches).includes(t) 
                     ? get_search_class(t) : get_selection_class(t);
                 b.classList.add(cnode);
                 g.appendChild(b);
@@ -346,8 +350,8 @@ function create_item(g, item, tl, zoom) {
             on_box_contextmenu(event, box, name, properties, node_id));
         b.addEventListener("wheel", event =>
             on_box_wheel(event, box), {passive: false});
-        b.addEventListener("mouseover", _ =>
-            on_box_mouseover(node_id, properties));
+        b.addEventListener("mouseenter", _ =>
+            on_box_mouseenter(node_id, properties));
         b.addEventListener("mouseleave", _ =>
             on_box_mouseleave(node_id));
 

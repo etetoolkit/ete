@@ -26,7 +26,7 @@ from threading import Timer
 from datetime import datetime
 from contextlib import contextmanager
 from collections import defaultdict, namedtuple
-from copy import deepcopy
+from copy import copy, deepcopy
 from dataclasses import dataclass
 import gzip
 import json
@@ -62,6 +62,7 @@ class AppTree:
     timer: float = None
     initialized: bool = False
     selected: dict = None
+    active: namedtuple = None  # active nodes
     searches: dict = None
 
 # REST api.
@@ -147,6 +148,7 @@ class Trees(Resource):
         elif rule == '/trees/<string:tree_id>/newick':
             MAX_MB = 2
             return get_newick(tree_id, MAX_MB)
+        # Selections
         elif rule == '/trees/<string:tree_id>/all_selections':
             selected = {
                 name: { 'nresults': len(results), 'nparents': len(parents) }
@@ -170,6 +172,26 @@ class Trees(Resource):
             return {'message': 'ok'}
         elif rule == '/trees/<string:tree_id>/selection/info':
             return get_selection_info(tid, request.args.copy())
+        elif rule == '/trees/<string:tree_id>/search_to_selection':
+            search_to_selection(tid, request.args.copy())
+            return { 'message': 'ok' }
+        elif rule == '/trees/<string:tree_id>/prune_by_selection':
+            prune_by_selection(tid, request.args.copy())
+            return { 'message': 'ok' }
+        # Active nodes
+        elif rule == '/trees/<string:tree_id>/activate':
+            activate_node(tree_id)
+            return {'message': 'ok'}
+        elif rule == '/trees/<string:tree_id>/deactivate':
+            deactivate_node(tree_id)
+            return {'message': 'ok'}
+        elif rule == '/trees/<string:tree_id>/store_active':
+            nresults, nparents = store_active(tree, request.args.copy())
+            return {'message': 'ok', 'nresults': nresults, 'nparents': nparents}
+        elif rule == '/trees/<string:tree_id>/remove_active':
+            remove_active(tree)
+            return {'message': 'ok'}
+        # Searches
         elif rule == '/trees/<string:tree_id>/searches':
             searches = { 
                 text: { 'nresults' : len(results), 'nparents': len(parents) }
@@ -182,12 +204,6 @@ class Trees(Resource):
             removed = remove_search(tid, request.args.copy())
             message = 'ok' if removed else 'search not found'
             return {'message': message}
-        elif rule == '/trees/<string:tree_id>/search_to_selection':
-            search_to_selection(tid, request.args.copy())
-            return { 'message': 'ok' }
-        elif rule == '/trees/<string:tree_id>/prune_by_selection':
-            prune_by_selection(tid, request.args.copy())
-            return { 'message': 'ok' }
         elif rule == '/trees/<string:tree_id>/draw':
             drawer = get_drawer(tree_id, request.args.copy())
             start = time()
@@ -446,11 +462,12 @@ def get_drawer(tree_id, args):
 
         update_ultrametric(args.get('ultrametric'), tid)
 
+        active = tree.active
         selected = tree.selected
         searches = tree.searches
         
         return drawer_class(load_tree(tree_id), viewport, panel, zoom,
-                    limits, collapsed_ids, selected, searches, tree.style)
+                    limits, collapsed_ids, active, selected, searches, tree.style)
     except StopIteration:
         raise InvalidUsage(f'not a valid drawer: {drawer_name}')
     except (ValueError, AssertionError) as e:
@@ -652,6 +669,20 @@ def prune_by_selection(tid, args):
     tree.initialized = False
 
 
+def update_selection(tree, name, results, parents):
+    if name in tree.selected.keys():
+        all_results, all_parents = tree.selected[name]
+        all_results.update(results)
+        for p, v in parents.items():  # update parents defaultdict
+            all_parents[p] += v
+        tree.selected[name] = (all_results, all_parents)
+    else:
+        tree.selected[name] = (results, parents)
+
+    results, parents = tree.selected[name]
+    return len(results), len(parents)
+
+
 def store_selection(tree_id, args):
     "Store the results and parents of a selection and return their numbers"
     if 'text' not in args:
@@ -664,17 +695,44 @@ def store_selection(tree_id, args):
     parents = get_parents([node])
 
     name = args.pop('text').strip()
-    if name in app_tree.selected.keys():
-        all_results, all_parents = app_tree.selected[name]
-        all_results.add(node)
-        for p, v in parents.items():  # update parents defaultdict
-            all_parents[p] += v
-        app_tree.selected[name] = (all_results, all_parents)
-    else:
-        app_tree.selected[name] = (set([node]), parents)
+    return update_selection(tree, name, set([node]), parents)
 
-    results, parents = app_tree.selected[name]
-    return len(results), len(parents)
+
+def activate_node(tree_id):
+    tid, subtree = get_tid(tree_id)
+    tree = app.trees[int(tid)]
+    node = gdn.get_node(tree.tree, subtree)
+    tree.active.results.add(node)
+    tree.active.parents.clear()
+    tree.active.parents.update(get_parents(tree.active.results))
+
+
+def deactivate_node(tree_id):
+    tid, subtree = get_tid(tree_id)
+    tree = app.trees[int(tid)]
+    node = gdn.get_node(tree.tree, subtree)
+    tree.active.results.discard(node)
+    tree.active.parents.clear()
+    tree.active.parents.update(get_parents(tree.active.results))
+
+
+def store_active(tree, args):
+    if 'text' not in args:
+        raise InvalidUsage('missing selection text')
+
+    name = args.pop('text').strip()
+    results = copy(tree.active.results)
+    parents = copy(tree.active.parents)
+
+    remove_active(tree)
+
+    return update_selection(tree, name, results, parents)
+
+
+def remove_active(tree):
+    tree.active.parents.clear()
+    tree.active.results.clear()
+
 
 
 def get_search_function(text):
@@ -1051,6 +1109,7 @@ def initialize(tree=None, tree_style=None, layouts=[], memory_only=False):
         timer = time(),
         searches = {},
         selected = {},
+        active = draw.Active(set(), defaultdict(lambda: 0)),
     ))
 
     if tree:
@@ -1131,6 +1190,10 @@ def add_resources(api):
         '/trees/<string:tree_id>/change_selection_name',
         '/trees/<string:tree_id>/search_to_selection',  # convert search to selection
         '/trees/<string:tree_id>/prune_by_selection',  # prune based on selection
+        '/trees/<string:tree_id>/activate',
+        '/trees/<string:tree_id>/deactivate',
+        '/trees/<string:tree_id>/store_active',
+        '/trees/<string:tree_id>/remove_active',
         '/trees/<string:tree_id>/search',
         '/trees/<string:tree_id>/searches',
         '/trees/<string:tree_id>/remove_search',

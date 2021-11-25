@@ -5,6 +5,7 @@ import { view, menus, on_tree_change,
          on_drawer_change, show_minimap, get_tid } from "./gui.js";
 import { draw_minimap } from "./minimap.js";
 import { update, draw_tree_scale } from "./draw.js";
+import { add_folder_active } from "./active.js";
 
 export { init_menus, update_folder_layouts };
 
@@ -21,6 +22,7 @@ function init_menus(trees) {
     create_menu_main(tab.pages[0], trees);
     create_menu_representation(tab.pages[1]);
     create_menu_selection(tab.pages[2]);
+    console.log(tab)
 }
 
 
@@ -85,6 +87,9 @@ function create_menu_selection(menu) {
     // filled dynamically in collapsed.js and select.js
     menus.collapsed = menu.addFolder({ title: "Collapsed" }); 
     menus.selected = menu.addFolder({ title: "Selected" });
+
+    view.active.folder = menu.addFolder({ title: `Active ${view.active.nodes.length}` });
+    add_folder_active();
 
     add_folder_searches(menu);
 }

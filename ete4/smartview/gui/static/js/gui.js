@@ -1,9 +1,10 @@
 // Main file for the gui.
 
 import { init_menus, update_folder_layouts } from "./menu.js";
-import { init_events, notifyParent } from "./events.js";
+import { init_events, notify_parent } from "./events.js";
 import { update } from "./draw.js";
 import { download_newick, download_svg } from "./download.js";
+import { activate_node, deactivate_node } from "./active.js";
 import { search, get_searches, remove_searches } from "./search.js";
 import { get_selections, remove_selections } from "./select.js";
 import { zoom_into_box, zoom_around, zoom_towards_box } from "./zoom.js";
@@ -13,7 +14,7 @@ import { remove_collapsed } from "./collapse.js";
 
 export { view, menus, on_tree_change, on_drawer_change, show_minimap,
          tree_command, get_tid, on_box_click, on_box_wheel, 
-         on_box_mouseover, on_box_mouseleave, coordinates,
+         on_box_mouseenter, on_box_mouseleave, coordinates,
          reset_view, show_help, sort, get_active_layouts };
 
 
@@ -57,7 +58,15 @@ const view = {
     layouts: {},
 
     // selected
-    selected: {},  // will contain the selected nodes
+    selected: {},  // will contain the selected nodes (saved)
+    active: {
+        nodes: [],    // will contain list of active nodes
+        color: "#98C1D9",
+        opacity: 0.4,
+        remove: undefined,
+        folder: undefined,
+        buttons: [],
+    },
 
     // searches
     search: () => search(),
@@ -612,8 +621,15 @@ function coordinates(point) {
 }
 
 
-function on_box_click(event, box, node_id) {
-    if (event.detail === 2 || event.ctrlKey) {  // double-click or ctrl-click
+function on_box_click(event, box, node_id, properties) {
+    if (event.altKey && node_id.length) {
+        if (view.active.nodes.includes(node_id))
+            deactivate_node(node_id)
+        else
+            activate_node(node_id, properties)
+    }
+    else if (event.detail === 2 || event.ctrlKey) {
+        // double-click or ctrl-click
         zoom_into_box(box);
     }
     else if (event.shiftKey) {  // shift-click
@@ -638,13 +654,15 @@ function on_box_wheel(event, box) {
 }
 
 
-function on_box_mouseover(node_id, properties) {
-    notifyParent("mouseover", { id: node_id, ...properties })
+function on_box_mouseenter(node_id, properties) {
+    notify_parent("mouseenter", { 
+        node: { id: String(node_id), ...properties } })
 }
 
 
 function on_box_mouseleave(node_id, properties) {
-    notifyParent("mouseleave", { id: node_id, ...properties })
+    notify_parent("mouseleave", { 
+        node: { id: String(node_id), ...properties } })
 }
 
 

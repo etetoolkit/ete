@@ -10,7 +10,7 @@ import { select_by_command, prune_by_selection, remove_selections } from "./sele
 import { update } from "./draw.js";
 import { on_box_contextmenu } from "./contextmenu.js";
 
-export { init_events, notifyParent };
+export { init_events, notify_parent };
 
 
 function init_events() {
@@ -260,26 +260,30 @@ function sendPostMessage(props) {
 }
 
 
-function notifyParent(selectionMode, { modification, name, color, node }) {
+function notify_parent(selectionMode, { eventType, name, color, node }) {
     if (self === top)  // only notify when encapsulated in iframe
         return
 
     // Hovering over a node
-    if (["mouseover", "mouseleave"].includes(selectionMode))
-        sendPostMessage({ selectionMode: selectionMode, node: node })
-
-    else if (selectionMode === "named")
-        sendPostMessage({ 
+    if (selectionMode === "hover")
+        sendPostMessage({
             selectionMode: selectionMode,
-            modification: modification,
-            name: name,
-            color: color,
+            eventType: eventType,
+            node: node
         })
 
     else if (selectionMode === "active")
         sendPostMessage({
             selectionMode: selectionMode,
-            nodes: view.active_nodes,
+            nodes: view.active.nodes,
+        })
+
+    else if (selectionMode === "saved")
+        sendPostMessage({ 
+            selectionMode: selectionMode,
+            eventType: eventType,
+            name: name,
+            color: color,
         })
 }
 
@@ -290,25 +294,37 @@ async function on_postMessage(event) {
     //if (!wiew.allowed_origins.includes(event.origin))
         //return
     
-    const { selectionMode, name, selectCommand } = event.data;
+    const { selectionMode, eventType, name, node, selectCommand } = event.data;
 
     div_tree.style.cursor = "wait";
 
-    // Selection
-    if (selectionMode === "selection" && selectCommand)
-        try { await select_by_command(selectCommand, name) } catch {}
+    if (selectionMode === "active" && node.id) {
 
-    // Remove selection
-    else if (selectionMode === "unselection" && name) {
-        if (name === "*")
-            remove_selections(true); // purge from backend as well
-        else if (view.selected[name])
-            view.selected[name].remove();
-    } 
+        if (eventType === "update")
+            
+            activate_node(node.id, node)
 
-    // Prune based on selection names
-    else if (selectionMode === "prune" && name)
-        prune_by_selection(name.trim().split(","));
+        else if (eventType === "update")
+            deactivate_node(node.id)
+
+    } else if (selectionMode !== "saved") {
+        // Selection
+        if (eventType === "select" && selectCommand)
+            try { await select_by_command(selectCommand, name) } catch {}
+
+        // Remove selection
+        else if (eventType === "remove" && name) {
+            if (name === "*")
+                remove_selections(true); // purge from backend as well
+            else if (view.selected[name])
+                view.selected[name].remove();
+        } 
+
+        // Prune based on selection names
+        else if (eventType === "prune" && name)
+            prune_by_selection(name.trim().split(","));
+
+    }
 
 
     div_tree.style.cursor = "auto";
