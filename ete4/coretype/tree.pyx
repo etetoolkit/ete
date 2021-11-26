@@ -1747,15 +1747,21 @@ cdef class TreeNode(object):
         if _store is None:
             _store = {}
 
+        def get_prop(_n, propname):
+            try: 
+                v = getattr(_n, propname)
+            except AttributeError:
+                v = _n.props.get(store_attr)
+            return v
+
         def get_value(_n):
             if store_attr is None:
                 _val = [_n]
             else:
                 if not isinstance(store_attr, six.string_types):
-                    _val = [tuple(_n.props.get(attr) for attr in store_attr)]
-
+                    _val = [tuple(get_prop(_n, attr) for attr in store_attr)]
                 else:
-                    _val = [_n.props.get(store_attr)]
+                    _val = [get_prop(_n, store_attr)]
 
             return _val
 
