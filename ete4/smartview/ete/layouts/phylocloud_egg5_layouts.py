@@ -1,4 +1,3 @@
-from ete4.treeview.main import NodeStyle
 from ete4.smartview.ete.faces import RectFace, TextFace
 from collections import OrderedDict
 

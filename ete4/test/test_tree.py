@@ -6,13 +6,11 @@ import itertools
 import json
 
 import sys
-from six.moves import range
 
 from .. import Tree, PhyloTree, TreeNode
 from ..coretype.tree import TreeError
 from ..parser.newick import NewickError
 from .datasets import *
-from ete4.smartview.ete.gardening import standardize
 
 class Test_Coretype_Tree(unittest.TestCase):
     """ Tests tree basics. """
@@ -39,19 +37,19 @@ class Test_Coretype_Tree(unittest.TestCase):
         self.assertRaises(TreeError, wrong_up)
         self.assertRaises(TreeError, wrong_children)
 
-    def test_add_remove_properties(self):
+    def test_add_remove_features(self):
         #The features concept will probably change in future versions. It is
         #very inefficient in larg trees.
         t = Tree()
         t.add_props(testf1=1, testf2="1", testf3=[1])
         t.add_prop('testf4', set([1]))
-        self.assertEqual(t.props.get('testf1'), 1)
-        self.assertEqual(t.props.get('testf2'), "1")
-        self.assertEqual(t.props.get('testf3'), [1])
-        self.assertEqual(t.props.get('testf4'), set([1]))
+        self.assertEqual(t.props["testf1"], 1)
+        self.assertEqual(t.props["testf2"], "1")
+        self.assertEqual(t.props["testf3"], [1])
+        self.assertEqual(t.props["testf4"], set([1]))
 
         t.del_prop('testf4')
-        self.assertTrue('testf4' not in t.props.keys())
+        self.assertTrue('testf4' not in t._properties)
 
     def test_tree_read_and_write(self):
         """ Tests newick support """
@@ -87,13 +85,13 @@ class Test_Coretype_Tree(unittest.TestCase):
         self.assertEqual(Tree("hola;").write(format=9),  "hola;")
         self.assertEqual(Tree("(hola);").write(format=9),  "(hola);")
 
-        #Test export root properties
+        #Test export root features
         t = Tree("(((A[&&NHX:name=A],B[&&NHX:name=B])[&&NHX:name=NoName],C[&&NHX:name=C])[&&NHX:name=I],(D[&&NHX:name=D],F[&&NHX:name=F])[&&NHX:name=J])[&&NHX:name=root];")
         #print t.get_ascii()
         self.assertEqual(t.write(format=9, properties=["name"], format_root_node=True),
                          "(((A[&&NHX:name=A],B[&&NHX:name=B])[&&NHX:name=NoName],C[&&NHX:name=C])[&&NHX:name=I],(D[&&NHX:name=D],F[&&NHX:name=F])[&&NHX:name=J])[&&NHX:name=root];")
 
-        #Test exporting ordered properties
+        #Test exporting ordered features
         t = Tree("((A,B),C);")
         expected_nw = "((A:1[&&NHX:dist=1.0:name=A:support=1.0],B:1[&&NHX:0=0:1=1:2=2:3=3:4=4:5=5:6=6:7=7:8=8:9=9:a=a:b=b:c=c:d=d:dist=1.0:e=e:f=f:g=g:h=h:i=i:j=j:k=k:l=l:m=m:n=n:name=B:o=o:p=p:q=q:r=r:s=s:support=1.0:t=t:u=u:v=v:w=w])1:1[&&NHX:dist=1.0:name=:support=1.0],C:1[&&NHX:dist=1.0:name=C:support=1.0]);"
         features = list("abcdefghijklmnopqrstuvw0123456789")
@@ -110,7 +108,7 @@ class Test_Coretype_Tree(unittest.TestCase):
         t2 = Tree('((a, b), c);')
         concat_tree = t1 + t2
         concat_tree.sort_descendants()
-        self.assertEqual(concat_tree.write(format=9, properties=None), '(((A,B),C),((a,b),c));')
+        self.assertEqual(concat_tree.write(format=9), '(((A,B),C),((a,b),c));')
         t3 = PhyloTree('((a, b), c);')
         mixed_types = lambda: t1 + t3
         self.assertRaises(TreeError, mixed_types)
@@ -125,10 +123,6 @@ class Test_Coretype_Tree(unittest.TestCase):
         for i in range(10):
             t = Tree()
             t.populate(4, random_branches=True)
-            standardize(t)
-
-            print(t)
-
             for f in NW_FORMAT:
                 self.assertEqual(t.write(format=f), Tree(t.write(format=f),format=f).write(format=f))
 
@@ -275,9 +269,7 @@ class Test_Coretype_Tree(unittest.TestCase):
                  [9, '((TEST-A,TEST-B),TEST-D);']]
 
         for f, result in check:
-            nw = t.write(format=f, dist_formatter="%0.1f",
-                    name_formatter="TEST-%s", support_formatter="SUP-%0.1f",
-                    properties=None)
+            nw = t.write(format=f, dist_formatter="%0.1f", name_formatter="TEST-%s", support_formatter="SUP-%0.1f")
             self.assertEqual(nw, result)
 
     def test_tree_manipulation(self):
@@ -311,7 +303,7 @@ class Test_Coretype_Tree(unittest.TestCase):
 
         c7 = c2.add_child(name="B", dist=2.4)
 
-        self.assertEqual(nw_tree, t.write(properties=None))
+        self.assertEqual(nw_tree, t.write())
         self.assertEqual(_c5, c5)
         self.assertEqual(_c6, c6)
         self.assertEqual(_n, n)
@@ -438,7 +430,7 @@ class Test_Coretype_Tree(unittest.TestCase):
             (t_fuzzy&'3').populate(5)
             t_fuzzy.prune(ref_nodes)
             t_fuzzy.sort_descendants()
-            self.assertEqual(orig_nw, t_fuzzy.write(format=1))
+            self.assertEqual(orig_nw, t_fuzzy.write())
             self.assertEqual(len(t_fuzzy.get_descendants()), (len(ref_nodes)*2)-2 )
 
         # Total number of nodes is correct (no single child nodes)
@@ -468,12 +460,12 @@ class Test_Coretype_Tree(unittest.TestCase):
         t = Tree("((a,a,a,a), (b,b,b,(c,c,c)));")
         t.resolve_polytomy()
         t.ladderize()
-        self.assertEqual(t.write(format=9, properties=None), "((a,(a,(a,a))),(b,(b,(b,(c,(c,c))))));")
+        self.assertEqual(t.write(format=9), "((a,(a,(a,a))),(b,(b,(b,(c,(c,c))))));")
 
         t = Tree("((((a,a,a,a))), (b,b,b,(c,c,c)));")
         t.standardize()
         t.ladderize()
-        self.assertEqual(t.write(format=9, properties=None), "((a,(a,(a,a))),(b,(b,(b,(c,(c,c))))));")
+        self.assertEqual(t.write(format=9), "((a,(a,(a,a))),(b,(b,(b,(c,(c,c))))));")
 
     def test_common_ancestors(self):
         # getting nodes, get_childs, get_sisters, get_tree_root,
@@ -490,18 +482,18 @@ class Test_Coretype_Tree(unittest.TestCase):
         test_not_found = lambda: t&'noffound'
         self.assertRaises(TreeError, test_not_found)
 
-        self.assertEqual("common", A.get_common_ancestor(C).props.get('tag'))
-        self.assertEqual("common", A.get_common_ancestor([C]).props.get('tag'))
-        self.assertEqual("common", t.get_common_ancestor(A, C).props.get('tag'))
-        self.assertEqual("common", A.get_common_ancestor(C, B).props.get('tag'))
+        self.assertEqual("common", A.get_common_ancestor(C).props["tag"])
+        self.assertEqual("common", A.get_common_ancestor([C]).props["tag"])
+        self.assertEqual("common", t.get_common_ancestor(A, C).props["tag"])
+        self.assertEqual("common", A.get_common_ancestor(C, B).props["tag"])
         self.assertEqual(root, t.get_common_ancestor([A, "D"]))
 
-        self.assertEqual("root", A.get_tree_root().props.get('tag'))
-        self.assertEqual("root", B.get_tree_root().props.get('tag'))
-        self.assertEqual("root", C.get_tree_root().props.get('tag'))
+        self.assertEqual("root", A.get_tree_root().props["tag"])
+        self.assertEqual("root", B.get_tree_root().props["tag"])
+        self.assertEqual("root", C.get_tree_root().props["tag"])
 
         common = A.get_common_ancestor(C)
-        self.assertEqual("root", common.get_tree_root().props.get('tag'))
+        self.assertEqual("root", common.get_tree_root().props["tag"])
 
         self.assertTrue(common.get_tree_root().is_root())
         self.assertTrue(not A.is_root())
@@ -539,7 +531,7 @@ class Test_Coretype_Tree(unittest.TestCase):
         self.assertEqual(ancestor_names, ["C", "D", "root"])
 
 
-        # Tree magic python properties
+        # Tree magic python features
         t = Tree(nw_dflt)
         self.assertEqual(len(t), 20)
         self.assertTrue("Ddi0002240" in t)
@@ -689,8 +681,8 @@ class Test_Coretype_Tree(unittest.TestCase):
         with self.assertRaises(ValueError):
             t.unroot(mode="new")
         t2.unroot(mode="legacy")
-        self.assertEqual("(('c':0.2,'d':0.2)1:1.3,'a':0.5,'b':0.5);", t.write(properties=None, quoted_node_names=True))
-        self.assertEqual("(('c':0.2,'d':0.2)1:0.8,'a':0.5,'b':0.5);", t2.write(properties=None, quoted_node_names=True))
+        self.assertEqual("(('c':0.2,'d':0.2)1:1.3,'a':0.5,'b':0.5);", t.write())
+        self.assertEqual("(('c':0.2,'d':0.2)1:0.8,'a':0.5,'b':0.5);", t2.write())
 
     def test_tree_navigation(self):
         t = Tree("(((A, B)H, C)I, (D, F)J)root;", format=1)
@@ -1313,20 +1305,18 @@ class Test_Coretype_Tree(unittest.TestCase):
         # we add a complex feature to the A node, consisting of a list of lists
         (t & "A").add_props(complex=[[0,1], [2,3], [1,11], [1,0]])
 
+        nw2 = t.write(properties=None, format=1, format_root_node=True)
 
         t_nw  = t.copy("newick")
         t_nwx = t.copy("newick-extended")
         t_pkl = t.copy("cpickle")
-        (t & "A").add_prop("testfn", lambda: "YES")
+        (t & "A").props['testfn'] = lambda: "YES"
         t_deep = t.copy("deepcopy")
 
-        print('\n\n\n'+ t_nw.name+ '\n\n')
-        print('\n\n\n'+ t_nw.write()+ '\n\n')
-
         self.assertEqual((t_nw & "root").name, "root")
-        self.assertEqual((t_nwx & "A").props.get("label"), "custom Value")
-        self.assertEqual((t_pkl & "A").props.get("complex")[0], [0,1])
-        self.assertEqual((t_deep & "A").props.get("testfn")(), "YES")
+        self.assertEqual((t_nwx & "A").props['label'], "custom Value")
+        self.assertEqual((t_pkl & "A").props['complex'][0], [0,1])
+        self.assertEqual((t_deep & "A").props['testfn'](), "YES")
 
 
     def test_cophenetic_matrix(self):
