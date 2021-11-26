@@ -1380,18 +1380,12 @@ cdef class TreeNode(object):
         if self == outgroup:
             raise TreeError("Cannot set the tree root as outgroup")
 
-            # Connects down branch to myself or to outgroup
-            quien_va_ser_padre = parent_outgroup
-            if quien_va_ser_padre is not self:
-                # Parent-child swapping
-                quien_va_ser_hijo = quien_va_ser_padre.up
-                quien_fue_padre = None
-                buffered_dist = quien_va_ser_padre.dist
-                buffered_support = quien_va_ser_padre.support
+        parent_outgroup = outgroup.up
 
-                while quien_va_ser_hijo is not self:
-                    quien_va_ser_padre.children.append(quien_va_ser_hijo)
-                    quien_va_ser_hijo.children.remove(quien_va_ser_padre)
+        # Detects (sub)tree root
+        n = outgroup
+        while n.up is not self:
+            n = n.up
 
         # If outgroup is a child from root, but with more than one
         # sister nodes, creates a new node to group them
@@ -1427,30 +1421,33 @@ cdef class TreeNode(object):
                 buffered_dist = buffered_dist2
                 buffered_support = buffered_support2
 
-                    quien_va_ser_padre = quien_va_ser_hijo
-                    quien_va_ser_hijo = quien_va_ser_padre.up
-
-                quien_va_ser_padre.children.append(down_branch_connector)
-                down_branch_connector.up = quien_va_ser_padre
                 quien_va_ser_padre.up = quien_fue_padre
+                quien_fue_padre = quien_va_ser_padre
 
-                down_branch_connector.dist += buffered_dist
-                outgroup2 = parent_outgroup
-                parent_outgroup.children.remove(outgroup)
-                outgroup2.dist = 0
+                quien_va_ser_padre = quien_va_ser_hijo
+                quien_va_ser_hijo = quien_va_ser_padre.up
 
-            else:
-                outgroup2 = down_branch_connector
+            quien_va_ser_padre.children.append(down_branch_connector)
+            down_branch_connector.up = quien_va_ser_padre
+            quien_va_ser_padre.up = quien_fue_padre
 
-            outgroup.up = self
-            outgroup2.up = self
-            # outgroup is always the first children. Some function my
-            # trust on this fact, so do no change this.
-            self.children = [outgroup,outgroup2]
-            middist = (outgroup2.dist + outgroup.dist)/2
-            outgroup.dist = middist
-            outgroup2.dist = middist
-            outgroup2.support = outgroup.support
+            down_branch_connector.dist += buffered_dist
+            outgroup2 = parent_outgroup
+            parent_outgroup.children.remove(outgroup)
+            outgroup2.dist = 0
+
+        else:
+            outgroup2 = down_branch_connector
+
+        outgroup.up = self
+        outgroup2.up = self
+        # outgroup is always the first children. Some function my
+        # trust on this fact, so do no change this.
+        self.children = [outgroup,outgroup2]
+        middist = (outgroup2.dist + outgroup.dist)/2
+        outgroup.dist = middist
+        outgroup2.dist = middist
+        outgroup2.support = outgroup.support
 
         update_all_sizes(self)
 
@@ -2735,93 +2732,6 @@ cdef class TreeNode(object):
         from .. import _ph
         _ph.call()
 
-    def cophenetic_matrix(self):
-        """
-        .. versionadded: 3.1.1
-        Generate a cophenetic distance matrix of the treee to standard output
-        The `cophenetic matrix <https://en.wikipedia.org/wiki/Cophenetic>` is a matrix representation of the
-        distance between each node.
-        if we have a tree like
-                                   ----A
-                      _____________|y
-                      |            |
-                      |            ----B
-              ________|z
-                      |            ----C
-                      |            |
-                      |____________|x     -----D
-                                   |      |
-                                   |______|w
-                                          |
-                                          |
-                                          -----E
-        Where w,x,y,z are internal nodes.
-        d(A,B) = d(y,A) + d(y,B)
-        and
-        d(A, E) = d(z,A) + d(z, E) = {d(z,y) + d(y,A)} + {d(z,x) + d(x,w) + d(w,E)}
-        We use an idea inspired by the ete3 team: https://gist.github.com/jhcepas/279f9009f46bf675e3a890c19191158b :
-        For each node find its path to the root.
-        e.g.
-        A -> A, y, z
-        E -> E, w, x,z
-        and make these orderless sets. Then we XOR the two sets to only find the elements
-        that are in one or other sets but not both. In this case A, E, y, x, w.
-        The distance between the two nodes is the sum of the distances from each of those nodes
-        to the parent
-        One more optimization: since the distances are symmetric, and distance to itself is zero
-        we user itertools.combinations rather than itertools.permutations. This cuts our computes from theta(n^2)
-        1/2n^2 - n (= O(n^2), which is still not great, but in reality speeds things up for large trees).
-        For this tree, we will return the two dimensional array:
-                         A                  B                   C                   D                     E
-        A                0           d(A-y) + d(B-y)     d(A-z) + d(C-z)     d(A-z) + d(D-z)       d(A-z) + d(E-z)
-        B         d(B-y) + d(A-y)           0            d(B-z) + d(C-z)     d(B-z) + d(D-z)       d(B-z) + d(E-z)
-        C         d(C-z) + d(A-z)    d(C-z) + d(B-z)            0            d(C-x) + d(D-x)       d(C-x) + d(E-x)
-        D         d(D-z) + d(A-z)    d(D-z) + d(B-z)     d(D-x) + d(C-x)            0              d(D-w) + d(E-w)
-        E         d(E-z) + d(A-z)    d(E-z) + d(B-z)     d(E-x) + d(C-x)     d(E-w) + d(D-w)              0
-        We will also return the one dimensional array with the leaves in the order in which they appear in the matrix
-        (i.e. the column and/or row headers).
-        :param filename: the optional file to write to. If not provided, output will be to standard output
-        :return: two-dimensional array and a one dimensional array
-        """
-
-        leaves = self.get_leaves()
-        paths = {x: set() for x in leaves}
-
-        # get the paths going up the tree
-        # we get all the nodes up to the last one and store them in a set
-
-        for n in leaves:
-            if n.is_root():
-                continue
-            movingnode = n
-            while not movingnode.is_root():
-                paths[n].add(movingnode)
-                movingnode = movingnode.up
-
-        # now we want to get all pairs of nodes using itertools combinations. We need AB AC etc but don't need BA CA
-
-        leaf_distances = {x.name: {} for x in leaves}
-
-        for (leaf1, leaf2) in itertools.combinations(leaves, 2):
-            # figure out the unique nodes in the path
-            uniquenodes = paths[leaf1] ^ paths[leaf2]
-            distance = sum(x.dist for x in uniquenodes)
-            leaf_distances[leaf1.name][leaf2.name] = leaf_distances[leaf2.name][leaf1.name] = distance
-
-        allleaves = sorted(leaf_distances.keys()) # the leaves in order that we will return
-
-        output = [] # the two dimensional array that we will return
-
-        for i, n in enumerate(allleaves):
-            output.append([])
-            for m in allleaves:
-                if m == n:
-                    output[i].append(0) # distance to ourself = 0
-                else:
-                    output[i].append(leaf_distances[n][m])
-        return output, allleaves 
-        
-        
 def _translate_nodes(root, *nodes):
     name2node = dict([ [n, None] for n in nodes if type(n) is str])
     if name2node:
