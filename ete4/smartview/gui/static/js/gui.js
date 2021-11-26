@@ -655,13 +655,15 @@ function on_box_wheel(event, box) {
 
 
 function on_box_mouseenter(node_id, properties) {
-    notify_parent("mouseenter", { 
+    notify_parent("hover", { 
+        eventType: "mouseenter",
         node: { id: String(node_id), ...properties } })
 }
 
 
 function on_box_mouseleave(node_id, properties) {
-    notify_parent("mouseleave", { 
+    notify_parent("hover", { 
+        eventType: "mouseleave",
         node: { id: String(node_id), ...properties } })
 }
 

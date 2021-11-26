@@ -22,7 +22,6 @@ function init_menus(trees) {
     create_menu_main(tab.pages[0], trees);
     create_menu_representation(tab.pages[1]);
     create_menu_selection(tab.pages[2]);
-    console.log(tab)
 }
 
 

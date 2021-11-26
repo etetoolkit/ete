@@ -39,6 +39,8 @@ async function activate_node(node_id, properties) {
 
     update_active_folder();
 
+    notify_active();
+
     draw_tree();
 }
 
@@ -51,6 +53,8 @@ async function deactivate_node(node_id) {
     view.active.nodes.filter(n => String(n.id) === node_id);
 
     update_active_folder();
+
+    notify_active();
 
     draw_tree();
 }
@@ -68,13 +72,11 @@ async function store_active(name) {
         if (res.message !== "ok")
             throw new Error("Something went wrong.");
 
+        store_selection(name, res);
+
         notify_active();
 
         view.active.remove(false);  // do not notify server nor redraw
-
-        console.log(name, res)
-
-        store_selection(name, res);
 
     } catch (exception) {
         selectError.fire({ html: exception });
