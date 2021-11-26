@@ -2425,7 +2425,7 @@ cdef class TreeNode(object):
             pass
 
         def add_leaf(tree, label):
-        yield (label, tree)
+            yield (label, tree)
             if not isinstance(tree, TipTuple) and isinstance(tree, tuple):
                 for left in add_leaf(tree[0], label):
                     yield (left, tree[1])
