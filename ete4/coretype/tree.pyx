@@ -1,6 +1,4 @@
-'''docdoc'''
-
-# #START_LICENSE###########################################################
+#START_LICENSE###########################################################
 #
 #
 # This file is part of the Environment for Tree Exploration program
