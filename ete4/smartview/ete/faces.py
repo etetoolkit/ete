@@ -485,8 +485,9 @@ class RectFace(Face):
             box = (x, y + (dy - height) / 2, width, height)
 
         elif pos.startswith('aligned'):
-            width = (self.width - 2 * self.padding_x) / zx
-            height = min(dy, (self.height - 2 * self.padding_y) / zy)
+            width, height = get_dimensions(None, dy)
+            # height = min(dy, (self.height - 2 * self.padding_y) / zy)
+            # width = min(self.width - 2 * self.padding_x) / zx
 
             if pos == 'aligned_bottom':
                 y = y + dy - height
