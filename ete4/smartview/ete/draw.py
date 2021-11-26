@@ -6,13 +6,14 @@ from math import sin, cos, pi, sqrt, atan2
 from collections import namedtuple, OrderedDict, defaultdict, deque
 import random
 
+from time import time
+
 from ete4.smartview.ete.walk import walk
+from ete4.smartview.ete.face_positions import FACE_POSITIONS, get_FaceAreas
 
 Size = namedtuple('Size', 'dx dy')  # size of a 2D shape (sizes are always >= 0)
 Box = namedtuple('Box', 'x y dx dy')  # corner and size of a 2D shape
 SBox = namedtuple('SBox', 'x y dx_min dx_max dy')  # slanted box
-
-FACE_POSITIONS = ["branch-top", "branch-bottom", "branch-right", "aligned"]
 
 # They are all "generalized coordinates" (can be radius and angle, say).
 
@@ -81,13 +82,27 @@ class Drawer:
             self.tree_style.aligned_grid_dxs = defaultdict(lambda: 0)
 
         point = self.xmin, self.ymin
+        first_counter = last_counter = descend_counter = 0
+        first_time = 0
         for it in walk(self.tree):
             graphics = []
             if it.first_visit:
+                start = time()
+
                 point = self.on_first_visit(point, it, graphics)
+
+                if not it.descend:
+                    descend_counter += 1
+                first_counter += 1
+                first_time += time() - start
             else:
+                last_counter += 1
                 point = self.on_last_visit(point, it, graphics)
             yield from graphics
+
+        print(f'First visit ({first_counter}): {first_time}')
+        print(f'Descend: {descend_counter}')
+        print(f'Last visit: {last_counter}')
 
         if self.outline:
             yield from self.get_outline()
@@ -96,6 +111,14 @@ class Drawer:
             max_dx = max([box[1].dx for box in self.nodeboxes] + [0])
             self.tree_style.aligned_grid_dxs[-1] = max_dx
             yield from self.nodeboxes[::-1]  # (so they overlap nicely)
+
+        # Draw aligned panel headers
+        if self.panel == 2:
+            if tree_style.aligned_panel_headers.top:
+                pass
+
+            if tree_style.aligned_panel_headers.bottom:
+                pass
 
     def on_first_visit(self, point, it, graphics):
         "Update list of graphics to draw and return new position"
@@ -143,17 +166,15 @@ class Drawer:
         searched_by = set( text for text,(results,_) in self.searches.items()
                 if it.node in results )
         # Selection
-        selected_by = next((text for text,(_,result,_) in self.selected.items()
-                if it.node == result), None)
-        selected_by = [ selected_by ] if selected_by else []
+        selected_by = [ text for text,(results,_) in self.selected.items()
+                if it.node in results ]
         # Only if node is collapsed
         selected_children = []
         if self.outline:
             if all(child in self.collapsed for child in it.node.children):
                 searched_by.update( text for text,(results,parents) in self.searches.items()
-                        if any(node in results or node in parents for node in self.collapsed) )
-                selected_children = [ text for text,(_,result,parents) in self.selected.items()
-                        if any(node == result or node in parents for node in self.collapsed) ]
+                        if any(node in results or node in parents.keys() for node in self.collapsed) )
+                selected_children = self.get_selected_children()
             graphics += self.get_outline()
 
         x_after, y_after = point
@@ -196,17 +217,17 @@ class Drawer:
         if self.panel == 0:
             node_style = node.img_style
             if dx > 0:
-                parent_of = [text for text,(_,parents) in self.searches.items()
-                                if node in parents]
-                parent_of += [text for text,(_,_,parents) in self.selected.items()
-                                if node in parents]
+                parent_of = set(text for text,(_,parents) in self.searches.items()
+                                if node in parents.keys())
+                parent_of.update(text for text,(_,parents) in self.selected.items()
+                                if node in parents.keys())
                 hz_line_style = {
                         'type': node_style['hz_line_type'],
                         'width': node_style['hz_line_width'],
                         'color': node_style['hz_line_color'],
                 }
                 yield from self.draw_lengthline((x, y + bdy), (x + dx, y + bdy),
-                                parent_of, hz_line_style)
+                                list(parent_of), hz_line_style)
 
             if bdy0 != bdy1:
                 vt_line_style = {
@@ -238,16 +259,14 @@ class Drawer:
 
         searched_by = [ text for text,(results,parents) in self.searches.items()
             if collapsed_node in results\
-            or any(node in results or node in parents for node in self.collapsed) ]
-        selected_by = next((text for text,(_,result,parents) in self.selected.items()
-            if collapsed_node == result), None)
-        selected_by = [ selected_by ] if selected_by else []
-        selected_children = [ text for text,(_,result,parents) in self.selected.items()
-            if any(node == result or node in parents for node in self.collapsed) ]
+            or any(node in results or node in parents.keys() for node in self.collapsed) ]
+        selected_by = [ text for text,(results,parents) in self.selected.items()
+            if collapsed_node in results ]
+        selected_children = self.get_selected_children()
 
         if uncollapse:
             self.bdy_dys.append([])
-            graphics += self.draw_content(node0, (x, y), selected_children)
+            graphics += self.draw_content(node0, (x, y))
         else:
             self.bdy_dys[-1].append( (self.outline.dy / 2, self.outline.dy) )
             graphics += self.draw_collapsed(collapsed_node, selected_children)
@@ -319,6 +338,15 @@ class Drawer:
         box_node = make_box((x, y), self.node_size(collapsed_node))
 
         return is_manually_collapsed or self.is_small(box_node)
+
+    def get_selected_children(self):
+        selected_children = []
+        for text,(results, parents) in self.selected.items():
+            hits = sum(1 for node in self.collapsed if node in results)
+            hits += sum(parents.get(node, 0) for node in self.collapsed)
+            if hits:
+                selected_children.append((text, hits))
+        return selected_children
 
 
     # These are the 2 functions that the user overloads to choose what to draw
@@ -542,76 +570,6 @@ def dx_fitting_texts(texts, dy, zoom):
     max_len = max(len(t) for t in texts)  # number of chars of the longest
     return max_len * dx_char / zx  # in tree units
 
-# Drawing generators.
-
-def draw_rect_leaf_name(drawer, node, point):
-    "Yield name to the right of the leaf"
-    if not node.is_leaf() or not node.name:
-        return
-
-    x, y = point
-    dx, dy = drawer.content_size(node)
-
-    x_text = (x + dx) if drawer.panel == 0 else drawer.xmin
-    dx_fit = dx_fitting_texts([node.name], dy, drawer.zoom)
-    box = Box(x_text, y, dx_fit, dy)
-
-    yield draw_text(box, node.name, 'name',
-            style={ 'fill': node.img_style.get('fgcolor') })
-
-
-def draw_circ_leaf_name(drawer, node, point):
-    "Yield name at the end of the leaf"
-    if not node.is_leaf() or not node.name:
-        return
-
-    r, a = point
-    dr, da = drawer.content_size(node)
-
-    if is_good_angle_interval(a, a + da) and r + dr > 0:
-        r_text = (r + dr) if drawer.panel == 0 else drawer.xmin
-        dr_fit = dx_fitting_texts([node.name], (r + dr) * da, drawer.zoom)
-        box = Box(r_text, a, dr_fit, da)
-        yield draw_text(box, node.name, 'name',
-                style={ 'fill': node.img_style.get('fgcolor') })
-
-
-def draw_rect_collapsed_names(drawer):
-    "Yield names of collapsed nodes after their outline"
-    x, y, dx_min, dx_max, dy = drawer.outline
-
-    names = summary(drawer.collapsed)
-    if all(name == '' for name in names):
-        return
-
-    texts = names if len(names) < 6 else (names[:3] + ['...'] + names[-2:])
-
-    x_text = (x + dx_max) if drawer.panel == 0 else drawer.xmin
-    dx_fit = dx_fitting_texts(texts, dy, drawer.zoom)
-    box = Box(x_text, y, dx_fit, dy)
-
-    yield from draw_texts(box, (0, 0.5), texts, 'name')
-
-
-def draw_circ_collapsed_names(drawer):
-    "Yield names of collapsed nodes after their outline"
-    r, a, dr_min, dr_max, da = drawer.outline
-    if not (-pi <= a <= pi and -pi <= a + da <= pi):
-        return
-
-    names = summary(drawer.collapsed)
-    if all(name == '' for name in names):
-        return
-
-    texts = names if len(names) < 6 else (names[:3] + ['...'] + names[-2:])
-
-    r_text = (r + dr_max) if drawer.panel == 0 else drawer.xmin
-    dr_fit = dx_fitting_texts(texts, (r + dr_max) * da, drawer.zoom)
-    box = Box(r_text, a, dr_fit, da)
-
-    yield from draw_texts(box, (0, 0.5), texts, 'name')
-
-
 # The actual drawers.
 
 class DrawerRectFaces(DrawerRect):
@@ -650,7 +608,7 @@ class DrawerRectFaces(DrawerRect):
 
             # Add SelectedFace for each search this node is a result of
             if pos == self.tree_style.selected_face_pos and len(selected_children):
-                faces[n_col] = [ self.tree_style.selected_face(s) for s in selected_children ]
+                faces[n_col] = [ self.tree_style.selected_face(s, text=v) for s,v in selected_children ]
                 n_col += 1
 
             dx_before = 0
@@ -694,6 +652,8 @@ class DrawerRectFaces(DrawerRect):
 
         if not node.is_initialized:
             node.is_initialized = True
+            node.faces = get_FaceAreas()
+            node.collapsed_faces = get_FaceAreas()
             for layout_fn in self.tree_style.layout_fn:
                 layout_fn(node)
 
@@ -707,7 +667,7 @@ class DrawerRectFaces(DrawerRect):
                 # Only run function to compute aligned grid
                 if self.tree_style.aligned_grid: 
                     deque(draw_faces_at_pos(node, 'aligned'))
-            else:
+            elif self.panel == 1:
                 yield from draw_faces_at_pos(node, 'aligned')
         else:
             for pos in FACE_POSITIONS:
@@ -824,7 +784,7 @@ class DrawerCircFaces(DrawerCirc):
                 # Only run function to compute aligned grid
                 if self.tree_style.aligned_grid: 
                     deque(draw_faces_at_pos(node, 'aligned'))
-            else:
+            elif self.panel == 1:
                 yield from draw_faces_at_pos(node, 'aligned')
         else:
             for pos in FACE_POSITIONS:
@@ -909,6 +869,9 @@ def draw_circle(center, radius, circle_type='', style=None):
 def draw_ellipse(center, rx, ry, ellipse_type='', style=None):
     return ['ellipse', center, rx, ry, ellipse_type, style or {}]
 
+def draw_slice(center, r, a, da, slice_type='', style=None):
+    return ['slice', (center, r, a, da), slice_type, style or {}]
+
 def draw_triangle(box, tip, triangle_type='', style=None):
     """Returns array with all the information needed to draw a triangle
     in front end. 
@@ -934,6 +897,23 @@ def draw_rhombus(box, rhombus_type='', style=None):
                (x, y + dy / 2))      # left
     return ['rhombus', rhombus, rhombus_type, style or {}]
 
+def draw_arrow(box, tip, orientation='right', arrow_type='', style=None):
+    """ Create arrow provided a bounding box """
+    x, y, dx, dy = box
+
+    if orientation == 'right':
+        arrow = ((x, y),
+                 (x + dx - tip, y),
+                 (x + dx, y + dy / 2),
+                 (x + dx - tip, y + dy),
+                 (x, y + dy))
+    elif orientation == 'left':
+        arrow = ((x, y + dy / 2),
+                 (x + tip, y),
+                 (x + dx, y),
+                 (x + dx, y + dy),
+                 (x + tip, y + dy))
+    return ['polygon', arrow, arrow_type, style or {}]
 
 def draw_array(box, a):
     return ['array', box, a]
@@ -973,6 +953,12 @@ def get_rect(element, zoom=(0, 0)):
         dx = points[2][0] - x
         dy = points[2][0] - y
         return  Box(x, y, dx, dy)
+    elif eid == 'polygon':
+        min_x = min(p[0] for p in element[1])
+        max_x = max(p[0] for p in element[1])
+        min_y = min(p[1] for p in element[1])
+        max_y = max(p[1] for p in element[1])
+        return Box(min_x, min_y, max_x - min_x, max_y - min_y)
     elif eid in ['line', 'arc']:  # not a great approximation for an arc...
         (x1, y1), (x2, y2) = element[1], element[2]
         return Box(min(x1, x2), min(y1, y2), abs(x2 - x1), abs(y2 - y1))
@@ -986,6 +972,11 @@ def get_rect(element, zoom=(0, 0)):
         zx, zy = zoom
         rx, ry = rx / zx, ry / zy
         rx, ry = 0, 0
+        return Box(x - rx, y - ry, 2 * rx, 2 * ry)
+    elif eid == 'slice':
+        (x, y), r = element[1][0], element[1][1]
+        zx, zy = zoom
+        rx, ry = r / zx, r / zy
         return Box(x - rx, y - ry, 2 * rx, 2 * ry)
     else:
         raise ValueError(f'unrecognized element: {element!r}')
@@ -1009,6 +1000,12 @@ def get_asec(element, zoom=(0, 0)):
         dr = points[2][0] - r
         da = points[2][0] - a
         return Box(r, a, dr , da)
+    elif eid == 'polygon':
+        min_x = min(p[0] for p in element[1])
+        max_x = max(p[0] for p in element[1])
+        min_y = min(p[1] for p in element[1])
+        max_y = max(p[1] for p in element[1])
+        return Box(min_x, min_y, max_x - min_x, max_y - min_y)
     elif eid in ['line', 'arc']:
         (x1, y1), (x2, y2) = element[1], element[2]
         rect = Box(min(x1, x2), min(y1, y2), abs(x2 - x1), abs(y2 - y1))
@@ -1023,6 +1020,11 @@ def get_asec(element, zoom=(0, 0)):
         zx, zy = zoom
         rx, ry = element[2] / zx, element[3] / zy
         rect = Box(x - rx, y - ry, 2 * rx, 2 * ry)
+        return circumasec(rect)
+    elif eid == 'slice':
+        z = zoom[0]
+        (x, y), r = cartesian(element[1][0]), element[1][1] / z
+        rect = Box(x - r, y - r, 2 * r, 2 * r)
         return circumasec(rect)
     else:
         raise ValueError(f'unrecognized element: {element!r}')

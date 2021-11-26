@@ -1,6 +1,6 @@
 // Functions related to updating (drawing) the view.
 
-import { view, get_tid, on_box_click, on_box_wheel } from "./gui.js";
+import { view, get_tid, on_box_click, on_box_wheel, get_active_layouts } from "./gui.js";
 import { update_minimap_visible_rect } from "./minimap.js";
 import { colorize_searches, get_search_class } from "./search.js";
 import { colorize_selections, get_selection_class } from "./select.js";
@@ -12,8 +12,8 @@ export { update, draw_tree, draw_tree_scale, draw, get_class_name, cartesian_shi
 
 
 // Update the view of all elements (gui, tree, minimap).
-function update() {
-    draw_tree();
+async function update() {
+    await draw_tree();
 
     if (view.minimap.show)
         update_minimap_visible_rect();
@@ -30,8 +30,7 @@ async function draw_tree() {
 
     div_tree.style.cursor = "wait";
     
-    const layouts = JSON.stringify(Object.keys(view.layouts)
-            .filter(l => view.layouts[l] === true));
+    const layouts = JSON.stringify(get_active_layouts());
 
     const params_rect = {  // parameters we have to pass to the drawer
         "drawer": view.drawer.name, "min_size": view.min_size,
@@ -152,8 +151,9 @@ function draw_tree_scale() {
     g.appendChild(create_vt_line("right"));
 
     // Text
-    const text = String((view.tree_scale.length / view.zoom.x).toFixed(3));
-    g.appendChild(create_text(text));
+    const value = view.tree_scale.length / view.zoom.x;
+    const rounded = value < 0.001 ? value.toExponential(1) : value.toFixed(3);
+    g.appendChild(create_text(String(rounded)));
 
 
     replace_child(tree_scale.children[0], g);
@@ -177,7 +177,7 @@ function draw(element, items, tl, zoom, replace=true) {
     const g = create_svg_element("g");
 
     const svg_items = items.filter(i => !i[0].includes("pixi-"));
-    svg_items.forEach(item => g.appendChild(create_item(item, tl, zoom)));
+    svg_items.forEach(item => g.appendChild(create_item(g, item, tl, zoom)));
     
     const pixi_items = items.filter(i => i[0].includes("pixi-"));
     const pixi = draw_pixi(pixi_items, tl, zoom)
@@ -210,6 +210,7 @@ function put_nodes_in_background(g) {
         e.style.fill = null;
         g.insertBefore(bg_node, first);
     });
+    Array.from(g.getElementsByClassName("box")).forEach(e => g.insertBefore(e, first));
 }
 
 function replace_child(element, child) {
@@ -235,19 +236,28 @@ function replace_svg(element) {
 
 // Draw elements that belong to panels above 0.
 async function draw_aligned(params) {
+    const panels = { 
+        1: div_aligned, 
+        //2: div_aligned_header_top, 
+        //3: div_aligned_header_bottom
+    };
+
     if (view.drawer.type === "rect") {
-        const qs = new URLSearchParams({...params, "panel": 1}).toString();
+        for (let panel = 1; panel < view.drawer.npanels; panel++) {
+            const qs = new URLSearchParams({...params, "panel": panel}).toString();
 
-        align_drawing = true;
+            align_drawing = true;
 
-        const items = await api(`/trees/${get_tid()}/draw?${qs}`);
+            const items = await api(`/trees/${get_tid()}/draw?${qs}`);
 
-        draw(div_aligned, items, {x: 0, y: view.tl.y}, view.zoom);
+            draw(panels[panel], items, {x: 0, y: view.tl.y}, view.zoom);
 
-        align_drawing = false;
+            align_drawing = false;
 
-        // NOTE: Only implemented for panel=1 for the moment. We just need to
-        //   decide where the graphics would go for panel > 1 (another div? ...)
+            // NOTE: Only implemented for panel=1 for the moment. We just need to
+            //   decide where the graphics would go for panel > 1 (another div? ...)
+            
+        }
     }
     else {
         for (let panel = 1; panel < view.drawer.npanels; panel++) {
@@ -266,7 +276,7 @@ async function draw_aligned(params) {
 
 
 // Return the graphical (svg) element corresponding to a drawer item.
-function create_item(item, tl, zoom) {
+function create_item(g, item, tl, zoom) {
     // item looks like ["line", ...] for a line, etc.
 
     const [zx, zy] = [zoom.x, zoom.y];  // shortcut 
@@ -278,14 +288,27 @@ function create_item(item, tl, zoom) {
         b.id = "node-" + node_id.join("_");
 
         b.classList.add("node");
-        result_of.forEach(t => {
-            const cnode = Object.keys(view.searches).includes(t) 
-                ? get_search_class(t, "results") 
-                : get_selection_class(t, "result");
-            b.classList.add(cnode);
-        });
 
-        style_nodebox(b, style)
+        if (result_of.length === 1) {
+            const t = result_of[0];
+            const cnode = Object.keys(view.searches).includes(t)
+                ? get_search_class(t) : get_selection_class(t);
+            b.classList.add(cnode);
+        } else if (result_of.length > 1) {
+            const [ x, y, width, dy ] = box;
+            const dx = width / result_of.length;
+            result_of.forEach((t, i) => {
+                const box = [ x + dx * i, y, dx, dy ];
+                const b = create_box(box, tl, zx, zy, "", style);
+                style_nodebox(b, style);
+                const cnode = Object.keys(view.searches).includes(t) 
+                    ? get_search_class(t) : get_selection_class(t);
+                b.classList.add(cnode);
+                g.appendChild(b);
+            })
+        }
+
+        style_nodebox(b, style);
 
         b.addEventListener("click", event =>
             on_box_click(event, box, node_id));
@@ -396,6 +419,24 @@ function create_item(item, tl, zoom) {
         style_polygon(rhombus, style);
 
         return rhombus;
+    }
+    else if (item[0] === "polygon") {
+        const [ , points, type, style] = item;
+
+        const polygon = create_polygon(points, tl, zx, zy, "polygon " + type);
+
+        style_polygon(polygon, style);
+
+        return polygon;
+    }
+    else if (item[0] === "slice") {
+        const [ , box, type, style] = item;
+
+        const slice = create_slice(...box, tl, zx, zy, type, style);
+
+        style_polygon(slice, style);
+
+        return slice;
     }
     else if (item[0] === "array") {
         const [ , box, array] = item;
@@ -624,6 +665,34 @@ function create_ellipse(center, rx, ry, tl, zx, zy, type="") {
         "class": "ellipse " + type,
         "cx": x, "cy": y, "rx": rx, "ry": ry,
     });
+}
+
+
+function create_slice(center, r, a, da, tl, zx, zy, type="", style) {
+    
+    // Calculate center to translate slice
+    const c = view.drawer.type === "rect"
+        ? { x: zx * (center[0] - tl.x), y: zy * (center[1] - tl.y) }
+        : cartesian_shifted(...center, tl, zx);
+
+    const large = da > Math.PI ? 1 : 0;
+    const p10 = { x: c.x + r * Math.cos(a), y: c.y + r * Math.sin(a) },
+          p11 = { x: c.x + r * Math.cos(a + da), y: c.y + r * Math.sin(a + da) };
+
+    const element =  {
+        "d": `M ${c.x} ${c.y}
+              L ${p10.x} ${p10.y}
+              A ${r} ${r} 0 ${large} 1 ${p11.x} ${p11.y}
+              Z`,
+    };
+
+    if (type)
+        element.class = type;
+
+    if (is_style_property(style.id))
+        element.id = style.id;
+    
+    return create_svg_element("path", element);
 }
 
 

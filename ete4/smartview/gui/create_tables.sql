@@ -6,4 +6,5 @@ create table trees (
     name text unique not null,
     description text,
     birth datetime,
-    newick text);
+    newick text,
+    layouts text);

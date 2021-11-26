@@ -6,7 +6,7 @@ import { view, menus, on_tree_change,
 import { draw_minimap } from "./minimap.js";
 import { update, draw_tree_scale } from "./draw.js";
 
-export { init_menus };
+export { init_menus, update_folder_layouts };
 
 
 // Init the menus on the top with all the options we can see and change.
@@ -122,11 +122,27 @@ function add_folder_tree(menu, trees) {
 }
 
 
-function add_folder_layouts(menu) {
-    const folder_layout = menu.addFolder({ title: "Layouts" });
+function update_folder_layouts (){
+    // Remove previous layout folders
+    menus.layouts.children.forEach(ch => ch.dispose());
 
-    Object.keys(view.layouts).sort().forEach(layout =>
-        folder_layout.addInput(view.layouts, layout).on("change", update));
+    // Place default layouts as first element
+    const sorted_layouts = [...Object.keys(view.layouts)].sort();
+    sorted_layouts.splice(sorted_layouts.indexOf("default"), 1);
+    sorted_layouts.unshift("default");
+
+    sorted_layouts.forEach(name => {
+        const layout_folder = menus.layouts.addFolder({ title: name, expanded: name === "default" })
+        const layouts = view.layouts[name];
+        Object.keys(layouts).sort().forEach(layout =>
+            layout_folder.addInput(view.layouts[name], layout).on("change", update))
+    });
+}
+
+
+function add_folder_layouts(menu) {
+    menus.layouts = menu.addFolder({ title: "Layouts" });
+    update_folder_layouts();
 }
 
 
@@ -161,16 +177,21 @@ function add_folder_view(menu) {
     folder_tl.addMonitor(view.tl, "x", { format: v => v.toFixed(3) });
     folder_tl.addMonitor(view.tl, "y", { format: v => v.toFixed(3) });
 
-    const folder_zoom = folder_view.addFolder({ title: "Zoom" });
 
-    folder_zoom.addInput(view.zoom, "x", { label: "x", 
+    folder_view.addInput(view.zoom, "x", { label: "Adjust zoom x", 
                                            format: v => v.toFixed(1),
-                                           min: 1, max: div_tree.offsetWidth })
-        .on("change", update)
-    folder_zoom.addInput(view.zoom, "y", { label: "y", 
-                                           format: v => v.toFixed(1),
-                                           min: 1, max: div_tree.offsetHeight })
-        .on("change", update)
+                                           min: 1, max: div_tree.offsetWidth / view.tree_size.width })
+
+    //const folder_zoom = folder_view.addFolder({ title: "Zoom" });
+
+    //folder_zoom.addInput(view.zoom, "x", { label: "x", 
+                                           //format: v => v.toFixed(1),
+                                           //min: 1, max: div_tree.offsetWidth })
+        //.on("change", update);
+    //folder_zoom.addInput(view.zoom, "y", { label: "y", 
+                                           //format: v => v.toFixed(3),
+                                           //min: 10**(-10), max: div_tree.offsetHeight, step: 10**(-10) })
+        .on("change", update);
 
     const folder_aligned = folder_view.addFolder({ title: "Aligned panel",
                                                    expanded: false });

@@ -1,5 +1,6 @@
 // Functions related to the context menu (right-click menu).
 
+import { api } from "./api.js";
 import { view, tree_command, on_tree_change, reset_view, sort, get_tid }
     from "./gui.js";
 import { draw_minimap } from "./minimap.js";
@@ -7,12 +8,12 @@ import { update } from "./draw.js";
 import { download_newick } from "./download.js";
 import { zoom_into_box } from "./zoom.js";
 import { collapse_node } from "./collapse.js";
-import { select_node } from "./select.js";
+import { select_node, unselect_node } from "./select.js";
 
 export { on_box_contextmenu };
 
 
-function on_box_contextmenu(event, box, name, properties, node_id=[]) {
+async function on_box_contextmenu(event, box, name, properties, node_id=[]) {
     event.preventDefault();
 
     div_contextmenu.innerHTML = "";
@@ -26,7 +27,7 @@ function on_box_contextmenu(event, box, name, properties, node_id=[]) {
         add_button("Zoom into branch", () => zoom_into_box(box),  "", "search");
 
         if (node_id.length > 0) {
-            add_node_options(box, name, properties, node_id);
+            await add_node_options(box, name, properties, node_id);
         }
 
     }
@@ -43,7 +44,7 @@ function on_box_contextmenu(event, box, name, properties, node_id=[]) {
 }
 
 
-function add_node_options(box, name, properties, node_id) {
+async function add_node_options(box, name, properties, node_id) {
     add_button("Go to subtree at branch", () => {
         view.subtree += (view.subtree ? "," : "") + node_id;
         on_tree_change();
@@ -68,8 +69,10 @@ function add_node_options(box, name, properties, node_id) {
                "Do not show nodes below the current one.",
                "compress", false);
 
-    if (Object.keys(view.selected).includes(String(node_id)))
-        add_button("Unselect node", view.selected[node_id].remove,
+    const tid = get_tid() + "," + node_id;
+    const selections = await api(`/trees/${tid}/selections`);
+    if (selections.selections.length)
+        add_button("Unselect node", () => unselect_node(node_id),
                    "Remove current node from selection.",
                    "trash-alt", false);
     else
