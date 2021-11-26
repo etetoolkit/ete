@@ -15,8 +15,8 @@ REST call examples:
 import os
 os.chdir(os.path.abspath(os.path.dirname(__file__)))
 
-import sys
-sys.path.insert(0, '..')
+# import sys
+# sys.path.insert(0, '..')
 
 import re
 from math import pi

@@ -189,9 +189,11 @@ function draw(element, items, tl, zoom, replace=true) {
     svg_items.forEach(item => g.appendChild(create_item(g, item, tl, zoom)));
     
     const pixi_items = items.filter(i => i[0].includes("pixi-"));
-    const pixi = draw_pixi(pixi_items, tl, zoom)
-    const pixi_container = view.drawer.type === "rect" ? div_aligned : div_tree;
-    replace_child(pixi_container.querySelector(".div_pixi"), pixi);
+    if (pixi_items.length) {
+        const pixi = draw_pixi(pixi_items, tl, zoom)
+        const pixi_container = view.drawer.type === "rect" ? div_aligned : div_tree;
+        replace_child(pixi_container.querySelector(".div_pixi"), pixi);
+    }
 
     const html_container = element.querySelector(".div_html")
     if (html_container) {

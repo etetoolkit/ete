@@ -249,8 +249,15 @@ class Drawer:
                     'size': node_style['size'],
                     'fill': node_style['fgcolor'],
             }
+            
             yield from self.draw_nodedot((x + dx, y + bdy),
                     dy * self.zoom[1], nodedot_style)
+
+            # nresults = len(parent_of)
+            # n += (1 if node_style['size') > 0 else 0)
+            # for idx, text in enumerate(parent_of):
+                # yield 
+
 
     def draw_aligned_headers(self):
         # Draw aligned panel headers
