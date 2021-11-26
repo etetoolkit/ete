@@ -27,7 +27,7 @@ var align_timeout; // Do not constantly render aligned panel (too costly) when s
 var align_drawing = false;
 // Ask the server for a tree in the new defined region, and draw it.
 async function draw_tree() {
-    const [zx, zy] = [view.zoom.x, view.zoom.y];
+    const [zx, zy, za] = [view.zoom.x, view.zoom.y, view.zoom.x * view.zoom.align_factor];
     const [x, y] = [view.tl.x, view.tl.y];
     const [w, h] = [div_tree.offsetWidth / zx, div_tree.offsetHeight / zy];
 
@@ -37,7 +37,7 @@ async function draw_tree() {
 
     const params_rect = {  // parameters we have to pass to the drawer
         "drawer": view.drawer.name, "min_size": view.min_size,
-        "zx": zx, "zy": zy, "x": x, "y": y, "w": w, "h": h,
+        "zx": zx, "zy": zy, "za": za, "x": x, "y": y, "w": w, "h": h,
         "collapsed_ids": JSON.stringify(Object.keys(view.collapsed_ids)),
         "layouts": layouts, "ultrametric": view.ultrametric ? 1 : 0,
     };

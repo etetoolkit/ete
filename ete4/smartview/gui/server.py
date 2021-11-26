@@ -415,7 +415,8 @@ def retrieve_tree(tid):
 
 def get_drawer(tree_id, args):
     "Return the drawer initialized as specified in the args"
-    valid_keys = ['x', 'y', 'w', 'h', 'panel', 'zx', 'zy', 'drawer', 'min_size',
+    valid_keys = ['x', 'y', 'w', 'h', 'panel', 'zx', 'zy', 'za',
+                  'drawer', 'min_size',
                   'layouts', 'ultrametric', 'collapsed_ids', 
                   'rmin', 'amin', 'amax']
 
@@ -431,8 +432,8 @@ def get_drawer(tree_id, args):
 
         panel = get('panel', 0)
 
-        zoom = (get('zx', 1), get('zy', 1))
-        assert zoom[0] > 0 and zoom[1] > 0, 'zoom must be > 0'
+        zoom = (get('zx', 1), get('zy', 1), get('za', 1))
+        assert zoom[0] > 0 and zoom[1] > 0 and zoom[2] > 0, 'zoom must be > 0'
 
         tid, _ = get_tid(tree_id)
         tree = app.trees[int(tid)]

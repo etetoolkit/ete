@@ -186,6 +186,10 @@ function add_folder_view(menu) {
                                            format: v => v.toFixed(1),
                                            min: 1, max: div_tree.offsetWidth / view.tree_size.width })
 
+    folder_view.addInput(view.zoom, "align_factor", { label: "Adjust zoom a", 
+                                           format: v => v.toFixed(1),
+                                           min: 10**(-10), max: 4, step: 0.1 })
+
     //const folder_zoom = folder_view.addFolder({ title: "Zoom" });
 
     //folder_zoom.addInput(view.zoom, "x", { label: "x", 

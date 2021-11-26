@@ -70,7 +70,7 @@ async function add_node_options(box, name, properties, node_id) {
                "Do not show nodes below the current one.",
                "compress", false);
 
-    if (view.active.nodes.includes(node_id))
+    if (view.active.nodes.find(n => n.id === String(node_id)))
         add_button("Unselect node", () => deactivate_node(node_id),
                    "Remove current node from active selection.",
                    "trash-alt", false);

@@ -83,7 +83,7 @@ const view = {
     // view
     reset_view: () => reset_view(),
     tl: {x: null, y: null},  // top-left of the view (in tree coordinates)
-    zoom: {x: null, y: null},  // initially chosen depending on the tree size
+    zoom: {x: null, y: null, align_factor: 1},  // initially chosen depending on the tree size
     select_text: false,  // if true, clicking and moving the mouse selects text
 
     // style
@@ -386,7 +386,7 @@ async function set_consistent_values() {
             view.zoom.x = view.zoom.y;
     }
 
-    reset_zoom(view.zoom.x === null, view.zoom.y === null);
+    reset_zoom(view.zoom.x === null, view.zoom.y === null, view.zoom.x === null);
     reset_position(view.tl.x === null, view.tl.y === null);
 }
 
@@ -427,7 +427,7 @@ async function reset_layouts() {
 
 
 // Set the zoom so the full tree fits comfortably on the screen.
-function reset_zoom(reset_zx=true, reset_zy=true) {
+function reset_zoom(reset_zx=true, reset_zy=true, reset_za=true) {
     if (!(reset_zx || reset_zy))
         return;
 
@@ -438,6 +438,8 @@ function reset_zoom(reset_zx=true, reset_zy=true) {
             view.zoom.x = 0.6 * div_tree.offsetWidth / size.width;
         if (reset_zy)
             view.zoom.y = 0.9 * div_tree.offsetHeight / size.height;
+        if (reset_za)
+            view.zoom.a = 1;
     }
     else if (view.drawer.type === "circ") {
         const min_w_h = Math.min(div_tree.offsetWidth, div_tree.offsetHeight);
@@ -623,7 +625,7 @@ function coordinates(point) {
 
 function on_box_click(event, box, node_id, properties) {
     if (event.altKey && node_id.length) {
-        if (view.active.nodes.includes(node_id))
+        if (view.active.nodes.find(n => n.id === String(node_id)))
             deactivate_node(node_id)
         else
             activate_node(node_id, properties)

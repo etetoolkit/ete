@@ -89,8 +89,7 @@ class Face(object):
         self._check_own_variables()
         return self._box
 
-    def compute_fsize(self, dx, dy, drawer, max_fsize=None):
-        zx, zy = drawer.zoom
+    def compute_fsize(self, dx, dy, zx, zy, max_fsize=None):
         self._fsize = min([dx * zx * CHAR_HEIGHT, abs(dy * zy), max_fsize or self.max_fsize])
 
     def compute_bounding_box(self, 
@@ -106,7 +105,10 @@ class Face(object):
         self._check_own_content()
         x, y = point
         dx, dy = size
-        zx, zy = drawer.zoom
+
+        zx, zy, za = drawer.zoom
+        if pos.startswith("aligned"):
+            zx = za
 
         if pos == 'branch_top':  # above the branch
             avail_dx = dx / n_col
@@ -119,14 +121,6 @@ class Face(object):
             avail_dy = (dy - bdy) / n_row
             x = x + dx_before
             y = y + bdy + dy_before
-
-        elif pos == 'branch_top-left':  # left of branch_top
-            width, height = get_dimensions(dx / n_col, bdy)
-            box = (x - (col + 1) * dx/n_col, y, width, height)
-
-        elif pos == 'branch_bottom-left':  # left of branch_bottom
-            width, height = get_dimensions(dx / n_col, dy - bdy)
-            box = (x - (col + 1) * dx/n_col, y + bdy, width, height)
 
         elif pos == 'branch_right':  # right of node
             avail_dx = dx_to_closest_child / n_col\
@@ -227,13 +221,16 @@ class TextFace(Face):
             n_row, n_col,
             dx_before, dy_before)
 
-        zx, zy = drawer.zoom
+        zx, zy, za = drawer.zoom
+        if pos.startswith("aligned"):
+            zx = za
+
         x, y , dx, dy = box
         r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
 
         def fit_fontsize(text, dx, dy):
             dchar = dx / len(text) if dx != None else float('inf')
-            self.compute_fsize(dchar, dy, drawer)
+            self.compute_fsize(dchar, dy, zx, zy)
             dxchar = self._fsize / (zx * CHAR_HEIGHT)
             dychar = self._fsize / (zy * r)
             return dxchar * len(text), dychar
@@ -347,7 +344,11 @@ class CircleFace(Face):
             dx_before, dy_before)
 
         x, y, dx, dy = box
-        zx, zy = drawer.zoom
+
+        zx, zy, za = drawer.zoom
+        if pos.startswith("aligned"):
+            zx = za
+
         r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
         padding_x, padding_y = self.padding_x / zx, self.padding_y / (zy * r)
 
@@ -440,7 +441,11 @@ class RectFace(Face):
             dx_before, dy_before)
 
         x, y, dx, dy = box
-        zx, zy = drawer.zoom
+
+        zx, zy, za = drawer.zoom
+        if pos.startswith("aligned"):
+            zx = za
+
         r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
 
         def get_dimensions(max_width, max_height):
@@ -516,19 +521,20 @@ class RectFace(Face):
 
         if self.text:
             x, y, dx, dy = self._box
-            zx, zy = drawer.zoom
+            zx, zy, za = drawer.zoom
+
             r = (x or 1e-10) if circ_drawer else 1
             if self.rotate_text:
                 rotation = 90
                 self.compute_fsize(dy * zy / (len(self.text) * zx) * r,
-                                   dx * zx / zy, drawer)
+                                   dx * zx / zy, zx, zy)
 
                 text_box = Box(x + (dx - self._fsize / (2 * zx)) / 2,
                         y + dy / 2,
                         dx, dy)
             else:
                 rotation = 0
-                self.compute_fsize(dx, dy, drawer)
+                self.compute_fsize(dx, dy, zx, zy)
                 text_box = Box(x + dx / 2,
                         y + (dy - self._fsize / (zy * r)) / 2,
                         dx, dy)
@@ -592,7 +598,10 @@ class ArrowFace(RectFace):
             style['id'] = rect_id
 
         x, y, dx, dy = self._box
-        zx, zy = drawer.zoom
+
+        zx, zy, za = drawer.zoom
+        # if pos.startswith("aligned"):
+            # zx = za
 
         tip = min(15, dx * zx * 0.9) / zx
         yield draw_arrow(self._box, 
@@ -606,14 +615,14 @@ class ArrowFace(RectFace):
             if self.rotate_text:
                 rotation = 90
                 self.compute_fsize(dy * zy / (len(self.text) * zx) * r,
-                                   dx * zx / zy, drawer)
+                                   dx * zx / zy, zx, zy)
 
                 text_box = Box(x + (dx - self._fsize / (2 * zx)) / 2,
                         y + dy / 2,
                         dx, dy)
             else:
                 rotation = 0
-                self.compute_fsize(dx, dy, drawer)
+                self.compute_fsize(dx, dy, zx, zy)
                 text_box = Box(x + dx / 2,
                         y + (dy - self._fsize / (zy * r)) / 2,
                         dx, dy)
@@ -734,7 +743,7 @@ class OutlineFace(Face):
                 'fill-opacity': self.opacity,
                 }
         x, y, dx_min, dx_max, dy = self.outline
-        zx, zy = drawer.zoom
+        zx, zy, _ = drawer.zoom
         circ_drawer = drawer.TYPE == 'circ'
         r = (x or 1e-10) if circ_drawer else 1
         if dy * zy * r < self.collapsing_height:
@@ -867,13 +876,16 @@ class SeqFace(Face):
             n_row, n_col,
             dx_before, dy_before)
 
-        zx, zy = drawer.zoom
+        zx, zy, za = drawer.zoom
+        if pos.startswith("aligned"):
+            zx = za
+
 
         x, y, _, dy = box
         dx = self.poswidth * len(self.seq) / zx
 
         if self.draw_text:
-            self.compute_fsize(self.poswidth / zx, dy, drawer)
+            self.compute_fsize(self.poswidth / zx, dy, zx, zy)
 
         self._box = Box(x, y, dx, dy)
         
@@ -881,7 +893,11 @@ class SeqFace(Face):
 
     def draw(self, drawer):
         x0, y, _, dy = self._box
-        zx, zy = drawer.zoom
+
+        zx, zy, za = drawer.zoom
+        # if pos.startswith("aligned"):
+            # zx = za
+
         dx = self.poswidth / zx
         # Send sequences as a whole to be rendered by PIXIjs
         yield [ "pixi-aa_notext", Box(x0, y, dx * len(self.seq), dy), self.seq ]
@@ -1060,7 +1076,10 @@ class SeqMotifFace(Face):
             dx_before, dy_before)
 
         x, y, _, dy = box
-        zx, zy = drawer.zoom
+
+        zx, zy, za = drawer.zoom
+        if pos.startswith("aligned"):
+            zx = za
 
         self._box = Box(x, y, self.width / zx, dy)
         return self._box
@@ -1071,7 +1090,11 @@ class SeqMotifFace(Face):
     def draw(self, drawer):
         # Only leaf/collapsed branch_right or aligned
         x0, y, _, dy = self._box
-        zx, zy = drawer.zoom
+
+        zx, zy, za = drawer.zoom
+        # if pos.startswith("aligned"):
+            # zx = za
+
         x = x0
         prev_end = -1
 
@@ -1153,7 +1176,7 @@ class SeqMotifFace(Face):
                         draw_text=True, max_fsize=self.max_fsize,
                         ftype=self.ftype)
                 seq_face._box = box # assign box manually
-                seq_face.compute_fsize(posw, h, drawer)
+                seq_face.compute_fsize(posw, h, zx, zy)
                 yield from seq_face.draw(drawer)
 
             # Text on top of shape
@@ -1163,7 +1186,7 @@ class SeqMotifFace(Face):
                     fsize = int(fsize)
                 except:
                     ftype, fsize, color = self.ftype, self.max_fsize, (fg or self.fcolor)
-                self.compute_fsize(w / len(text), h, drawer, fsize)
+                self.compute_fsize(w / len(text), h, zx, zy, fsize)
                 text_box = Box(x + w / 2,
                         y + (dy - self._fsize / (zy * r)) / 2,
                         self._fsize / (zx * CHAR_HEIGHT),

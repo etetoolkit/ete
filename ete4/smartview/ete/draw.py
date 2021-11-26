@@ -306,7 +306,7 @@ class Drawer:
                     dx_before += dx_grid
 
         size = ( self.viewport.dx, self.viewport.dy )
-        zx, zy = self.zoom
+        _, zy, zx = self.zoom
         graphics = []
 
         if self.panel == 2:
@@ -480,11 +480,16 @@ class DrawerRect(Drawer):
         return Size(node.size[0] - abs(node.dist), node.size[1])
 
     def is_small(self, box):
-        zx, zy = self.zoom
+        zx, zy, _ = self.zoom
         return box.dy * zy < self.COLLAPSE_SIZE
 
     def get_box(self, element):
-        return get_rect(element, self.zoom)
+        zx, zy, za = self.zoom
+        if self.panel == 0:
+            zoom = (zx, zy)
+        else:
+            zoom = (za, zy)
+        return get_rect(element, zoom)
 
     def draw_lengthline(self, p1, p2, parent_of, style):
         "Yield a line representing a length"
@@ -509,7 +514,7 @@ class DrawerRect(Drawer):
                         circle_type='nodedot', style=nodedot_style)
             elif style['shape'] == 'square':
                 x, y = center
-                zx, zy = self.zoom
+                zx, zy, _ = self.zoom
                 dx, dy = 2 * size / zx, 2 * size / zy
                 box = (x - dx/2, y - dy/2, dx, dy)
                 yield draw_rect(box, rect_type='nodedot', style=nodedot_style)
@@ -662,11 +667,12 @@ class DrawerRectFaces(DrawerRect):
         # Space available for branch-right Face position
         dx_to_closest_child = min(child.dist for child in node.children)\
                 if not node.is_leaf() else node.dist
-        zx, zy = self.zoom
+        zx, zy, za = self.zoom
 
         def it_fits(box, pos):
+            z = za if pos == 'aligned' else zx
             _, _, dx, dy = box
-            return dx * zx > self.MIN_SIZE\
+            return dx * z > self.MIN_SIZE\
                     and dy * zy > self.MIN_SIZE\
                     and self.in_viewport(box, pos)
 
@@ -688,6 +694,8 @@ class DrawerRectFaces(DrawerRect):
                 
             faces = dict(getattr(node_faces, pos, {}))
             n_col = max(faces.keys(), default = -1) + 1
+
+            z = za if pos == 'aligned' else zx
 
             # Add SelectedFace for each search this node is a result of
             if pos == self.tree_style.selected_face_pos and len(selected_children):
@@ -717,7 +725,7 @@ class DrawerRectFaces(DrawerRect):
                             dx_before, dy_before))
                     if drawn_face:
                         _, _, dx, dy = face.get_box()
-                        hz_padding = 2 * face.padding_x / zx
+                        hz_padding = 2 * face.padding_x / z
                         vt_padding = 2 * face.padding_y / zy
                         dx_max = max(dx_max, (dx or 0) + hz_padding)
                         dy_before += dy + vt_padding
@@ -1112,8 +1120,8 @@ def get_asec(element, zoom=(0, 0)):
         return circumasec(rect)
     elif eid == 'ellipse':
         x, y = cartesian(element[1])
-        zx, zy = zoom
-        rx, ry = element[2] / zx, element[3] / zy
+        z = zoom[0]
+        rx, ry = element[2] / z, element[3] / z
         rect = Box(x - rx, y - ry, 2 * rx, 2 * ry)
         return circumasec(rect)
     elif eid == 'slice':
