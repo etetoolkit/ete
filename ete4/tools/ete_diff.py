@@ -555,9 +555,9 @@ def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, support=
     log.info("Computing distance matrix...")
     
     for index, n in enumerate(t1.traverse('preorder')):
-        n._nid = index
+        n.add_prop('_nid', index)
     for index, n in enumerate(t2.traverse('preorder')):
-        n._nid = index
+        n.add_prop('_nid', index)
     t1_cached_content = t1.get_cached_content(store_attr=attr1)
     t1 = None
     t2_cached_content = t2.get_cached_content(store_attr=attr2)
@@ -808,8 +808,8 @@ def show_difftable_topo(difftable, attr1, attr2, usecolor=False, extended=None):
     total_dist = 0
     for dist, b_dist, side1, side2, diff, n1, n2 in sorted(difftable, reverse=True):
         total_dist += dist
-        n1 = Tree(n1.write(features=[attr1]))
-        n2 = Tree(n2.write(features=[attr2]))
+        n1 = Tree(n1.write(properties=[attr1]))
+        n2 = Tree(n2.write(properties=[attr2]))
         n1.ladderize()
         n2.ladderize()
         for leaf in n1.iter_leaves():
