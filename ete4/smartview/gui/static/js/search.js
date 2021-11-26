@@ -41,6 +41,8 @@ async function search() {
                 if (text in view.searches)
                     throw new Error("Search already exists.");
 
+                document.querySelector(".swal2-container").style.cursor = "wait";
+
                 const qs = `text=${encodeURIComponent(text)}`;
                 return await api(`/trees/${get_tid()}/search?${qs}`);
             } catch (exception) {
@@ -76,6 +78,8 @@ async function search() {
             view.search_cache = search_text;
         }
     }
+
+    div_tree.style.cursor = "auto";
     return search_text;
 }
 

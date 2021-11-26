@@ -1,6 +1,6 @@
 // Functions related to selecting nodes.
 
-import { view, menus, get_tid } from "./gui.js";
+import { view, menus, get_tid, on_tree_change } from "./gui.js";
 import { draw_tree } from "./draw.js";
 import { api } from "./api.js";
 import { colors } from "./colors.js"
@@ -8,7 +8,8 @@ import { colors } from "./colors.js"
 export { 
     select_node, unselect_node, store_selection,
     get_selections, remove_selections, 
-    get_selection_class, colorize_selections };
+    get_selection_class, colorize_selections,
+    select_by_command, prune_by_selection };
 
 const selectError = Swal.mixin({
     position: "bottom-start",
@@ -66,7 +67,7 @@ async function unselect_node(node_id) {
 
     const old_selections = await api(`/trees/${tid}/selections`); // just names for specific node
     await api(`/trees/${tid}/unselect`);
-    const selections = await api(`/trees/${tid}/selected`);  // names and nresults/nparents for whole tree
+    const selections = await api(`/trees/${tid}/all_selections`);  // names and nresults/nparents for whole tree
     const selection_names = [...Object.keys(selections.selected)];
 
     old_selections.selections.forEach(name => {
@@ -151,10 +152,11 @@ function change_name(name, folder) {
 function add_selected_to_menu(name) {
     const selected = view.selected[name];
 
-    const folder = menus.selected.addFolder({
-        title: name,
-        expanded: false 
-    });
+    const folder = menus.selected.addFolder({ title: name });
+
+    folder.addInput(selected.results, "color", { view: "color" })
+        .on("change", () => colorize_selection(name));
+
 
     selected.remove = async function(purge=true) {
         if (purge) {
@@ -169,18 +171,19 @@ function add_selected_to_menu(name) {
         draw_tree();
     }
 
-    folder.addButton({ title: "edit name" }).on("click", () => change_name(folder.title, folder));
 
-    const folder_results = folder.addFolder({ title: `results (${selected.results.n})` });
+    const folder_more = folder.addFolder({ title: "more", expanded: false });
+
+    folder_more.addButton({ title: "edit name" }).on("click", () => change_name(folder.title, folder));
+
+    const folder_results = folder_more.addFolder({ title: `results (${selected.results.n})` });
     folder_results.addInput(selected.results, "opacity", 
         { min: 0, max: 1, step: 0.1 })
-        .on("change", () => colorize_selection(name));
-    folder_results.addInput(selected.results, "color", { view: "color" })
         .on("change", () => colorize_selection(name));
     // Store to change title when selection is edited
     selected.results.folder = folder_results;
 
-    const folder_parents = folder.addFolder({ title: `parents (${selected.parents.n})` });
+    const folder_parents = folder_more.addFolder({ title: `parents (${selected.parents.n})` });
     folder_parents.addInput(selected.parents, "color", { view: "color" })
         .on("change", () => colorize_selection(name));
     folder_parents.addInput(selected.parents, "width", { min: 0.1, max: 10 })
@@ -188,7 +191,7 @@ function add_selected_to_menu(name) {
     // Store to change title when selection is edited
     selected.parents.folder = folder_parents;
 
-    folder.addButton({ title: "remove" }).on("click", selected.remove);
+    folder_more.addButton({ title: "remove" }).on("click", selected.remove);
 
 }
 
@@ -226,12 +229,47 @@ function colorize_selections() {
 
 // Get selections from api and fill view.selections
 async function get_selections() {
-    const selected = await api(`/trees/${get_tid()}/selected`);
+    const selected = await api(`/trees/${get_tid()}/all_selections`);
     Object.entries(selected.selected)
         .forEach(([name, res]) => store_selection(name, res));
 }
 
 
-function remove_selections() {
-    Object.keys(view.selected).forEach(s => view.selected[s].remove(false));
+function remove_selections(purge=false) {
+    Object.keys(view.selected).forEach(s => view.selected[s].remove(purge));
+}
+
+
+async function select_by_command(select_command, name) {
+    // First search with selectCommand then store as selection
+
+    // Perform search given a select_command
+    let qs = `text=${encodeURIComponent(select_command)}`;
+    const res = await api(`/trees/${get_tid()}/search?${qs}`);
+
+    if (res.message !== 'ok' || res.nresults === 0)
+        throw new Error(`No results found by: ${select_command}`);
+
+    // Conver search to selection if successful
+    await api(`/trees/${get_tid()}/search_to_selection?${qs}`);
+
+    if (name) {
+        // Change selection name in backend
+        qs = `name=${encodeURIComponent(select_command)}&newname=${encodeURIComponent(name)}`;
+        await api(`/trees/${get_tid()}/change_selection_name?${qs}`);
+    } else
+        name = select_command;
+
+    store_selection(name, { nresults: res.nresults, nparents: res.nparents });
+
+    draw_tree();
+}
+
+
+async function prune_by_selection(names) {
+    const qs = `names=${encodeURIComponent(names)}`;
+    const res = await api(`/trees/${get_tid()}/prune_by_selection?${qs}`);
+
+    if (res.message === 'ok')
+        on_tree_change()
 }
