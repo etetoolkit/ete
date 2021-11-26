@@ -1,12 +1,17 @@
 from types import FunctionType, MethodType
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 
 
+from ete4.smartview import SelectedRectFace
+from ete4.smartview.ete.face_positions import FACE_POSITIONS, _FaceContainer
+from ete4.smartview.utils import InvalidUsage
 from ete4.smartview.ete.layouts.default_layouts import get_layout_leaf_name, get_layout_nleaves,\
         get_layout_branch_length, get_layout_branch_support,\
         get_layout_outline, get_layout_align_link
 
-from ete4.smartview import SelectedRectFace, FACE_POSITIONS
+
+aligned_panel_header = namedtuple("aligned_panel_header", ["top", "bottom"],
+                                  defaults=(_FaceContainer(), _FaceContainer()))
 
 
 class TreeStyle(object):
@@ -29,6 +34,10 @@ class TreeStyle(object):
         # Selected face
         self._selected_face = SelectedRectFace
         self._selected_face_pos = "branch_right"
+
+        # Aligned panel headers
+        self._aligned_panel_header = aligned_panel_header()
+
         
     @property
     def layout_fn(self):
@@ -75,6 +84,14 @@ class TreeStyle(object):
             raise ValueError(f'{pos} is not a valid Face position. ' +
                     'Please provide one of the following values' + 
                     ', '.join(FACE_POSITIONS + '.'))
+
+    @property
+    def aligned_panel_header(self):
+        return self._aligned_panel_header
+
+    @aligned_panel_header.setter
+    def aligned_panel_header(self, value):
+        raise invalidUsage('Attribute "aligned_panel_header" can only be accessed.')
 
     def del_layout_fn(self, name):
         """ Deletes layout function given its _module:__name__ """

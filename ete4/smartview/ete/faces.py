@@ -5,7 +5,7 @@ from ete4.smartview.utils import InvalidUsage, get_random_string
 from ete4.smartview.ete.draw import Box, SBox,\
                                     clip_angles, cartesian,\
                                     draw_text, draw_rect,\
-                                    draw_circle, draw_ellipse,\
+                                    draw_circle, draw_ellipse, draw_slice,\
                                     draw_line, draw_outline,\
                                     draw_triangle, draw_rhombus,\
                                     draw_arrow
@@ -385,7 +385,7 @@ class RectFace(Face):
         self.color = color
         # Text related
         self.text = str(text) if text is not None else None
-        self.rotate_text = True
+        self.rotate_text = False
         self.fgcolor = fgcolor
         self.ftype = ftype
         self.min_fsize = min_fsize
@@ -712,12 +712,13 @@ class SelectedCircleFace(SelectedFace, CircleFace):
 
 class SelectedRectFace(SelectedFace, RectFace):
     def __init__(self, name, width=15, height=15,
+            text=None,
             padding_x=1, padding_y=0):
 
         SelectedFace.__init__(self, name);
 
         RectFace.__init__(self, width=width, height=height, color=None,
-                name=self.name,
+                name=self.name, text=text,
                 padding_x=padding_x, padding_y=padding_y)
 
     def __name__(self):
@@ -1226,3 +1227,48 @@ class SeqMotifFace(Face):
 
             # Update x to draw consecutive motifs
             x += w
+
+
+class PieChartFace(CircleFace):
+
+    def __init__(self, radius, data, name="",
+            padding_x=0, padding_y=0):
+
+        Face.__init__(self, name=name,
+                padding_x=padding_x, padding_y=padding_y)
+
+        self.radius = radius
+        # Drawing private properties
+        self._max_radius = 0
+        self._center = (0, 0)
+
+        # data = [ [name, value, color], ... ]
+        # self.data = [ (name, value, color, a, da) ]
+        self.data = []
+        self.compute_pie(list(data))
+
+    def __name__(self):
+        return "PieChartFace"
+
+    def compute_pie(self, data):
+        total_value = sum(d[1] for d in data)
+
+        a = 0
+        for name, value, color in data:
+            da = (value / total_value) * 2 * pi
+            self.data.append((name, value, color, a, da))
+            a += da
+
+        assert a >= 2 * pi - 1e-5 and a <= 2 * pi + 1e-5, "Incorrect pie"
+
+    def draw(self, drawer):
+
+        # Draw circle if only one datum
+        if len(self.data) == 1:
+            self.color = self.data[0][2]
+            return CircleFace.draw(self, drawer)
+        
+        for (name, value, color, a, da) in self.data:
+            style = { 'fill': color }
+            yield draw_slice(self._center, self._max_radius, a, da, 
+                    "", style=style)
