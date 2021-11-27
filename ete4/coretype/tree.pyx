@@ -59,7 +59,7 @@ except ImportError:
     pass # Treeview is now an optional dependency
 
 from ..smartview import Face as smartFace
-from ..smartview.ete.face_positions import _FaceAreas, get_FaceAreas
+from ..smartview.renderer.face_positions import _FaceAreas, get_FaceAreas
 # except ImportError:
     # TREEVIEW = False
 # else:
