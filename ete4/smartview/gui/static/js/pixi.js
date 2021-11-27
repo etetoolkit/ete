@@ -12,6 +12,9 @@ const resources = loader.resources;
 const Sprite = PIXI.Sprite;
 
 
+const MIN_FSIZE = 7;
+
+
 const app_options = {
     transparent: true,
     resolution: 1,
@@ -40,17 +43,28 @@ const aa_notext_png = aa.map(a => {
         url: `images/aa_notext/${a}.png` }
 });
 
+const aa_text_png = aa.map(a => {
+    return { 
+        name: `aa_text_${a}`, 
+        url: `images/aa_text/${a}.png` }
+});
+
 
 // Load texture atlas
 loader
     //.add(`../images/aa_text.json`)
     //.add("aa_notext", `images/aa_notext.json`)
     .add(aa_notext_png)
+    .add(aa_text_png)
     .add("block", "images/block.png")
     .load(() => {
         textures = { 
             aa_notext: aa.reduce((textures, a) => {
                 textures[a] = resources[`aa_notext_${a}`].texture;
+                return textures
+            }, {}),
+            aa_text: aa.reduce((textures, a) => {
+                textures[a] = resources[`aa_text_${a}`].texture;
                 return textures
             }, {}),
             shapes: {
@@ -113,6 +127,8 @@ function addSprite(sprite, box, tl, zx, zy) {
 function draw_msa(sequence, type, box, tl, zx, zy) {
     const [ x0, y, width, posh ] = box;
     const posw = width / sequence.length;
+    if (posw * zx < MIN_FSIZE)
+        type = type.split("_")[0] + "_notext";
     sequence.split("").forEach((s, i) => {
         if (s != "-") {
             const sprite = new Sprite(textures[type][s])

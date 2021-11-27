@@ -539,10 +539,11 @@ class DrawerCirc(Drawer):
     TYPE = 'circ'
 
     def __init__(self, tree, viewport=None, panel=0, zoom=(1, 1),
-                 limits=None, collapsed_ids=None, selected=None, searches=None,
+                 limits=None, collapsed_ids=None, active=None,
+                 selected=None, searches=None,
                  tree_style=None):
         super().__init__(tree, viewport, panel, zoom,
-                         limits, collapsed_ids, selected, searches, tree_style)
+                         limits, collapsed_ids, active, selected, searches, tree_style)
 
         assert self.zoom[0] == self.zoom[1], 'zoom must be equal in x and y'
 

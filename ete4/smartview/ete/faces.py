@@ -79,7 +79,6 @@ class Face(object):
 
         self.always_drawn = False # Use carefully to avoid overheading...
 
-        self.drawertype = None
         self.zoom = (0, 0)
 
     def __name__(self):
@@ -113,7 +112,6 @@ class Face(object):
         if pos.startswith("aligned"):
             zx = za
         self.zoom = (zx, zy)
-        self.drawertype = drawer.TYPE
 
         if pos == 'branch_top':  # above the branch
             avail_dx = dx / n_col
@@ -152,7 +150,7 @@ class Face(object):
         else:
             raise InvalidUsage(f'unkown position {pos}')
 
-        r = (x or 1e-10) if self.drawertype == 'circ' else 1
+        r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
         padding_x = self.padding_x / zx
         padding_y = self.padding_y / (zy * r)
 
@@ -427,9 +425,6 @@ class RectFace(Face):
             n_row, n_col,
             dx_before, dy_before):
 
-        self.drawertype = drawer.TYPE
-        self.zoom = drawer.zoom
-
         if drawer.TYPE == 'circ':
             pos = swap_pos(pos, point[1])
 
@@ -446,7 +441,7 @@ class RectFace(Face):
         x, y, dx, dy = box
         zx, zy = self.zoom
 
-        r = (x or 1e-10) if self.drawertype == 'circ' else 1
+        r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
 
         def get_dimensions(max_width, max_height):
             if not (max_width or max_height):
@@ -506,10 +501,10 @@ class RectFace(Face):
         self._box = Box(*box)
         return self._box
 
-    def draw(self):
+    def draw(self, drawer):
         self._check_own_variables()
 
-        circ_drawer = self.drawertype == 'circ'
+        circ_drawer = drawer.TYPE == 'circ'
         style = {'fill': self.color, 'opacity': 0.7}
         if self.text and circ_drawer:
             rect_id = get_random_string(10)
@@ -749,7 +744,7 @@ class OutlineFace(Face):
                 'fill-opacity': self.opacity,
                 }
         x, y, dx_min, dx_max, dy = self.outline
-        zx, zy, _ = drawer.zoom
+        zx, zy = self.zoom
         circ_drawer = drawer.TYPE == 'circ'
         r = (x or 1e-10) if circ_drawer else 1
         if dy * zy * r < self.collapsing_height:
@@ -899,25 +894,31 @@ class SeqFace(Face):
 
         dx = self.poswidth / zx
         # Send sequences as a whole to be rendered by PIXIjs
-        yield [ "pixi-aa_notext", Box(x0, y, dx * len(self.seq), dy), self.seq ]
-        # Rende text if necessary
         if self.draw_text:
-            text_style = {
-                'max_fsize': self._fsize,
-                'text_anchor': 'middle',
-                'ftype': f'{self.ftype}, sans-serif', # default sans-serif
-                }
-            for idx, pos in enumerate(self.seq):
-                x = x0 + idx * dx
-                r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
-                # Draw rect
-                if pos != '-':
-                    text_box = Box(x + dx / 2,
-                            y + (dy - self._fsize / (zy * r)) / 2,
-                            dx, dy)
-                    yield draw_text(text_box,
-                            pos,
-                            style=text_style)
+            aa_type = "text"
+        else:
+            aa_type = "notext"
+
+        yield [ f'pixi-aa_{aa_type}', Box(x0, y, dx * len(self.seq), dy), self.seq ]
+
+        # Rende text if necessary
+        # if self.draw_text:
+            # text_style = {
+                # 'max_fsize': self._fsize,
+                # 'text_anchor': 'middle',
+                # 'ftype': f'{self.ftype}, sans-serif', # default sans-serif
+                # }
+            # for idx, pos in enumerate(self.seq):
+                # x = x0 + idx * dx
+                # r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
+                # # Draw rect
+                # if pos != '-':
+                    # text_box = Box(x + dx / 2,
+                            # y + (dy - self._fsize / (zy * r)) / 2,
+                            # dx, dy)
+                    # yield draw_text(text_box,
+                            # pos,
+                            # style=text_style)
 
 
 class SeqMotifFace(Face):
@@ -1075,10 +1076,7 @@ class SeqMotifFace(Face):
             dx_before, dy_before)
 
         x, y, _, dy = box
-
         zx, zy = self.zoom
-        if pos.startswith("aligned"):
-            zx = za
 
         self._box = Box(x, y, self.width / zx, dy)
         return self._box
@@ -1089,10 +1087,7 @@ class SeqMotifFace(Face):
     def draw(self, drawer):
         # Only leaf/collapsed branch_right or aligned
         x0, y, _, dy = self._box
-
-        zx, zy, za = drawer.zoom
-        # if pos.startswith("aligned"):
-            # zx = za
+        zx, zy = self.zoom
 
         x = x0
         prev_end = -1
@@ -1165,18 +1160,22 @@ class SeqMotifFace(Face):
                     yield draw_ellipse(center, rx, ry, style=style)
 
             # Sequence and compact sequence
-            elif shape == 'compactseq':
+            elif shape in ['seq', 'compactseq']:
                 seq = self.seq[start : end + 1]
-                yield [ "pixi-aa_notext", box, seq ]
+                if shape == 'compactseq':
+                    aa_type = "notext"
+                else:
+                    aa_type = "text"
+                yield [ f'pixi-aa_{aa_type}', box, seq ]
 
-            elif shape == 'seq':
-                seq = self.seq[start : end + 1]
-                seq_face = SeqFace(seq, self.seqtype, posw * zx,
-                        draw_text=True, max_fsize=self.max_fsize,
-                        ftype=self.ftype)
-                seq_face._box = box # assign box manually
-                seq_face.compute_fsize(posw, h, zx, zy)
-                yield from seq_face.draw(drawer)
+            # elif shape == 'seq':
+                # seq = self.seq[start : end + 1]
+                # seq_face = SeqFace(seq, self.seqtype, posw * zx,
+                        # draw_text=True, max_fsize=self.max_fsize,
+                        # ftype=self.ftype)
+                # seq_face._box = box # assign box manually
+                # seq_face.compute_fsize(posw, h, zx, zy)
+                # yield from seq_face.draw(drawer)
 
             # Text on top of shape
             if text:
