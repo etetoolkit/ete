@@ -1,5 +1,4 @@
-// Handle gui events.
-
+// Handle gui events.  
 import { view, get_tid, menus, coordinates, reset_view, show_minimap, show_help }
     from "./gui.js";
 import { zoom_around } from "./zoom.js";
@@ -7,6 +6,7 @@ import { move_minimap_view } from "./minimap.js";
 import { drag_start, drag_stop, drag_move } from "./drag.js";
 import { search } from "./search.js";
 import { select_by_command, prune_by_selection, remove_selections } from "./select.js";
+import { activate_node, deactivate_node, update_active_nodes } from "./active.js";
 import { update } from "./draw.js";
 import { on_box_contextmenu } from "./contextmenu.js";
 
@@ -294,20 +294,24 @@ async function on_postMessage(event) {
     //if (!wiew.allowed_origins.includes(event.origin))
         //return
     
-    const { selectionMode, eventType, name, node, selectCommand } = event.data;
+    const { selectionMode, eventType, name, node, nodes, selectCommand } = event.data;
 
     div_tree.style.cursor = "wait";
 
-    if (selectionMode === "active" && node.id) {
+    if (selectionMode === "active") {
 
-        if (eventType === "update")
-            
+        if (eventType === "select" && node && node.id)
             activate_node(node.id, node)
 
-        else if (eventType === "update")
+        else if (eventType === "remove" && node && node.id)
             deactivate_node(node.id)
 
-    } else if (selectionMode !== "saved") {
+        else if (eventType === "update") {
+            update_active_nodes(nodes || [])
+        }
+
+
+    } else if (selectionMode === "saved") {
         // Selection
         if (eventType === "select" && selectCommand)
             try { await select_by_command(selectCommand, name) } catch {}

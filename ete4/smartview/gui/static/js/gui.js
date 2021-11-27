@@ -7,6 +7,7 @@ import { download_newick, download_svg } from "./download.js";
 import { activate_node, deactivate_node } from "./active.js";
 import { search, get_searches, remove_searches } from "./search.js";
 import { get_selections, remove_selections } from "./select.js";
+import { get_active_nodes } from "./active.js";
 import { zoom_into_box, zoom_around, zoom_towards_box } from "./zoom.js";
 import { draw_minimap, update_minimap_visible_rect } from "./minimap.js";
 import { api, api_put, escape_html } from "./api.js";
@@ -175,6 +176,7 @@ async function main() {
 
     get_searches();
     get_selections();
+    get_active_nodes();
 
     draw_minimap();
     show_minimap("visible");
@@ -251,6 +253,8 @@ async function on_tree_change() {
         get_searches();
     if (Object.keys(view.selected).length === 0)
         get_selections();
+    if (Object.keys(view.active.nodes).length === 0)
+        get_active_nodes();
 
     reset_node_count();
     await reset_layouts();

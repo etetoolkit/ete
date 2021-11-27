@@ -8,8 +8,9 @@ import { store_selection } from "./select.js";
 
 export { 
     activate_node, deactivate_node,
+    update_active_nodes,
     get_active_class, colorize_active,
-    add_folder_active,
+    add_folder_active, get_active_nodes
 };
 
 const selectError = Swal.mixin({
@@ -29,7 +30,7 @@ function notify_active() {
     notify_parent("active", { nodes: view.active.nodes });
 }
 
-async function activate_node(node_id, properties) {
+async function activate_node(node_id, properties, notify=true) {
     const tid = get_tid() + "," + node_id;
 
     // Remove active node
@@ -39,22 +40,25 @@ async function activate_node(node_id, properties) {
 
     update_active_folder();
 
-    notify_active();
+    if (notify)
+        notify_active();
 
     draw_tree();
 }
 
-async function deactivate_node(node_id) {
+async function deactivate_node(node_id, notify=true) {
     const tid = get_tid() + "," + node_id;
 
     // Remove active node
     await api(`/trees/${tid}/deactivate`)
 
-    view.active.nodes.filter(n => String(n.id) === node_id);
+    view.active.nodes = view.active.nodes
+        .filter(n => n.id !== String(node_id));
 
     update_active_folder();
 
-    notify_active();
+    if (notify)
+        notify_active();
 
     draw_tree();
 }
@@ -76,7 +80,7 @@ async function store_active(name) {
 
         notify_active();
 
-        view.active.remove(false);  // do not notify server nor redraw
+        view.active.remove(false);
 
     } catch (exception) {
         selectError.fire({ html: exception });
@@ -140,4 +144,31 @@ function colorize_active() {
         e.style.opacity = view.active.opacity;
         e.style.fill = view.active.color;
     });
+}
+
+
+async function get_active_nodes() {
+    view.active.nodes = await api(`/trees/${get_tid()}/all_active`);
+    notify_active();
+    if (view.active.folder)
+        update_active_folder();
+}
+
+
+function update_active_nodes(nodes) {
+    const active_ids = view.active.nodes.map(n => n.id);
+    const new_ids = nodes.map(n => String(n.id));
+
+    nodes.forEach(node => {
+        if (!active_ids.includes(String(node.id)))
+            activate_node(node.id, node, false)
+    })
+
+    active_ids.forEach(id => {
+        if (!new_ids.includes(id))
+            deactivate_node(id, false)
+    })
+
+    if (view.active.folder)
+        update_active_folder();
 }

@@ -191,6 +191,12 @@ class Trees(Resource):
         elif rule == '/trees/<string:tree_id>/remove_active':
             remove_active(tree)
             return {'message': 'ok'}
+        elif rule == '/trees/<string:tree_id>/all_active':
+            nodes = []
+            for node in tree.active.results:
+                node_id = ",".join(map(str, get_node_id(tree.tree, node, [])))
+                nodes.append({ "id": node_id, **node.props })
+            return nodes
         # Searches
         elif rule == '/trees/<string:tree_id>/searches':
             searches = { 
@@ -541,7 +547,7 @@ def get_selections(tree_id):
     return [ name for name, (results, _) in tree.selected.items() if node in results ]
 
 
-def get_node_id(tree, node, node_id=[]):
+def get_node_id(tree, node, node_id):
     parent = node.up
     if not parent:
         node_id.reverse()
@@ -562,7 +568,7 @@ def get_selection_info(tid, args):
     no_props = len(props) == 1 and props[0] == ''
 
     if 'node_id' in props or no_props or '*' in props:
-        node_ids = [ ",".join(map(str, get_node_id(tree.tree, node))) 
+        node_ids = [ ",".join(map(str, get_node_id(tree.tree, node, []))) 
                 for node in nodes ]
     if no_props:
         return node_ids
@@ -1195,6 +1201,7 @@ def add_resources(api):
         '/trees/<string:tree_id>/deactivate',
         '/trees/<string:tree_id>/store_active',
         '/trees/<string:tree_id>/remove_active',
+        '/trees/<string:tree_id>/all_active',
         '/trees/<string:tree_id>/search',
         '/trees/<string:tree_id>/searches',
         '/trees/<string:tree_id>/remove_search',
