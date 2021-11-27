@@ -44,7 +44,6 @@ from . import clustvalidation
 from ..coretype.tree import _translate_nodes
 from .. import TreeNode, ArrayTable
 import numpy
-from six.moves import range
 
 __all__ = ["ClusterNode", "ClusterTree"]
 

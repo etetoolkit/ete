@@ -12,8 +12,8 @@ from tempfile import TemporaryFile
 
 import pytest
 
-from ete4 import Tree
-import ete4.parser.newick as newick
+from ... import Tree
+import ....parser.newick as newick
 
 
 good_trees = """\

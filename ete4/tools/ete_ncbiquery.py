@@ -42,9 +42,6 @@ import sys
 
 from .common import log, dump
 
-import six
-from six.moves import map
-
 DESC = ""
 
 def populate_args(ncbi_args_p):
@@ -191,7 +188,7 @@ def run(args):
         print('# ' + '\t'.join(["Taxid", "Sci.Name", "Rank", "Named Lineage", "Taxid Lineage"]))
         translator = ncbi.get_taxid_translator(all_taxids)
         ranks = ncbi.get_rank(all_taxids)
-        for taxid, name in six.iteritems(translator):
+        for taxid, name in translator.items():
             lineage = ncbi.get_lineage(taxid)
             named_lineage = ','.join(ncbi.translate_to_names(lineage))
             lineage_string = ','.join(map(str, lineage))

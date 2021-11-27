@@ -47,8 +47,6 @@ import numpy
 from .common import as_str, shorten_str, src_tree_iterator, ref_tree_iterator
 from ..utils import print_table
 
-from six.moves import map
-
 DESC = """
  - ete maptrees -
 

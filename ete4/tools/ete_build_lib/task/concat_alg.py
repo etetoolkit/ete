@@ -40,8 +40,6 @@ from __future__ import absolute_import
 from os.path import join as pjoin
 import logging
 from collections import defaultdict
-import six
-from six.moves import zip
 from functools import cmp_to_key
 log = logging.getLogger("main")
 
@@ -223,7 +221,7 @@ def get_concatenated_alg(alg_filenames, models=None,
         # Set best matrix for this alignment
         alg.matrix = matrix
         # Change seq names to contain only species names
-        for i, seq in six.iteritems(alg.id2seq):
+        for i, seq in alg.id2seq.items():
             name = db.get_seq_name(alg.id2name[i])
             taxid = get_species_code(name, splitter=sp_delimiter, field=sp_field)
             if lenseq is not None and len(seq) != lenseq:
@@ -238,7 +236,7 @@ def get_concatenated_alg(alg_filenames, models=None,
             sp2alg[taxid].append(alg) # Records all species seen in all algs.
             alg.sp2seq[taxid] = seq
 
-    valid_species = [sp for sp in six.iterkeys(sp2alg) \
+    valid_species = [sp for sp in sp2alg.keys() \
                          if sp in keep_species or \
                          len(sp2alg[sp])/float(len(alg_objects)) > kill_thr]
 

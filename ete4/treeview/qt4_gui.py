@@ -39,7 +39,6 @@
 from __future__ import absolute_import
 from __future__ import print_function
 import re
-import six
 
 # try:
 #     from .qt import QtOpenGL
@@ -625,7 +624,7 @@ class _PropertiesDialog(QWidget):
                     self.prop2nodes.setdefault(pname,[]).append(n)
                     self.prop2values.setdefault(pname,[]).append(pvalue)
 
-            for pname,pvalue in six.iteritems(n.img_style):
+            for pname,pvalue in n.img_style.items():
                 if type(pvalue) == int or \
                    type(pvalue) == float or \
                    type(pvalue) == str :

@@ -49,8 +49,7 @@ from __future__ import absolute_import
 from ..parser.fasta import read_fasta, write_fasta
 from ..parser.paml import read_paml, write_paml
 from ..parser.phylip import read_phylip, write_phylip
-import six
-from six.moves import zip
+
 
 __all__ = ["SeqGroup"]
 
@@ -134,7 +133,7 @@ class SeqGroup(object):
         """ Returns an iterator over all sequences in the
         collection. Each item is a tuple with the sequence name,
         sequence, and sequence comments """
-        for i, seq in six.iteritems(self.id2seq):
+        for i, seq in self.id2seq.items():
             yield self.id2name[i], seq,  self.id2comment.get(i, [])
 
     def get_seq(self, name):

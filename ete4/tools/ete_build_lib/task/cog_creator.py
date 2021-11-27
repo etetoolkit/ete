@@ -38,15 +38,10 @@ from __future__ import print_function
 #
 #
 # #END_LICENSE#############################################################
-from six import StringIO
-import six.moves.cPickle
+from io import StringIO
 from collections import defaultdict
 import logging
-import os
 import time
-import six
-from six.moves import map
-from six.moves import range
 log = logging.getLogger("main")
 
 from ..master_task import CogSelectorTask
@@ -293,7 +288,7 @@ def brh_cogs2(DB, species, missing_factor=0.0, seed_sp=None, min_score=0):
         log.log(26, "Finding best COG selection...")
         seed2size = get_sorted_seeds(seed_sp, species, sp_to_test, min_species, DB)
         size_analysis = []
-        for seedname, content in six.iteritems(seed2size):
+        for seedname, content in seed2size.items():
             cog_sizes = [size for seq, size in content]
             mx, avg = _max(cog_sizes), round(_mean(cog_sizes))
             size_analysis.append([seedname, mx, avg, len(content)])
@@ -394,7 +389,7 @@ def get_sorted_seeds(seed, species, sp_to_test, min_species, DB):
             counter[seqid].update(set(targets.split(",")) & species)
 
         # Filter out too small COGs
-        valid_seqs = [(k, len(v)) for k, v in six.iteritems(counter) if
+        valid_seqs = [(k, len(v)) for k, v in counter.items() if
                       len(v)>= min_species-1]
 
         seed2count[seed] = valid_seqs

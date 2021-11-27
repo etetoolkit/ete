@@ -44,7 +44,6 @@ the coretype PhyloNode and add some speciall features to the the node
 instances.
 """
 from __future__ import absolute_import
-from six.moves import map
 
 __author__     = "Francois-Jose Serra"
 __email__      = "francois@barrabin.org"

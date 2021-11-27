@@ -17,7 +17,7 @@ from tempfile import TemporaryFile
 
 import pytest
 
-from ete4.smartview.ete import nexus
+from ...smartview.renderer import nexus
 
 
 def test_loads():

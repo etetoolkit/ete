@@ -6,7 +6,7 @@ Read trees from a file in nexus format.
 
 import re
 
-from ete4.parser.newick import read_newick, write_newick
+from ...parser.newick import read_newick, write_newick
 
 
 class NexusError(Exception):

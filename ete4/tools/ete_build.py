@@ -44,12 +44,6 @@ from __future__ import print_function
 import re
 import itertools
 import errno
-import six.moves.builtins
-import six
-from six.moves import map
-from six.moves import range
-from six import StringIO
-from six.moves import input
 
 import sys
 import os
@@ -294,7 +288,7 @@ def main(args):
         config['threading'] = {}
 
         apps_to_test = {}
-        for k, (appsrc, cores) in six.iteritems(appset):
+        for k, (appsrc, cores) in appset.items():
             cores = int(cores)
             if appsrc == "built-in":
                 #cores = int(config["threading"].get(k, args.maxcores))
@@ -609,7 +603,7 @@ def main(args):
     # This initialises all pipelines
     pending_tasks = []
     start_time = ctime()
-    for wkname, config in six.iteritems(run2config):
+    for wkname, config in run2config.items():
         # Feeds pending task with the first task of the workflow
         config["_name"] = wkname
         new_tasks = pipeline(None, wkname, config)

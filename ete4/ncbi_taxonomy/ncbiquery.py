@@ -58,8 +58,6 @@ from hashlib import md5
 import sqlite3
 import math
 import tarfile
-import six
-from six.moves import map
 import warnings
 
 
@@ -274,7 +272,7 @@ class NCBITaxa(object):
         if len(all_ids) != len(id2name) and try_synonyms:
             not_found_taxids = all_ids - set(id2name.keys())
             taxids, old2new = self._translate_merged(not_found_taxids)
-            new2old = {v: k for k,v in six.iteritems(old2new)}
+            new2old = {v: k for k,v in old2new.items()}
 
             if old2new:
                 query = ','.join(['"%s"' %v for v in new2old])
@@ -300,7 +298,7 @@ class NCBITaxa(object):
 
         names = set(name2origname.keys())
 
-        query = ','.join(['"%s"' %n for n in six.iterkeys(name2origname)])
+        query = ','.join(['"%s"' %n for n in name2origname.keys()])
         cmd = 'select spname, taxid from species where spname IN (%s)' %query
         result = self.db.execute('select spname, taxid from species where spname IN (%s)' %query)
         for sp, taxid in result.fetchall():
@@ -374,9 +372,9 @@ class NCBITaxa(object):
                 return map(int, [n.name for n in tree])
 
         elif intermediate_nodes:
-            return [tid for tid, count in six.iteritems(descendants)]
+            return [tid for tid, count in descendants.items()]
         else:
-            return [tid for tid, count in six.iteritems(descendants) if count == 1]
+            return [tid for tid, count in descendants.items() if count == 1]
 
     def get_topology(self, taxids, intermediate_nodes=False, rank_limit=None, collapse_subspecies=False, annotate=True):
         """Given a list of taxid numbers, return the minimal pruned NCBI taxonomy tree
@@ -397,7 +395,7 @@ class NCBITaxa(object):
             node.
 
         """
-        from ete4 import PhyloTree
+        from .. import PhyloTree
         taxids, merged_conversion = self._translate_merged(taxids)
         if len(taxids) == 1:
             root_taxid = int(list(taxids)[0])
@@ -452,7 +450,7 @@ class NCBITaxa(object):
                     track.append(node)
                 sp2track[sp] = track
             # generate parent child relationships
-            for sp, track in six.iteritems(sp2track):
+            for sp, track in sp2track.items():
                 parent = None
                 for elem in track:
                     if parent and elem not in parent.children:
@@ -571,7 +569,7 @@ class NCBITaxa(object):
                 occurrence[taxid] += 1
                 pos[taxid].add(i)
 
-        common = [taxid for taxid, ocu in six.iteritems(occurrence) if ocu == len(vectors)]
+        common = [taxid for taxid, ocu in occurrence.items() if ocu == len(vectors)]
         if not common:
             return [""]
         else:
@@ -632,7 +630,7 @@ class NCBITaxa(object):
 
         broken_branches = defaultdict(set)
         broken_clades = set()
-        for tax, leaves in six.iteritems(tax2node):
+        for tax, leaves in tax2node.items():
             if len(leaves) > 1:
                 common = t.get_common_ancestor(leaves)
             else:

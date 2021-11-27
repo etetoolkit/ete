@@ -49,8 +49,6 @@ except ImportError:
     from urllib.request import urlopen, URLError
     from urllib.parse import quote as urquote
 
-from six.moves import input
-
 try:
     from . import __ETEID__
 except ImportError:

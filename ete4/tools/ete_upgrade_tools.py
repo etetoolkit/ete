@@ -9,8 +9,6 @@ from os.path import join as pjoin
 from os.path import split as psplit
 from os.path import exists as pexist
 
-from six.moves import input
-
 from .utils import colorify
 
 import tarfile

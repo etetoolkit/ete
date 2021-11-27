@@ -42,7 +42,6 @@ from __future__ import print_function
 from .common import as_str, shorten_str, src_tree_iterator, ref_tree_iterator
 
 import re
-from six.moves import map
 
 DESC = """
  - ete compare -

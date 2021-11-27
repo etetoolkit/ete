@@ -47,7 +47,6 @@ from collections import defaultdict
 from .common import log, POSNAMES, node_matcher, src_tree_iterator
 from .. import (Tree, PhyloTree, TextFace, RectFace, faces, TreeStyle, CircleFace, AttrFace,
                 add_face_to_node, random_color)
-from six.moves import map
 
 DESC = ""
 FACES = []

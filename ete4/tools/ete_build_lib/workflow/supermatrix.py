@@ -51,7 +51,6 @@ from .. import db
 from ..workflow.common import (process_new_tasks, IterConfig,
                                get_next_npr_node, get_iternumber)
 from ..logger import logindent
-import six
 
 log = logging.getLogger("main")
 
@@ -70,7 +69,7 @@ def annotate_node(t, final_task):
     n = cladeid2node[t.cladeid]
     n.add_features(size=final_task.size)
     for task in alltasks:
-        params = ["%s %s" %(k,v) for k,v in  six.iteritems(task.args)
+        params = ["%s %s" %(k,v) for k,v in  task.args.items()
                   if not k.startswith("_")]
         params = " ".join(params)
 
@@ -123,7 +122,7 @@ def process_task(task, wkname, npr_conf, nodeid2info):
         # for the concat alg task. If something changes, concat alg will change
         # and the associated tree will be rebuilt
         config_blocks = set([wkname])
-        for key, value in six.iteritems(conf[wkname]):
+        for key, value in conf[wkname].items():
             if isinstance(value, list) or  isinstance(value, tuple) \
                     or isinstance(value, set):
                 for elem in value:

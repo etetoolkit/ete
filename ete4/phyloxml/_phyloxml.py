@@ -48,8 +48,6 @@ from __future__ import print_function
 import sys
 import getopt
 import re as re_
-import six
-from six.moves import range
 
 etree_ = None
 Verbose_import_ = False
@@ -225,7 +223,7 @@ def showIndent(outfile, level):
 def quote_xml(inStr):
     if not inStr:
         return ''
-    s1 = (isinstance(inStr, six.string_types) and inStr or
+    s1 = (isinstance(inStr, str) and inStr or
           '%s' % inStr)
     s1 = s1.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
@@ -233,7 +231,7 @@ def quote_xml(inStr):
     return s1
 
 def quote_attrib(inStr):
-    s1 = (isinstance(inStr, six.string_types) and inStr or
+    s1 = (isinstance(inStr, str) and inStr or
           '%s' % inStr)
     s1 = s1.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
@@ -278,7 +276,7 @@ def find_attr_value_(attr_name, node):
     value = attrs.get(attr_name)
     if value is None:
         # Now try the other possible namespaces.
-        namespaces = six.itervalues(node.nsmap)
+        namespaces = node.nsmap.values()
         for namespace in namespaces:
             value = attrs.get('{%s}%s' % (namespace, attr_name, ))
             if value is not None:

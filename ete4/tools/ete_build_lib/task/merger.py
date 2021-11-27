@@ -40,7 +40,6 @@ from __future__ import print_function
 # #END_LICENSE#############################################################
 import logging
 import os
-import six
 log = logging.getLogger("main")
 
 from ..master_task import TreeMergeTask
@@ -94,7 +93,7 @@ class TreeMerger(TreeMergeTask):
 
             partition_pairs = []
             everything = set([_n.name for _n in ttree_content[ttree]])
-            for n, content in six.iteritems(ttree_content):
+            for n, content in ttree_content.items():
                 if n is ttree:
                     continue
                 left = set([_n.name for _n in content])
@@ -221,7 +220,7 @@ class TreeMerger(TreeMergeTask):
 
         # Reloads node2content of the rooted tree and generate cladeids
         ttree_content = self.main_tree.get_cached_content()
-        for n, content in six.iteritems(ttree_content):
+        for n, content in ttree_content.items():
             cid = generate_id([_n.name for _n in content])
             n.add_feature("cladeid", cid)
 

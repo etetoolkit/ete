@@ -43,7 +43,7 @@ from ..evol import EvolTree
 from random import random as rnd
 from copy import deepcopy
 import os
-from six.moves.cPickle import load, dump
+from pickle import load, dump
 import hashlib
 
 DATAPATH = os.path.abspath(os.path.split(os.path.realpath(__file__))[0])+"/ete_evol_data/"

@@ -45,9 +45,7 @@ import itertools
 from collections import deque, namedtuple
 from hashlib import md5
 from functools import cmp_to_key
-
-import six
-from six.moves import (cPickle, map, range, zip)
+import pickle 
 
 from .. import utils
 from ..parser.newick import read_newick, write_newick 
@@ -61,7 +59,7 @@ except ImportError:
     pass # Treeview is now an optional dependency
 
 from ..smartview import Face as smartFace
-from ..smartview.ete.face_positions import FACE_POSITIONS, _FaceAreas, get_FaceAreas
+from ..smartview.ete.face_positions import _FaceAreas, get_FaceAreas
 # except ImportError:
     # TREEVIEW = False
 # else:
@@ -91,6 +89,7 @@ cdef class TreeNode(object):
     cdef public object _up
     cdef public object _img_style
     cdef public object _faces
+    cdef public object _smfaces
     cdef public object _collapsed_faces
     cdef public int _initialized
     cdef public int _collapsed
@@ -238,13 +237,13 @@ cdef class TreeNode(object):
 
     def _set_face_areas(self, value):
         if isinstance(value, _FaceAreas):
-            self._faces = value
+            self._smfaces = value
         else:
             raise ValueError("[%s] is not a valid FaceAreas instance" %type(value))
     def _get_face_areas(self):
-        if not hasattr(self, "_faces") or self._faces is None:
-            self._faces = get_FaceAreas()
-        return self._faces
+        if not hasattr(self, "_smfaces") or self._smfaces is None:
+            self._smfaces = get_FaceAreas()
+        return self._smfaces
 
     def _set__collapsed_face_areas(self, value):
         if isinstance(value, _FaceAreas):
@@ -348,7 +347,7 @@ cdef class TreeNode(object):
 
     def add_props(self, **props):
         """Add or update several properties."""
-        for name, value in six.iteritems(props):
+        for name, value in props.items():
             self.add_prop(name, value)
 
     def del_prop(self, name):
@@ -644,7 +643,7 @@ cdef class TreeNode(object):
         # their path to the common ancestor.
         n2count = {}
         n2depth = {}
-        for seed, path in six.iteritems(node2path):
+        for seed, path in node2path.items():
             for visited_node in path:
                 if visited_node not in n2depth:
                     depth = visited_node.get_distance(start, topology_only=True)
@@ -655,13 +654,13 @@ cdef class TreeNode(object):
         # if several internal nodes are in the path of exactly the same kept
         # nodes, only one (the deepest) should be maintain.
         visitors2nodes = {}
-        for node, visitors in six.iteritems(n2count):
+        for node, visitors in n2count.items():
             # keep nodes connection at least two other nodes
             if len(visitors)>1:
                 visitor_key = frozenset(visitors)
                 visitors2nodes.setdefault(visitor_key, set()).add(node)
 
-        for visitors, nodes in six.iteritems(visitors2nodes):
+        for visitors, nodes in visitors2nodes.items():
             if not (to_keep & nodes):
                 sorted_nodes = sorted(nodes, key=cmp_to_key(cmp_nodes))
                 to_keep.add(sorted_nodes[0])
@@ -1024,7 +1023,7 @@ cdef class TreeNode(object):
         common = None
         for n in reference:
             broken = False
-            for node, path in six.iteritems(n2path):
+            for node, path in n2path.items():
                 if node is not ref_node and n not in path:
                     broken = True
                     break
@@ -1050,7 +1049,7 @@ cdef class TreeNode(object):
 
         for n in self.traverse():
             conditions_passed = 0
-            for key, value in six.iteritems(conditions):
+            for key, value in conditions.items():
                 if (hasattr(n, key) and getattr(n, key) == value)\
                   or n.props.get(key) == value:
                     conditions_passed +=1
@@ -1372,7 +1371,7 @@ cdef class TreeNode(object):
           structure that will be used as a basal node.
 
         """
-        from ..smartview.ete.gardening import update_all_sizes
+        from ..smartview.renderer.gardening import update_all_sizes
         outgroup = _translate_nodes(self, outgroup)
 
         if self == outgroup:
@@ -1585,7 +1584,7 @@ cdef class TreeNode(object):
         elif method == "cpickle":
             parent = self.up
             self.up = None
-            new_node = cPickle.loads(cPickle.dumps(self, 2))
+            new_node = pickle.loads(pickle.dumps(self, 2))
             self.up = parent
         else:
             raise TreeError("Invalid copy method")
@@ -1758,7 +1757,7 @@ cdef class TreeNode(object):
             if store_attr is None:
                 _val = [_n]
             else:
-                if not isinstance(store_attr, six.string_types):
+                if not isinstance(store_attr, str):
                     _val = [tuple(get_prop(_n, attr) for attr in store_attr)]
                 else:
                     _val = [get_prop(_n, store_attr)]
@@ -1881,18 +1880,18 @@ cdef class TreeNode(object):
                 edges1 = set([
                         tuple(sorted([tuple(sorted([getattr(n, attr_t1) for n in content if hasattr(n, attr_t1) and getattr(n, attr_t1) in common_attrs])),
                                       tuple(sorted([getattr(n, attr_t1) for n in t1_leaves-content if hasattr(n, attr_t1) and getattr(n, attr_t1) in common_attrs]))]))
-                        for content in six.itervalues(t1_content)])
+                        for content in t1_content.values()])
                 edges1.discard(((),()))
             else:
                 edges1 = set([
                         tuple(sorted([getattr(n, attr_t1) for n in content if hasattr(n, attr_t1) and getattr(n, attr_t1) in common_attrs]))
-                        for content in six.itervalues(t1_content)])
+                        for content in t1_content.values()])
                 edges1.discard(())
 
             if min_support_t1:
                 support_t1 = dict([
                         (tuple(sorted([getattr(n, attr_t1) for n in content if hasattr(n, attr_t1) and getattr(n, attr_t1) in common_attrs])), branch.support)
-                        for branch, content in six.iteritems(t1_content)])
+                        for branch, content in t1_content.items()])
 
             for t2 in target_trees:
                 t2_content = t2.get_cached_content()
@@ -1902,18 +1901,18 @@ cdef class TreeNode(object):
                             tuple(sorted([
                                         tuple(sorted([getattr(n, attr_t2) for n in content if hasattr(n, attr_t2) and getattr(n, attr_t2) in common_attrs])),
                                         tuple(sorted([getattr(n, attr_t2) for n in t2_leaves-content if hasattr(n, attr_t2) and getattr(n, attr_t2) in common_attrs]))]))
-                            for content in six.itervalues(t2_content)])
+                            for content in t2_content.values()])
                     edges2.discard(((),()))
                 else:
                     edges2 = set([
                             tuple(sorted([getattr(n, attr_t2) for n in content if hasattr(n, attr_t2) and getattr(n, attr_t2) in common_attrs]))
-                            for content in six.itervalues(t2_content)])
+                            for content in t2_content.values()])
                     edges2.discard(())
 
                 if min_support_t2:
                     support_t2 = dict([
                         (tuple(sorted(([getattr(n, attr_t2) for n in content if hasattr(n, attr_t2) and getattr(n, attr_t2) in common_attrs]))), branch.support)
-                        for branch, content in six.iteritems(t2_content)])
+                        for branch, content in t2_content.items()])
 
 
                 # if a support value is passed as a constraint, discard lowly supported branches from the analysis
@@ -2153,7 +2152,7 @@ cdef class TreeNode(object):
         if not cached_content:
             cached_content = self.get_cached_content()
         all_leaves = cached_content[self]
-        for n, side1 in six.iteritems(cached_content):
+        for n, side1 in cached_content.items():
             yield (side1, all_leaves-side1)
 
     def get_edges(self, cached_content = None):
@@ -2603,7 +2602,19 @@ cdef class TreeNode(object):
                     output[i].append(leaf_distances[n][m])
         return output, allleaves
 
-    def add_face(self, face, column, position="branch-right", collapsed_only=False):
+    def add_face(self, face, column, position=None, collapsed_only=False):
+        if isinstance(face, Face):
+            if position is None: 
+                position = 'branch-right'
+            self.add_face_treeview(face, column, position)
+        elif isinstance(face, smartFace):
+            if position is None: 
+                position = 'branch_right'
+            self.add_face_smartview(face, column, position, collapsed_only)
+        else: 
+            raise ValueError("Invalid face format")
+
+    def add_face_treeview(self, face, column, position="branch-right"):
         """
         .. versionadded: 2.1
 
@@ -2617,11 +2628,41 @@ cdef class TreeNode(object):
           "branch-right", "branch-top", "branch-bottom", "float",
           "aligned"
         """
+        
+        from ..treeview.main import  _FaceAreas, FaceContainer, FACE_POSITIONS
+    
+        if self._faces is None:
+            self._faces = _FaceAreas()
 
         if position not in FACE_POSITIONS:
             raise ValueError("face position not in %s" %FACE_POSITIONS)
 
-        if isinstance(face, Face) or isinstance(face, smartFace):
+        if isinstance(face, Face):
+            print(self._faces)
+            getattr(self._faces, position).add_face(face, column=column)
+        else:
+            raise ValueError("not a Face instance")
+
+    def add_face_smartview(self, face, column, position="branch-right", collapsed_only=False):
+        """
+        .. versionadded: 2.1
+
+        Add a fixed face to the node.  This type of faces will be
+        always attached to nodes, independently of the layout
+        function.
+
+        :argument face: a Face or inherited instance
+        :argument column: An integer number starting from 0
+        :argument "branch-right" position: Posible values are:
+          "branch-right", "branch-top", "branch-bottom", "float",
+          "aligned"
+        """
+        from ..smartview.ete.face_positions import FACE_POSITIONS
+
+        if position not in FACE_POSITIONS:
+            raise ValueError("face position not in %s" %FACE_POSITIONS)
+
+        if isinstance(face, smartFace):
             if collapsed_only:
                 getattr(self.collapsed_faces, position).add_face(face, column=column)
             else:
@@ -2741,7 +2782,7 @@ def _translate_nodes(root, *nodes):
                     name2node[n.name] = n
 
     if None in list(name2node.values()):
-        notfound = [key for key, value in six.iteritems(name2node) if value is None]
+        notfound = [key for key, value in name2node.items() if value is None]
         raise ValueError("Node names not found: "+str(notfound))
 
     valid_nodes = []

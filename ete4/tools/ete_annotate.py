@@ -38,7 +38,6 @@ from __future__ import absolute_import
 #
 # #END_LICENSE#############################################################
 from .common import dump, src_tree_iterator
-from six.moves import map
 
 DESC = ""
 def populate_args(annotate_args_p):

@@ -8,8 +8,8 @@ sys.path.insert(0, f'{abspath(dirname(__file__))}/../../..')
 
 from math import pi, sqrt
 
-from ete4 import Tree
-from ete4.smartview.ete import draw, gardening as gdn
+from ... import Tree
+from ...smartview.renderer import draw, gardening as gdn
 Size, Box, SBox = draw.Size, draw.Box, draw.SBox
 
 

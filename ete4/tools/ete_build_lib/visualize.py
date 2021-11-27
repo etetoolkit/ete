@@ -40,7 +40,6 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import re
-from six.moves import range
 
 def draw_tree(tree, conf, outfile):
     try:

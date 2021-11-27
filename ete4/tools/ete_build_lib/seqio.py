@@ -159,12 +159,6 @@ def load_sequences(args, seqtype, target_seqs, target_species, cached_seqs):
     # return target_seqs, visited_seqs, seq2length, seq2unknown, seq2seq
 
 
-
-
-
-
-
-
 def check_seq_integrity(args, target_seqs, visited_seqs, seq2length, seq2unknown, seq2seq):
     log.log(28, "Checking data consistency ...")
     source_seqtype = "aa" if "aa" in GLOBALS["seqtypes"] else "nt"
@@ -177,7 +171,7 @@ def check_seq_integrity(args, target_seqs, visited_seqs, seq2length, seq2unknown
             counter = defaultdict(int)
             for seqname in visited_seqs[source_seqtype]:
                 counter[seqname] += 1
-            duplicates = ["%s\thas %d copies" %(key, value) for key, value in six.iteritems(counter) if value > 1]
+            duplicates = ["%s\thas %d copies" %(key, value) for key, value in counter.items() if value > 1]
             error += "\nDuplicate sequence names.\n"
             error += '\n'.join(duplicates)
 
@@ -193,13 +187,13 @@ def check_seq_integrity(args, target_seqs, visited_seqs, seq2length, seq2unknown
     for seqtype in GLOBALS["seqtypes"]:
         if seq2unknown[seqtype]:
             error += "\nThe following %s sequences contain unknown symbols:\n" %seqtype
-            error += '\n'.join(["%s\tcontains:\t%s" %(k,' '.join(v)) for k,v in six.iteritems(seq2unknown[seqtype])] )
+            error += '\n'.join(["%s\tcontains:\t%s" %(k,' '.join(v)) for k,v in seq2unknown[seqtype].items()] )
 
     # check for aa/cds consistency
     REAL_NT = set('ACTG')
     if GLOBALS["seqtypes"] == set(["aa", "nt"]):
         inconsistent_cds = set()
-        for seqname, ntlen in six.iteritems(seq2length["nt"]):
+        for seqname, ntlen in seq2length["nt"].items():
             if seqname in seq2length["aa"]:
                 aa_len = seq2length["aa"][seqname]
                 if ntlen / 3.0 != aa_len:
@@ -257,7 +251,7 @@ def hash_names(target_names):
         hash_name = encode_seqname(name)
         hash2name[hash_name].append(name)
 
-    collisions = [(k,v) for k,v in six.iteritems(hash2name) if len(v)>1]
+    collisions = [(k,v) for k,v in hash2name.items() if len(v)>1]
     #GLOBALS["name_collisions"] = {}
     if collisions:
         visited = set(hash2name.keys())
@@ -274,14 +268,14 @@ def hash_names(target_names):
                     new_hashes[hash_name].append(name)
                 valid = set(new_hashes.keys()).isdisjoint(visited)
 
-            log.log(20, "Fixed with %d concatenations! %s", niter, ', '.join(['%s=%s' %(e[1][0], e[0]) for e in  six.iteritems(new_hashes)]))
+            log.log(20, "Fixed with %d concatenations! %s", niter, ', '.join(['%s=%s' %(e[1][0], e[0]) for e in  new_hashes.items()]))
             del hash2name[old_hash]
             hash2name.update(new_hashes)
             #GLOBALS["name_collisions"].update([(_name, _code) for _code, _name in new_hashes.iteritems()])
             logindent(-2)
     #collisions = [(k,v) for k,v in hash2name.iteritems() if len(v)>1]
     #log.log(28, "Final collisions %s", collisions )
-    hash2name = {k: v[0] for k,v in six.iteritems(hash2name)}
-    name2hash = {v: k for k,v in six.iteritems(hash2name)}
+    hash2name = {k: v[0] for k,v in hash2name.items()}
+    name2hash = {v: k for k,v in hash2name.items()}
     return name2hash, hash2name
 

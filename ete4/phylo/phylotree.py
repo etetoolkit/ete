@@ -355,7 +355,7 @@ class PhyloNode(TreeNode):
             try:
                 return self.props.get('_speciesFunction')(self.name)
             except:
-                return self.props.get(_speciesFunction)(self)
+                return self.props.get('_speciesFunction')(self)
         else:
             return self.props.get('_species')
 

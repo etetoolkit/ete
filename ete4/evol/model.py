@@ -42,8 +42,6 @@ this module defines the evolutionary Model that can be linked
 to phylogeny, and computed by one of codeml, gerp, slr.
 """
 from __future__ import absolute_import
-import six
-from six.moves import range
 from re       import sub
 from warnings import warn
 
@@ -164,14 +162,14 @@ class Model:
             # parse rst file if site or branch-site model
             if 'site' in self.properties['typ']:
                 # sites and classes attr
-                for key, val in six.iteritems(parse_rst(path)):
+                for key, val in parse_rst(path).items():
                     setattr(self, key, val)
             if 'ancestor' in self.properties['typ']:
                 get_ancestor(path, self)
             vars(self) ['lnL'] = self.stats ['lnL']
             vars(self) ['np']  = self.stats ['np']
         elif self.properties['exec'] == 'Slr':
-            for key, val in six.iteritems(parse_slr (path)):
+            for key, val in parse_slr(path).items():
                 setattr (self, key, val)
             vars(self) ['lnL'] = 0
             vars(self) ['np']  = 0

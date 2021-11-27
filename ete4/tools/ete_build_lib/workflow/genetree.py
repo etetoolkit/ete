@@ -50,8 +50,6 @@ from ..master_task import register_task_recursively
 from ..workflow.common import (IterConfig, get_next_npr_node,
                                process_new_tasks, get_iternumber)
 from ..logger import logindent
-import six
-from six.moves import map
 log = logging.getLogger("main")
 
 def annotate_node(t, final_task):
@@ -69,7 +67,7 @@ def annotate_node(t, final_task):
     n = cladeid2node[t.props.get("cladeid")]
     n.add_features(size=final_task.size)
     for task in alltasks:
-        params = ["%s %s" %(k,v) for k,v in  six.iteritems(task.args)
+        params = ["%s %s" %(k,v) for k,v in task.args.items()
                   if not k.startswith("_")]
         params = " ".join(params)
 

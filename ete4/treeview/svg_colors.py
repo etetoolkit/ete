@@ -41,7 +41,6 @@ from __future__ import print_function
 
 import random
 import colorsys
-from six.moves import range
 
 __all__ = ["SVG_COLORS", "COLOR_SCHEMES", "random_color"]
 

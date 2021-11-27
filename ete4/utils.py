@@ -42,9 +42,6 @@ import re
 import time
 
 import os
-import six
-from six.moves import range
-from six.moves import input
 
 try:
     import numpy
@@ -141,7 +138,7 @@ def print_table(items, header=None, wrap=True, max_col_width=20,
         current_item = -1
         row = header
         if wrap and not fix_col_width:
-            for col, maxw in six.iteritems(c2maxw):
+            for col, maxw in c2maxw.items():
                 c2maxw[col] = max(maxw, safelen(header[col]))
                 if wrap:
                     c2maxw[col] = min(c2maxw[col], max_col_width)

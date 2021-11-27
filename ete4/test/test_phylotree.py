@@ -4,7 +4,6 @@ import unittest
 
 from .. import PhyloTree, SeqGroup
 from .datasets import *
-from ete4.smartview.ete.gardening import standardize
 
 class Test_phylo_module(unittest.TestCase):
 

@@ -46,9 +46,6 @@ from .errors import ConfigError
 from .utils import colorify
 from .apps import APP2CLASS, OPTION2APPTYPE, APPTYPES
 
-import six
-from six.moves import map
-
 def build_supermatrix_workflow(wname):
     try:
         cog_selector, alg_concatenator, treebuilder = map(lambda x: "@%s" %x, wname.split("-"))
@@ -90,12 +87,12 @@ def list_workflows(config, target_type=None):
 
     if not target_type or target_type == 'supermatrix':
         print()
-        avail_meta = [(k, config["workflow_desc"].get(k, ""), len(v)) for k,v in six.iteritems(config.get('supermatrix_meta_workflow', {}))]
+        avail_meta = [(k, config["workflow_desc"].get(k, ""), len(v)) for k,v in config.get('supermatrix_meta_workflow', {}).items()]
         print_table(avail_meta, fix_col_width=[45, 60, 10], header=["Worflow name", "Description", "threads"], title="Supermatrix shortcut workflow names", row_line=True)
         
     if not target_type or target_type == 'genetree':        
         print()
-        avail_meta = [(k, config["workflow_desc"].get(k, ""), len(v)) for k,v in six.iteritems(config.get('genetree_meta_workflow', {}))]
+        avail_meta = [(k, config["workflow_desc"].get(k, ""), len(v)) for k,v in config.get('genetree_meta_workflow', {}).items()]
         print_table(avail_meta, fix_col_width=[45, 60, 10], header=["Worflow name", "Description", "threads"], title="GeneTree shortcut workflow names", row_line=True)
 
 
@@ -131,7 +128,7 @@ def block_detail(block_name, config, color=True):
     while next_block:
         block = next_block.pop()
         blocks_to_show[block] = pos
-        for k1, v1 in six.iteritems(config[block]):
+        for k1, v1 in config[block].items():
             if type(v1) in iterable_types:
                 for v2 in v1:
                     if isinstance(v2, str) and v2.startswith('@'):
@@ -183,7 +180,7 @@ def parse_block(blockname, conf):
             check_block_link(conf, blockname, conf[blockname][attr], attr)
             
     # Check for missing attributes     
-    for tag, tester in six.iteritems(CHECKERS):
+    for tag, tester in CHECKERS.items():
         if tag[0] == blocktype and (tester[2] and tag[1] not in conf[blockname]):
             raise ConfigError('[%s] attribute expected in block [%s]' %(tag[1], blockname))
             
@@ -214,10 +211,10 @@ def check_config(fname):
         parse_block(blockname, conf)
 
     # Check that the number of columns in main workflow definition is the same in all attributes
-    for flow_name in six.iterkeys(conf):
+    for flow_name in conf.keys():
         if conf[flow_name].get("_app", "") != "main":
             continue
-        npr_config = [len(v) for k, v in six.iteritems(conf[flow_name])
+        npr_config = [len(v) for k, v in conf[flow_name].items()
                       if type(v) == list and k != "target_levels"]
         if len(set(npr_config)) != 1:
             raise ConfigError("List values in [%s] should all have the same length" %flow_name)

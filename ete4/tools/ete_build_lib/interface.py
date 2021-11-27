@@ -48,14 +48,13 @@ from signal import signal, SIGWINCH, SIGKILL, SIGTERM
 from collections import deque
 from textwrap import TextWrapper
 
-import six.moves.queue
+import queue
 import threading
+from io import StringIO
 
 from .logger import get_main_log
 from .utils import GLOBALS, clear_tempdir, terminate_job_launcher, pjoin, pexist
 from .errors import *
-import six
-from six import StringIO
 
 MAIN_LOG = False
 
@@ -175,7 +174,7 @@ class Screen(StringIO):
                 self.refresh()
 
     def refresh(self):
-        for windex, (win, dim) in six.iteritems(self.windows):
+        for windex, (win, dim) in self.windows.items():
             h, w, sy, sx = dim
             line, col = self.pos[windex]
             if h is not None:
@@ -186,13 +185,8 @@ class Screen(StringIO):
         curses.doupdate()
 
     def write(self, text):
-        if six.PY3:
-            text = str(text)
-        else:
-            if isinstance(text, six.text_type):
-                #text = text.encode(self.stdout.encoding)
-                text = text.encode("UTF-8")
-        
+
+        text = str(text)    
         if NCURSES:
             self.write_curses(text)
             if self.logfile:
@@ -326,7 +320,7 @@ def init_curses(main_scr):
     #WIN[2], WIN[12] = newwin(h-dbg_h-1, (w/2)-1, 1, (w/2)+2)
     #WIN[3], WIN[13] = newwin(dbg_h-1, (w/2)-1, h-dbg_h+1, (w/2)+2)
 
-    for windex, (w, dim) in six.iteritems(WIN):
+    for windex, (w, dim) in WIN.items():
         #w = WIN[i]
         #w.bkgd(str(windex))
         w.bkgd(" ")
@@ -427,7 +421,7 @@ def main(main_screen, func, args):
     # Call main function as lower thread
     if NCURSES:
         screen.refresh()
-        exceptions = six.moves.queue.Queue()
+        exceptions = queue.Queue()
         t = ExcThread(bucket=exceptions, target=func, args=[args])
         t.daemon = True
         t.start()
@@ -438,7 +432,7 @@ def main(main_screen, func, args):
             while 1:
                 try:
                     exc = exceptions.get(block=False)
-                except six.moves.queue.Empty:
+                except queue.Empty:
                     pass
                 else:
                     exc_type, exc_obj, exc_trace = exc

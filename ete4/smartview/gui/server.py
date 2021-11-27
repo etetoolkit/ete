@@ -41,11 +41,10 @@ from flask_compress import Compress
 from itsdangerous import TimedJSONWebSignatureSerializer as JSONSigSerializer
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from ete4 import Tree
-from ete4.smartview import TreeStyle, FACE_POSITIONS, layout_modules
-from ete4.parser.newick import NewickError
-from ete4.smartview.utils import InvalidUsage, get_random_string
-from ete4.smartview.ete import nexus, draw, gardening as gdn
+from .. import Tree
+from .. import TreeStyle, layout_modules
+from ..utils import InvalidUsage, get_random_string
+from ..ete import nexus, draw, gardening as gdn
 
 # call initialize() to fill it up
 app = None
@@ -847,7 +846,7 @@ def modify_tree_fields(tree_id):
 
 def update_app_available_layouts():
     try:
-        from ete4.smartview import layout_modules
+        from .. import layout as layout_modules
         avail_layouts = get_layouts_from_getters(layout_modules)
     except Exception as e:
         raise "Error while updating app layouts.\n{e}"
@@ -889,7 +888,7 @@ def get_layouts_from_getters(layout_modules):
 # Layout related functions
 def get_layouts(layouts=[], tree_style=TreeStyle()):
     # Get layouts from their getters in layouts module:
-    # ete4/smartview/ete/layouts
+    # smartview/redender/layouts
     layouts_from_module = get_layouts_from_getters(layout_modules)
 
     # Get default layouts
