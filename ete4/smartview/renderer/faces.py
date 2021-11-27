@@ -1,9 +1,8 @@
 import re
 from math import pi
 
-from ete4.smartview.utils import InvalidUsage, get_random_string
-from ete4.smartview.ete.draw import Box, SBox,\
-                                    clip_angles, cartesian,\
+from ..utils import InvalidUsage, get_random_string
+from .draw_helpers import Box, SBox, clip_angles, cartesian,\
                                     draw_text, draw_rect,\
                                     draw_circle, draw_ellipse, draw_slice,\
                                     draw_line, draw_outline,\

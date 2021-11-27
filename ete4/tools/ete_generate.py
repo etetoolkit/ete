@@ -38,7 +38,6 @@
 # #END_LICENSE#############################################################
 from __future__ import absolute_import
 from .common import dump
-from six.moves import range
 
 DESC = ""
 

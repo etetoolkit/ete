@@ -2,10 +2,11 @@ from types import FunctionType, MethodType
 from collections import defaultdict, namedtuple
 
 
-from ete4.smartview import SelectedRectFace
-from ete4.smartview.ete.face_positions import FACE_POSITIONS, _FaceContainer
-from ete4.smartview.utils import InvalidUsage
-from ete4.smartview.ete.layouts.default_layouts import get_layout_leaf_name, get_layout_nleaves,\
+from .faces import SelectedRectFace
+from .face_positions import FACE_POSITIONS, _FaceContainer
+from ..utils import InvalidUsage
+from .nodestyle import NodeStyle
+from .layouts.default_layouts import get_layout_leaf_name, get_layout_nleaves,\
         get_layout_branch_length, get_layout_branch_support,\
         get_layout_outline, get_layout_align_link
 
@@ -123,11 +124,7 @@ class TreeStyle(object):
         layouts = []
 
         # Set clean node style
-        try:
-            clean = NodeStyle()
-        except:
-            from ete4 import NodeStyle
-            clean = NodeStyle()
+        clean = NodeStyle()
 
         clean['size'] = 0
         clean['bgcolor'] = 'transparent'

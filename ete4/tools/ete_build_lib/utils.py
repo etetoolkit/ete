@@ -58,9 +58,6 @@ import datetime
 import re
 import shutil
 from glob import glob
-import six
-from six.moves import range
-from six.moves import input
 
 from .getch import Getch
 from .errors import DataError
@@ -135,7 +132,6 @@ class _DataTypes(object):
         self.task = 2
 
 DATATYPES = _DataTypes()
-
 
 from collections import OrderedDict
 
@@ -225,7 +221,7 @@ def generate_node_ids(target_seqs, out_seqs):
 
 
 def merge_arg_dicts(source, target, parent=""):
-    for k,v in six.iteritems(source):
+    for k,v in source.items():
         if not k.startswith("_"):
             if k not in target:
                 target[k] = v

@@ -55,11 +55,6 @@ except ImportError:
     # Fall back to Python 2's urllib2
     from urllib2 import urlopen
 
-import six
-from six.moves import map
-from six.moves import range
-from six.moves import zip
-
 from .qt import (QGraphicsRectItem, QGraphicsLineItem,
                  QGraphicsPolygonItem, QGraphicsEllipseItem,
                  QPen, QColor, QBrush, QPolygonF, QFont,
@@ -1851,7 +1846,7 @@ class SeqMotifFace(StaticItemFace):
             # this loop corrects x-positions for overlaping motifs and takes
             # into account the different scales used for different motif types,
             # i.e. seq
-            for (old_start, old_end), correction in six.iteritems(seq_x_correction):
+            for (old_start, old_end), correction in seq_x_correction.items():
                 seq_range = None
                 if seq_start > old_start:
                     seq_range = min(old_end, seq_start) - old_start

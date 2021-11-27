@@ -46,8 +46,6 @@ from commands import getoutput as run
 
 
 import logging
-import six
-from six.moves import map
 log = logging.getLogger("main")
 
 from . import db
@@ -64,12 +62,12 @@ def launch_jobs(jobs, conf):
     for j, cmd in jobs:
         job_config = conf["sge"].copy()
         job_config["-pe smp"] = j.cores
-        for k,v in six.iteritems(j.sge):
+        for k,v in j.sge.items():
             job_config[k] = v
         conf_key = tuple(sorted(job_config.items()))
         conf2jobs[conf_key].append((j,cmd))
 
-    for job_config, commands in six.iteritems(conf2jobs):
+    for job_config, commands in conf2jobs.items():
         job_config = dict(job_config)
         job_file = "%s_%d_jobs" %(time.ctime().replace(" ", "_").replace(":","-"),
                                   len(commands))
@@ -77,7 +75,7 @@ def launch_jobs(jobs, conf):
         qsub_file = os.path.join(sge_path, job_file+".qsub")
 
         script =  '''#!/bin/sh\n'''
-        for k,v in six.iteritems(job_config):
+        for k,v in job_config.items():
             if not k.startswith("_"):
                 script += '#$ %s %s\n' %(k,v)
         script += '#$ -f \n'

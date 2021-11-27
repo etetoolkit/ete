@@ -43,9 +43,6 @@ and main outfile
 """
 from __future__ import absolute_import
 from __future__ import print_function
-from six.moves import map
-from six.moves import filter
-from six.moves import range
 
 __author__  = "Francois-Jose Serra"
 __email__   = "francois@barrabin.org"

@@ -40,10 +40,9 @@ from __future__ import absolute_import
 from .. import (PhyloTree, PhyloNode,
                   ClusterTree, ClusterNode, EvolTree, EvolNode)
 from . import layouts
-import six
 
 def apply_template(tree_style, template):
-    for k, v in six.iteritems(template):
+    for k, v in template.items():
         setattr(tree_style, k, v)
 
 phylogeny = {

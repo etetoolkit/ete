@@ -49,8 +49,6 @@ from .. import task as all_tasks
 from .. import db
 from ..errors import ConfigError, DataError, TaskError
 from ..master_task import register_task_recursively, isjob
-import six
-from six.moves import range
 
 log = logging.getLogger("main")
 
@@ -141,11 +139,11 @@ def get_iternumber(threadid):
 
 def get_identity(fname):
     s = SeqGroup(fname)
-    seqlen = len(six.itervalues(s.id2seq))
+    seqlen = len(s.id2seq.values())
     ident = list()
     for i in range(seqlen):
         states = defaultdict(int)
-        for seq in six.itervalues(s.id2seq):
+        for seq in s.id2seq.values():
             if seq[i] != "-":
                 states[seq[i]] += 1
         values = list(states.values())
@@ -370,7 +368,7 @@ def select_closest_outgroup(target, n2content, splitterconf):
     n2targetdist = distance_matrix_new(target, leaf_only=False,
                                                topology_only=out_topodist)
 
-    valid_nodes = sorted([(node, ndist) for node, ndist in six.iteritems(n2targetdist)
+    valid_nodes = sorted([(node, ndist) for node, ndist in n2targetdist.items()
                           if not(n2content[node] & n2content[target])
                           and node.support >= out_min_support
                           and len(n2content[node])<=max_outgroup_size],
@@ -379,7 +377,7 @@ def select_closest_outgroup(target, n2content, splitterconf):
         best_outgroup = valid_nodes[0][0]
     else:
         print('\n'.join(sorted(["%s Size:%d Dist:%f Supp:%f" %(node.cladeid, len(n2content[node]), ndist, node.support)
-                                for node, ndist in six.iteritems(n2targetdist)],
+                                for node, ndist in n2targetdist.items()],
                                sort_outgroups)))
         raise TaskError(None, "Could not find a suitable outgroup!")
 
@@ -436,7 +434,7 @@ def select_sister_outgroup(target, n2content, splitterconf):
 
     sister_content = n2content[target.get_sisters()[0]]
 
-    valid_nodes = sorted([(node, ndist) for node, ndist in six.iteritems(n2targetdist)
+    valid_nodes = sorted([(node, ndist) for node, ndist in n2targetdist.items()
                           if not(n2content[node] & n2content[target])
                           and n2content[node].issubset(sister_content)
                           and node.support >= out_min_support
@@ -446,7 +444,7 @@ def select_sister_outgroup(target, n2content, splitterconf):
         best_outgroup = valid_nodes[0][0]
     else:
         print('\n'.join(sorted(["%s Size:%d Distance:%f Support:%f" %(node.cladeid, len(n2content[node]), ndist, node.support)
-                                for node, ndist in six.iteritems(n2targetdist)],
+                                for node, ndist in n2targetdist.items()],
                                sort_outgroups)))
         raise TaskError(None, "Could not find a suitable outgroup!")
 

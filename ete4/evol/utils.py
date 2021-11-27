@@ -40,8 +40,6 @@ from __future__ import absolute_import
 
 
 from math import log, exp
-
-from six.moves import range
 from numpy import floor, pi as PI, sin
 
 from .. import Tree

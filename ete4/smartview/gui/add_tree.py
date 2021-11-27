@@ -15,7 +15,7 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter as fmt
 
 import sqlite3
 
-from ete4.parser.newick import read_newick, NewickError
+from ...parser.newick import read_newick, NewickError
 
 TData = namedtuple('TData', 'name description newick')
 

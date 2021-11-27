@@ -44,8 +44,6 @@ from .qt import QRectF, QGraphicsSimpleTextItem, QGraphicsPixmapItem, \
 from .main import FACE_POSITIONS, _leaf
 from .node_gui_actions import _NodeActions as _ActionDelegator
 from math import pi, cos, sin
-import six
-from six.moves import range
 
 class _TextFaceItem(QGraphicsSimpleTextItem, _ActionDelegator):
     def __init__(self, face, node, text):
@@ -169,9 +167,9 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
             return
 
         if self.as_grid:
-            self.h = max( [sum([self.r2max_h[r] for r in six.iterkeys(rows)]) for c, rows in six.iteritems(self.sizes)])
+            self.h = max( [sum([self.r2max_h[r] for r in rows.keys()]) for c, rows in self.sizes.items()])
         else:
-            self.h = max( [self.c2height[c] for c in six.iterkeys(self.sizes)])
+            self.h = max( [self.c2height[c] for c in self.sizes.keys()])
 
         self.w = sum(self.c2max_w.values())
         #self.setRect(0, 0, self.w+random.randint(1,5), self.h)
@@ -378,7 +376,7 @@ def update_node_faces(node, n2f, img):
 
         # _temp_faces should be initialized by the set_style function
         all_faces = getattr(node.props.get("_temp_faces"), position)
-        for column, values in six.iteritems(fixed_faces):
+        for column, values in fixed_faces.items():
             all_faces.setdefault(column, []).extend(values)
 
         if position == "aligned" and img.draw_aligned_faces_as_table:

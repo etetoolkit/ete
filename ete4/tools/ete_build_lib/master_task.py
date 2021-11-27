@@ -42,7 +42,6 @@ from __future__ import print_function
 import os
 import logging
 import traceback
-import six
 log = logging.getLogger("main")
 from collections import defaultdict
 
@@ -120,7 +119,7 @@ class Task(object):
         print("Dir:", self.taskdir)
         print("Jobs", len(self.jobs))
         print("Status", self.status)
-        for tag, value in six.iteritems(self.args):
+        for tag, value in self.args.items():
             print(tag,":", value)
 
     def __init__(self, nodeid, task_type, task_name, base_args=None,
@@ -166,7 +165,7 @@ class Task(object):
         # extract all internal config values associated to this task
         # and generate its unique id (later used to generate taskid)
         self._config_id = md5(','.join(sorted(["%s %s" %(str(pair[0]),str(pair[1])) for pair in
-                                       six.iteritems(extra_args) if pair[0].startswith("_")])))
+                                       extra_args.items() if pair[0].startswith("_")])))
         self.dependencies = set()
 
     def get_status(self, sge_jobs=None):
@@ -322,7 +321,7 @@ class Task(object):
         # easy to check if a task is already done in the working path.
         if not self.taskid:
             args_id = md5(','.join(sorted(["%s %s" %(str(pair[0]), str(pair[1]))
-                                           for pair in six.iteritems(self.args)])))
+                                           for pair in self.args.items()])))
 
             unique_id = md5(','.join([self.nodeid, self._config_id, args_id] +\
                                          sorted([getattr(j, "jobid", "taskid")

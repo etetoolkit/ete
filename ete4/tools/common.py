@@ -42,7 +42,6 @@ from __future__ import print_function
 import sys
 import operator
 import re
-from six.moves import map
 
 __CITATION__ = '''#       ** If you use this software for a published work, please cite: **
 #

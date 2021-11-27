@@ -42,8 +42,6 @@ from __future__ import print_function
 import os
 import re
 from sys import stderr as STDERR
-import six
-from six.moves import range
 
 def read_phylip(source, interleaved=True, obj=None,
                 relaxed=False, fix_duplicates=True):
@@ -172,7 +170,7 @@ def write_phylip(aln, outfile=None, interleaved=True, relaxed=False):
     if interleaved:
         visited = set([])
         for i in range(0, seqlength, width):
-            for j in six.iterkeys(aln.id2name): #xrange(len(aln)):
+            for j in aln.id2name.keys(): 
                 name =  aln.id2name[j]
                 if not relaxed and len(name)>name_fix:
                     name = name[:name_fix]

@@ -46,8 +46,6 @@ from os import path
 
 import numpy
 from ..parser.text_arraytable import write_arraytable, read_arraytable
-import six
-from six.moves import range
 
 __all__ = ["ArrayTable"]
 
@@ -138,7 +136,7 @@ class ArrayTable(object):
         grouped_matrix = []
         colNames = []
         alltnames = set([])
-        for gname,tnames in six.iteritems(groups):
+        for gname,tnames in groups.items():
             all_vectors=[]
             for tn in tnames:
                 if tn not in self.colValues:
