@@ -2656,7 +2656,7 @@ cdef class TreeNode(object):
           "branch-right", "branch-top", "branch-bottom", "float",
           "aligned"
         """
-        from ..smartview.ete.face_positions import FACE_POSITIONS
+        from ..smartview.renderer.face_positions import FACE_POSITIONS
 
         if position not in FACE_POSITIONS:
             raise ValueError("face position not in %s" %FACE_POSITIONS)
