@@ -12,9 +12,6 @@ const resources = loader.resources;
 const Sprite = PIXI.Sprite;
 
 
-const MIN_FSIZE = 7;
-
-
 const app_options = {
     transparent: true,
     resolution: 1,
@@ -127,8 +124,6 @@ function addSprite(sprite, box, tl, zx, zy) {
 function draw_msa(sequence, type, box, tl, zx, zy) {
     const [ x0, y, width, posh ] = box;
     const posw = width / sequence.length;
-    if (posw * zx < MIN_FSIZE)
-        type = type.split("_")[0] + "_notext";
     sequence.split("").forEach((s, i) => {
         if (s != "-") {
             const sprite = new Sprite(textures[type][s])

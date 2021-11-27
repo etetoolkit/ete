@@ -962,6 +962,7 @@ class SeqMotifFace(Face):
 
         # Text
         self.ftype = ftype
+        self._min_fsize = 8
         self.max_fsize = max_fsize
         self._fsize = None
 
@@ -1162,7 +1163,7 @@ class SeqMotifFace(Face):
             # Sequence and compact sequence
             elif shape in ['seq', 'compactseq']:
                 seq = self.seq[start : end + 1]
-                if shape == 'compactseq':
+                if shape == 'compactseq' or posw * drawer.zoom[0] < self._min_fsize:
                     aa_type = "notext"
                 else:
                     aa_type = "text"
