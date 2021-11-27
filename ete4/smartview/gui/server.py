@@ -41,10 +41,11 @@ from flask_compress import Compress
 from itsdangerous import TimedJSONWebSignatureSerializer as JSONSigSerializer
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from .. import Tree
+from ... import Tree
 from .. import TreeStyle, layout_modules
 from ..utils import InvalidUsage, get_random_string
-from ..ete import nexus, draw, gardening as gdn
+from ..renderer import nexus, gardening as gdn
+from ..renderer import drawer as drawer_module
 
 # call initialize() to fill it up
 app = None
@@ -73,7 +74,7 @@ class Drawers(Resource):
                     any(getattr(ly, 'contains_aligned_face', False)\
                         for ly in app.trees[int(tree_id)].style.layout_fn):
                 name = 'Align' + name
-            drawer_class = next(d for d in draw.get_drawers()
+            drawer_class = next(d for d in drawer_module.get_drawers()
                 if d.__name__[len('Drawer'):] == name)
             return {'type': drawer_class.TYPE,
                     'npanels': drawer_class.NPANELS}
@@ -328,7 +329,7 @@ def load_tree(tree_id):
                 print('Traversing')
                 for node in t.traverse():
                     node.is_initialized = False
-                    node._faces = None
+                    node._smfaces = None
                     node._collapsed_faces = None
 
                 print(f'Initialize: {time() - start}')
@@ -431,7 +432,7 @@ def get_drawer(tree_id, args):
                 any(getattr(ly, 'contains_aligned_face', False)\
                     for ly in tree.style.layout_fn):
             drawer_name = 'Align' + drawer_name
-        drawer_class = next((d for d in draw.get_drawers()
+        drawer_class = next((d for d in drawer_module.get_drawers()
             if d.__name__[len('Drawer'):] == drawer_name), None)
 
         drawer_class.COLLAPSE_SIZE = get('min_size', 6)

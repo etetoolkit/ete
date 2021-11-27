@@ -2638,7 +2638,6 @@ cdef class TreeNode(object):
             raise ValueError("face position not in %s" %FACE_POSITIONS)
 
         if isinstance(face, Face):
-            print(self._faces)
             getattr(self._faces, position).add_face(face, column=column)
         else:
             raise ValueError("not a Face instance")
