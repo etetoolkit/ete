@@ -79,6 +79,9 @@ class Face(object):
 
         self.always_drawn = False # Use carefully to avoid overheading...
 
+        self.drawertype = None
+        self.zoom = (0, 0)
+
     def __name__(self):
         return "Face"
 
@@ -109,6 +112,8 @@ class Face(object):
         zx, zy, za = drawer.zoom
         if pos.startswith("aligned"):
             zx = za
+        self.zoom = (zx, zy)
+        self.drawertype = drawer.TYPE
 
         if pos == 'branch_top':  # above the branch
             avail_dx = dx / n_col
@@ -147,7 +152,7 @@ class Face(object):
         else:
             raise InvalidUsage(f'unkown position {pos}')
 
-        r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
+        r = (x or 1e-10) if self.drawertype == 'circ' else 1
         padding_x = self.padding_x / zx
         padding_y = self.padding_y / (zy * r)
 
@@ -221,9 +226,7 @@ class TextFace(Face):
             n_row, n_col,
             dx_before, dy_before)
 
-        zx, zy, za = drawer.zoom
-        if pos.startswith("aligned"):
-            zx = za
+        zx, zy = self.zoom
 
         x, y , dx, dy = box
         r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
@@ -344,10 +347,7 @@ class CircleFace(Face):
             dx_before, dy_before)
 
         x, y, dx, dy = box
-
-        zx, zy, za = drawer.zoom
-        if pos.startswith("aligned"):
-            zx = za
+        zx, zy = self.zoom
 
         r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
         padding_x, padding_y = self.padding_x / zx, self.padding_y / (zy * r)
@@ -427,6 +427,9 @@ class RectFace(Face):
             n_row, n_col,
             dx_before, dy_before):
 
+        self.drawertype = drawer.TYPE
+        self.zoom = drawer.zoom
+
         if drawer.TYPE == 'circ':
             pos = swap_pos(pos, point[1])
 
@@ -441,12 +444,9 @@ class RectFace(Face):
             dx_before, dy_before)
 
         x, y, dx, dy = box
+        zx, zy = self.zoom
 
-        zx, zy, za = drawer.zoom
-        if pos.startswith("aligned"):
-            zx = za
-
-        r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
+        r = (x or 1e-10) if self.drawertype == 'circ' else 1
 
         def get_dimensions(max_width, max_height):
             if not (max_width or max_height):
@@ -506,10 +506,10 @@ class RectFace(Face):
         self._box = Box(*box)
         return self._box
 
-    def draw(self, drawer):
+    def draw(self):
         self._check_own_variables()
 
-        circ_drawer = drawer.TYPE == 'circ'
+        circ_drawer = self.drawertype == 'circ'
         style = {'fill': self.color, 'opacity': 0.7}
         if self.text and circ_drawer:
             rect_id = get_random_string(10)
@@ -521,7 +521,7 @@ class RectFace(Face):
 
         if self.text:
             x, y, dx, dy = self._box
-            zx, zy, za = drawer.zoom
+            zx, zy = self.zoom
 
             r = (x or 1e-10) if circ_drawer else 1
             if self.rotate_text:
@@ -560,7 +560,9 @@ class RectFace(Face):
 
 class ArrowFace(RectFace):
     def __init__(self, width, height, orientation='right',
-            color='gray', props={},
+            color='gray', 
+            stroke_color='gray', stroke_width='1.5px',
+            props={},
             text=None, fgcolor='black', # text color
             min_fsize=6, max_fsize=15,
             ftype='sans-serif',
@@ -574,6 +576,8 @@ class ArrowFace(RectFace):
 
         self.orientation = orientation
         self.props = props
+        self.stroke_color = stroke_color
+        self.stroke_width = stroke_width
 
     def __name__(self):
         return "ArrowFace"
@@ -592,18 +596,20 @@ class ArrowFace(RectFace):
         self._check_own_variables()
 
         circ_drawer = drawer.TYPE == 'circ'
-        style = {'fill': self.color, 'opacity': 0.7}
+        style = {
+            'fill': self.color, 
+            'opacity': 0.7,
+            'stroke': self.stroke_color,
+            'stroke-width': self.stroke_width,
+            }
         if self.text and circ_drawer:
             rect_id = get_random_string(10)
             style['id'] = rect_id
 
         x, y, dx, dy = self._box
+        zx, zy = self.zoom
 
-        zx, zy, za = drawer.zoom
-        # if pos.startswith("aligned"):
-            # zx = za
-
-        tip = min(15, dx * zx * 0.9) / zx
+        tip = min(5, dx * zx * 0.9) / zx
         yield draw_arrow(self._box, 
                 tip, self.orientation,
                 self.name,
@@ -876,12 +882,8 @@ class SeqFace(Face):
             n_row, n_col,
             dx_before, dy_before)
 
-        zx, zy, za = drawer.zoom
-        if pos.startswith("aligned"):
-            zx = za
-
-
         x, y, _, dy = box
+        zx, zy = self.zoom
         dx = self.poswidth * len(self.seq) / zx
 
         if self.draw_text:
@@ -893,10 +895,7 @@ class SeqFace(Face):
 
     def draw(self, drawer):
         x0, y, _, dy = self._box
-
-        zx, zy, za = drawer.zoom
-        # if pos.startswith("aligned"):
-            # zx = za
+        zx, zy = self.zoom
 
         dx = self.poswidth / zx
         # Send sequences as a whole to be rendered by PIXIjs
@@ -1077,7 +1076,7 @@ class SeqMotifFace(Face):
 
         x, y, _, dy = box
 
-        zx, zy, za = drawer.zoom
+        zx, zy = self.zoom
         if pos.startswith("aligned"):
             zx = za
 

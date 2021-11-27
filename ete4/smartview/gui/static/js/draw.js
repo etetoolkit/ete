@@ -1044,6 +1044,15 @@ function style_polygon(polygon, style) {
     if (is_style_property(style.opacity))
         polygon.style.opacity = style.opacity;
 
+    if (is_style_property(style.opacity))
+        polygon.style.opacity = style.opacity;
+
+    if (is_style_property(style.stroke))
+        polygon.style.stroke = style.stroke;
+
+    if (is_style_property(style["stroke-width"]))
+        polygon.style["stroke-width"] = style["stroke-width"];
+
     return polygon
 }
 
