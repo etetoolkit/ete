@@ -83,6 +83,7 @@ function drag_move(point) {
             // pixi canvas
             div_aligned.children[1].children[0].style.transform = `translate(${dx}px, 0)`;
         }
+
         else {
             view.tl.x += scale_x * movement.x;
             view.tl.y += scale_y * movement.y;
@@ -95,14 +96,16 @@ function drag_move(point) {
     }
 }
 
+
 function get_drag_scale() {
     if (dragging.element === div_tree)
         return [-1 / view.zoom.x, -1 / view.zoom.y];
     else if (dragging.element === div_aligned)
-        return [-1 / view.zoom.a, -1 / view.zoom.y];
+        return [-1 / view.zoom.x, -1 / view.zoom.y];
     else // dragging.element === div_visible_rect
         return [1 / view.minimap.zoom.x, 1 / view.minimap.zoom.y];
 }
+
 
 function get_point(point) {
     if (dragging.element === div_aligned && !dragging.from_grabber)

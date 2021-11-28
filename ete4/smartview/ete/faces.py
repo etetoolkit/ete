@@ -1095,7 +1095,7 @@ class SeqMotifFace(Face):
 
         if self.gap_format in ["line", "-"]:
             p1 = (x0, y + dy / 2)
-            p2 = (x0 + self.width / zx, y + dy / 2)
+            p2 = (x0 + self.width, y + dy / 2)
             if drawer.TYPE == 'circ':
                 p1 = cartesian(p1)
                 p2 = cartesian(p2)
@@ -1103,7 +1103,7 @@ class SeqMotifFace(Face):
                                            'stroke': self.gapcolor})
 
         for (start, end, shape, posw, h, fg, bg, text, opacity) in self.regions:
-            posw = (posw or self.poswidth) * self.w_scale / zx
+            posw = (posw or self.poswidth) * self.w_scale
             w = posw * (end + 1 - start)
             style = { 'fill': bg, 'opacity': opacity }
 
@@ -1163,7 +1163,7 @@ class SeqMotifFace(Face):
             # Sequence and compact sequence
             elif shape in ['seq', 'compactseq']:
                 seq = self.seq[start : end + 1]
-                if shape == 'compactseq' or posw * drawer.zoom[0] < self._min_fsize:
+                if shape == 'compactseq' or posw * zx < self._min_fsize:
                     aa_type = "notext"
                 else:
                     aa_type = "text"

@@ -73,7 +73,6 @@ function zoom_xy(point, qz, do_zoom) {
         const zoom_new = qz.x * view.zoom.x;
         view.tl.x += (1 / view.zoom.x - 1 / zoom_new) * point.x;
         view.zoom.x = zoom_new;
-        view.zoom.a = qz.x * view.zoom.a;
         zooming.qz.x *= qz.x;
     }
 
@@ -112,15 +111,11 @@ function zoom_angular(point, qz) {
 function zoom_aligned(point, zoom_in) {
     const x0 = div_tree.offsetWidth * view.aligned.pos / 100;
     point.x -= x0;
-    const qz = { a: (zoom_in ? 0.8 : 1.25) };
+    const qz = { a: (zoom_in ? 1.25 : 0.8) };
     const zoom_new = qz.a * view.zoom.a;
-    view.aligned.x += (1 / (zoom_new) - 1 / view.zoom.a) * point.x;
+    view.aligned.x += (1 / view.zoom.a - 1 / zoom_new) * point.x;
     view.zoom.a = zoom_new;
     zooming.qz.a *= qz.a;
-
-    console.log(view.zoom.a, view.aligned.x)
-
-    //console.log(point.x, view.aligned.x, view.tl.x, view.zoom.a, view.zoom.x)
 
     smooth_zoom_aligned(point)
 }

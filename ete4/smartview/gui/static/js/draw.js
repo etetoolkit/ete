@@ -293,7 +293,7 @@ async function draw_aligned(params) {
                     div.style.display = "none";
             }
 
-            draw(div, items, {x: view.aligned.x, y: panel.params.y}, view.zoom);
+            draw(div, items, {x: view.aligned.x, y: panel.params.y}, { x: view.zoom.a, y: view.zoom.y });
 
             align_drawing = false;
 

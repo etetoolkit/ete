@@ -79,6 +79,8 @@ function draw_pixi(items, tl, zoom) {
     // Remove all items from stage
     app.stage.children = [];
 
+    console.log(zoom)
+
     if (textures_loaded && items.length)
         draw(items, tl, zoom);
     return app.view;

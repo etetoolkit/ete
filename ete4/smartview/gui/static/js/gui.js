@@ -315,10 +315,9 @@ async function set_query_string_values() {
             view.tl.x = Number(value);
         else if (param === "y")
             view.tl.y = Number(value);
-        else if (param === "w") {
+        else if (param === "w")
             view.zoom.x = div_tree.offsetWidth / Number(value);
-            view.zoom.a = view.zoom.x;
-        } else if (param === "h")
+        else if (param === "h")
             view.zoom.y = div_tree.offsetHeight / Number(value);
         else if (param === "drawer")
             view.drawer.name = value;
@@ -448,7 +447,7 @@ function reset_zoom(reset_zx=true, reset_zy=true, reset_za=true) {
         if (reset_zy)
             view.zoom.y = 0.9 * div_tree.offsetHeight / size.height;
         if (reset_za)
-            view.zoom.a = view.zoom.x;
+            view.zoom.a = 1;
     }
     else if (view.drawer.type === "circ") {
         const min_w_h = Math.min(div_tree.offsetWidth, div_tree.offsetHeight);
