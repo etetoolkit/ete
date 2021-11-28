@@ -55,15 +55,13 @@ from ..parser.newick import read_newick, write_newick
 try:
     from ..treeview.main import NodeStyle
     from ..treeview.faces import Face
+    TREEVIEW = True
 except ImportError:
-    pass # Treeview is now an optional dependency
+    TREEVIEW = False
 
 from ..smartview import Face as smartFace
+from ..smartview.renderer.nodestyle import NodeStyle as smNodeStyle
 from ..smartview.renderer.face_positions import _FaceAreas, get_FaceAreas
-# except ImportError:
-    # TREEVIEW = False
-# else:
-TREEVIEW = True
 
 __all__ = ["Tree", "TreeNode"]
 
@@ -88,6 +86,7 @@ cdef class TreeNode(object):
     cdef public list _children
     cdef public object _up
     cdef public object _img_style
+    cdef public object _sm_style
     cdef public object _faces
     cdef public object _smfaces
     cdef public object _collapsed_faces
@@ -193,10 +192,18 @@ cdef class TreeNode(object):
 
     def _get_style(self):
         if self._img_style is None:
-            self._set_style(None)
-
+            self._img_style = NodeStyle()
         return self._img_style
+
     def _set_style(self, value):
+        self.set_style(value)
+
+    def _get_sm_style(self):
+        if self._sm_style is None:
+            self._sm_style = smNodeStyle()
+        return self._sm_style
+
+    def _set_sm_style(self, value):
         self.set_style(value)
 
     def _get_initialized(self):
@@ -218,6 +225,7 @@ cdef class TreeNode(object):
 
     #: Node styling properties
     img_style = property(fget=_get_style, fset=_set_style)
+    sm_style = property(fget=_get_sm_style, fset=_set_sm_style)
 
     #: Name for current node
     name = property(fget=_get_name, fset=_set_name)
@@ -2703,13 +2711,12 @@ cdef class TreeNode(object):
 
         Set 'node_style' as the fixed style for the current node.
         """
-        if TREEVIEW:
-            if node_style is None:
-                node_style = NodeStyle()
-            if type(node_style) is NodeStyle:
-                self._img_style = node_style
+        if isinstance(node_style, NodeStyle):
+            self._img_style = node_style
+        elif isinstance(node_style, smNodeStyle):
+            self._sm_style = node_style
         else:
-            raise ValueError("Treeview module is disabled")
+            raise ValueError("Invalid NodeStyle format")
 
     @staticmethod
     def from_parent_child_table(parent_child_table):

@@ -130,7 +130,7 @@ class Drawer:
             it.descend = False  # skip children
             return x, y + box_node.dy
 
-        if not it.node.img_style['draw_descendants']:
+        if not it.node.sm_style['draw_descendants']:
             # Skip descendants => in collapsed_ids
             self.collapsed_ids.add(it.node_id)
 
@@ -194,7 +194,7 @@ class Drawer:
         box = Box(x_before, y_before, ndx, dy)
         self.nodeboxes += self.draw_nodebox(it.node, it.node_id, box,
                 list(searched_by) + selected_by + active_by,
-                { 'fill': it.node.img_style.get('bgcolor') })
+                { 'fill': it.node.sm_style.get('bgcolor') })
 
         return x_before, y_after;
 
@@ -220,7 +220,7 @@ class Drawer:
 
         # Draw the branch line ("lengthline") and a line spanning all children.
         if self.panel == 0:
-            node_style = node.img_style
+            node_style = node.sm_style
             if dx > 0:
                 parent_of = set(text for text,(_,parents) in self.searches.items()
                                 if node in parents.keys())
@@ -363,7 +363,7 @@ class Drawer:
 
             box = draw_nodebox(self.flush_outline(ndx), name, 
                     properties, [], searched_by + selected_by + active_by,
-                    { 'fill': collapsed_node.img_style.get('bgcolor') })
+                    { 'fill': collapsed_node.sm_style.get('bgcolor') })
             self.nodeboxes.append(box)
         else:
             self.flush_outline()
@@ -504,7 +504,7 @@ class DrawerRect(Drawer):
             yield line
 
     def draw_nodedot(self, center, max_size, style):
-        "Yield circle or square on node based on node.img_style"
+        "Yield circle or square on node based on node.sm_style"
         size = min(max_size, style['size'])
         if size > 0:
             fill = style['fill']

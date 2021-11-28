@@ -93,24 +93,24 @@ def get_layout_evoltype():
     def layout_fn(node):
         if not node.is_leaf():
             if node.props.get('evoltype_2') == 'S':
-                node.img_style["fgcolor"] = 'blue'
-                node.img_style["size"] = 2
+                node.sm_style["fgcolor"] = 'blue'
+                node.sm_style["size"] = 2
 
             elif node.props.get('evoltype_2') == 'D':
-                node.img_style["fgcolor"] = 'red'
-                node.img_style["size"] = 2
+                node.sm_style["fgcolor"] = 'red'
+                node.sm_style["size"] = 2
 
             elif node.props.get('evoltype_2') == 'FD':
-                node.img_style["fgcolor"] = 'Coral'
-                node.img_style["size"] = 2
+                node.sm_style["fgcolor"] = 'Coral'
+                node.sm_style["size"] = 2
 
             if node.props.get('is_og'):
-                node.img_style['size'] = 5
+                node.sm_style['size'] = 5
                 if node.up.props.get('lca'):
                     color = node.up.props.get('Lca_color')
                 else:
                     color = node.props.get('Lca_color')
-                node.img_style["fgcolor"] = color
+                node.sm_style["fgcolor"] = color
 
     layout_fn.__name__ = 'Evolution events'
     return layout_fn

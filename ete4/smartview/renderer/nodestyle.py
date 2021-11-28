@@ -82,13 +82,6 @@ class NodeStyle(dict):
             elif not checker(self[key]):
                 raise ValueError("'%s' attribute in node style has not a valid value: %s" %\
                                      (key, self[key]))
-    #
-    #    #super(NodeStyle, self).__setitem__("_smfaces", {})
-    #    # copy fixed faces to the faces dict that will be drawn
-    #    #for pos, values in self["faces"].iteritems():
-    #    #    for col, faces in values.iteritems():
-    #    #        self["_smfaces"].setdefault(pos, {})
-    #    #        self["_smfaces"][pos][col] = list(faces)
 
     def __setitem__(self, i, v):
         # keeps compatible with ETE 2.0 version
