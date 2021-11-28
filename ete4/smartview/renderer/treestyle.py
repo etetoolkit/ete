@@ -3,7 +3,7 @@ from collections import defaultdict, namedtuple
 
 
 from .faces import SelectedRectFace
-from .face_positions import FACE_POSITIONS, _FaceContainer
+from .face_positions import FACE_POSITIONS, _HeaderFaceContainer
 from ..utils import InvalidUsage
 from .nodestyle import NodeStyle
 from .layouts.default_layouts import get_layout_leaf_name, get_layout_nleaves,\
@@ -12,7 +12,7 @@ from .layouts.default_layouts import get_layout_leaf_name, get_layout_nleaves,\
 
 
 aligned_panel_header = namedtuple("aligned_panel_header", ["top", "bottom"],
-                                  defaults=(_FaceContainer(), _FaceContainer()))
+                                  defaults=(_HeaderFaceContainer(), _HeaderFaceContainer()))
 
 
 class TreeStyle(object):
@@ -35,6 +35,10 @@ class TreeStyle(object):
         # Selected face
         self._selected_face = SelectedRectFace
         self._selected_face_pos = "branch_right"
+
+        # Active face
+        self._active_face = SelectedRectFace
+        self._active_face_pos = "branch_right"
 
         # Aligned panel headers
         self._aligned_panel_header = aligned_panel_header()
@@ -81,6 +85,30 @@ class TreeStyle(object):
     def selected_face_pos(self, pos):
         if pos in FACE_POSITIONS:
             self._selected_face_pos = pos
+        else:
+            raise ValueError(f'{pos} is not a valid Face position. ' +
+                    'Please provide one of the following values' + 
+                    ', '.join(FACE_POSITIONS + '.'))
+
+    @property
+    def active_face(self):
+        return self._active_face
+
+    @active_face.setter
+    def active_face(self, face):
+        if isinstance(face, Face):
+            self._active_face = face
+        else:
+            raise ValueError(f'{type(face)} is not a valid Face instance')
+
+    @property
+    def active_face_pos(self):
+        return self._active_face_pos
+
+    @active_face_pos.setter
+    def active_face_pos(self, pos):
+        if pos in FACE_POSITIONS:
+            self._active_face_pos = pos
         else:
             raise ValueError(f'{pos} is not a valid Face position. ' +
                     'Please provide one of the following values' + 

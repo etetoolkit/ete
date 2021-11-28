@@ -8,6 +8,7 @@ import { update } from "./draw.js";
 import { download_newick } from "./download.js";
 import { zoom_into_box } from "./zoom.js";
 import { collapse_node } from "./collapse.js";
+import { activate_node, deactivate_node } from "./active.js";
 import { select_node, unselect_node } from "./select.js";
 
 export { on_box_contextmenu };
@@ -69,21 +70,36 @@ async function add_node_options(box, name, properties, node_id) {
                "Do not show nodes below the current one.",
                "compress", false);
 
-    const tid = get_tid() + "," + node_id;
-    const selections = await api(`/trees/${tid}/selections`);
-    if (selections.selections.length)
-        add_button("Unselect node", () => unselect_node(node_id),
-                   "Remove current node from selection.",
+    if (view.active.nodes.find(n => n.id === String(node_id)))
+        add_button("Unselect node", () => deactivate_node(node_id),
+                   "Remove current node from active selection.",
                    "trash-alt", false);
     else
-        add_button("Select node", () => {
-            Swal.fire({
-                input: "text",
-                text: "Enter name to describe selection",
-                inputValue: name || node_id.join(","),
-                preConfirm: name => select_node(node_id, name)
-            });
-        }, "Select current node.", "hand-pointer", false);
+        add_button("Select node", () => activate_node(node_id, properties),
+                   "Add current node from active selection.",
+                   "hand-pointer", false);
+
+    //const tid = get_tid() + "," + node_id;
+    //const selections = await api(`/trees/${tid}/selections`);
+    //if (selections.selections.length)
+        //add_button("Unselect node", () => unselect_node(node_id),
+                   //"Remove current node from selection.",
+                   //"trash-alt", false);
+    //else
+        //add_button("Select node", () => {
+            //Swal.fire({
+                //input: "text",
+                //text: "Enter name to describe selection",
+                //inputValue: name || node_id.join(","),
+                //preConfirm: name => select_node(node_id, name)
+            //});
+        //}, "Select current node.", "hand-pointer", false);
+
+    if ("hyperlink" in properties) {
+        const [ label, url ] = properties["hyperlink"];
+        add_button("Go to " + label, () => window.open(url), 
+            url, "external-link-alt");
+    }
 
     if (view.allow_modifications)
         add_node_modifying_options(box, name, properties, node_id);

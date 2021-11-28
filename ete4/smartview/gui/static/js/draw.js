@@ -1,14 +1,17 @@
 // Functions related to updating (drawing) the view.
 
-import { view, get_tid, on_box_click, on_box_wheel, get_active_layouts } from "./gui.js";
+import { view, get_tid, on_box_click, on_box_wheel,
+         on_box_mouseenter, on_box_mouseleave,
+         get_active_layouts } from "./gui.js";
 import { update_minimap_visible_rect } from "./minimap.js";
+import { colorize_active, get_active_class } from "./active.js";
 import { colorize_searches, get_search_class } from "./search.js";
 import { colorize_selections, get_selection_class } from "./select.js";
 import { on_box_contextmenu } from "./contextmenu.js";
 import { api } from "./api.js";
 import { draw_pixi } from "./pixi.js";
 
-export { update, draw_tree, draw_tree_scale, draw, get_class_name, cartesian_shifted };
+export { update, draw_tree, draw_tree_scale, draw_aligned, draw, get_class_name, cartesian_shifted };
 
 
 // Update the view of all elements (gui, tree, minimap).
@@ -19,12 +22,8 @@ async function update() {
         update_minimap_visible_rect();
 }
 
-
-var align_timeout; // Do not constantly render aligned panel (too costly) when scrolling
-var align_drawing = false;
-// Ask the server for a tree in the new defined region, and draw it.
-async function draw_tree() {
-    const [zx, zy] = [view.zoom.x, view.zoom.y];
+function get_tree_params() {
+    const [zx, zy, za] = [view.zoom.x, view.zoom.y, view.zoom.a];
     const [x, y] = [view.tl.x, view.tl.y];
     const [w, h] = [div_tree.offsetWidth / zx, div_tree.offsetHeight / zy];
 
@@ -34,7 +33,7 @@ async function draw_tree() {
 
     const params_rect = {  // parameters we have to pass to the drawer
         "drawer": view.drawer.name, "min_size": view.min_size,
-        "zx": zx, "zy": zy, "x": x, "y": y, "w": w, "h": h,
+        "zx": zx, "zy": zy, "za": za, "x": x, "y": y, "w": w, "h": h,
         "collapsed_ids": JSON.stringify(Object.keys(view.collapsed_ids)),
         "layouts": layouts, "ultrametric": view.ultrametric ? 1 : 0,
     };
@@ -45,6 +44,14 @@ async function draw_tree() {
     };
 
     const params = view.drawer.type === "rect" ? params_rect : params_circ;
+    return params
+}
+
+var align_timeout; // Do not constantly render aligned panel (too costly) when scrolling
+var align_drawing = false;
+// Ask the server for a tree in the new defined region, and draw it.
+async function draw_tree() {
+    const params = get_tree_params();
     const qs = new URLSearchParams(params).toString();  // "x=...&y=..."
 
     try {
@@ -57,6 +64,7 @@ async function draw_tree() {
         clearTimeout(align_timeout);
 
         view.nnodes = div_tree.getElementsByClassName("node").length;
+        colorize_active();
         colorize_searches();
         colorize_selections();
 
@@ -74,7 +82,7 @@ async function draw_tree() {
                 if (!align_drawing)
                     await draw_aligned(params);
                 clearTimeout(align_timeout);
-            }, 200);
+            }, 50);
         }
 
         if (view.drawer.type === "circ") {
@@ -174,15 +182,32 @@ function draw_negative_xaxis() {
 // Append a svg to the given element, with all the items in the list drawn.
 // The first child of element will be used or replaced as a svg.
 function draw(element, items, tl, zoom, replace=true) {
+    const is_svg = item => {
+        const name = item[0];
+        return !(name.includes("pixi-") || name === "html")
+    }
+
     const g = create_svg_element("g");
 
-    const svg_items = items.filter(i => !i[0].includes("pixi-"));
+    const svg_items = items.filter(is_svg);
     svg_items.forEach(item => g.appendChild(create_item(g, item, tl, zoom)));
     
     const pixi_items = items.filter(i => i[0].includes("pixi-"));
-    const pixi = draw_pixi(pixi_items, tl, zoom)
-    const pixi_container = view.drawer.type === "rect" ? div_aligned : div_tree;
-    replace_child(pixi_container.querySelector(".div_pixi"), pixi);
+    if (pixi_items.length) {
+        const pixi = draw_pixi(pixi_items, tl, zoom)
+        const pixi_container = view.drawer.type === "rect" ? div_aligned : div_tree;
+        replace_child(pixi_container.querySelector(".div_pixi"), pixi);
+        pixi.style.transform = "translate(0, 0)";
+        pixi.setAttribute("width", "1000");
+    }
+
+    const html_container = element.querySelector(".div_html")
+    if (html_container) {
+        html_container.querySelectorAll("*").forEach(child => child.remove());
+        const html_items = items.filter(i => i[0] === "html");
+        html_items.forEach(item => create_html(html_container, item, tl, zoom))
+    }
+
 
     put_nodes_in_background(g);
 
@@ -227,30 +252,48 @@ function replace_svg(element) {
         "height": element.offsetHeight,
     });
 
-    if (element.children.length > 0)
-        element.children[0].replaceWith(svg);
-    else
-        element.appendChild(svg);
+    replace_child(element, svg);
 }
 
 
 // Draw elements that belong to panels above 0.
 async function draw_aligned(params) {
+    if (!params)
+        params = get_tree_params();
+
+    const zy = view.zoom.y;
     const panels = { 
-        1: div_aligned, 
-        //2: div_aligned_header_top, 
-        //3: div_aligned_header_bottom
+        1: { div: div_aligned, params: { x: view.aligned.x, y: view.tl.y } }, 
+        2: { div: div_aligned_header, params: { x: 0, y:0, 
+            h: Math.max(-view.tl.y, view.aligned.header.height / zy) } }, 
+        3: { div: div_aligned_footer, params: { x: 0, y:0,
+            h: Math.max(div_tree.offsetHeight / zy + view.tl.y - view.tree_size.height,
+                        view.aligned.footer.height / zy) } }
     };
 
     if (view.drawer.type === "rect") {
-        for (let panel = 1; panel < view.drawer.npanels; panel++) {
-            const qs = new URLSearchParams({...params, "panel": panel}).toString();
+        for (let panel_n = 1; panel_n < view.drawer.npanels; panel_n++) {
+            const panel = panels[panel_n];
+            const qs = new URLSearchParams({
+                ...params, ...panel.params, "panel": panel_n
+            }).toString();
 
             align_drawing = true;
 
+            const div = panel.div;
+
             const items = await api(`/trees/${get_tid()}/draw?${qs}`);
 
-            draw(panels[panel], items, {x: 0, y: view.tl.y}, view.zoom);
+            // Resize headers accordingly or remove them in no items
+            if (panel_n === 2 || panel_n === 3) {
+                if (items.length > 0) {
+                    div.style.display = "block";
+                    div.style.height = panel.params.h * zy + "px";
+                } else
+                    div.style.display = "none";
+            }
+
+            draw(div, items, {x: view.aligned.x, y: panel.params.y}, { x: view.zoom.a, y: view.zoom.y });
 
             align_drawing = false;
 
@@ -291,7 +334,8 @@ function create_item(g, item, tl, zoom) {
 
         if (result_of.length === 1) {
             const t = result_of[0];
-            const cnode = Object.keys(view.searches).includes(t)
+            const cnode = t === "active" ? get_active_class()
+                : Object.keys(view.searches).includes(t)
                 ? get_search_class(t) : get_selection_class(t);
             b.classList.add(cnode);
         } else if (result_of.length > 1) {
@@ -301,7 +345,8 @@ function create_item(g, item, tl, zoom) {
                 const box = [ x + dx * i, y, dx, dy ];
                 const b = create_box(box, tl, zx, zy, "", style);
                 style_nodebox(b, style);
-                const cnode = Object.keys(view.searches).includes(t) 
+                const cnode = t === "active" ? get_active_class()
+                    : Object.keys(view.searches).includes(t) 
                     ? get_search_class(t) : get_selection_class(t);
                 b.classList.add(cnode);
                 g.appendChild(b);
@@ -316,6 +361,10 @@ function create_item(g, item, tl, zoom) {
             on_box_contextmenu(event, box, name, properties, node_id));
         b.addEventListener("wheel", event =>
             on_box_wheel(event, box), {passive: false});
+        b.addEventListener("mouseenter", _ =>
+            on_box_mouseenter(node_id, properties));
+        b.addEventListener("mouseleave", _ =>
+            on_box_mouseleave(node_id));
 
         if (name.length > 0 || Object.entries(properties).length > 0)
             b.appendChild(create_tooltip(name, properties));
@@ -421,9 +470,16 @@ function create_item(g, item, tl, zoom) {
         return rhombus;
     }
     else if (item[0] === "polygon") {
-        const [ , points, type, style] = item;
+        const [ , points, type, style, props] = item;
 
         const polygon = create_polygon(points, tl, zx, zy, "polygon " + type);
+
+        if (props) {
+            const name = props["name"];
+            if (name)
+                delete props["name"];
+            polygon.appendChild(create_tooltip(name, props))
+        }
 
         style_polygon(polygon, style);
 
@@ -456,6 +512,28 @@ function create_item(g, item, tl, zoom) {
 
         return g;
     }
+}
+
+function create_html(container, item, tl, zoom) {
+    const range = document.createRange();
+    range.selectNode(container);
+    const html = range.createContextualFragment(item[2]);
+
+    container.appendChild(html)
+    const element = container.lastElementChild;
+
+    const [x, y, dx, dy] = item[1];
+    const [zx, zy] = [zoom.x, zoom.y];
+    const style = { 
+        position: "absolute",
+        overflow: "hidden",
+        top: zy * (y - tl.y) + "px",
+        left: zx * (x - tl.x) + "px",
+        width: dx * zx + "px", 
+        height: dy * zy + "px"
+    };
+
+    style_html(element, style);
 }
 
 
@@ -961,6 +1039,9 @@ function style_text(text, style) {
         text.appendChild(textPath);
     }
 
+    if (is_style_property(style["pointer-events"]))
+        text.style["pointer-events"] = style["pointer-events"];
+
     return text;
 }
 
@@ -972,5 +1053,41 @@ function style_polygon(polygon, style) {
     if (is_style_property(style.opacity))
         polygon.style.opacity = style.opacity;
 
+    if (is_style_property(style.opacity))
+        polygon.style.opacity = style.opacity;
+
+    if (is_style_property(style.stroke))
+        polygon.style.stroke = style.stroke;
+
+    if (is_style_property(style["stroke-width"]))
+        polygon.style["stroke-width"] = style["stroke-width"];
+
     return polygon
+}
+
+
+function style_html(html, style) {
+    if (is_style_property(style.position))
+        html.style.position = style.position;
+
+    if (is_style_property(style.overflow))
+        html.style.overflow = style.overflow;
+
+    if (is_style_property(style.top))
+        html.style.top = style.top;
+
+    if (is_style_property(style.bottom))
+        html.style.bottom = style.bottom;
+
+    if (is_style_property(style.left))
+        html.style.left = style.left;
+
+    if (is_style_property(style.right))
+        html.style.right = style.right;
+
+    if (is_style_property(style.width))
+        html.style.width = style.width;
+
+    if (is_style_property(style.height))
+        html.style.height = style.height;
 }

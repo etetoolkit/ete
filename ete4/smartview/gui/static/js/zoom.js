@@ -1,13 +1,13 @@
 // Zoom-related functions.
 
 import { view } from "./gui.js";
-import { update } from "./draw.js";
+import { update, draw_aligned } from "./draw.js";
 import { draw_minimap, update_minimap_visible_rect } from "./minimap.js";
 
-export { zoom_around, zoom_into_box, zoom_towards_box };
+export { zoom_around, zoom_into_box, zoom_towards_box, zoom_aligned };
 
 
-const zooming = {qz: {x: 1, y: 1}, timeout: undefined};
+const zooming = {qz: {x: 1, y: 1, a: 1}, timeout: undefined};
 
 
 // Zoom the current view into the area defined by the given box, with a border
@@ -49,7 +49,8 @@ window.zoom_into_box = zoom_into_box;  // exposed so it can be called in onclick
 function zoom_around(point, zoom_in, do_zoom={x:true, y:true}, qz=undefined) {
     if (!qz)
         qz = {x: (zoom_in ? 1.25 : 0.8),  // zoom change (quotient)
-              y: (zoom_in ? 1.25 : 0.8)};
+              y: (zoom_in ? 1.25 : 0.8),
+              a: (zoom_in ? 1.25 : 0.8)};
 
     if (view.drawer.type === "rect") {
         zoom_xy(point, qz, do_zoom);
@@ -107,6 +108,19 @@ function zoom_angular(point, qz) {
 }
 
 
+function zoom_aligned(point, zoom_in) {
+    const x0 = div_tree.offsetWidth * view.aligned.pos / 100;
+    point.x -= x0;
+    const qz = { a: (zoom_in ? 1.25 : 0.8) };
+    const zoom_new = qz.a * view.zoom.a;
+    view.aligned.x += (1 / view.zoom.a - 1 / zoom_new) * point.x;
+    view.zoom.a = zoom_new;
+    zooming.qz.a *= qz.a;
+
+    smooth_zoom_aligned(point)
+}
+
+
 // Zoom adaptatively so that the given box tends to occupy the full screen.
 function zoom_towards_box(box, point, zoom_in, do_zoom) {
     let qx, qy;
@@ -127,6 +141,24 @@ function zoom_towards_box(box, point, zoom_in, do_zoom) {
 }
 
 
+function smooth_zoom_aligned(point) {
+    if (zooming.timeout)
+        window.clearTimeout(zooming.timeout);
+
+    const toTransform = Array.from(div_aligned.children[0].children);
+    toTransform.push(div_aligned.children[1].children[0])  // pixi canvas
+    //toTransform.forEach(g => g.style.transform = 
+            //`scale(${zooming.qz.a}, 1) ` +
+            //`translate(${(1 - 1 / zooming.qz.a) * point.x}px, 0)`);
+
+    zooming.timeout = window.setTimeout(() => {
+        zooming.qz.x = zooming.qz.y = zooming.qz.a = 1;
+        zooming.timeout = undefined;
+        draw_aligned();
+    }, 50);  // 50 ms until we actually update (if not cancelled before!)
+}
+
+
 // Zoom by scaling the svg, and really update it only after a timeout.
 function smooth_zoom(point) {
     if (zooming.timeout)
@@ -142,7 +174,7 @@ function smooth_zoom(point) {
         update_minimap_visible_rect();
 
     zooming.timeout = window.setTimeout(() => {
-        zooming.qz.x = zooming.qz.y = 1;
+        zooming.qz.x = zooming.qz.y = zooming.qz.a = 1;
         zooming.timeout = undefined;
         update();
     }, 50);  // 50 ms until we actually update (if not cancelled before!)

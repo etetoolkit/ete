@@ -3,7 +3,8 @@
 import { view, menus, get_tid, on_tree_change } from "./gui.js";
 import { draw_tree } from "./draw.js";
 import { api } from "./api.js";
-import { colors } from "./colors.js"
+import { colors } from "./colors.js";
+import { notify_parent } from "./events.js";
 
 export { 
     select_node, unselect_node, store_selection,
@@ -22,19 +23,6 @@ const selectError = Swal.mixin({
         el.addEventListener('mouseleave', Swal.resumeTimer)
     }
 });
-
-
-function notifyParent(name, eventType) {
-    if (self === top)  // only notify when encapsulated in iframe
-        return
-
-    parent.postMessage({ 
-        tid: get_tid(),
-        eventType: eventType,  // selection, unselection, modification, colorChange
-        name: name,
-        color: view.selected[name].results.color,
-    }, "*");
-}
 
 
 // Select node with the given name and return true if things went well.
@@ -62,6 +50,16 @@ async function select_node(node_id, name) {
 }
 
 
+function notify_selection(modification, name) {
+    if (view.selected[name])
+        notify_parent("saved", {
+            eventType: modification,
+            name: name,
+            color: view.selected[name].results.color,
+        })
+}
+
+
 async function unselect_node(node_id) {
     const tid = get_tid() + "," + node_id;
 
@@ -73,10 +71,9 @@ async function unselect_node(node_id) {
     old_selections.selections.forEach(name => {
         if (!selection_names.includes(name)) {
             view.selected[name].remove();
-            notifyParent(name, "unselection");
         } else {
             update_selected_folder(name, selections.selected[name]);
-            notifyParent(name, "modification");
+            notify_selection("modify", name);
         }
     });
     draw_tree();
@@ -93,7 +90,7 @@ function store_selection(name, res) {
     const selected = view.selected[name];
     if (selected) {
         update_selected_folder(name, res)
-        notifyParent(name, "modification");
+        notify_selection("modify", name);
     }
     else {
         view.selected[name] = {
@@ -104,7 +101,7 @@ function store_selection(name, res) {
                        color: "#000",
                        width: 2.5 },};
         add_selected_to_menu(name);
-        notifyParent(name, "selection");
+        notify_selection("select", name);
     }
 
 }
@@ -164,7 +161,7 @@ function add_selected_to_menu(name) {
             await api(`/trees/${get_tid()}/remove_selection?${qs}`);
         }
 
-        notifyParent(folder.title, "unselection");
+        notify_selection("remove", folder.title);
 
         delete view.selected[folder.title];
         folder.dispose();
@@ -206,7 +203,7 @@ function colorize_selection(name, notify=true) {
     const selected = view.selected[name];
 
     if (notify)
-        notifyParent(name, "colorChange");
+        notify_selection("colorChange", folder.title);
 
     const cresults = get_selection_class(name, "results");
     Array.from(div_tree.getElementsByClassName(cresults)).forEach(e => {

@@ -5,6 +5,7 @@ import { view, menus, on_tree_change,
          on_drawer_change, show_minimap, get_tid } from "./gui.js";
 import { draw_minimap } from "./minimap.js";
 import { update, draw_tree_scale } from "./draw.js";
+import { add_folder_active } from "./active.js";
 
 export { init_menus, update_folder_layouts };
 
@@ -85,6 +86,9 @@ function create_menu_selection(menu) {
     // filled dynamically in collapsed.js and select.js
     menus.collapsed = menu.addFolder({ title: "Collapsed" }); 
     menus.selected = menu.addFolder({ title: "Selected" });
+
+    view.active.folder = menu.addFolder({ title: `Active ${view.active.nodes.length}` });
+    add_folder_active();
 
     add_folder_searches(menu);
 }
@@ -178,9 +182,15 @@ function add_folder_view(menu) {
     folder_tl.addMonitor(view.tl, "y", { format: v => v.toFixed(3) });
 
 
-    folder_view.addInput(view.zoom, "x", { label: "Adjust zoom x", 
-                                           format: v => v.toFixed(1),
-                                           min: 1, max: div_tree.offsetWidth / view.tree_size.width })
+    folder_view.addInput(view.zoom, "x", {
+        label: "Adjust zoom x", 
+        format: v => v.toFixed(1),
+        min: 1, max: div_tree.offsetWidth / view.tree_size.width }).on("change", update);
+
+    folder_view.addInput(view.zoom, "a", {
+        label: "Adjust zoom a", 
+        format: v => v.toFixed(1),
+        min: 1, max: div_tree.offsetWidth / view.tree_size.width }).on("change", update);
 
     //const folder_zoom = folder_view.addFolder({ title: "Zoom" });
 
@@ -191,13 +201,13 @@ function add_folder_view(menu) {
     //folder_zoom.addInput(view.zoom, "y", { label: "y", 
                                            //format: v => v.toFixed(3),
                                            //min: 10**(-10), max: div_tree.offsetHeight, step: 10**(-10) })
-        .on("change", update);
+        //.on("change", update);
 
     const folder_aligned = folder_view.addFolder({ title: "Aligned panel",
                                                    expanded: false });
-    folder_aligned.addInput(view, "align_bar", { label: "position", 
+    folder_aligned.addInput(view.aligned, "pos", { label: "position", 
                                                  min: 0, max: 100 })
-        .on("change", () => div_aligned.style.width = `${100 - view.align_bar}%`);
+        .on("change", () => div_aligned.style.width = `${100 - view.aligned.pos}%`);
 }
 
 

@@ -1,18 +1,21 @@
 // Main file for the gui.
 
 import { init_menus, update_folder_layouts } from "./menu.js";
-import { init_events } from "./events.js";
+import { init_events, notify_parent } from "./events.js";
 import { update } from "./draw.js";
 import { download_newick, download_svg } from "./download.js";
+import { activate_node, deactivate_node } from "./active.js";
 import { search, get_searches, remove_searches } from "./search.js";
 import { get_selections, remove_selections } from "./select.js";
+import { get_active_nodes } from "./active.js";
 import { zoom_into_box, zoom_around, zoom_towards_box } from "./zoom.js";
 import { draw_minimap, update_minimap_visible_rect } from "./minimap.js";
 import { api, api_put, escape_html } from "./api.js";
 import { remove_collapsed } from "./collapse.js";
 
 export { view, menus, on_tree_change, on_drawer_change, show_minimap,
-         tree_command, get_tid, on_box_click, on_box_wheel, coordinates,
+         tree_command, get_tid, on_box_click, on_box_wheel, 
+         on_box_mouseenter, on_box_mouseleave, coordinates,
          reset_view, show_help, sort, get_active_layouts };
 
 
@@ -47,13 +50,28 @@ const view = {
     current_property: "name",  // pre-selected property in the add label menu
     rmin: 0,
     angle: {min: -180, max: 180},
-    align_bar: 80,  // % of the screen width where the aligned panel starts
+    aligned: {
+        x: 0,
+        pos: 80,  // % of the screen width where the aligned panel starts
+        header: {
+            show: true, height: 150 },
+        footer: {
+            show: true, height: 150 },
+    },
     collapsed_ids: {},
 
     layouts: {},
 
     // selected
-    selected: {},  // will contain the selected nodes
+    selected: {},  // will contain the selected nodes (saved)
+    active: {
+        nodes: [],    // will contain list of active nodes
+        color: "#98C1D9",
+        opacity: 0.4,
+        remove: undefined,
+        folder: undefined,
+        buttons: [],
+    },
 
     // searches
     search: () => search(),
@@ -70,7 +88,7 @@ const view = {
     // view
     reset_view: () => reset_view(),
     tl: {x: null, y: null},  // top-left of the view (in tree coordinates)
-    zoom: {x: null, y: null},  // initially chosen depending on the tree size
+    zoom: {x: null, y: null, a: null},  // initially chosen depending on the tree size
     select_text: false,  // if true, clicking and moving the mouse selects text
 
     // style
@@ -162,6 +180,7 @@ async function main() {
 
     get_searches();
     get_selections();
+    get_active_nodes();
 
     draw_minimap();
     show_minimap("visible");
@@ -238,6 +257,8 @@ async function on_tree_change() {
         get_searches();
     if (Object.keys(view.selected).length === 0)
         get_selections();
+    if (Object.keys(view.active.nodes).length === 0)
+        get_active_nodes();
 
     reset_node_count();
     await reset_layouts();
@@ -373,7 +394,7 @@ async function set_consistent_values() {
             view.zoom.x = view.zoom.y;
     }
 
-    reset_zoom(view.zoom.x === null, view.zoom.y === null);
+    reset_zoom(view.zoom.x === null, view.zoom.y === null, view.zoom.a === null);
     reset_position(view.tl.x === null, view.tl.y === null);
 }
 
@@ -414,8 +435,8 @@ async function reset_layouts() {
 
 
 // Set the zoom so the full tree fits comfortably on the screen.
-function reset_zoom(reset_zx=true, reset_zy=true) {
-    if (!(reset_zx || reset_zy))
+function reset_zoom(reset_zx=true, reset_zy=true, reset_za=true) {
+    if (!(reset_zx || reset_zy || reset_za))
         return;
 
     const size = view.tree_size;
@@ -425,10 +446,13 @@ function reset_zoom(reset_zx=true, reset_zy=true) {
             view.zoom.x = 0.6 * div_tree.offsetWidth / size.width;
         if (reset_zy)
             view.zoom.y = 0.9 * div_tree.offsetHeight / size.height;
+        if (reset_za)
+            view.zoom.a = 1;
     }
     else if (view.drawer.type === "circ") {
         const min_w_h = Math.min(div_tree.offsetWidth, div_tree.offsetHeight);
         view.zoom.x = view.zoom.y = min_w_h / (view.rmin + size.width) / 2;
+        view.zoom.a = view.zoom.x;
     }
 }
 
@@ -608,8 +632,15 @@ function coordinates(point) {
 }
 
 
-function on_box_click(event, box, node_id) {
-    if (event.detail === 2 || event.ctrlKey) {  // double-click or ctrl-click
+function on_box_click(event, box, node_id, properties) {
+    if (event.altKey && node_id.length) {
+        if (view.active.nodes.find(n => n.id === String(node_id)))
+            deactivate_node(node_id)
+        else
+            activate_node(node_id, properties)
+    }
+    else if (event.detail === 2 || event.ctrlKey) {
+        // double-click or ctrl-click
         zoom_into_box(box);
     }
     else if (event.shiftKey) {  // shift-click
@@ -631,6 +662,20 @@ function on_box_wheel(event, box) {
         zoom_towards_box(box, point, zoom_in, do_zoom);
     else
         zoom_around(point, zoom_in, do_zoom);
+}
+
+
+function on_box_mouseenter(node_id, properties) {
+    notify_parent("hover", { 
+        eventType: "mouseenter",
+        node: { id: String(node_id), ...properties } })
+}
+
+
+function on_box_mouseleave(node_id, properties) {
+    notify_parent("hover", { 
+        eventType: "mouseleave",
+        node: { id: String(node_id), ...properties } })
 }
 
 

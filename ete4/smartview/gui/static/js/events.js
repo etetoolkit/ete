@@ -1,16 +1,16 @@
-// Handle gui events.
-
-import { view, menus, coordinates, reset_view, show_minimap, show_help }
+// Handle gui events.  
+import { view, get_tid, menus, coordinates, reset_view, show_minimap, show_help }
     from "./gui.js";
-import { zoom_around } from "./zoom.js";
+import { zoom_around, zoom_aligned } from "./zoom.js";
 import { move_minimap_view } from "./minimap.js";
 import { drag_start, drag_stop, drag_move } from "./drag.js";
 import { search } from "./search.js";
 import { select_by_command, prune_by_selection, remove_selections } from "./select.js";
+import { activate_node, deactivate_node, update_active_nodes } from "./active.js";
 import { update } from "./draw.js";
 import { on_box_contextmenu } from "./contextmenu.js";
 
-export { init_events };
+export { init_events, notify_parent };
 
 
 function init_events() {
@@ -125,7 +125,10 @@ function on_wheel(event) {
     const zoom_in = event.deltaY < 0;
     const do_zoom = {x: !event.ctrlKey, y: !event.altKey};
 
-    zoom_around(point, zoom_in, do_zoom);
+    if (div_aligned.contains(event.target))
+        zoom_aligned(point, zoom_in)
+    else
+        zoom_around(point, zoom_in, do_zoom);
 }
 
 function is_svg(element) {
@@ -150,8 +153,10 @@ function on_mousedown(event) {
         drag_start(point, div_visible_rect);
     else if (div_minimap.contains(event.target))
         move_minimap_view(point);
-    else if (div_aligned.contains(event.target))
+    else if (div_aligned_grabber.contains(event.target))
         drag_start(point, div_aligned);
+    else if (div_aligned.contains(event.target))
+        drag_start(point, div_aligned, false);
     else if (div_tree.contains(event.target))
         drag_start(point, div_tree);
     // NOTE: div_tree contains div_minimap, which also contains div_visible,
@@ -253,6 +258,38 @@ function on_touchend(event) {
 }
 
 
+function sendPostMessage(props) {
+    parent.postMessage({ tid: get_tid(), ...props }, "*");
+}
+
+
+function notify_parent(selectionMode, { eventType, name, color, node }) {
+    if (self === top)  // only notify when encapsulated in iframe
+        return
+
+    // Hovering over a node
+    if (selectionMode === "hover")
+        sendPostMessage({
+            selectionMode: selectionMode,
+            eventType: eventType,
+            node: node
+        })
+
+    else if (selectionMode === "active")
+        sendPostMessage({
+            selectionMode: selectionMode,
+            nodes: view.active.nodes,
+        })
+
+    else if (selectionMode === "saved")
+        sendPostMessage({ 
+            selectionMode: selectionMode,
+            eventType: eventType,
+            name: name,
+            color: color,
+        })
+}
+
 async function on_postMessage(event) {
     // Selection when placing ETE in iframe
     
@@ -260,25 +297,41 @@ async function on_postMessage(event) {
     //if (!wiew.allowed_origins.includes(event.origin))
         //return
     
-    const { eventType, name, selectCommand } = event.data;
+    const { selectionMode, eventType, name, node, nodes, selectCommand } = event.data;
 
     div_tree.style.cursor = "wait";
 
-    // Selection
-    if (eventType === "selection" && selectCommand)
-        try { await select_by_command(selectCommand, name) } catch {}
+    if (selectionMode === "active") {
 
-    // Remove selection
-    else if (eventType === "unselection" && name) {
-        if (name === "*")
-            remove_selections(true); // purge from backend as well
-        else if (view.selected[name])
-            view.selected[name].remove();
-    } 
+        if (eventType === "select" && node && node.id)
+            activate_node(node.id, node)
 
-    // Prune based on selection names
-    else if (eventType === "prune" && name)
-        prune_by_selection(name.trim().split(","));
+        else if (eventType === "remove" && node && node.id)
+            deactivate_node(node.id)
+
+        else if (eventType === "update") {
+            update_active_nodes(nodes || [])
+        }
+
+
+    } else if (selectionMode === "saved") {
+        // Selection
+        if (eventType === "select" && selectCommand)
+            try { await select_by_command(selectCommand, name) } catch {}
+
+        // Remove selection
+        else if (eventType === "remove" && name) {
+            if (name === "*")
+                remove_selections(true); // purge from backend as well
+            else if (view.selected[name])
+                view.selected[name].remove();
+        } 
+
+        // Prune based on selection names
+        else if (eventType === "prune" && name)
+            prune_by_selection(name.trim().split(","));
+
+    }
 
 
     div_tree.style.cursor = "auto";

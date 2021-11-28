@@ -89,7 +89,8 @@ def draw_rhombus(box, rhombus_type='', style=None):
                (x, y + dy / 2))      # left
     return ['rhombus', rhombus, rhombus_type, style or {}]
 
-def draw_arrow(box, tip, orientation='right', arrow_type='', style=None):
+def draw_arrow(box, tip, orientation='right', arrow_type='', 
+        style=None, props=None):
     """ Create arrow provided a bounding box """
     x, y, dx, dy = box
 
@@ -105,8 +106,10 @@ def draw_arrow(box, tip, orientation='right', arrow_type='', style=None):
                  (x + dx, y),
                  (x + dx, y + dy),
                  (x + tip, y + dy))
-    return ['polygon', arrow, arrow_type, style or {}]
+    return ['polygon', arrow, arrow_type, style or {}, props or {}]
 
 def draw_array(box, a):
     return ['array', box, a]
 
+def draw_html(box, html, html_type='', style=None):
+    return ['html', box, html, html_type, style or {}]

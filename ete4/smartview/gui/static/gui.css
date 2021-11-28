@@ -75,20 +75,58 @@ body {
 
 .aligned {
     display: none;
-    cursor: ew-resize;
     position: absolute;
     right: 0px;
     width: 20%;
     height: 100%;
     background: white;
-    overflow: hidden;
+    /*overflow: hidden;*/
     touch-action: none;
+    margin-left: 15px;
+}
+
+.div_aligned_grabber {
+    position: absolute;
+    top: 0;
+    left: -15px;
+    width: 15px;
+    height: 100%;
+    cursor: ew-resize;
+    background-color: lightgray;
+    opacity: 0;
+}
+
+.div_aligned_grabber:hover {
+    opacity: 0.5;
 }
 
 .div_pixi {
     position: absolute;
     top: 0;
     pointer-events: none;
+}
+
+.div_aligned_top {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    background-color: inherit;
+    cursor: auto;
+}
+
+.div_aligned_bottom {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background-color: inherit;
+    cursor: auto;
+}
+
+.div_html {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 100%;
 }
 
 .dotted {

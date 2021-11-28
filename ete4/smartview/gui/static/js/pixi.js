@@ -40,17 +40,28 @@ const aa_notext_png = aa.map(a => {
         url: `images/aa_notext/${a}.png` }
 });
 
+const aa_text_png = aa.map(a => {
+    return { 
+        name: `aa_text_${a}`, 
+        url: `images/aa_text/${a}.png` }
+});
+
 
 // Load texture atlas
 loader
     //.add(`../images/aa_text.json`)
     //.add("aa_notext", `images/aa_notext.json`)
     .add(aa_notext_png)
+    .add(aa_text_png)
     .add("block", "images/block.png")
     .load(() => {
         textures = { 
             aa_notext: aa.reduce((textures, a) => {
                 textures[a] = resources[`aa_notext_${a}`].texture;
+                return textures
+            }, {}),
+            aa_text: aa.reduce((textures, a) => {
+                textures[a] = resources[`aa_text_${a}`].texture;
                 return textures
             }, {}),
             shapes: {
@@ -64,9 +75,11 @@ function draw_pixi(items, tl, zoom) {
     // Resize canvas based on container
     const container = view.drawer.type === "rect" ?
         div_aligned : div_tree;
-    app.renderer.resize(container.clientWidth, container.clientHeight);
+    app.renderer.resize(container.clientWidth * 1000, container.clientHeight);
     // Remove all items from stage
     app.stage.children = [];
+
+    console.log(zoom)
 
     if (textures_loaded && items.length)
         draw(items, tl, zoom);
@@ -99,7 +112,6 @@ function addSprite(sprite, box, tl, zx, zy) {
         sprite.anchor.set(0.5, 0.5);
         sprite.rotation = y + dy/2;
     }
-
     sprite.x = sx;
     sprite.y = sy;
     sprite.width = sw;

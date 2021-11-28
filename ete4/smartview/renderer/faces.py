@@ -7,7 +7,7 @@ from .draw_helpers import Box, SBox, clip_angles, cartesian,\
                                     draw_circle, draw_ellipse, draw_slice,\
                                     draw_line, draw_outline,\
                                     draw_triangle, draw_rhombus,\
-                                    draw_arrow
+                                    draw_arrow, draw_html
 
 
 CHAR_HEIGHT = 1.4 # char's height to width ratio
@@ -78,6 +78,8 @@ class Face(object):
 
         self.always_drawn = False # Use carefully to avoid overheading...
 
+        self.zoom = (0, 0)
+
     def __name__(self):
         return "Face"
 
@@ -88,8 +90,7 @@ class Face(object):
         self._check_own_variables()
         return self._box
 
-    def compute_fsize(self, dx, dy, drawer, max_fsize=None):
-        zx, zy = drawer.zoom
+    def compute_fsize(self, dx, dy, zx, zy, max_fsize=None):
         self._fsize = min([dx * zx * CHAR_HEIGHT, abs(dy * zy), max_fsize or self.max_fsize])
 
     def compute_bounding_box(self, 
@@ -105,7 +106,11 @@ class Face(object):
         self._check_own_content()
         x, y = point
         dx, dy = size
-        zx, zy = drawer.zoom
+
+        zx, zy, za = drawer.zoom
+        if pos.startswith("aligned"):
+            zx = za
+        self.zoom = (zx, zy)
 
         if pos == 'branch_top':  # above the branch
             avail_dx = dx / n_col
@@ -119,14 +124,6 @@ class Face(object):
             x = x + dx_before
             y = y + bdy + dy_before
 
-        elif pos == 'branch_top-left':  # left of branch_top
-            width, height = get_dimensions(dx / n_col, bdy)
-            box = (x - (col + 1) * dx/n_col, y, width, height)
-
-        elif pos == 'branch_bottom-left':  # left of branch_bottom
-            width, height = get_dimensions(dx / n_col, dy - bdy)
-            box = (x - (col + 1) * dx/n_col, y + bdy, width, height)
-
         elif pos == 'branch_right':  # right of node
             avail_dx = dx_to_closest_child / n_col\
                     if not (self.node.is_leaf() or self.node.is_collapsed)\
@@ -135,13 +132,20 @@ class Face(object):
             x = x + bdx + dx_before
             y = y + bdy + (row - n_row / 2) * avail_dy
 
-        elif pos == 'aligned': # right of tree
+        elif pos.startswith('aligned'): # right of tree
             avail_dx = None # should be overriden
             avail_dy = dy / n_row
             aligned_x = drawer.node_size(drawer.tree)[0]\
                     if drawer.panel == 0 else drawer.xmin
             x = aligned_x + dx_before
-            y = y + dy / 2 + (row - n_row / 2) * avail_dy
+        
+            if pos == 'aligned_bottom':
+                y = y + dy - avail_dy - dy_before
+            elif pos == 'aligned_top':
+                y = y + dy_before
+            else:
+                y = y + dy / 2 + (row - n_row / 2) * avail_dy
+
         else:
             raise InvalidUsage(f'unkown position {pos}')
 
@@ -219,13 +223,14 @@ class TextFace(Face):
             n_row, n_col,
             dx_before, dy_before)
 
-        zx, zy = drawer.zoom
+        zx, zy = self.zoom
+
         x, y , dx, dy = box
         r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
 
         def fit_fontsize(text, dx, dy):
             dchar = dx / len(text) if dx != None else float('inf')
-            self.compute_fsize(dchar, dy, drawer)
+            self.compute_fsize(dchar, dy, zx, zy)
             dxchar = self._fsize / (zx * CHAR_HEIGHT)
             dychar = self._fsize / (zy * r)
             return dxchar * len(text), dychar
@@ -237,6 +242,12 @@ class TextFace(Face):
 
         elif pos == 'branch_bottom':
             box = (x, y, width, height) # container top
+
+        elif pos == 'aligned_bottom':
+            box = (x, y + dy - height, width, height)
+
+        elif pos == 'aligned_top':
+            box = (x, y, width, height)
 
         else: # branch_right and aligned
             box = (x, y + (dy - height) / 2, width, height)
@@ -333,7 +344,8 @@ class CircleFace(Face):
             dx_before, dy_before)
 
         x, y, dx, dy = box
-        zx, zy = drawer.zoom
+        zx, zy = self.zoom
+
         r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
         padding_x, padding_y = self.padding_x / zx, self.padding_y / (zy * r)
 
@@ -352,8 +364,17 @@ class CircleFace(Face):
         else: # branch_right and aligned
             if pos == 'aligned':
                 self._max_radius = min(dy * zy * r / 2, self.radius)
+
             cx = x + self._max_radius / zx - padding_x # centered
-            cy = y + dy / 2 # centered
+
+            if pos == 'aligned_bottom':
+                cy = y + dy - self._max_radius / zy
+
+            elif pos == 'aligned_top':
+                cy = y + self._max_radius / zy
+
+            else:
+                cy = y + dy / 2 # centered
 
         self._center = (cx, cy)
         self._box = Box(cx, cy, 
@@ -417,7 +438,8 @@ class RectFace(Face):
             dx_before, dy_before)
 
         x, y, dx, dy = box
-        zx, zy = drawer.zoom
+        zx, zy = self.zoom
+
         r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
 
         def get_dimensions(max_width, max_height):
@@ -461,10 +483,19 @@ class RectFace(Face):
             width, height = get_dimensions(dx, max_dy)
             box = (x, y + (dy - height) / 2, width, height)
 
-        elif pos == 'aligned':
-            width = (self.width - 2 * self.padding_x) / zx
-            height = min(dy, (self.height - 2 * self.padding_y) / zy)
-            box = (x, y + (dy - height) / 2, width, height)
+        elif pos.startswith('aligned'):
+            width, height = get_dimensions(None, dy)
+            # height = min(dy, (self.height - 2 * self.padding_y) / zy)
+            # width = min(self.width - 2 * self.padding_x) / zx
+
+            if pos == 'aligned_bottom':
+                y = y + dy - height
+            elif pos == 'aligned_top':
+                y = y
+            else:
+                y = y + (dy - height) / 2
+
+            box = (x, y, width, height)
 
         self._box = Box(*box)
         return self._box
@@ -484,19 +515,20 @@ class RectFace(Face):
 
         if self.text:
             x, y, dx, dy = self._box
-            zx, zy = drawer.zoom
+            zx, zy = self.zoom
+
             r = (x or 1e-10) if circ_drawer else 1
             if self.rotate_text:
                 rotation = 90
                 self.compute_fsize(dy * zy / (len(self.text) * zx) * r,
-                                   dx * zx / zy, drawer)
+                                   dx * zx / zy, zx, zy)
 
                 text_box = Box(x + (dx - self._fsize / (2 * zx)) / 2,
                         y + dy / 2,
                         dx, dy)
             else:
                 rotation = 0
-                self.compute_fsize(dx, dy, drawer)
+                self.compute_fsize(dx, dy, zx, zy)
                 text_box = Box(x + dx / 2,
                         y + (dy - self._fsize / (zy * r)) / 2,
                         dx, dy)
@@ -520,107 +552,29 @@ class RectFace(Face):
                     style=text_style)
 
 
-class ArrowFace(Face):
+class ArrowFace(RectFace):
     def __init__(self, width, height, orientation='right',
-            color='gray',
+            color='gray', 
+            stroke_color='gray', stroke_width='1.5px',
+            props={},
             text=None, fgcolor='black', # text color
             min_fsize=6, max_fsize=15,
             ftype='sans-serif',
             name="",
             padding_x=0, padding_y=0):
 
-        Face.__init__(self, name=name, padding_x=padding_x, padding_y=padding_y)
+        RectFace.__init__(self, width=width, height=height,
+                color=color, text=text, fgcolor=fgcolor,
+                min_fsize=min_fsize, max_fsize=max_fsize, ftype=ftype,
+                name=name, padding_x=padding_x, padding_y=padding_y)
 
-        self.width = width
-        self.height = height
         self.orientation = orientation
-        self.color = color
-        # Text related
-        self.text = str(text) if text is not None else None
-        self.rotate_text = False
-        self.fgcolor = fgcolor
-        self.ftype = ftype
-        self.min_fsize = min_fsize
-        self.max_fsize = max_fsize
+        self.props = props
+        self.stroke_color = stroke_color
+        self.stroke_width = stroke_width
 
     def __name__(self):
         return "ArrowFace"
-
-    def compute_bounding_box(self, 
-            drawer,
-            point, size,
-            dx_to_closest_child,
-            bdx, bdy,
-            bdy0, bdy1,
-            pos, row,
-            n_row, n_col,
-            dx_before, dy_before):
-
-        if drawer.TYPE == 'circ':
-            pos = swap_pos(pos, point[1])
-
-        box = super().compute_bounding_box( 
-            drawer,
-            point, size,
-            dx_to_closest_child,
-            bdx, bdy,
-            bdy0, bdy1,
-            pos, row,
-            n_row, n_col,
-            dx_before, dy_before)
-
-        x, y, dx, dy = box
-        zx, zy = drawer.zoom
-        r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
-
-        def get_dimensions(max_width, max_height):
-            if not (max_width or max_height):
-                return 0, 0
-            if (type(max_width) in (int, float) and max_width <= 0) or\
-               (type(max_height) in (int, float) and max_height <= 0):
-                return 0, 0
-
-            width = self.width / zx if self.width is not None else None
-            height = self.height / zy if self.height is not None else None
-
-            if width is None:
-                return max_width or 0, min(height or float('inf'), max_height)
-            if height is None:
-                return min(width, max_width or float('inf')), max_height
-
-            hw_ratio = height / width
-
-            if max_width and width > max_width:
-                width = max_width
-                height = width * hw_ratio
-            if max_height and height > max_height:
-                height = max_height
-                width = height / hw_ratio
-
-            height /= r  # in circular drawer
-            return width, height
-
-        max_dy = dy * r  # take into account circular mode
-
-        if pos == 'branch_top':
-            width, height = get_dimensions(dx, max_dy)
-            box = (x, y + dy - height, width, height) # container bottom
-
-        elif pos == 'branch_bottom':
-            width, height = get_dimensions(dx, max_dy)
-            box = (x, y, width, height) # container top
-
-        elif pos == 'branch_right':
-            width, height = get_dimensions(dx, max_dy)
-            box = (x, y + (dy - height) / 2, width, height)
-
-        elif pos == 'aligned':
-            width = (self.width - 2 * self.padding_x) / zx
-            height = min(dy, (self.height - 2 * self.padding_y) / zy)
-            box = (x, y + (dy - height) / 2, width, height)
-
-        self._box = Box(*box)
-        return self._box
 
     @property
     def orientation(self):
@@ -636,33 +590,39 @@ class ArrowFace(Face):
         self._check_own_variables()
 
         circ_drawer = drawer.TYPE == 'circ'
-        style = {'fill': self.color, 'opacity': 0.7}
+        style = {
+            'fill': self.color, 
+            'opacity': 0.7,
+            'stroke': self.stroke_color,
+            'stroke-width': self.stroke_width,
+            }
         if self.text and circ_drawer:
             rect_id = get_random_string(10)
             style['id'] = rect_id
 
         x, y, dx, dy = self._box
-        zx, zy = drawer.zoom
+        zx, zy = self.zoom
 
-        tip = min(15, dx * zx * 0.9) / zx
+        tip = min(5, dx * zx * 0.9) / zx
         yield draw_arrow(self._box, 
                 tip, self.orientation,
                 self.name,
-                style=style)
+                style=style,
+                props=self.props)
 
         if self.text:
             r = (x or 1e-10) if circ_drawer else 1
             if self.rotate_text:
                 rotation = 90
                 self.compute_fsize(dy * zy / (len(self.text) * zx) * r,
-                                   dx * zx / zy, drawer)
+                                   dx * zx / zy, zx, zy)
 
                 text_box = Box(x + (dx - self._fsize / (2 * zx)) / 2,
                         y + dy / 2,
                         dx, dy)
             else:
                 rotation = 0
-                self.compute_fsize(dx, dy, drawer)
+                self.compute_fsize(dx, dy, zx, zy)
                 text_box = Box(x + dx / 2,
                         y + (dy - self._fsize / (zy * r)) / 2,
                         dx, dy)
@@ -670,6 +630,7 @@ class ArrowFace(Face):
                 'max_fsize': self._fsize,
                 'text_anchor': 'middle',
                 'ftype': f'{self.ftype}, sans-serif', # default sans-serif
+                'pointer-events': 'none',
                 }
 
             if circ_drawer:
@@ -782,7 +743,7 @@ class OutlineFace(Face):
                 'fill-opacity': self.opacity,
                 }
         x, y, dx_min, dx_max, dy = self.outline
-        zx, zy = drawer.zoom
+        zx, zy = self.zoom
         circ_drawer = drawer.TYPE == 'circ'
         r = (x or 1e-10) if circ_drawer else 1
         if dy * zy * r < self.collapsing_height:
@@ -915,13 +876,12 @@ class SeqFace(Face):
             n_row, n_col,
             dx_before, dy_before)
 
-        zx, zy = drawer.zoom
-
         x, y, _, dy = box
+        zx, zy = self.zoom
         dx = self.poswidth * len(self.seq) / zx
 
         if self.draw_text:
-            self.compute_fsize(self.poswidth / zx, dy, drawer)
+            self.compute_fsize(self.poswidth / zx, dy, zx, zy)
 
         self._box = Box(x, y, dx, dy)
         
@@ -929,28 +889,35 @@ class SeqFace(Face):
 
     def draw(self, drawer):
         x0, y, _, dy = self._box
-        zx, zy = drawer.zoom
+        zx, zy = self.zoom
+
         dx = self.poswidth / zx
         # Send sequences as a whole to be rendered by PIXIjs
-        yield [ "pixi-aa_notext", Box(x0, y, dx * len(self.seq), dy), self.seq ]
-        # Rende text if necessary
         if self.draw_text:
-            text_style = {
-                'max_fsize': self._fsize,
-                'text_anchor': 'middle',
-                'ftype': f'{self.ftype}, sans-serif', # default sans-serif
-                }
-            for idx, pos in enumerate(self.seq):
-                x = x0 + idx * dx
-                r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
-                # Draw rect
-                if pos != '-':
-                    text_box = Box(x + dx / 2,
-                            y + (dy - self._fsize / (zy * r)) / 2,
-                            dx, dy)
-                    yield draw_text(text_box,
-                            pos,
-                            style=text_style)
+            aa_type = "text"
+        else:
+            aa_type = "notext"
+
+        yield [ f'pixi-aa_{aa_type}', Box(x0, y, dx * len(self.seq), dy), self.seq ]
+
+        # Rende text if necessary
+        # if self.draw_text:
+            # text_style = {
+                # 'max_fsize': self._fsize,
+                # 'text_anchor': 'middle',
+                # 'ftype': f'{self.ftype}, sans-serif', # default sans-serif
+                # }
+            # for idx, pos in enumerate(self.seq):
+                # x = x0 + idx * dx
+                # r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
+                # # Draw rect
+                # if pos != '-':
+                    # text_box = Box(x + dx / 2,
+                            # y + (dy - self._fsize / (zy * r)) / 2,
+                            # dx, dy)
+                    # yield draw_text(text_box,
+                            # pos,
+                            # style=text_style)
 
 
 class SeqMotifFace(Face):
@@ -994,6 +961,7 @@ class SeqMotifFace(Face):
 
         # Text
         self.ftype = ftype
+        self._min_fsize = 8
         self.max_fsize = max_fsize
         self._fsize = None
 
@@ -1108,7 +1076,7 @@ class SeqMotifFace(Face):
             dx_before, dy_before)
 
         x, y, _, dy = box
-        zx, zy = drawer.zoom
+        zx, zy = self.zoom
 
         self._box = Box(x, y, self.width / zx, dy)
         return self._box
@@ -1119,13 +1087,14 @@ class SeqMotifFace(Face):
     def draw(self, drawer):
         # Only leaf/collapsed branch_right or aligned
         x0, y, _, dy = self._box
-        zx, zy = drawer.zoom
+        zx, zy = self.zoom
+
         x = x0
         prev_end = -1
 
         if self.gap_format in ["line", "-"]:
             p1 = (x0, y + dy / 2)
-            p2 = (x0 + self.width / zx, y + dy / 2)
+            p2 = (x0 + self.width, y + dy / 2)
             if drawer.TYPE == 'circ':
                 p1 = cartesian(p1)
                 p2 = cartesian(p2)
@@ -1133,7 +1102,7 @@ class SeqMotifFace(Face):
                                            'stroke': self.gapcolor})
 
         for (start, end, shape, posw, h, fg, bg, text, opacity) in self.regions:
-            posw = (posw or self.poswidth) * self.w_scale / zx
+            posw = (posw or self.poswidth) * self.w_scale
             w = posw * (end + 1 - start)
             style = { 'fill': bg, 'opacity': opacity }
 
@@ -1191,18 +1160,22 @@ class SeqMotifFace(Face):
                     yield draw_ellipse(center, rx, ry, style=style)
 
             # Sequence and compact sequence
-            elif shape == 'compactseq':
+            elif shape in ['seq', 'compactseq']:
                 seq = self.seq[start : end + 1]
-                yield [ "pixi-aa_notext", box, seq ]
+                if shape == 'compactseq' or posw * zx < self._min_fsize:
+                    aa_type = "notext"
+                else:
+                    aa_type = "text"
+                yield [ f'pixi-aa_{aa_type}', box, seq ]
 
-            elif shape == 'seq':
-                seq = self.seq[start : end + 1]
-                seq_face = SeqFace(seq, self.seqtype, posw * zx,
-                        draw_text=True, max_fsize=self.max_fsize,
-                        ftype=self.ftype)
-                seq_face._box = box # assign box manually
-                seq_face.compute_fsize(posw, h, drawer)
-                yield from seq_face.draw(drawer)
+            # elif shape == 'seq':
+                # seq = self.seq[start : end + 1]
+                # seq_face = SeqFace(seq, self.seqtype, posw * zx,
+                        # draw_text=True, max_fsize=self.max_fsize,
+                        # ftype=self.ftype)
+                # seq_face._box = box # assign box manually
+                # seq_face.compute_fsize(posw, h, zx, zy)
+                # yield from seq_face.draw(drawer)
 
             # Text on top of shape
             if text:
@@ -1211,7 +1184,7 @@ class SeqMotifFace(Face):
                     fsize = int(fsize)
                 except:
                     ftype, fsize, color = self.ftype, self.max_fsize, (fg or self.fcolor)
-                self.compute_fsize(w / len(text), h, drawer, fsize)
+                self.compute_fsize(w / len(text), h, zx, zy, fsize)
                 text_box = Box(x + w / 2,
                         y + (dy - self._fsize / (zy * r)) / 2,
                         self._fsize / (zx * CHAR_HEIGHT),
@@ -1261,13 +1234,28 @@ class PieChartFace(CircleFace):
         assert a >= 2 * pi - 1e-5 and a <= 2 * pi + 1e-5, "Incorrect pie"
 
     def draw(self, drawer):
-
         # Draw circle if only one datum
         if len(self.data) == 1:
             self.color = self.data[0][2]
-            return CircleFace.draw(self, drawer)
-        
-        for (name, value, color, a, da) in self.data:
-            style = { 'fill': color }
-            yield draw_slice(self._center, self._max_radius, a, da, 
-                    "", style=style)
+            yield from CircleFace.draw(self, drawer)
+
+        else:
+            for (name, value, color, a, da) in self.data:
+                style = { 'fill': color }
+                yield draw_slice(self._center, self._max_radius, a, da, 
+                        "", style=style)
+
+
+class HTMLFace(RectFace):
+    def __init__(self, html, width, height, name="", padding_x=0, padding_y=0):
+
+        RectFace.__init__(self, width=width, height=height,
+                name=name, padding_x=padding_x, padding_y=padding_y)
+
+        self.content = html
+
+    def __name__(self):
+        return "HTMLFace"
+
+    def draw(self, drawer):
+        yield draw_html(self._box, self.content)
