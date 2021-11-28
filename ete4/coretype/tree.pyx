@@ -45,17 +45,17 @@ import itertools
 from collections import deque, namedtuple
 from hashlib import md5
 from functools import cmp_to_key
-import pickle 
+import pickle
 
 from .. import utils
-from ..parser.newick import read_newick, write_newick 
+from ..parser.newick import read_newick, write_newick
 
 # the following imports are necessary to set fixed styles and faces
 # try:
-try: 
+try:
     from ..treeview.main import NodeStyle
     from ..treeview.faces import Face
-except ImportError: 
+except ImportError:
     pass # Treeview is now an optional dependency
 
 from ..smartview import Face as smartFace
@@ -98,7 +98,7 @@ cdef class TreeNode(object):
 
     cdef public (double, double) size
     cdef public double d1
-    
+
     """
     TreeNode (Tree) class is used to store a tree structure. A tree
     consists of a collection of TreeNode instances connected in a
@@ -270,13 +270,13 @@ cdef class TreeNode(object):
         # for performance reasons (pickling)
         self._initialized = 0 # Layout fns have not been run on node
 
-        self.size = (0, 0) 
+        self.size = (0, 0)
         self.d1 = 0.0
 
         # Initialize tree
         if newick is not None:
             read_newick(newick, self, format=format, quoted_names=quoted_node_names)
-        
+
         self.name = name if name is not None else\
                 self.name if self.name is not None else DEFAULT_NAME
         self.dist = dist if dist is not None else\
@@ -1347,7 +1347,7 @@ cdef class TreeNode(object):
                 tname = ''.join(next(avail_names))
             n.name = tname
 
-    
+
     def set_outgroup_jordi(self, outgroup, branch_properties=None):
         """
         Returns a descendant node as the outgroup of a tree.  This function
@@ -1531,14 +1531,14 @@ cdef class TreeNode(object):
         :layouts: list of layout functions that will be available from the
         front end. It is important to name functions (__name__), as they will
         be adressed by such in the explorer.
-        By default it includes: outline, leaf_name, branch_length 
+        By default it includes: outline, leaf_name, branch_length
         and branch_support.
 
         :port: port used to run the local server (127.0.0.1). Default 5000
         """
         from ..smartview.gui.server import run_smartview
 
-        run_smartview(tree=self, tree_name=tree_name, 
+        run_smartview(tree=self, tree_name=tree_name,
                 tree_style=tree_style, layouts=layouts, port=port)
 
     def copy(self, method="cpickle"):
@@ -1775,7 +1775,7 @@ cdef class TreeNode(object):
             _store = {}
 
         def get_prop(_n, propname):
-            try: 
+            try:
                 v = getattr(_n, propname)
             except AttributeError:
                 v = _n.props.get(store_attr)
@@ -2632,14 +2632,14 @@ cdef class TreeNode(object):
 
     def add_face(self, face, column, position=None, collapsed_only=False):
         if isinstance(face, Face):
-            if position is None: 
+            if position is None:
                 position = 'branch-right'
             self.add_face_treeview(face, column, position)
         elif isinstance(face, smartFace):
-            if position is None: 
+            if position is None:
                 position = 'branch_right'
             self.add_face_smartview(face, column, position, collapsed_only)
-        else: 
+        else:
             raise ValueError("Invalid face format")
 
     def add_face_treeview(self, face, column, position="branch-right"):
@@ -2656,9 +2656,9 @@ cdef class TreeNode(object):
           "branch-right", "branch-top", "branch-bottom", "float",
           "aligned"
         """
-        
+
         from ..treeview.main import  _FaceAreas, FaceContainer, FACE_POSITIONS
-    
+
         if self._faces is None:
             self._faces = _FaceAreas()
 
