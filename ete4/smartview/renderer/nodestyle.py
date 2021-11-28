@@ -30,10 +30,8 @@ TREE_STYLE_CHECKER = {
     "mode": lambda x: x.lower() in set(["c", "r"]),
     }
 
-# _faces and faces are registered to allow deepcopy to work on nodes
-VALID_NODE_STYLE_KEYS = set([i[0] for i in NODE_STYLE_DEFAULT]) | set(["_faces"])
-
-
+# _smfaces and faces are registered to allow deepcopy to work on nodes
+VALID_NODE_STYLE_KEYS = set([i[0] for i in NODE_STYLE_DEFAULT]) | set(["_smfaces"])
 
 class NodeStyle(dict):
     """
@@ -85,12 +83,12 @@ class NodeStyle(dict):
                 raise ValueError("'%s' attribute in node style has not a valid value: %s" %\
                                      (key, self[key]))
     #
-    #    #super(NodeStyle, self).__setitem__("_faces", {})
+    #    #super(NodeStyle, self).__setitem__("_smfaces", {})
     #    # copy fixed faces to the faces dict that will be drawn
     #    #for pos, values in self["faces"].iteritems():
     #    #    for col, faces in values.iteritems():
-    #    #        self["_faces"].setdefault(pos, {})
-    #    #        self["_faces"][pos][col] = list(faces)
+    #    #        self["_smfaces"].setdefault(pos, {})
+    #    #        self["_smfaces"][pos][col] = list(faces)
 
     def __setitem__(self, i, v):
         # keeps compatible with ETE 2.0 version
