@@ -50,10 +50,14 @@ const view = {
     current_property: "name",  // pre-selected property in the add label menu
     rmin: 0,
     angle: {min: -180, max: 180},
-    align_bar: 80,  // % of the screen width where the aligned panel starts
-    aligned_header: { 
-        top: { show: true, height: 150 }, 
-        bottom: { show: true, height: 150 } },
+    aligned: {
+        x: 0,
+        pos: 80,  // % of the screen width where the aligned panel starts
+        header: {
+            show: true, height: 150 },
+        footer: {
+            show: true, height: 150 },
+    },
     collapsed_ids: {},
 
     layouts: {},
@@ -84,7 +88,7 @@ const view = {
     // view
     reset_view: () => reset_view(),
     tl: {x: null, y: null},  // top-left of the view (in tree coordinates)
-    zoom: {x: null, y: null, align_factor: 1},  // initially chosen depending on the tree size
+    zoom: {x: null, y: null, a: null},  // initially chosen depending on the tree size
     select_text: false,  // if true, clicking and moving the mouse selects text
 
     // style
@@ -311,9 +315,10 @@ async function set_query_string_values() {
             view.tl.x = Number(value);
         else if (param === "y")
             view.tl.y = Number(value);
-        else if (param === "w")
+        else if (param === "w") {
             view.zoom.x = div_tree.offsetWidth / Number(value);
-        else if (param === "h")
+            view.zoom.a = view.zoom.x;
+        } else if (param === "h")
             view.zoom.y = div_tree.offsetHeight / Number(value);
         else if (param === "drawer")
             view.drawer.name = value;
@@ -390,7 +395,7 @@ async function set_consistent_values() {
             view.zoom.x = view.zoom.y;
     }
 
-    reset_zoom(view.zoom.x === null, view.zoom.y === null, view.zoom.x === null);
+    reset_zoom(view.zoom.x === null, view.zoom.y === null, view.zoom.a === null);
     reset_position(view.tl.x === null, view.tl.y === null);
 }
 
@@ -432,7 +437,7 @@ async function reset_layouts() {
 
 // Set the zoom so the full tree fits comfortably on the screen.
 function reset_zoom(reset_zx=true, reset_zy=true, reset_za=true) {
-    if (!(reset_zx || reset_zy))
+    if (!(reset_zx || reset_zy || reset_za))
         return;
 
     const size = view.tree_size;
@@ -443,11 +448,12 @@ function reset_zoom(reset_zx=true, reset_zy=true, reset_za=true) {
         if (reset_zy)
             view.zoom.y = 0.9 * div_tree.offsetHeight / size.height;
         if (reset_za)
-            view.zoom.a = 1;
+            view.zoom.a = view.zoom.x;
     }
     else if (view.drawer.type === "circ") {
         const min_w_h = Math.min(div_tree.offsetWidth, div_tree.offsetHeight);
         view.zoom.x = view.zoom.y = min_w_h / (view.rmin + size.width) / 2;
+        view.zoom.a = view.zoom.x;
     }
 }
 

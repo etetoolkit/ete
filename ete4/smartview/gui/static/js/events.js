@@ -1,7 +1,7 @@
 // Handle gui events.  
 import { view, get_tid, menus, coordinates, reset_view, show_minimap, show_help }
     from "./gui.js";
-import { zoom_around } from "./zoom.js";
+import { zoom_around, zoom_aligned } from "./zoom.js";
 import { move_minimap_view } from "./minimap.js";
 import { drag_start, drag_stop, drag_move } from "./drag.js";
 import { search } from "./search.js";
@@ -125,7 +125,10 @@ function on_wheel(event) {
     const zoom_in = event.deltaY < 0;
     const do_zoom = {x: !event.ctrlKey, y: !event.altKey};
 
-    zoom_around(point, zoom_in, do_zoom);
+    if (div_aligned.contains(event.target))
+        zoom_aligned(point, zoom_in)
+    else
+        zoom_around(point, zoom_in, do_zoom);
 }
 
 function is_svg(element) {
@@ -150,10 +153,10 @@ function on_mousedown(event) {
         drag_start(point, div_visible_rect);
     else if (div_minimap.contains(event.target))
         move_minimap_view(point);
-    else if (div_aligned.contains(event.target) && 
-        !(div_aligned_top.contains(event.target) || 
-          div_aligned_bottom.contains(event.target)))
+    else if (div_aligned_grabber.contains(event.target))
         drag_start(point, div_aligned);
+    else if (div_aligned.contains(event.target))
+        drag_start(point, div_aligned, false);
     else if (div_tree.contains(event.target))
         drag_start(point, div_tree);
     // NOTE: div_tree contains div_minimap, which also contains div_visible,

@@ -75,7 +75,7 @@ function draw_pixi(items, tl, zoom) {
     // Resize canvas based on container
     const container = view.drawer.type === "rect" ?
         div_aligned : div_tree;
-    app.renderer.resize(container.clientWidth, container.clientHeight);
+    app.renderer.resize(container.clientWidth * 1000, container.clientHeight);
     // Remove all items from stage
     app.stage.children = [];
 
@@ -110,7 +110,6 @@ function addSprite(sprite, box, tl, zx, zy) {
         sprite.anchor.set(0.5, 0.5);
         sprite.rotation = y + dy/2;
     }
-
     sprite.x = sx;
     sprite.y = sy;
     sprite.width = sw;

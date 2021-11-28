@@ -11,7 +11,7 @@ import { on_box_contextmenu } from "./contextmenu.js";
 import { api } from "./api.js";
 import { draw_pixi } from "./pixi.js";
 
-export { update, draw_tree, draw_tree_scale, draw, get_class_name, cartesian_shifted };
+export { update, draw_tree, draw_tree_scale, draw_aligned, draw, get_class_name, cartesian_shifted };
 
 
 // Update the view of all elements (gui, tree, minimap).
@@ -22,12 +22,8 @@ async function update() {
         update_minimap_visible_rect();
 }
 
-
-var align_timeout; // Do not constantly render aligned panel (too costly) when scrolling
-var align_drawing = false;
-// Ask the server for a tree in the new defined region, and draw it.
-async function draw_tree() {
-    const [zx, zy, za] = [view.zoom.x, view.zoom.y, view.zoom.x * view.zoom.align_factor];
+function get_tree_params() {
+    const [zx, zy, za] = [view.zoom.x, view.zoom.y, view.zoom.a];
     const [x, y] = [view.tl.x, view.tl.y];
     const [w, h] = [div_tree.offsetWidth / zx, div_tree.offsetHeight / zy];
 
@@ -48,6 +44,14 @@ async function draw_tree() {
     };
 
     const params = view.drawer.type === "rect" ? params_rect : params_circ;
+    return params
+}
+
+var align_timeout; // Do not constantly render aligned panel (too costly) when scrolling
+var align_drawing = false;
+// Ask the server for a tree in the new defined region, and draw it.
+async function draw_tree() {
+    const params = get_tree_params();
     const qs = new URLSearchParams(params).toString();  // "x=...&y=..."
 
     try {
@@ -78,7 +82,7 @@ async function draw_tree() {
                 if (!align_drawing)
                     await draw_aligned(params);
                 clearTimeout(align_timeout);
-            }, 200);
+            }, 50);
         }
 
         if (view.drawer.type === "circ") {
@@ -193,6 +197,8 @@ function draw(element, items, tl, zoom, replace=true) {
         const pixi = draw_pixi(pixi_items, tl, zoom)
         const pixi_container = view.drawer.type === "rect" ? div_aligned : div_tree;
         replace_child(pixi_container.querySelector(".div_pixi"), pixi);
+        pixi.style.transform = "translate(0, 0)";
+        pixi.setAttribute("width", "1000");
     }
 
     const html_container = element.querySelector(".div_html")
@@ -252,14 +258,17 @@ function replace_svg(element) {
 
 // Draw elements that belong to panels above 0.
 async function draw_aligned(params) {
+    if (!params)
+        params = get_tree_params();
+
     const zy = view.zoom.y;
     const panels = { 
-        1: { div: div_aligned, params: { x:0, y: view.tl.y } }, 
-        2: { div: div_aligned_top, params: { x:0, y:0, 
-            h: Math.max(-view.tl.y, view.aligned_header.top.height / zy) } }, 
-        3: { div: div_aligned_bottom, params: { x:0, y:0,
+        1: { div: div_aligned, params: { x: view.aligned.x, y: view.tl.y } }, 
+        2: { div: div_aligned_header, params: { x: 0, y:0, 
+            h: Math.max(-view.tl.y, view.aligned.header.height / zy) } }, 
+        3: { div: div_aligned_footer, params: { x: 0, y:0,
             h: Math.max(div_tree.offsetHeight / zy + view.tl.y - view.tree_size.height,
-                        view.aligned_header.bottom.height / zy) } }
+                        view.aligned.footer.height / zy) } }
     };
 
     if (view.drawer.type === "rect") {
@@ -284,7 +293,7 @@ async function draw_aligned(params) {
                     div.style.display = "none";
             }
 
-            draw(div, items, {x: 0, y: panel.params.y}, view.zoom);
+            draw(div, items, {x: view.aligned.x, y: panel.params.y}, view.zoom);
 
             align_drawing = false;
 

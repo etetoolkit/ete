@@ -75,14 +75,29 @@ body {
 
 .aligned {
     display: none;
-    cursor: ew-resize;
     position: absolute;
     right: 0px;
     width: 20%;
     height: 100%;
     background: white;
-    overflow: hidden;
+    /*overflow: hidden;*/
     touch-action: none;
+    margin-left: 15px;
+}
+
+.div_aligned_grabber {
+    position: absolute;
+    top: 0;
+    left: -15px;
+    width: 15px;
+    height: 100%;
+    cursor: ew-resize;
+    background-color: lightgray;
+    opacity: 0;
+}
+
+.div_aligned_grabber:hover {
+    opacity: 0.5;
 }
 
 .div_pixi {

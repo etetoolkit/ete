@@ -187,10 +187,10 @@ function add_folder_view(menu) {
         format: v => v.toFixed(1),
         min: 1, max: div_tree.offsetWidth / view.tree_size.width }).on("change", update);
 
-    folder_view.addInput(view.zoom, "align_factor", {
+    folder_view.addInput(view.zoom, "a", {
         label: "Adjust zoom a", 
-        format: v => v.toFixed(3),
-        min: 0.001, max: 2, step: 0.001 }).on("change", update);
+        format: v => v.toFixed(1),
+        min: 1, max: div_tree.offsetWidth / view.tree_size.width }).on("change", update);
 
     //const folder_zoom = folder_view.addFolder({ title: "Zoom" });
 
@@ -205,9 +205,9 @@ function add_folder_view(menu) {
 
     const folder_aligned = folder_view.addFolder({ title: "Aligned panel",
                                                    expanded: false });
-    folder_aligned.addInput(view, "align_bar", { label: "position", 
+    folder_aligned.addInput(view.aligned, "pos", { label: "position", 
                                                  min: 0, max: 100 })
-        .on("change", () => div_aligned.style.width = `${100 - view.align_bar}%`);
+        .on("change", () => div_aligned.style.width = `${100 - view.aligned.pos}%`);
 }
 
 
