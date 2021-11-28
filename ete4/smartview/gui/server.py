@@ -1117,7 +1117,7 @@ def initialize(tree=None, tree_style=None, layouts=[], memory_only=False):
         timer = time(),
         searches = {},
         selected = {},
-        active = draw.Active(set(), defaultdict(lambda: 0)),
+        active = drawer_module.Active(set(), defaultdict(lambda: 0)),
     ))
 
     if tree:
