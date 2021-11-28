@@ -94,8 +94,8 @@ Visit http://etetoolkit.org for more info.
 extensions = [
         Extension('ete4.coretype.tree', ['ete4/coretype/tree.pyx']), 
         Extension('ete4.parser.newick', ['ete4/parser/newick.pyx']), 
-        Extension('ete4.smartview.ete.gardening', ['ete4/smartview/ete/gardening.pyx']), 
-        Extension('ete4.smartview.ete.face_positions', ['ete4/smartview/ete/face_positions.pyx']), 
+        Extension('ete4.smartview.renderer.gardening', ['ete4/smartview/renderer/gardening.pyx']), 
+        Extension('ete4.smartview.renderer.face_positions', ['ete4/smartview/renderer/face_positions.pyx']), 
             ],
 
 try:
@@ -108,7 +108,7 @@ try:
 
         entry_points = {"console_scripts":
                         ["ete4 = %s.tools.ete:main" %MOD_NAME]},
-        requires = ["six"],
+        requires = [],
 
         # Project uses reStructuredText, so ensure that the docutils get
         # installed or upgraded on the target machine

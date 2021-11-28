@@ -39,13 +39,9 @@
 
 from collections import namedtuple, OrderedDict
 
-
-
 FACE_POSITIONS = ["branch_right", "branch_top", "branch_bottom", "aligned"]
 
-
 _FaceAreas = namedtuple('_FaceAreas', FACE_POSITIONS)
-
 
 def get_FaceAreas(branch_top=None, branch_bottom=None,
         branch_right=None, aligned=None):

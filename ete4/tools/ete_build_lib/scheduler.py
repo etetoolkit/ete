@@ -44,14 +44,11 @@ import os
 import signal
 import subprocess
 from multiprocessing import Process, Queue
-from six.moves.queue import Empty as QueueEmpty
+from queue import Empty as QueueEmpty
 from time import sleep, ctime, time
 from collections import defaultdict, deque
 import re
 import logging
-import six
-from six.moves import map
-from six.moves import range
 log = logging.getLogger("main")
 
 from . import db
@@ -211,7 +208,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
             set_logindent(0)
             log.log(28, "@@13: Updating tasks status:@@1: (%s)" % (ctime()))
             info_lines = []
-            for tid, tlist in six.iteritems(thread2tasks):
+            for tid, tlist in thread2tasks.items():
                 threadname = GLOBALS[tid]["_name"]
                 sizelist = ["%s" %getattr(_ts, "size", "?") for _ts in tlist]
                 info = "Thread @@13:%s@@1:: pending tasks: @@8:%s@@1: of sizes: %s" %(
@@ -263,7 +260,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
                                 if j.jobid not in BUG:
                                     if not os.path.exists(j.jobdir):
                                         os.makedirs(j.jobdir)
-                                    for ifile, outpath in six.iteritems(j.input_files):
+                                    for ifile, outpath in j.input_files.items():
                                         try:
                                             _tid, _did = ifile.split(".")
                                             _did = int(_did)
@@ -370,7 +367,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
 
             # Dump / show ended threads
             error_lines = []
-            for configid, etasks in six.iteritems(thread_errors):
+            for configid, etasks in thread_errors.items():
                 error_lines.append("Thread @@10:%s@@1: contains errors:" %\
                             (GLOBALS[configid]["_name"]))
                 for error in etasks:
@@ -506,7 +503,7 @@ def background_job_launcher(job_queue, run_detached, schedule_time, max_cores):
             launched = 0
             done_jobs = set()
             cores_used = 0
-            for jid, (cores, cmd, st_file, pid) in six.iteritems(running_jobs):
+            for jid, (cores, cmd, st_file, pid) in running_jobs.items():
                 process_done = pid.poll() if pid else None
                 try:
                     st = open(st_file).read(1)
@@ -580,7 +577,7 @@ def background_job_launcher(job_queue, run_detached, schedule_time, max_cores):
     except:
         if len(running_jobs):
             print(' Killing %s running jobs...' %len(running_jobs), file=sys.stderr)
-            for jid, (cores, cmd, st_file, pid) in six.iteritems(running_jobs):
+            for jid, (cores, cmd, st_file, pid) in running_jobs.items():
                 if pid:
                     #print >>sys.stderr, ".",
                     #sys.stderr.flush()
@@ -617,7 +614,7 @@ def show_task_info(task):
     log.log(28, "(%s) %s" % (color_status(task.status), task))
     logindent(2)
     st_info = ', '.join(["%d(%s)" % (v, k) for k, v in
-                         six.iteritems(task.job_status)])
+                         task.job_status.items()])
     log.log(26, "%d jobs: %s" %(len(task.jobs), st_info))
     tdir = task.taskid
     tdir = tdir.lstrip("/")

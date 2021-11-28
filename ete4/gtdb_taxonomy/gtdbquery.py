@@ -45,12 +45,8 @@ from __future__ import absolute_import
 from __future__ import print_function
 import sys
 import os
-try:
-    import cPickle as pickle
-except ImportError:
-    # python 3 support
-    import pickle
 
+import pickle
 from collections import defaultdict, Counter
 
 from hashlib import md5
@@ -58,9 +54,10 @@ from hashlib import md5
 import sqlite3
 import math
 import tarfile
-import six
-from six.moves import map
 import warnings
+
+#from ..  import PhyloTree, Tree
+
 
 #import gtdb_to_taxdump
 
@@ -281,7 +278,7 @@ class GTDBTaxa(object):
         # if len(all_ids) != len(id2name) and try_synonyms:
         #     not_found_taxids = all_ids - set(id2name.keys())
         #     taxids, old2new = self._translate_merged(not_found_taxids)
-        #     new2old = {v: k for k,v in six.iteritems(old2new)}
+        #     new2old = {v: k for k,v in old2new.items()}
 
         #     if old2new:
         #         query = ','.join(['"%s"' %v for v in new2old])
@@ -306,7 +303,7 @@ class GTDBTaxa(object):
 
         names = set(name2origname.keys())
 
-        query = ','.join(['"%s"' %n for n in six.iterkeys(name2origname)])
+        query = ','.join(['"%s"' %n for n in name2origname.keys()])
         cmd = 'select spname, taxid from species where spname IN (%s)' %query
         result = self.db.execute('select spname, taxid from species where spname IN (%s)' %query)
         for sp, taxid in result.fetchall():
@@ -380,10 +377,10 @@ class GTDBTaxa(object):
                 return [n.name for n in tree]
 
         elif intermediate_nodes:
-            return self.translate_to_names([tid for tid, count in six.iteritems(descendants)])
+            return self.translate_to_names([tid for tid, count in descendants.items()])
         else:
-            self.translate_to_names([tid for tid, count in six.iteritems(descendants) if count == 1])
-            return self.translate_to_names([tid for tid, count in six.iteritems(descendants) if count == 1])
+            self.translate_to_names([tid for tid, count in descendants.items() if count == 1])
+            return self.translate_to_names([tid for tid, count in descendants.items() if count == 1])
 
     def get_topology(self, taxnames, intermediate_nodes=False, rank_limit=None, collapse_subspecies=False, annotate=True):
         """Given a list of taxid numbers, return the minimal pruned GTDB taxonomy tree
@@ -400,7 +397,6 @@ class GTDBTaxa(object):
             species rank will be collapsed into the species upper
             node.
         """
-        from ete4 import PhyloTree
         #taxids, merged_conversion = self._translate_merged(taxids)
         tax2id = self.get_name_translator(taxnames) #{'f__Korarchaeaceae': [2174], 'o__Peptococcales': [205487], 'p__Huberarchaeota': [610]}
         taxids = [i[0] for i in tax2id.values()]
@@ -467,7 +463,7 @@ class GTDBTaxa(object):
                     track.append(node)
                 sp2track[sp] = track
             # generate parent child relationships
-            for sp, track in six.iteritems(sp2track):
+            for sp, track in sp2track.items():
                 parent = None
                 for elem in track:
                     if parent and elem not in parent.children:
@@ -597,7 +593,7 @@ class GTDBTaxa(object):
                 occurrence[taxid] += 1
                 pos[taxid].add(i)
 
-        common = [taxid for taxid, ocu in six.iteritems(occurrence) if ocu == len(vectors)]
+        common = [taxid for taxid, ocu in occurrence.items() if ocu == len(vectors)]
         if not common:
             return [""]
         else:
@@ -656,7 +652,7 @@ class GTDBTaxa(object):
 
         broken_branches = defaultdict(set)
         broken_clades = set()
-        for tax, leaves in six.iteritems(tax2node):
+        for tax, leaves in tax2node.items():
             if len(leaves) > 1:
                 common = t.get_common_ancestor(leaves)
             else:
@@ -689,7 +685,6 @@ class GTDBTaxa(object):
 
 
 def load_gtdb_tree_from_dump(tar):
-    from ete4 import Tree
     # Download: gtdbdump/gtdbr202dump.tar.z
     parent2child = {}
     name2node = {}
@@ -869,7 +864,6 @@ if __name__ == "__main__":
     tree = gtdb.get_topology(["p__Huberarchaeota", "o__Peptococcales", "f__Korarchaeaceae", "s__Korarchaeum"], intermediate_nodes=True, collapse_subspecies=True, annotate=True)
     print(tree.get_ascii(attributes=["taxid",  "sci_name", "rank"]))
     
-    from ete4 import PhyloTree
     tree = PhyloTree('((c__Thorarchaeia, c__Lokiarchaeia_A), s__Caballeronia udeis);', sp_naming_function=lambda name: name)
     tax2name, tax2track, tax2rank = gtdb.annotate_tree(tree, taxid_attr="name")
     print(tree.get_ascii(attributes=["taxid","name", "sci_name", "rank"]))

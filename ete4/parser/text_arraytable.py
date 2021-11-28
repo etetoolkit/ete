@@ -41,10 +41,7 @@ from __future__ import print_function
 
 import re
 from sys import stderr
-
 import numpy
-
-from six.moves import map
 
 __all__ = ['read_arraytable', 'write_arraytable']
 

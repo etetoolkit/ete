@@ -40,7 +40,6 @@ from __future__ import absolute_import
 
 import numpy
 from math import sqrt
-from six.moves import range
 
 def safe_mean(values):
     """ Returns mean value discarding non finite values """

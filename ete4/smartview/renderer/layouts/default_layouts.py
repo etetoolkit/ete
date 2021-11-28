@@ -1,8 +1,8 @@
-from ete4.smartview import Face, AttrFace, TextFace,\
+from ..faces import Face, AttrFace, TextFace,\
         CircleFace, RectFace,\
         OutlineFace, AlignLinkFace
 
-from ete4.smartview.ete.draw import summary
+from ..draw_helpers import summary
 
 
 __all__ = [ "get_layout_leaf_name", "get_layout_nleaves",

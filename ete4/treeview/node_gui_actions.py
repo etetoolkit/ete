@@ -38,7 +38,6 @@
 # #END_LICENSE#############################################################
 from __future__ import absolute_import
 from functools import partial
-from six.moves import range
 
 from .qt import Qt, QDialog, QMenu, QCursor, QInputDialog
 from .svg_colors import random_color

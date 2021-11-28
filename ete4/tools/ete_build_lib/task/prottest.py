@@ -41,7 +41,6 @@ import os
 import re
 import logging
 import shutil
-from six.moves import map
 log = logging.getLogger("main")
 
 from ..master_task import ModelTesterTask

@@ -56,13 +56,14 @@ class Test_ncbiquery(unittest.TestCase):
     self.assertEqual(set(name2id['Bacteria']), set([2]))
 
     out = ncbi.get_descendant_taxa("9605", intermediate_nodes=True)
+    print(out)
     #Out[9]: [9606, 63221, 741158, 2665952, 2665953, 1425170]
     # New Taxonomies of Homo in NCBI, {2665952: 'environmental samples', 2665953: 'Homo sapiens environmental sample'}
-    self.assertEqual(set(out), set([9606, 63221, 741158, 2665952, 2665953, 1425170]))
+    self.assertEqual(set(out), set([9606, 63221, 741158, 1425170, 2665952, 2665953, 2813598, 2813599]))
     
     out = ncbi.get_descendant_taxa("9605", intermediate_nodes=False)
     #Out[10]: [63221, 741158, 2665953, 1425170]
-    self.assertEqual(set(out), set([63221, 741158, 2665953, 1425170]))
+    self.assertEqual(set(out), set([63221, 741158, 2665953, 1425170, 2813599]))
     
     out = ncbi.get_descendant_taxa("9596", intermediate_nodes=False, rank_limit="species")
     #Out[11]: [9597, 9598]

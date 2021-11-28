@@ -1,5 +1,4 @@
-from ete4.treeview.main import NodeStyle
-from ete4.smartview.ete.faces import RectFace, TextFace
+from ..faces import RectFace, TextFace
 from collections import OrderedDict
 
 __all__ = [ "get_layout_sciname", "get_layout_gnames", "get_layout_ogs_egg5",

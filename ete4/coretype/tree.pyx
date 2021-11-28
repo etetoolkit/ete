@@ -45,18 +45,21 @@ import itertools
 from collections import deque, namedtuple
 from hashlib import md5
 from functools import cmp_to_key
-
-import six
-from six.moves import (cPickle, map, range, zip)
+import pickle
 
 from .. import utils
+from ..parser.newick import read_newick, write_newick
 
 # the following imports are necessary to set fixed styles and faces
 # try:
-from ..treeview.main import NodeStyle
-from ..treeview.faces import Face
-from ete4.smartview import Face as smartFace
-from ete4.smartview.ete.face_positions import FACE_POSITIONS, _FaceAreas, get_FaceAreas
+try:
+    from ..treeview.main import NodeStyle
+    from ..treeview.faces import Face
+except ImportError:
+    pass # Treeview is now an optional dependency
+
+from ..smartview import Face as smartFace
+from ..smartview.renderer.face_positions import _FaceAreas, get_FaceAreas
 # except ImportError:
     # TREEVIEW = False
 # else:
@@ -86,6 +89,7 @@ cdef class TreeNode(object):
     cdef public object _up
     cdef public object _img_style
     cdef public object _faces
+    cdef public object _smfaces
     cdef public object _collapsed_faces
     cdef public int _initialized
     cdef public int _collapsed
@@ -94,7 +98,7 @@ cdef class TreeNode(object):
 
     cdef public (double, double) size
     cdef public double d1
-    
+
     """
     TreeNode (Tree) class is used to store a tree structure. A tree
     consists of a collection of TreeNode instances connected in a
@@ -135,13 +139,19 @@ cdef class TreeNode(object):
         t3 = Tree('/home/user/myNewickFile.txt')
     """
 
+    # def __getattr__(self, item):
+    #     try:
+    #         return super(TreeNode, self).__getattr__(item)
+    #     except AttributeError:
+    #         return self._properties[item]
+
     def _get_name(self):
-        return self._properties.get('name')
+        return self._properties.get('name', DEFAULT_NAME)
     def _set_name(self, value):
         self._properties['name'] = value
 
     def _get_dist(self):
-        return self._properties.get('dist')
+        return self._properties.get('dist', DEFAULT_DIST)
     def _set_dist(self, value):
         try:
             self._properties['dist'] = float(value)
@@ -149,7 +159,7 @@ cdef class TreeNode(object):
             raise TreeError('node dist must be a float number')
 
     def _get_support(self):
-        return self._properties.get('support')
+        return self._properties.get('support', DEFAULT_SUPPORT)
     def _set_support(self, value):
         try:
             self._properties['support'] = float(value)
@@ -227,13 +237,13 @@ cdef class TreeNode(object):
 
     def _set_face_areas(self, value):
         if isinstance(value, _FaceAreas):
-            self._faces = value
+            self._smfaces = value
         else:
             raise ValueError("[%s] is not a valid FaceAreas instance" %type(value))
     def _get_face_areas(self):
-        if not hasattr(self, "_faces") or self._faces is None:
-            self._faces = get_FaceAreas()
-        return self._faces
+        if not hasattr(self, "_smfaces") or self._smfaces is None:
+            self._smfaces = get_FaceAreas()
+        return self._smfaces
 
     def _set__collapsed_face_areas(self, value):
         if isinstance(value, _FaceAreas):
@@ -260,14 +270,13 @@ cdef class TreeNode(object):
         # for performance reasons (pickling)
         self._initialized = 0 # Layout fns have not been run on node
 
-        self.size = (0, 0) 
+        self.size = (0, 0)
         self.d1 = 0.0
 
         # Initialize tree
         if newick is not None:
-            from ete4.parser.newick import read_newick
-            read_newick(newick, self)
-        
+            read_newick(newick, self, format=format, quoted_names=quoted_node_names)
+
         self.name = name if name is not None else\
                 self.name if self.name is not None else DEFAULT_NAME
         self.dist = dist if dist is not None else\
@@ -338,7 +347,7 @@ cdef class TreeNode(object):
 
     def add_props(self, **props):
         """Add or update several properties."""
-        for name, value in six.iteritems(props):
+        for name, value in props.items():
             self.add_prop(name, value)
 
     def del_prop(self, name):
@@ -363,7 +372,7 @@ cdef class TreeNode(object):
         """
         Permanently deletes a node's feature.
         """
-        print("\nWARNING! del_prop is DEPRECATED use del_prop instead\n")
+        print("\nWARNING! del_feature is DEPRECATED use del_prop instead\n")
         self.del_prop(pr_name)
     # DEPRECATED #
 
@@ -634,7 +643,7 @@ cdef class TreeNode(object):
         # their path to the common ancestor.
         n2count = {}
         n2depth = {}
-        for seed, path in six.iteritems(node2path):
+        for seed, path in node2path.items():
             for visited_node in path:
                 if visited_node not in n2depth:
                     depth = visited_node.get_distance(start, topology_only=True)
@@ -645,13 +654,13 @@ cdef class TreeNode(object):
         # if several internal nodes are in the path of exactly the same kept
         # nodes, only one (the deepest) should be maintain.
         visitors2nodes = {}
-        for node, visitors in six.iteritems(n2count):
+        for node, visitors in n2count.items():
             # keep nodes connection at least two other nodes
             if len(visitors)>1:
                 visitor_key = frozenset(visitors)
                 visitors2nodes.setdefault(visitor_key, set()).add(node)
 
-        for visitors, nodes in six.iteritems(visitors2nodes):
+        for visitors, nodes in visitors2nodes.items():
             if not (to_keep & nodes):
                 sorted_nodes = sorted(nodes, key=cmp_to_key(cmp_nodes))
                 to_keep.add(sorted_nodes[0])
@@ -901,7 +910,7 @@ cdef class TreeNode(object):
         print("Most distant node:\t%s" %max_node.name)
         print("Max. distance:\t%f" %max_dist)
 
-    def write(self, properties=[], outfile=None, format=0, is_leaf_fn=None,
+    def write(self, properties=None, outfile=None, format=0, is_leaf_fn=None,
               format_root_node=False, dist_formatter=None, support_formatter=None,
               name_formatter=None, quoted_node_names=False):
         """
@@ -909,18 +918,17 @@ cdef class TreeNode(object):
         arguments control the way in which extra data is shown for
         every node:
 
-        :argument properties: a list of feature names to be exported
-          using the Extended Newick Format (i.e. properties=["name",
-          "dist"]). Use an empty list to export all available properties
-          in each node (properties=[]), assign it None to mute all the 
-          properties (properties=None)
+        :argument features: a list of feature names to be exported
+          using the Extended Newick Format (i.e. features=["name",
+          "dist"]). Use an empty list to export all available features
+          in each node (features=[])
 
         :argument outfile: writes the output to a given file
 
         :argument format: defines the newick standard used to encode the
           tree. See tutorial for details.
 
-        :argument False format_root_node: If True, it allows properties
+        :argument False format_root_node: If True, it allows features
           and branch information from root node to be exported as a
           part of the newick text string. For newick compatibility
           reasons, this is False by default.
@@ -932,18 +940,17 @@ cdef class TreeNode(object):
 
         ::
 
-             t.write(properties=["species","name"], format=1, outfile="mytree.nwx")
+             t.write(features=["species","name"], format=1)
 
         """
 
-        from ete4.parser.newick import set_formatters, write_newick
-        # Set dist, support and name formatters
-        set_formatters(dist_formatter=dist_formatter,
-                       support_formatter=support_formatter,
-                       name_formatter=name_formatter)
-
-        nw = write_newick(self, format=format, properties=properties,
-                quoted_names=quoted_node_names)
+        nw = write_newick(self, properties=properties, format=format,
+                          is_leaf_fn=is_leaf_fn,
+                          format_root_node=format_root_node,
+                          dist_formatter=dist_formatter,
+                          support_formatter=support_formatter,
+                          name_formatter=name_formatter,
+                          quoted_names=quoted_node_names)
 
         if outfile is not None:
             with open(outfile, "w") as OUT:
@@ -1016,7 +1023,7 @@ cdef class TreeNode(object):
         common = None
         for n in reference:
             broken = False
-            for node, path in six.iteritems(n2path):
+            for node, path in n2path.items():
                 if node is not ref_node and n not in path:
                     broken = True
                     break
@@ -1042,7 +1049,7 @@ cdef class TreeNode(object):
 
         for n in self.traverse():
             conditions_passed = 0
-            for key, value in six.iteritems(conditions):
+            for key, value in conditions.items():
                 if (hasattr(n, key) and getattr(n, key) == value)\
                   or n.props.get(key) == value:
                     conditions_passed +=1
@@ -1340,7 +1347,8 @@ cdef class TreeNode(object):
                 tname = ''.join(next(avail_names))
             n.name = tname
 
-    def set_outgroup(self, outgroup, branch_properties=None):
+
+    def set_outgroup_jordi(self, outgroup, branch_properties=None):
         """
         Returns a descendant node as the outgroup of a tree.  This function
         can be used to root a tree or even an internal node.
@@ -1349,8 +1357,97 @@ cdef class TreeNode(object):
           structure that will be used as a basal node.
         :branch_properties: list of branch properties (other than "support").
         """
-        from ete4.smartview.ete.gardening import root_at
+        from ..smartview.ete.gardening import root_at
         return root_at(outgroup, branch_properties)
+
+
+
+    def set_outgroup(self, outgroup):
+        """
+        Sets a descendant node as the outgroup of a tree.  This function
+        can be used to root a tree or even an internal node.
+
+        :argument outgroup: a node instance within the same tree
+          structure that will be used as a basal node.
+
+        """
+        from ..smartview.renderer.gardening import update_all_sizes
+        outgroup = _translate_nodes(self, outgroup)
+
+        if self == outgroup:
+            raise TreeError("Cannot set the tree root as outgroup")
+
+        parent_outgroup = outgroup.up
+
+        # Detects (sub)tree root
+        n = outgroup
+        while n.up is not self:
+            n = n.up
+
+        # If outgroup is a child from root, but with more than one
+        # sister nodes, creates a new node to group them
+        self.children.remove(n)
+        if len(self.children) != 1:
+            down_branch_connector = self.__class__()
+            down_branch_connector.dist = 0.0
+            down_branch_connector.support = n.support
+            for ch in self.get_children():
+                down_branch_connector.children.append(ch)
+                ch.up = down_branch_connector
+                self.children.remove(ch)
+        else:
+            down_branch_connector = self.children[0]
+
+        # Connects down branch to myself or to outgroup
+        quien_va_ser_padre = parent_outgroup
+        if quien_va_ser_padre is not self:
+            # Parent-child swapping
+            quien_va_ser_hijo = quien_va_ser_padre.up
+            quien_fue_padre = None
+            buffered_dist = quien_va_ser_padre.dist
+            buffered_support = quien_va_ser_padre.support
+
+            while quien_va_ser_hijo is not self:
+                quien_va_ser_padre.children.append(quien_va_ser_hijo)
+                quien_va_ser_hijo.children.remove(quien_va_ser_padre)
+
+                buffered_dist2 = quien_va_ser_hijo.dist
+                buffered_support2 = quien_va_ser_hijo.support
+                quien_va_ser_hijo.dist = buffered_dist
+                quien_va_ser_hijo.support = buffered_support
+                buffered_dist = buffered_dist2
+                buffered_support = buffered_support2
+
+                quien_va_ser_padre.up = quien_fue_padre
+                quien_fue_padre = quien_va_ser_padre
+
+                quien_va_ser_padre = quien_va_ser_hijo
+                quien_va_ser_hijo = quien_va_ser_padre.up
+
+            quien_va_ser_padre.children.append(down_branch_connector)
+            down_branch_connector.up = quien_va_ser_padre
+            quien_va_ser_padre.up = quien_fue_padre
+
+            down_branch_connector.dist += buffered_dist
+            outgroup2 = parent_outgroup
+            parent_outgroup.children.remove(outgroup)
+            outgroup2.dist = 0
+
+        else:
+            outgroup2 = down_branch_connector
+
+        outgroup.up = self
+        outgroup2.up = self
+        # outgroup is always the first children. Some function my
+        # trust on this fact, so do no change this.
+        self.children = [outgroup,outgroup2]
+        middist = (outgroup2.dist + outgroup.dist)/2
+        outgroup.dist = middist
+        outgroup2.dist = middist
+        outgroup2.support = outgroup.support
+
+        update_all_sizes(self)
+
 
     def unroot(self, mode='legacy'):
         """
@@ -1434,14 +1531,14 @@ cdef class TreeNode(object):
         :layouts: list of layout functions that will be available from the
         front end. It is important to name functions (__name__), as they will
         be adressed by such in the explorer.
-        By default it includes: outline, leaf_name, branch_length 
+        By default it includes: outline, leaf_name, branch_length
         and branch_support.
 
         :port: port used to run the local server (127.0.0.1). Default 5000
         """
-        from ete4.smartview.gui.server import run_smartview
+        from ..smartview.gui.server import run_smartview
 
-        run_smartview(tree=self, tree_name=tree_name, 
+        run_smartview(tree=self, tree_name=tree_name,
                 tree_style=tree_style, layouts=layouts, port=port)
 
     def copy(self, method="cpickle"):
@@ -1476,9 +1573,9 @@ cdef class TreeNode(object):
         """
         method = method.lower()
         if method=="newick":
-            new_node = self.__class__(self.write(properties=["name"], format=1)) #, format_root_node=True))
+            new_node = self.__class__(self.write(properties=None, format=1, format_root_node=True), format=1)
         elif method=="newick-extended":
-            new_node = self.__class__(self.write(properties=[], format=1))
+            new_node = self.__class__(self.write(properties=[], format=1), format=1)
         elif method == "deepcopy":
             parent = self.up
             self.up = None
@@ -1487,7 +1584,7 @@ cdef class TreeNode(object):
         elif method == "cpickle":
             parent = self.up
             self.up = None
-            new_node = cPickle.loads(cPickle.dumps(self, 2))
+            new_node = pickle.loads(pickle.dumps(self, 2))
             self.up = parent
         else:
             raise TreeError("Invalid copy method")
@@ -1613,6 +1710,34 @@ cdef class TreeNode(object):
 
         return size
 
+    def to_str(self, attributes=None, are_last=None):
+        "Return a string with a visual representation of the tree."
+        are_last = are_last or []
+
+        attrs = attributes or ['name']
+        desc = ', '.join(str(self.props.get(attr) or '<empty>') for attr in attrs)
+        line = self._get_branches_repr(are_last) + desc
+
+        return '\n'.join([line] +
+            [node.to_str(attrs, are_last + [False]) for node in self.children[:-1]] +
+            [node.to_str(attrs, are_last + [True])  for node in self.children[-1:]])
+
+    def _get_branches_repr(self, are_last):
+        """
+        Return a text line representing open branches according to are_last.
+
+        are_last is a list of bools. It says per level if we are the last node.
+
+        Example (with more spaces for clarity):
+        [True , False, True , True , True ] ->
+        '│             │      │      └─   '
+        """
+        if len(are_last) == 0:
+            return ''
+
+        prefix = ''.join('  ' if is_last else '│ ' for is_last in are_last[:-1])
+        return prefix + ('└─' if are_last[-1] else '├─')
+
     def sort_descendants(self, attr="name"):
         """
         .. versionadded: 2.1
@@ -1649,15 +1774,21 @@ cdef class TreeNode(object):
         if _store is None:
             _store = {}
 
+        def get_prop(_n, propname):
+            try:
+                v = getattr(_n, propname)
+            except AttributeError:
+                v = _n.props.get(store_attr)
+            return v
+
         def get_value(_n):
             if store_attr is None:
                 _val = [_n]
             else:
-                if not isinstance(store_attr, six.string_types):
-                    _val = [tuple(_n.props.get(attr) for attr in store_attr)]
-
+                if not isinstance(store_attr, str):
+                    _val = [tuple(get_prop(_n, attr) for attr in store_attr)]
                 else:
-                    _val = [_n.props.get(store_attr)]
+                    _val = [get_prop(_n, store_attr)]
 
             return _val
 
@@ -1777,18 +1908,18 @@ cdef class TreeNode(object):
                 edges1 = set([
                         tuple(sorted([tuple(sorted([getattr(n, attr_t1) for n in content if hasattr(n, attr_t1) and getattr(n, attr_t1) in common_attrs])),
                                       tuple(sorted([getattr(n, attr_t1) for n in t1_leaves-content if hasattr(n, attr_t1) and getattr(n, attr_t1) in common_attrs]))]))
-                        for content in six.itervalues(t1_content)])
+                        for content in t1_content.values()])
                 edges1.discard(((),()))
             else:
                 edges1 = set([
                         tuple(sorted([getattr(n, attr_t1) for n in content if hasattr(n, attr_t1) and getattr(n, attr_t1) in common_attrs]))
-                        for content in six.itervalues(t1_content)])
+                        for content in t1_content.values()])
                 edges1.discard(())
 
             if min_support_t1:
                 support_t1 = dict([
                         (tuple(sorted([getattr(n, attr_t1) for n in content if hasattr(n, attr_t1) and getattr(n, attr_t1) in common_attrs])), branch.support)
-                        for branch, content in six.iteritems(t1_content)])
+                        for branch, content in t1_content.items()])
 
             for t2 in target_trees:
                 t2_content = t2.get_cached_content()
@@ -1798,18 +1929,18 @@ cdef class TreeNode(object):
                             tuple(sorted([
                                         tuple(sorted([getattr(n, attr_t2) for n in content if hasattr(n, attr_t2) and getattr(n, attr_t2) in common_attrs])),
                                         tuple(sorted([getattr(n, attr_t2) for n in t2_leaves-content if hasattr(n, attr_t2) and getattr(n, attr_t2) in common_attrs]))]))
-                            for content in six.itervalues(t2_content)])
+                            for content in t2_content.values()])
                     edges2.discard(((),()))
                 else:
                     edges2 = set([
                             tuple(sorted([getattr(n, attr_t2) for n in content if hasattr(n, attr_t2) and getattr(n, attr_t2) in common_attrs]))
-                            for content in six.itervalues(t2_content)])
+                            for content in t2_content.values()])
                     edges2.discard(())
 
                 if min_support_t2:
                     support_t2 = dict([
                         (tuple(sorted(([getattr(n, attr_t2) for n in content if hasattr(n, attr_t2) and getattr(n, attr_t2) in common_attrs]))), branch.support)
-                        for branch, content in six.iteritems(t2_content)])
+                        for branch, content in t2_content.items()])
 
 
                 # if a support value is passed as a constraint, discard lowly supported branches from the analysis
@@ -2049,7 +2180,7 @@ cdef class TreeNode(object):
         if not cached_content:
             cached_content = self.get_cached_content()
         all_leaves = cached_content[self]
-        for n, side1 in six.iteritems(cached_content):
+        for n, side1 in cached_content.items():
             yield (side1, all_leaves-side1)
 
     def get_edges(self, cached_content = None):
@@ -2499,7 +2630,19 @@ cdef class TreeNode(object):
                     output[i].append(leaf_distances[n][m])
         return output, allleaves
 
-    def add_face(self, face, column, position="branch-right", collapsed_only=False):
+    def add_face(self, face, column, position=None, collapsed_only=False):
+        if isinstance(face, Face):
+            if position is None:
+                position = 'branch-right'
+            self.add_face_treeview(face, column, position)
+        elif isinstance(face, smartFace):
+            if position is None:
+                position = 'branch_right'
+            self.add_face_smartview(face, column, position, collapsed_only)
+        else:
+            raise ValueError("Invalid face format")
+
+    def add_face_treeview(self, face, column, position="branch-right"):
         """
         .. versionadded: 2.1
 
@@ -2514,10 +2657,39 @@ cdef class TreeNode(object):
           "aligned"
         """
 
+        from ..treeview.main import  _FaceAreas, FaceContainer, FACE_POSITIONS
+
+        if self._faces is None:
+            self._faces = _FaceAreas()
+
         if position not in FACE_POSITIONS:
             raise ValueError("face position not in %s" %FACE_POSITIONS)
 
-        if isinstance(face, Face) or isinstance(face, smartFace):
+        if isinstance(face, Face):
+            getattr(self._faces, position).add_face(face, column=column)
+        else:
+            raise ValueError("not a Face instance")
+
+    def add_face_smartview(self, face, column, position="branch-right", collapsed_only=False):
+        """
+        .. versionadded: 2.1
+
+        Add a fixed face to the node.  This type of faces will be
+        always attached to nodes, independently of the layout
+        function.
+
+        :argument face: a Face or inherited instance
+        :argument column: An integer number starting from 0
+        :argument "branch-right" position: Posible values are:
+          "branch-right", "branch-top", "branch-bottom", "float",
+          "aligned"
+        """
+        from ..smartview.renderer.face_positions import FACE_POSITIONS
+
+        if position not in FACE_POSITIONS:
+            raise ValueError("face position not in %s" %FACE_POSITIONS)
+
+        if isinstance(face, smartFace):
             if collapsed_only:
                 getattr(self.collapsed_faces, position).add_face(face, column=column)
             else:
@@ -2637,7 +2809,7 @@ def _translate_nodes(root, *nodes):
                     name2node[n.name] = n
 
     if None in list(name2node.values()):
-        notfound = [key for key, value in six.iteritems(name2node) if value is None]
+        notfound = [key for key, value in name2node.items() if value is None]
         raise ValueError("Node names not found: "+str(notfound))
 
     valid_nodes = []

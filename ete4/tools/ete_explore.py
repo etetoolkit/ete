@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -37,36 +36,44 @@ from __future__ import absolute_import
 #
 #
 # #END_LICENSE#############################################################
-from .. import (PhyloTree, PhyloNode,
-                  ClusterTree, ClusterNode, EvolTree, EvolNode)
-from . import layouts
+from __future__ import absolute_import
+from __future__ import print_function
 
-def apply_template(tree_style, template):
-    for k, v in template.items():
-        setattr(tree_style, k, v)
+import random
+import re
+import colorsys
+from collections import defaultdict
 
-phylogeny = {
-    "layout_fn": layouts.phylogeny,
-     "show_leaf_name":False,
-     "draw_guiding_lines":False
-    }
+from .common import log, POSNAMES, node_matcher, src_tree_iterator
+# from .. import (Tree, PhyloTree, TextFace, RectFace, faces, TreeStyle, CircleFace, AttrFace,
+#                 add_face_to_node, random_color)
+from ete4 import Tree, NodeStyle, PhyloTree
+from ete4.smartview import TreeStyle
+from six.moves import map
 
-evol = {
-    "layout_fn": layouts.evol_layout,
-     "show_leaf_name":True,
-     "draw_guiding_lines":False
-    }
+DESC = ""
+FACES = []
 
-clustering = {
-    "layout_fn": layouts.large,
-    "show_leaf_name":False
-    }
+def populate_args(explore_args_p):
+    explore_args_p.add_argument("--face", action="append",
+                             help="adds a face to the selected nodes. In example --face 'value:@dist, pos:b-top, color:red, size:10, if:@dist>0.9' ")
 
-_DEFAULT_STYLE={
-    PhyloTree: phylogeny,
-    PhyloNode: phylogeny,
-    EvolTree: evol,
-    EvolNode: evol,
-    ClusterTree: clustering,
-    ClusterNode: clustering,
-    }
+    return
+
+def run(args):
+
+    global FACES
+
+    if args.face:
+        FACES = parse_faces(args.face)
+    else:
+        FACES = []
+    
+    # VISUALIZATION
+    # Basic tree style
+    ts = TreeStyle()
+    ts.show_leaf_name = True
+
+    for tindex, tfile in enumerate(src_tree_iterator(args)):
+        t = PhyloTree(tfile, format=args.src_newick_format)
+        t.explore(tree_name="example", tree_style=ts)

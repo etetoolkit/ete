@@ -39,13 +39,8 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from six import StringIO
-import six.moves.cPickle
 from collections import defaultdict
 import logging
-import os
-import six
-from six.moves import map
 from functools import cmp_to_key
 log = logging.getLogger("main")
 
@@ -129,7 +124,7 @@ class CogSelector(CogSelectorTask):
                 sp2seqs[spcode].append(seqcode)
                 
             one2one_cog = set()
-            for sp, seqs in six.iteritems(sp2seqs):
+            for sp, seqs in sp2seqs.items():
                 #if len(seqs) != 1:
                 #    print sp, len(seqs)
                 if sp in all_species and len(seqs) == 1:

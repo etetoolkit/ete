@@ -13,37 +13,30 @@ build:
 requirements:
   build:
     - python
-    - six
+    - cython
+    - flask
+    - flask-cors
+    - flask-restful 
+    - flask-compress 
     - lxml
     - numpy
     - scipy
     - pyqt
     - qt
     
-
   run:
     - python
-    - six
+    - cython
+    - flask
+    - flask-cors
+    - flask-restful 
+    - flask-compress 
     - lxml
     - numpy
     - scipy
     - pyqt
     - qt
-
-
-test:
-  requires:
-    - python
-    - six
-    - lxml
-    - numpy
-    - scipy
-    - pyqt
-    - qt
-    - scikit-bio
-    - biopython
-    - ete_toolchain
-
+  
   commands:
     - ete3 version
     #- ete3 build check

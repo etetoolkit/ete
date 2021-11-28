@@ -38,11 +38,7 @@
 #
 # #END_LICENSE#############################################################
 from __future__ import absolute_import
-
-import os
-import sys
 import logging
-from six.moves import map
 log = logging.getLogger("main")
 
 from ..master_task import AlgCleanerTask
