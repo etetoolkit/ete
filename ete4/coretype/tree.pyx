@@ -1710,6 +1710,34 @@ cdef class TreeNode(object):
 
         return size
 
+    def to_str(self, attributes=None, are_last=None):
+        "Return a string with a visual representation of the tree."
+        are_last = are_last or []
+
+        attrs = attributes or ['name']
+        desc = ', '.join(str(self.props.get(attr) or '<empty>') for attr in attrs)
+        line = self.get_branches_repr(are_last) + desc
+
+        return '\n'.join([line] +
+            [node.to_str(attrs, are_last + [False]) for node in self.children[:-1]] +
+            [node.to_str(attrs, are_last + [True])  for node in self.children[-1:]])
+
+    def get_branches_repr(self, are_last):
+        """
+        Return a text line representing open branches according to are_last.
+
+        are_last is a list of bools. It says per level if we are the last node.
+
+        Example (with more spaces for clarity):
+        [True , False, True , True , True ] ->
+        '│             │      │      └─   '
+        """
+        if len(are_last) == 0:
+            return ''
+
+        prefix = ''.join('  ' if is_last else '│ ' for is_last in are_last[:-1])
+        return prefix + ('└─' if are_last[-1] else '├─')
+
     def sort_descendants(self, attr="name"):
         """
         .. versionadded: 2.1
