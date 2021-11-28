@@ -1716,13 +1716,13 @@ cdef class TreeNode(object):
 
         attrs = attributes or ['name']
         desc = ', '.join(str(self.props.get(attr) or '<empty>') for attr in attrs)
-        line = self.get_branches_repr(are_last) + desc
+        line = self._get_branches_repr(are_last) + desc
 
         return '\n'.join([line] +
             [node.to_str(attrs, are_last + [False]) for node in self.children[:-1]] +
             [node.to_str(attrs, are_last + [True])  for node in self.children[-1:]])
 
-    def get_branches_repr(self, are_last):
+    def _get_branches_repr(self, are_last):
         """
         Return a text line representing open branches according to are_last.
 
