@@ -8,10 +8,9 @@ document.addEventListener("DOMContentLoaded", on_load_page);
 
 // Setup.
 async function on_load_page() {
-    if (!check_metadata.checked)  // if we reload the page, it may be checked
-        div_metadata.style.display = "none";
 
     div_upload.style.display = "block";
+    radio_string.click();
 }
 
 
@@ -20,19 +19,10 @@ async function on_load_page() {
 // When the upload button is pressed.
 button_upload.addEventListener("click", async () => {
     try {
-        await assert(input_name.value || !check_metadata.checked, "Missing name");
-
-        const [name, description] = check_metadata.checked ?
-            [input_name.value, input_description.value] :
-            [hash(Date.now().toString()), ""];
-
-        await assert(!input_trees_file.disabled || !input_newick_string.disabled,
-                     "You need to supply a newick string or select a file");
-
         const data = new FormData();
         data.append("id", 0);
         data.append("name", name);
-        data.append("description", description);
+        
         if (!input_newick_string.disabled)
             data.append("newick", input_newick_string.value.trim());
         else
@@ -70,17 +60,19 @@ function show_uploaded_trees(resp) {
         `tree=${encodeURIComponent(name)}">${escape_html(name)}</a>`;
 
     if (names.length >= 1)
-        Swal.fire({
-            title: "Uploading Successful",
-            html: "Added trees: " + names.map(link).join(", "),
-            icon: "success",
-            confirmButtonText: "Explore" + (names.length > 1 ? " the first" : ""),
-            showCancelButton: true,
-        }).then(result => {
-            if (result.isConfirmed)
-                window.location.href =
-                    "gui.html?tree=" + encodeURIComponent(names[0]);
-        });
+        window.location.href = "gui.html?tree=" + encodeURIComponent(names[0])
+
+        // Swal.fire({
+        //     title: "Uploading Successful",
+        //     html: "Added trees: " + names.map(link).join(", "),
+        //     icon: "success",
+        //     confirmButtonText: "Explore" + (names.length > 1 ? " the first" : ""),
+        //     showCancelButton: true,
+        // }).then(result => {
+        //     if (result.isConfirmed)
+        //         window.location.href =
+        //             "gui.html?tree=" + encodeURIComponent(names[0]);
+        // });
     else
         Swal.fire({html: "Could not find any tree in file.", icon: "warning"});
 }
@@ -91,8 +83,8 @@ function load_example() {
     radio_string.click();
 
     input_newick_string.value = `
-((((((((((('Escherichia coli_D':0.001,'Escherichia coli':0.001)Escherichia:0.001,('Escherichia dysenteriae':0.002,'Escherichia flexneri':0.001)Escherichia:0.001)Escherichia:0.001,'Escherichia fergusonii':0.005)Escherichia:0.001,'Escherichia coli_C':0.001)Escherichia:0.001,'Escherichia sp002965065':0.004)Escherichia:0.001,(((('Escherichia sp004211955':0.001,'Escherichia sp005843885':0.001)Escherichia:0.001,'Escherichia sp001660175':0.002)Escherichia:0.001,'Escherichia marmotae':0.003)Escherichia:0.001,'Escherichia sp000208585':0.003)Escherichia:0.001)Escherichia:0.001,'Escherichia albertii':0.005)Escherichia:0.016,(((('Salmonella diarizonae':0.003,'Salmonella houtenae':0.003)Salmonella:0.001,'Salmonella arizonae':0.005)Salmonella:0.001,'Salmonella enterica':0.002)Salmonella:0.003,'Salmonella bongori':0.007)Salmonella:0.009)Enterobacteriaceae:0.004,(((('Citrobacter_A amalonaticus_C':0.006,'Citrobacter_A farmeri':0.003)Citrobacter_A:0.002,'Citrobacter_A amalonaticus':0.004)Citrobacter_A:0.006,('Citrobacter_A rodentium':0.011,'Citrobacter_A sedlakii':0.006)Citrobacter_A:0.006)Citrobacter_A:0.004,'Citrobacter_C amalonaticus_A':0.017)Enterobacteriaceae:0.002)Enterobacteriaceae:0.002,'Citrobacter_B koseri':0.014)Enterobacteriaceae:0.004,((((((('Citrobacter freundii_E':0.002,'Citrobacter europaeus':0.002)Citrobacter:0.001,'Citrobacter braakii':0.003)Citrobacter:0.001,'Citrobacter freundii_A':0.003)Citrobacter:0.001,'Citrobacter freundii':0.002)Citrobacter:0.001,(('Citrobacter portucalensis_A':0.002,'Citrobacter werkmanii':0.002)Citrobacter:0.003,'Citrobacter portucalensis':0.001)Citrobacter:0.001)Citrobacter:0.002,('Citrobacter youngae':0.001,'Citrobacter sp005281345':0.003)Citrobacter:0.002)Citrobacter:0.004,(('Citrobacter gillenii':0.005,'Citrobacter sp004684345':0.004)Citrobacter:0.007,'Citrobacter murliniae':0.007)Citrobacter:0.002)Citrobacter:0.011);
-        `.trim();
+    ((raccoon:19.19959,bear:6.80041):0.84600,((sea_lion:11.99700, seal:12.00300):7.52973,((monkey:100.85930,cat:47.14069):20.59201, weasel:18.87953):2.09460):3.87382,dog:25.46154);
+    `.trim();
 }
 window.load_example = load_example;
 
@@ -109,6 +101,3 @@ radio_string.addEventListener("click", () => {
     input_trees_file.disabled = true;
 });
 
-check_metadata.addEventListener("change", () => {
-    div_metadata.style.display = check_metadata.checked ? "block" : "none";
-});
