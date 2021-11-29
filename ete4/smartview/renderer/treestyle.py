@@ -1,15 +1,11 @@
 from types import FunctionType, MethodType
-from collections import defaultdict, namedtuple
+from collections import defaultdict
 
 
 from .faces import SelectedRectFace
 from .face_positions import FACE_POSITIONS, _HeaderFaceContainer
 from ..utils import InvalidUsage
 from .nodestyle import NodeStyle
-
-
-aligned_panel_header = namedtuple("aligned_panel_header", ["top", "bottom"],
-                                  defaults=(_HeaderFaceContainer(), _HeaderFaceContainer()))
 
 
 class TreeStyle(object):
@@ -36,7 +32,8 @@ class TreeStyle(object):
         self._active_face_pos = "branch_right"
 
         # Aligned panel headers
-        self._aligned_panel_header = aligned_panel_header()
+        self._aligned_panel_header = _HeaderFaceContainer()
+        self._aligned_panel_footer = _HeaderFaceContainer()
 
     @property
     def selected_face(self):
@@ -93,3 +90,11 @@ class TreeStyle(object):
     @aligned_panel_header.setter
     def aligned_panel_header(self, value):
         raise invalidUsage('Attribute "aligned_panel_header" can only be accessed.')
+
+    @property
+    def aligned_panel_footer(self):
+        return self._aligned_panel_footer
+
+    @aligned_panel_footer.setter
+    def aligned_panel_footer(self, value):
+        raise invalidUsage('Attribute "aligned_panel_footer" can only be accessed.')

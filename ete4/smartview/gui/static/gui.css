@@ -108,7 +108,7 @@ body {
     overflow: hidden;
 }
 
-.div_aligned_top {
+.div_aligned_header {
     position: absolute;
     top: 0;
     width: 100%;
@@ -116,7 +116,7 @@ body {
     cursor: auto;
 }
 
-.div_aligned_bottom {
+.div_aligned_footer {
     position: absolute;
     bottom: 0;
     width: 100%;

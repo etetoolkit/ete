@@ -311,15 +311,15 @@ class Drawer:
         graphics = []
 
         if self.panel == 2:
-            deque(draw_faces_at_pos(self.tree_style.aligned_panel_header.top,
+            deque(draw_faces_at_pos(self.tree_style.aligned_panel_header,
                     "aligned_bottom", 0))
-            graphics += draw_faces_at_pos(self.tree_style.aligned_panel_header.top,
+            graphics += draw_faces_at_pos(self.tree_style.aligned_panel_header,
                     "aligned_bottom", 1)
 
         if self.panel == 3:
-            deque(draw_faces_at_pos(self.tree_style.aligned_panel_header.bottom,
+            deque(draw_faces_at_pos(self.tree_style.aligned_panel_footer,
                     "aligned_top", 0))
-            graphics += draw_faces_at_pos(self.tree_style.aligned_panel_header.bottom,
+            graphics += draw_faces_at_pos(self.tree_style.aligned_panel_footer,
                     "aligned_top", 1)
 
         return graphics

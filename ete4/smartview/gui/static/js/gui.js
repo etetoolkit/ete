@@ -53,6 +53,7 @@ const view = {
     aligned: {
         x: 0,
         pos: 80,  // % of the screen width where the aligned panel starts
+        zoom: false,
         header: {
             show: true, height: 150 },
         footer: {

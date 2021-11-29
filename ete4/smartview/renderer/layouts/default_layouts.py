@@ -11,7 +11,7 @@ from ..draw_helpers import summary
 
 __all__ = [ "LayoutLeafName", "LayoutNumberLeaves",
         "LayoutBranchLength", "LayoutBranchSupport",
-        "LayoutOutline", "LayoutCleanStyle" ]
+        "LayoutOutline" ]
 
 Padding = namedtuple('Padding', 'x y')
 
@@ -66,6 +66,8 @@ class LayoutNumberLeaves(TreeLayout):
         self.min_fsize = min_fsize
         self.max_fsize = max_fsize
         self.padding = Padding(padding_x, padding_y)
+
+        self.active = False
 
         self.collapsed_only = collapsed_only
 
@@ -156,10 +158,12 @@ class LayoutBranchSupport(TreeLayout):
 
 
 class LayoutOutline(TreeLayout):
-    def __init__(self, name='Outline',
+    def __init__(self, name=None,
             stroke_color="black", stroke_width=0.5, 
             color="lightgray", opacity=0.3, collapsing_height=5):
-        super().__init__(name)
+        super().__init__(None)
+
+        self.always_render = True
 
         self.face = OutlineFace(stroke_color="black", stroke_width=stroke_width, 
             color=color, opacity=opacity, collapsing_height=collapsing_height)
@@ -190,15 +194,3 @@ def get_layout_align_link(stroke_color='gray', stroke_width=0.5,
     layout_fn.__name__ = 'Aligned panel link'
     layout_fn._module = 'default'
     return layout_fn
-
-
-class LayoutCleanStyle(TreeLayout):
-    def __init__(self):
-        super().__init__(None)
-        self.clean_style = NodeStyle()
-        self.clean_style["size"] = 0
-
-        self.always_render = True
-
-    def set_node_style(self, node):
-        node.set_style(self.clean_style)

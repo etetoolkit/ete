@@ -965,14 +965,13 @@ def get_layouts(layouts=[]):
     # Get default layouts
     default_layouts = layouts_from_module.pop("default_layouts")
 
-    layouts = list(set(default_layouts + layouts))
+    all_layouts = {}
+    for idx, layout in enumerate(default_layouts + layouts):
+        layout.module = "default"
+        all_layouts[layout.name or idx] = layout
 
-    print(layouts)
-
-    for ly in layouts:
-        ly.module = "default"
-
-    return layouts, layouts_from_module
+        
+    return list(all_layouts.values()), layouts_from_module
 
 
 def update_layouts(active_layouts, tid):
@@ -1076,14 +1075,12 @@ def copy_style(tree_style):
             for face in face_list:
                 header.add_face(face, column=column)
 
-    header = tree_style.aligned_panel_header
-
-    top = deepcopy(dict(header.top))
-    bottom = deepcopy(dict(header.bottom))
+    header = deepcopy(dict(tree_style.aligned_panel_header))
+    footer = deepcopy(dict(tree_style.aligned_panel_footer))
 
     ts = deepcopy(tree_style)
-    add_faces_to_header(ts.aligned_panel_header.top, top)
-    add_faces_to_header(ts.aligned_panel_header.bottom, bottom)
+    add_faces_to_header(ts.aligned_panel_header, header)
+    add_faces_to_header(ts.aligned_panel_footer, footer)
 
     return ts
 

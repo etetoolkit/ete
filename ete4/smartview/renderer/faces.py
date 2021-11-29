@@ -1063,7 +1063,7 @@ class SeqMotifFace(Face):
             n_row, n_col,
             dx_before, dy_before):
 
-        if pos not in ('branch_right', 'aligned'):
+        if pos != 'branch_right' and not pos.startswith('aligned'):
             raise InvalidUsage(f'Position {pos} not allowed for SeqMotifFace')
 
         box = super().compute_bounding_box( 
