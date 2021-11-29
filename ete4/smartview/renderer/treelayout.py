@@ -1,8 +1,8 @@
 class TreeLayout():
-    def __init__(self, name, ts=None, ns=None):
+    def __init__(self, name, ts=None, ns=None, aligned_faces=False):
         self.name = name
         self.active = True
-        self.aligned_faces = False
+        self.aligned_faces = aligned_faces
         self.description = ""
 
         self.always_render = False
