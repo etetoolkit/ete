@@ -229,8 +229,8 @@ class Drawer:
                                 if node in parents.keys())
                 hz_line_style = {
                         'type': node_style['hz_line_type'],
-                        'width': node_style['hz_line_width'],
-                        'color': node_style['hz_line_color'],
+                        'stroke-width': node_style['hz_line_width'],
+                        'stroke': node_style['hz_line_color'],
                 }
                 yield from self.draw_lengthline((x, y + bdy), (x + dx, y + bdy),
                                 list(parent_of), hz_line_style)
@@ -238,8 +238,8 @@ class Drawer:
             if bdy0 != bdy1:
                 vt_line_style = {
                         'type': node_style['vt_line_type'],
-                        'width': node_style['vt_line_width'],
-                        'color': node_style['vt_line_color'],
+                        'stroke-width': node_style['vt_line_width'],
+                        'stroke': node_style['vt_line_color'],
                 }
                 yield from self.draw_childrenline((x + dx, y + bdy0),
                                                   (x + dx, y + bdy1),
@@ -253,11 +253,6 @@ class Drawer:
             
             yield from self.draw_nodedot((x + dx, y + bdy),
                     dy * self.zoom[1], nodedot_style)
-
-            # nresults = len(parent_of)
-            # n += (1 if node_style['size') > 0 else 0)
-            # for idx, text in enumerate(parent_of):
-                # yield 
 
 
     def draw_aligned_headers(self):

@@ -46,9 +46,9 @@ def draw_line(p1, p2, line_type='', parent_of=None, style=None):
     types = ['solid', 'dotted', 'dashed']
     style = style or {}
     if style.get('type'):
-        style['type'] = types[int(style['type'])]
+        style['stroke-dasharray'] = types[int(style['type'])]
     else:
-        style['type'] = types[0]
+        style['stroke-dasharray'] = types[0]
 
     return ['line', p1, p2, line_type, parent_of or [], style]
 
