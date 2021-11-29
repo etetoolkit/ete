@@ -26,8 +26,6 @@ function get_tree_params() {
     const [zx, zy, za] = [view.zoom.x, view.zoom.y, view.zoom.a];
     const [x, y] = [view.tl.x, view.tl.y];
     const [w, h] = [div_tree.offsetWidth / zx, div_tree.offsetHeight / zy];
-
-    div_tree.style.cursor = "wait";
     
     const layouts = JSON.stringify(get_active_layouts());
 
@@ -51,6 +49,7 @@ var align_timeout; // Do not constantly render aligned panel (too costly) when s
 var align_drawing = false;
 // Ask the server for a tree in the new defined region, and draw it.
 async function draw_tree() {
+    div_tree.style.cursor = "wait";
     const params = get_tree_params();
     const qs = new URLSearchParams(params).toString();  // "x=...&y=..."
 
@@ -82,7 +81,7 @@ async function draw_tree() {
                 if (!align_drawing)
                     await draw_aligned(params);
                 clearTimeout(align_timeout);
-            }, 50);
+            }, 70);
         }
 
         if (view.drawer.type === "circ") {
@@ -181,7 +180,7 @@ function draw_negative_xaxis() {
 
 // Append a svg to the given element, with all the items in the list drawn.
 // The first child of element will be used or replaced as a svg.
-function draw(element, items, tl, zoom, replace=true) {
+function draw(element, items, tl, zoom, replace=true, clean_pixi=true) {
     const is_svg = item => {
         const name = item[0];
         return !(name.includes("pixi-") || name === "html")
@@ -194,11 +193,10 @@ function draw(element, items, tl, zoom, replace=true) {
     
     const pixi_items = items.filter(i => i[0].includes("pixi-"));
     if (pixi_items.length) {
-        const pixi = draw_pixi(pixi_items, tl, zoom)
+        const pixi = draw_pixi(pixi_items, tl, zoom, clean_pixi)
         const pixi_container = view.drawer.type === "rect" ? div_aligned : div_tree;
         replace_child(pixi_container.querySelector(".div_pixi"), pixi);
         pixi.style.transform = "translate(0, 0)";
-        pixi.setAttribute("width", "1000");
     }
 
     const html_container = element.querySelector(".div_html")
@@ -258,6 +256,7 @@ function replace_svg(element) {
 
 // Draw elements that belong to panels above 0.
 async function draw_aligned(params) {
+
     if (!params)
         params = get_tree_params();
 
@@ -293,7 +292,8 @@ async function draw_aligned(params) {
                     div.style.display = "none";
             }
 
-            draw(div, items, {x: view.aligned.x, y: panel.params.y}, { x: view.zoom.a, y: view.zoom.y });
+            draw(div, items, {x: view.aligned.x, y: panel.params.y}, 
+                { x: view.zoom.a, y: view.zoom.y }, true, panel_n === 1);
 
             align_drawing = false;
 

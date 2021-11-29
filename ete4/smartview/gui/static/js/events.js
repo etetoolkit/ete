@@ -125,7 +125,7 @@ function on_wheel(event) {
     const zoom_in = event.deltaY < 0;
     const do_zoom = {x: !event.ctrlKey, y: !event.altKey};
 
-    if (div_aligned.contains(event.target))
+    if (div_aligned.contains(event.target) && view.aligned.zoom)
         zoom_aligned(point, zoom_in)
     else
         zoom_around(point, zoom_in, do_zoom);
@@ -155,7 +155,7 @@ function on_mousedown(event) {
         move_minimap_view(point);
     else if (div_aligned_grabber.contains(event.target))
         drag_start(point, div_aligned);
-    else if (div_aligned.contains(event.target))
+    else if (div_aligned.contains(event.target) && view.aligned.zoom)
         drag_start(point, div_aligned, false);
     else if (div_tree.contains(event.target))
         drag_start(point, div_tree);

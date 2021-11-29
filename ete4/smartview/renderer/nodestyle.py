@@ -19,7 +19,7 @@ NODE_STYLE_DEFAULT = [
     ["hz_line_color",    "#000000",    _COLOR_CHECKER                           ],
     ["hz_line_type",     0,            _LINE_TYPE_CHECKER                       ], # 0 solid, 1 dashed, 2 dotted
     ["vt_line_type",     0,            _LINE_TYPE_CHECKER                       ], # 0 solid, 1 dashed, 2 dotted
-    ["size",             3,            _SIZE_CHECKER                            ], # node circle size
+    ["size",             0,            _SIZE_CHECKER                            ], # node circle size
     ["shape",            "circle",     _NODE_TYPE_CHECKER                       ],
     ["draw_descendants", True,         _BOOL_CHECKER                            ],
     ["hz_line_width",          0,      _SIZE_CHECKER                            ],

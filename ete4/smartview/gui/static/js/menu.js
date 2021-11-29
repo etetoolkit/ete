@@ -4,7 +4,7 @@ import { api } from "./api.js";
 import { view, menus, on_tree_change,
          on_drawer_change, show_minimap, get_tid } from "./gui.js";
 import { draw_minimap } from "./minimap.js";
-import { update, draw_tree_scale } from "./draw.js";
+import { update, draw_tree_scale, draw_aligned } from "./draw.js";
 import { add_folder_active } from "./active.js";
 
 export { init_menus, update_folder_layouts };
@@ -44,6 +44,7 @@ function create_menu_main(menu, trees) {
         set_boxes_clickable(!view.select_text);
     });
     menu.addInput(view, "smart_zoom", { label: "smart zoom" });
+    menu.addInput(view.aligned, "zoom", { label: "aligned panel zoom" });
     menu.addButton({ title: "share view" }).on("click", view.share_view);
     menu.addButton({ title: "Help" }).on("click", view.show_help);
 }
@@ -116,8 +117,8 @@ function add_folder_tree(menu, trees) {
     folder_sort.addInput(view.sorting, "key");
     folder_sort.addInput(view.sorting, "reverse");
 
-    if (trees.length > 1)
-    folder_tree.addButton({ title: "upload" }).on("click", view.upload);
+    if (view.upload)
+        folder_tree.addButton({ title: "upload" }).on("click", view.upload);
 
     const folder_download = folder_tree.addFolder({ title: "Download",
                                                     expanded: false });
