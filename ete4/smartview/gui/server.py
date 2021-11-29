@@ -1242,6 +1242,7 @@ if __name__ == '__main__':
     run_smartview(safe_mode=False)
 
 
+
 # But for production it's better if we serve it with something like:
 #   gunicorn server:app
 
