@@ -133,12 +133,12 @@ class Trees(Resource):
             tree.timer = time()
 
         if rule == '/trees':
-            if app.memory_only:
-                raise InvalidUsage(f'invalid path {rule} in memory_only mode', 404)
+            if app.safe_mode:
+                raise InvalidUsage(f'invalid path {rule} in safe_mode mode', 404)
             return [{ 'id': i, 'name': v.name } for i, v in app.trees.items()]
         # elif rule == '/trees/<string:tree_id>':
-            # if app.memory_only:
-                # raise InvalidUsage(f'invalid path {rule} in memory_only mode', 404)
+            # if app.safe_mode:
+                # raise InvalidUsage(f'invalid path {rule} in safe_mode mode', 404)
         elif rule == '/trees/<string:tree_id>/nodeinfo':
             node = gdn.get_node(tree.tree, subtree)
             return node.props
@@ -993,7 +993,7 @@ def update_layouts(active_layouts, tid):
                     tree.style.del_layout_fn(name)  # remove layout_fn from ts
 
     if reinit_trees:
-        if app.memory_only:
+        if app.safe_mode:
             tree.initialized = False
         else:
             for t in app.trees.values():
@@ -1094,7 +1094,7 @@ def copy_style(tree_style):
 
 # App initialization.
 
-def initialize(tree=None, tree_style=None, layouts=[], memory_only=False):
+def initialize(tree=None, tree_style=None, layouts=[], safe_mode=False):
     "Initialize the database and the flask app"
     app = Flask(__name__, instance_relative_config=True)
     configure(app)
@@ -1102,7 +1102,7 @@ def initialize(tree=None, tree_style=None, layouts=[], memory_only=False):
     api = Api(app)
     add_resources(api)
 
-    app.memory_only = memory_only
+    app.safe_mode = safe_mode
 
     tree_style = copy_style(tree_style) if tree_style else TreeStyle()
 
@@ -1126,7 +1126,7 @@ def initialize(tree=None, tree_style=None, layouts=[], memory_only=False):
         @app.route('/')
         def index():
             return redirect(url_for('static', filename='gui.html', tree=tree))
-    elif app.memory_only:
+    elif app.safe_mode:
         @app.route('/')
         def index():
             return redirect(url_for('static', filename='gui.html'))
@@ -1215,13 +1215,13 @@ def add_resources(api):
 
 
 def run_smartview(tree=None, tree_name=None, tree_style=None, layouts=[],
-        memory_only=False, port=5000, run=True):
+        safe_mode=False, port=5000, run=True):
     # Set tree_name to None if no tree was provided
     # Generate tree_name if none was provided
     tree_name = tree_name or get_random_string(10) if tree else None
 
     global app
-    app = initialize(tree_name, tree_style, layouts, memory_only=memory_only)
+    app = initialize(tree_name, tree_style, layouts, safe_mode=safe_mode)
     # purge inactive trees every 15 minutes
     purge(interval=15*60, max_time=30*60)
 
@@ -1246,11 +1246,11 @@ def run_smartview(tree=None, tree_name=None, tree_style=None, layouts=[],
 
 
 if __name__ == '__main__':
-    run_smartview(memory_only=True)
+    run_smartview(safe_mode=True)
 
 
 # But for production it's better if we serve it with something like:
 #   gunicorn server:app
 
 # To do so, uncomment the following line
-# app = run_smartview(memory_only=True, run=False)
+# app = run_smartview(safe_mode=True, run=False)
