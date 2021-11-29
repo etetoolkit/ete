@@ -30,6 +30,7 @@ button_upload.addEventListener("click", async () => {
                      "You need to supply a newick string or select a file");
 
         const data = new FormData();
+        data.append("id", 0);
         data.append("name", name);
         data.append("description", description);
         if (!input_newick_string.disabled)
