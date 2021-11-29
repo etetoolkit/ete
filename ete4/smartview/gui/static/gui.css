@@ -104,6 +104,8 @@ body {
     position: absolute;
     top: 0;
     pointer-events: none;
+    width: 100%;
+    overflow: hidden;
 }
 
 .div_aligned_top {

@@ -75,11 +75,12 @@ function draw_pixi(items, tl, zoom) {
     // Resize canvas based on container
     const container = view.drawer.type === "rect" ?
         div_aligned : div_tree;
-    app.renderer.resize(container.clientWidth * 1000, container.clientHeight);
+    console.log(container.clientWidth)
+
+    app.renderer.resize(container.clientWidth, container.clientHeight);
+
     // Remove all items from stage
     app.stage.children = [];
-
-    console.log(zoom)
 
     if (textures_loaded && items.length)
         draw(items, tl, zoom);

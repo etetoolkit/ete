@@ -57,7 +57,7 @@ class AppTree:
     tree: Tree = None
     name: str = None
     style: TreeStyle = None
-    layouts: dict = None
+    layouts: list = None
     timer: float = None
     initialized: bool = False
     selected: dict = None
@@ -72,8 +72,8 @@ class Drawers(Resource):
         try:
             tree_id, _ = get_tid(tree_id)
             if name not in ['Rect', 'Circ'] and\
-                    any(getattr(ly, 'contains_aligned_face', False)\
-                        for ly in app.trees[int(tree_id)].style.layout_fn):
+                    any(getattr(ly, 'aligned_faces', False)\
+                        for ly in sum(app.trees[int(tree_id)].layouts.values(),[])):
                 name = 'Align' + name
             drawer_class = next(d for d in drawer_module.get_drawers()
                 if d.__name__[len('Drawer'):] == name)
@@ -97,16 +97,12 @@ class Layouts(Resource):
             tree_style = tree.style
             avail_layouts = tree.layouts
         elif rule == '/layouts/list':
-            return { module: [ [ ly.__name__, ly.__doc__ ] for ly in layouts ]
+            return { module: [ [ ly.name, ly.description ] for ly in layouts if ly.name ]
                     for module, layouts in app.avail_layouts.items() }
-
-        # For layouts and tree specific layouts (first two if statements)
-        active = [ f'{l._module}:{l.__name__}' for l in tree_style.layout_fn\
-                if l.__name__ != '<lambda>' ]
 
         layouts = {}
         for module, lys in avail_layouts.items():
-            layouts[module] = { l.__name__: (f'{module}:{l.__name__}' in active) for l in lys }
+            layouts[module] = { l.name: l.active for l in lys if l.name}
 
         return layouts
 
@@ -133,12 +129,12 @@ class Trees(Resource):
             tree.timer = time()
 
         if rule == '/trees':
-            if app.memory_only:
-                raise InvalidUsage(f'invalid path {rule} in memory_only mode', 404)
+            if app.safe_mode:
+                raise InvalidUsage(f'invalid path {rule} in safe_mode mode', 404)
             return [{ 'id': i, 'name': v.name } for i, v in app.trees.items()]
         # elif rule == '/trees/<string:tree_id>':
-            # if app.memory_only:
-                # raise InvalidUsage(f'invalid path {rule} in memory_only mode', 404)
+            # if app.safe_mode:
+                # raise InvalidUsage(f'invalid path {rule} in safe_mode mode', 404)
         elif rule == '/trees/<string:tree_id>/nodeinfo':
             node = gdn.get_node(tree.tree, subtree)
             return node.props
@@ -342,6 +338,13 @@ def load_tree(tree_id):
             t = gdn.get_node(tree.tree, subtree)
             # Reinitialize if layouts have to be reapplied
             if not tree.initialized:
+                tree.style = TreeStyle()
+
+                # Layout pre-render
+                for layouts in tree.layouts.values():
+                    for layout in layouts:
+                        if layout.active:
+                            layout.set_tree_style(tree.style)
 
                 print('initializing')
                 start = time()
@@ -449,11 +452,12 @@ def get_drawer(tree_id, args):
         if active_layouts != None:
             update_layouts(active_layouts, tid)
 
+        layouts = set(ly for ly in sum(tree.layouts.values(), []) if ly.active)
+
         drawer_name = args.get('drawer', 'RectFaces')
         # Automatically provide aligned drawer when necessary
         if drawer_name not in ['Rect', 'Circ'] and\
-                any(getattr(ly, 'contains_aligned_face', False)\
-                    for ly in tree.style.layout_fn):
+                any(getattr(ly, 'aligned_faces', False) for ly in layouts):
             drawer_name = 'Align' + drawer_name
         drawer_class = next((d for d in drawer_module.get_drawers()
             if d.__name__[len('Drawer'):] == drawer_name), None)
@@ -475,7 +479,8 @@ def get_drawer(tree_id, args):
         searches = tree.searches
         
         return drawer_class(load_tree(tree_id), viewport, panel, zoom,
-                    limits, collapsed_ids, active, selected, searches, tree.style)
+                    limits, collapsed_ids, active, selected, searches,
+                    layouts, tree.style)
     except StopIteration:
         raise InvalidUsage(f'not a valid drawer: {drawer_name}')
     except (ValueError, AssertionError) as e:
@@ -928,7 +933,7 @@ def get_layouts_from_getters(layout_modules):
     def get_layouts(module):
         return ( getattr(module, getter)() for getter in dir(module)\
                 if not getter.startswith("_")\
-                and getter.startswith("get_layout_") )
+                and getter.startswith("Layout") )
 
     all_layouts = {}
     all_modules = get_modules(layout_modules)
@@ -938,7 +943,7 @@ def get_layouts_from_getters(layout_modules):
         all_layouts[name] = list(layouts)
         # Set _module attr for future reference (update_layouts)
         for ly in all_layouts[name]:
-            ly._module = name
+            ly.module = name
 
         # if type(next(layouts, None)) == FunctionType:
             # Simple file with layout function getters
@@ -952,7 +957,7 @@ def get_layouts_from_getters(layout_modules):
     return all_layouts
 
 # Layout related functions
-def get_layouts(layouts=[], tree_style=TreeStyle()):
+def get_layouts(layouts=[]):
     # Get layouts from their getters in layouts module:
     # smartview/redender/layouts
     layouts_from_module = get_layouts_from_getters(layout_modules)
@@ -960,40 +965,31 @@ def get_layouts(layouts=[], tree_style=TreeStyle()):
     # Get default layouts
     default_layouts = layouts_from_module.pop("default_layouts")
 
-    avail_layouts = layouts_from_module
+    layouts = list(set(default_layouts + layouts))
 
-    # Get layouts from TreeStyle
-    ts_layouts = tree_style.layout_fn
-
-    layouts = list(set(default_layouts + ts_layouts + layouts))
+    print(layouts)
 
     for ly in layouts:
-        ly._module = "default"
+        ly.module = "default"
 
-    return [ ly for ly in layouts if ly.__name__ != '<lambda>' ], avail_layouts
+    return layouts, layouts_from_module
 
 
 def update_layouts(active_layouts, tid):
     """ Update app layouts based on front end status """
     tree = app.trees[int(tid)]
-    ts_layouts = [ f'{ly._module}:{ly.__name__}' for ly in tree.style.layout_fn\
-                if ly.__name__ != '<lambda>' ]
     reinit_trees = False
     for module, layouts in tree.layouts.items():
         for layout in layouts:
-            name = f'{module}:{layout.__name__}'
-            status = name in ts_layouts
-            new_status = name in active_layouts
-            if status != new_status:
-                reinit_trees = True
-                # Update tree.style layout functions
-                if new_status == True:
-                    tree.style.layout_fn = layout
-                elif new_status == False:
-                    tree.style.del_layout_fn(name)  # remove layout_fn from ts
+            if not layout.always_render:
+                name = f'{module}:{layout.name}'
+                new_status = name in active_layouts
+                if layout.active != new_status:
+                    reinit_trees = True
+                    layout.active = new_status
 
     if reinit_trees:
-        if app.memory_only:
+        if app.safe_mode:
             tree.initialized = False
         else:
             for t in app.trees.values():
@@ -1094,7 +1090,7 @@ def copy_style(tree_style):
 
 # App initialization.
 
-def initialize(tree=None, tree_style=None, layouts=[], memory_only=False):
+def initialize(tree=None, layouts=[], safe_mode=False):
     "Initialize the database and the flask app"
     app = Flask(__name__, instance_relative_config=True)
     configure(app)
@@ -1102,17 +1098,17 @@ def initialize(tree=None, tree_style=None, layouts=[], memory_only=False):
     api = Api(app)
     add_resources(api)
 
-    app.memory_only = memory_only
+    app.safe_mode = safe_mode
 
-    tree_style = copy_style(tree_style) if tree_style else TreeStyle()
+    # tree_style = copy_style(tree_style) if tree_style else TreeStyle()
 
     # App associated layouts
     # Layouts will be accessible for each tree independently
-    app.default_layouts, app.avail_layouts = get_layouts(layouts, tree_style)
+    app.default_layouts, app.avail_layouts = get_layouts(layouts)
     # Dict containing AppTree dataclasses with tree info
     app.trees = defaultdict(lambda: AppTree(
         name=get_random_string(10),
-        style=copy_style(tree_style),
+        style=copy_style(TreeStyle()),
         layouts = app.default_layouts,
         timer = time(),
         searches = {},
@@ -1126,7 +1122,7 @@ def initialize(tree=None, tree_style=None, layouts=[], memory_only=False):
         @app.route('/')
         def index():
             return redirect(url_for('static', filename='gui.html', tree=tree))
-    elif app.memory_only:
+    elif app.safe_mode:
         @app.route('/')
         def index():
             return redirect(url_for('static', filename='gui.html'))
@@ -1214,14 +1210,14 @@ def add_resources(api):
         '/trees/<string:tree_id>/reload')
 
 
-def run_smartview(tree=None, tree_name=None, tree_style=None, layouts=[],
-        memory_only=False, port=5000, run=True):
+def run_smartview(tree=None, tree_name=None, layouts=[],
+        safe_mode=False, port=5000, run=True):
     # Set tree_name to None if no tree was provided
     # Generate tree_name if none was provided
     tree_name = tree_name or get_random_string(10) if tree else None
 
     global app
-    app = initialize(tree_name, tree_style, layouts, memory_only=memory_only)
+    app = initialize(tree_name, layouts, safe_mode=safe_mode)
     # purge inactive trees every 15 minutes
     purge(interval=15*60, max_time=30*60)
 
@@ -1246,11 +1242,11 @@ def run_smartview(tree=None, tree_name=None, tree_style=None, layouts=[],
 
 
 if __name__ == '__main__':
-    run_smartview(memory_only=True)
+    run_smartview(safe_mode=False)
 
 
 # But for production it's better if we serve it with something like:
 #   gunicorn server:app
 
 # To do so, uncomment the following line
-# app = run_smartview(memory_only=True, run=False)
+# app = run_smartview(safe_mode=True, run=False)

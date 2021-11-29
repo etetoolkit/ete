@@ -1526,7 +1526,7 @@ cdef class TreeNode(object):
                                     layout=layout, tree_style=tree_style,
                                       units=units, dpi=dpi)
 
-    def explore(self, tree_name=None, tree_style=None, layouts=[], port=5000):
+    def explore(self, tree_name=None, layouts=[], port=5000):
         """
         Starts an interactive smartview session to visualize current node
         structure using provided TreeStyle.
@@ -1547,7 +1547,7 @@ cdef class TreeNode(object):
         from ..smartview.gui.server import run_smartview
 
         run_smartview(tree=self, tree_name=tree_name,
-                tree_style=tree_style, layouts=layouts, port=port)
+                layouts=layouts, port=port)
 
     def copy(self, method="cpickle"):
         """.. versionadded: 2.1
