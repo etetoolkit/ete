@@ -54,7 +54,7 @@ TOOLSPATH = os.path.realpath(os.path.split(os.path.realpath(__file__))[0])
 import argparse
 from . import (ete_split, ete_expand, ete_annotate, ete_ncbiquery, ete_view,
                ete_generate, ete_mod, ete_extract, ete_compare, ete_evol,
-               ete_maptrees, ete_explore)
+               ete_maptrees, ete_diff, ete_explore)
 from . import common
 from .common import log
 from .utils import colorify, which
@@ -171,6 +171,10 @@ def _main(arguments):
     # split
     split_args_p = argparse.ArgumentParser(add_help=False)
     ete_split.populate_args(split_args_p)
+    
+    # diff
+    diff_args_p = argparse.ArgumentParser(add_help=False)
+    ete_diff.populate_args(diff_args_p)
 
 
     # ADD SUBPROGRAM TO THE MAIN PARSER
@@ -239,6 +243,13 @@ def _main(arguments):
                                        description=ete_maptrees.DESC)
     maptrees_args_p.set_defaults(func=ete_maptrees.run)
     ete_maptrees.populate_args(maptrees_args_p)
+    
+    # - DIFF -
+    diff_args_p = subparser.add_parser("diff", parents=[source_args_p, ref_args_p, main_args_p],
+                                           description=ete_diff.DESC,
+                                          formatter_class=argparse.RawDescriptionHelpFormatter)
+    diff_args_p.set_defaults(func=ete_diff.run)
+    ete_diff.populate_args(diff_args_p)
 
     # - build -
     generate_args_p = subparser.add_parser("build")
