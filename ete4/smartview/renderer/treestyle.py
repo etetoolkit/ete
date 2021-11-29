@@ -1,18 +1,11 @@
 from types import FunctionType, MethodType
-from collections import defaultdict, namedtuple
+from collections import defaultdict
 
 
 from .faces import SelectedRectFace
 from .face_positions import FACE_POSITIONS, _HeaderFaceContainer
 from ..utils import InvalidUsage
 from .nodestyle import NodeStyle
-from .layouts.default_layouts import get_layout_leaf_name, get_layout_nleaves,\
-        get_layout_branch_length, get_layout_branch_support,\
-        get_layout_outline, get_layout_align_link
-
-
-aligned_panel_header = namedtuple("aligned_panel_header", ["top", "bottom"],
-                                  defaults=(_HeaderFaceContainer(), _HeaderFaceContainer()))
 
 
 class TreeStyle(object):
@@ -29,9 +22,7 @@ class TreeStyle(object):
         self.show_nleaves = False
         self.show_branch_length = False
         self.show_branch_support = False
-        self.default_layouts = ['Outline', 'Leaf name', 'Number of leaves',
-                                'Branch length', 'Branch support',
-                                'Aligned panel link']
+
         # Selected face
         self._selected_face = SelectedRectFace
         self._selected_face_pos = "branch_right"
@@ -41,30 +32,8 @@ class TreeStyle(object):
         self._active_face_pos = "branch_right"
 
         # Aligned panel headers
-        self._aligned_panel_header = aligned_panel_header()
-
-        
-    @property
-    def layout_fn(self):
-        default_layout = self._get_default_layout()
-        return default_layout + self._layout_handler
-
-    @layout_fn.setter
-    def layout_fn(self, layout):
-        if type(layout) not in set([list, set, tuple, frozenset]):
-            layout = [layout]
-
-        for ly in layout:
-            # Validates layout function (python function)
-            # Consider `callable(ly)`
-            if type(ly) == FunctionType or type(ly) == MethodType or ly is None:
-                name = ly.__name__
-                if name in self.default_layouts:
-                    self._update_layout_flags(name, True)
-                else:
-                    self._layout_handler.append(ly)
-            else:
-                raise ValueError ("Required layout is not a function pointer nor a valid layout name.")
+        self._aligned_panel_header = _HeaderFaceContainer()
+        self._aligned_panel_footer = _HeaderFaceContainer()
 
     @property
     def selected_face(self):
@@ -122,52 +91,10 @@ class TreeStyle(object):
     def aligned_panel_header(self, value):
         raise invalidUsage('Attribute "aligned_panel_header" can only be accessed.')
 
-    def del_layout_fn(self, name):
-        """ Deletes layout function given its _module:__name__ """
-        # Modify flags if name refers to defaults
-        module, name = name.split(":")
-        if module == "default" and name in self.default_layouts:
-            self._update_layout_flags(name, False)
-        else:
-            for layout in self.layout_fn:
-                if layout.__name__ != "<lambda>" and\
-                  layout._module == module and layout.__name__ == name:
-                    self._layout_handler.remove(layout)
+    @property
+    def aligned_panel_footer(self):
+        return self._aligned_panel_footer
 
-    def _update_layout_flags(self, name, status):
-        if name == 'Outline':
-            self.show_outline = status
-        if name == 'Aligned panel link':
-            self.show_align_link = status
-        if name == 'Leaf name':
-            self.show_leaf_name = status
-        if name == 'Number of leaves':
-            self.show_nleaves = status
-        if name == 'Branch length':
-            self.show_branch_length = status
-        if name == 'Branch support':
-            self.show_branch_support = status
-
-    def _get_default_layout(self):
-        layouts = []
-
-        # Set clean node style
-        clean = NodeStyle()
-
-        clean['size'] = 0
-        clean['bgcolor'] = 'transparent'
-        layouts.append(lambda node: node.set_style(clean))
-
-        if self.show_outline:
-            layouts.append(get_layout_outline())
-        if self.show_align_link:
-            layouts.append(get_layout_align_link())
-        if self.show_leaf_name:
-            layouts.append(get_layout_leaf_name())
-        if self.show_nleaves:
-            layouts.append(get_layout_nleaves())
-        if self.show_branch_length:
-            layouts.append(get_layout_branch_length())
-        if self.show_branch_support:
-            layouts.append(get_layout_branch_support())
-        return layouts
+    @aligned_panel_footer.setter
+    def aligned_panel_footer(self, value):
+        raise invalidUsage('Attribute "aligned_panel_footer" can only be accessed.')

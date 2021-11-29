@@ -1,5 +1,5 @@
 class TreeLayout():
-    def __init__(self, name, ns=None, ts=None):
+    def __init__(self, name, ts=None, ns=None):
         self.name = name
         self.active = True
         self.aligned_faces = False
@@ -20,6 +20,3 @@ class TreeLayout():
     def set_node_style(self, node):
         if self.ns:
             self.ns(node)
-        
-    def post_render(self):
-        pass

@@ -1,8 +1,8 @@
 // Drag-related functions.
 
-import { view, menus } from "./gui.js";
+import { view } from "./gui.js";
 import { update_minimap_visible_rect } from "./minimap.js";
-import { draw_tree } from "./draw.js";
+import { draw_tree, draw_aligned } from "./draw.js";
 
 export { drag_start, drag_stop, drag_move };
 
@@ -11,6 +11,7 @@ const dragging = {
     element: undefined, moved: false,
     p0: {x: 0, y: 0},
     p_last: {x: 0, y: 0},
+    timeout: undefined,
 };
 
 
@@ -74,14 +75,14 @@ function drag_move(point) {
         }
 
         if (dragging.element === div_aligned) {
-            dx *= view.zoom.x / view.zoom.a;
-
             view.aligned.x += scale_x * movement.x;
 
-            Array.from(div_aligned.children[0].children).forEach(g =>
-                g.setAttribute("transform", `translate(${dx} 0)`));
+            //Array.from(div_aligned.children[0].children).forEach(g =>
+                //g.setAttribute("transform", `translate(${dx} 0)`));
             // pixi canvas
-            div_aligned.children[1].children[0].style.transform = `translate(${dx}px, 0)`;
+            //div_aligned.children[1].children[0].style.transform = `translate(${dx}px, 0)`;
+
+            draw_aligned();
         }
 
         else {
@@ -101,7 +102,7 @@ function get_drag_scale() {
     if (dragging.element === div_tree)
         return [-1 / view.zoom.x, -1 / view.zoom.y];
     else if (dragging.element === div_aligned)
-        return [-1 / view.zoom.x, -1 / view.zoom.y];
+        return [-1 / view.zoom.a, -1 / view.zoom.y];
     else // dragging.element === div_visible_rect
         return [1 / view.minimap.zoom.x, 1 / view.minimap.zoom.y];
 }

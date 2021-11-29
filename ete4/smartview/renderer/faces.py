@@ -279,7 +279,6 @@ class AttrFace(TextFace):
             ftype="sans-serif",
             padding_x=0, padding_y=0):
 
-
         TextFace.__init__(self, text="",
                 name=name, color=color,
                 min_fsize=min_fsize, max_fsize=max_fsize, 
@@ -719,6 +718,8 @@ class OutlineFace(Face):
         self.outline = drawer.outline if drawer.outline \
             and len(drawer.outline) == 5 else SBox(0, 0, 0, 0, 0)
 
+        self.zoom = drawer.zoom[0], drawer.zoom[1]
+
         if drawer.TYPE == 'circ':
             r, a, dr_min, dr_max, da = self.outline
             a1, a2 = clip_angles(a, a + da)
@@ -1062,7 +1063,7 @@ class SeqMotifFace(Face):
             n_row, n_col,
             dx_before, dy_before):
 
-        if pos not in ('branch_right', 'aligned'):
+        if pos != 'branch_right' and not pos.startswith('aligned'):
             raise InvalidUsage(f'Position {pos} not allowed for SeqMotifFace')
 
         box = super().compute_bounding_box( 

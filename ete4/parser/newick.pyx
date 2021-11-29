@@ -254,7 +254,6 @@ def read_newick(newick, root_node=None, format=0, quoted_names=False):
         else:
             nw = newick
 
-
         matcher = compile_matchers(format)
         nw = nw.strip()
         if not nw.startswith('(') and nw.endswith(';'):

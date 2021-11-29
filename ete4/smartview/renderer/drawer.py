@@ -59,7 +59,7 @@ class Drawer:
     def __init__(self, tree, viewport=None, panel=0, zoom=(1, 1),
                  limits=None, collapsed_ids=None, 
                  active=None, selected=None, searches=None,
-                 tree_style=None):
+                 layouts=None, tree_style=None):
         self.tree = tree
         self.viewport = Box(*viewport) if viewport else None
         self.panel = panel
@@ -69,6 +69,7 @@ class Drawer:
         self.active = active or Active(set(), defaultdict(lambda: 0))  # looks like (results, parents)
         self.selected = selected or {}  # looks like {node_id: (node, parents)}
         self.searches = searches or {}  # looks like {text: (results, parents)}
+        self.layouts = layouts or []
         self.tree_style = tree_style
         if not self.tree_style:
             self.tree_style = TreeStyle()
@@ -310,15 +311,15 @@ class Drawer:
         graphics = []
 
         if self.panel == 2:
-            deque(draw_faces_at_pos(self.tree_style.aligned_panel_header.top,
+            deque(draw_faces_at_pos(self.tree_style.aligned_panel_header,
                     "aligned_bottom", 0))
-            graphics += draw_faces_at_pos(self.tree_style.aligned_panel_header.top,
+            graphics += draw_faces_at_pos(self.tree_style.aligned_panel_header,
                     "aligned_bottom", 1)
 
         if self.panel == 3:
-            deque(draw_faces_at_pos(self.tree_style.aligned_panel_header.bottom,
+            deque(draw_faces_at_pos(self.tree_style.aligned_panel_footer,
                     "aligned_top", 0))
-            graphics += draw_faces_at_pos(self.tree_style.aligned_panel_header.bottom,
+            graphics += draw_faces_at_pos(self.tree_style.aligned_panel_footer,
                     "aligned_top", 1)
 
         return graphics
@@ -728,8 +729,8 @@ class DrawerRectFaces(DrawerRect):
             node.is_initialized = True
             node.faces = get_FaceAreas()
             node.collapsed_faces = get_FaceAreas()
-            for layout_fn in self.tree_style.layout_fn:
-                layout_fn(node)
+            for layout in self.layouts:
+                layout.set_node_style(node)
 
         
 
@@ -851,8 +852,8 @@ class DrawerCircFaces(DrawerCirc):
 
         if not node.is_initialized:
             node.is_initialized = True
-            for layout_fn in self.tree_style.layout_fn:
-                layout_fn(node)
+            for layout in self.layouts:
+                layout.set_node_style(node)
 
         # Render Faces in different panels
         if self.NPANELS > 1:

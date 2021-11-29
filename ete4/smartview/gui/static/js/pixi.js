@@ -71,15 +71,16 @@ loader
         textures_loaded = true;
     });
 
-function draw_pixi(items, tl, zoom) {
+function draw_pixi(items, tl, zoom, clean=true) {
     // Resize canvas based on container
     const container = view.drawer.type === "rect" ?
         div_aligned : div_tree;
-    app.renderer.resize(container.clientWidth * 1000, container.clientHeight);
-    // Remove all items from stage
-    app.stage.children = [];
 
-    console.log(zoom)
+    app.renderer.resize(container.clientWidth, container.clientHeight);
+
+    // Remove all items from stage
+    if (clean)
+        app.stage.children = [];
 
     if (textures_loaded && items.length)
         draw(items, tl, zoom);
