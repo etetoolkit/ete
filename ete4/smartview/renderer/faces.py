@@ -2,13 +2,7 @@ import re
 from math import pi
 
 from ..utils import InvalidUsage, get_random_string
-from .draw_helpers import Box, SBox, clip_angles, cartesian,\
-                                    draw_text, draw_rect,\
-                                    draw_circle, draw_ellipse, draw_slice,\
-                                    draw_line, draw_outline,\
-                                    draw_triangle, draw_rhombus,\
-                                    draw_arrow, draw_html
-
+from .draw_helpers import *
 
 CHAR_HEIGHT = 1.4 # char's height to width ratio
 
@@ -80,9 +74,16 @@ class Face(object):
 
         self.zoom = (0, 0)
         self.stretch = False  # Stretch width independently of height
+        self.viewport = None  # Aligned panel viewport (x1, x2)
+        self.viewport_margin = 100
 
     def __name__(self):
         return "Face"
+
+    def in_aligned_viewport(self, segment):
+        if self.viewport:
+            return intersects_segment(self.viewport, segment)
+        return True
 
     def get_content(self):
         return self._content
@@ -305,7 +306,7 @@ class AttrFace(TextFace):
 
 class CircleFace(Face):
 
-    def __init__(self, radius, color, name="",
+    def __init__(self, radius, color, name="", tooltip=None,
             padding_x=0, padding_y=0):
 
         Face.__init__(self, name=name,
@@ -316,6 +317,8 @@ class CircleFace(Face):
         # Drawing private properties
         self._max_radius = 0
         self._center = (0, 0)
+
+        self.tooltip = tooltip
 
     def __name__(self):
         return "CircleFace"
@@ -387,7 +390,7 @@ class CircleFace(Face):
         self._check_own_variables()
         style = {'fill': self.color} if self.color else {}
         yield draw_circle(self._center, self._max_radius,
-                self.name, style=style)
+                self.name, style=style, tooltip=self.tooltip)
 
 
 class RectFace(Face):
@@ -395,6 +398,7 @@ class RectFace(Face):
             text=None, fgcolor='black', # text color
             min_fsize=6, max_fsize=15,
             ftype='sans-serif',
+            tooltip=None,
             name="",
             padding_x=0, padding_y=0):
 
@@ -411,6 +415,8 @@ class RectFace(Face):
         self.ftype = ftype
         self.min_fsize = min_fsize
         self.max_fsize = max_fsize
+
+        self.tooltip = tooltip
 
     def __name__(self):
         return "RectFace"
@@ -514,7 +520,8 @@ class RectFace(Face):
 
         yield draw_rect(self._box,
                 self.name,
-                style=style)
+                style=style,
+                tooltip=self.tooltip)
 
         if self.text:
             x, y, dx, dy = self._box
@@ -559,7 +566,7 @@ class ArrowFace(RectFace):
     def __init__(self, width, height, orientation='right',
             color='gray', 
             stroke_color='gray', stroke_width='1.5px',
-            props={},
+            tooltip=None,
             text=None, fgcolor='black', # text color
             min_fsize=6, max_fsize=15,
             ftype='sans-serif',
@@ -569,10 +576,10 @@ class ArrowFace(RectFace):
         RectFace.__init__(self, width=width, height=height,
                 color=color, text=text, fgcolor=fgcolor,
                 min_fsize=min_fsize, max_fsize=max_fsize, ftype=ftype,
+                tooltip=tooltip,
                 name=name, padding_x=padding_x, padding_y=padding_y)
 
         self.orientation = orientation
-        self.props = props
         self.stroke_color = stroke_color
         self.stroke_width = stroke_width
 
@@ -611,7 +618,7 @@ class ArrowFace(RectFace):
                 tip, self.orientation,
                 self.name,
                 style=style,
-                props=self.props)
+                tooltip=self.tooltip)
 
         if self.text:
             r = (x or 1e-10) if circ_drawer else 1
@@ -1083,6 +1090,8 @@ class SeqMotifFace(Face):
         x, y, _, dy = box
         zx, zy = self.zoom
 
+        self.viewport = (drawer.viewport.x, drawer.viewport.x + drawer.viewport.dx)
+
         self._box = Box(x, y, self.width / zx, dy)
         return self._box
 
@@ -1105,8 +1114,11 @@ class SeqMotifFace(Face):
                 p2 = cartesian(p2)
             yield draw_line(p1, p2, style={'stroke-width': self.gap_linewidth,
                                            'stroke': self.gapcolor})
-
         for (start, end, shape, posw, h, fg, bg, text, opacity) in self.regions:
+
+            # if not self.in_aligned_viewport((start, end)):
+                # continue
+
             posw = (posw or self.poswidth) * self.w_scale
             w = posw * (end + 1 - start)
             style = { 'fill': bg, 'opacity': opacity }
@@ -1167,11 +1179,21 @@ class SeqMotifFace(Face):
             # Sequence and compact sequence
             elif shape in ['seq', 'compactseq']:
                 seq = self.seq[start : end + 1]
+                if self.viewport:
+                    sx, sy, sw, sh = box
+                    sposw = sw / len(seq)
+                    viewport_start = self.viewport[0] - self.viewport_margin / zx
+                    viewport_end = self.viewport[1] + self.viewport_margin / zx
+                    sm_x = max(viewport_start - sx, 0)
+                    sm_start = round(sm_x / sposw)
+                    sm_end = len(seq) - round(max(sx + sw - viewport_end, 0) / sposw)
+                    seq = seq[sm_start:sm_end]
+                    sm_box = (sm_x, sy, sposw * len(seq), sh)
                 if shape == 'compactseq' or posw * zx < self._min_fsize:
                     aa_type = "notext"
                 else:
                     aa_type = "text"
-                yield [ f'pixi-aa_{aa_type}', box, seq ]
+                yield [ f'pixi-aa_{aa_type}', sm_box, seq ]
 
             # elif shape == 'seq':
                 # seq = self.seq[start : end + 1]
@@ -1219,8 +1241,8 @@ class PieChartFace(CircleFace):
         self._max_radius = 0
         self._center = (0, 0)
 
-        # data = [ [name, value, color], ... ]
-        # self.data = [ (name, value, color, a, da) ]
+        # data = [ [name, value, color, tooltip], ... ]
+        # self.data = [ (name, value, color, tooltip, a, da) ]
         self.data = []
         self.compute_pie(list(data))
 
@@ -1231,9 +1253,9 @@ class PieChartFace(CircleFace):
         total_value = sum(d[1] for d in data)
 
         a = 0
-        for name, value, color in data:
+        for name, value, color, tooltip in data:
             da = (value / total_value) * 2 * pi
-            self.data.append((name, value, color, a, da))
+            self.data.append((name, value, color, tooltip, a, da))
             a += da
 
         assert a >= 2 * pi - 1e-5 and a <= 2 * pi + 1e-5, "Incorrect pie"
@@ -1245,10 +1267,10 @@ class PieChartFace(CircleFace):
             yield from CircleFace.draw(self, drawer)
 
         else:
-            for (name, value, color, a, da) in self.data:
+            for name, value, color, tooltip, a, da in self.data:
                 style = { 'fill': color }
                 yield draw_slice(self._center, self._max_radius, a, da, 
-                        "", style=style)
+                        "", style=style, tooltip=tooltip)
 
 
 class HTMLFace(RectFace):
@@ -1292,7 +1314,6 @@ class ScaleFace(Face):
 
         self.vt_line_height = 10
 
-
     def __name__(self):
         return "ScaleFace"
 
@@ -1322,6 +1343,8 @@ class ScaleFace(Face):
         x, y, _, dy = box
         zx, zy = self.zoom
 
+        self.viewport = (drawer.viewport.x, drawer.viewport.x + drawer.viewport.dx)
+
         self.height = (self.line_width + 10 + self.max_fsize) / zy
 
         height = min(dy, self.height)
@@ -1349,7 +1372,14 @@ class ScaleFace(Face):
         dx = self.width / nticks
         range_factor = (self.range[1] - self.range[0]) / self.width
 
-        for i in range(nticks + 1):
+        if self.viewport:
+            sm_start = round(max(self.viewport[0] - self.viewport_margin - x0, 0) / dx)
+            sm_end = nticks- round(max(x0 + self.width - (self.viewport[1] +
+                self.viewport_margin), 0) / dx)
+        else:
+            sm_start, sm_end = 0, nticks
+
+        for i in range(sm_start, sm_end + 1):
             x = x0 + i * dx
             number = range_factor * x
             text = self.formatter % number if self.formatter else str(number)

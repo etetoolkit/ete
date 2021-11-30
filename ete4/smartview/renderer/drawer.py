@@ -899,14 +899,6 @@ def make_box(point, size):
     dx, dy = size
     return Box(x, y, dx, dy)
 
-def get_xs(box):
-    x, _, dx, _ = box
-    return x, x + dx
-
-def get_ys(box):
-    _, y, _, dy = box
-    return y, y + dy
-
 
 def get_rect(element, zoom=(0, 0)):
     "Return the rectangle that contains the given graphic element"
@@ -1027,27 +1019,6 @@ def drawn_size(elements, get_box, min_x=None):
         x_min = max(x_min, min_x)
 
     return Size(x_max - x_min, y_max - y_min)
-
-
-def intersects_box(b1, b2):
-    "Return True if the boxes b1 and b2 (of the same kind) intersect"
-    return (intersects_segment(get_xs(b1), get_xs(b2)) and
-            intersects_segment(get_ys(b1), get_ys(b2)))
-
-
-def intersects_segment(s1, s2):
-    "Return True if the segments s1 and s2 intersect"
-    s1min, s1max = s1
-    s2min, s2max = s2
-    return s1min <= s2max and s2min <= s1max
-
-
-def intersects_angles(rect, asec):
-    "Return True if any part of rect is contained within the angles of the asec"
-    return any(intersects_segment(get_ys(circumasec(r)), get_ys(asec))
-                   for r in split_thru_negative_xaxis(rect))
-    # We divide rect in two if it passes thru the -x axis, because then its
-    # circumbscribing asec goes from -pi to +pi and (wrongly) always intersects.
 
 
 def split_thru_negative_xaxis(rect):

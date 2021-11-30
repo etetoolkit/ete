@@ -100,7 +100,7 @@ function draw(items, tl, zoom) {
 }
 
 
-function addSprite(sprite, box, tl, zx, zy) {
+function addSprite(sprite, box, tl, zx, zy, tooltip) {
     const [ x, y, dx, dy ] = box;
 
     let [ sx, sy ] = [ x, y ];
@@ -118,6 +118,10 @@ function addSprite(sprite, box, tl, zx, zy) {
     sprite.width = sw;
     sprite.height = sh;
 
+    if (tooltip) {
+        sprite.accessibleTitle = tooltip;
+    }
+
     // Add to stage
     app.stage.addChild(sprite);
 }
@@ -125,6 +129,7 @@ function addSprite(sprite, box, tl, zx, zy) {
 
 function draw_msa(sequence, type, box, tl, zx, zy) {
     const [ x0, y, width, posh ] = box;
+
     const posw = width / sequence.length;
 
     if (view.aligned.adjust_zoom)
@@ -136,7 +141,8 @@ function draw_msa(sequence, type, box, tl, zx, zy) {
         if (s != "-") {
             const sprite = new Sprite(textures[type][s])
             const x = x0 + i * posw;
-            addSprite(sprite, [x, y, posw, posh], tl, zx, zy);
+            const tooltip = `Residue: ${s}\nPosition: ${i}`
+            addSprite(sprite, [x, y, posw, posh], tl, zx, zy, tooltip);
         }
     })
 }

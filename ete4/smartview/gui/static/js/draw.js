@@ -260,18 +260,21 @@ async function draw_aligned(params, npanels) {
     if (!params)
         params = get_tree_params();
 
+    const zx = view.zoom.a;
     const zy = view.zoom.y;
     const panels = { 
         1: { div: div_aligned, show: true,
-             params: { x: view.aligned.x, y: view.tl.y } }, 
+             params: { x: view.aligned.x, y: view.tl.y, w: div_aligned.offsetWidth / zx } }, 
 
         2: { div: div_aligned_header, show: view.aligned.header.show,
-             params: { x: 0, y:0, 
-                h: Math.max(-view.tl.y, view.aligned.header.height / zy) } }, 
+             params: { x: view.aligned.x, y: 0,
+                 w: div_aligned.offsetWidth / zx,
+                 h: Math.max(-view.tl.y, view.aligned.header.height / zy) } }, 
 
         3: { div: div_aligned_footer, show: view.aligned.footer.show,
-             params: { x: 0, y:0,
-                h: Math.max(div_tree.offsetHeight / zy + view.tl.y - view.tree_size.height,
+             params: { x: view.aligned.x, y: 0,
+                 w: div_aligned.offsetWidth / zx,
+                 h: Math.max(div_tree.offsetHeight / zy + view.tl.y - view.tree_size.height,
                         view.aligned.footer.height / zy) } }
     };
 
@@ -298,8 +301,7 @@ async function draw_aligned(params, npanels) {
                     div.style.display = "none";
             }
 
-            draw(div, items, {x: view.aligned.x, y: panel.params.y}, 
-                { x: view.zoom.a, y: view.zoom.y });
+            draw(div, items, {x: view.aligned.x, y: panel.params.y}, { x: view.zoom.a, y: zy });
 
             align_drawing = false;
 
@@ -372,8 +374,11 @@ function create_item(g, item, tl, zoom) {
         b.addEventListener("mouseleave", _ =>
             on_box_mouseleave(node_id));
 
-        if (name.length > 0 || Object.entries(properties).length > 0)
-            b.appendChild(create_tooltip(name, properties));
+        if (name.length > 0 || Object.entries(properties).length > 0) {
+            const text = (name ? name : "(unnamed)") + "\n" +
+            Object.entries(properties).map(x => x[0] + ": " + x[1]).join("\n");
+            b.appendChild(create_tooltip(text));
+        }
 
         return b;
     }
@@ -405,16 +410,19 @@ function create_item(g, item, tl, zoom) {
         return arc;
     }
     else if (item[0] === "circle") {
-        const [ , center, radius, type, style] = item;
+        const [ , center, radius, type, style, tooltip] = item;
 
         const circle = create_circle(center, radius, tl, zx, zy, type);
 
         style_ellipse(circle, style); // same styling as ellipse
 
+        if (tooltip)
+            circle.appendChild(create_tooltip(tooltip));
+
         return circle
     }
     else if (item[0] === "ellipse") {
-        const [ , center, rx, ry, type, style] = item;
+        const [ , center, rx, ry, type, style, tooltip] = item;
 
         const ellipse = create_ellipse(center, rx, ry, tl, zx, zy, type);
 
@@ -426,10 +434,13 @@ function create_item(g, item, tl, zoom) {
         
         style_ellipse(ellipse, style);
 
+        if (tooltip)
+            ellipse.appendChild(create_tooltip(tooltip));
+
         return ellipse;
     }
     else if (item[0] === "triangle") {
-        const [ , box, tip, type, style] = item;
+        const [ , box, tip, type, style, tooltip] = item;
 
         const triangle = create_triangle(box, tip, tl, zx, zy, type);
 
@@ -445,6 +456,9 @@ function create_item(g, item, tl, zoom) {
 
         style_polygon(triangle, style);
 
+        if (tooltip)
+            triangle.appendChild(create_tooltip(tooltip));
+
         return triangle;
     }
     else if (item[0] === "text") {
@@ -458,45 +472,50 @@ function create_item(g, item, tl, zoom) {
         return text;
     }
     else if (item[0] === "rect") {
-        const [ , box, type, style] = item;
+        const [ , box, type, style, tooltip] = item;
 
         const rect = create_box(box, tl, zx, zy, type, style);
 
         style_polygon(rect, style);
 
+        if (tooltip)
+            rect.appendChild(create_tooltip(tooltip));
+
         return rect;
     }
     else if (item[0] === "rhombus") {
-        const [ , points, type, style] = item;
+        const [ , points, type, style, tooltip] = item;
 
         const rhombus = create_polygon(points, tl, zx, zy, "rhombus " + type);
 
         style_polygon(rhombus, style);
 
+        if (tooltip)
+            rhombus.appendChild(create_tooltip(tooltip))
+
         return rhombus;
     }
     else if (item[0] === "polygon") {
-        const [ , points, type, style, props] = item;
+        const [ , points, type, style, tooltip] = item;
 
         const polygon = create_polygon(points, tl, zx, zy, "polygon " + type);
 
-        if (props) {
-            const name = props["name"];
-            if (name)
-                delete props["name"];
-            polygon.appendChild(create_tooltip(name, props))
-        }
-
         style_polygon(polygon, style);
+
+        if (tooltip)
+            polygon.appendChild(create_tooltip(tooltip))
 
         return polygon;
     }
     else if (item[0] === "slice") {
-        const [ , box, type, style] = item;
+        const [ , box, type, style, tooltip] = item;
 
         const slice = create_slice(...box, tl, zx, zy, type, style);
 
         style_polygon(slice, style);
+
+        if (tooltip)
+            slice.appendChild(create_tooltip(tooltip))
 
         return slice;
     }
@@ -681,10 +700,8 @@ function create_circ_outline(sbox, tl, z) {
 
 // Return an element that, appended to a svg element (normally a box), will
 // make it show a tooltip showing nicely the given name and properties.
-function create_tooltip(name, properties) {
+function create_tooltip(text) {
     const title = create_svg_element("title", {});
-    const text = (name ? name : "(unnamed)") + "\n" +
-        Object.entries(properties).map(x => x[0] + ": " + x[1]).join("\n");
     title.appendChild(document.createTextNode(text));
     return title;
 }
