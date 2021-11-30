@@ -36,6 +36,8 @@ function create_menu_main(menu, trees) {
 
     add_folder_tree_scale(menu);
 
+    add_folder_aligned(menu);
+
     menu.addInput(view, "select_text", { label: "select text", position: 'left' })
       .on("change", () => {
         style("font").userSelect = (view.select_text ? "text" : "none");
@@ -44,7 +46,6 @@ function create_menu_main(menu, trees) {
         set_boxes_clickable(!view.select_text);
     });
     menu.addInput(view, "smart_zoom", { label: "smart zoom" });
-    menu.addInput(view.aligned, "zoom", { label: "aligned panel zoom" });
     menu.addButton({ title: "share view" }).on("click", view.share_view);
     menu.addButton({ title: "Help" }).on("click", view.show_help);
 }
@@ -369,7 +370,7 @@ function add_folder_minimap(menu) {
 
 function add_folder_tree_scale(menu) {
     const folder_scale = menu.addFolder(
-        { title: "Tree scale", expanded: false });
+        { title: "Tree scale legend", expanded: false });
 
     folder_scale.addInput(view.tree_scale, "length", 
         { label: "width (px)", min: 10, max: 300 })
@@ -381,4 +382,25 @@ function add_folder_tree_scale(menu) {
     folder_scale.addInput(view.tree_scale, "show", { view: "color" })
         .on("change", draw_tree_scale);
     
+}
+
+
+function add_folder_aligned(menu) {
+    const folder_aligned = menu.addFolder(
+        { title: "Aligned panel", expanded: false });
+
+    folder_aligned.addInput(view.aligned, "zoom", 
+        { label: "zoom" });
+
+
+    folder_aligned.addInput(view.aligned, "adjust_zoom", 
+        { label: "adjust zoom" });
+
+    folder_aligned.addInput(view.aligned.header, "show", 
+        { label: "show header" })
+        .on("change",() => draw_aligned());
+
+    folder_aligned.addInput(view.aligned.footer, "show", 
+        { label: "show footer" })
+        .on("change",() => draw_aligned());
 }

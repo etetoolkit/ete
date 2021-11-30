@@ -112,7 +112,9 @@ function zoom_aligned(point, zoom_in) {
     const x0 = div_tree.offsetWidth * view.aligned.pos / 100;
     point.x -= x0;
     const qz = { a: (zoom_in ? 1.25 : 0.8) };
-    const zoom_new = qz.a * view.zoom.a;
+    let zoom_new = Math.max(qz.a * view.zoom.a, 1);
+    zoom_new = view.aligned.max_zoom ?
+        Math.min(view.aligned.max_zoom, zoom_new) : zoom_new;
     view.aligned.x += (1 / view.zoom.a - 1 / zoom_new) * point.x;
     view.zoom.a = zoom_new;
     zooming.qz.a *= qz.a;

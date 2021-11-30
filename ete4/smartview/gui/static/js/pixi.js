@@ -10,6 +10,7 @@ const loader = PIXI.Loader.shared;
 //const textureCache = PIXI.utils.TextureCache;
 const resources = loader.resources;
 const Sprite = PIXI.Sprite;
+const MIN_MSA_POSWIDTH = 12;
 
 
 const app_options = {
@@ -18,7 +19,8 @@ const app_options = {
 };
     
 // Globals
-const app = new Application(app_options);
+const apps = {};
+var app;
 var textures;
 var textures_loaded = false;
 
@@ -71,16 +73,14 @@ loader
         textures_loaded = true;
     });
 
-function draw_pixi(items, tl, zoom, clean=true) {
-    // Resize canvas based on container
-    const container = view.drawer.type === "rect" ?
-        div_aligned : div_tree;
+function draw_pixi(container, items, tl, zoom) {
+    app = apps[container.id] = apps[container.id] || new Application(app_options);
 
+    // Resize canvas based on container
     app.renderer.resize(container.clientWidth, container.clientHeight);
 
     // Remove all items from stage
-    if (clean)
-        app.stage.children = [];
+    app.stage.children = [];
 
     if (textures_loaded && items.length)
         draw(items, tl, zoom);
@@ -126,6 +126,12 @@ function addSprite(sprite, box, tl, zx, zy) {
 function draw_msa(sequence, type, box, tl, zx, zy) {
     const [ x0, y, width, posh ] = box;
     const posw = width / sequence.length;
+
+    if (view.aligned.adjust_zoom)
+        view.aligned.max_zoom = MIN_MSA_POSWIDTH / posw;
+    else
+        view.aligned.max_zoom = undefined;
+
     sequence.split("").forEach((s, i) => {
         if (s != "-") {
             const sprite = new Sprite(textures[type][s])

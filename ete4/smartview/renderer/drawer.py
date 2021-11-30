@@ -259,7 +259,6 @@ class Drawer:
             # for idx, text in enumerate(parent_of):
                 # yield 
 
-
     def draw_aligned_headers(self):
         # Draw aligned panel headers
         def it_fits(box, pos):

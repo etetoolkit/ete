@@ -527,7 +527,7 @@ class RectFace(Face):
                         dx, dy)
             else:
                 rotation = 0
-                self.compute_fsize(dx, dy, zx, zy)
+                self.compute_fsize(dx / len(self.text), dy, zx, zy)
                 text_box = Box(x + dx / 2,
                         y + (dy - self._fsize / (zy * r)) / 2,
                         dx, dy)
@@ -621,7 +621,7 @@ class ArrowFace(RectFace):
                         dx, dy)
             else:
                 rotation = 0
-                self.compute_fsize(dx, dy, zx, zy)
+                self.compute_fsize(dx / len(text), dy, zx, zy)
                 text_box = Box(x + dx / 2,
                         y + (dy - self._fsize / (zy * r)) / 2,
                         dx, dy)
@@ -1260,3 +1260,111 @@ class HTMLFace(RectFace):
 
     def draw(self, drawer):
         yield draw_html(self._box, self.content)
+
+
+
+class ScaleFace(Face):
+    def __init__(self, name='', width=None, color='black',
+            scale_range=(0, 0), tick_width=80, line_width=1,
+            formatter='%.0f',
+            min_fsize=6, max_fsize=12, ftype='sans-serif',
+            padding_x=0, padding_y=0):
+
+        Face.__init__(self, name=name,
+                padding_x=padding_x, padding_y=padding_y)
+
+        self.width = width
+        self.height = None
+        self.range = scale_range
+
+        self.color = color
+        self.min_fsize = min_fsize
+        self.max_fsize = max_fsize
+        self._fsize = max_fsize
+        self.ftype = ftype
+        self.formatter = formatter
+
+        self.tick_width = tick_width
+        self.line_width = line_width
+
+        self.vt_line_height = 10
+
+
+    def __name__(self):
+        return "ScaleFace"
+
+    def compute_bounding_box(self,
+            drawer,
+            point, size,
+            dx_to_closest_child,
+            bdx, bdy,
+            bdy0, bdy1,
+            pos, row,
+            n_row, n_col,
+            dx_before, dy_before):
+
+        if drawer.TYPE == 'circ':
+            pos = swap_pos(pos, point[1])
+
+        box = super().compute_bounding_box( 
+            drawer,
+            point, size,
+            dx_to_closest_child,
+            bdx, bdy,
+            bdy0, bdy1,
+            pos, row,
+            n_row, n_col,
+            dx_before, dy_before)
+
+        x, y, _, dy = box
+        zx, zy = self.zoom
+
+        self.height = (self.line_width + 10 + self.max_fsize) / zy
+
+        height = min(dy, self.height)
+
+        if pos == "aligned_bottom":
+            y = y + dy - height
+
+        self._box = Box(x, y, self.width / zx, height)
+        return self._box
+
+    def draw(self, drawer):
+        x0, y, _, dy = self._box
+        zx, zy = self.zoom
+
+        p1 = (x0, y + dy - 5 / zy)
+        p2 = (x0 + self.width, y + dy - self.vt_line_height / (2 * zy))
+        if drawer.TYPE == 'circ':
+            p1 = cartesian(p1)
+            p2 = cartesian(p2)
+        yield draw_line(p1, p2, style={'stroke-width': self.line_width,
+                                       'stroke': self.color})
+
+
+        nticks = round((self.width * zx) / self.tick_width)
+        dx = self.width / nticks
+        range_factor = (self.range[1] - self.range[0]) / self.width
+
+        for i in range(nticks + 1):
+            x = x0 + i * dx
+            number = range_factor * x
+            text = self.formatter % number if self.formatter else str(number)
+            self.compute_fsize(self.tick_width / len(text), dy, zx, zy)
+            text_style = {
+                'max_fsize': self._fsize,
+                'text_anchor': 'middle',
+                'ftype': f'{self.ftype}, sans-serif', # default sans-serif
+                }
+            text_box = Box(x,
+                    y,
+                    # y + (dy - self._fsize / (zy * r)) / 2,
+                    dx, dy)
+
+            yield draw_text(text_box, text, style=text_style)
+
+            p1 = (x, y + dy - self.vt_line_height / zy)
+            p2 = (x, y + dy)
+
+            yield draw_line(p1, p2, style={'stroke-width': self.line_width,
+                                           'stroke': self.color})
