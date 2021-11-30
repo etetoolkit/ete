@@ -41,7 +41,6 @@ function drag_stop() {
     }
 
     if (dragging.moved) {
-        console.log("drawing")
         draw_tree();
         dragging.moved = false;
     }

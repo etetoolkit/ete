@@ -79,6 +79,7 @@ class Face(object):
         self.always_drawn = False # Use carefully to avoid overheading...
 
         self.zoom = (0, 0)
+        self.stretch = False  # Stretch width independently of height
 
     def __name__(self):
         return "Face"
@@ -401,6 +402,7 @@ class RectFace(Face):
 
         self.width = width
         self.height = height
+        self.stretch = True
         self.color = color
         # Text related
         self.text = str(text) if text is not None else None
@@ -438,6 +440,7 @@ class RectFace(Face):
 
         x, y, dx, dy = box
         zx, zy = self.zoom
+        zx = 1 if self.stretch and pos.startswith('aligned') else zx
 
         r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
 
@@ -621,7 +624,7 @@ class ArrowFace(RectFace):
                         dx, dy)
             else:
                 rotation = 0
-                self.compute_fsize(dx / len(text), dy, zx, zy)
+                self.compute_fsize(dx / len(self.text), dy, zx, zy)
                 text_box = Box(x + dx / 2,
                         y + (dy - self._fsize / (zy * r)) / 2,
                         dx, dy)
@@ -1260,7 +1263,6 @@ class HTMLFace(RectFace):
 
     def draw(self, drawer):
         yield draw_html(self._box, self.content)
-
 
 
 class ScaleFace(Face):

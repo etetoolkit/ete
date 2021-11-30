@@ -149,9 +149,6 @@ function smooth_zoom_aligned(point) {
 
     const toTransform = Array.from(div_aligned.children[0].children);
     toTransform.push(div_aligned.children[1].children[0])  // pixi canvas
-    //toTransform.forEach(g => g.style.transform = 
-            //`scale(${zooming.qz.a}, 1) ` +
-            //`translate(${(1 - 1 / zooming.qz.a) * point.x}px, 0)`);
 
     zooming.timeout = window.setTimeout(() => {
         zooming.qz.x = zooming.qz.y = zooming.qz.a = 1;
