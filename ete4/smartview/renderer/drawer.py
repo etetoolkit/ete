@@ -233,7 +233,7 @@ class Drawer:
                         'stroke': node_style['hz_line_color'],
                 }
                 yield from self.draw_lengthline((x, y + bdy), (x + dx, y + bdy),
-                                list(parent_of), hz_line_style)
+                                list(parent_of), style=hz_line_style)
 
             if bdy0 != bdy1:
                 vt_line_style = {

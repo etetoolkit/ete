@@ -77,7 +77,7 @@ function drag_move(point) {
             view.aligned.x += scale_x * movement.x;
 
             const toTranslate = [ 
-                ...div_aligned.children[0].children,
+                //...div_aligned.children[0].children,
                 ...div_aligned_header.children[0].children,
                 ...div_aligned_footer.children[0].children,
             ];
