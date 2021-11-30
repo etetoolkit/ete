@@ -15,7 +15,6 @@ const dragging = {
 };
 
 
-
 function drag_start(point, element, from_grabber=true) {
     if (element === div_aligned)
         div_aligned.style.cursor = "grabbing";
@@ -77,12 +76,17 @@ function drag_move(point) {
         if (dragging.element === div_aligned) {
             view.aligned.x += scale_x * movement.x;
 
-            //Array.from(div_aligned.children[0].children).forEach(g =>
-                //g.setAttribute("transform", `translate(${dx} 0)`));
+            const toTranslate = [ 
+                //...div_aligned.children[0].children,
+                ...div_aligned_header.children[0].children,
+                ...div_aligned_footer.children[0].children,
+            ];
+            toTranslate.forEach(g =>
+                g.setAttribute("transform", `translate(${dx} 0)`));
             // pixi canvas
-            //div_aligned.children[1].children[0].style.transform = `translate(${dx}px, 0)`;
+            //div_aligned.children[1].children[0].style.transform = `translate(${movement.x}px, 0)`;
 
-            draw_aligned();
+            draw_aligned(undefined, 2);
         }
 
         else {

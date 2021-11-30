@@ -13,15 +13,10 @@ class TreeStyle(object):
         self._layout_handler = []
         self.aligned_grid = True
         self.aligned_grid_dxs = defaultdict(lambda: 0)
-        self.show_align_link = False
 
         self.ultrametric = False
-        
-        self.show_outline = True
-        self.show_leaf_name = True
-        self.show_nleaves = False
-        self.show_branch_length = False
-        self.show_branch_support = False
+
+        self.collapse_size = 6
 
         # Selected face
         self._selected_face = SelectedRectFace

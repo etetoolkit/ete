@@ -51,9 +51,11 @@ const view = {
     rmin: 0,
     angle: {min: -180, max: 180},
     aligned: {
-        x: 0,
+        x: -10,
         pos: 80,  // % of the screen width where the aligned panel starts
-        zoom: false,
+        zoom: true,
+        max_zoom: undefined,
+        adjust_zoom: true,
         header: {
             show: true, height: 150 },
         footer: {
@@ -252,6 +254,7 @@ async function on_tree_change() {
     remove_selections();
     remove_collapsed();
     view.tree_size = await api(`/trees/${get_tid()}/size`);
+    view.min_size = await api(`/trees/${get_tid()}/collapse_size`);
 
     // Get searches and selections if any are stored in backend
     if (Object.keys(view.searches).length === 0)
@@ -363,6 +366,7 @@ async function set_consistent_values() {
     }
 
     view.tree_size = await api(`/trees/${get_tid()}/size`);
+    view.min_size = await api(`/trees/${get_tid()}/collapse_size`);
 
     let drawer_info;
     try {

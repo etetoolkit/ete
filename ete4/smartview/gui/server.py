@@ -217,6 +217,8 @@ class Trees(Resource):
         elif rule == '/trees/<string:tree_id>/size':
             width, height = t.size
             return {'width': width, 'height': height}
+        elif rule == '/trees/<string:tree_id>/collapse_size':
+            return tree.style.collapse_size
         elif rule == '/trees/<string:tree_id>/properties':
             properties = set()
             for node in t.traverse():
@@ -1179,6 +1181,7 @@ def add_resources(api):
         '/trees/<string:tree_id>/newick',
         '/trees/<string:tree_id>/draw',
         '/trees/<string:tree_id>/size',
+        '/trees/<string:tree_id>/collapse_size',
         '/trees/<string:tree_id>/properties',
         '/trees/<string:tree_id>/nodecount',
         '/trees/<string:tree_id>/ultrametric',

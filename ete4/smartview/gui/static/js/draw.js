@@ -180,7 +180,7 @@ function draw_negative_xaxis() {
 
 // Append a svg to the given element, with all the items in the list drawn.
 // The first child of element will be used or replaced as a svg.
-function draw(element, items, tl, zoom, replace=true, clean_pixi=true) {
+function draw(element, items, tl, zoom, replace=true) {
     const is_svg = item => {
         const name = item[0];
         return !(name.includes("pixi-") || name === "html")
@@ -193,10 +193,10 @@ function draw(element, items, tl, zoom, replace=true, clean_pixi=true) {
     
     const pixi_items = items.filter(i => i[0].includes("pixi-"));
     if (pixi_items.length) {
-        const pixi = draw_pixi(pixi_items, tl, zoom, clean_pixi)
-        const pixi_container = view.drawer.type === "rect" ? div_aligned : div_tree;
-        replace_child(pixi_container.querySelector(".div_pixi"), pixi);
+        const pixi_container = view.drawer.type === "circ" ? div_tree : element;
+        const pixi = draw_pixi(pixi_container, pixi_items, tl, zoom)
         pixi.style.transform = "translate(0, 0)";
+        replace_child(pixi_container.querySelector(".div_pixi"), pixi);
     }
 
     const html_container = element.querySelector(".div_html")
@@ -255,23 +255,29 @@ function replace_svg(element) {
 
 
 // Draw elements that belong to panels above 0.
-async function draw_aligned(params) {
+async function draw_aligned(params, npanels) {
 
     if (!params)
         params = get_tree_params();
 
     const zy = view.zoom.y;
     const panels = { 
-        1: { div: div_aligned, params: { x: view.aligned.x, y: view.tl.y } }, 
-        2: { div: div_aligned_header, params: { x: 0, y:0, 
-            h: Math.max(-view.tl.y, view.aligned.header.height / zy) } }, 
-        3: { div: div_aligned_footer, params: { x: 0, y:0,
-            h: Math.max(div_tree.offsetHeight / zy + view.tl.y - view.tree_size.height,
+        1: { div: div_aligned, show: true,
+             params: { x: view.aligned.x, y: view.tl.y } }, 
+
+        2: { div: div_aligned_header, show: view.aligned.header.show,
+             params: { x: 0, y:0, 
+                h: Math.max(-view.tl.y, view.aligned.header.height / zy) } }, 
+
+        3: { div: div_aligned_footer, show: view.aligned.footer.show,
+             params: { x: 0, y:0,
+                h: Math.max(div_tree.offsetHeight / zy + view.tl.y - view.tree_size.height,
                         view.aligned.footer.height / zy) } }
     };
 
     if (view.drawer.type === "rect") {
-        for (let panel_n = 1; panel_n < view.drawer.npanels; panel_n++) {
+        npanels = npanels ? Math.min(view.drawer.npanels, npanels) : view.drawer.npanels;
+        for (let panel_n = 1; panel_n < npanels; panel_n++) {
             const panel = panels[panel_n];
             const qs = new URLSearchParams({
                 ...params, ...panel.params, "panel": panel_n
@@ -285,7 +291,7 @@ async function draw_aligned(params) {
 
             // Resize headers accordingly or remove them in no items
             if (panel_n === 2 || panel_n === 3) {
-                if (items.length > 0) {
+                if (items.length > 0 && panel.show) {
                     div.style.display = "block";
                     div.style.height = panel.params.h * zy + "px";
                 } else
@@ -293,7 +299,7 @@ async function draw_aligned(params) {
             }
 
             draw(div, items, {x: view.aligned.x, y: panel.params.y}, 
-                { x: view.zoom.a, y: view.zoom.y }, true, panel_n === 1);
+                { x: view.zoom.a, y: view.zoom.y });
 
             align_drawing = false;
 
