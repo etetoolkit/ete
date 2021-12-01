@@ -132,9 +132,14 @@ class Trees(Resource):
             if app.safe_mode:
                 raise InvalidUsage(f'invalid path {rule} in safe_mode mode', 404)
             return [{ 'id': i, 'name': v.name } for i, v in app.trees.items()]
-        # elif rule == '/trees/<string:tree_id>':
-            # if app.safe_mode:
-                # raise InvalidUsage(f'invalid path {rule} in safe_mode mode', 404)
+        elif rule == '/trees/<string:tree_id>':
+            if app.safe_mode:
+                raise invalidusage(f'invalid path {rule} in safe_mode mode', 404)
+            properties = set()
+            for node in tree.tree.traverse():
+                properties |= node.props.keys()
+            properties = [ p for p in properties if not p.startswith("_") ]
+            return { 'name': tree.name, 'props': properties }
         elif rule == '/trees/<string:tree_id>/nodeinfo':
             node = gdn.get_node(tree.tree, subtree)
             return node.props
@@ -190,7 +195,8 @@ class Trees(Resource):
             nodes = []
             for node in tree.active.results:
                 node_id = ",".join(map(str, get_node_id(tree.tree, node, [])))
-                nodes.append({ "id": node_id, **node.props })
+                props = { k:v for k,v in node.props.items() if not k.startswith('_') }
+                nodes.append({ "id": node_id, **props })
             return nodes
         # Searches
         elif rule == '/trees/<string:tree_id>/searches':
@@ -898,8 +904,8 @@ def add_tree(data):
     print('dumping')
     # Write tree data as a temporary pickle file
     obj = { 'name': name, 'layouts': layouts, 'tree': tree }
-    # with open(f'/tmp/{tid}.pickle', 'wb') as handle:
-        # pickle.dump(obj, handle)
+    with open(f'/tmp/{tid}.pickle', 'wb') as handle:
+        pickle.dump(obj, handle)
 
     print(f'Dump: {time() - start}')
 

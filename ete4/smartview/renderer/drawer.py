@@ -138,9 +138,10 @@ class Drawer:
         is_manually_collapsed = it.node_id in self.collapsed_ids
 
         if is_manually_collapsed and self.outline:
-            graphics += self.get_outline()  # so we won't stack with its outline
+            graphics += self.get_outline(it.node_id)  # so we won't stack with its outline
 
         if is_manually_collapsed or self.is_small(box_node):
+            print("HEELOO", is_manually_collapsed)
             self.node_dxs[-1].append(box_node.dx)
             self.collapsed.append(it.node)
             self.outline = stack(self.outline, box_node)
@@ -178,6 +179,8 @@ class Drawer:
                         if any(node in results or node in parents.keys() for node in self.collapsed) )
                 active_children = self.get_active_children()
                 selected_children = self.get_selected_children()
+
+            print("lastt", it.node_id in self.collapsed_ids)
             graphics += self.get_outline()
 
         x_after, y_after = point
@@ -318,7 +321,7 @@ class Drawer:
 
         return graphics
 
-    def get_outline(self):
+    def get_outline(self, node_id=None):
         "Yield the outline representation"
         graphics = []
 
@@ -357,7 +360,7 @@ class Drawer:
             name, properties = collapsed_node.name, collapsed_node.props
 
             box = draw_nodebox(self.flush_outline(ndx), name, 
-                    properties, [], searched_by + selected_by + active_by,
+                    properties, node_id or [], searched_by + selected_by + active_by,
                     { 'fill': collapsed_node.sm_style.get('bgcolor') })
             self.nodeboxes.append(box)
         else:

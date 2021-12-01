@@ -14,14 +14,87 @@ export { init_menus, update_folder_layouts };
 function init_menus(trees) {
     menus.pane = new Tweakpane.Pane()
         .addFolder({ title: "Control panel" });
+
     const tab = menus.pane.addTab({ pages: [
-        { title: "Tree view" },
-        { title: "Representation" },
-        { title: "Selection" },
+        { title: "Basic" },
+        { title: "Selections" },
+        { title: "Advanced" },
     ]});
-    create_menu_main(tab.pages[0], trees);
-    create_menu_representation(tab.pages[1]);
-    create_menu_selection(tab.pages[2]);
+    create_menu_basic(tab.pages[0], trees);
+    create_menu_selection(tab.pages[1]);
+
+
+    //const tab = menus.pane.addTab({ pages: [
+        //{ title: "Tree view" },
+        //{ title: "Representation" },
+        //{ title: "Selection" },
+    //]});
+    //create_menu_main(tab.pages[0], trees);
+    //create_menu_representation(tab.pages[1]);
+    //create_menu_selection(tab.pages[2]);
+}
+
+
+function create_menu_basic(menu, trees) {
+    
+    // trees
+    if (trees.length > 1) {
+        const options = trees.reduce((opt, t) => ({ ...opt, [t]: t }), {});
+        menu.addInput(view, "tree", {options: options}).on("change", () => {
+            view.subtree = "";
+            on_tree_change();
+        });
+    } else
+        menu.addMonitor(view, "tree",
+            { label: "tree" })
+
+    // upload 
+    if (view.upload)
+        menu.addButton({ title: "upload" }).on("click", view.upload);
+
+    // download
+    const folder_download = menu.addFolder({ title: "Download",
+                                                    expanded: false });
+    folder_download.addButton({ title: "newick" }).on("click", view.download.newick);
+    folder_download.addButton({ title: "svg" }).on("click", view.download.svg);
+
+
+    // drawer
+    const options = { "Rectangular": "RectFaces", "Circular": "CircFaces" };
+    menu.addInput(view.drawer, "name", { label: "drawer", options: options })
+        .on("change", on_drawer_change);
+
+    // min collapse size
+    menu.addInput(view, "min_size", { label: "collapse", 
+        min: 1, max: 100, step: 1 }).on("change", update);
+
+    // ultrametric
+    menu.addInput(view, "ultrametric", { label: "ultrametric" }).on("change", 
+        async () => {
+            await api(`/trees/${get_tid()}/ultrametric`);
+            update();
+    })
+
+    // topology only
+
+
+    // layouts
+    add_folder_layouts(menu, false);
+
+    // minimap
+    menus.minimap = menu.addInput(view.minimap, "show", { label: "show minimap" })
+        .on("change", () => show_minimap(view.minimap.show));
+
+    // tree scale legend
+    menu.addInput(view.tree_scale, "show", { label: "show tree scale legend" })
+        .on("change", draw_tree_scale);
+
+    // zooms
+    menu.addInput(view, "smart_zoom", { label: "smart zoom" });
+
+    menu.addInput(view.aligned, "zoom", { label: "zoom in aligned panel" });
+
+    menu.addButton({ title: "Help" }).on("click", view.show_help);
 }
 
 
@@ -80,17 +153,18 @@ function create_menu_representation(menu) {
 
     //add_folder_style(menu);
 
-    add_folder_layouts(menu);
+    //add_folder_layouts(menu);
 }
 
 
 function create_menu_selection(menu) {
     // filled dynamically in collapsed.js and select.js
-    menus.collapsed = menu.addFolder({ title: "Collapsed" }); 
-    menus.selected = menu.addFolder({ title: "Selected" });
+    menus.collapsed = menu.addFolder({ title: "Collapsed", expanded: false }); 
 
     view.active.folder = menu.addFolder({ title: `Active ${view.active.nodes.length}` });
     add_folder_active();
+
+    menus.selected = menu.addFolder({ title: "Selected", expanded: false });
 
     add_folder_searches(menu);
 }
@@ -146,14 +220,14 @@ function update_folder_layouts (){
 }
 
 
-function add_folder_layouts(menu) {
-    menus.layouts = menu.addFolder({ title: "Layouts" });
+function add_folder_layouts(menu, expanded=true) {
+    menus.layouts = menu.addFolder({ title: "Layouts", expanded: expanded });
     update_folder_layouts();
 }
 
 
 function add_folder_searches(menu) {
-    menus.searches = menu.addFolder({ title: "Searches" });
+    menus.searches = menu.addFolder({ title: "Searched" });
 
     menus.searches.addButton({ title: "new search" }).on("click", view.search);
 }
@@ -193,23 +267,6 @@ function add_folder_view(menu) {
         label: "Adjust zoom a", 
         format: v => v.toFixed(1),
         min: 1, max: div_tree.offsetWidth / view.tree_size.width }).on("change", update);
-
-    //const folder_zoom = folder_view.addFolder({ title: "Zoom" });
-
-    //folder_zoom.addInput(view.zoom, "x", { label: "x", 
-                                           //format: v => v.toFixed(1),
-                                           //min: 1, max: div_tree.offsetWidth })
-        //.on("change", update);
-    //folder_zoom.addInput(view.zoom, "y", { label: "y", 
-                                           //format: v => v.toFixed(3),
-                                           //min: 10**(-10), max: div_tree.offsetHeight, step: 10**(-10) })
-        //.on("change", update);
-
-    const folder_aligned = folder_view.addFolder({ title: "Aligned panel",
-                                                   expanded: false });
-    folder_aligned.addInput(view.aligned, "pos", { label: "position", 
-                                                 min: 0, max: 100 })
-        .on("change", () => div_aligned.style.width = `${100 - view.aligned.pos}%`);
 }
 
 
@@ -379,9 +436,8 @@ function add_folder_tree_scale(menu) {
     folder_scale.addInput(view.tree_scale, "color", { view: "color" })
         .on("change", draw_tree_scale);
 
-    folder_scale.addInput(view.tree_scale, "show", { view: "color" })
-        .on("change", draw_tree_scale);
-    
+    folder_scale.addInput(view.tree_scale, "show")
+        .on("change", draw_tree_scale); 
 }
 
 
@@ -403,4 +459,8 @@ function add_folder_aligned(menu) {
     folder_aligned.addInput(view.aligned.footer, "show", 
         { label: "show footer" })
         .on("change",() => draw_aligned());
+
+    folder_aligned.addInput(view.aligned, "pos", { label: "position", 
+                                                 min: 0, max: 100 })
+        .on("change", () => div_aligned.style.width = `${100 - view.aligned.pos}%`);
 }

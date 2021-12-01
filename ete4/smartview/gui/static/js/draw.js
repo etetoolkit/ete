@@ -71,9 +71,13 @@ async function draw_tree() {
         view.drawer.npanels = drawer_info.npanels; // type has already been set
 
         // Toggle aligned panel
-        if (drawer_info.type === "rect" && drawer_info.npanels > 1)
+        if (drawer_info.type === "rect" && drawer_info.npanels > 1) {
             div_aligned.style.display = "initial";  // show aligned panel
-        else
+            const tree_px_width = view.zoom.x * (view.tree_size.width - view.tl.x);
+            view.aligned.pos = 100 * (tree_px_width + 200) / div_tree.offsetWidth;
+            view.aligned.pos = Math.min(Math.max(view.aligned.pos, 1), 99);  // clip
+            div_aligned.style.width = `${100 - view.aligned.pos}%`;
+        } else
             div_aligned.style.display = "none";  // hide aligned panel
 
         if (view.drawer.npanels > 1) {
@@ -81,7 +85,7 @@ async function draw_tree() {
                 if (!align_drawing)
                     await draw_aligned(params);
                 clearTimeout(align_timeout);
-            }, 70);
+            }, view.aligned.timeout);
         }
 
         if (view.drawer.type === "circ") {
