@@ -450,7 +450,6 @@ class Drawer:
         # Uses self.collapsed and self.outline to extract and place info.
 
 
-
 class DrawerRect(Drawer):
     "Minimal functional drawer for a rectangular representation"
 

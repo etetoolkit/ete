@@ -22,6 +22,7 @@ function init_menus(trees) {
     ]});
     create_menu_basic(tab.pages[0], trees);
     create_menu_selection(tab.pages[1]);
+    create_menu_advanced(tab.pages[2])
 
 
     //const tab = menus.pane.addTab({ pages: [
@@ -94,23 +95,7 @@ function create_menu_basic(menu, trees) {
 
     menu.addInput(view.aligned, "zoom", { label: "zoom in aligned panel" });
 
-    menu.addButton({ title: "Help" }).on("click", view.show_help);
-}
-
-
-function create_menu_main(menu, trees) {
-    add_folder_tree(menu, trees);
-
-    add_folder_info(menu);
-
-    add_folder_view(menu);
-
-    add_folder_minimap(menu);
-
-    add_folder_tree_scale(menu);
-
-    add_folder_aligned(menu);
-
+    // text select
     menu.addInput(view, "select_text", { label: "select text", position: 'left' })
       .on("change", () => {
         style("font").userSelect = (view.select_text ? "text" : "none");
@@ -118,26 +103,30 @@ function create_menu_main(menu, trees) {
         div_aligned.style.cursor = (view.select_text ? "text" : "ew-resize");
         set_boxes_clickable(!view.select_text);
     });
-    menu.addInput(view, "smart_zoom", { label: "smart zoom" });
+
     menu.addButton({ title: "share view" }).on("click", view.share_view);
     menu.addButton({ title: "Help" }).on("click", view.show_help);
 }
 
 
-function create_menu_representation(menu) {
-    const options = { "Rectangular": "RectFaces", "Circular": "CircFaces" };
-    menu.addInput(view.drawer, "name", { label: "drawer", options: options })
-        .on("change", on_drawer_change);
+function create_menu_advanced(menu) {
+    add_folder_info(menu);
 
-    menu.addInput(view, "min_size", { label: "collapse", 
-        min: 1, max: 100, step: 1 }).on("change", update);
+    add_folder_view(menu);
 
-    menu.addInput(view, "ultrametric", { label: "ultrametric" }).on("change", 
-        async () => {
-            await api(`/trees/${get_tid()}/ultrametric`);
-            update();
-    })
+    add_folder_circular(menu)
 
+    add_folder_sort(menu);
+
+    add_folder_minimap(menu);
+
+    add_folder_tree_scale(menu);
+
+    add_folder_aligned(menu);
+}
+
+
+function add_folder_circular(menu) {
     const folder_circ = menu.addFolder({ title: "Circular", expanded: false });
 
     function update_with_minimap() {
@@ -170,35 +159,12 @@ function create_menu_selection(menu) {
 }
 
 
-function add_folder_tree(menu, trees) {
-    const folder_tree = menu.addFolder({ title: "Tree" });
-
-    if (trees.length > 1) {
-        const options = trees.reduce((opt, t) => ({ ...opt, [t]: t }), {});
-        folder_tree.addInput(view, "tree", {options: options}).on("change", () => {
-            view.subtree = "";
-            on_tree_change();
-        });
-    } else
-        folder_tree.addMonitor(view, "tree",
-            { label: "tree" })
-
-    menus.subtree = folder_tree.addInput(view, "subtree", 
-        { value: view.subtree }).on("change", on_tree_change);
-
-    const folder_sort = folder_tree.addFolder({ title: "Sort",
+function add_folder_sort(menu) {
+    const folder_sort = menu.addFolder({ title: "Sort",
                                                 expanded: false });
     folder_sort.addButton({ title: "sort" }).on("click", view.sorting.sort);
     folder_sort.addInput(view.sorting, "key");
     folder_sort.addInput(view.sorting, "reverse");
-
-    if (view.upload)
-        folder_tree.addButton({ title: "upload" }).on("click", view.upload);
-
-    const folder_download = folder_tree.addFolder({ title: "Download",
-                                                    expanded: false });
-    folder_download.addButton({ title: "newick" }).on("click", view.download.newick);
-    folder_download.addButton({ title: "svg" }).on("click", view.download.svg);
 }
 
 
@@ -235,6 +201,9 @@ function add_folder_searches(menu) {
 
 function add_folder_info(menu) {
     const folder_info = menu.addFolder({ title: "Info", expanded: false });
+    
+    menus.subtree = folder_info.addInput(view, "subtree", 
+        { value: view.subtree }).on("change", on_tree_change);
     
     const folder_nodes = folder_info.addFolder({ title: "Nodes", expanded: true });
     folder_nodes.addMonitor(view, "nnodes", 
@@ -444,10 +413,6 @@ function add_folder_tree_scale(menu) {
 function add_folder_aligned(menu) {
     const folder_aligned = menu.addFolder(
         { title: "Aligned panel", expanded: false });
-
-    folder_aligned.addInput(view.aligned, "zoom", 
-        { label: "zoom" });
-
 
     folder_aligned.addInput(view.aligned, "adjust_zoom", 
         { label: "adjust zoom" });
