@@ -1116,8 +1116,8 @@ class SeqMotifFace(Face):
                                            'stroke': self.gapcolor})
         for (start, end, shape, posw, h, fg, bg, text, opacity) in self.regions:
 
-            # if not self.in_aligned_viewport((start, end)):
-                # continue
+            if not self.in_aligned_viewport((start, end)):
+                continue
 
             posw = (posw or self.poswidth) * self.w_scale
             w = posw * (end + 1 - start)
@@ -1226,66 +1226,6 @@ class SeqMotifFace(Face):
 
             # Update x to draw consecutive motifs
             x += w
-
-
-class PieChartFace(CircleFace):
-
-    def __init__(self, radius, data, name="",
-            padding_x=0, padding_y=0):
-
-        Face.__init__(self, name=name,
-                padding_x=padding_x, padding_y=padding_y)
-
-        self.radius = radius
-        # Drawing private properties
-        self._max_radius = 0
-        self._center = (0, 0)
-
-        # data = [ [name, value, color, tooltip], ... ]
-        # self.data = [ (name, value, color, tooltip, a, da) ]
-        self.data = []
-        self.compute_pie(list(data))
-
-    def __name__(self):
-        return "PieChartFace"
-
-    def compute_pie(self, data):
-        total_value = sum(d[1] for d in data)
-
-        a = 0
-        for name, value, color, tooltip in data:
-            da = (value / total_value) * 2 * pi
-            self.data.append((name, value, color, tooltip, a, da))
-            a += da
-
-        assert a >= 2 * pi - 1e-5 and a <= 2 * pi + 1e-5, "Incorrect pie"
-
-    def draw(self, drawer):
-        # Draw circle if only one datum
-        if len(self.data) == 1:
-            self.color = self.data[0][2]
-            yield from CircleFace.draw(self, drawer)
-
-        else:
-            for name, value, color, tooltip, a, da in self.data:
-                style = { 'fill': color }
-                yield draw_slice(self._center, self._max_radius, a, da, 
-                        "", style=style, tooltip=tooltip)
-
-
-class HTMLFace(RectFace):
-    def __init__(self, html, width, height, name="", padding_x=0, padding_y=0):
-
-        RectFace.__init__(self, width=width, height=height,
-                name=name, padding_x=padding_x, padding_y=padding_y)
-
-        self.content = html
-
-    def __name__(self):
-        return "HTMLFace"
-
-    def draw(self, drawer):
-        yield draw_html(self._box, self.content)
 
 
 class ScaleFace(Face):
@@ -1401,3 +1341,63 @@ class ScaleFace(Face):
 
             yield draw_line(p1, p2, style={'stroke-width': self.line_width,
                                            'stroke': self.color})
+
+
+class PieChartFace(CircleFace):
+
+    def __init__(self, radius, data, name="",
+            padding_x=0, padding_y=0):
+
+        Face.__init__(self, name=name,
+                padding_x=padding_x, padding_y=padding_y)
+
+        self.radius = radius
+        # Drawing private properties
+        self._max_radius = 0
+        self._center = (0, 0)
+
+        # data = [ [name, value, color, tooltip], ... ]
+        # self.data = [ (name, value, color, tooltip, a, da) ]
+        self.data = []
+        self.compute_pie(list(data))
+
+    def __name__(self):
+        return "PieChartFace"
+
+    def compute_pie(self, data):
+        total_value = sum(d[1] for d in data)
+
+        a = 0
+        for name, value, color, tooltip in data:
+            da = (value / total_value) * 2 * pi
+            self.data.append((name, value, color, tooltip, a, da))
+            a += da
+
+        assert a >= 2 * pi - 1e-5 and a <= 2 * pi + 1e-5, "Incorrect pie"
+
+    def draw(self, drawer):
+        # Draw circle if only one datum
+        if len(self.data) == 1:
+            self.color = self.data[0][2]
+            yield from CircleFace.draw(self, drawer)
+
+        else:
+            for name, value, color, tooltip, a, da in self.data:
+                style = { 'fill': color }
+                yield draw_slice(self._center, self._max_radius, a, da, 
+                        "", style=style, tooltip=tooltip)
+
+
+class HTMLFace(RectFace):
+    def __init__(self, html, width, height, name="", padding_x=0, padding_y=0):
+
+        RectFace.__init__(self, width=width, height=height,
+                name=name, padding_x=padding_x, padding_y=padding_y)
+
+        self.content = html
+
+    def __name__(self):
+        return "HTMLFace"
+
+    def draw(self, drawer):
+        yield draw_html(self._box, self.content)

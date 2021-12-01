@@ -57,9 +57,9 @@ const view = {
         max_zoom: undefined,
         adjust_zoom: true,
         header: {
-            show: true, height: 150 },
+            show: true, height: 50 },
         footer: {
-            show: true, height: 150 },
+            show: true, height: 50 },
     },
     collapsed_ids: {},
 

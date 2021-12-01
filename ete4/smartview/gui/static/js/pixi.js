@@ -51,8 +51,6 @@ const aa_text_png = aa.map(a => {
 
 // Load texture atlas
 loader
-    //.add(`../images/aa_text.json`)
-    //.add("aa_notext", `images/aa_notext.json`)
     .add(aa_notext_png)
     .add(aa_text_png)
     .add("block", "images/block.png")
