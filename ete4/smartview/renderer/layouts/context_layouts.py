@@ -48,7 +48,7 @@ class LayoutGenomicContext(TreeLayout):
                 color = gene.get("color", self.non_conserved_color)
                 conservation = gene.get("conservation_score")
                 if conservation is not None\
-                    and float(conservation) >= self.conservation_threshold:
+                    and float(conservation) < self.conservation_threshold:
                     color = self.non_conserved_color
                 strand = gene.get("strand", "+")
                 cluster = gene.get("cluster")
