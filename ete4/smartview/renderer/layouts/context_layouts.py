@@ -38,11 +38,7 @@ class LayoutGenomicContext(TreeLayout):
         style.collapse_size = self.collapse_size
 
     def set_node_style(self, node):
-        if node.is_leaf():
-            context = node.props.get("_context")
-        else:
-            first_leaf = next(node.iter_leaves())
-            context = first_leaf.props.get("_context")
+        context = self.get_context(node)
         if context:
             for idx, gene in enumerate(context):
                 name = gene.get("name")
@@ -68,7 +64,10 @@ class LayoutGenomicContext(TreeLayout):
                     else:
                         key_props = self.tooltip_props
 
-                    props = { k:v for k,v in gene.items() if k in key_props and k not in ("strand", "color") }
+                    props = { k:v for k,v in gene.items()\
+                            if k in key_props\
+                            and v\
+                            and k not in ("strand", "color") }
                     tooltip = "\n".join(f'{k}: {v}' for k,v in props.items())
                 else:
                     tooltip = ""
@@ -80,3 +79,12 @@ class LayoutGenomicContext(TreeLayout):
                         padding_x=2, padding_y=2)
                 node.add_face(arrow, position="aligned", column=idx,
                         collapsed_only=(not node.is_leaf()))
+
+
+    def get_context(self, node):
+        if node.is_leaf():
+            return node.props.get("_context")
+
+        first_leaf = next(node.iter_leaves())
+        context = first_leaf.props.get("_context")
+
