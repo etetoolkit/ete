@@ -1,3 +1,4 @@
+from collections import Counter, defaultdict
 from ..treelayout import TreeLayout
 from ..faces import ArrowFace
 
@@ -12,7 +13,8 @@ class LayoutGenomicContext(TreeLayout):
             gene_name="name", tooltip_props=[],
             stroke_color="gray", stroke_width="1.5px",
             anchor_stroke_color="black", anchor_stroke_width="3px",
-            non_conserved_color="#d0d0d0"):
+            non_conserved_color="#d0d0d0", collapse_conservation=0.2,
+            collapse_by_conservation=True):
 
         super().__init__(name, aligned_faces=True)
 
@@ -32,6 +34,9 @@ class LayoutGenomicContext(TreeLayout):
         self.stroke_width = stroke_width
 
         self.non_conserved_color = non_conserved_color
+
+        self.collapse_conservation = collapse_conservation
+        self.collapse_by_conservation = collapse_by_conservation
 
     def set_tree_style(self, style):
         super().set_tree_style(style)
@@ -92,6 +97,32 @@ class LayoutGenomicContext(TreeLayout):
         if node.is_leaf():
             return node.props.get("_context")
 
-        first_leaf = next(node.iter_leaves())
-        context = first_leaf.props.get("_context")
+        if not self.collapse_by_conservation:
+            first_leaf = next(node.iter_leaves())
+            return first_leaf.props.get("_context")
+
+        color_context = defaultdict(list)
+        color2genes = {}
+
+        for l in node:
+            lcontext = l.props.get("_context")
+            for pos, gene in enumerate(lcontext):
+                color = gene["color"]
+                color_context[pos].append(color)
+                color2genes[color] = gene
+
+        ntips = len(node)
+        context = []
+        for pos, colors in sorted(color_context.items()):
+            print(pos)
+            color, n = Counter(colors).most_common(1)[0]
+            if n / ntips >= self.collapse_conservation\
+                and color != self.non_conserved_color:
+                context.append({ 
+                    **color2genes[color], 
+                    "vertical_conservation": n / ntips })
+            else:
+                context.append({ "color": self.non_conserved_color })
+
+
         return context
