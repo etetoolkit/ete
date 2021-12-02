@@ -115,7 +115,6 @@ class LayoutGenomicContext(TreeLayout):
         ntips = len(node)
         context = []
         for pos, colors in sorted(color_context.items()):
-            print(pos)
             color, n = Counter(colors).most_common(1)[0]
             if n / ntips >= self.collapse_conservation\
                 and color != self.non_conserved_color:
