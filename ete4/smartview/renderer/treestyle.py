@@ -16,7 +16,7 @@ class TreeStyle(object):
 
         self.ultrametric = False
 
-        self.collapse_size = 6
+        self.collapse_size = 10
 
         # Selected face
         self._selected_face = SelectedRectFace

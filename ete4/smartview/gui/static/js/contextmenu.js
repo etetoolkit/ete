@@ -1,6 +1,5 @@
 // Functions related to the context menu (right-click menu).
 
-import { api } from "./api.js";
 import { view, tree_command, on_tree_change, reset_view, sort, get_tid }
     from "./gui.js";
 import { draw_minimap } from "./minimap.js";
@@ -9,12 +8,13 @@ import { download_newick } from "./download.js";
 import { zoom_into_box } from "./zoom.js";
 import { collapse_node } from "./collapse.js";
 import { activate_node, deactivate_node } from "./active.js";
-import { select_node, unselect_node } from "./select.js";
 
 export { on_box_contextmenu };
 
 
 async function on_box_contextmenu(event, box, name, properties, node_id=[]) {
+
+    console.log(node_id)
     event.preventDefault();
 
     div_contextmenu.innerHTML = "";
@@ -66,9 +66,16 @@ async function add_node_options(box, name, properties, node_id) {
         }, `Open the NCBI Taxonomy Browser on this taxonomy ID: ${taxid}.`,
            "book", false);
     }
-    add_button("Collapse branch", () => collapse_node(name, node_id),
-               "Do not show nodes below the current one.",
-               "compress", false);
+
+    const collapsed_node = view.collapsed_ids[node_id];
+    if (collapsed_node)
+        add_button("Uncollapse branch", () => collapsed_node.remove(),
+                   "Show nodes below the current one.",
+                   "expand", false);
+    else
+        add_button("Collapse branch", () => collapse_node(node_id),
+                   "Do not show nodes below the current one.",
+                   "compress", false);
 
     if (view.active.nodes.find(n => n.id === String(node_id)))
         add_button("Unselect node", () => deactivate_node(node_id),
@@ -78,22 +85,6 @@ async function add_node_options(box, name, properties, node_id) {
         add_button("Select node", () => activate_node(node_id, properties),
                    "Add current node from active selection.",
                    "hand-pointer", false);
-
-    //const tid = get_tid() + "," + node_id;
-    //const selections = await api(`/trees/${tid}/selections`);
-    //if (selections.selections.length)
-        //add_button("Unselect node", () => unselect_node(node_id),
-                   //"Remove current node from selection.",
-                   //"trash-alt", false);
-    //else
-        //add_button("Select node", () => {
-            //Swal.fire({
-                //input: "text",
-                //text: "Enter name to describe selection",
-                //inputValue: name || node_id.join(","),
-                //preConfirm: name => select_node(node_id, name)
-            //});
-        //}, "Select current node.", "hand-pointer", false);
 
     if ("hyperlink" in properties) {
         const [ label, url ] = properties["hyperlink"];

@@ -30,7 +30,6 @@ const view = {
     tree: null,  // string with the current tree name
     tree_size: {width: 0, height: 0},
     ultrametric: false,
-    node_properties: [],  // existing in the current tree
     subtree: "",  // node id of the current subtree; looks like "0,1,0,0,1"
     sorting: {
         sort: () => sort(),
@@ -50,9 +49,15 @@ const view = {
     current_property: "name",  // pre-selected property in the add label menu
     rmin: 0,
     angle: {min: -180, max: 180},
+    tooltip: {
+        timeout: undefined,
+    },
     aligned: {
         x: -10,
         pos: 80,  // % of the screen width where the aligned panel starts
+        adjust_pos: true,
+        padding: 200,
+        timeout: 100,  // ms to refresh
         zoom: false,
         max_zoom: undefined,
         adjust_zoom: true,
@@ -498,7 +503,7 @@ function get_url_view(x, y, w, h) {
 async function show_tree_info() {
     const info = await api(`/trees/${get_tid()}`);
 
-    const props = view.node_properties.map(p =>
+    const props = info.props.map(p =>
         `<tt>${escape_html(p)}</tt>`).join("<br>");
 
     const w = div_tree.offsetWidth / view.zoom.x,

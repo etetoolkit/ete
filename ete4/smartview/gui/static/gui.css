@@ -331,3 +331,37 @@ button.tp-tbiv_b {
     --tp-button-background-color: #d6d6d6;
     --tp-button-background-color-hover: #ccc;
 }
+
+
+
+/*Tooltip*/
+.tooltip {
+  display: none;
+  position: absolute;
+  width: 160px;
+  /*background-color: #d6d6d6;*/
+  background-color: #eaeaea;
+  color: black;
+  font-family:sans-serif;
+  font-size: 12px;
+  padding: 5px 10px;
+  margin-top: 20px;
+  margin-left: -55px;
+  border-radius: 2px;
+  border: solid 1px lightgray;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  z-index: 1;
+  transition: opacity 0.3s;
+  pointer-events: all;
+}
+
+.tooltip::after {
+    content: "";
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent transparent lightgray transparent;
+}
