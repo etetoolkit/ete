@@ -57,28 +57,35 @@ class LayoutGenomicContext(TreeLayout):
                 else:
                     stroke_color = self.stroke_color
                     stroke_width = self.stroke_width
-
-                if self.tooltip_props is not None:
-                    if self.tooltip_props == []:
-                        key_props = gene.keys()
-                    else:
-                        key_props = self.tooltip_props
-
-                    props = { k:v for k,v in gene.items()\
-                            if k in key_props\
-                            and v\
-                            and k not in ("strand", "color") }
-                    tooltip = "\n".join(f'{k}: {v}' for k,v in props.items())
-                else:
-                    tooltip = ""
                 arrow = ArrowFace(self.width, self.height,
                         orientation=orientation, color=color,
                         stroke_color=stroke_color, stroke_width=stroke_width,
-                        tooltip=tooltip,
+                        tooltip=self.get_tooltip(gene),
                         text=text,
                         padding_x=2, padding_y=2)
                 node.add_face(arrow, position="aligned", column=idx,
                         collapsed_only=(not node.is_leaf()))
+
+
+    def get_tooltip(self, gene):
+        if self.tooltip_props is None:
+            return ""
+
+        if self.tooltip_props == []:
+            key_props = gene.keys()
+        else:
+            key_props = self.tooltip_props
+
+        props = {}
+        for k,v in gene.items():
+            if k in key_props and v and not k in ("strand", "color"):
+                if k == "hyperlink":
+                    k = "Go to"
+                    label, url = v
+                    v = f'<a href="{url}" target="_blank">{label}</a>'
+                props[k] = v
+
+        return "<br>".join(f'{k}: {v}' for k,v in props.items())
 
 
     def get_context(self, node):

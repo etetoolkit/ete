@@ -102,7 +102,10 @@ function drag_move(point) {
                     update_minimap_visible_rect();
             }
         }
-    }
+
+        return 1
+    } else
+        return undefined
 }
 
 

@@ -49,6 +49,9 @@ const view = {
     current_property: "name",  // pre-selected property in the add label menu
     rmin: 0,
     angle: {min: -180, max: 180},
+    tooltip: {
+        timeout: undefined,
+    },
     aligned: {
         x: -10,
         pos: 80,  // % of the screen width where the aligned panel starts

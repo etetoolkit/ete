@@ -384,11 +384,8 @@ function create_item(g, item, tl, zoom) {
         b.addEventListener("mouseleave", _ =>
             on_box_mouseleave(node_id));
 
-        if (name.length > 0 || Object.entries(properties).length > 0) {
-            const text = (name ? name : "(unnamed)") + "\n" +
-            Object.entries(properties).map(x => x[0] + ": " + x[1]).join("\n");
-            b.appendChild(create_tooltip(text));
-        }
+        if (name.length > 0 || Object.entries(properties).length > 0)
+            b.appendChild(create_tooltip(name, properties))
 
         return b;
     }
@@ -426,8 +423,7 @@ function create_item(g, item, tl, zoom) {
 
         style_ellipse(circle, style); // same styling as ellipse
 
-        if (tooltip)
-            circle.appendChild(create_tooltip(tooltip));
+        circle.setAttribute("data-tooltip", tooltip);;
 
         return circle
     }
@@ -444,8 +440,7 @@ function create_item(g, item, tl, zoom) {
         
         style_ellipse(ellipse, style);
 
-        if (tooltip)
-            ellipse.appendChild(create_tooltip(tooltip));
+        ellipse.setAttribute("data-tooltip", tooltip);;
 
         return ellipse;
     }
@@ -466,8 +461,7 @@ function create_item(g, item, tl, zoom) {
 
         style_polygon(triangle, style);
 
-        if (tooltip)
-            triangle.appendChild(create_tooltip(tooltip));
+        triangle.setAttribute("data-tooltip", tooltip);;
 
         return triangle;
     }
@@ -486,10 +480,7 @@ function create_item(g, item, tl, zoom) {
 
         const rect = create_box(box, tl, zx, zy, type, style);
 
-        style_polygon(rect, style);
-
-        if (tooltip)
-            rect.appendChild(create_tooltip(tooltip));
+        rect.setAttribute("data-tooltip", tooltip);
 
         return rect;
     }
@@ -500,8 +491,7 @@ function create_item(g, item, tl, zoom) {
 
         style_polygon(rhombus, style);
 
-        if (tooltip)
-            rhombus.appendChild(create_tooltip(tooltip))
+        rhombus.setAttribute("data-tooltip", tooltip);
 
         return rhombus;
     }
@@ -512,8 +502,7 @@ function create_item(g, item, tl, zoom) {
 
         style_polygon(polygon, style);
 
-        if (tooltip)
-            polygon.appendChild(create_tooltip(tooltip))
+        polygon.setAttribute("data-tooltip", tooltip);
 
         return polygon;
     }
@@ -524,8 +513,7 @@ function create_item(g, item, tl, zoom) {
 
         style_polygon(slice, style);
 
-        if (tooltip)
-            slice.appendChild(create_tooltip(tooltip))
+        slice.setAttribute("data-tooltip", tooltip);
 
         return slice;
     }
@@ -710,12 +698,13 @@ function create_circ_outline(sbox, tl, z) {
 
 // Return an element that, appended to a svg element (normally a box), will
 // make it show a tooltip showing nicely the given name and properties.
-function create_tooltip(text) {
+function create_tooltip(name, properties) {
+    const text = (name ? name : "(unnamed)") + "\n" +
+        Object.entries(properties).map(x => x[0] + ": " + x[1]).join("\n");
     const title = create_svg_element("title", {});
     title.appendChild(document.createTextNode(text));
-    return title;
+    return title
 }
-
 
 function create_line(p1, p2, tl, zx, zy, type="", parent_of=[]) {
     const [x1, y1] = [zx * (p1[0] - tl.x), zy * (p1[1] - tl.y)],
