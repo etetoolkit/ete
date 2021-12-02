@@ -18,7 +18,7 @@ class LayoutGenomicContext(TreeLayout):
 
         self.nside = nside
         self.conservation_threshold = conservation_threshold
-        self.gene_name
+        self.gene_name = gene_name
         self.tooltip_props = tooltip_props
 
         self.width = width
