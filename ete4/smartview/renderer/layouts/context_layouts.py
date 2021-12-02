@@ -101,6 +101,7 @@ class LayoutGenomicContext(TreeLayout):
             first_leaf = next(node.iter_leaves())
             return first_leaf.props.get("_context")
 
+        # Compute conserved context by color
         color_context = defaultdict(list)
         color2genes = {}
 
@@ -123,6 +124,5 @@ class LayoutGenomicContext(TreeLayout):
                     "vertical_conservation": n / ntips })
             else:
                 context.append({ "color": self.non_conserved_color })
-
 
         return context
