@@ -7,14 +7,16 @@ __all__ = [ "LayoutGenomicContext" ]
 
 class LayoutGenomicContext(TreeLayout):
 
-    def __init__(self, nside=2, name="Genomic context",
-            width=70, height=15, collapse_size=1,
+    def __init__(self, name="Genomic context", nside=2,
+            conservation_threshold=0, width=70, height=15, collapse_size=1,
             stroke_color="gray", stroke_width="1.5px",
-            anchor_stroke_color="black", anchor_stroke_width="3px"):
+            anchor_stroke_color="black", anchor_stroke_width="3px",
+            non_conserved_color="#d0d0d0"):
 
         super().__init__(name, aligned_faces=True)
 
         self.nside = nside
+        self.conservation_threshold = conservation_threshold
 
         self.width = width
         self.height = height
@@ -25,6 +27,8 @@ class LayoutGenomicContext(TreeLayout):
         self.anchor_stroke_width = anchor_stroke_width
         self.stroke_color = stroke_color
         self.stroke_width = stroke_width
+
+        self.non_conserved_color = non_conserved_color
 
     def set_tree_style(self, style):
         super().set_tree_style(style)
@@ -40,6 +44,9 @@ class LayoutGenomicContext(TreeLayout):
             for idx, gene in enumerate(context):
                 name = gene.get("name")
                 color = gene.get("color", "gray")
+                conservation = gene.get("conservation_score")
+                if conservation and conservation >= self.conservation_threshold:
+                    color = self.non_conserved_color
                 strand = gene.get("strand", "+")
                 cluster = gene.get("cluster")
                 orientation = "left" if strand == "-" else "right"
