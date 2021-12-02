@@ -45,6 +45,14 @@ Active = namedtuple('Active', 'results parents')
 
 # Drawing.
 
+def get_node_id(node, node_id):
+    parent = node.up
+    if not parent:
+        node_id.reverse()
+        return node_id
+    node_id.append(parent.children.index(node))
+    return get_node_id(parent, node_id)
+
 class Drawer:
     "Base class (needs subclassing with extra functions to draw)"
 
@@ -90,27 +98,13 @@ class Drawer:
 
         else:
             point = self.xmin, self.ymin
-            first_counter = last_counter = descend_counter = 0
-            first_time = 0
             for it in walk(self.tree):
                 graphics = []
                 if it.first_visit:
-                    start = time()
-
                     point = self.on_first_visit(point, it, graphics)
-
-                    if not it.descend:
-                        descend_counter += 1
-                    first_counter += 1
-                    first_time += time() - start
                 else:
-                    last_counter += 1
                     point = self.on_last_visit(point, it, graphics)
                 yield from graphics
-
-            print(f'First visit ({first_counter}): {first_time}')
-            print(f'Descend: {descend_counter}')
-            print(f'Last visit: {last_counter}')
 
             if self.outline:
                 yield from self.get_outline()
@@ -138,10 +132,9 @@ class Drawer:
         is_manually_collapsed = it.node_id in self.collapsed_ids
 
         if is_manually_collapsed and self.outline:
-            graphics += self.get_outline(it.node_id)  # so we won't stack with its outline
+            graphics += self.get_outline()  # so we won't stack with its outline
 
         if is_manually_collapsed or self.is_small(box_node):
-            print("HEELOO", is_manually_collapsed)
             self.node_dxs[-1].append(box_node.dx)
             self.collapsed.append(it.node)
             self.outline = stack(self.outline, box_node)
@@ -180,7 +173,6 @@ class Drawer:
                 active_children = self.get_active_children()
                 selected_children = self.get_selected_children()
 
-            print("lastt", it.node_id in self.collapsed_ids)
             graphics += self.get_outline()
 
         x_after, y_after = point
@@ -321,7 +313,7 @@ class Drawer:
 
         return graphics
 
-    def get_outline(self, node_id=None):
+    def get_outline(self):
         "Yield the outline representation"
         graphics = []
 
@@ -358,9 +350,10 @@ class Drawer:
         # Draw collapsed node nodebox when necessary
         if is_manually_collapsed or is_small or collapsed_node.dist == 0:
             name, properties = collapsed_node.name, collapsed_node.props
-
+            node_id = tuple(get_node_id(collapsed_node, []))\
+                    if is_manually_collapsed else []
             box = draw_nodebox(self.flush_outline(ndx), name, 
-                    properties, node_id or [], searched_by + selected_by + active_by,
+                    properties, node_id, searched_by + selected_by + active_by,
                     { 'fill': collapsed_node.sm_style.get('bgcolor') })
             self.nodeboxes.append(box)
         else:

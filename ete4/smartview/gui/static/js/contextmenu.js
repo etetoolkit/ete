@@ -66,9 +66,16 @@ async function add_node_options(box, name, properties, node_id) {
         }, `Open the NCBI Taxonomy Browser on this taxonomy ID: ${taxid}.`,
            "book", false);
     }
-    add_button("Collapse branch", () => collapse_node(name, node_id),
-               "Do not show nodes below the current one.",
-               "compress", false);
+
+    const collapsed_node = view.collapsed_ids[node_id];
+    if (collapsed_node)
+        add_button("Uncollapse branch", () => collapsed_node.remove(),
+                   "Show nodes below the current one.",
+                   "expand", false);
+    else
+        add_button("Collapse branch", () => collapse_node(node_id),
+                   "Do not show nodes below the current one.",
+                   "compress", false);
 
     if (view.active.nodes.find(n => n.id === String(node_id)))
         add_button("Unselect node", () => deactivate_node(node_id),

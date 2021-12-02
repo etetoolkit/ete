@@ -4,7 +4,7 @@ import { api } from "./api.js";
 import { view, menus, on_tree_change,
          on_drawer_change, show_minimap, get_tid } from "./gui.js";
 import { draw_minimap } from "./minimap.js";
-import { update, draw_tree_scale, draw_aligned } from "./draw.js";
+import { update, draw_tree_scale, draw_aligned, update_aligned_panel_display } from "./draw.js";
 import { add_folder_active } from "./active.js";
 
 export { init_menus, update_folder_layouts };
@@ -112,11 +112,11 @@ function create_menu_basic(menu, trees) {
 function create_menu_advanced(menu) {
     add_folder_info(menu);
 
+    add_folder_sort(menu);
+
     add_folder_view(menu);
 
     add_folder_circular(menu)
-
-    add_folder_sort(menu);
 
     add_folder_minimap(menu);
 
@@ -127,7 +127,7 @@ function create_menu_advanced(menu) {
 
 
 function add_folder_circular(menu) {
-    const folder_circ = menu.addFolder({ title: "Circular", expanded: false });
+    const folder_circ = menu.addFolder({ title: "Circular mode", expanded: false });
 
     function update_with_minimap() {
         draw_minimap();
@@ -148,8 +148,6 @@ function add_folder_circular(menu) {
 
 function create_menu_selection(menu) {
     // filled dynamically in collapsed.js and select.js
-    menus.collapsed = menu.addFolder({ title: "Collapsed", expanded: false }); 
-
     view.active.folder = menu.addFolder({ title: `Active ${view.active.nodes.length}` });
     add_folder_active();
 
@@ -428,4 +426,11 @@ function add_folder_aligned(menu) {
     folder_aligned.addInput(view.aligned, "pos", { label: "position", 
                                                  min: 0, max: 100 })
         .on("change", () => div_aligned.style.width = `${100 - view.aligned.pos}%`);
+
+    folder_aligned.addInput(view.aligned, "adjust_pos", { label: "adjust position" })
+        .on("change", () => update_aligned_panel_display());
+
+    folder_aligned.addInput(view.aligned, "padding", { label: "padding from tree", 
+                                                 min: 0, max: 600 })
+        .on("change", () => update_aligned_panel_display());
 }

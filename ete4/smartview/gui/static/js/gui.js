@@ -52,6 +52,8 @@ const view = {
     aligned: {
         x: -10,
         pos: 80,  // % of the screen width where the aligned panel starts
+        adjust_pos: true,
+        padding: 200,
         timeout: 100,  // ms to refresh
         zoom: false,
         max_zoom: undefined,

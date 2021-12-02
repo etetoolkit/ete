@@ -11,7 +11,7 @@ import { on_box_contextmenu } from "./contextmenu.js";
 import { api } from "./api.js";
 import { draw_pixi } from "./pixi.js";
 
-export { update, draw_tree, draw_tree_scale, draw_aligned, draw, get_class_name, cartesian_shifted };
+export { update, draw_tree, draw_tree_scale, draw_aligned, draw, get_class_name, cartesian_shifted, update_aligned_panel_display };
 
 
 // Update the view of all elements (gui, tree, minimap).
@@ -70,15 +70,7 @@ async function draw_tree() {
         const drawer_info = await api(`/drawers/${view.drawer.name}/${get_tid()}`);
         view.drawer.npanels = drawer_info.npanels; // type has already been set
 
-        // Toggle aligned panel
-        if (drawer_info.type === "rect" && drawer_info.npanels > 1) {
-            div_aligned.style.display = "initial";  // show aligned panel
-            const tree_px_width = view.zoom.x * (view.tree_size.width - view.tl.x);
-            view.aligned.pos = 100 * (tree_px_width + 200) / div_tree.offsetWidth;
-            view.aligned.pos = Math.min(Math.max(view.aligned.pos, 1), 99);  // clip
-            div_aligned.style.width = `${100 - view.aligned.pos}%`;
-        } else
-            div_aligned.style.display = "none";  // hide aligned panel
+        update_aligned_panel_display();
 
         if (view.drawer.npanels > 1) {
             align_timeout = setTimeout(async () => { 
@@ -257,6 +249,20 @@ function replace_svg(element) {
     replace_child(element, svg);
 }
 
+function update_aligned_panel_display() {
+    // Toggle aligned panel
+    if (view.drawer.type === "rect" && view.drawer.npanels > 1) {
+        div_aligned.style.display = "initial";  // show aligned panel
+
+        if (view.aligned.adjust_pos) {
+            const tree_px_width = view.zoom.x * (view.tree_size.width - view.tl.x);
+            view.aligned.pos = 100 * (tree_px_width + view.aligned.padding) / div_tree.offsetWidth;
+            view.aligned.pos = Math.min(Math.max(view.aligned.pos, 1), 99);  // clip
+            div_aligned.style.width = `${100 - view.aligned.pos}%`;
+        }
+    } else
+        div_aligned.style.display = "none";  // hide aligned panel
+}
 
 // Draw elements that belong to panels above 0.
 async function draw_aligned(params, npanels) {

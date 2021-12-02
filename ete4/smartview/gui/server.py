@@ -72,7 +72,7 @@ class Drawers(Resource):
         try:
             tree_id, _ = get_tid(tree_id)
             if name not in ['Rect', 'Circ'] and\
-                    any(getattr(ly, 'aligned_faces', False)\
+                    any(getattr(ly, 'aligned_faces', False) and ly.active\
                         for ly in sum(app.trees[int(tree_id)].layouts.values(),[])):
                 name = 'Align' + name
             drawer_class = next(d for d in drawer_module.get_drawers()
@@ -121,10 +121,7 @@ class Trees(Resource):
         # Update tree's timer
         if rule.startswith('/trees/<string:tree_id>'):
             tid, subtree = get_tid(tree_id)
-            print('loading')
-            start = time()
             t = load_tree(tree_id)  # load if it was not loaded in memory
-            print(f'Loading tree: {time() - start}')
             tree = app.trees[int(tid)]
             tree.timer = time()
 
@@ -213,13 +210,7 @@ class Trees(Resource):
             return {'message': message}
         elif rule == '/trees/<string:tree_id>/draw':
             drawer = get_drawer(tree_id, request.args.copy())
-            start = time()
-            graphics = drawer.draw()
-            print(f'Getting graphics: {time() - start}')
-            start = time()
-            g_list = list(graphics)
-            print(f'Graphics to list ({len(g_list)}): {time() - start}')
-            return g_list
+            return list(drawer.draw())
         elif rule == '/trees/<string:tree_id>/size':
             width, height = t.size
             return {'width': width, 'height': height}
@@ -354,18 +345,13 @@ def load_tree(tree_id):
                         if layout.active:
                             layout.set_tree_style(tree.style)
 
-                print('initializing')
-                start = time()
-
                 tree.initialized = True
 
-                print('Traversing')
                 for node in t.traverse():
                     node.is_initialized = False
                     node._smfaces = None
                     node._collapsed_faces = None
 
-                print(f'Initialize: {time() - start}')
             return t
         else:
             tree.name, tree.tree, tree.layouts = retrieve_tree(tid)
@@ -901,7 +887,7 @@ def add_tree(data):
     print("Tree added to app.trees")
 
     start = time()
-    print('dumping')
+    print('Dumping tree...')
     # Write tree data as a temporary pickle file
     obj = { 'name': name, 'layouts': layouts, 'tree': tree }
     with open(f'/tmp/{tid}.pickle', 'wb') as handle:
