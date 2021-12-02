@@ -94,4 +94,4 @@ class LayoutGenomicContext(TreeLayout):
 
         first_leaf = next(node.iter_leaves())
         context = first_leaf.props.get("_context")
-
+        return context
