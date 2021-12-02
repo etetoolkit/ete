@@ -9,7 +9,7 @@ class LayoutGenomicContext(TreeLayout):
 
     def __init__(self, name="Genomic context", nside=2,
             conservation_threshold=0, width=70, height=15, collapse_size=1,
-            gene_name="name",
+            gene_name="name", tooltip_props=[],
             stroke_color="gray", stroke_width="1.5px",
             anchor_stroke_color="black", anchor_stroke_width="3px",
             non_conserved_color="#d0d0d0"):
@@ -19,6 +19,7 @@ class LayoutGenomicContext(TreeLayout):
         self.nside = nside
         self.conservation_threshold = conservation_threshold
         self.gene_name
+        self.tooltip_props = tooltip_props
 
         self.width = width
         self.height = height
@@ -60,8 +61,17 @@ class LayoutGenomicContext(TreeLayout):
                 else:
                     stroke_color = self.stroke_color
                     stroke_width = self.stroke_width
-                props = { k:v for k,v in gene.items() if k not in ("strand", "color") }
-                tooltip = "\n".join(f'{k}: {v}' for k,v in props.items())
+
+                if self.tooltip_props:
+                    if self.tooltip_props == []:
+                        key_props = gene.keys()
+                    else:
+                        key_props = self.tooltip_props
+
+                    props = { k:v for k,v in gene.items() if k in key_props and k not in ("strand", "color") }
+                    tooltip = "\n".join(f'{k}: {v}' for k,v in props.items())
+                else:
+                    tooltip = ""
                 arrow = ArrowFace(self.width, self.height,
                         orientation=orientation, color=color,
                         stroke_color=stroke_color, stroke_width=stroke_width,
