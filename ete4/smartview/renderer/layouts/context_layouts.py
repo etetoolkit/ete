@@ -62,7 +62,7 @@ class LayoutGenomicContext(TreeLayout):
                     stroke_color = self.stroke_color
                     stroke_width = self.stroke_width
 
-                if self.tooltip_props:
+                if self.tooltip_props is not None:
                     if self.tooltip_props == []:
                         key_props = gene.keys()
                     else:
