@@ -56,7 +56,7 @@ import math
 import tarfile
 import warnings
 
-#from ..  import PhyloTree, Tree
+# from .. import PhyloTree, Tree
 
 
 #import gtdb_to_taxdump
@@ -397,6 +397,7 @@ class GTDBTaxa(object):
             species rank will be collapsed into the species upper
             node.
         """
+        from .. import PhyloTree
         #taxids, merged_conversion = self._translate_merged(taxids)
         tax2id = self.get_name_translator(taxnames) #{'f__Korarchaeaceae': [2174], 'o__Peptococcales': [205487], 'p__Huberarchaeota': [610]}
         taxids = [i[0] for i in tax2id.values()]
@@ -685,6 +686,7 @@ class GTDBTaxa(object):
 
 
 def load_gtdb_tree_from_dump(tar):
+    from .. import Tree
     # Download: gtdbdump/gtdbr202dump.tar.z
     parent2child = {}
     name2node = {}
