@@ -72,7 +72,7 @@ class Drawers(Resource):
         try:
             tree_id, _ = get_tid(tree_id)
             if name not in ['Rect', 'Circ'] and\
-                    any(getattr(ly, 'aligned_faces', False)\
+                    any(getattr(ly, 'aligned_faces', False) and ly.active\
                         for ly in sum(app.trees[int(tree_id)].layouts.values(),[])):
                 name = 'Align' + name
             drawer_class = next(d for d in drawer_module.get_drawers()
@@ -121,10 +121,7 @@ class Trees(Resource):
         # Update tree's timer
         if rule.startswith('/trees/<string:tree_id>'):
             tid, subtree = get_tid(tree_id)
-            print('loading')
-            start = time()
             t = load_tree(tree_id)  # load if it was not loaded in memory
-            print(f'Loading tree: {time() - start}')
             tree = app.trees[int(tid)]
             tree.timer = time()
 
@@ -132,9 +129,14 @@ class Trees(Resource):
             if app.safe_mode:
                 raise InvalidUsage(f'invalid path {rule} in safe_mode mode', 404)
             return [{ 'id': i, 'name': v.name } for i, v in app.trees.items()]
-        # elif rule == '/trees/<string:tree_id>':
-            # if app.safe_mode:
-                # raise InvalidUsage(f'invalid path {rule} in safe_mode mode', 404)
+        elif rule == '/trees/<string:tree_id>':
+            if app.safe_mode:
+                raise invalidusage(f'invalid path {rule} in safe_mode mode', 404)
+            properties = set()
+            for node in tree.tree.traverse():
+                properties |= node.props.keys()
+            properties = [ p for p in properties if not p.startswith("_") ]
+            return { 'name': tree.name, 'props': properties }
         elif rule == '/trees/<string:tree_id>/nodeinfo':
             node = gdn.get_node(tree.tree, subtree)
             return node.props
@@ -190,7 +192,8 @@ class Trees(Resource):
             nodes = []
             for node in tree.active.results:
                 node_id = ",".join(map(str, get_node_id(tree.tree, node, [])))
-                nodes.append({ "id": node_id, **node.props })
+                props = { k:v for k,v in node.props.items() if not k.startswith('_') }
+                nodes.append({ "id": node_id, **props })
             return nodes
         # Searches
         elif rule == '/trees/<string:tree_id>/searches':
@@ -207,16 +210,12 @@ class Trees(Resource):
             return {'message': message}
         elif rule == '/trees/<string:tree_id>/draw':
             drawer = get_drawer(tree_id, request.args.copy())
-            start = time()
-            graphics = drawer.draw()
-            print(f'Getting graphics: {time() - start}')
-            start = time()
-            g_list = list(graphics)
-            print(f'Graphics to list ({len(g_list)}): {time() - start}')
-            return g_list
+            return list(drawer.draw())
         elif rule == '/trees/<string:tree_id>/size':
             width, height = t.size
             return {'width': width, 'height': height}
+        elif rule == '/trees/<string:tree_id>/collapse_size':
+            return tree.style.collapse_size
         elif rule == '/trees/<string:tree_id>/properties':
             properties = set()
             for node in t.traverse():
@@ -346,18 +345,13 @@ def load_tree(tree_id):
                         if layout.active:
                             layout.set_tree_style(tree.style)
 
-                print('initializing')
-                start = time()
-
                 tree.initialized = True
 
-                print('Traversing')
                 for node in t.traverse():
                     node.is_initialized = False
                     node._smfaces = None
                     node._collapsed_faces = None
 
-                print(f'Initialize: {time() - start}')
             return t
         else:
             tree.name, tree.tree, tree.layouts = retrieve_tree(tid)
@@ -893,11 +887,11 @@ def add_tree(data):
     print("Tree added to app.trees")
 
     start = time()
-    print('dumping')
+    print('Dumping tree...')
     # Write tree data as a temporary pickle file
     obj = { 'name': name, 'layouts': layouts, 'tree': tree }
-    # with open(f'/tmp/{tid}.pickle', 'wb') as handle:
-        # pickle.dump(obj, handle)
+    with open(f'/tmp/{tid}.pickle', 'wb') as handle:
+        pickle.dump(obj, handle)
 
     print(f'Dump: {time() - start}')
 
@@ -1179,6 +1173,7 @@ def add_resources(api):
         '/trees/<string:tree_id>/newick',
         '/trees/<string:tree_id>/draw',
         '/trees/<string:tree_id>/size',
+        '/trees/<string:tree_id>/collapse_size',
         '/trees/<string:tree_id>/properties',
         '/trees/<string:tree_id>/nodecount',
         '/trees/<string:tree_id>/ultrametric',

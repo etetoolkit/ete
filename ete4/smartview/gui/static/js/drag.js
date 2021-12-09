@@ -15,7 +15,6 @@ const dragging = {
 };
 
 
-
 function drag_start(point, element, from_grabber=true) {
     if (element === div_aligned)
         div_aligned.style.cursor = "grabbing";
@@ -42,7 +41,10 @@ function drag_stop() {
     }
 
     if (dragging.moved) {
-        draw_tree();
+        if (dragging.element == div_aligned)
+            draw_aligned();
+        else
+            draw_tree();
         dragging.moved = false;
     }
 
@@ -56,45 +58,54 @@ function drag_move(point) {
                       y: point.y - dragging.p_last.y};
     dragging.p_last = point;
 
-    if (dragging.element === div_aligned && dragging.from_grabber) {
-        view.aligned.pos += 100 * movement.x / div_tree.offsetWidth;
-        view.aligned.pos = Math.min(Math.max(view.aligned.pos, 1), 99);  // clip
-        div_aligned.style.width = `${100 - view.aligned.pos}%`;
-    }
-    else if (dragging.element) {
+    if (dragging.element) {
         dragging.moved = true;
-
-        const [scale_x, scale_y] = get_drag_scale();
-
-        let dx = point.x - dragging.p0.x,
-            dy = point.y - dragging.p0.y;
-
-        if (dragging.element === div_visible_rect) {
-            dx *= -view.zoom.x / view.minimap.zoom.x;
-            dy *= -view.zoom.y / view.minimap.zoom.y;
+        if (dragging.element === div_aligned && dragging.from_grabber) {
+            view.aligned.pos += 100 * movement.x / div_tree.offsetWidth;
+            view.aligned.pos = Math.min(Math.max(view.aligned.pos, 1), 99);  // clip
+            div_aligned.style.width = `${100 - view.aligned.pos}%`;
         }
-
-        if (dragging.element === div_aligned) {
-            view.aligned.x += scale_x * movement.x;
-
-            //Array.from(div_aligned.children[0].children).forEach(g =>
-                //g.setAttribute("transform", `translate(${dx} 0)`));
-            // pixi canvas
-            //div_aligned.children[1].children[0].style.transform = `translate(${dx}px, 0)`;
-
-            draw_aligned();
-        }
-
         else {
-            view.tl.x += scale_x * movement.x;
-            view.tl.y += scale_y * movement.y;
-            Array.from(div_tree.children[0].children).forEach(g =>
-                g.setAttribute("transform", `translate(${dx} ${dy})`));
+            const [scale_x, scale_y] = get_drag_scale();
 
-            if (view.minimap.show)
-                update_minimap_visible_rect();
+            let dx = point.x - dragging.p0.x,
+                dy = point.y - dragging.p0.y;
+
+            if (dragging.element === div_visible_rect) {
+                dx *= -view.zoom.x / view.minimap.zoom.x;
+                dy *= -view.zoom.y / view.minimap.zoom.y;
+            }
+
+            if (dragging.element === div_aligned) {
+                view.aligned.x += scale_x * movement.x;
+
+                const toTranslate = [ 
+                    //...div_aligned.children[0].children,
+                    ...div_aligned_header.children[0].children,
+                    ...div_aligned_footer.children[0].children,
+                ];
+                toTranslate.forEach(g =>
+                    g.setAttribute("transform", `translate(${dx} 0)`));
+                // pixi canvas
+                //div_aligned.children[1].children[0].style.transform = `translate(${movement.x}px, 0)`;
+
+                draw_aligned(undefined, 2);
+            }
+
+            else {
+                view.tl.x += scale_x * movement.x;
+                view.tl.y += scale_y * movement.y;
+                Array.from(div_tree.children[0].children).forEach(g =>
+                    g.setAttribute("transform", `translate(${dx} ${dy})`));
+
+                if (view.minimap.show)
+                    update_minimap_visible_rect();
+            }
         }
-    }
+
+        return 1
+    } else
+        return undefined
 }
 
 

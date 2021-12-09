@@ -11,7 +11,7 @@ import { on_box_contextmenu } from "./contextmenu.js";
 import { api } from "./api.js";
 import { draw_pixi } from "./pixi.js";
 
-export { update, draw_tree, draw_tree_scale, draw_aligned, draw, get_class_name, cartesian_shifted };
+export { update, draw_tree, draw_tree_scale, draw_aligned, draw, get_class_name, cartesian_shifted, update_aligned_panel_display };
 
 
 // Update the view of all elements (gui, tree, minimap).
@@ -70,18 +70,14 @@ async function draw_tree() {
         const drawer_info = await api(`/drawers/${view.drawer.name}/${get_tid()}`);
         view.drawer.npanels = drawer_info.npanels; // type has already been set
 
-        // Toggle aligned panel
-        if (drawer_info.type === "rect" && drawer_info.npanels > 1)
-            div_aligned.style.display = "initial";  // show aligned panel
-        else
-            div_aligned.style.display = "none";  // hide aligned panel
+        update_aligned_panel_display();
 
         if (view.drawer.npanels > 1) {
             align_timeout = setTimeout(async () => { 
                 if (!align_drawing)
                     await draw_aligned(params);
                 clearTimeout(align_timeout);
-            }, 70);
+            }, view.aligned.timeout);
         }
 
         if (view.drawer.type === "circ") {
@@ -180,7 +176,7 @@ function draw_negative_xaxis() {
 
 // Append a svg to the given element, with all the items in the list drawn.
 // The first child of element will be used or replaced as a svg.
-function draw(element, items, tl, zoom, replace=true, clean_pixi=true) {
+function draw(element, items, tl, zoom, replace=true) {
     const is_svg = item => {
         const name = item[0];
         return !(name.includes("pixi-") || name === "html")
@@ -193,10 +189,10 @@ function draw(element, items, tl, zoom, replace=true, clean_pixi=true) {
     
     const pixi_items = items.filter(i => i[0].includes("pixi-"));
     if (pixi_items.length) {
-        const pixi = draw_pixi(pixi_items, tl, zoom, clean_pixi)
-        const pixi_container = view.drawer.type === "rect" ? div_aligned : div_tree;
-        replace_child(pixi_container.querySelector(".div_pixi"), pixi);
+        const pixi_container = view.drawer.type === "circ" ? div_tree : element;
+        const pixi = draw_pixi(pixi_container, pixi_items, tl, zoom)
         pixi.style.transform = "translate(0, 0)";
+        replace_child(pixi_container.querySelector(".div_pixi"), pixi);
     }
 
     const html_container = element.querySelector(".div_html")
@@ -253,25 +249,48 @@ function replace_svg(element) {
     replace_child(element, svg);
 }
 
+function update_aligned_panel_display() {
+    // Toggle aligned panel
+    if (view.drawer.type === "rect" && view.drawer.npanels > 1) {
+        div_aligned.style.display = "initial";  // show aligned panel
+
+        if (view.aligned.adjust_pos) {
+            const tree_px_width = view.zoom.x * (view.tree_size.width - view.tl.x);
+            view.aligned.pos = 100 * (tree_px_width + view.aligned.padding) / div_tree.offsetWidth;
+            view.aligned.pos = Math.min(Math.max(view.aligned.pos, 1), 99);  // clip
+            div_aligned.style.width = `${100 - view.aligned.pos}%`;
+        }
+    } else
+        div_aligned.style.display = "none";  // hide aligned panel
+}
 
 // Draw elements that belong to panels above 0.
-async function draw_aligned(params) {
+async function draw_aligned(params, npanels) {
 
     if (!params)
         params = get_tree_params();
 
+    const zx = view.zoom.a;
     const zy = view.zoom.y;
     const panels = { 
-        1: { div: div_aligned, params: { x: view.aligned.x, y: view.tl.y } }, 
-        2: { div: div_aligned_header, params: { x: 0, y:0, 
-            h: Math.max(-view.tl.y, view.aligned.header.height / zy) } }, 
-        3: { div: div_aligned_footer, params: { x: 0, y:0,
-            h: Math.max(div_tree.offsetHeight / zy + view.tl.y - view.tree_size.height,
+        1: { div: div_aligned, show: true,
+             params: { x: view.aligned.x, y: view.tl.y, w: div_aligned.offsetWidth / zx } }, 
+
+        2: { div: div_aligned_header, show: view.aligned.header.show,
+             params: { x: view.aligned.x, y: 0,
+                 w: div_aligned.offsetWidth / zx,
+                 h: Math.max(-view.tl.y, view.aligned.header.height / zy) } }, 
+
+        3: { div: div_aligned_footer, show: view.aligned.footer.show,
+             params: { x: view.aligned.x, y: 0,
+                 w: div_aligned.offsetWidth / zx,
+                 h: Math.max(div_tree.offsetHeight / zy + view.tl.y - view.tree_size.height,
                         view.aligned.footer.height / zy) } }
     };
 
     if (view.drawer.type === "rect") {
-        for (let panel_n = 1; panel_n < view.drawer.npanels; panel_n++) {
+        npanels = npanels ? Math.min(view.drawer.npanels, npanels) : view.drawer.npanels;
+        for (let panel_n = 1; panel_n < npanels; panel_n++) {
             const panel = panels[panel_n];
             const qs = new URLSearchParams({
                 ...params, ...panel.params, "panel": panel_n
@@ -285,15 +304,14 @@ async function draw_aligned(params) {
 
             // Resize headers accordingly or remove them in no items
             if (panel_n === 2 || panel_n === 3) {
-                if (items.length > 0) {
+                if (items.length > 0 && panel.show) {
                     div.style.display = "block";
                     div.style.height = panel.params.h * zy + "px";
                 } else
                     div.style.display = "none";
             }
 
-            draw(div, items, {x: view.aligned.x, y: panel.params.y}, 
-                { x: view.zoom.a, y: view.zoom.y }, true, panel_n === 1);
+            draw(div, items, {x: view.aligned.x, y: panel.params.y}, { x: view.zoom.a, y: zy });
 
             align_drawing = false;
 
@@ -367,7 +385,7 @@ function create_item(g, item, tl, zoom) {
             on_box_mouseleave(node_id));
 
         if (name.length > 0 || Object.entries(properties).length > 0)
-            b.appendChild(create_tooltip(name, properties));
+            b.appendChild(create_tooltip(name, properties))
 
         return b;
     }
@@ -399,16 +417,18 @@ function create_item(g, item, tl, zoom) {
         return arc;
     }
     else if (item[0] === "circle") {
-        const [ , center, radius, type, style] = item;
+        const [ , center, radius, type, style, tooltip] = item;
 
         const circle = create_circle(center, radius, tl, zx, zy, type);
 
         style_ellipse(circle, style); // same styling as ellipse
 
+        circle.setAttribute("data-tooltip", tooltip);;
+
         return circle
     }
     else if (item[0] === "ellipse") {
-        const [ , center, rx, ry, type, style] = item;
+        const [ , center, rx, ry, type, style, tooltip] = item;
 
         const ellipse = create_ellipse(center, rx, ry, tl, zx, zy, type);
 
@@ -420,10 +440,12 @@ function create_item(g, item, tl, zoom) {
         
         style_ellipse(ellipse, style);
 
+        ellipse.setAttribute("data-tooltip", tooltip);;
+
         return ellipse;
     }
     else if (item[0] === "triangle") {
-        const [ , box, tip, type, style] = item;
+        const [ , box, tip, type, style, tooltip] = item;
 
         const triangle = create_triangle(box, tip, tl, zx, zy, type);
 
@@ -439,6 +461,8 @@ function create_item(g, item, tl, zoom) {
 
         style_polygon(triangle, style);
 
+        triangle.setAttribute("data-tooltip", tooltip);;
+
         return triangle;
     }
     else if (item[0] === "text") {
@@ -452,45 +476,44 @@ function create_item(g, item, tl, zoom) {
         return text;
     }
     else if (item[0] === "rect") {
-        const [ , box, type, style] = item;
+        const [ , box, type, style, tooltip] = item;
 
         const rect = create_box(box, tl, zx, zy, type, style);
 
-        style_polygon(rect, style);
+        rect.setAttribute("data-tooltip", tooltip);
 
         return rect;
     }
     else if (item[0] === "rhombus") {
-        const [ , points, type, style] = item;
+        const [ , points, type, style, tooltip] = item;
 
         const rhombus = create_polygon(points, tl, zx, zy, "rhombus " + type);
 
         style_polygon(rhombus, style);
 
+        rhombus.setAttribute("data-tooltip", tooltip);
+
         return rhombus;
     }
     else if (item[0] === "polygon") {
-        const [ , points, type, style, props] = item;
+        const [ , points, type, style, tooltip] = item;
 
         const polygon = create_polygon(points, tl, zx, zy, "polygon " + type);
 
-        if (props) {
-            const name = props["name"];
-            if (name)
-                delete props["name"];
-            polygon.appendChild(create_tooltip(name, props))
-        }
-
         style_polygon(polygon, style);
+
+        polygon.setAttribute("data-tooltip", tooltip);
 
         return polygon;
     }
     else if (item[0] === "slice") {
-        const [ , box, type, style] = item;
+        const [ , box, type, style, tooltip] = item;
 
         const slice = create_slice(...box, tl, zx, zy, type, style);
 
         style_polygon(slice, style);
+
+        slice.setAttribute("data-tooltip", tooltip);
 
         return slice;
     }
@@ -676,13 +699,12 @@ function create_circ_outline(sbox, tl, z) {
 // Return an element that, appended to a svg element (normally a box), will
 // make it show a tooltip showing nicely the given name and properties.
 function create_tooltip(name, properties) {
-    const title = create_svg_element("title", {});
     const text = (name ? name : "(unnamed)") + "\n" +
         Object.entries(properties).map(x => x[0] + ": " + x[1]).join("\n");
+    const title = create_svg_element("title", {});
     title.appendChild(document.createTextNode(text));
-    return title;
+    return title
 }
-
 
 function create_line(p1, p2, tl, zx, zy, type="", parent_of=[]) {
     const [x1, y1] = [zx * (p1[0] - tl.x), zy * (p1[1] - tl.y)],

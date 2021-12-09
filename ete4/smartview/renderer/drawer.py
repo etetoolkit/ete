@@ -45,6 +45,14 @@ Active = namedtuple('Active', 'results parents')
 
 # Drawing.
 
+def get_node_id(node, node_id):
+    parent = node.up
+    if not parent:
+        node_id.reverse()
+        return node_id
+    node_id.append(parent.children.index(node))
+    return get_node_id(parent, node_id)
+
 class Drawer:
     "Base class (needs subclassing with extra functions to draw)"
 
@@ -90,27 +98,13 @@ class Drawer:
 
         else:
             point = self.xmin, self.ymin
-            first_counter = last_counter = descend_counter = 0
-            first_time = 0
             for it in walk(self.tree):
                 graphics = []
                 if it.first_visit:
-                    start = time()
-
                     point = self.on_first_visit(point, it, graphics)
-
-                    if not it.descend:
-                        descend_counter += 1
-                    first_counter += 1
-                    first_time += time() - start
                 else:
-                    last_counter += 1
                     point = self.on_last_visit(point, it, graphics)
                 yield from graphics
-
-            print(f'First visit ({first_counter}): {first_time}')
-            print(f'Descend: {descend_counter}')
-            print(f'Last visit: {last_counter}')
 
             if self.outline:
                 yield from self.get_outline()
@@ -178,6 +172,7 @@ class Drawer:
                         if any(node in results or node in parents.keys() for node in self.collapsed) )
                 active_children = self.get_active_children()
                 selected_children = self.get_selected_children()
+
             graphics += self.get_outline()
 
         x_after, y_after = point
@@ -229,17 +224,17 @@ class Drawer:
                                 if node in parents.keys())
                 hz_line_style = {
                         'type': node_style['hz_line_type'],
-                        'width': node_style['hz_line_width'],
-                        'color': node_style['hz_line_color'],
+                        'stroke-width': node_style['hz_line_width'],
+                        'stroke': node_style['hz_line_color'],
                 }
                 yield from self.draw_lengthline((x, y + bdy), (x + dx, y + bdy),
-                                list(parent_of), hz_line_style)
+                                list(parent_of), style=hz_line_style)
 
             if bdy0 != bdy1:
                 vt_line_style = {
                         'type': node_style['vt_line_type'],
-                        'width': node_style['vt_line_width'],
-                        'color': node_style['vt_line_color'],
+                        'stroke-width': node_style['vt_line_width'],
+                        'stroke': node_style['vt_line_color'],
                 }
                 yield from self.draw_childrenline((x + dx, y + bdy0),
                                                   (x + dx, y + bdy1),
@@ -253,12 +248,6 @@ class Drawer:
             
             yield from self.draw_nodedot((x + dx, y + bdy),
                     dy * self.zoom[1], nodedot_style)
-
-            # nresults = len(parent_of)
-            # n += (1 if node_style['size') > 0 else 0)
-            # for idx, text in enumerate(parent_of):
-                # yield 
-
 
     def draw_aligned_headers(self):
         # Draw aligned panel headers
@@ -361,9 +350,10 @@ class Drawer:
         # Draw collapsed node nodebox when necessary
         if is_manually_collapsed or is_small or collapsed_node.dist == 0:
             name, properties = collapsed_node.name, collapsed_node.props
-
+            node_id = tuple(get_node_id(collapsed_node, []))\
+                    if is_manually_collapsed else []
             box = draw_nodebox(self.flush_outline(ndx), name, 
-                    properties, [], searched_by + selected_by + active_by,
+                    properties, node_id, searched_by + selected_by + active_by,
                     { 'fill': collapsed_node.sm_style.get('bgcolor') })
             self.nodeboxes.append(box)
         else:
@@ -451,7 +441,6 @@ class Drawer:
         # selected_children: list of selected nodes under this node
         yield from []  # they are always drawn (only visible nodes can collapse)
         # Uses self.collapsed and self.outline to extract and place info.
-
 
 
 class DrawerRect(Drawer):
@@ -905,14 +894,6 @@ def make_box(point, size):
     dx, dy = size
     return Box(x, y, dx, dy)
 
-def get_xs(box):
-    x, _, dx, _ = box
-    return x, x + dx
-
-def get_ys(box):
-    _, y, _, dy = box
-    return y, y + dy
-
 
 def get_rect(element, zoom=(0, 0)):
     "Return the rectangle that contains the given graphic element"
@@ -1033,27 +1014,6 @@ def drawn_size(elements, get_box, min_x=None):
         x_min = max(x_min, min_x)
 
     return Size(x_max - x_min, y_max - y_min)
-
-
-def intersects_box(b1, b2):
-    "Return True if the boxes b1 and b2 (of the same kind) intersect"
-    return (intersects_segment(get_xs(b1), get_xs(b2)) and
-            intersects_segment(get_ys(b1), get_ys(b2)))
-
-
-def intersects_segment(s1, s2):
-    "Return True if the segments s1 and s2 intersect"
-    s1min, s1max = s1
-    s2min, s2max = s2
-    return s1min <= s2max and s2min <= s1max
-
-
-def intersects_angles(rect, asec):
-    "Return True if any part of rect is contained within the angles of the asec"
-    return any(intersects_segment(get_ys(circumasec(r)), get_ys(asec))
-                   for r in split_thru_negative_xaxis(rect))
-    # We divide rect in two if it passes thru the -x axis, because then its
-    # circumbscribing asec goes from -pi to +pi and (wrongly) always intersects.
 
 
 def split_thru_negative_xaxis(rect):

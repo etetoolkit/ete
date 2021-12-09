@@ -460,7 +460,7 @@ def write_newick(rootnode, properties=None, format=1, format_root_node=True,
                                           support_formatter=support_formatter,
                                           name_formatter=name_formatter,
                                           quoted_names=quoted_names))
-                newick.append(_get_features_string(node, properties))
+                newick.append(_get_features_string(node, properties, format))
         else:
             if node is not rootnode and node != node.up.children[0]:
                 newick.append(",")
@@ -471,14 +471,14 @@ def write_newick(rootnode, properties=None, format=1, format_root_node=True,
                                           support_formatter=support_formatter,
                                           name_formatter=name_formatter,
                                           quoted_names=quoted_names))
-                newick.append(_get_features_string(node, properties))
+                newick.append(_get_features_string(node, properties, format))
             else:
                 newick.append("(")
 
     newick.append(";")
     return ''.join(newick)
 
-def _get_features_string(self, features=None):
+def _get_features_string(self, features=None, format=0):
     """ Generates the extended newick string NHX with extra data about
     a node. """
     string = ""
@@ -487,8 +487,9 @@ def _get_features_string(self, features=None):
     elif features == []:
         features = sorted(self._properties.keys())
 
+    excluded_props = set(c[0] for c in NW_FORMAT[format] if c[0] is not None)
     for pr in features:
-        if pr in self._properties:
+        if pr in self._properties and pr not in excluded_props:
             raw = self._properties[pr]
             if type(raw) in ITERABLE_TYPES:
                 raw = '|'.join(map(str, raw))

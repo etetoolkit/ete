@@ -10,6 +10,7 @@ const loader = PIXI.Loader.shared;
 //const textureCache = PIXI.utils.TextureCache;
 const resources = loader.resources;
 const Sprite = PIXI.Sprite;
+const MIN_MSA_POSWIDTH = 12;
 
 
 const app_options = {
@@ -18,7 +19,8 @@ const app_options = {
 };
     
 // Globals
-const app = new Application(app_options);
+const apps = {};
+var app;
 var textures;
 var textures_loaded = false;
 
@@ -49,8 +51,6 @@ const aa_text_png = aa.map(a => {
 
 // Load texture atlas
 loader
-    //.add(`../images/aa_text.json`)
-    //.add("aa_notext", `images/aa_notext.json`)
     .add(aa_notext_png)
     .add(aa_text_png)
     .add("block", "images/block.png")
@@ -71,16 +71,14 @@ loader
         textures_loaded = true;
     });
 
-function draw_pixi(items, tl, zoom, clean=true) {
-    // Resize canvas based on container
-    const container = view.drawer.type === "rect" ?
-        div_aligned : div_tree;
+function draw_pixi(container, items, tl, zoom) {
+    app = apps[container.id] = apps[container.id] || new Application(app_options);
 
+    // Resize canvas based on container
     app.renderer.resize(container.clientWidth, container.clientHeight);
 
     // Remove all items from stage
-    if (clean)
-        app.stage.children = [];
+    app.stage.children = [];
 
     if (textures_loaded && items.length)
         draw(items, tl, zoom);
@@ -100,7 +98,7 @@ function draw(items, tl, zoom) {
 }
 
 
-function addSprite(sprite, box, tl, zx, zy) {
+function addSprite(sprite, box, tl, zx, zy, tooltip) {
     const [ x, y, dx, dy ] = box;
 
     let [ sx, sy ] = [ x, y ];
@@ -118,6 +116,10 @@ function addSprite(sprite, box, tl, zx, zy) {
     sprite.width = sw;
     sprite.height = sh;
 
+    if (tooltip) {
+        sprite.accessibleTitle = tooltip;
+    }
+
     // Add to stage
     app.stage.addChild(sprite);
 }
@@ -125,12 +127,20 @@ function addSprite(sprite, box, tl, zx, zy) {
 
 function draw_msa(sequence, type, box, tl, zx, zy) {
     const [ x0, y, width, posh ] = box;
+
     const posw = width / sequence.length;
+
+    if (view.aligned.adjust_zoom)
+        view.aligned.max_zoom = MIN_MSA_POSWIDTH / posw;
+    else
+        view.aligned.max_zoom = undefined;
+
     sequence.split("").forEach((s, i) => {
         if (s != "-") {
             const sprite = new Sprite(textures[type][s])
             const x = x0 + i * posw;
-            addSprite(sprite, [x, y, posw, posh], tl, zx, zy);
+            const tooltip = `Residue: ${s}\nPosition: ${i}`
+            addSprite(sprite, [x, y, posw, posh], tl, zx, zy, tooltip);
         }
     })
 }

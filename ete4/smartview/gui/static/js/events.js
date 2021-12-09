@@ -163,6 +163,32 @@ function on_mousedown(event) {
     // so the order in which to do the contains() tests matters.
 }
 
+function update_tooltip(event) {
+
+    function clear_timeout() {
+        if (view.tooltip.timeout) {
+            clearTimeout(view.tooltip.timeout);
+            view.tooltip.timeout = undefined;
+        }
+    }
+
+    if (tooltip.contains(event.target)) {
+        clear_timeout();
+        return
+    }
+
+    const style = tooltip.style;
+    const data = event.target.getAttribute("data-tooltip");
+    if (data) {
+        tooltip.innerHTML = data;
+        style.display = "block";
+        const bbox = event.target.getBoundingClientRect();
+        style.left = bbox.x + "px";
+        style.top = bbox.y + "px";
+        clear_timeout();
+    } else if (!view.tooltip.timeout)
+        view.tooltip.timeout = setTimeout(() => style.display = "none", 500);
+}
 
 // Mouse move -- move tree view if dragging, update position coordinates.
 function on_mousemove(event) {
@@ -171,6 +197,8 @@ function on_mousemove(event) {
     drag_move(point);
 
     [view.pos.cx, view.pos.cy] = coordinates(point);
+
+    update_tooltip(event);
 }
 
 
