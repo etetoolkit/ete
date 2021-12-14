@@ -64,7 +64,7 @@ _QUOTED_TEXT_RE = r"""((?=["'])(?:"[^"\\]*(?:\\[\s\S][^"\\]*)*"|'[^'\\]*(?:\\[\s
 
 _QUOTED_TEXT_PREFIX='ete3_quotref_'
 
-DEFAULT_DIST = 1.0
+DEFAULT_DIST = 0.0
 DEFAULT_NAME = ''
 DEFAULT_SUPPORT = 1.0
 FLOAT_FORMATTER = "%0.6g"

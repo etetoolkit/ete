@@ -190,10 +190,13 @@ async function main() {
     get_selections();
     get_active_nodes();
 
-    draw_minimap();
-    show_minimap("visible");
-
-    await update();
+    setTimeout(async () => {
+        reset_zoom();
+        reset_position();
+        draw_minimap();
+        show_minimap("visible");
+        await update();
+    }, 100)
 
     const sample_trees = ["ncbi", "GTDB_bact_r95"];  // hardcoded for the moment
     view.allow_modifications = !sample_trees.includes(view.tree);

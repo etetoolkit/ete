@@ -193,7 +193,7 @@ class Trees(Resource):
             for node in tree.active.results:
                 node_id = ",".join(map(str, get_node_id(tree.tree, node, [])))
                 props = { k:v for k,v in node.props.items() if not k.startswith('_') }
-                nodes.append({ "id": node_id, **props })
+                nodes.append({ 'id': node_id, **props })
             return nodes
         # Searches
         elif rule == '/trees/<string:tree_id>/searches':
@@ -208,6 +208,12 @@ class Trees(Resource):
             removed = remove_search(tid, request.args.copy())
             message = 'ok' if removed else 'search not found'
             return {'message': message}
+        # Find
+        elif rule == '/trees/<string:tree_id>/find':
+            node = find_node(tree.tree, request.args.copy())
+            node_id = ",".join(map(str, get_node_id(tree.tree, node, [])))
+            props = { k:v for k,v in node.props.items() if not k.startswith('_') }
+            return { 'id': node_id, **props }
         elif rule == '/trees/<string:tree_id>/draw':
             drawer = get_drawer(tree_id, request.args.copy())
             return list(drawer.draw())
@@ -534,6 +540,22 @@ def store_search(tree_id, args):
         app.trees[int(tid)].searches[text] = (results, parents)
 
         return len(results), len(parents)
+    except InvalidUsage:
+        raise
+    except Exception as e:
+        raise InvalidUsage(f'evaluating expression: {e}')
+
+
+def find_node(tree, args):
+    if 'text' not in args:
+        raise InvalidUsage('missing search text')
+
+    text = args.pop('text').strip()
+    func = get_search_function(text)
+
+    try:
+        return next((node for node in tree.traverse() if func(node)), None)
+
     except InvalidUsage:
         raise
     except Exception as e:
@@ -1194,6 +1216,7 @@ def add_resources(api):
         '/trees/<string:tree_id>/search',
         '/trees/<string:tree_id>/searches',
         '/trees/<string:tree_id>/remove_search',
+        '/trees/<string:tree_id>/find',
         '/trees/<string:tree_id>/sort',
         '/trees/<string:tree_id>/root_at',
         '/trees/<string:tree_id>/move',
