@@ -362,7 +362,7 @@ function create_item(g, item, tl, zoom) {
             result_of.forEach((t, i) => {
                 const box = [ x + dx * i, y, dx, dy ];
                 const b = create_box(box, tl, zx, zy, "", style);
-                style_nodebox(b, style);
+                style_polygon(b, style);
                 const cnode = t === "active" ? get_active_class()
                     : Object.keys(view.searches).includes(t) 
                     ? get_search_class(t) : get_selection_class(t);
@@ -371,7 +371,7 @@ function create_item(g, item, tl, zoom) {
             })
         }
 
-        style_nodebox(b, style);
+        style_polygon(b, style);
 
         b.addEventListener("click", event =>
             on_box_click(event, box, node_id));
@@ -479,6 +479,8 @@ function create_item(g, item, tl, zoom) {
         const [ , box, type, style, tooltip] = item;
 
         const rect = create_box(box, tl, zx, zy, type, style);
+
+        style_polygon(rect, style);
 
         rect.setAttribute("data-tooltip", tooltip);
 
@@ -995,17 +997,6 @@ function is_style_property(property) {
     return property != undefined && property != null && property != ""
 }
 
-// Style created items with information from backend
-function style_nodebox(nodebox, style){
-    if (is_style_property(style.fill))
-        nodebox.style.fill = style.fill;
-    
-    if (is_style_property(style.opacity))
-        nodebox.style.opacity = style.opacity;
-
-    return nodebox;
-}
-
 
 function style_line(line, style) {
     if (is_style_property(style.type))
@@ -1071,9 +1062,6 @@ function style_text(text, style) {
 function style_polygon(polygon, style) {
     if (is_style_property(style.fill))
         polygon.style.fill = style.fill;
-
-    if (is_style_property(style.opacity))
-        polygon.style.opacity = style.opacity;
 
     if (is_style_property(style.opacity))
         polygon.style.opacity = style.opacity;
