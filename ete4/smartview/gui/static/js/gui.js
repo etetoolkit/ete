@@ -159,7 +159,6 @@ const view = {
 };
 
 const menus = {  // will contain the menus on the top
-    show_cp: true,
     pane: undefined, // main pane containing different tabs
     selected: undefined,
     searches: undefined,
