@@ -2263,6 +2263,14 @@ cdef class TreeNode(object):
             edge_keys.append(sorted([k1, k2]))
         return md5(str(sorted(edge_keys)).encode('utf-8')).hexdigest()
 
+
+    def set_unique_ids(self):
+        """ Sets unique numeric id for each node in the tree, given its root """
+
+        for i, n in enumerate(self.traverse()):
+            n.add_prop('node_id', i)
+
+
     # def get_partitions(self):
     #     """
     #     .. versionadded: 2.1
