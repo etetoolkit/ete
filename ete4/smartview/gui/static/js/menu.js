@@ -13,7 +13,7 @@ export { init_menus, update_folder_layouts };
 // Init the menus on the top with all the options we can see and change.
 function init_menus(trees) {
     menus.pane = new Tweakpane.Pane()
-        .addFolder({ title: "Control panel" });
+        .addFolder({ title: "Control panel", expanded: view.control_panel.show });
 
     const tab = menus.pane.addTab({ pages: [
         { title: "Basic" },

@@ -149,6 +149,8 @@ const view = {
         fsize: 12,
     },
 
+    control_panel: { show: true },
+
     smart_zoom: true,
 
     share_view: () => share_view(),
@@ -157,6 +159,7 @@ const view = {
 };
 
 const menus = {  // will contain the menus on the top
+    show_cp: true,
     pane: undefined, // main pane containing different tabs
     selected: undefined,
     searches: undefined,
@@ -333,6 +336,10 @@ async function set_query_string_values() {
             view.zoom.y = div_tree.offsetHeight / Number(value);
         else if (param === "drawer")
             view.drawer.name = value;
+        else if (param === "minimap")
+            view.minimap.show = Boolean(value);
+        else if (param === "controlpanel")
+            view.control_panel.show = Boolean(value);
         else if (param === "layouts") {
             const active = value.split(",");
             active.forEach(a => {
