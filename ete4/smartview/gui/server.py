@@ -406,6 +406,7 @@ def retrieve_layouts(layouts):
     tree_layouts["default"] = app.default_layouts
 
     print(tree_layouts)
+    print(layouts)
 
     return dict(tree_layouts)
 
