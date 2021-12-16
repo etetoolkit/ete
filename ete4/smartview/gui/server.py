@@ -19,6 +19,7 @@ os.chdir(os.path.abspath(os.path.dirname(__file__)))
 # sys.path.insert(0, '..')
 
 import re
+from importlib import reload as module_reload
 from math import pi
 from functools import partial
 from time import time
@@ -933,7 +934,7 @@ def modify_tree_fields(tree_id):
 
 def update_app_available_layouts():
     try:
-        from .. import layout as layout_modules
+        module_reload(layout_modules)
         avail_layouts = get_layouts_from_getters(layout_modules)
     except Exception as e:
         raise "Error while updating app layouts.\n{e}"
