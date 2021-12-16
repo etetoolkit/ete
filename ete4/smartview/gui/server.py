@@ -398,7 +398,7 @@ def retrieve_layouts(layouts):
         if ly_name == '*':
             tree_layouts[key] = avail
         else:
-            match = next((ly for ly in avail if ly.__name__ == ly_name ), None)
+            match = next((ly for ly in avail if ly.name == ly_name ), None)
             if match:
                 tree_layouts[key].append(match)
 
