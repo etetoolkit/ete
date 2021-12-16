@@ -405,6 +405,8 @@ def retrieve_layouts(layouts):
     # Add default layouts
     tree_layouts["default"] = app.default_layouts
 
+    print(tree_layouts)
+
     return dict(tree_layouts)
 
 @init_timer
