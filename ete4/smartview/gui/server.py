@@ -395,6 +395,7 @@ def retrieve_layouts(layouts):
 
         key, ly_name = name_split
         avail = app.avail_layouts.get(key, [])
+        print(avail)
         if ly_name == '*':
             tree_layouts[key] = avail
         else:
