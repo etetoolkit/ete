@@ -12,6 +12,8 @@ class LayoutEvolEvents(TreeLayout):
         self.speciation_color = speciation_color
         self.duplication_color = duplication_color
 
+        self.active = False
+
 
     def set_node_style(self, node):
         if not node.is_leaf():

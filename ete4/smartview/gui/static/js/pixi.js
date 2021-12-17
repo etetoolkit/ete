@@ -2,7 +2,7 @@ import { view } from "./gui.js";
 import { cartesian_shifted } from "./draw.js";
 
 
-export { draw_pixi };
+export { draw_pixi, clear_pixi };
 
 //Aliases
 const Application = PIXI.Application;
@@ -70,6 +70,14 @@ loader
         }
         textures_loaded = true;
     });
+
+function clear_pixi(container) {
+    // Remove all items from stage
+    app = apps[container.id];
+
+    if (app)
+        app.stage.children = [];
+}
 
 function draw_pixi(container, items, tl, zoom) {
     app = apps[container.id] = apps[container.id] || new Application(app_options);

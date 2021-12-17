@@ -14,17 +14,22 @@ def get_level(node, level=0):
 
 
 class LayoutLastCommonAncestor(TreeLayout):
-    def __init__(self, name="Last common ancestor", 
-            speciation_color="blue", duplication_color="red"):
+    def __init__(self, name="Last common ancestor",
+            rect_width=15, column=0):
         super().__init__(name, aligned_faces=True)
+
+        self.active = False
+
+        self.rect_width = rect_width
+        self.column = column
 
     def set_node_style(self, node):
         if node.props.get('sci_name'):
             lca = node.props.get('sci_name')
             color = node.props.get('sci_name_color', 'lightgray')
             
-            level = get_level(node)
-            lca_face = RectFace(15, float('inf'), 
+            level = get_level(node, level=self.column)
+            lca_face = RectFace(self.rect_width, float('inf'), 
                     color = color, 
                     text = lca,
                     fgcolor = "white",
