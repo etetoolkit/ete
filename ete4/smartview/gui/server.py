@@ -373,7 +373,7 @@ def load_tree(tree_id):
 
 def load_tree_from_newick(tid, newick):
     """Load tree into memory from newick"""
-    t = Tree(newick)
+    t = Tree(newick, format=1)
 
     if app.trees[int(tid)].style.ultrametric:
         t.convert_to_ultrametric()
