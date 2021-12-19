@@ -17,4 +17,4 @@ class LayoutEteDiffDistance(TreeLayout):
         if difference:
             node.sm_style["fgcolor"] = self.diff_node_color
             node.sm_style["size"] = self.diff_node_size
-            node.sm_style["fgopacity"] = 1 - float(difference)
+            node.sm_style["fgopacity"] = float(difference)
