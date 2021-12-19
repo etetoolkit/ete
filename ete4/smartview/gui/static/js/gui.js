@@ -149,7 +149,7 @@ const view = {
         fsize: 12,
     },
 
-    control_panel: { show: true },
+    control_panel: { show: false },
 
     smart_zoom: false,
 

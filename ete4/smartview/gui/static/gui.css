@@ -180,8 +180,9 @@ body {
 
 .tweakpane {
     position: absolute;
-    top: 0px;
+    top: 10px;
     left: 10px;
+    width: 350px;
     z-index: 3;
 }
 
