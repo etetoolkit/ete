@@ -491,7 +491,7 @@ def get_drawer(tree_id, args):
 def get_newick(tree_id, max_mb):
     "Return the newick representation of the given tree"
 
-    newick = load_tree(tree_id).write()
+    newick = load_tree(tree_id).write(properties=[])
 
     size_mb = len(newick) / 1e6
     if size_mb > max_mb:
