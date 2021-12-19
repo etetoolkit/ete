@@ -244,6 +244,7 @@ class Drawer:
                     'shape': node_style['shape'],
                     'size': node_style['size'],
                     'fill': node_style['fgcolor'],
+                    'opacity': node_style['fgopacity'],
             }
             
             yield from self.draw_nodedot((x + dx, y + bdy),
