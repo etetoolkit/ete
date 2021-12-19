@@ -996,7 +996,7 @@ function get_approx_BBox(text) {
 
 // Chech whether style property exists and is not empty
 function is_style_property(property) {
-    return property != undefined && property != null && property != ""
+    return property != undefined && property != null && property !== ""
 }
 
 
