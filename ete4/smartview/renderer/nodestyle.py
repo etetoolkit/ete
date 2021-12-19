@@ -11,7 +11,7 @@ _BOOL_CHECKER =  lambda x: isinstance(x, bool) or x in (0,1)
 
 NODE_STYLE_DEFAULT = [
     ["fgcolor",          "#0030c1",    _COLOR_CHECKER                           ],
-    ["bgcolor",          "#FFFFFF",    _COLOR_CHECKER                           ],
+    ["bgcolor",          "transparent",    _COLOR_CHECKER                       ], # #FFFFFF
     #["node_bgcolor",     "#FFFFFF",    _COLOR_CHECKER                           ],
     #["partition_bgcolor","#FFFFFF",    _COLOR_CHECKER                           ],
     #["faces_bgcolor",    "#FFFFFF",    _COLOR_CHECKER                           ],

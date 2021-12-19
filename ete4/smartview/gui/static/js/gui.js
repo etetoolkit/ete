@@ -74,7 +74,7 @@ const view = {
     selected: {},  // will contain the selected nodes (saved)
     active: {
         nodes: [],    // will contain list of active nodes
-        color: "#98C1D9",
+        color: "#b3004b",
         opacity: 0.4,
         remove: undefined,
         folder: undefined,
