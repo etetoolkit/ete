@@ -72,6 +72,8 @@ async function draw_tree() {
 
         update_aligned_panel_display();
 
+        console.log(view.drawer.npanels)
+
         if (view.drawer.npanels > 1) {
             align_timeout = setTimeout(async () => { 
                 if (!align_drawing)
