@@ -151,7 +151,7 @@ const view = {
 
     control_panel: { show: true },
 
-    smart_zoom: true,
+    smart_zoom: false,
 
     share_view: () => share_view(),
 
