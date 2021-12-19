@@ -11,7 +11,7 @@ class LayoutEteDiffDistance(TreeLayout):
         self.diff_node_color = diff_node_color
 
     def set_node_style(self, node):
-        difference = node.props.get("distance")
+        difference = node.props.get("compare_distance")
         if difference:
             node.sm_style["fgcolor"] = self.diff_node_color
             node.sm_style["size"] = 2
