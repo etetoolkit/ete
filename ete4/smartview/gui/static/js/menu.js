@@ -91,7 +91,7 @@ function create_menu_basic(menu, trees) {
         .on("change", draw_tree_scale);
 
     // zooms
-    menu.addInput(view, "smart_zoom", { label: "adjust window to node while zooming" });
+    menu.addInput(view, "smart_zoom", { label: "zoom around node" });
 
     menu.addInput(view.aligned, "zoom", { label: "zoom in aligned panel" });
 
