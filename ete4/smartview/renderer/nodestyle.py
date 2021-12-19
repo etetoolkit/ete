@@ -24,8 +24,8 @@ NODE_STYLE_DEFAULT = [
     ["size",             0,            _SIZE_CHECKER                            ], # node circle size
     ["shape",            "circle",     _NODE_TYPE_CHECKER                       ],
     ["draw_descendants", True,         _BOOL_CHECKER                            ],
-    ["hz_line_width",          0,      _SIZE_CHECKER                            ],
-    ["vt_line_width",          0,      _SIZE_CHECKER                            ]
+    ["hz_line_width",          .5,      _SIZE_CHECKER                            ],
+    ["vt_line_width",          .5,      _SIZE_CHECKER                            ]
     ]
 
 TREE_STYLE_CHECKER = {
