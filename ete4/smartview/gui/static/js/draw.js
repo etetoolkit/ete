@@ -423,7 +423,7 @@ function create_item(g, item, tl, zoom) {
 
         const circle = create_circle(center, radius, tl, zx, zy, type);
 
-        style_ellipse(circle, style); // same styling as ellipse
+        style_polygon(circle, style); // same styling as ellipse
 
         circle.setAttribute("data-tooltip", tooltip);;
 
@@ -440,7 +440,7 @@ function create_item(g, item, tl, zoom) {
             addRotation(ellipse, angle, cx, cy);
         }
         
-        style_ellipse(ellipse, style);
+        style_polygon(ellipse, style);
 
         ellipse.setAttribute("data-tooltip", tooltip);;
 
@@ -1030,13 +1030,6 @@ function style_outline(outline, style) {
         outline.style["stroke-width"] = style["stroke-width"];
 
     return outline;
-}
-
-
-function style_ellipse(ellipse, style) {
-    if (is_style_property(style.fill))
-        ellipse.style.fill = style.fill;
-    return ellipse;
 }
 
 
