@@ -178,14 +178,12 @@ body {
     font-weight: bold;
 }
 
-.menu_main,.menu_representation,.menu_tags_searches {
+.tweakpane {
     position: absolute;
     top: 0px;
+    left: 10px;
     z-index: 3;
 }
-.menu_main { right: 10px; }
-.menu_representation { right: 260px; }
-.menu_tags_searches { right: 510px; }
 
 .contextmenu {
     position: absolute;
