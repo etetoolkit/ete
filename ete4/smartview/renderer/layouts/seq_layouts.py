@@ -30,7 +30,7 @@ class LayoutAlignment(TreeLayout):
     def _get_seq(self, node):
         if self.alignment:
             return self.alignment.get_seq(node.name)
-        return node.props.get("_seq", None)
+        return node.props.get("seq", None)
 
     def get_seq(self, node):
         if node.is_leaf():

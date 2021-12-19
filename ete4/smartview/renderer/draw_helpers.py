@@ -115,7 +115,8 @@ def circumasec(rect):
 
 def draw_nodebox(box, name='', properties=None, 
         node_id=None, searched_by=None, style=None):
-    properties = { k:v for k,v in (properties or {}).items() if not k.startswith('_') }
+    properties = { k:v for k,v in (properties or {}).items() \
+            if not (k.startswith('_') or k == 'seq')}
     return ['nodebox', box, name, 
             properties, node_id or [], 
             searched_by or [], style or {}]
