@@ -11,7 +11,7 @@ __all__ = [ "LayoutSciName", "LayoutPreferredName", "LayoutAutoName",
 
 sciName2color = {}
 taxid2color = {}
-with open('/ete4/smartview/renderer/layouts/spongilla_taxa_color_codes.csv') as t:
+with open('/data/smartview_servers/ete4phylocloud/ete4/smartview/renderer/layouts/spongilla_taxa_color_codes.csv') as t:
     for line in t:
         if not line.startswith('#'):
             info = line.split('\t')
