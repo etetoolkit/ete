@@ -499,7 +499,7 @@ class DrawerRect(Drawer):
         size = min(max_size, style['size'])
         if size > 0:
             fill = style['fill']
-            nodedot_style={'fill':fill}
+            nodedot_style={'fill':fill, 'opacity': style['opacity']}
             if style['shape'] == 'circle':
                 yield draw_circle(center, radius=size, 
                         circle_type='nodedot', style=nodedot_style)
