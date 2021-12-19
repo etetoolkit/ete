@@ -601,6 +601,7 @@ class DrawerCirc(Drawer):
         if -pi < a < pi and size > 0:
             fill = style['fill']
             nodedot_style={'fill':fill, 'opacity': style['opacity']}
+            print(style['opacity'])
             if style['shape'] == 'circle':
                 yield draw_circle(center, radius=size,
                           circle_type='nodedot', style=nodedot_style)
