@@ -56,7 +56,7 @@ import math
 import tarfile
 import warnings
 
-#from ..  import PhyloTree, Tree
+from ..  import PhyloTree, Tree
 
 
 #import gtdb_to_taxdump
