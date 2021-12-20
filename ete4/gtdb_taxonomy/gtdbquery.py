@@ -56,12 +56,8 @@ import math
 import tarfile
 import warnings
 
-<<<<<<< HEAD
-# from .. import PhyloTree, Tree
-=======
 # from ..coretype.tree  import Tree
 # from ..phylo.phylotree  import Tree
->>>>>>> 27af4712429ebb25acf5fe988bb385d8817d77be
 
 
 #import gtdb_to_taxdump
