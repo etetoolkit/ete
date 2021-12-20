@@ -7,11 +7,13 @@ _COLOR_MATCH = re.compile("^#[A-Fa-f\d]{6}$")
 _COLOR_CHECKER = lambda x: x.lower() in SVG_COLORS or re.match(_COLOR_MATCH, x)
 _NODE_TYPE_CHECKER = lambda x: x in ["sphere", "circle", "square"]
 _BOOL_CHECKER =  lambda x: isinstance(x, bool) or x in (0,1)
+_FLOAT_CHECKER = lambda x: isinstance(x, float) or isinstance(x, int)
 
 
 NODE_STYLE_DEFAULT = [
     ["fgcolor",          "#0030c1",    _COLOR_CHECKER                           ],
-    ["bgcolor",          "#FFFFFF",    _COLOR_CHECKER                           ],
+    ["bgcolor",          "transparent",_COLOR_CHECKER                           ], # #FFFFFF
+    ["fgopacity",          1,          _FLOAT_CHECKER                           ],
     #["node_bgcolor",     "#FFFFFF",    _COLOR_CHECKER                           ],
     #["partition_bgcolor","#FFFFFF",    _COLOR_CHECKER                           ],
     #["faces_bgcolor",    "#FFFFFF",    _COLOR_CHECKER                           ],
@@ -22,8 +24,8 @@ NODE_STYLE_DEFAULT = [
     ["size",             0,            _SIZE_CHECKER                            ], # node circle size
     ["shape",            "circle",     _NODE_TYPE_CHECKER                       ],
     ["draw_descendants", True,         _BOOL_CHECKER                            ],
-    ["hz_line_width",          0,      _SIZE_CHECKER                            ],
-    ["vt_line_width",          0,      _SIZE_CHECKER                            ]
+    ["hz_line_width",          .5,      _SIZE_CHECKER                            ],
+    ["vt_line_width",          .5,      _SIZE_CHECKER                            ]
     ]
 
 TREE_STYLE_CHECKER = {

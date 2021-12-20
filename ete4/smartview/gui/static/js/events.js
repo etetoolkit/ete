@@ -164,6 +164,9 @@ function on_mousedown(event) {
 }
 
 function update_tooltip(event) {
+    
+    if (!event.target.getAttribute)
+        return
 
     function clear_timeout() {
         if (view.tooltip.timeout) {

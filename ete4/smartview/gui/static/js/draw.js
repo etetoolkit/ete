@@ -9,7 +9,7 @@ import { colorize_searches, get_search_class } from "./search.js";
 import { colorize_selections, get_selection_class } from "./select.js";
 import { on_box_contextmenu } from "./contextmenu.js";
 import { api } from "./api.js";
-import { draw_pixi } from "./pixi.js";
+import { draw_pixi, clear_pixi } from "./pixi.js";
 
 export { update, draw_tree, draw_tree_scale, draw_aligned, draw, get_class_name, cartesian_shifted, update_aligned_panel_display };
 
@@ -187,13 +187,15 @@ function draw(element, items, tl, zoom, replace=true) {
     const svg_items = items.filter(is_svg);
     svg_items.forEach(item => g.appendChild(create_item(g, item, tl, zoom)));
     
+    const pixi_container = view.drawer.type === "circ" ? div_tree : element;
     const pixi_items = items.filter(i => i[0].includes("pixi-"));
     if (pixi_items.length) {
-        const pixi_container = view.drawer.type === "circ" ? div_tree : element;
         const pixi = draw_pixi(pixi_container, pixi_items, tl, zoom)
         pixi.style.transform = "translate(0, 0)";
         replace_child(pixi_container.querySelector(".div_pixi"), pixi);
-    }
+
+    } else if (replace)
+        clear_pixi(pixi_container);
 
     const html_container = element.querySelector(".div_html")
     if (html_container) {
@@ -421,7 +423,7 @@ function create_item(g, item, tl, zoom) {
 
         const circle = create_circle(center, radius, tl, zx, zy, type);
 
-        style_ellipse(circle, style); // same styling as ellipse
+        style_polygon(circle, style); // same styling as ellipse
 
         circle.setAttribute("data-tooltip", tooltip);;
 
@@ -438,7 +440,7 @@ function create_item(g, item, tl, zoom) {
             addRotation(ellipse, angle, cx, cy);
         }
         
-        style_ellipse(ellipse, style);
+        style_polygon(ellipse, style);
 
         ellipse.setAttribute("data-tooltip", tooltip);;
 
@@ -994,7 +996,7 @@ function get_approx_BBox(text) {
 
 // Chech whether style property exists and is not empty
 function is_style_property(property) {
-    return property != undefined && property != null && property != ""
+    return property != undefined && property != null && property !== ""
 }
 
 
@@ -1028,13 +1030,6 @@ function style_outline(outline, style) {
         outline.style["stroke-width"] = style["stroke-width"];
 
     return outline;
-}
-
-
-function style_ellipse(ellipse, style) {
-    if (is_style_property(style.fill))
-        ellipse.style.fill = style.fill;
-    return ellipse;
 }
 
 

@@ -244,6 +244,7 @@ class Drawer:
                     'shape': node_style['shape'],
                     'size': node_style['size'],
                     'fill': node_style['fgcolor'],
+                    'opacity': node_style['fgopacity'],
             }
             
             yield from self.draw_nodedot((x + dx, y + bdy),
@@ -498,7 +499,7 @@ class DrawerRect(Drawer):
         size = min(max_size, style['size'])
         if size > 0:
             fill = style['fill']
-            nodedot_style={'fill':fill}
+            nodedot_style={'fill':fill, 'opacity': style['opacity']}
             if style['shape'] == 'circle':
                 yield draw_circle(center, radius=size, 
                         circle_type='nodedot', style=nodedot_style)
@@ -531,9 +532,10 @@ class DrawerCirc(Drawer):
     def __init__(self, tree, viewport=None, panel=0, zoom=(1, 1),
                  limits=None, collapsed_ids=None, active=None,
                  selected=None, searches=None,
-                 tree_style=None):
+                 layouts=None, tree_style=None):
         super().__init__(tree, viewport, panel, zoom,
-                         limits, collapsed_ids, active, selected, searches, tree_style)
+                         limits, collapsed_ids, active, selected, searches, 
+                         layouts, tree_style)
 
         assert self.zoom[0] == self.zoom[1], 'zoom must be equal in x and y'
 
@@ -598,7 +600,7 @@ class DrawerCirc(Drawer):
         size = min(max_size, style['size'])
         if -pi < a < pi and size > 0:
             fill = style['fill']
-            nodedot_style={'fill':fill}
+            nodedot_style={'fill':fill, 'opacity': style['opacity']}
             if style['shape'] == 'circle':
                 yield draw_circle(center, radius=size,
                           circle_type='nodedot', style=nodedot_style)
@@ -1016,16 +1018,6 @@ def drawn_size(elements, get_box, min_x=None):
     return Size(x_max - x_min, y_max - y_min)
 
 
-def split_thru_negative_xaxis(rect):
-    "Return a list of rectangles resulting from cutting the given one"
-    x, y, dx, dy = rect
-    if x >= 0 or y > 0 or y + dy < 0:
-        return [rect]
-    else:
-        EPSILON = 1e-8
-        return [Box(x, y, dx, -y-EPSILON), Box(x, EPSILON, dx, dy + y)]
-
-
 def stack(sbox, box):
     "Return the sbox resulting from stacking the given sbox and box"
     if not sbox:
@@ -1035,45 +1027,3 @@ def stack(sbox, box):
         x, y, dx_min, dx_max, dy = sbox
         _, _, dx_box, dy_box = box
         return SBox(x, y, min(dx_min, dx_box), max(dx_max, dx_box), dy + dy_box)
-
-
-def circumrect(asec):
-    "Return the rectangle that circumscribes the given annular sector"
-    if asec is None:
-        return None
-
-    rmin, amin, dr, da = asec
-    rmax, amax = rmin + dr, amin + da
-
-    amin, amax = clip_angles(amin, amax)
-
-    points = [(rmin, amin), (rmin, amax), (rmax, amin), (rmax, amax)]
-    xs = [r * cos(a) for r,a in points]
-    ys = [r * sin(a) for r,a in points]
-    xmin, ymin = min(xs), min(ys)
-    xmax, ymax = max(xs), max(ys)
-
-    if amin < -pi/2 < amax:  # asec traverses the -y axis
-        ymin = -rmax
-    if amin < 0 < amax:  # asec traverses the +x axis
-        xmax = rmax
-    if amin < pi/2 < amax:  # asec traverses the +y axis
-        ymax = rmax
-    # NOTE: the annular sectors we consider never traverse the -x axis.
-
-    return Box(xmin, ymin, xmax - xmin, ymax - ymin)
-
-
-def circumasec(rect):
-    "Return the annular sector that circumscribes the given rectangle"
-    if rect is None:
-        return None
-    x, y, dx, dy = rect
-    points = [(x, y), (x, y+dy), (x+dx, y), (x+dx, y+dy)]
-    radius2 = [x*x + y*y for x,y in points]
-    if x <= 0 and x+dx >= 0 and y <= 0 and y+dy >= 0:
-        return Box(0, -pi, sqrt(max(radius2)), 2*pi)
-    else:
-        angles = [atan2(y, x) for x,y in points]
-        rmin, amin = sqrt(min(radius2)), min(angles)
-        return Box(rmin, amin, sqrt(max(radius2)) - rmin, max(angles) - amin)

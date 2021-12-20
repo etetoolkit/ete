@@ -69,7 +69,7 @@ __all__ = ["Tree", "TreeNode"]
 
 DEFAULT_COMPACT = False
 DEFAULT_SHOWINTERNAL = False
-DEFAULT_DIST = 1.0
+DEFAULT_DIST = 0.0
 DEFAULT_SUPPORT = 1.0
 DEFAULT_NAME = ""
 
@@ -2262,13 +2262,6 @@ cdef class TreeNode(object):
             k2 = sorted([getattr(e, attr) for e in s2])
             edge_keys.append(sorted([k1, k2]))
         return md5(str(sorted(edge_keys)).encode('utf-8')).hexdigest()
-
-
-    def set_unique_ids(self):
-        """ Sets unique numeric id for each node in the tree, given its root """
-
-        for i, n in enumerate(self.traverse()):
-            n.add_prop('node_id', i)
 
 
     # def get_partitions(self):

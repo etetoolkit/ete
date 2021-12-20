@@ -74,7 +74,7 @@ const view = {
     selected: {},  // will contain the selected nodes (saved)
     active: {
         nodes: [],    // will contain list of active nodes
-        color: "#98C1D9",
+        color: "#b3004b",
         opacity: 0.4,
         remove: undefined,
         folder: undefined,
@@ -149,7 +149,9 @@ const view = {
         fsize: 12,
     },
 
-    smart_zoom: true,
+    control_panel: { show: false },
+
+    smart_zoom: false,
 
     share_view: () => share_view(),
 
@@ -333,6 +335,8 @@ async function set_query_string_values() {
             view.zoom.y = div_tree.offsetHeight / Number(value);
         else if (param === "drawer")
             view.drawer.name = value;
+        else if (param === "controlpanel")
+            view.control_panel.show = Boolean(value);
         else if (param === "layouts") {
             const active = value.split(",");
             active.forEach(a => {

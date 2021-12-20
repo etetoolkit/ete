@@ -14,7 +14,6 @@ export { on_box_contextmenu };
 
 async function on_box_contextmenu(event, box, name, properties, node_id=[]) {
 
-    console.log(node_id)
     event.preventDefault();
 
     div_contextmenu.innerHTML = "";

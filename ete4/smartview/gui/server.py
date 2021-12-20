@@ -19,6 +19,7 @@ os.chdir(os.path.abspath(os.path.dirname(__file__)))
 # sys.path.insert(0, '..')
 
 import re
+from importlib import reload as module_reload
 from math import pi
 from functools import partial
 from time import time
@@ -372,7 +373,7 @@ def load_tree(tree_id):
 
 def load_tree_from_newick(tid, newick):
     """Load tree into memory from newick"""
-    t = Tree(newick)
+    t = Tree(newick, format=1)
 
     if app.trees[int(tid)].style.ultrametric:
         t.convert_to_ultrametric()
@@ -397,7 +398,7 @@ def retrieve_layouts(layouts):
         if ly_name == '*':
             tree_layouts[key] = avail
         else:
-            match = next((ly for ly in avail if ly.__name__ == ly_name ), None)
+            match = next((ly for ly in avail if ly.name == ly_name ), None)
             if match:
                 tree_layouts[key].append(match)
 
@@ -490,7 +491,7 @@ def get_drawer(tree_id, args):
 def get_newick(tree_id, max_mb):
     "Return the newick representation of the given tree"
 
-    newick = load_tree(tree_id).write()
+    newick = load_tree(tree_id).write(properties=[])
 
     size_mb = len(newick) / 1e6
     if size_mb > max_mb:
@@ -933,7 +934,7 @@ def modify_tree_fields(tree_id):
 
 def update_app_available_layouts():
     try:
-        from .. import layout as layout_modules
+        module_reload(layout_modules)
         avail_layouts = get_layouts_from_getters(layout_modules)
     except Exception as e:
         raise "Error while updating app layouts.\n{e}"

@@ -7,7 +7,6 @@ __all__ = [ "LayoutGenomicContext" ]
 
 
 class LayoutGenomicContext(TreeLayout):
-
     def __init__(self, name="Genomic context", nside=2,
             conservation_threshold=0, width=70, height=15, collapse_size=1,
             gene_name="name", tooltip_props=[],
@@ -71,7 +70,6 @@ class LayoutGenomicContext(TreeLayout):
                 node.add_face(arrow, position="aligned", column=idx,
                         collapsed_only=(not node.is_leaf()))
 
-
     def get_tooltip(self, gene):
         if self.tooltip_props is None:
             return ""
@@ -91,7 +89,6 @@ class LayoutGenomicContext(TreeLayout):
                 props[k] = v
 
         return "<br>".join(f'{k}: {v}' for k,v in props.items())
-
 
     def get_context(self, node):
         if node.is_leaf():
