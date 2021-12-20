@@ -56,8 +56,8 @@ import math
 import tarfile
 import warnings
 
-from ..coretype.tree  import Tree
-from ..phylo.phylotree  import Tree
+# from ..coretype.tree  import Tree
+# from ..phylo.phylotree  import Tree
 
 
 #import gtdb_to_taxdump
@@ -401,6 +401,12 @@ class GTDBTaxa(object):
         #taxids, merged_conversion = self._translate_merged(taxids)
         tax2id = self.get_name_translator(taxnames) #{'f__Korarchaeaceae': [2174], 'o__Peptococcales': [205487], 'p__Huberarchaeota': [610]}
         taxids = [i[0] for i in tax2id.values()]
+
+        try:
+            PhyloTree()
+        except:
+            from .. import PhyloTree
+
         if len(taxids) == 1:
             root_taxid = int(list(taxids)[0])
             with open(self.dbfile+".traverse.pkl", "rb") as CACHED_TRAVERSE:
@@ -727,7 +733,11 @@ def load_gtdb_tree_from_dump(tar):
         fields =  line.split("|")
         nodename = fields[0].strip()
         parentname = fields[1].strip()
-        n = Tree()
+        try:
+            n = Tree()
+        except:
+            from .. import Tree
+            n = Tree()
         n.name = nodename
         #n.taxname = node2taxname[nodename]
         n.add_prop('taxname', node2taxname[nodename])
