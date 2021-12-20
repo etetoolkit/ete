@@ -69,7 +69,8 @@ __all__ = ["Tree", "TreeNode"]
 
 DEFAULT_COMPACT = False
 DEFAULT_SHOWINTERNAL = False
-DEFAULT_DIST = 0.0
+DEFAULT_DIST = 1.0
+DEFAULT_DIST_ROOT = 0.0
 DEFAULT_SUPPORT = 1.0
 DEFAULT_NAME = ""
 
@@ -152,7 +153,7 @@ cdef class TreeNode(object):
         self._properties['name'] = value
 
     def _get_dist(self):
-        return self._properties.get('dist', DEFAULT_DIST)
+        return self._properties.get('dist', DEFAULT_DIST if self.up else DEFAULT_DIST_ROOT)
     def _set_dist(self, value):
         try:
             self._properties['dist'] = float(value)
@@ -290,9 +291,10 @@ cdef class TreeNode(object):
         self.name = name if name is not None else\
                 self.name if self.name is not None else DEFAULT_NAME
         self.dist = dist if dist is not None else\
-                self.dist if self.dist is not None else DEFAULT_DIST
+                self.dist if self.dist is not None\
+                else (DEFAULT_DIST if self.up else DEFAULT_DIST_ROOT)
         self.support = support if support is not None else\
-                self.support if self.support is not None else DEFAULT_SUPPORT
+        self.support if self.support is not None else DEFAULT_SUPPORT
 
     def __nonzero__(self):
         return True
