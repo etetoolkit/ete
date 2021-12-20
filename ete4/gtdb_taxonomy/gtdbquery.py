@@ -56,8 +56,8 @@ import math
 import tarfile
 import warnings
 
-from ..ete4.coretype.tree  import Tree
-from ..ete4.phylo.phylotree  import Tree
+from ..coretype.tree  import Tree
+from ..phylo.phylotree  import Tree
 
 
 #import gtdb_to_taxdump
