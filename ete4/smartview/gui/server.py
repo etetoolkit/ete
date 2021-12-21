@@ -390,16 +390,30 @@ def retrieve_layouts(layouts):
     for ly in layouts:
         name_split = ly.split(':')
 
-        if len(name_split) != 2:
+        if len(name_split) not in (2, 3):
             continue
+        
+        if len(name_split) == 2:
+            key, ly_name = name_split
+            active = None
 
-        key, ly_name = name_split
+        elif len(name_split) == 3:
+            key, ly_name, active = name_split
+            active = True if active == "active" else False
+
         avail = app.avail_layouts.get(key, [])
         if ly_name == '*':
             tree_layouts[key] = avail
+
+            if active is not None:
+                for ly in avail:
+                    ly.active = active
+
         else:
             match = next((ly for ly in avail if ly.name == ly_name ), None)
             if match:
+                if active is not None:
+                    match.active = active
                 tree_layouts[key].append(match)
 
     # Add default layouts

@@ -211,7 +211,10 @@ async function init_trees() {
         const trees_info = await api("/trees");
 
         trees_info.forEach(t => trees[t.name] = t.id);  // like trees["mytree"] = 7
-    } catch {} // Working in memory_only mode
+    } catch {
+     // Working in memory_only mode
+        view.upload = undefined;
+    }
 }
 
 

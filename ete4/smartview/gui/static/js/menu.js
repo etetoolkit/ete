@@ -19,7 +19,7 @@ function init_menus(trees) {
     });
 
     const tab = menus.pane.addTab({ pages: [
-        { title: "Basic" },
+        { title: "Layout" },
         { title: "Selections" },
         { title: "Advanced" },
     ]});
@@ -51,16 +51,6 @@ function create_menu_basic(menu, trees) {
     } else
         menu.addMonitor(view, "tree",
             { label: "tree" })
-
-    // upload 
-    if (view.upload)
-        menu.addButton({ title: "upload" }).on("click", view.upload);
-
-    // download
-    const folder_download = menu.addFolder({ title: "Download",
-                                                    expanded: false });
-    folder_download.addButton({ title: "newick" }).on("click", view.download.newick);
-    folder_download.addButton({ title: "svg" }).on("click", view.download.svg);
 
 
     // drawer
@@ -106,6 +96,16 @@ function create_menu_basic(menu, trees) {
         div_aligned.style.cursor = (view.select_text ? "text" : "ew-resize");
         set_boxes_clickable(!view.select_text);
     });
+
+    // upload 
+    if (view.upload)
+        menu.addButton({ title: "upload" }).on("click", view.upload);
+
+    // download
+    const folder_download = menu.addFolder({ title: "Download",
+                                                    expanded: false });
+    folder_download.addButton({ title: "newick" }).on("click", view.download.newick);
+    folder_download.addButton({ title: "svg" }).on("click", view.download.svg);
 
     menu.addButton({ title: "share view" }).on("click", view.share_view);
     menu.addButton({ title: "Help" }).on("click", view.show_help);
