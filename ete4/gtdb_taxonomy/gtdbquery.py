@@ -93,7 +93,7 @@ class GTDBTaxa(object):
     Provides a local transparent connector to the GTDB taxonomy database.
     """
 
-    def __init__(self, dbfile=None, taxdump_file=None):
+    def __init__(self, dbfile=None, taxdump_file=None, memory=False):
         
         if not dbfile:
             self.dbfile = DEFAULT_GTDBTAXADB
@@ -116,6 +116,11 @@ class GTDBTaxa(object):
         if not is_taxadb_up_to_date(self.dbfile):
             print('GTDB database format is outdated. Upgrading', file=sys.stderr)
             self.update_taxonomy_database(taxdump_file)
+
+        if memory: 
+            filedb = self.db
+            self.db = sqlite3.connect(':memory:')
+            filedb.backup(self.db)
 
     def update_taxonomy_database(self, taxdump_file=None):
         """Updates the GTDB taxonomy database by downloading and parsing the latest
