@@ -73,7 +73,7 @@ function create_menu_basic(menu, trees) {
 
 
     // layouts
-    add_folder_layouts(menu, false);
+    add_folder_layouts(menu, true);
 
     // minimap
     menus.minimap = menu.addInput(view.minimap, "show", { label: "show minimap" })
@@ -179,7 +179,7 @@ function update_folder_layouts (){
     sorted_layouts.unshift("default");
 
     sorted_layouts.forEach(name => {
-        const layout_folder = menus.layouts.addFolder({ title: name, expanded: name === "default" })
+        const layout_folder = menus.layouts.addFolder({ title: name, expanded: true })
         const layouts = view.layouts[name];
         Object.keys(layouts).sort().forEach(layout =>
             layout_folder.addInput(view.layouts[name], layout).on("change", update))
