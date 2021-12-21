@@ -399,7 +399,7 @@ def retrieve_layouts(layouts):
 
         elif len(name_split) == 3:
             key, ly_name, active = name_split
-            active = True if active == "active" else False
+            active = True if active == "on" else False
 
         avail = app.avail_layouts.get(key, [])
         if ly_name == '*':
