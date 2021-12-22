@@ -546,6 +546,9 @@ def random_color(h=None, l=None, s=None, num=None, sep=None, seed=None):
     if not num:
         n = 1
         sep = 1
+    else:
+        n = num
+
     if not sep:
         n = num
         sep = (1.0/n)

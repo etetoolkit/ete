@@ -10,7 +10,6 @@ from .nodestyle import NodeStyle
 
 class TreeStyle(object):
     def __init__(self):
-        self._layout_handler = []
         self.aligned_grid = True
         self.aligned_grid_dxs = defaultdict(lambda: 0)
 
