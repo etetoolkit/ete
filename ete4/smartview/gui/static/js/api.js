@@ -1,6 +1,8 @@
 // Functions related to the interaction with the server, including html cleanup
 // and error handling.
 
+import { view } from "./gui.js";
+
 export { escape_html, hash, assert, api, api_post, api_put,
          storage_get, storage_set, storage_remove };
 
@@ -9,7 +11,7 @@ export { escape_html, hash, assert, api, api_post, api_put,
 
 // Make a GET api call and return the retrieved data.
 async function api(endpoint) {
-    const response = await fetch(endpoint);
+    const response = await fetch(view.path + endpoint);
 
     await assert(response.status === 200, "Request failed :(", response);
 

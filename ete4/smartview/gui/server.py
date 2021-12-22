@@ -48,6 +48,7 @@ from ..utils import InvalidUsage, get_random_string
 from ..renderer import nexus, gardening as gdn
 from ..renderer import drawer as drawer_module
 
+
 # call initialize() to fill it up
 app = None
 
@@ -132,7 +133,7 @@ class Trees(Resource):
             return [{ 'id': i, 'name': v.name } for i, v in app.trees.items()]
         elif rule == '/trees/<string:tree_id>':
             if app.safe_mode:
-                raise invalidusage(f'invalid path {rule} in safe_mode mode', 404)
+                raise InvalidUsage(f'invalid path {rule} in safe_mode mode', 404)
             properties = set()
             for node in tree.tree.traverse():
                 properties |= node.props.keys()
@@ -403,12 +404,11 @@ def retrieve_layouts(layouts):
 
         avail = app.avail_layouts.get(key, [])
         if ly_name == '*':
-            tree_layouts[key] = avail
-
             if active is not None:
                 for ly in avail:
                     ly.active = active
 
+            tree_layouts[key] = avail
         else:
             match = next((ly for ly in avail if ly.name == ly_name ), None)
             if match:
@@ -1127,8 +1127,6 @@ def initialize(tree=None, layouts=[], safe_mode=False):
     add_resources(api)
 
     app.safe_mode = safe_mode
-
-    # tree_style = copy_style(tree_style) if tree_style else TreeStyle()
 
     # App associated layouts
     # Layouts will be accessible for each tree independently

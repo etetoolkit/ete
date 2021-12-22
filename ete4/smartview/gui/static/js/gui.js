@@ -26,6 +26,7 @@ document.addEventListener("DOMContentLoaded", main);
 // Global variables related to the current view on the tree.
 // Most will be shown on the top-right gui (using Tweakpane).
 const view = {
+    path: "",  // path when adding app to werkzeug.wsgi.DispatchMiddleWare server
     // tree
     tree: null,  // string with the current tree name
     tree_size: {width: 0, height: 0},
@@ -338,6 +339,8 @@ async function set_query_string_values() {
             view.zoom.y = div_tree.offsetHeight / Number(value);
         else if (param === "drawer")
             view.drawer.name = value;
+        else if (param === "path")
+            view.path = value;
         else if (param === "controlpanel")
             view.control_panel.show = Boolean(value);
         else if (param === "layouts") {
