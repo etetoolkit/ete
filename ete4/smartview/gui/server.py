@@ -385,7 +385,6 @@ def load_tree_from_newick(tid, newick):
 
 
 def retrieve_layouts(layouts):
-    print(layouts)
     layouts = layouts or []
     tree_layouts = defaultdict(list)
 

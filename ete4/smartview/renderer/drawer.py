@@ -723,8 +723,6 @@ class DrawerRectFaces(DrawerRect):
             for layout in self.layouts:
                 layout.set_node_style(node)
 
-        
-
         # Render Faces in different panels
         if self.NPANELS > 1:
             if self.panel == 0:

@@ -45,8 +45,10 @@ function on_keydown(event) {
     const key = event.key;  // shortcut
     let is_hotkey = true;  // will set to false if it isn't
 
-    if (document.querySelector(".tp-dfwv").contains(event.target))
-            return;  // avoid interfering with writing on a field of the menus
+    try {
+        if (document.querySelector(".tp-dfwv").contains(event.target))
+                return;  // avoid interfering with writing on a field of the menus
+    } catch {}
 
     if (key === "F1") {
         show_help();
