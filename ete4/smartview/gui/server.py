@@ -13,7 +13,7 @@ REST call examples:
 """
 
 import os
-os.chdir(os.path.abspath(os.path.dirname(__file__)))
+# os.chdir(os.path.abspath(os.path.dirname(__file__)))
 
 # import sys
 # sys.path.insert(0, '..')
