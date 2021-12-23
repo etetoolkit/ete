@@ -124,18 +124,21 @@ def draw_nodebox(box, name='', properties=None,
 def draw_outline(sbox, style=None):
     return ['outline', sbox, style or {}]
 
-def draw_line(p1, p2, line_type='', parent_of=None, style=None):
+def get_line_type(style):
     types = ['solid', 'dotted', 'dashed']
-    style = style or {}
     if style.get('type'):
         style['type'] = types[int(style['type'])]
     else:
         style['type'] = types[0]
+    return style
 
+def draw_line(p1, p2, line_type='', parent_of=None, style=None):
+    style = get_line_type(style or {})
     return ['line', p1, p2, line_type, parent_of or [], style]
 
 def draw_arc(p1, p2, large=False, arc_type='', style=None):
-    return ['arc', p1, p2, int(large), arc_type, style or {}]
+    style = get_line_type(style or {})
+    return ['arc', p1, p2, int(large), arc_type, style]
 
 def draw_circle(center, radius, circle_type='', style=None, tooltip=None):
     return ['circle', center, radius, circle_type, style or {}, tooltip or '']
