@@ -771,7 +771,7 @@ def activate_node(tree_id):
     tree.active.parents.clear()
     tree.active.parents.update(get_parents(tree.active.results))
 
-    get_active_parents(tree.active.results)
+    # get_active_parents(tree.active.results)
 
 
 def deactivate_node(tree_id):
