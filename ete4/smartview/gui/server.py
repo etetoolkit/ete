@@ -525,6 +525,27 @@ def get_parents(results):
     return parents
 
 
+def get_active_parents(results):
+    "Return a set of parents given a set of results"
+    parents = get_parents(results)
+
+    active = set()
+    for node in results:
+        parent = node.up
+        current_active = None
+        while parent:
+            if parents.get(parent, 0) == len(parent):
+                current_active = parent
+                parent = parent.up
+            else:
+                active.add(current_active)
+                break
+
+    print(active)
+
+    return active
+
+
 def remove_search(tid, args):
     "Remove search"
     if 'text' not in args:
@@ -749,6 +770,8 @@ def activate_node(tree_id):
     tree.active.results.add(node)
     tree.active.parents.clear()
     tree.active.parents.update(get_parents(tree.active.results))
+
+    get_active_parents(tree.active.results)
 
 
 def deactivate_node(tree_id):
