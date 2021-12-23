@@ -364,3 +364,9 @@ button.tp-tbiv_b {
     border-style: solid;
     border-color: transparent transparent lightgray transparent;
 }
+
+
+/*Sweetalert*/
+.swal2-popup {
+    width: auto !important;
+}

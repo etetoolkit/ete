@@ -97,7 +97,10 @@ const view = {
     // view
     reset_view: () => reset_view(),
     tl: {x: null, y: null},  // top-left of the view (in tree coordinates)
-    zoom: {x: null, y: null, a: null},  // initially chosen depending on the tree size
+    zoom: {
+        x: null, y: null, a: null,  // initially chosen depending on the tree size
+        delta: { in: 0.25, out: -0.2 }
+    },
     select_text: false,  // if true, clicking and moving the mouse selects text
 
     // style
@@ -154,6 +157,8 @@ const view = {
 
     smart_zoom: false,
 
+    zoom_sensitivity: 1,
+
     share_view: () => share_view(),
 
     show_help: () => show_help(),
@@ -197,7 +202,7 @@ async function main() {
         reset_zoom();
         reset_position();
         draw_minimap();
-        show_minimap("visible");
+        show_minimap(view.minimap.show);
         await update();
     }, 100)
 
@@ -342,7 +347,9 @@ async function set_query_string_values() {
         else if (param === "path")
             view.path = value;
         else if (param === "controlpanel")
-            view.control_panel.show = Boolean(value);
+            view.control_panel.show = value === "1";
+        else if (param === "minimap")
+            view.minimap.show = value === "1";
         else if (param === "layouts") {
             const active = value.split(",");
             active.forEach(a => {
@@ -655,9 +662,11 @@ function coordinates(point) {
 }
 
 
-function on_box_click(event, box, node_id, properties) {
+async function on_box_click(event, box, node_id, properties) {
     if (event.altKey && node_id.length) {
-        if (view.active.nodes.find(n => n.id === String(node_id)))
+        const tid = get_tid() + "," + node_id;
+        const active = await api(`/trees/${tid}/active`);
+        if (active.length)
             deactivate_node(node_id)
         else
             activate_node(node_id, properties)

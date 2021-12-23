@@ -8,6 +8,7 @@ import { download_newick } from "./download.js";
 import { zoom_into_box } from "./zoom.js";
 import { collapse_node } from "./collapse.js";
 import { activate_node, deactivate_node } from "./active.js";
+import { api } from "./api.js";
 
 export { on_box_contextmenu };
 
@@ -50,9 +51,17 @@ async function add_node_options(box, name, properties, node_id) {
         on_tree_change();
     }, "Explore the subtree starting at the current node.",
        "map-marker-alt", false);
-    add_button("Show node id", () => {
-        Swal.fire({text: `${node_id}`, position: "bottom",
-                   showConfirmButton: false});
+    add_button("Show node info", () => {
+        let text = "<div style='text-align: left'>";
+        Object.entries(properties)
+            .forEach(([k, v]) => {
+                if (k && v)
+                    text += `${k}: ${v}<br>`;
+            });
+        text += "</div>";
+        Swal.fire({ 
+            html: `${text}`, 
+            showConfirmButton: false });
     }, "", "fingerprint", false);
     add_button("Download branch as newick", () => download_newick(node_id),
                "Download subtree starting at this node as a newick file.",
@@ -76,7 +85,9 @@ async function add_node_options(box, name, properties, node_id) {
                    "Do not show nodes below the current one.",
                    "compress", false);
 
-    if (view.active.nodes.find(n => n.id === String(node_id)))
+    const tid = get_tid() + "," + node_id;
+    const active = await api(`/trees/${tid}/active`);
+    if (active.length)
         add_button("Unselect node", () => deactivate_node(node_id),
                    "Remove current node from active selection.",
                    "trash-alt", false);

@@ -9,7 +9,6 @@ export { zoom_around, zoom_into_box, zoom_towards_box, zoom_aligned };
 
 const zooming = {qz: {x: 1, y: 1, a: 1}, timeout: undefined};
 
-
 // Zoom the current view into the area defined by the given box, with a border
 // marking the fraction of zoom-out (to see a bit the surroundings).
 function zoom_into_box(box, border=0.10) {
@@ -47,10 +46,10 @@ window.zoom_into_box = zoom_into_box;  // exposed so it can be called in onclick
 
 // Zoom maintaining the given point on the screen.
 function zoom_around(point, zoom_in, do_zoom={x:true, y:true}, qz=undefined) {
-    if (!qz)
-        qz = {x: (zoom_in ? 1.25 : 0.8),  // zoom change (quotient)
-              y: (zoom_in ? 1.25 : 0.8),
-              a: (zoom_in ? 1.25 : 0.8)};
+    if (!qz)  // zoom change (quotient)
+        qz = { x: 1 + (zoom_in ? view.zoom.delta.in : view.zoom.delta.out),
+               y: 1 + (zoom_in ? view.zoom.delta.in : view.zoom.delta.out),
+               a: 1 + (zoom_in ? view.zoom.delta.in : view.zoom.delta.out)};
 
     if (view.drawer.type === "rect") {
         zoom_xy(point, qz, do_zoom);
@@ -111,7 +110,7 @@ function zoom_angular(point, qz) {
 function zoom_aligned(point, zoom_in) {
     const x0 = div_tree.offsetWidth * view.aligned.pos / 100;
     point.x -= x0;
-    const qz = { a: (zoom_in ? 1.25 : 0.8) };
+    const qz = { a: 1 + (zoom_in ? view.zoom.delta.in : view.zoom.delta.out) };
     let zoom_new = qz.a * view.zoom.a;
 
     if (view.aligned.adjust_zoom) {

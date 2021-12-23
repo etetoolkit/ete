@@ -119,6 +119,8 @@ function create_menu_advanced(menu) {
 
     add_folder_view(menu);
 
+    add_folder_zoom(menu);
+
     add_folder_circular(menu)
 
     add_folder_minimap(menu);
@@ -226,17 +228,30 @@ function add_folder_view(menu) {
     const folder_tl = folder_view.addFolder({ title: "Top-left corner" });
     folder_tl.addMonitor(view.tl, "x", { format: v => v.toFixed(3) });
     folder_tl.addMonitor(view.tl, "y", { format: v => v.toFixed(3) });
+}
 
 
-    folder_view.addInput(view.zoom, "x", {
+function add_folder_zoom(menu) {
+    const folder_zoom = menu.addFolder({ title: "Zoom", expanded: false });
+
+    folder_zoom.addInput(view.zoom, "x", {
         label: "Adjust zoom x", 
         format: v => v.toFixed(1),
         min: 1, max: div_tree.offsetWidth / view.tree_size.width }).on("change", update);
 
-    folder_view.addInput(view.zoom, "a", {
+    folder_zoom.addInput(view.zoom, "a", {
         label: "Adjust zoom a", 
         format: v => v.toFixed(1),
         min: 1, max: div_tree.offsetWidth / view.tree_size.width }).on("change", update);
+
+    folder_zoom.addInput(view, "zoom_sensitivity", {
+        label: "Zoom sensitivity",
+        format: v => v.toFixed(1),
+        min: 0.1, max: 2, step: 0.1,
+    }).on("change", () => {
+        view.zoom.delta.in = 0.25 * view.zoom_sensitivity;
+        view.zoom.delta.out = -0.2 * view.zoom_sensitivity;
+    })
 }
 
 

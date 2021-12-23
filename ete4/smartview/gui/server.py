@@ -142,6 +142,12 @@ class Trees(Resource):
         elif rule == '/trees/<string:tree_id>/nodeinfo':
             node = gdn.get_node(tree.tree, subtree)
             return node.props
+        elif rule == '/trees/<string:tree_id>/leaves_info':
+            node = gdn.get_node(tree.tree, subtree)
+            return get_nodes_info(node.iter_leaves(), request.args.copy())
+        elif rule == '/trees/<string:tree_id>/descendants_info':
+            node = gdn.get_node(tree.tree, subtree)
+            return get_nodes_info(node.iter_descendants(), request.args.copy())
         elif rule == '/trees/<string:tree_id>/name':
             return tree.name
         elif rule == '/trees/<string:tree_id>/newick':
@@ -170,7 +176,7 @@ class Trees(Resource):
             change_selection_name(tid, request.args.copy())
             return {'message': 'ok'}
         elif rule == '/trees/<string:tree_id>/selection/info':
-            return get_selection_info(tid, request.args.copy())
+            return get_selection_info(tree, request.args.copy())
         elif rule == '/trees/<string:tree_id>/search_to_selection':
             search_to_selection(tid, request.args.copy())
             return { 'message': 'ok' }
@@ -178,6 +184,10 @@ class Trees(Resource):
             prune_by_selection(tid, request.args.copy())
             return { 'message': 'ok' }
         # Active nodes
+        elif rule == '/trees/<string:tree_id>/active':
+            node = gdn.get_node(tree.tree, subtree)
+            active = get_active_parent(node, tree.active.results)
+            return "active" if active else ""
         elif rule == '/trees/<string:tree_id>/activate':
             activate_node(tree_id)
             return {'message': 'ok'}
@@ -518,21 +528,45 @@ def get_parents(results):
     "Return a set of parents given a set of results"
     parents = defaultdict(lambda: 0)
     for node in results:
+        nleaves = len(node)
         parent = node.up
         while parent:
-            parents[parent] += 1
+            parents[parent] += nleaves
             parent = parent.up
     return parents
 
+def remove_active_node(node, active):
+    active_parent = get_active_parent(node, active)
+    active.discard(active_parent)
 
-def get_active_parents(results):
+    if node == active_parent:
+        return
+
+    while node:
+        parent = node.up
+        active.update(parent.children)
+        active.discard(node)
+        node = parent
+        if node == active_parent:
+            return
+
+def get_active_parent(node, active):
+    if node in active:
+        return node
+    parent = node.up
+    while parent:
+        if parent in active:
+            return parent
+        else:
+            parent = parent.up
+    return None
+        
+def get_active_parents(results, parents):
     "Return a set of parents given a set of results"
-    parents = get_parents(results)
-
     active = set()
     for node in results:
         parent = node.up
-        current_active = None
+        current_active = node
         while parent:
             if parents.get(parent, 0) == len(parent):
                 current_active = parent
@@ -540,9 +574,6 @@ def get_active_parents(results):
             else:
                 active.add(current_active)
                 break
-
-    print(active)
-
     return active
 
 
@@ -613,16 +644,7 @@ def get_node_id(tree, node, node_id):
     node_id.append(parent.children.index(node))
     return get_node_id(tree, parent, node_id)
 
-
-def get_selection_info(tid, args):
-    "Get selection info from their nodes"
-    if 'text' not in args:
-        raise InvalidUsage('missing selection text')
-    tree = app.trees[int(tid)]
-    name = args.pop('text').strip()
-    nodes = tree.selected.get(name, [[]])[0]
-
-    props = args.pop('props', '').strip().split(',')
+def get_nodes_info(nodes, props):
     no_props = len(props) == 1 and props[0] == ''
 
     if 'node_id' in props or no_props or '*' in props:
@@ -631,19 +653,31 @@ def get_selection_info(tid, args):
     if no_props:
         return node_ids
 
-    node_props = []
+    nodes_info = []
     for idx, node in enumerate(nodes):
         if props[0] == "*":
             node_id = node_ids[idx]
-            node_props.append({ **node.props, 'node_id': node_id })
+            nodes_info.append({ **node.props, 'node_id': node_id })
         else:
             node_p = { p: node.props.get(p) for p in props }
             if 'node_id' in props:
                 node_p['node_id'] = node_ids[idx]
-            node_props.append(node_p)
+            nodes_info.append(node_p)
+
+    return nodes_info
 
 
-    return node_props
+def get_selection_info(tree, args):
+    "Get selection info from their nodes"
+    if 'text' not in args:
+        raise InvalidUsage('missing selection text')
+    name = args.pop('text').strip()
+    nodes = tree.selected.get(name, [[]])[0]
+
+    props = args.pop('props', '').strip().split(',')
+    selection_info = get_nodes_info(nodes, props)
+
+    return selection_info
 
 
 def remove_selection(tid, args):
@@ -768,17 +802,22 @@ def activate_node(tree_id):
     tree = app.trees[int(tid)]
     node = gdn.get_node(tree.tree, subtree)
     tree.active.results.add(node)
+    for n in node.iter_descendants():
+        tree.active.results.discard(n)
+    results = tree.active.results
+    parents = get_parents(results)
+    active_parents = get_active_parents(results, parents)
+    tree.active.results.clear()
     tree.active.parents.clear()
-    tree.active.parents.update(get_parents(tree.active.results))
-
-    # get_active_parents(tree.active.results)
+    tree.active.results.update(active_parents)
+    tree.active.parents.update(get_parents(active_parents))
 
 
 def deactivate_node(tree_id):
     tid, subtree = get_tid(tree_id)
     tree = app.trees[int(tid)]
     node = gdn.get_node(tree.tree, subtree)
-    tree.active.results.discard(node)
+    remove_active_node(node, tree.active.results)
     tree.active.parents.clear()
     tree.active.parents.update(get_parents(tree.active.results))
 
@@ -1227,6 +1266,8 @@ def add_resources(api):
         '/trees',
         '/trees/<string:tree_id>',
         '/trees/<string:tree_id>/nodeinfo',
+        '/trees/<string:tree_id>/leaves_info',
+        '/trees/<string:tree_id>/descendants_info',
         '/trees/<string:tree_id>/name',
         '/trees/<string:tree_id>/newick',
         '/trees/<string:tree_id>/draw',
@@ -1244,6 +1285,7 @@ def add_resources(api):
         '/trees/<string:tree_id>/change_selection_name',
         '/trees/<string:tree_id>/search_to_selection',  # convert search to selection
         '/trees/<string:tree_id>/prune_by_selection',  # prune based on selection
+        '/trees/<string:tree_id>/active',
         '/trees/<string:tree_id>/activate',
         '/trees/<string:tree_id>/deactivate',
         '/trees/<string:tree_id>/store_active',
