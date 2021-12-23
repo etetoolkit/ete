@@ -180,6 +180,8 @@ const trees = {};  // will translate names to ids (trees[tree_name] = tree_id)
 async function main() {
     await init_trees();
 
+    set_app_path();
+
     view.layouts = await api(`/layouts`); // init layouts
 
     await set_query_string_values();
@@ -323,6 +325,14 @@ function reset_view() {
     update();
 }
 
+
+function set_app_path() {
+    const params = new URLSearchParams(location.search);
+
+    for (const [param, value] of params)
+        if (param === "path")
+            view.path = value;
+}
 
 // Set values that have been given with the query string.
 async function set_query_string_values() {
