@@ -85,15 +85,24 @@ async function add_node_options(box, name, properties, node_id) {
                    "Do not show nodes below the current one.",
                    "compress", false);
 
-    const tid = get_tid() + "," + node_id;
-    const active = await api(`/trees/${tid}/active`);
-    if (active.length)
-        add_button("Unselect node", () => deactivate_node(node_id),
+    if (view.active.nodes.nodes.find(n => n.id == String(node_id)))
+        add_button("Unselect node", () => deactivate_node(node_id, "nodes"),
                    "Remove current node from active selection.",
                    "trash-alt", false);
     else
-        add_button("Select node", () => activate_node(node_id, properties),
+        add_button("Select node", () => activate_node(node_id, properties, "nodes"),
                    "Add current node from active selection.",
+                   "hand-pointer", false);
+
+    const nid = get_tid() + "," + node_id;
+    const active = await api(`/trees/${nid}/active`);
+    if (active === "active_clade")
+        add_button("Unselect clade", () => deactivate_node(node_id, "clades"),
+                   "Remove current clade from active selection.",
+                   "trash-alt", false);
+    else
+        add_button("Select clade", () => activate_node(node_id, properties, "clades"),
+                   "Add current clade from active selection.",
                    "hand-pointer", false);
 
     if ("hyperlink" in properties) {

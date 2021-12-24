@@ -99,7 +99,7 @@ function store_selection(name, res) {
                       color: colors[nselected % colors.length] },
             parents: { n: res.nparents,
                        color: "#000",
-                       width: 2.5 },};
+                       width: 1 },};
         add_selected_to_menu(name);
         notify_selection("select", name);
     }
@@ -150,6 +150,8 @@ function add_selected_to_menu(name) {
     const selected = view.selected[name];
 
     const folder = menus.selected.addFolder({ title: name });
+
+    selected.folder = folder;
 
     folder.addInput(selected.results, "color", { view: "color" })
         .on("change", () => colorize_selection(name));
@@ -203,7 +205,7 @@ function colorize_selection(name, notify=true) {
     const selected = view.selected[name];
 
     if (notify)
-        notify_selection("colorChange", folder.title);
+        notify_selection("colorChange", selected.folder.title);
 
     const cresults = get_selection_class(name, "results");
     Array.from(div_tree.getElementsByClassName(cresults)).forEach(e => {

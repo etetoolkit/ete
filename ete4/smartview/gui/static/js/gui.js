@@ -74,12 +74,22 @@ const view = {
     // selected
     selected: {},  // will contain the selected nodes (saved)
     active: {
-        nodes: [],    // will contain list of active nodes
-        color: "#b3004b",
-        opacity: 0.4,
-        remove: undefined,
-        folder: undefined,
-        buttons: [],
+        nodes: {
+            nodes: [],    // will contain list of active nodes
+            color: "#b3004b",
+            opacity: 0.4,
+            remove: undefined,
+            folder: undefined,
+            buttons: [],
+        },
+        clades: {
+            nodes: [],    // will contain list of active clades
+            color: "#b3004b",
+            opacity: 0.4,
+            remove: undefined,
+            folder: undefined,
+            buttons: [],
+        }
     },
 
     // searches
@@ -282,7 +292,7 @@ async function on_tree_change() {
         get_searches();
     if (Object.keys(view.selected).length === 0)
         get_selections();
-    if (Object.keys(view.active.nodes).length === 0)
+    if (Object.keys(view.active.nodes.nodes).length === 0)
         get_active_nodes();
 
     reset_node_count();
@@ -674,21 +684,27 @@ function coordinates(point) {
 
 async function on_box_click(event, box, node_id, properties) {
     if (event.altKey && node_id.length) {
-        const tid = get_tid() + "," + node_id;
-        const active = await api(`/trees/${tid}/active`);
-        if (active.length)
-            deactivate_node(node_id)
+        if (view.active.nodes.nodes.find(n => n.id == String(node_id)))
+            deactivate_node(node_id, "nodes")
         else
-            activate_node(node_id, properties)
+            activate_node(node_id, properties, "nodes")
     }
-    else if (event.detail === 2 || event.ctrlKey) {
-        // double-click or ctrl-click
+    else if (event.shiftKey && node_id.length) {
+        const nid = get_tid() + "," + node_id;
+        const active = await api(`/trees/${nid}/active`);
+        if (active === "active_clade")
+            deactivate_node(node_id, "clades")
+        else
+            activate_node(node_id, properties, "clades")
+    }
+    else if (event.detail === 2) {
+        // double-click
         zoom_into_box(box);
     }
-    else if (event.shiftKey) {  // shift-click
-        view.subtree += (view.subtree ? "," : "") + node_id;
-        on_tree_change();
-    }
+    //else if (event.shiftKey) {  // shift-click
+        //view.subtree += (view.subtree ? "," : "") + node_id;
+        //on_tree_change();
+    //}
 }
 
 

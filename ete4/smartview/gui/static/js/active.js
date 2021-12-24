@@ -26,61 +26,61 @@ const selectError = Swal.mixin({
 });
 
 
-function notify_active() {
-    notify_parent("active", { nodes: view.active.nodes });
+function notify_active(type) {
+    notify_parent("active", { activeType: type });
 }
 
-async function activate_node(node_id, properties, notify=true) {
+async function activate_node(node_id, properties, type, notify=true) {
     const tid = get_tid() + "," + node_id;
 
     // Remove active node
-    await api(`/trees/${tid}/activate`)
+    await api(`/trees/${tid}/activate_${type.slice(0, -1)}`)
 
-    view.active.nodes.push({ id: String(node_id), ...properties });
+    view.active[type].nodes.push({ id: String(node_id), ...properties });
 
-    update_active_folder();
+    update_active_folder(type);
 
     if (notify)
-        notify_active();
+        notify_active(type);
 
     draw_tree();
 }
 
-async function deactivate_node(node_id, notify=true) {
+async function deactivate_node(node_id, type, notify=true) {
     const tid = get_tid() + "," + node_id;
 
     // Remove active node
-    await api(`/trees/${tid}/deactivate`)
+    await api(`/trees/${tid}/deactivate_${type.slice(0, -1)}`)
 
-    view.active.nodes = view.active.nodes
+    view.active[type].nodes = view.active[type].nodes
         .filter(n => n.id !== String(node_id));
 
-    update_active_folder();
+    update_active_folder(type);
 
     if (notify)
-        notify_active();
+        notify_active(type);
 
     draw_tree();
 }
 
 
 // Notify parent window if encapsulated in iframe
-async function store_active(name) {
+async function store_active(name, type) {
     try {
         if (!name)
             return false;  // prevent popup from closing
 
         const qs = `text=${encodeURIComponent(name)}`;
-        const res = await api(`/trees/${get_tid()}/store_active?${qs}`);
+        const res = await api(`/trees/${get_tid()}/store_active_${type}?${qs}`);
 
         if (res.message !== "ok")
             throw new Error("Something went wrong.");
 
         store_selection(name, res);
 
-        notify_active();
+        notify_active(type);
 
-        view.active.remove(false);
+        view.active[type].remove(false);
 
     } catch (exception) {
         selectError.fire({ html: exception });
@@ -88,87 +88,115 @@ async function store_active(name) {
 }
 
 
-function add_folder_active() {
+function add_folder_active(type) {
 
-    const folder = view.active.folder;
-    folder.addInput(view.active, "color", { view: "color" })
-        .on("change", colorize_active);
+    const folder = view.active[type].folder;
+    folder.addInput(view.active[type], "color", { view: "color" })
+        .on("change", () => colorize_active(type));
 
-    view.active.remove = async function(purge=true, redraw=true) {
+    view.active[type].remove = async function(purge=true, redraw=true) {
         if (purge)
-            await api(`/trees/${get_tid()}/remove_active`);
+            await api(`/trees/${get_tid()}/remove_active_${type}`);
 
-        view.active.nodes = [];
+        view.active[type].nodes = [];
 
-        notify_active();
+        notify_active(type);
 
-        update_active_folder();
+        update_active_folder(type);
 
         if (redraw)
             draw_tree();
     }
 
-    view.active.buttons.push(folder.addButton({ 
+    view.active[type].buttons.push(folder.addButton({ 
         title: "save selection",
         disabled: true })
         .on("click", () => {
             Swal.fire({
                 input: "text",
                 text: "Enter name to describe selection",
-                preConfirm: name => store_active(name)
+                preConfirm: name => store_active(name, type)
             });
         }));
-    view.active.buttons.push(folder
+    view.active[type].buttons.push(folder
         .addButton({ title: "remove", disabled: true })
-        .on("click", view.active.remove));
+        .on("click", view.active[type].remove));
 }
 
 
-function update_active_folder() {
+function update_active_folder(type) {
     // Update value in control panel
-    view.active.folder.title = `Active (${view.active.nodes.length})`;
-    const disable = view.active.nodes.length === 0
-    view.active.buttons.forEach(b => b.disabled = disable);
+    view.active[type].folder.title = `Active ${type} (${view.active[type].nodes.length})`;
+    const disable = view.active[type].nodes.length === 0
+    view.active[type].buttons.forEach(b => b.disabled = disable);
 }
 
 
 // Return a class name related to the results of selecting nodes.
-function get_active_class(type="results") {
-    return "selected_" + type + "_active";
+function get_active_class(active_type, type="results") {
+    return "selected_" + type + "_active_" + active_type;
 }
 
 
-function colorize_active() {
-    const cresults = get_active_class("results");
+function colorize_active(type) {
+    const cresults = get_active_class(type, "results");
     Array.from(div_tree.getElementsByClassName(cresults)).forEach(e => {
-        e.style.opacity = view.active.opacity;
-        e.style.fill = view.active.color;
+        if ([...e.classList].includes("nodedot"))
+            e.style.opacity = 1;
+        else
+            e.style.opacity = view.active[type].opacity;
+        e.style.fill = view.active[type].color;
     });
 }
 
 
 async function get_active_nodes() {
-    view.active.nodes = await api(`/trees/${get_tid()}/all_active`);
-    notify_active();
-    if (view.active.folder)
-        update_active_folder();
+    const all_active = await api(`/trees/${get_tid()}/all_active`);
+    view.active.nodes.nodes = all_active.nodes;
+    view.active.clades.nodes = all_active.clades;
+    notify_active("nodes");
+    notify_active("clades");
+    if (view.active.nodes.folder)
+        update_active_folder("nodes");
+    if (view.active.clades.folder)
+        update_active_folder("clades");
 }
 
 
-function update_active_nodes(nodes) {
-    const active_ids = view.active.nodes.map(n => n.id);
+function update_active_nodes(nodes, type) {
+    async function activate(node) {
+        const node_id = String(node.id);
+        if (type === "nodes")
+            return !active_ids.includes(node_id);
+        else {
+            const nid = tid + "," + node_id;
+            const active = await api(`/trees/${nid}/active`);
+            return active !== "active_clade";
+        }
+    }
+    async function deactivate(id) {
+        if (type === "nodes")
+            return !new_ids.includes(id);
+        else {
+            const nid = tid + "," + id;
+            const active = await api(`/trees/${nid}/active`);
+            return active === "active_clade";
+        }
+    }
+    const active_ids = view.active[type].nodes.map(n => n.id);
     const new_ids = nodes.map(n => String(n.id));
+    const tid = get_tid();
 
     nodes.forEach(node => {
-        if (!active_ids.includes(String(node.id)))
-            activate_node(node.id, node, false)
+        if (activate(node))
+            activate_node(node.id, node, type, false)
     })
 
     active_ids.forEach(id => {
-        if (!new_ids.includes(id))
-            deactivate_node(id, false)
+        if (deactivate(id))
+            deactivate_node(id, type, false)
     })
 
-    if (view.active.folder)
-        update_active_folder();
+    if (view.active[type].folder)
+        update_active_folder(type);
 }

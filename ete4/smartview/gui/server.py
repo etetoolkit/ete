@@ -13,7 +13,6 @@ REST call examples:
 """
 
 import os
-# os.chdir(os.path.abspath(os.path.dirname(__file__)))
 
 # import sys
 # sys.path.insert(0, '..')
@@ -144,10 +143,10 @@ class Trees(Resource):
             return node.props
         elif rule == '/trees/<string:tree_id>/leaves_info':
             node = gdn.get_node(tree.tree, subtree)
-            return get_nodes_info(node.iter_leaves(), request.args.copy())
+            return get_nodes_info(tree.tree, node.iter_leaves(), request.args.copy())
         elif rule == '/trees/<string:tree_id>/descendants_info':
             node = gdn.get_node(tree.tree, subtree)
-            return get_nodes_info(node.iter_descendants(), request.args.copy())
+            return get_nodes_info(tree.tree, node.iter_descendants(), request.args.copy())
         elif rule == '/trees/<string:tree_id>/name':
             return tree.name
         elif rule == '/trees/<string:tree_id>/newick':
@@ -186,27 +185,46 @@ class Trees(Resource):
         # Active nodes
         elif rule == '/trees/<string:tree_id>/active':
             node = gdn.get_node(tree.tree, subtree)
-            active = get_active_parent(node, tree.active.results)
-            return "active" if active else ""
-        elif rule == '/trees/<string:tree_id>/activate':
+            if get_active_clade(node, tree.active.clades.results):
+                return "active_clade"
+            elif node in tree.active.nodes.results:
+                return "active_node"
+            else:
+                return ""
+        elif rule == '/trees/<string:tree_id>/activate_node':
             activate_node(tree_id)
             return {'message': 'ok'}
-        elif rule == '/trees/<string:tree_id>/deactivate':
+        elif rule == '/trees/<string:tree_id>/deactivate_node':
             deactivate_node(tree_id)
             return {'message': 'ok'}
-        elif rule == '/trees/<string:tree_id>/store_active':
-            nresults, nparents = store_active(tree, request.args.copy())
+        elif rule == '/trees/<string:tree_id>/activate_clade':
+            activate_clade(tree_id)
+            return {'message': 'ok'}
+        elif rule == '/trees/<string:tree_id>/deactivate_clade':
+            deactivate_clade(tree_id)
+            return {'message': 'ok'}
+        elif rule == '/trees/<string:tree_id>/store_active_nodes':
+            nresults, nparents = store_active(tree, 0, request.args.copy())
             return {'message': 'ok', 'nresults': nresults, 'nparents': nparents}
-        elif rule == '/trees/<string:tree_id>/remove_active':
-            remove_active(tree)
+        elif rule == '/trees/<string:tree_id>/store_active_clades':
+            nresults, nparents = store_active(tree, 1, request.args.copy())
+            return {'message': 'ok', 'nresults': nresults, 'nparents': nparents}
+        elif rule == '/trees/<string:tree_id>/remove_active_nodes':
+            remove_active(tree, 0)
+            return {'message': 'ok'}
+        elif rule == '/trees/<string:tree_id>/remove_active_clades':
+            remove_active(tree, 1)
             return {'message': 'ok'}
         elif rule == '/trees/<string:tree_id>/all_active':
-            nodes = []
-            for node in tree.active.results:
-                node_id = ",".join(map(str, get_node_id(tree.tree, node, [])))
-                props = { k:v for k,v in node.props.items() if not k.startswith('_') }
-                nodes.append({ 'id': node_id, **props })
-            return nodes
+            return { 
+                "nodes": get_nodes_info(tree.tree, tree.active.nodes.results, ["*"]),
+                "clades": get_nodes_info(tree.tree, tree.active.clades.results, ["*"]),
+            }
+        elif rule == '/trees/<string:tree_id>/all_active_leaves':
+            active_leaves = set( n for n in tree.active.nodes.results if n.is_leaf() )
+            for n in tree.active.clades.results:
+                active_leaves.update(set(n.iter_leaves()))
+            return get_nodes_info(tree.tree, active_leaves, ["*"])
         # Searches
         elif rule == '/trees/<string:tree_id>/searches':
             searches = { 
@@ -524,59 +542,6 @@ def get_newick(tree_id, max_mb):
     return newick
 
 
-def get_parents(results):
-    "Return a set of parents given a set of results"
-    parents = defaultdict(lambda: 0)
-    for node in results:
-        nleaves = len(node)
-        parent = node.up
-        while parent:
-            parents[parent] += nleaves
-            parent = parent.up
-    return parents
-
-def remove_active_node(node, active):
-    active_parent = get_active_parent(node, active)
-    active.discard(active_parent)
-
-    if node == active_parent:
-        return
-
-    while node:
-        parent = node.up
-        active.update(parent.children)
-        active.discard(node)
-        node = parent
-        if node == active_parent:
-            return
-
-def get_active_parent(node, active):
-    if node in active:
-        return node
-    parent = node.up
-    while parent:
-        if parent in active:
-            return parent
-        else:
-            parent = parent.up
-    return None
-        
-def get_active_parents(results, parents):
-    "Return a set of parents given a set of results"
-    active = set()
-    for node in results:
-        parent = node.up
-        current_active = node
-        while parent:
-            if parents.get(parent, 0) == len(parent):
-                current_active = parent
-                parent = parent.up
-            else:
-                active.add(current_active)
-                break
-    return active
-
-
 def remove_search(tid, args):
     "Remove search"
     if 'text' not in args:
@@ -644,11 +609,17 @@ def get_node_id(tree, node, node_id):
     node_id.append(parent.children.index(node))
     return get_node_id(tree, parent, node_id)
 
-def get_nodes_info(nodes, props):
+
+def get_node_props(node):
+    return { k:v for k,v in node.props.items() \
+            if not (k.startswith("_") or k == "seq") }
+
+
+def get_nodes_info(tree, nodes, props):
     no_props = len(props) == 1 and props[0] == ''
 
     if 'node_id' in props or no_props or '*' in props:
-        node_ids = [ ",".join(map(str, get_node_id(tree.tree, node, []))) 
+        node_ids = [ ",".join(map(str, get_node_id(tree, node, []))) 
                 for node in nodes ]
     if no_props:
         return node_ids
@@ -657,7 +628,7 @@ def get_nodes_info(nodes, props):
     for idx, node in enumerate(nodes):
         if props[0] == "*":
             node_id = node_ids[idx]
-            nodes_info.append({ **node.props, 'node_id': node_id })
+            nodes_info.append({ **get_node_props(node), 'node_id': node_id })
         else:
             node_p = { p: node.props.get(p) for p in props }
             if 'node_id' in props:
@@ -675,7 +646,7 @@ def get_selection_info(tree, args):
     nodes = tree.selected.get(name, [[]])[0]
 
     props = args.pop('props', '').strip().split(',')
-    selection_info = get_nodes_info(nodes, props)
+    selection_info = get_nodes_info(tree.tree, nodes, props)
 
     return selection_info
 
@@ -782,6 +753,21 @@ def update_selection(tree, name, results, parents):
     return len(results), len(parents)
 
 
+def get_parents(results, count_leaves=False):
+    "Return a set of parents given a set of results"
+    parents = defaultdict(lambda: 0)
+    for node in results:
+        if count_leaves:
+            nleaves = len(node)
+        else:
+            nleaves = 1
+        parent = node.up
+        while parent:
+            parents[parent] += nleaves
+            parent = parent.up
+    return parents
+
+
 def store_selection(tree_id, args):
     "Store the results and parents of a selection and return their numbers"
     if 'text' not in args:
@@ -801,44 +787,107 @@ def activate_node(tree_id):
     tid, subtree = get_tid(tree_id)
     tree = app.trees[int(tid)]
     node = gdn.get_node(tree.tree, subtree)
-    tree.active.results.add(node)
-    for n in node.iter_descendants():
-        tree.active.results.discard(n)
-    results = tree.active.results
-    parents = get_parents(results)
-    active_parents = get_active_parents(results, parents)
-    tree.active.results.clear()
-    tree.active.parents.clear()
-    tree.active.results.update(active_parents)
-    tree.active.parents.update(get_parents(active_parents))
+    tree.active.nodes.results.add(node)
+    tree.active.nodes.parents.clear()
+    tree.active.nodes.parents.update(get_parents(tree.active.nodes.results))
 
 
 def deactivate_node(tree_id):
     tid, subtree = get_tid(tree_id)
     tree = app.trees[int(tid)]
     node = gdn.get_node(tree.tree, subtree)
-    remove_active_node(node, tree.active.results)
-    tree.active.parents.clear()
-    tree.active.parents.update(get_parents(tree.active.results))
+    tree.active.nodes.results.discard(node)
+    tree.active.nodes.parents.clear()
+    tree.active.nodes.parents.update(get_parents(tree.active.nodes.results))
 
 
-def store_active(tree, args):
+def get_active_clade(node, active):
+    if node in active:
+        return node
+    parent = node.up
+    while parent:
+        if parent in active:
+            return parent
+        else:
+            parent = parent.up
+    return None
+
+
+def get_active_clades(results, parents):
+    active = set()
+    for node in results:
+        parent = node.up
+        current_active = node
+        while parent:
+            if parents.get(parent, 0) == len(parent):
+                current_active = parent
+                parent = parent.up
+            else:
+                active.add(current_active)
+                break
+    return active
+
+
+def activate_clade(tree_id):
+    tid, subtree = get_tid(tree_id)
+    tree = app.trees[int(tid)]
+    node = gdn.get_node(tree.tree, subtree)
+    tree.active.clades.results.add(node)
+    for n in node.iter_descendants():
+        tree.active.clades.results.discard(n)
+    results = tree.active.clades.results
+    parents = get_parents(results, count_leaves=True)
+    active_parents = get_active_clades(results, parents)
+    tree.active.clades.results.clear()
+    tree.active.clades.parents.clear()
+    tree.active.clades.results.update(active_parents)
+    tree.active.clades.parents.update(get_parents(active_parents, count_leaves=True))
+
+
+def remove_active_clade(node, active):
+    active_parent = get_active_clade(node, active)
+    active.discard(active_parent)
+
+    if node == active_parent:
+        return
+
+    while node:
+        parent = node.up
+        active.update(parent.children)
+        active.discard(node)
+        node = parent
+        if node == active_parent:
+            return
+        
+
+def deactivate_clade(tree_id):
+    tid, subtree = get_tid(tree_id)
+    tree = app.trees[int(tid)]
+    node = gdn.get_node(tree.tree, subtree)
+    remove_active_clade(node, tree.active.clades.results)
+    tree.active.clades.parents.clear()
+    tree.active.clades.parents.update(get_parents(tree.active.clades.results))
+
+
+def store_active(tree, idx, args):
     if 'text' not in args:
         raise InvalidUsage('missing selection text')
 
     name = args.pop('text').strip()
-    results = copy(tree.active.results)
-    parents = copy(tree.active.parents)
+    results = copy(tree.active[idx].results)
+    if idx == 0:  # active.nodes
+        parents = copy(tree.active[idx].parents)
+    else:         # active.clades
+        parents = get_parents(results)
 
-    remove_active(tree)
+    remove_active(tree, idx)
 
     return update_selection(tree, name, results, parents)
 
 
-def remove_active(tree):
-    tree.active.parents.clear()
-    tree.active.results.clear()
-
+def remove_active(tree, idx):
+    tree.active[idx].parents.clear()
+    tree.active[idx].results.clear()
 
 
 def get_search_function(text):
@@ -1201,7 +1250,7 @@ def initialize(tree=None, layouts=[], safe_mode=False):
         timer = time(),
         searches = {},
         selected = {},
-        active = drawer_module.Active(set(), defaultdict(lambda: 0)),
+        active = drawer_module.get_empty_active(),
     ))
 
     if tree:
@@ -1286,11 +1335,16 @@ def add_resources(api):
         '/trees/<string:tree_id>/search_to_selection',  # convert search to selection
         '/trees/<string:tree_id>/prune_by_selection',  # prune based on selection
         '/trees/<string:tree_id>/active',
-        '/trees/<string:tree_id>/activate',
-        '/trees/<string:tree_id>/deactivate',
-        '/trees/<string:tree_id>/store_active',
-        '/trees/<string:tree_id>/remove_active',
+        '/trees/<string:tree_id>/activate_node',
+        '/trees/<string:tree_id>/activate_clade',
+        '/trees/<string:tree_id>/deactivate_node',
+        '/trees/<string:tree_id>/deactivate_clade',
+        '/trees/<string:tree_id>/store_active_nodes',
+        '/trees/<string:tree_id>/store_active_clades',
+        '/trees/<string:tree_id>/remove_active_nodes',
+        '/trees/<string:tree_id>/remove_active_clades',
         '/trees/<string:tree_id>/all_active',
+        '/trees/<string:tree_id>/all_active_leaves',
         '/trees/<string:tree_id>/search',
         '/trees/<string:tree_id>/searches',
         '/trees/<string:tree_id>/remove_search',
@@ -1304,10 +1358,13 @@ def add_resources(api):
 
 
 def run_smartview(tree=None, tree_name=None, layouts=[],
-        safe_mode=False, port=5000, run=True):
+        safe_mode=False, port=5000, run=True, serve_static=True):
     # Set tree_name to None if no tree was provided
     # Generate tree_name if none was provided
     tree_name = tree_name or get_random_string(10) if tree else None
+
+    if serve_static:
+        os.chdir(os.path.abspath(os.path.dirname(__file__)))
 
     global app
     app = initialize(tree_name, layouts, safe_mode=safe_mode)

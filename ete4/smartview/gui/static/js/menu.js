@@ -153,8 +153,13 @@ function add_folder_circular(menu) {
 
 function create_menu_selection(menu) {
     // filled dynamically in collapsed.js and select.js
-    view.active.folder = menu.addFolder({ title: `Active ${view.active.nodes.length}` });
-    add_folder_active();
+    view.active.nodes.folder = menu.addFolder({ 
+        title: `Active nodes (${view.active.nodes.nodes.length})` });
+    add_folder_active("nodes");
+
+    view.active.clades.folder = menu.addFolder({ 
+        title: `Active clades (${view.active.clades.nodes.length})` });
+    add_folder_active("clades");
 
     menus.selected = menu.addFolder({ title: "Selected", expanded: false });
 

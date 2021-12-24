@@ -63,7 +63,8 @@ async function draw_tree() {
         clearTimeout(align_timeout);
 
         view.nnodes = div_tree.getElementsByClassName("node").length;
-        colorize_active();
+        colorize_active("nodes");
+        colorize_active("clades");
         colorize_searches();
         colorize_selections();
 
@@ -338,6 +339,15 @@ async function draw_aligned(params, npanels) {
 }
 
 
+function get_node_class(t) {
+    return t === "active_nodes"
+        ? get_active_class("nodes")
+        : t === "active_clades"
+        ? get_active_class("clades")
+        : Object.keys(view.searches).includes(t)
+        ? get_search_class(t) : get_selection_class(t);
+}
+
 // Return the graphical (svg) element corresponding to a drawer item.
 function create_item(g, item, tl, zoom) {
     // item looks like ["line", ...] for a line, etc.
@@ -353,10 +363,7 @@ function create_item(g, item, tl, zoom) {
         b.classList.add("node");
 
         if (result_of.length === 1) {
-            const t = result_of[0];
-            const cnode = t === "active" ? get_active_class()
-                : Object.keys(view.searches).includes(t)
-                ? get_search_class(t) : get_selection_class(t);
+            const cnode = get_node_class(result_of[0]);
             b.classList.add(cnode);
         } else if (result_of.length > 1) {
             const [ x, y, width, dy ] = box;
@@ -365,9 +372,7 @@ function create_item(g, item, tl, zoom) {
                 const box = [ x + dx * i, y, dx, dy ];
                 const b = create_box(box, tl, zx, zy, "", style);
                 style_polygon(b, style);
-                const cnode = t === "active" ? get_active_class()
-                    : Object.keys(view.searches).includes(t) 
-                    ? get_search_class(t) : get_selection_class(t);
+                const cnode = get_node_class(t);
                 b.classList.add(cnode);
                 g.appendChild(b);
             })

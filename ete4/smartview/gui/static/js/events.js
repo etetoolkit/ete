@@ -296,7 +296,7 @@ function sendPostMessage(props) {
 }
 
 
-function notify_parent(selectionMode, { eventType, name, color, node }) {
+function notify_parent(selectionMode, { eventType, name, color, node, activeType }) {
     if (self === top)  // only notify when encapsulated in iframe
         return
 
@@ -311,7 +311,8 @@ function notify_parent(selectionMode, { eventType, name, color, node }) {
     else if (selectionMode === "active")
         sendPostMessage({
             selectionMode: selectionMode,
-            nodes: view.active.nodes,
+            activeType: activeType,
+            nodes: view.active[activeType].nodes,
         })
 
     else if (selectionMode === "saved")
@@ -330,20 +331,20 @@ async function on_postMessage(event) {
     //if (!wiew.allowed_origins.includes(event.origin))
         //return
     
-    const { selectionMode, eventType, name, node, nodes, selectCommand } = event.data;
+    const { selectionMode, eventType, name, node, nodes, selectCommand, activeType } = event.data;
 
     div_tree.style.cursor = "wait";
 
-    if (selectionMode === "active") {
+    if (selectionMode === "active" && activeType) {
 
         if (eventType === "select" && node && node.id)
-            activate_node(node.id, node)
+            activate_node(node.id, node, activeType)
 
         else if (eventType === "remove" && node && node.id)
-            deactivate_node(node.id)
+            deactivate_node(node.id, activeType)
 
         else if (eventType === "update") {
-            update_active_nodes(nodes || [])
+            update_active_nodes(nodes || [], activeType)
         }
 
 
