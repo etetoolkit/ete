@@ -618,7 +618,7 @@ def get_node_props(node):
 def get_nodes_info(tree, nodes, props):
     no_props = len(props) == 1 and props[0] == ''
 
-    if 'node_id' in props or no_props or '*' in props:
+    if 'id' in props or no_props or '*' in props:
         node_ids = [ ",".join(map(str, get_node_id(tree, node, []))) 
                 for node in nodes ]
     if no_props:
@@ -628,11 +628,11 @@ def get_nodes_info(tree, nodes, props):
     for idx, node in enumerate(nodes):
         if props[0] == "*":
             node_id = node_ids[idx]
-            nodes_info.append({ **get_node_props(node), 'node_id': node_id })
+            nodes_info.append({ **get_node_props(node), 'id': node_id })
         else:
             node_p = { p: node.props.get(p) for p in props }
-            if 'node_id' in props:
-                node_p['node_id'] = node_ids[idx]
+            if 'id' in props:
+                node_p['id'] = node_ids[idx]
             nodes_info.append(node_p)
 
     return nodes_info
