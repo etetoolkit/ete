@@ -845,7 +845,6 @@ def activate_clade(tree_id):
     results = tree.active.clades.results
     parents = get_parents(results, count_leaves=True)
     active_parents = get_active_clades(results, parents)
-    print(active_parents)
     tree.active.clades.results.clear()
     tree.active.clades.parents.clear()
     tree.active.clades.results.update(active_parents)
