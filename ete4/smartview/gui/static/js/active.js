@@ -36,7 +36,11 @@ async function activate_node(node_id, properties, type, notify=true) {
     // Remove active node
     await api(`/trees/${tid}/activate_${type.slice(0, -1)}`)
 
-    view.active[type].nodes.push({ id: String(node_id), ...properties });
+    if (type === "clades") {
+        const active = await api(`/trees/${tid}/all_active`)
+        view.active[type].nodes = active.clades;
+    } else
+        view.active[type].nodes.push({ id: String(node_id), ...properties });
 
     update_active_folder(type);
 
@@ -52,8 +56,13 @@ async function deactivate_node(node_id, type, notify=true) {
     // Remove active node
     await api(`/trees/${tid}/deactivate_${type.slice(0, -1)}`)
 
-    view.active[type].nodes = view.active[type].nodes
-        .filter(n => n.id !== String(node_id));
+
+    if (type === "clades") {
+        const active = await api(`/trees/${tid}/all_active`)
+        view.active[type].nodes = active.clades;
+    } else
+        view.active[type].nodes = view.active[type].nodes
+            .filter(n => n.id !== String(node_id));
 
     update_active_folder(type);
 

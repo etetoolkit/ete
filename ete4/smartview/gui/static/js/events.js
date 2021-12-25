@@ -338,10 +338,10 @@ async function on_postMessage(event) {
     if (selectionMode === "active" && activeType) {
 
         if (eventType === "select" && node && node.id)
-            activate_node(node.id, node, activeType, false)
+            activate_node(node.id, node, activeType)
 
         else if (eventType === "remove" && node && node.id)
-            deactivate_node(node.id, activeType, false)
+            deactivate_node(node.id, activeType)
 
         else if (eventType === "update") {
             update_active_nodes(nodes || [], activeType)

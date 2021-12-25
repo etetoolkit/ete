@@ -825,6 +825,13 @@ def get_active_clades(results, parents):
             else:
                 active.add(current_active)
                 break
+    # Case where active clade is root
+    if len(active) == 0 and len(parents.keys()) == 1:
+        root = list(parents.keys())[0]
+        if root.dist > 0:
+            active.add(root)
+        else:
+            active.update(root.children)
     return active
 
 
@@ -838,6 +845,7 @@ def activate_clade(tree_id):
     results = tree.active.clades.results
     parents = get_parents(results, count_leaves=True)
     active_parents = get_active_clades(results, parents)
+    print(active_parents)
     tree.active.clades.results.clear()
     tree.active.clades.parents.clear()
     tree.active.clades.results.update(active_parents)
