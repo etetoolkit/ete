@@ -182,6 +182,26 @@ const menus = {  // will contain the menus on the top
     layouts: undefined,
     minimap: undefined, // minimap toggler
     subtree: undefined,
+    open: () => {
+        document.getElementById("sidenav-open").style.opacity = 0;
+        const sidenav = document.getElementById("sidenav");
+        sidenav.style.width = "350px";
+        sidenav.style.padding = "10px";
+        setTimeout(() => {
+            document.querySelector("#sidenav > div").style.opacity = 1;
+        }, 500);
+    },
+    close: () => {
+        document.querySelector("#sidenav > div").style.opacity = 0;
+        const sidenav = document.getElementById("sidenav");
+        setTimeout(() => {
+            sidenav.style.padding = 0;
+            sidenav.style.width = 0;
+            setTimeout(() => {
+                document.getElementById("sidenav-open").style.opacity = 1;
+            }, 500);
+        }, 500);
+    }
 };
 
 const trees = {};  // will translate names to ids (trees[tree_name] = tree_id)

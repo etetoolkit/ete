@@ -1,0 +1,43 @@
+ /* The side navigation menu */
+.sidenav {
+  height: 100%; /* 100% Full-height */
+  width: 0; /* 0 width - change this with JavaScript */
+  position: fixed; /* Stay in place */
+  z-index: 4; /* Stay on top */
+  top: 0;
+  left: 0;
+  background-color: #f7f7f7; /* Black*/
+  overflow-x: hidden; /* Disable horizontal scroll */
+  transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
+}
+
+.sidenav > div {
+    opacity: 0;
+    transition: opacity .5s;
+}
+
+.sidenav-open {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 3;
+    transition: opacity .5s;
+    background-color: #d6d6d6;
+    padding: 3px 7px;
+    border-radius: 5px;
+    border: solid 1px lightgray;
+    transition: background-color 0.5s;
+    cursor: pointer;
+    font-family: sans-serif;
+    font-weight: bold;
+}
+.sidenav-open:hover {
+    background-color: #ccc;
+    box-shadow: rgba(53, 64, 82, 0.04) 0 2px 4px 0;
+}
+
+
+/* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller font size) */
+@media screen and (max-height: 450px) {
+  .sidenav {padding: 5px;}
+} 

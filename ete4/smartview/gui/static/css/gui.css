@@ -222,10 +222,25 @@ body {
     border-radius: 4px;
     text-align: left;
     background-color: inherit;
+    display: flex;
+    align-items: center;
 }
 
 .ctx_button:hover {
     background-color: #eaeaea;
+}
+
+.ctx_button span {
+    background: lightgray;
+    margin-left: 5px;
+    padding: 2px 5px;
+    border-radius: 5px;
+}
+
+.ctx_button svg {
+    width: 20px;
+    height: 20px;
+    margin-right: 3px;
 }
 
 .ctx_label {
@@ -306,6 +321,7 @@ button.tp-tbiv_b {
 /* General tweakpane styling */
 .tp-rotv {
     font-weight: bold !important;
+    box-shadow: none !important;
 }
 
 /*:root {*/

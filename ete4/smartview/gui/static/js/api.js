@@ -20,7 +20,7 @@ async function api(endpoint) {
 
 // Make a POST api call using the stored authentication.
 async function api_post(endpoint, data) {
-    const response = await fetch(endpoint, {
+    const response = await fetch(view.path + endpoint, {
         method: "POST",
         body: data,
     });
@@ -33,7 +33,7 @@ async function api_post(endpoint, data) {
 
 // Make a PUT api call
 async function api_put(endpoint, params=undefined) {
-    const response = await fetch(endpoint, {
+    const response = await fetch(view.path + endpoint, {
         method: "PUT",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify(params),

@@ -13,10 +13,14 @@ export { init_menus, update_folder_layouts };
 // Init the menus on the top with all the options we can see and change.
 function init_menus(trees) {
     menus.pane = new Tweakpane.Pane({
-        container: div_tweakpane,
-    }).addFolder({ 
-        title: "Control panel", expanded: view.control_panel.show
+        container: sidenav,
     });
+
+    menus.pane.addButton({ title: "Close" })
+        .on("click", menus.close);
+
+    document.getElementById("sidenav-open")
+        .addEventListener("click", menus.open);
 
     const tab = menus.pane.addTab({ pages: [
         { title: "Layout" },
@@ -25,17 +29,7 @@ function init_menus(trees) {
     ]});
     create_menu_basic(tab.pages[0], trees);
     create_menu_selection(tab.pages[1]);
-    create_menu_advanced(tab.pages[2])
-
-
-    //const tab = menus.pane.addTab({ pages: [
-        //{ title: "Tree view" },
-        //{ title: "Representation" },
-        //{ title: "Selection" },
-    //]});
-    //create_menu_main(tab.pages[0], trees);
-    //create_menu_representation(tab.pages[1]);
-    //create_menu_selection(tab.pages[2]);
+    create_menu_advanced(tab.pages[2]);
 }
 
 

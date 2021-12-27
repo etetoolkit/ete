@@ -9,6 +9,7 @@ import { zoom_into_box } from "./zoom.js";
 import { collapse_node } from "./collapse.js";
 import { activate_node, deactivate_node } from "./active.js";
 import { api } from "./api.js";
+import { icons } from "./icons.js";
 
 export { on_box_contextmenu };
 
@@ -25,7 +26,7 @@ async function on_box_contextmenu(event, box, name, properties, node_id=[]) {
 
         add_label("Node" + (name.length > 0 ? name_text : ""));
 
-        add_button("Zoom into branch", () => zoom_into_box(box),  "", "search");
+        add_button("Zoom into branch <span>Dblclick</span>", () => zoom_into_box(box),  "", "zoom");
 
         if (node_id.length > 0) {
             await add_node_options(box, name, properties, node_id);
@@ -50,7 +51,7 @@ async function add_node_options(box, name, properties, node_id) {
         view.subtree += (view.subtree ? "," : "") + node_id;
         on_tree_change();
     }, "Explore the subtree starting at the current node.",
-       "map-marker-alt", false);
+       "login", false);
     add_button("Show node info", () => {
         let text = "<div style='text-align: left'>";
         Object.entries(properties)
@@ -62,7 +63,7 @@ async function add_node_options(box, name, properties, node_id) {
         Swal.fire({ 
             html: `${text}`, 
             showConfirmButton: false });
-    }, "", "fingerprint", false);
+    }, "", "info", false);
     add_button("Download branch as newick", () => download_newick(node_id),
                "Download subtree starting at this node as a newick file.",
                "download", false);
@@ -79,31 +80,31 @@ async function add_node_options(box, name, properties, node_id) {
     if (collapsed_node)
         add_button("Uncollapse branch", () => collapsed_node.remove(),
                    "Show nodes below the current one.",
-                   "expand", false);
+                   "open", false);
     else
         add_button("Collapse branch", () => collapse_node(node_id),
                    "Do not show nodes below the current one.",
-                   "compress", false);
+                   "close", false);
 
     if (view.active.nodes.nodes.find(n => n.id == String(node_id)))
-        add_button("Unselect node", () => deactivate_node(node_id, "nodes"),
+        add_button("Unselect node <span>Alt+Click</span>", () => deactivate_node(node_id, "nodes"),
                    "Remove current node from active selection.",
-                   "trash-alt", false);
+                   "unselect", false);
     else
-        add_button("Select node", () => activate_node(node_id, properties, "nodes"),
+        add_button("Select node <span>Alt+Click</span>", () => activate_node(node_id, properties, "nodes"),
                    "Add current node from active selection.",
-                   "hand-pointer", false);
+                   "hand", false);
 
     const nid = get_tid() + "," + node_id;
     const active = await api(`/trees/${nid}/active`);
     if (active === "active_clade")
-        add_button("Unselect clade", () => deactivate_node(node_id, "clades"),
+        add_button("Unselect clade <span>Shift+Click</span>", () => deactivate_node(node_id, "clades"),
                    "Remove current clade from active selection.",
-                   "trash-alt", false);
+                   "unselect", false);
     else
-        add_button("Select clade", () => activate_node(node_id, properties, "clades"),
+        add_button("Select clade <span>Shift+Click</span>", () => activate_node(node_id, properties, "clades"),
                    "Add current clade from active selection.",
-                   "hand-pointer", false);
+                   "hand", false);
 
     if ("hyperlink" in properties) {
         const [ label, url ] = properties["hyperlink"];
@@ -135,7 +136,7 @@ function add_node_modifying_options(box, name, properties, node_id) {
             draw_minimap();
             update();
         }, "Set this node as the root of the tree. Changes the tree structure.",
-           "anchor", true);
+           "root", true);
     }
     add_button("Move branch up", async () => {
         await tree_command("move", [node_id, -1]);
@@ -143,30 +144,30 @@ function add_node_modifying_options(box, name, properties, node_id) {
         update();
     }, "Move the current branch one step above its current position. " +
         "Changes the tree structure.",
-        "arrow-up", true);
+        "up", true);
     add_button("Move branch down", async () => {
         await tree_command("move", [node_id, +1]);
         draw_minimap();
         update();
     }, "Move the current branch one step below its current position. " +
         "Changes the tree structure.",
-        "arrow-down", true);
+        "down", true);
     add_button("Sort branch", () => sort(node_id),
         "Sort branches below this node according to the current sorting " +
         "function. Changes the tree structure.",
-        "sort-amount-down-alt", false);
+        "sort", true);
     add_button("Remove branch", async () => {
         await tree_command("remove", node_id);
         draw_minimap();
         update();
     }, "Prune this branch from the tree. Changes the tree structure.",
-        "trash-alt", true);
+        "trash", true);
 }
 
 
 function add_tree_options() {
     add_button("Reset view", reset_view,
-               "Fit tree to the window.", "power-off");
+               "Fit tree to the window.", "view");
     if (view.subtree) {
         add_button("Go back to main tree", () => {
             view.subtree = "";
@@ -179,30 +180,36 @@ function add_tree_options() {
         add_button("Sort tree", () => sort(),
             "Sort all branches according to the current sorting function. " +
             "Changes the tree structure.", 
-            "sort-amount-down-alt", true);
+            "sort", true);
         if (!view.subtree) {
             add_button("Reload tree", async () => {
                 await tree_command("reload", get_tid());
                 on_tree_change();
             }, "Reload current tree. Restores the original tree structure.",
-                "sync-alt", true);
+                "refresh", true);
         }
     }
 }
 
 function create_icon(name) {
-    const i = document.createElement("i");
-    i.classList.add("fas", `fa-${name}`);
-    return i;
+    const el = document.createElement("div");
+    el.innerHTML = icons[name] || "";
+    el.style.height = "20px";
+    if (name === "exclamation")
+        el.style["margin-left"] = "3px";
+    return el;
 }
 
 function add_button(text, fn, tooltip, icon_before, icon_warning=false) {
     const button = document.createElement("button");
     if (icon_before)
         button.appendChild(create_icon(icon_before));
-    button.appendChild(document.createTextNode(text));
+    const content = document.createElement("div");
+    content.innerHTML = text;
+    button.appendChild(content)
+    //button.appendChild(document.createTextNode(text));
     if (icon_warning) 
-        button.appendChild(create_icon("exclamation-circle"))
+        button.appendChild(create_icon("exclamation"))
     button.addEventListener("click", event => {
         div_contextmenu.style.visibility = "hidden";
         fn(event);
@@ -213,7 +220,6 @@ function add_button(text, fn, tooltip, icon_before, icon_warning=false) {
         button.setAttribute("title", tooltip);
 
     div_contextmenu.appendChild(button);
-    add_element("br");
 }
 
 
