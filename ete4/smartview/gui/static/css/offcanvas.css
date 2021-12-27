@@ -30,7 +30,9 @@
     cursor: pointer;
     font-family: sans-serif;
     font-weight: bold;
+    font-size: 0.73rem;
 }
+
 .sidenav-open:hover {
     background-color: #ccc;
     box-shadow: rgba(53, 64, 82, 0.04) 0 2px 4px 0;
