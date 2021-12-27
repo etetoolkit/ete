@@ -103,13 +103,14 @@ function add_folder_active(type) {
     folder.addInput(view.active[type], "color", { view: "color" })
         .on("change", () => colorize_active(type));
 
-    view.active[type].remove = async function(purge=true, redraw=true) {
+    view.active[type].remove = async function(purge=true, redraw=true, notify=true) {
         if (purge)
             await api(`/trees/${get_tid()}/remove_active_${type}`);
 
         view.active[type].nodes = [];
 
-        notify_active(type);
+        if (notify)
+            notify_active(type);
 
         update_active_folder(type);
 
@@ -195,6 +196,11 @@ function update_active_nodes(nodes, type) {
     const active_ids = view.active[type].nodes.map(n => n.id);
     const new_ids = nodes.map(n => String(n.id));
     const tid = get_tid();
+
+    if (nodes.length === 0) {
+        view.active[type].remove(true, true, false)
+        return
+    }
 
     nodes.forEach(node => {
         if (activate(node))
