@@ -4,7 +4,7 @@ import { view, tree_command, on_tree_change, reset_view, sort, get_tid }
     from "./gui.js";
 import { draw_minimap } from "./minimap.js";
 import { update } from "./draw.js";
-import { download_newick } from "./download.js";
+import { download_newick, download_seqs } from "./download.js";
 import { zoom_into_box } from "./zoom.js";
 import { collapse_node } from "./collapse.js";
 import { activate_node, deactivate_node } from "./active.js";
@@ -78,6 +78,14 @@ async function add_node_options(box, name, properties, node_id) {
     add_button("Download branch as newick", () => download_newick(node_id),
                "Download subtree starting at this node as a newick file.",
                "download", false);
+    const nid = get_tid() + "," + node_id;
+    const nseq = await api(`/trees/${nid}/nseq`);
+    if (nseq.length > 0)
+        add_button("Download " + (nseq == 1 ? "sequence" : `leaf sequences (${seq})`),
+            () => download_seqs(node_id),
+                   "Download " + (nseq == 1 ? "sequence" : `leaf sequences (${seq})`) 
+                               + " as fasta file.",
+                   "download", false);
     if ("taxid" in properties) {
         const taxid = properties["taxid"];
         add_button("Show in taxonomy browser", () => {
@@ -106,7 +114,6 @@ async function add_node_options(box, name, properties, node_id) {
                    "Add current node from active selection.",
                    "hand", false);
 
-    const nid = get_tid() + "," + node_id;
     const active = await api(`/trees/${nid}/active`);
     if (active === "active_clade")
         add_button("Unselect clade <span>Shift+Click</span>", () => deactivate_node(node_id, "clades"),

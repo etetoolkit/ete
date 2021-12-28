@@ -152,6 +152,24 @@ class Trees(Resource):
         elif rule == '/trees/<string:tree_id>/newick':
             MAX_MB = 2
             return get_newick(tree_id, MAX_MB)
+        elif rule == '/trees/<string:tree_id>/seq':
+            node = gdn.get_node(tree.tree, subtree)
+            leaves = get_leaves(node)
+            seqs = []
+            for leaf in leaves:
+                if leaf.props.get("seq"):
+                    name = ">" + str(tid) + " "
+                    if leaf.name:
+                        name += leaf.name
+                    else:
+                        name += ",".join(map(str, get_node_id(tree.tree, leaf, [])))
+                    seqs.append(name + "\n" + leaf.props.get("seq"))
+            return "\n".join(seqs)
+            
+        elif rule == '/trees/<string:tree_id>/nseq':
+            node = gdn.get_node(tree.tree, subtree)
+            leaves = get_leaves(node)
+            return sum(l for l in leaves if l.props.get("seq"))
         # Selections
         elif rule == '/trees/<string:tree_id>/all_selections':
             selected = {
@@ -530,6 +548,14 @@ def get_drawer(tree_id, args):
         raise InvalidUsage(f'not a valid drawer: {drawer_name}')
     except (ValueError, AssertionError) as e:
         raise InvalidUsage(str(e))
+
+
+def get_leaves(node):
+    if node.is_leaf():
+        leaves = [ node ]
+    else:
+        leaves = node.iter_leaves()
+    return leaves
 
 
 def get_newick(tree_id, max_mb):
@@ -1341,6 +1367,8 @@ def add_resources(api):
         '/trees/<string:tree_id>/descendants_info',
         '/trees/<string:tree_id>/name',
         '/trees/<string:tree_id>/newick',
+        '/trees/<string:tree_id>/seq',
+        '/trees/<string:tree_id>/nseq',
         '/trees/<string:tree_id>/draw',
         '/trees/<string:tree_id>/size',
         '/trees/<string:tree_id>/collapse_size',

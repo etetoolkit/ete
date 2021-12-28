@@ -3,14 +3,20 @@
 import { view, get_tid } from "./gui.js";
 import { api } from "./api.js";
 
-export { download_newick, download_image, download_svg };
+export { download_newick, download_seqs, download_image, download_svg };
 
 
 // Download a file with the newick representation of the tree.
 async function download_newick(node_id) {
-    const tid = get_tid() + (node_id ? "," + node_id : "");
-    const newick = await api(`/trees/${tid}/newick`);
+    const nid = get_tid() + (node_id ? "," + node_id : "");
+    const newick = await api(`/trees/${nid}/newick`);
     download(view.tree + ".tree", "data:text/plain;charset=utf-8," + newick);
+}
+
+async function download_seqs(node_id) {
+    const nid = get_tid() + (node_id ? "," + node_id : "");
+    const fasta = await api(`/trees/${nid}/seq`);
+    download(view.tree + ".fasta", "data:text/plain;charset=utf-8," + fasta);
 }
 
 
