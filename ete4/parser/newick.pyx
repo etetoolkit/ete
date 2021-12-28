@@ -485,7 +485,7 @@ def _get_features_string(self, features=None, format=0):
     if features is None:
         features = []
     elif features == []:
-        features = sorted(self._properties.keys())
+        features = sorted(k for k in self._properties.keys() if not k.startswith("_"))
 
     excluded_props = set(c[0] for c in NW_FORMAT[format] if c[0] is not None)
     for pr in features:

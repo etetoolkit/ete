@@ -193,14 +193,15 @@ function update_active_nodes(nodes, type) {
             return active === "active_clade";
         }
     }
-    const active_ids = view.active[type].nodes.map(n => n.id);
-    const new_ids = nodes.map(n => String(n.id));
-    const tid = get_tid();
 
     if (nodes.length === 0) {
         view.active[type].remove(true, true, false)
         return
     }
+
+    const active_ids = view.active[type].nodes.map(n => n.id);
+    const new_ids = nodes.map(n => String(n.id));
+    const tid = get_tid();
 
     nodes.forEach(node => {
         if (activate(node))

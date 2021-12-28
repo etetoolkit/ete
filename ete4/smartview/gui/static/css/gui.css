@@ -383,6 +383,23 @@ button.tp-tbiv_b {
 
 
 /*Sweetalert*/
+.swal2-file, .swal2-input, .swal2-textarea {
+    font-size: .9em !important;
+}
+
 .swal2-popup {
     width: auto !important;
+}
+
+.swal2-input-flex {
+    display: flex;
+    align-items: center;
+}
+
+.swal2-input-flex label.swal2-input-label {
+    margin: 1em !important;
+}
+
+.swal2-input-flex .swal2-input {
+    height: 2em !important;
 }

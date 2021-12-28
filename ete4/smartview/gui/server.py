@@ -291,7 +291,6 @@ class Trees(Resource):
             sort(tree_id, node_id, key_text, reverse)
             return {'message': 'ok'}
         elif rule == '/trees/<string:tree_id>/root_at':
-            tid, subtree = get_tid(tree_id)
             if subtree:
                 raise InvalidUsage('operation not allowed with subtree')
             node_id = request.json
@@ -312,15 +311,17 @@ class Trees(Resource):
                 return {'message': 'ok'}
             except AssertionError as e:
                 raise InvalidUsage(f'cannot remove ${node_id}: {e}')
-        elif rule == '/trees/<string:tree_id>/rename':
+        elif rule == '/trees/<string:tree_id>/update_props':
             try:
-                node_id, name = request.json
-                gdn.get_node(t, node_id).name = name
+                node = gdn.get_node(tree.tree, subtree)
+                update_node_props(node, request.json)
                 return {'message': 'ok'}
             except AssertionError as e:
-                raise InvalidUsage(f'cannot rename ${node_id}: {e}')
+                raise InvalidUsage(f'cannot update props of ${node_id}: {e}')
+        elif rule == '/trees/<string:tree_id>/reinitialize':
+            tree.initialized = False
+            return { 'message': 'ok' }
         elif rule == '/trees/<string:tree_id>/reload':
-            tid, subtree = get_tid(tree_id)
             if subtree:
                 raise InvalidUsage('operation not allowed with subtree')
 
@@ -613,6 +614,19 @@ def get_node_id(tree, node, node_id):
 def get_node_props(node):
     return { k:v for k,v in node.props.items() \
             if not (k.startswith("_") or k == "seq") }
+
+
+def update_node_props(node, args):
+    for prop, value in node.props.items():
+        newvalue = args.pop(prop, "").strip()
+        if not newvalue:
+            continue
+        try:  # convert to proper type
+            newvalue = type(value)(newvalue)
+        except:
+            raise InvalidUsage('property {prop} should be of type {type(value)}')
+        else:
+            node.add_prop(prop, newvalue)
 
 
 def get_nodes_info(tree, nodes, props):
@@ -1360,7 +1374,8 @@ def add_resources(api):
         '/trees/<string:tree_id>/root_at',
         '/trees/<string:tree_id>/move',
         '/trees/<string:tree_id>/remove',
-        '/trees/<string:tree_id>/rename',
+        '/trees/<string:tree_id>/update_props',
+        '/trees/<string:tree_id>/reinitialize',
         '/trees/<string:tree_id>/reload')
 
 
@@ -1407,4 +1422,4 @@ if __name__ == '__main__':
 #   gunicorn server:app
 
 # To do so, uncomment the following line
-# app = run_smartview(safe_mode=True, run=False)
+# app = run_smartview(saChangefe_mode=True, run=False)

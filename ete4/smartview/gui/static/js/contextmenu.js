@@ -8,11 +8,22 @@ import { download_newick } from "./download.js";
 import { zoom_into_box } from "./zoom.js";
 import { collapse_node } from "./collapse.js";
 import { activate_node, deactivate_node } from "./active.js";
-import { api } from "./api.js";
+import { api, api_put } from "./api.js";
 import { icons } from "./icons.js";
 
 export { on_box_contextmenu };
 
+const inputError = Swal.mixin({
+    position: "bottom-start",
+    showConfirmButton: false,
+    icon: "error",
+    timer: 3000,
+    timerProgressBar: true,
+    didOpen: el => {
+        el.addEventListener('mouseenter', Swal.stopTimer)
+        el.addEventListener('mouseleave', Swal.resumeTimer)
+    }
+});
 
 async function on_box_contextmenu(event, box, name, properties, node_id=[]) {
 
@@ -118,17 +129,38 @@ async function add_node_options(box, name, properties, node_id) {
 
 
 function add_node_modifying_options(box, name, properties, node_id) {
-    add_button("Rename node", async () => {
+    add_button("Edit node properties", async () => {
+        const html = Object.entries(properties).map(([k, v], idx) =>
+            '<div class="swal2-input-flex">' +
+            `<label class="swal2-input-label" for="swal-input${idx}">${k}</label>` +
+            `<input id="swal-input${idx}" class="swal2-input" value="${v}">` +
+            "</div>").join(" ");
         const result = await Swal.fire({
-            input: "text",
-            inputPlaceholder: "Enter new name",
-            preConfirm: async name => {
-                return await tree_command("rename", [node_id, name]);
-            },
+              title: 'Edit node properties',
+              html: html,
+              focusConfirm: false,
+              preConfirm: () => {
+                  const newprops = {};
+                  Object.entries(properties).forEach(([k, v], idx) => {
+                      const value = document.getElementById(`swal-input${idx}`).value;
+                      if (value != v)
+                          newprops[k] = value;
+                  })
+                  return newprops;
+              }
         });
-        if (result.isConfirmed)
-            update();
-    }, "Change the name of this node. Changes the tree structure.",
+        if (result.isConfirmed) {
+            const newprops = result.value;
+            const nid = get_tid() + "," + node_id;
+            const res = await api_put(`/trees/${nid}/update_props`, newprops);
+            if (res.message !== "ok")
+                inputError.fire({ text: "An error ocurred when editing properties" })
+            else {
+                api_put(`/trees/${nid}/reinitialize`);
+                update();
+            }
+        }
+    }, "Edit the properties of this node. Changes the tree structure.",
        "edit", true);
     if (!view.subtree) {
         add_button("Root on this node", async () => {
