@@ -269,7 +269,6 @@ function update_aligned_panel_display() {
 
 // Draw elements that belong to panels above 0.
 async function draw_aligned(params, npanels) {
-
     if (!params)
         params = get_tree_params();
 

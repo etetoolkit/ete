@@ -131,8 +131,8 @@ function add_folder_control_panel(menu) {
     const folder_cp = menu.addFolder({ title: "Control panel", expanded: false });
 
     let timeout;
-    folder_cp.addInput(menus, "width", { label: "width", 
-        min: 300, max: 600, step: 1 }).on("change", () => {
+    folder_cp.addInput(menus, "width", { label: "width", format: v => v.toFixed(0) })
+        .on("change", () => {
             if (timeout)
                 clearTimeout(timeout);
             timeout = setTimeout(menus.open, 200);
@@ -443,6 +443,10 @@ function add_folder_tree_scale(menu) {
 function add_folder_aligned(menu) {
     const folder_aligned = menu.addFolder(
         { title: "Aligned panel", expanded: false });
+
+    folder_aligned.addInput(view.aligned, "timeout", 
+        { label: "Refresh rate (ms)", min: 0, max: 1000 });
+
 
     folder_aligned.addInput(view.aligned, "adjust_zoom", 
         { label: "adjust zoom" });
