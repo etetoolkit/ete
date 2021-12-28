@@ -80,6 +80,7 @@ async function add_node_options(box, name, properties, node_id) {
                "download", false);
     const nid = get_tid() + "," + node_id;
     const nseq = Number(await api(`/trees/${nid}/nseq`));
+    console.log(nseq)
     if (nseq > 0)
         add_button("Download " + (nseq === 1 ? "sequence" : `leaf sequences (${seq})`),
             () => download_seqs(node_id),
