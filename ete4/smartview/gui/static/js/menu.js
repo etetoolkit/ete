@@ -122,6 +122,21 @@ function create_menu_advanced(menu) {
     add_folder_tree_scale(menu);
 
     add_folder_aligned(menu);
+
+    add_folder_control_panel(menu);
+}
+
+
+function add_folder_control_panel(menu) {
+    const folder_cp = menu.addFolder({ title: "Control panel", expanded: false });
+
+    let timeout;
+    folder_cp.addInput(menus, "width", { label: "width", 
+        min: 300, max: 600, step: 1 }).on("change", () => {
+            if (timeout)
+                clearTimeout(timeout);
+            timeout = setTimeout(menus.open, 200);
+        });
 }
 
 

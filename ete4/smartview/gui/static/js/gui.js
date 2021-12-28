@@ -182,10 +182,12 @@ const menus = {  // will contain the menus on the top
     layouts: undefined,
     minimap: undefined, // minimap toggler
     subtree: undefined,
+    width: 330,
     open: () => {
         document.getElementById("sidenav-open").style.opacity = 0;
+        div_viz.style["margin-left"] = menus.width + "px";
         const sidenav = document.getElementById("sidenav");
-        sidenav.style.width = "350px";
+        sidenav.style.width = menus.width + "px";
         sidenav.style.padding = "10px";
         setTimeout(() => {
             document.querySelector("#sidenav > div").style.opacity = 1;
@@ -197,6 +199,7 @@ const menus = {  // will contain the menus on the top
         setTimeout(() => {
             sidenav.style.padding = 0;
             sidenav.style.width = 0;
+            div_viz.style["margin-left"] = 0;
             setTimeout(() => {
                 document.getElementById("sidenav-open").style.opacity = 1;
             }, 500);
