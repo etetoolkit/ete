@@ -319,6 +319,7 @@ class Trees(Resource):
             except AssertionError as e:
                 raise InvalidUsage(f'cannot update props of ${node_id}: {e}')
         elif rule == '/trees/<string:tree_id>/reinitialize':
+            gdn.standardize(tree.tree)
             tree.initialized = False
             return { 'message': 'ok' }
         elif rule == '/trees/<string:tree_id>/reload':
@@ -1422,4 +1423,4 @@ if __name__ == '__main__':
 #   gunicorn server:app
 
 # To do so, uncomment the following line
-# app = run_smartview(saChangefe_mode=True, run=False)
+# app = run_smartview(safe_mode=True, run=False)
