@@ -169,7 +169,9 @@ class Trees(Resource):
         elif rule == '/trees/<string:tree_id>/nseq':
             node = gdn.get_node(tree.tree, subtree)
             leaves = get_leaves(node)
-            return sum(1 for l in leaves if l.props.get("seq"))
+            nseq = sum(1 for l in leaves if l.props.get("seq"))
+            print(nseq)
+            return nseq
         # Selections
         elif rule == '/trees/<string:tree_id>/all_selections':
             selected = {
