@@ -158,7 +158,7 @@ class Trees(Resource):
             seqs = []
             for leaf in leaves:
                 if leaf.props.get("seq"):
-                    name = ">" + str(tid) + " "
+                    name = ">"
                     if leaf.name:
                         name += leaf.name
                     else:
