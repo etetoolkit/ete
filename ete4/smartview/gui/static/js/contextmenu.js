@@ -81,9 +81,9 @@ async function add_node_options(box, name, properties, node_id) {
     const nid = get_tid() + "," + node_id;
     const nseq = Number(await api(`/trees/${nid}/nseq`));
     if (nseq > 0)
-        add_button("Download " + (nseq === 1 ? "sequence" : `leaf sequences (${seq})`),
+        add_button("Download " + (nseq === 1 ? "sequence" : `leaf sequences (${nseq})`),
             () => download_seqs(node_id),
-                   "Download " + (nseq === 1 ? "sequence" : `leaf sequences (${seq})`) 
+                   "Download " + (nseq === 1 ? "sequence" : `leaf sequences (${nseq})`) 
                                + " as fasta file.",
                    "download", false);
     if ("taxid" in properties) {
