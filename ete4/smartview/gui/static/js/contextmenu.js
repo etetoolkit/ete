@@ -157,6 +157,7 @@ function add_node_modifying_options(box, name, properties, node_id) {
                 inputError.fire({ text: "An error ocurred when editing properties" })
             else {
                 api_put(`/trees/${nid}/reinitialize`);
+                draw_minimap();
                 update();
             }
         }
