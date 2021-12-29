@@ -1,7 +1,7 @@
 // Main file for the gui.
 
 import { init_menus, update_folder_layouts } from "./menu.js";
-import { init_events, notify_parent } from "./events.js";
+import { init_events, notify_parent, get_event_zoom } from "./events.js";
 import { update } from "./draw.js";
 import { download_newick, download_svg } from "./download.js";
 import { activate_node, deactivate_node } from "./active.js";
@@ -740,8 +740,7 @@ function on_box_wheel(event, box) {
 
     const point = {x: event.pageX, y: event.pageY};
     point.x -= (menus.show ? menus.width : 0)
-    const zoom_in = event.deltaY < 0;
-    const do_zoom = {x: !event.ctrlKey, y: !event.altKey};
+    const [ zoom_in, do_zoom ] = get_event_zoom(event);
 
     if (view.drawer.type === "rect" && view.smart_zoom)
         zoom_towards_box(box, point, zoom_in, do_zoom);
