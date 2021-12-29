@@ -183,7 +183,9 @@ const menus = {  // will contain the menus on the top
     minimap: undefined, // minimap toggler
     subtree: undefined,
     width: 330,
+    show: false,
     open: () => {
+        menus.show = true;
         document.getElementById("sidenav-open").style.opacity = 0;
         div_viz.style["margin-left"] = menus.width + "px";
         const sidenav = document.getElementById("sidenav");
@@ -194,6 +196,7 @@ const menus = {  // will contain the menus on the top
         }, 500);
     },
     close: () => {
+        menus.show = false;
         document.querySelector("#sidenav > div").style.opacity = 0;
         const sidenav = document.getElementById("sidenav");
         setTimeout(() => {
@@ -736,6 +739,7 @@ function on_box_wheel(event, box) {
     event.preventDefault();
 
     const point = {x: event.pageX, y: event.pageY};
+    point.x -= (menus.show ? menus.width : 0)
     const zoom_in = event.deltaY < 0;
     const do_zoom = {x: !event.ctrlKey, y: !event.altKey};
 

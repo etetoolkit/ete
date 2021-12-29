@@ -124,6 +124,7 @@ function on_wheel(event) {
     event.preventDefault();
 
     const point = {x: event.pageX, y: event.pageY};
+    point.x -= (menus.show ? menus.width : 0)
     const zoom_in = event.deltaY < 0;
     const do_zoom = {x: !event.ctrlKey, y: !event.altKey};
 
