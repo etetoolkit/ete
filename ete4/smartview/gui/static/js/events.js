@@ -64,8 +64,12 @@ function on_keydown(event) {
         show_minimap(view.minimap.show);
         menus.minimap.refresh();
     }
-    else if (key === "p")
-        menus.pane.expanded = !menus.pane.expanded;
+    else if (key === "p") {
+        if (menus.show)
+            menus.close()
+        else
+            menus.open()
+    }
     else if (key === "d")
         view.download.svg();
     else if (key === "+") {
