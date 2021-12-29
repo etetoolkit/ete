@@ -1,6 +1,6 @@
 // Zoom-related functions.
 
-import { view } from "./gui.js";
+import { view, menus } from "./gui.js";
 import { update, draw_aligned } from "./draw.js";
 import { draw_minimap, update_minimap_visible_rect } from "./minimap.js";
 
