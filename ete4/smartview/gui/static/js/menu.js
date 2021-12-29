@@ -388,14 +388,14 @@ function add_folder_style(menu) {
 
 function style(name) {
     const pos = {
-        "line": 1,
-        "lengthline": 2,
-        "childrenline": 3,
-        "nodedot": 4,
-        "font": 6,
-        "name": 7,
-        "node": 8,
-        "outline": 9,
+        "line": 3,
+        "lengthline": 4,
+        "childrenline": 5,
+        "nodedot": 6,
+        "font": 7,
+        "name": 8,
+        "node": 9,
+        "outline": 10,
     };
     return document.styleSheets[0].cssRules[pos[name]].style;
 }
