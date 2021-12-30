@@ -395,6 +395,7 @@ class CircleFace(Face):
 
 class RectFace(Face):
     def __init__(self, width, height, color='gray',
+            opacity=0.7,
             text=None, fgcolor='black', # text color
             min_fsize=6, max_fsize=15,
             ftype='sans-serif',
@@ -408,6 +409,7 @@ class RectFace(Face):
         self.height = height
         self.stretch = True
         self.color = color
+        self.opacity = opacity
         # Text related
         self.text = str(text) if text is not None else None
         self.rotate_text = False
@@ -448,7 +450,6 @@ class RectFace(Face):
         zx, zy = self.zoom
         zx = 1 if self.stretch\
                 and pos.startswith('aligned')\
-                and drawer.TYPE != 'circ'\
                 else zx
 
         r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
@@ -516,7 +517,7 @@ class RectFace(Face):
         self._check_own_variables()
 
         circ_drawer = drawer.TYPE == 'circ'
-        style = {'fill': self.color, 'opacity': 0.7}
+        style = {'fill': self.color, 'opacity': self.opacity}
         if self.text and circ_drawer:
             rect_id = get_random_string(10)
             style['id'] = rect_id
