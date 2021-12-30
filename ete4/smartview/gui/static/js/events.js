@@ -208,7 +208,7 @@ function update_tooltip(event) {
         tooltip.innerHTML = data;
         style.display = "block";
         const bbox = event.target.getBoundingClientRect();
-        style.left = bbox.x + "px";
+        style.left = bbox.x + bbox.width/2 + "px";
         style.top = bbox.y + "px";
         clear_timeout();
     } else if (!view.tooltip.timeout)

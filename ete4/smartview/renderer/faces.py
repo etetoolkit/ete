@@ -475,7 +475,7 @@ class RectFace(Face):
                 height = width * hw_ratio
             if max_height and height > max_height:
                 height = max_height
-                if not self.stretch:
+                if not self.stretch or drawer.TYPE == 'circ':
                     width = height / hw_ratio
 
             height /= r  # in circular drawer

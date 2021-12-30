@@ -38,7 +38,6 @@ function zoom_into_box(box, border=0.10) {
             view.tl.x = x - (div_tree.offsetWidth / zy - w) / 2 - border * w;
         }
     }
-    view.tl.x -= (menus.show ? menus.width : 0)
     update();
 }
 

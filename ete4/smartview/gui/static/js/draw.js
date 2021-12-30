@@ -429,7 +429,7 @@ function create_item(g, item, tl, zoom) {
 
         style_polygon(circle, style); // same styling as ellipse
 
-        circle.setAttribute("data-tooltip", tooltip);;
+        circle.setAttribute("data-tooltip", tooltip);
 
         return circle
     }
@@ -446,7 +446,7 @@ function create_item(g, item, tl, zoom) {
         
         style_polygon(ellipse, style);
 
-        ellipse.setAttribute("data-tooltip", tooltip);;
+        ellipse.setAttribute("data-tooltip", tooltip);
 
         return ellipse;
     }
@@ -467,7 +467,7 @@ function create_item(g, item, tl, zoom) {
 
         style_polygon(triangle, style);
 
-        triangle.setAttribute("data-tooltip", tooltip);;
+        triangle.setAttribute("data-tooltip", tooltip);
 
         return triangle;
     }
