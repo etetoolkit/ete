@@ -446,7 +446,10 @@ class RectFace(Face):
 
         x, y, dx, dy = box
         zx, zy = self.zoom
-        zx = 1 if self.stretch and pos.startswith('aligned') else zx
+        zx = 1 if self.stretch\
+                and pos.startswith('aligned')\
+                and drawer.TYPE != 'circ'\
+                else zx
 
         r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
 
