@@ -10,7 +10,7 @@ import { activate_node, deactivate_node, update_active_nodes } from "./active.js
 import { update } from "./draw.js";
 import { on_box_contextmenu } from "./contextmenu.js";
 
-export { init_events, notify_parent };
+export { init_events, notify_parent, get_event_zoom };
 
 
 function init_events() {
@@ -64,8 +64,12 @@ function on_keydown(event) {
         show_minimap(view.minimap.show);
         menus.minimap.refresh();
     }
-    else if (key === "p")
-        menus.pane.expanded = !menus.pane.expanded;
+    else if (key === "p") {
+        if (menus.show)
+            menus.close()
+        else
+            menus.open()
+    }
     else if (key === "d")
         view.download.svg();
     else if (key === "+") {
@@ -114,6 +118,21 @@ function on_keydown(event) {
 }
 
 
+function get_event_zoom(event) {
+    const { deltaX, deltaY } = event;
+    const do_zoom = {x: !event.ctrlKey, y: !event.altKey};
+    let zoom_in;
+
+    if (deltaX !== 0) {
+        zoom_in = deltaX < 0;
+        do_zoom.y = false;
+    } else
+        zoom_in = deltaY < 0;
+
+    return [ zoom_in, do_zoom ]
+}
+
+
 // Mouse wheel -- zoom in/out (instead of scrolling).
 function on_wheel(event) {
     const g_panel0 = div_tree.children[0].children[0];
@@ -123,9 +142,10 @@ function on_wheel(event) {
 
     event.preventDefault();
 
+
     const point = {x: event.pageX, y: event.pageY};
-    const zoom_in = event.deltaY < 0;
-    const do_zoom = {x: !event.ctrlKey, y: !event.altKey};
+    point.x -= (menus.show ? menus.width : 0)
+    const [ zoom_in, do_zoom ] = get_event_zoom(event);
 
     if (div_aligned.contains(event.target) && view.aligned.zoom)
         zoom_aligned(point, zoom_in)
@@ -188,7 +208,7 @@ function update_tooltip(event) {
         tooltip.innerHTML = data;
         style.display = "block";
         const bbox = event.target.getBoundingClientRect();
-        style.left = bbox.x + "px";
+        style.left = bbox.x + bbox.width/2 + "px";
         style.top = bbox.y + "px";
         clear_timeout();
     } else if (!view.tooltip.timeout)

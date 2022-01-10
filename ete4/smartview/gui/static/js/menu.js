@@ -91,6 +91,8 @@ function create_menu_basic(menu, trees) {
         set_boxes_clickable(!view.select_text);
     });
 
+    menu.addInput(view.aligned, "zoom", { label: "zoom in aligned panel" });
+
     // upload 
     if (view.upload)
         menu.addButton({ title: "upload" }).on("click", view.upload);
@@ -122,6 +124,21 @@ function create_menu_advanced(menu) {
     add_folder_tree_scale(menu);
 
     add_folder_aligned(menu);
+
+    add_folder_control_panel(menu);
+}
+
+
+function add_folder_control_panel(menu) {
+    const folder_cp = menu.addFolder({ title: "Control panel", expanded: false });
+
+    let timeout;
+    folder_cp.addInput(menus, "width", { label: "width", format: v => v.toFixed(0) })
+        .on("change", () => {
+            if (timeout)
+                clearTimeout(timeout);
+            timeout = setTimeout(menus.open, 200);
+        });
 }
 
 
@@ -373,14 +390,14 @@ function add_folder_style(menu) {
 
 function style(name) {
     const pos = {
-        "line": 1,
-        "lengthline": 2,
-        "childrenline": 3,
-        "nodedot": 4,
-        "font": 6,
-        "name": 7,
-        "node": 8,
-        "outline": 9,
+        "line": 3,
+        "lengthline": 4,
+        "childrenline": 5,
+        "nodedot": 6,
+        "font": 7,
+        "name": 8,
+        "node": 9,
+        "outline": 10,
     };
     return document.styleSheets[0].cssRules[pos[name]].style;
 }
@@ -428,6 +445,10 @@ function add_folder_tree_scale(menu) {
 function add_folder_aligned(menu) {
     const folder_aligned = menu.addFolder(
         { title: "Aligned panel", expanded: false });
+
+    folder_aligned.addInput(view.aligned, "timeout", 
+        { label: "Refresh rate (ms)", min: 0, max: 1000 });
+
 
     folder_aligned.addInput(view.aligned, "adjust_zoom", 
         { label: "adjust zoom" });

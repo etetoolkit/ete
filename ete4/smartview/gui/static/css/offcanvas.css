@@ -1,3 +1,6 @@
+#div_viz {
+    transition: margin-left .5s;
+}
  /* The side navigation menu */
 .sidenav {
   height: 100%; /* 100% Full-height */

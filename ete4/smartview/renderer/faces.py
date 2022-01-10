@@ -446,7 +446,10 @@ class RectFace(Face):
 
         x, y, dx, dy = box
         zx, zy = self.zoom
-        zx = 1 if self.stretch and pos.startswith('aligned') else zx
+        zx = 1 if self.stretch\
+                and pos.startswith('aligned')\
+                and drawer.TYPE != 'circ'\
+                else zx
 
         r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
 
@@ -472,7 +475,7 @@ class RectFace(Face):
                 height = width * hw_ratio
             if max_height and height > max_height:
                 height = max_height
-                if not self.stretch:
+                if not self.stretch or drawer.TYPE == 'circ':
                     width = height / hw_ratio
 
             height /= r  # in circular drawer

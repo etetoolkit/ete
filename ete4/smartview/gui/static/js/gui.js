@@ -1,7 +1,7 @@
 // Main file for the gui.
 
 import { init_menus, update_folder_layouts } from "./menu.js";
-import { init_events, notify_parent } from "./events.js";
+import { init_events, notify_parent, get_event_zoom } from "./events.js";
 import { update } from "./draw.js";
 import { download_newick, download_svg } from "./download.js";
 import { activate_node, deactivate_node } from "./active.js";
@@ -182,21 +182,27 @@ const menus = {  // will contain the menus on the top
     layouts: undefined,
     minimap: undefined, // minimap toggler
     subtree: undefined,
+    width: 330,
+    show: false,
     open: () => {
+        menus.show = true;
         document.getElementById("sidenav-open").style.opacity = 0;
+        div_viz.style["margin-left"] = menus.width + "px";
         const sidenav = document.getElementById("sidenav");
-        sidenav.style.width = "350px";
+        sidenav.style.width = menus.width + "px";
         sidenav.style.padding = "10px";
         setTimeout(() => {
             document.querySelector("#sidenav > div").style.opacity = 1;
         }, 500);
     },
     close: () => {
+        menus.show = false;
         document.querySelector("#sidenav > div").style.opacity = 0;
         const sidenav = document.getElementById("sidenav");
         setTimeout(() => {
             sidenav.style.padding = 0;
             sidenav.style.width = 0;
+            div_viz.style["margin-left"] = 0;
             setTimeout(() => {
                 document.getElementById("sidenav-open").style.opacity = 1;
             }, 500);
@@ -281,7 +287,7 @@ async function tree_command(command, params=undefined) {
     try {
         await api_put(`/trees/${get_tid()}/${command}`, params);
 
-        const commands_modifying_size = ["root_at", "remove"];
+        const commands_modifying_size = ["root_at", "remove", "update_props"];
         if (commands_modifying_size.includes(command))
             view.tree_size = await api(`/trees/${get_tid()}/size`);
     }
@@ -733,8 +739,8 @@ function on_box_wheel(event, box) {
     event.preventDefault();
 
     const point = {x: event.pageX, y: event.pageY};
-    const zoom_in = event.deltaY < 0;
-    const do_zoom = {x: !event.ctrlKey, y: !event.altKey};
+    point.x -= (menus.show ? menus.width : 0)
+    const [ zoom_in, do_zoom ] = get_event_zoom(event);
 
     if (view.drawer.type === "rect" && view.smart_zoom)
         zoom_towards_box(box, point, zoom_in, do_zoom);
