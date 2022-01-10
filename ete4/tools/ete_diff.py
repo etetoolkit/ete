@@ -706,9 +706,11 @@ def show_difftable_summary(difftable, rf=-1, rf_max=-1, extended=None):
     if extended:
         print("\n"+"\t".join(["Dist", "branchDist", "Mismatches", "RF", "maxRF"]))
         print("%0.6f\t%0.6f\t%10d\t%d\t%d" %(total_dist,total_bdist, len(difftable), rf, rf_max))
+        return total_dist,total_bdist, len(difftable), rf, rf_max
     else:
         print("\n"+"\t".join(["Dist", "Mismatches", "RF", "maxRF"]))
         print("%0.6f\t%10d\t%d\t%d" %(total_dist, len(difftable), rf, rf_max))
+        return total_dist, len(difftable), rf, rf_max
 
 def show_difftable(difftable, extended=False):
     '''
@@ -741,7 +743,7 @@ def show_difftable(difftable, extended=False):
             showtable.append([dist, len(side1), len(side2), len(diff), sepstring(side1), sepstring(side2), sepstring(diff)])
         print_table(showtable, header=["Dist", "Size1", "Size2", "ndiffs", "refTree", "targetTree", "Diff"],
                     max_col_width=80, wrap_style="wrap", row_line=True)
-
+    return showtable
 def show_difftable_tab(difftable, extended=None):
     '''
     Generates a tabulated table report from the result of treediff function
