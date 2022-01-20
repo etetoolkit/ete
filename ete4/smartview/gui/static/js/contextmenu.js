@@ -46,7 +46,6 @@ async function on_box_contextmenu(event, box, name, properties, node_id=[]) {
     }
 
     add_label("Tree");
-
     add_tree_options();
 
     const x_max = div_tree.offsetWidth - div_contextmenu.offsetWidth,
@@ -130,47 +129,140 @@ async function add_node_options(box, name, properties, node_id) {
             url, "external-link-alt");
     }
 
-    if (view.allow_modifications)
-        add_node_modifying_options(box, name, properties, node_id);
+    if (view.allow_modifications) {
+        const nodestyle = await api(`/trees/${nid}/nodestyle`);
+        add_node_modifying_options(properties, nodestyle, node_id);
+    }
 }
 
 
-function add_node_modifying_options(box, name, properties, node_id) {
-    add_button("Edit node properties", async () => {
-        const html = Object.entries(properties).map(([k, v], idx) =>
-            '<div class="swal2-input-flex">' +
-            `<label class="swal2-input-label" for="swal-input${idx}">${k}</label>` +
-            `<input id="swal-input${idx}" class="swal2-input" value="${v}">` +
-            "</div>").join(" ");
-        const result = await Swal.fire({
-              title: 'Edit node properties',
-              html: html,
-              focusConfirm: false,
-              preConfirm: () => {
-                  const newprops = {};
-                  Object.entries(properties).forEach(([k, v], idx) => {
-                      const value = document.getElementById(`swal-input${idx}`).value;
-                      if (value != v)
+async function add_json_editor(nid, json, endpoint, reinitialize=false, errortag="json", html) {
+    const prefix = `${endpoint}-swal-input`;
+    html = html || get_menu_input_html(json, prefix);
+    const result = await Swal.fire({
+          title: `Edit node ${errortag}`,
+          html: html,
+          focusConfirm: false,
+          preConfirm: () => {
+              const newprops = {};
+              Object.keys(json).forEach((k, idx) => {
+                  const element = document.getElementById(`${prefix}${idx}`);
+                  if (element.type == "checkbox")
+                      newprops[k] = element.checked;
+                  else {
+                      const value = element.value;
+                      if (value !== "")
                           newprops[k] = value;
-                  })
-                  return newprops;
-              }
-        });
-        if (result.isConfirmed) {
-            const newprops = result.value;
-            const nid = get_tid() + "," + node_id;
-            const res = await api_put(`/trees/${nid}/update_props`, newprops);
-            if (res.message !== "ok")
-                inputError.fire({ text: "An error ocurred when editing properties" })
-            else {
+                  }
+              })
+              return newprops;
+          }
+    });
+    if (result.isConfirmed) {
+        const newprops = result.value;
+        const res = await api_put(`/trees/${nid}/${endpoint}`, newprops);
+        if (res.message !== "ok")
+            inputError.fire({ text: `An error ocurred when editing node ${errortag}` })
+        else {
+            if (reinitialize)
                 api_put(`/trees/${nid}/reinitialize`);
                 view.tree_size = await api(`/trees/${get_tid()}/size`);
-                draw_minimap();
-                update();
-            }
+            draw_minimap();
+            update();
         }
-    }, "Edit the properties of this node. Changes the tree structure.",
+    }
+}
+
+
+const NODESTYLE = {
+    nodedot: {
+        shape: "Shape",
+        size: "Size",
+        fgcolor: "Color",
+        fgopacity: "Opacity",
+    }, 
+    background : {
+        bgcolor: "Color",
+    },
+    lines: {
+        hz_line_color: "Horizontal line color",
+        hz_line_type: "Horizontal line type",
+        hz_line_width: "Horizontal line width",
+        vt_line_color: "Vertical line color",
+        vt_line_type: "Vertical line type",
+        vt_line_width: "Vertical line width",
+    },
+    outline: {
+        outline_line_color: "Outline line color",
+        outline_line_width: "Outline line width",
+        outline_color: "Outline color",
+        outline_opacity: "Outline opacity",
+    },
+}
+
+function get_menu_input_html(json, prefix, counter=0) {
+    return  Object.entries(json).map(([k, v], idx) => {
+        idx += counter;
+        return `<div class="swal2-input-flex">` +
+        `<label class="swal2-input-label" for="${prefix}${idx}">${k}</label>`+
+        `<input id="${prefix}${idx}" class="swal2-input" value="${v}"`+
+        ([true, "true", false, "false"].includes(v) ? "type='checkbox'>" : ">") +
+        `</div>`}).join(" ");
+}
+
+function get_nodestyle_html(nodestyle) {
+    function get_label(label) {
+        return `<div class='swal2-input-title'>${label}</div>`
+    }
+    function get_json(style) {
+        const json = {};
+        Object.entries(style).forEach(([k, v]) =>
+            json[v] = nodestyle[k])
+        return json;
+    }
+    const prefix = "update_nodestyle-swal-input";
+    let column = 0
+    let html = get_label("Foreground")
+    html += get_menu_input_html(get_json(NODESTYLE.nodedot), prefix, column)
+    column += Object.keys(NODESTYLE.nodedot).length;
+    html += get_label("Background")
+    html += get_menu_input_html(get_json(NODESTYLE.background), prefix, column)
+    column += Object.keys(NODESTYLE.background).length;
+    html += get_label("Lines")
+    html += get_menu_input_html(get_json(NODESTYLE.lines), prefix, column)
+    column += Object.keys(NODESTYLE.lines).length;
+    html += get_label("Outline (collapsed)")
+    html += get_menu_input_html(get_json(NODESTYLE.outline), prefix, column)
+    column += Object.keys(NODESTYLE.outline).length;
+    html += get_menu_input_html({ "Apply to all descendants": false }, prefix, column)
+    return html
+}
+
+function format_nodestyle(style) {
+    const keys = [
+        ...Object.keys(NODESTYLE.nodedot),
+        ...Object.keys(NODESTYLE.background),
+        ...Object.keys(NODESTYLE.lines),
+        ...Object.keys(NODESTYLE.outline),
+    ];
+    const nodestyle = {};
+    keys.forEach(key => nodestyle[key] = style[key]);
+    nodestyle["extend_to_descendants"] = false
+    return nodestyle;
+}
+
+async function add_node_modifying_options(properties, nodestyle, node_id) {
+    const nid = get_tid() + "," + node_id;
+    nodestyle = format_nodestyle(nodestyle);
+    add_button("Edit node properties", () =>
+        add_json_editor(nid, properties, "update_props", true, "properties"),
+       "Edit the properties of this node. Changes the tree structure.",
        "edit", true);
+    add_button("Edit node style", () => {
+        const html = get_nodestyle_html(nodestyle);
+        add_json_editor(nid, nodestyle, "update_nodestyle", false, "style", html)},
+       "Edit the style of this node. Changes the tree structure.",
+       "edit", false);
     if (!view.subtree) {
         add_button("Root on this node", async () => {
             await tree_command("root_at", node_id);
@@ -248,7 +340,6 @@ function add_button(text, fn, tooltip, icon_before, icon_warning=false) {
     const content = document.createElement("div");
     content.innerHTML = text;
     button.appendChild(content)
-    //button.appendChild(document.createTextNode(text));
     if (icon_warning) 
         button.appendChild(create_icon("exclamation"))
     button.addEventListener("click", event => {

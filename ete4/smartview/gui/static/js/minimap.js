@@ -22,6 +22,9 @@ async function draw_minimap() {
     else
         qs += `&drawer=Circ&rmin=${view.rmin}` +
               `&amin=${view.angle.min}&amax=${view.angle.max}`;
+    
+    if (view.ultrametric)
+        qs += "&ultrametric=1"
 
     const items = await api(`/trees/${get_tid()}/draw?${qs}`);
 

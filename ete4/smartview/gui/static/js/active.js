@@ -56,7 +56,6 @@ async function deactivate_node(node_id, type, notify=true) {
     // Remove active node
     await api(`/trees/${tid}/deactivate_${type.slice(0, -1)}`)
 
-
     if (type === "clades") {
         const active = await api(`/trees/${tid}/all_active`)
         view.active[type].nodes = active.clades;
@@ -173,45 +172,14 @@ async function get_active_nodes() {
 }
 
 
-function update_active_nodes(nodes, type) {
-    async function activate(node) {
-        const node_id = String(node.id);
-        if (type === "nodes")
-            return !active_ids.includes(node_id);
-        else {
-            const nid = tid + "," + node_id;
-            const active = await api(`/trees/${nid}/active`);
-            return active !== "active_clade";
-        }
-    }
-    async function deactivate(id) {
-        if (type === "nodes")
-            return !new_ids.includes(id);
-        else {
-            const nid = tid + "," + id;
-            const active = await api(`/trees/${nid}/active`);
-            return active === "active_clade";
-        }
-    }
+async function update_active_nodes(nodes, type) {
+    // Override active nodes
+    
+    // First remove
+    view.active[type].remove(true, true, false)
 
-    if (nodes.length === 0) {
-        view.active[type].remove(true, true, false)
-        return
-    }
-
-    const active_ids = view.active[type].nodes.map(n => n.id);
-    const new_ids = nodes.map(n => String(n.id));
-    const tid = get_tid();
-
-    nodes.forEach(node => {
-        if (activate(node))
-            activate_node(node.id, node, type, false)
-    })
-
-    active_ids.forEach(id => {
-        if (deactivate(id))
-            deactivate_node(id, type, false)
-    })
+    // Then activate each new node
+    nodes.forEach(node => activate_node(node.id, node, type, false));
 
     if (view.active[type].folder)
         update_active_folder(type);

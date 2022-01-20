@@ -450,6 +450,7 @@ class RectFace(Face):
         zx, zy = self.zoom
         zx = 1 if self.stretch\
                 and pos.startswith('aligned')\
+                and drawer.TYPE != 'circ'\
                 else zx
 
         r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
@@ -701,17 +702,13 @@ class SelectedRectFace(SelectedFace, RectFace):
 
 class OutlineFace(Face):
     def __init__(self, 
-            stroke_color='black', stroke_width=0.5,
-            color="lightgray", opacity=0.3,
+            stroke_color=None, stroke_width=None,
+            color=None, opacity=0.3,
             collapsing_height=5, # height in px at which outline becomes a line
             padding_x=0, padding_y=0):
 
         Face.__init__(self, padding_x=padding_x, padding_y=padding_y)
 
-        self.opacity = opacity
-        self.color = color
-        self.stroke_color = stroke_color
-        self.stroke_width = stroke_width
         self.outline = None
         self.collapsing_height = collapsing_height
 
@@ -752,11 +749,12 @@ class OutlineFace(Face):
         return True
 
     def draw(self, drawer):
+        nodestyle = self.node.sm_style
         style = {
-                'stroke': self.stroke_color,
-                'stroke-width': self.stroke_width,
-                'fill': self.color,
-                'fill-opacity': self.opacity,
+                'stroke': nodestyle["outline_line_color"],
+                'stroke-width': nodestyle["outline_line_width"],
+                'fill': nodestyle["outline_color"],
+                'fill-opacity': nodestyle["outline_opacity"],
                 }
         x, y, dx_min, dx_max, dy = self.outline
         zx, zy = self.zoom
@@ -771,7 +769,7 @@ class OutlineFace(Face):
                 p2 = cartesian(p2)
             yield draw_line(p1, p2, style=style)
         else:
-            yield draw_outline(self.outline, style)
+            yield draw_outline(self.outline, style=style)
 
 
 class AlignLinkFace(Face):

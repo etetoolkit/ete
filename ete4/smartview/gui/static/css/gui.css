@@ -383,6 +383,21 @@ button.tp-tbiv_b {
 
 
 /*Sweetalert*/
+.swal2-container * {
+    font-family: sans-serif;
+    font-size: .9rem;
+}
+
+.swal2-header {
+    font-size: 1rem;
+}
+
+.swal2-input-title {
+    margin-top: 2em;
+    font-weight: bold;
+    text-align: left;
+}
+
 .swal2-file, .swal2-input, .swal2-textarea {
     font-size: .9em !important;
 }
@@ -398,6 +413,9 @@ button.tp-tbiv_b {
 
 .swal2-input-flex label.swal2-input-label {
     margin: 1em !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    white-space: nowrap;
 }
 
 .swal2-input-flex .swal2-input {

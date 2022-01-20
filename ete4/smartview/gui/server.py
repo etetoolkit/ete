@@ -40,6 +40,7 @@ from flask_cors import CORS
 from flask_compress import Compress
 from itsdangerous import TimedJSONWebSignatureSerializer as JSONSigSerializer
 from werkzeug.security import generate_password_hash, check_password_hash
+import logging
 
 from ... import Tree
 from .. import TreeStyle, layout_modules
@@ -141,6 +142,9 @@ class Trees(Resource):
         elif rule == '/trees/<string:tree_id>/nodeinfo':
             node = gdn.get_node(tree.tree, subtree)
             return node.props
+        elif rule == '/trees/<string:tree_id>/nodestyle':
+            node = gdn.get_node(tree.tree, subtree)
+            return node.sm_style
         elif rule == '/trees/<string:tree_id>/leaves_info':
             node = gdn.get_node(tree.tree, subtree)
             return get_nodes_info(tree.tree, node.iter_leaves(), request.args.copy())
@@ -336,6 +340,13 @@ class Trees(Resource):
                 return {'message': 'ok'}
             except AssertionError as e:
                 raise InvalidUsage(f'cannot update props of ${node_id}: {e}')
+        elif rule == '/trees/<string:tree_id>/update_nodestyle':
+            try:
+                node = gdn.get_node(tree.tree, subtree)
+                update_node_style(node, request.json)
+                return {'message': 'ok'}
+            except AssertionError as e:
+                raise InvalidUsage(f'cannot update style of ${node_id}: {e}')
         elif rule == '/trees/<string:tree_id>/reinitialize':
             gdn.standardize(tree.tree)
             tree.initialized = False
@@ -654,6 +665,29 @@ def update_node_props(node, args):
             raise InvalidUsage('property {prop} should be of type {type(value)}')
         else:
             node.add_prop(prop, newvalue)
+
+def update_node_style(node, args):
+    newstyle = {}
+    for prop, value in dict(node.sm_style).items():
+        newvalue = args.pop(prop, "").strip()
+        if not newvalue:
+            continue
+        try:  # convert to proper type
+            newvalue = type(value)(newvalue)
+        except:
+            raise InvalidUsage('property {prop} should be of type {type(value)}')
+        else:
+            newstyle[prop] = newvalue
+
+    extend_to_descendants = args.pop("extend_to_descendants", None)
+    if extend_to_descendants:
+        nodes = node.traverse()
+    else:
+        nodes = [ node ]
+
+    for node in nodes:
+        for key, value in newstyle.items():
+            node.sm_style[key] = value
 
 
 def get_nodes_info(tree, nodes, props):
@@ -1363,6 +1397,7 @@ def add_resources(api):
         '/trees',
         '/trees/<string:tree_id>',
         '/trees/<string:tree_id>/nodeinfo',
+        '/trees/<string:tree_id>/nodestyle',
         '/trees/<string:tree_id>/leaves_info',
         '/trees/<string:tree_id>/descendants_info',
         '/trees/<string:tree_id>/name',
@@ -1404,12 +1439,14 @@ def add_resources(api):
         '/trees/<string:tree_id>/move',
         '/trees/<string:tree_id>/remove',
         '/trees/<string:tree_id>/update_props',
+        '/trees/<string:tree_id>/update_nodestyle',
         '/trees/<string:tree_id>/reinitialize',
         '/trees/<string:tree_id>/reload')
 
 
 def run_smartview(tree=None, tree_name=None, layouts=[],
-        safe_mode=False, port=5000, run=True, serve_static=True):
+        safe_mode=False, port=5000, run=True, 
+        serve_static=True, verbose=True):
     # Set tree_name to None if no tree was provided
     # Generate tree_name if none was provided
     tree_name = tree_name or get_random_string(10) if tree else None
@@ -1435,6 +1472,10 @@ def run_smartview(tree=None, tree_name=None, layouts=[],
         with app.app_context():
             tid = add_tree(tree_data)
             print(f'Added tree {tree_name} with id {tid}.')
+
+    if not verbose:
+        app.logger.disabled = True
+        logging.getLogger('werkzeug').disabled = True
 
     if run:
         app.run(debug=True, use_reloader=False, port=port)
