@@ -72,6 +72,6 @@ def run(args):
         run_smartview()
     else:
         t = PhyloTree(tfile, format=args.src_newick_format)
-        t.explore(tree_name=tfile, tree_style=ts)
+        t.explore(tree_name=tfile)
  
         
