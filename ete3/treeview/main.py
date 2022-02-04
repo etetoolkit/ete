@@ -749,10 +749,10 @@ def save(scene, imgName, w=None, h=None, dpi=90,\
         scene.render(pp, targetRect, scene.sceneRect(), ratio_mode)
     else:
         targetRect = QRectF(0, 0, w, h)
-        ii= QImage(w, h, QImage.Format_ARGB32)
+        ii= QImage(int(w), int(h), QImage.Format_ARGB32) # FIXME this raises exception QImage(QImage): argument 1 has unexpected type 'float' when calling Tree.render (... units="mm")
         ii.fill(QColor(Qt.white).rgb())
-        ii.setDotsPerMeterX(dpi / 0.0254) # Convert inches to meters
-        ii.setDotsPerMeterY(dpi / 0.0254)
+        ii.setDotsPerMeterX(int(dpi / 0.0254)) # Convert inches to meters # FIXME this raises exception TypeError: setDotsPerMeterX(self, int): argument 1 has unexpected type 'float'
+        ii.setDotsPerMeterY(int(dpi / 0.0254)) # FIXME this raises exception TypeError: setDotsPerMeterX(self, int): argument 1 has unexpected type 'float'
         pp = QPainter(ii)
         pp.setRenderHint(QPainter.Antialiasing)
         pp.setRenderHint(QPainter.TextAntialiasing)
