@@ -2,7 +2,7 @@ import { view } from "./gui.js";
 import { cartesian_shifted } from "./draw.js";
 
 
-export { draw_pixi, clear_pixi };
+export { draw_pixi, clear_pixi, apps };
 
 //Aliases
 const Application = PIXI.Application;

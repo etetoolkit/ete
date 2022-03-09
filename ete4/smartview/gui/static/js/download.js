@@ -2,6 +2,7 @@
 
 import { view, get_tid } from "./gui.js";
 import { api } from "./api.js";
+import { apps } from "./pixi.js";
 
 export { download_newick, download_seqs, download_image, download_svg };
 
@@ -22,6 +23,15 @@ async function download_seqs(node_id) {
 
 // Download a file with the current view of the tree as a svg.
 function download_svg() {
+    const app = Object.values(apps)[0];
+    let graphics = new PIXI.Graphics()
+        .beginFill(0xFF0000)
+        .drawCircle(100, 100, 50);
+    const img = app.renderer.plugins.extract.image(app.stage);
+    console.log(app);
+    console.log(app.stage.children[0])
+    console.log(img);
+    div_viz.appendChild(img);
     const svg = div_viz.cloneNode(true)
     // Remove foreground nodeboxes for faster rendering
     // (Background nodes not excluded as they are purposely styled)
