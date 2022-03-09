@@ -23,16 +23,17 @@ async function download_seqs(node_id) {
 
 // Download a file with the current view of the tree as a svg.
 function download_svg() {
-    const app = Object.values(apps)[0];
-    let graphics = new PIXI.Graphics()
-        .beginFill(0xFF0000)
-        .drawCircle(100, 100, 50);
-    const img = app.renderer.plugins.extract.image(app.stage);
-    console.log(app);
-    console.log(app.stage.children[0])
-    console.log(img);
-    div_viz.appendChild(img);
-    const svg = div_viz.cloneNode(true)
+    const svg = div_viz.cloneNode(true);
+    // Remove aligned panel grabber
+    svg.querySelector("#div_aligned_grabber").remove();
+    // Add pixi images to clone (canvas not downloadable)
+    Object.entries(apps).forEach(([id, app]) => {
+        const img = app.renderer.plugins.extract.image(app.stage);
+        const container = svg.querySelector(`#${id} .div_pixi`);
+        container.style.top = app.stage._bounds.minY + "px";
+        container.replaceChild(img, container.children[0]);
+    })
+    
     // Remove foreground nodeboxes for faster rendering
     // (Background nodes not excluded as they are purposely styled)
     Array.from(svg.getElementsByClassName("fg_node")).forEach(e => e.remove());

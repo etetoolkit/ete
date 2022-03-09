@@ -414,14 +414,11 @@ def load_tree(tree_id):
 
                 tree.initialized = True
 
-                start  = time()
                 for node in t.traverse():
                     node.is_initialized = False
                     node._smfaces = None
                     node._collapsed_faces = None
                     node._sm_style = None
-
-                print(f'traverse {time() - start}')
 
             return t
         else:
