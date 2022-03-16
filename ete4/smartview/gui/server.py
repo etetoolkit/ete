@@ -1485,7 +1485,7 @@ def run_smartview(tree=None, tree_name=None, layouts=[],
 
 
 if __name__ == '__main__':
-    run_smartview(safe_mode=False)
+    run_smartview(safe_mode=True)
 
 
 
