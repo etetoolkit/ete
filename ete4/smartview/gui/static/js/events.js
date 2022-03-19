@@ -355,6 +355,11 @@ async function on_postMessage(event) {
         view.download.svg();
         return
     }
+
+    if (event.data.toggleSearch) {
+        view.search();
+        return
+    }
     
     const { selectionMode, eventType, name, node, nodes, selectCommand, activeType } = event.data;
 

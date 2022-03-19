@@ -165,7 +165,7 @@ const view = {
 
     control_panel: { show: false },
 
-    smart_zoom: false,
+    smart_zoom: true,
 
     zoom_sensitivity: 1,
 

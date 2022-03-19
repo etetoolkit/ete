@@ -91,8 +91,6 @@ function create_menu_basic(menu, trees) {
         set_boxes_clickable(!view.select_text);
     });
 
-    menu.addInput(view.aligned, "zoom", { label: "zoom in aligned panel" });
-
     // upload 
     if (view.upload)
         menu.addButton({ title: "upload" }).on("click", view.upload);
