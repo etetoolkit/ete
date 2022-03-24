@@ -400,7 +400,7 @@ class NCBITaxa(object):
             node.
 
         """
-        from .. import PhyloTree
+        from ete4 import PhyloTree
         taxids, merged_conversion = self._translate_merged(taxids)
         if len(taxids) == 1:
             root_taxid = int(list(taxids)[0])
@@ -508,8 +508,8 @@ class NCBITaxa(object):
         taxids = set()
         for n in t.traverse():
             try:
-                tid = int(getattr(n, taxid_attr))
-            except (ValueError,AttributeError):
+                tid = int(n.props.get(taxid_attr))
+            except (ValueError,AttributeError, TypeError):
                 pass
             else:
                 taxids.add(tid)
@@ -525,7 +525,6 @@ class NCBITaxa(object):
         all_taxid_codes = set([_tax for _lin in list(tax2track.values()) for _tax in _lin])
         extra_tax2name = self.get_taxid_translator(list(all_taxid_codes - set(tax2name.keys())))
         tax2name.update(extra_tax2name)
-
         tax2common_name = self.get_common_names(tax2name.keys())
 
         if not tax2rank:
@@ -535,8 +534,8 @@ class NCBITaxa(object):
 
         for n in t.traverse('postorder'):
             try:
-                node_taxid = int(getattr(n, taxid_attr))
-            except (ValueError, AttributeError):
+                node_taxid = int(n.props.get(taxid_attr))
+            except (ValueError, AttributeError, TypeError):
                 node_taxid = None
 
             n.add_prop('taxid', node_taxid)
