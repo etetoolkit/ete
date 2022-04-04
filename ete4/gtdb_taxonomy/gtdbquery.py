@@ -571,8 +571,6 @@ class GTDBTaxa(object):
 
             n.add_prop('taxid', node_taxid)
             if node_taxid:
-                # print("hello", node_taxid)
-                print(self.get_name_translator([node_taxid]).get(node_taxid, [None])[0])
                 tmp_taxid = self.get_name_translator([node_taxid]).get(node_taxid, [None])[0]
                 #tmp_taxid = self.get_name_translator([node_taxid])[node_taxid][0] # translate to temperatoru
                 if node_taxid in merged_conversion:
