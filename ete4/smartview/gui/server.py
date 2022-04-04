@@ -379,6 +379,20 @@ class Id(Resource):
                 # raise InvalidUsage('unknown tree name %r' % name)
             # return {'id': pids[0]}
 
+class CustomEndpoints(Resource):
+    def __init__(self, resources={}):
+        super().__init__()
+        self.resources = resources
+
+    def get(self, *args, **kwargs):
+        rule = request.url_rule.rule  # shortcut
+
+        for endpoint, func in self.resources.items():
+            if  endpoint == rule:
+                return func(*args, **kwargs)
+
+        return ""
+
 
 # Auxiliary functions.
 
@@ -1312,13 +1326,13 @@ def copy_style(tree_style):
 
 # App initialization.
 
-def initialize(tree=None, layouts=[], safe_mode=False):
+def initialize(tree=None, layouts=[], custom_api={}, custom_route={}, safe_mode=False):
     "Initialize the database and the flask app"
     app = Flask(__name__, instance_relative_config=True)
     configure(app)
 
     api = Api(app)
-    add_resources(api)
+    add_resources(app, api, custom_api, custom_route)
 
     app.safe_mode = safe_mode
 
@@ -1389,7 +1403,18 @@ def configure(app):
         app.config.from_pyfile(f'{app.instance_path}/config.py')  # overrides
 
 
-def add_resources(api):
+def add_custom_resources(app, api, custom_api={}, custom_route={}):
+    api_endpoints = [ endpoint for endpoint in custom_api.keys() ]
+    api.add_resource(CustomEndpoints, *api_endpoints,
+            resource_class_kwargs={ "resources": custom_api })
+
+    for endpoint, route_fn in custom_route.items():
+        @app.route(endpoint)
+        def fn(*args, **kwargs):
+            return route_fn(*args, **kwargs)
+
+
+def add_resources(app, api, custom_api={}, custom_route={}):
     "Add all the REST endpoints"
     add = api.add_resource  # shortcut
     add(Drawers, '/drawers/<string:name>/<string:tree_id>')
@@ -1443,9 +1468,11 @@ def add_resources(api):
         '/trees/<string:tree_id>/update_nodestyle',
         '/trees/<string:tree_id>/reinitialize',
         '/trees/<string:tree_id>/reload')
+    add_custom_resources(app, api, custom_api, custom_route)
 
 
-def run_smartview(tree=None, tree_name=None, layouts=[],
+def run_smartview(tree=None, tree_name=None, 
+        layouts=[], custom_api={}, custom_route={},
         safe_mode=False, port=5000, run=True, 
         serve_static=True, verbose=True):
     # Set tree_name to None if no tree was provided
@@ -1456,7 +1483,10 @@ def run_smartview(tree=None, tree_name=None, layouts=[],
         os.chdir(os.path.abspath(os.path.dirname(__file__)))
 
     global app
-    app = initialize(tree_name, layouts, safe_mode=safe_mode)
+    app = initialize(tree_name, layouts, 
+            custom_api=custom_api,
+            custom_route=custom_route,
+            safe_mode=safe_mode)
     # purge inactive trees every 15 minutes
     purge(interval=15*60, max_time=30*60)
 

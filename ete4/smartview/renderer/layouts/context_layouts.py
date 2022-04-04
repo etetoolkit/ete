@@ -81,7 +81,8 @@ class LayoutGenomicContext(TreeLayout):
 
         props = {}
         for k,v in gene.items():
-            if k in key_props and v and not k in ("strand", "color"):
+            if k in key_props and v and not k in ("strand", "color")\
+                    and not k.startswith("_"):
                 if k == "hyperlink":
                     k = "Go to"
                     label, url = v
