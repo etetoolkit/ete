@@ -22,9 +22,12 @@ function init_menus(trees) {
     document.getElementById("sidenav-open")
         .addEventListener("click", menus.open);
 
+    document.getElementById("search-trigger")
+        .addEventListener("click", view.search);
+
     const tab = menus.pane.addTab({ pages: [
         { title: "Layout" },
-        { title: "Selections" },
+        { title: "Search & Select" },
         { title: "Advanced" },
     ]});
     create_menu_basic(tab.pages[0], trees);
@@ -99,9 +102,10 @@ function create_menu_basic(menu, trees) {
     const folder_download = menu.addFolder({ title: "Download",
                                                     expanded: false });
     folder_download.addButton({ title: "newick" }).on("click", view.download.newick);
-    folder_download.addButton({ title: "svg" }).on("click", view.download.svg);
+    folder_download.addButton({ title: "svg+xml" }).on("click", view.download.svg);
+    folder_download.addButton({ title: "pdf" }).on("click", view.download.pdf);
 
-    menu.addButton({ title: "share view" }).on("click", view.share_view);
+    //menu.addButton({ title: "share view" }).on("click", view.share_view);
     menu.addButton({ title: "Help" }).on("click", view.show_help);
 }
 

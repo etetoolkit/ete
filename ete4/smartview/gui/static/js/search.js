@@ -30,6 +30,7 @@ async function search() {
         position: "bottom-start",
         ...inputValue,
         inputPlaceholder: "Enter name or /r <regex> or /e <exp>",
+        showClass: { popup: "swal2-search" },
         showConfirmButton: false,
         preConfirm: async text => {
             if (!text)

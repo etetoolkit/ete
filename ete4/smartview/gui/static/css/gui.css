@@ -265,6 +265,30 @@ hr {
     background-color: #333;
 }
 
+/*Side buttons*/
+
+.sidebtn {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 3;
+    transition: opacity .5s;
+    background-color: #d6d6d6;
+    padding: 3px 7px;
+    border-radius: 5px;
+    border: solid 1px lightgray;
+    transition: background-color 0.5s;
+    cursor: pointer;
+    font-family: sans-serif;
+    font-weight: bold;
+    font-size: 0.73rem;
+}
+
+.sidebtn:hover {
+    background-color: #ccc;
+    box-shadow: rgba(53, 64, 82, 0.04) 0 2px 4px 0;
+}
+
 /* from https://developer.mozilla.org/en-US/docs/Web/HTML/Element/kbd */
 kbd {
     background-color: #eee;
@@ -420,4 +444,8 @@ button.tp-tbiv_b {
 
 .swal2-input-flex .swal2-input {
     height: 2em !important;
+}
+
+.swal2-search { 
+    min-width: 32rem;
 }

@@ -19,28 +19,6 @@
     transition: opacity .5s;
 }
 
-.sidenav-open {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    z-index: 3;
-    transition: opacity .5s;
-    background-color: #d6d6d6;
-    padding: 3px 7px;
-    border-radius: 5px;
-    border: solid 1px lightgray;
-    transition: background-color 0.5s;
-    cursor: pointer;
-    font-family: sans-serif;
-    font-weight: bold;
-    font-size: 0.73rem;
-}
-
-.sidenav-open:hover {
-    background-color: #ccc;
-    box-shadow: rgba(53, 64, 82, 0.04) 0 2px 4px 0;
-}
-
 
 /* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller font size) */
 @media screen and (max-height: 450px) {
