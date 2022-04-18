@@ -351,8 +351,13 @@ async function on_postMessage(event) {
     //if (!wiew.allowed_origins.includes(event.origin))
         //return
 
-    if (event.data.downloadImg) {
+    if (event.data.downloadSvg) {
         view.download.svg();
+        return
+    }
+
+    if (event.data.downloadPdf) {
+        view.download.pdf();
         return
     }
 
