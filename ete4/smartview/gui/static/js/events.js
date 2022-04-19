@@ -71,7 +71,7 @@ function on_keydown(event) {
             menus.open()
     }
     else if (key === "d")
-        view.download.svg();
+        view.download.pdf();
     else if (key === "+") {
         const center = {x: div_tree.offsetWidth / 2,
                         y: div_tree.offsetHeight / 2};
@@ -351,8 +351,13 @@ async function on_postMessage(event) {
     //if (!wiew.allowed_origins.includes(event.origin))
         //return
 
-    if (event.data.downloadImg) {
+    if (event.data.downloadSvg) {
         view.download.svg();
+        return
+    }
+
+    if (event.data.downloadPdf) {
+        view.download.pdf();
         return
     }
 

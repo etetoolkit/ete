@@ -25,6 +25,7 @@ const inputError = Swal.mixin({
     }
 });
 
+
 async function on_box_contextmenu(event, box, name, properties, node_id=[]) {
 
     event.preventDefault();

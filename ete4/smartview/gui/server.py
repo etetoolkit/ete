@@ -59,6 +59,7 @@ class AppTree:
     tree: Tree = None
     name: str = None
     style: TreeStyle = None
+    nodestyles: dict = None
     layouts: list = None
     timer: float = None
     initialized: bool = False
@@ -343,7 +344,8 @@ class Trees(Resource):
         elif rule == '/trees/<string:tree_id>/update_nodestyle':
             try:
                 node = gdn.get_node(tree.tree, subtree)
-                update_node_style(node, request.json)
+                update_node_style(node, request.json.copy())
+                tree.nodestyles[node] = request.json.copy()
                 return {'message': 'ok'}
             except AssertionError as e:
                 raise InvalidUsage(f'cannot update style of ${node_id}: {e}')
@@ -433,6 +435,9 @@ def load_tree(tree_id):
                     node._smfaces = None
                     node._collapsed_faces = None
                     node._sm_style = None
+
+                for node, args in tree.nodestyles.items():
+                    update_node_style(node, args.copy())
 
             return t
         else:
@@ -680,6 +685,7 @@ def update_node_props(node, args):
             raise InvalidUsage('property {prop} should be of type {type(value)}')
         else:
             node.add_prop(prop, newvalue)
+
 
 def update_node_style(node, args):
     newstyle = {}
@@ -1343,6 +1349,7 @@ def initialize(tree=None, layouts=[], custom_api={}, custom_route={}, safe_mode=
     app.trees = defaultdict(lambda: AppTree(
         name=get_random_string(10),
         style=copy_style(TreeStyle()),
+        nodestyles={},
         layouts = app.default_layouts,
         timer = time(),
         searches = {},
