@@ -509,7 +509,7 @@ class NCBITaxa(object):
         for n in t.traverse():
             try:
                 tid = int(getattr(n, taxid_attr))
-            except (ValueError,AttributeError, TypeError):
+            except (ValueError,AttributeError):
                 pass
             else:
                 taxids.add(tid)
@@ -535,7 +535,7 @@ class NCBITaxa(object):
         for n in t.traverse('postorder'):
             try:
                 node_taxid = int(getattr(n, taxid_attr))
-            except (ValueError, AttributeError, TypeError):
+            except (ValueError, AttributeError):
                 node_taxid = None
 
             n.add_prop('taxid', node_taxid)
