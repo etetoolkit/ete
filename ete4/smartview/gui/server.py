@@ -155,7 +155,7 @@ class Trees(Resource):
         elif rule == '/trees/<string:tree_id>/name':
             return tree.name
         elif rule == '/trees/<string:tree_id>/newick':
-            MAX_MB = 2
+            MAX_MB = 200
             return get_newick(tree_id, MAX_MB)
         elif rule == '/trees/<string:tree_id>/seq':
             node = gdn.get_node(tree.tree, subtree)

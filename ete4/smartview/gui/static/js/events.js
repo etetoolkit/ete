@@ -71,7 +71,7 @@ function on_keydown(event) {
             menus.open()
     }
     else if (key === "d")
-        view.download.pdf();
+        view.download.svg();
     else if (key === "+") {
         const center = {x: div_tree.offsetWidth / 2,
                         y: div_tree.offsetHeight / 2};
