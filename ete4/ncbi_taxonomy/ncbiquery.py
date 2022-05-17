@@ -400,7 +400,7 @@ class NCBITaxa(object):
             node.
 
         """
-        from ete4 import PhyloTree
+        from .. import PhyloTree
         taxids, merged_conversion = self._translate_merged(taxids)
         if len(taxids) == 1:
             root_taxid = int(list(taxids)[0])
