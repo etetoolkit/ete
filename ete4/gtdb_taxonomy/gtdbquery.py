@@ -878,7 +878,7 @@ def upload_data(dbfile):
     db.commit()
 
 if __name__ == "__main__":
-    from .. import PhyloTree
+    #from .. import PhyloTree
     gtdb = GTDBTaxa()
     gtdb.update_taxonomy_database(DEFAULT_GTDBTAXADUMP)
     
