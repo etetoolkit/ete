@@ -1,3 +1,5 @@
+import base64
+import pathlib
 import re
 from math import pi
 
@@ -5,6 +7,8 @@ from ..utils import InvalidUsage, get_random_string
 from .draw_helpers import *
 
 CHAR_HEIGHT = 1.4 # char's height to width ratio
+
+ALLOWED_IMG_EXTENSIONS = [ "png", "svg", "jpeg" ]
 
 _aacolors = {
     'A':"#C8C8C8" ,
@@ -1403,3 +1407,29 @@ class HTMLFace(RectFace):
 
     def draw(self, drawer):
         yield draw_html(self._box, self.content)
+
+
+class ImgFace(RectFace):
+    def __init__(self, img_path, width, height, name="", padding_x=0, padding_y=0):
+
+        RectFace.__init__(self, width=width, height=height,
+                name=name, padding_x=padding_x, padding_y=padding_y)
+
+
+        
+        with open(img_path, "rb") as handle:
+            img = base64.b64encode(handle.read()).decode("utf-8")
+        extension = pathlib.Path(img_path).suffix[1:]
+        if extension not in ALLOWED_IMG_EXTENSIONS:
+            print("The image does not have an allowed format: " +
+                    extension + " not in " + str(ALLOWED_IMG_EXTENSIONS))
+
+        self.content = f'data:image/{extension};base64,{img}'
+
+        self.stretch = False
+
+    def __name__(self):
+        return "ImgFace"
+
+    def draw(self, drawer):
+        yield draw_img(self._box, self.content)

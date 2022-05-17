@@ -180,7 +180,7 @@ function draw_negative_xaxis() {
 function draw(element, items, tl, zoom, replace=true) {
     const is_svg = item => {
         const name = item[0];
-        return !(name.includes("pixi-") || name === "html")
+        return !(name.includes("pixi-") || name === "html" || name === "img")
     }
 
     const g = create_svg_element("g");
@@ -203,6 +203,13 @@ function draw(element, items, tl, zoom, replace=true) {
         html_container.querySelectorAll("*").forEach(child => child.remove());
         const html_items = items.filter(i => i[0] === "html");
         html_items.forEach(item => create_html(html_container, item, tl, zoom))
+    }
+
+    const img_container = element.querySelector(".div_img")
+    if (img_container) {
+        img_container.querySelectorAll("*").forEach(child => child.remove());
+        const img_items = items.filter(i => i[0] === "img");
+        img_items.forEach(item => create_img(img_container, item, tl, zoom))
     }
 
 
@@ -565,6 +572,26 @@ function create_html(container, item, tl, zoom) {
     };
 
     style_html(element, style);
+}
+
+function create_img(container, item, tl, zoom) {
+    const img = document.createElement("img");
+    img.src = item[2]
+
+    const [x, y, dx, dy] = item[1];
+    const [zx, zy] = [zoom.x, zoom.y];
+    const style = { 
+        position: "absolute",
+        overflow: "hidden",
+        top: zy * (y - tl.y) + "px",
+        left: zx * (x - tl.x) + "px",
+        width: dx * zx + "px", 
+        height: dy * zy + "px"
+    };
+
+    style_html(img, style);
+
+    container.appendChild(img)
 }
 
 
