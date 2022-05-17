@@ -571,9 +571,11 @@ class GTDBTaxa(object):
 
             n.add_prop('taxid', node_taxid)
             if node_taxid:
-                tmp_taxid = self.get_name_translator([node_taxid])[node_taxid][0] # translate to temperatoru
+                tmp_taxid = self.get_name_translator([node_taxid]).get(node_taxid, [None])[0]
+                #tmp_taxid = self.get_name_translator([node_taxid])[node_taxid][0] # translate to temperatoru
                 if node_taxid in merged_conversion:
                     node_taxid = merged_conversion[node_taxid]
+
                 n.add_props(sci_name = tax2name.get(node_taxid, getattr(n, taxid_attr, '')),
                                common_name = tax2common_name.get(node_taxid, ''),
                                lineage = tax2track.get(tmp_taxid, []),
@@ -587,7 +589,10 @@ class GTDBTaxa(object):
                                named_lineage = [])
             else:
                 lineage = self._common_lineage([lf.props.get('lineage') for lf in n2leaves[n]])
-                ancestor = self.get_taxid_translator([lineage[-1]])[lineage[-1]]
+                if lineage[-1]:
+                    ancestor = self.get_taxid_translator([lineage[-1]])[lineage[-1]]
+                else:
+                    ancestor = None
                 #print([tax2name.get(tax, str(tax)) for tax in lineage])
                 n.add_props(sci_name = tax2name.get(ancestor, str(ancestor)),
                                common_name = tax2common_name.get(lineage[-1], ''),
@@ -873,6 +878,7 @@ def upload_data(dbfile):
     db.commit()
 
 if __name__ == "__main__":
+    #from .. import PhyloTree
     gtdb = GTDBTaxa()
     gtdb.update_taxonomy_database(DEFAULT_GTDBTAXADUMP)
     
