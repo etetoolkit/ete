@@ -703,7 +703,7 @@ class GTDBTaxa(object):
 
 
 def load_gtdb_tree_from_dump(tar):
-    from ete4 import Tree
+    from .. import Tree
     # Download: gtdbdump/gtdbr202dump.tar.z
     parent2child = {}
     name2node = {}
