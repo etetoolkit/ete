@@ -33,7 +33,7 @@ def first_name(tree):
     sci_names = []
     for node in tree.traverse('preorder'):
         if node.is_leaf():
-            sci_name = node.props.get('sciName')
+            sci_name = node.props.get('sci_name')
             sci_names.append(sci_name)
 
     return next(iter(sci_names))
@@ -47,11 +47,11 @@ class LayoutSciName(TreeLayout):
     def set_node_style(self, node):
         if node.is_leaf():
            
-            sci_name = node.props.get('sciName')
+            sci_name = node.props.get('sci_name')
             prot_id = node.name.split('.', 1)[1]
 
-            if node.props.get('sciName') in sciName2color.keys():
-                color = sciName2color[node.props.get('sciName')]
+            if node.props.get('sci_name') in sciName2color.keys():
+                color = sciName2color[node.props.get('sci_name')]
             else:
                 color = 'black'
            
