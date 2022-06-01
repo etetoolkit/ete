@@ -397,8 +397,14 @@ function create_item(g, item, tl, zoom) {
         b.addEventListener("mouseleave", _ =>
             on_box_mouseleave(node_id));
 
-        if (name.length > 0 || Object.entries(properties).length > 0)
-            b.appendChild(create_tooltip(name, properties))
+        //if (name.length > 0 || Object.entries(properties).length > 0)
+            //b.appendChild(create_tooltip(name, properties))
+
+        b.setAttribute("data-tooltip", properties.tooltip ||
+            Object.entries(properties).map(([k,v]) => {
+                if (v !== "") return `${k}: ${v}`})
+                  .filter(d => d)
+                  .join("<br>"));
 
         return b;
     }

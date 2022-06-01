@@ -12,6 +12,7 @@ const zooming = {qz: {x: 1, y: 1, a: 1}, timeout: undefined};
 // Zoom the current view into the area defined by the given box, with a border
 // marking the fraction of zoom-out (to see a bit the surroundings).
 function zoom_into_box(box, border=0.10) {
+    tooltip.style.display = "none";
     if (view.drawer.type === "rect") {
         const [x, y, w, h] = box;
         view.tl.x = x - border * w;
@@ -46,6 +47,7 @@ window.zoom_into_box = zoom_into_box;  // exposed so it can be called in onclick
 
 // Zoom maintaining the given point on the screen.
 function zoom_around(point, zoom_in, do_zoom={x:true, y:true}, qz=undefined) {
+    tooltip.style.display = "none";
     if (!qz)  // zoom change (quotient)
         qz = { x: 1 + (zoom_in ? view.zoom.delta.in : view.zoom.delta.out),
                y: 1 + (zoom_in ? view.zoom.delta.in : view.zoom.delta.out),
@@ -131,6 +133,7 @@ function zoom_aligned(point, zoom_in) {
 
 // Zoom adaptatively so that the given box tends to occupy the full screen.
 function zoom_towards_box(box, point, zoom_in, do_zoom) {
+    tooltip.style.display = "none";
     let qx, qy;
     if (zoom_in) {
         const [dx, dy] = [box[2], box[3]];

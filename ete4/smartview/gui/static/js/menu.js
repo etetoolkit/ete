@@ -79,6 +79,9 @@ function create_menu_basic(menu, trees) {
     // tree scale legend
     menu.addInput(view.tree_scale, "show", { label: "show tree scale legend" })
         .on("change", draw_tree_scale);
+    
+    // tooltip
+    menu.addInput(view.tooltip, "auto", { label: "tooltip on hover" });
 
     // zooms
     menu.addInput(view, "smart_zoom", { label: "zoom around node" });

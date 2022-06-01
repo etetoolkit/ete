@@ -38,8 +38,6 @@ from flask import Flask, request, jsonify, g, redirect, url_for
 from flask_restful import Resource, Api
 from flask_cors import CORS
 from flask_compress import Compress
-from itsdangerous import TimedJSONWebSignatureSerializer as JSONSigSerializer
-from werkzeug.security import generate_password_hash, check_password_hash
 import logging
 
 from ... import Tree
@@ -426,7 +424,7 @@ def load_tree(tree_id):
                 for layouts in tree.layouts.values():
                     for layout in layouts:
                         if layout.active:
-                            layout.set_tree_style(tree.style)
+                            layout.set_tree_style(tree.tree, tree.style)
 
                 tree.initialized = True
 

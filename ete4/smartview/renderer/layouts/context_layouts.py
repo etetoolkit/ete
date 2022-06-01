@@ -37,8 +37,8 @@ class LayoutGenomicContext(TreeLayout):
         self.collapse_conservation = collapse_conservation
         self.collapse_by_conservation = collapse_by_conservation
 
-    def set_tree_style(self, style):
-        super().set_tree_style(style)
+    def set_tree_style(self, tree, style):
+        super().set_tree_style(tree, style)
         style.collapse_size = self.collapse_size
 
     def set_node_style(self, node):

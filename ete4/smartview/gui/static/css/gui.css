@@ -377,7 +377,7 @@ button.tp-tbiv_b {
 .tooltip {
   display: none;
   position: absolute;
-  width: 160px;
+  /*width: 160px;*/
   /*background-color: #d6d6d6;*/
   background-color: #eaeaea;
   color: black;
