@@ -32,7 +32,7 @@ function getElementToDownload() {
         const img = app.renderer.plugins.extract.image(app.stage);
         const container = element.querySelector(`#${id} .div_pixi`);
         container.style.top = app.stage._bounds.minY + "px";
-        container.style.left = "10px";
+        container.style.left = `${-view.aligned.x}px`;
         container.replaceChild(img, container.children[0]);
     });
     
@@ -68,13 +68,32 @@ function download_pdf() {
         });
     };
 
+    function addAlignedBackground() {
+        const x = aligned_x * 3/4
+        const w = aligned_box.width
+        doc.rect(x, 0, w, view.tree_size.height / view.zoom.y);
+        doc.fill("white").strokeColor("white");
+        doc.stroke();
+    }
+
+    function addPixiBackground() {
+        const x = (aligned_x - 5) * 3/4
+        const w = view.aligned.x * 3/4
+        doc.rect(x - w, 0, w, view.tree_size.height / view.zoom.y);
+        doc.fill("white").strokeColor("white");
+        doc.stroke();
+    }
+
     function addPixi() {
         element.querySelectorAll(".div_pixi").forEach(container => {
             const img = container.children[0];
             if (img)
-                addImg(img, aligned_x + 10, +container.style.top.slice(0,-2),
+                addImg(img, aligned_x - (view.drawer.type === "rect" ? view.aligned.x : 0),
+                      +container.style.top.slice(0,-2),
                        img.width, img.height);
         });
+        if (view.aligned.x > 0)
+            addPixiBackground()
     };
     
     const element = getElementToDownload();
@@ -102,19 +121,34 @@ function download_pdf() {
     const menus_width = menus.show ? menus.width : 0;
 
     const tree = element.querySelector("#div_tree svg");
-    addSvg(tree)
-    const aligned_x = div_aligned.getBoundingClientRect().x - menus_width;
-    const aligned = element.querySelector("#div_aligned svg");
-    const aligned_header = element.querySelector("#div_aligned_header svg");
-    const aligned_footer = element.querySelector("#div_aligned_footer svg");
-    [ aligned, aligned_header, aligned_footer ].forEach(el => {
-        if (+el.getAttribute("width") !== 0)
-            addSvg(el, aligned_x)
-    });
+    if (view.drawer.type === "circ") {
+        [...tree.querySelectorAll("path.childrenline")].forEach(el => {
+            el.style["fill-opacity"] = 0
+        })
+        addSvg(tree)
+    }
 
+
+    const aligned_box = div_aligned.getBoundingClientRect();
+    const aligned_x = view.drawer.type === "rect" ? aligned_box.x - menus_width : 0;
+    if (view.drawer.type === "rect") {
+        if (view.aligned.x <= 0)
+            addSvg(tree)
+        addAlignedBackground()
+        const aligned = element.querySelector("#div_aligned svg");
+        const aligned_header = element.querySelector("#div_aligned_header svg");
+        const aligned_footer = element.querySelector("#div_aligned_footer svg");
+        [ aligned, aligned_header, aligned_footer ].forEach(el => {
+            if (+el.getAttribute("width") !== 0)
+                addSvg(el, aligned_x)
+        });
+
+    }
     setTimeout(() => {
         // Pixi needs some time to render to img
         addPixi();
+        if (view.aligned.x > 0)
+            addSvg(tree)
         doc.end();
     }, 100);
 }

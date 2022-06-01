@@ -198,3 +198,6 @@ def draw_array(box, a):
 
 def draw_html(box, html, html_type='', style=None):
     return ['html', box, html, html_type, style or {}]
+
+def draw_img(box, img, img_type='', style=None):
+    return ['img', box, img, img_type, style or {}]

@@ -10,7 +10,7 @@ class TreeLayout():
         self.ts = ts
         self.ns = ns
 
-    def set_tree_style(self, style):
+    def set_tree_style(self, tree, style):
         if self.aligned_faces:
             style.aligned_panel = True
 

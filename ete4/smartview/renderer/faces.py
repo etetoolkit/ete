@@ -1,3 +1,5 @@
+import base64
+import pathlib
 import re
 from math import pi
 
@@ -5,6 +7,8 @@ from ..utils import InvalidUsage, get_random_string
 from .draw_helpers import *
 
 CHAR_HEIGHT = 1.4 # char's height to width ratio
+
+ALLOWED_IMG_EXTENSIONS = [ "png", "svg", "jpeg" ]
 
 _aacolors = {
     'A':"#C8C8C8" ,
@@ -952,6 +956,8 @@ class SeqMotifFace(Face):
         self.seq = seq or '-' * max([m[1] for m in motifs])
         self.seqtype = seqtype
 
+        self.autoformat = True  # block if 1px contains > 1 tile
+
         self.motifs = motifs
         self.overlaping_motif_opacity = 0.5
 
@@ -1105,6 +1111,19 @@ class SeqMotifFace(Face):
         x0, y, _, dy = self._box
         zx, zy = self.zoom
 
+        if self.viewport and len(self.seq):
+            vx0, vx1 = self.viewport
+            is_small = ((vx1 - vx0) * zx) / (len(self.seq) / zx) < 3
+            if self.seq_format in [ "seq", "compactseq" ] and is_small:
+                self.seq_format = "[]"
+                self.regions = []
+                self.build_regions()
+            if self.seq_format == "[]" and not is_small:
+                self.seq_format = "seq"
+                self.regions = []
+                self.build_regions()
+
+
         x = x0
         prev_end = -1
 
@@ -1116,10 +1135,15 @@ class SeqMotifFace(Face):
                 p2 = cartesian(p2)
             yield draw_line(p1, p2, style={'stroke-width': self.gap_linewidth,
                                            'stroke': self.gapcolor})
-        for (start, end, shape, posw, h, fg, bg, text, opacity) in self.regions:
 
-            if not self.in_aligned_viewport((start, end)):
+        for item in self.regions:
+            if len(item) == 9:
+                start, end, shape, posw, h, fg, bg, text, opacity = item
+            else:
                 continue
+            
+            # if not self.in_aligned_viewport((start / zx, end / zx)):
+                # continue
 
             posw = (posw or self.poswidth) * self.w_scale
             w = posw * (end + 1 - start)
@@ -1197,14 +1221,6 @@ class SeqMotifFace(Face):
                     aa_type = "text"
                 yield [ f'pixi-aa_{aa_type}', sm_box, seq ]
 
-            # elif shape == 'seq':
-                # seq = self.seq[start : end + 1]
-                # seq_face = SeqFace(seq, self.seqtype, posw * zx,
-                        # draw_text=True, max_fsize=self.max_fsize,
-                        # ftype=self.ftype)
-                # seq_face._box = box # assign box manually
-                # seq_face.compute_fsize(posw, h, zx, zy)
-                # yield from seq_face.draw(drawer)
 
             # Text on top of shape
             if text:
@@ -1403,3 +1419,29 @@ class HTMLFace(RectFace):
 
     def draw(self, drawer):
         yield draw_html(self._box, self.content)
+
+
+class ImgFace(RectFace):
+    def __init__(self, img_path, width, height, name="", padding_x=0, padding_y=0):
+
+        RectFace.__init__(self, width=width, height=height,
+                name=name, padding_x=padding_x, padding_y=padding_y)
+
+
+        
+        with open(img_path, "rb") as handle:
+            img = base64.b64encode(handle.read()).decode("utf-8")
+        extension = pathlib.Path(img_path).suffix[1:]
+        if extension not in ALLOWED_IMG_EXTENSIONS:
+            print("The image does not have an allowed format: " +
+                    extension + " not in " + str(ALLOWED_IMG_EXTENSIONS))
+
+        self.content = f'data:image/{extension};base64,{img}'
+
+        self.stretch = False
+
+    def __name__(self):
+        return "ImgFace"
+
+    def draw(self, drawer):
+        yield draw_img(self._box, self.content)

@@ -52,6 +52,9 @@ const view = {
     rmin: 0,
     angle: {min: -180, max: 180},
     tooltip: {
+        auto: false,
+        fixed: false,
+        target: undefined,
         timeout: undefined,
     },
     aligned: {
