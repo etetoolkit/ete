@@ -1332,7 +1332,7 @@ class ScaleFace(Face):
 
         if self.viewport:
             sm_start = round(max(self.viewport[0] - self.viewport_margin - x0, 0) / dx)
-            sm_end = nticks- round(max(x0 + self.width - (self.viewport[1] +
+            sm_end = nticks - round(max(x0 + self.width - (self.viewport[1] +
                 self.viewport_margin), 0) / dx)
         else:
             sm_start, sm_end = 0, nticks
@@ -1340,6 +1340,7 @@ class ScaleFace(Face):
         for i in range(sm_start, sm_end + 1):
             x = x0 + i * dx
             number = range_factor * x
+            print(number)
             text = self.formatter % number if self.formatter else str(number)
             self.compute_fsize(self.tick_width / len(text), dy, zx, zy)
             text_style = {

@@ -1,3 +1,4 @@
+from . import staple_layouts
 from . import context_layouts
 from . import evol_events_layouts
 from . import etecompare_layouts
