@@ -39,9 +39,11 @@ class LayoutPlot(TreeLayout):
         self.size_prop = size_prop
         self.color_prop = color_prop
 
+        self.size_range = None
+        self.color_range = None
+
         self.color = color
         self.colors = colors
-        self.color_range = None
         self.color_gradient = color_gradient
         if self.color_prop and not self.color_gradient:
             self.color_gradient = ("#FFF", self.color)
@@ -88,6 +90,8 @@ class LayoutPlot(TreeLayout):
                 self.color_range = vals["color"][1:3]
 
     def get_size(self, node):
+        if not self.size_prop:
+            return self.width
         minval, maxval = self.size_range
         return node.props.get(self.size_prop, 0) / maxval * self.width
 
@@ -120,7 +124,7 @@ class LayoutBarplot(LayoutPlot):
     def set_tree_style(self, tree, tree_style):
         super().set_tree_style(tree, tree_style)
             
-        if self.width and self.scale:
+        if self.scale and self.size_range:
             scale = ScaleFace(width=self.width, scale_range=self.size_range, 
                     formatter='%.2f',
                     padding_x=self.padding_x, padding_y=2)
@@ -132,6 +136,14 @@ class LayoutBarplot(LayoutPlot):
         width = self.get_size(node)
         color = self.get_color(node)
         if width and color:
-            face = RectFace(width, None, color=color, padding_x=self.padding_x)
+            tooltip = ""
+            if node.name:
+                tooltip += f'<b>{node.name}</b><br>'
+            if self.size_prop:
+                tooltip += f'<br>{self.size_prop}: {width}<br>'
+            if self.color_prop:
+                tooltip += f'<br>{self.color_prop}: {color}<br>'
+            face = RectFace(width, None, color=color, 
+                    tooltip=tooltip, padding_x=self.padding_x)
             node.add_face(face, position=self.position, column=self.column,
                     collapsed_only=not node.is_leaf())

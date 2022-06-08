@@ -1346,6 +1346,8 @@ class ScaleFace(Face):
             else:
                 text = self.formatter % number if self.formatter else str(number)
 
+            text = text.rstrip('0').rstrip('.') if '.' in text else text
+
             self.compute_fsize(self.tick_width / len(text), dy, zx, zy)
             text_style = {
                 'max_fsize': self._fsize,
