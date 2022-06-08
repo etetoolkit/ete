@@ -1339,9 +1339,13 @@ class ScaleFace(Face):
 
         for i in range(sm_start, sm_end + 1):
             x = x0 + i * dx
-            number = range_factor * x
-            print(number)
-            text = self.formatter % number if self.formatter else str(number)
+            number = range_factor * i * dx
+
+            if number == 0:
+                text = "0"
+            else:
+                text = self.formatter % number if self.formatter else str(number)
+
             self.compute_fsize(self.tick_width / len(text), dy, zx, zy)
             text_style = {
                 'max_fsize': self._fsize,

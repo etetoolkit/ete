@@ -112,7 +112,8 @@ function zoom_angular(point, qz) {
 function zoom_aligned(point, zoom_in) {
     const x0 = div_tree.offsetWidth * view.aligned.pos / 100;
     point.x -= x0;
-    const qz = { a: 1 + (zoom_in ? view.zoom.delta.in : view.zoom.delta.out) };
+    const qz = { a: 1 + (zoom_in ? view.zoom.delta.in * 0.5
+                                 : view.zoom.delta.out * 0.5) };
     let zoom_new = qz.a * view.zoom.a;
 
     if (view.aligned.adjust_zoom) {
@@ -145,8 +146,9 @@ function zoom_towards_box(box, point, zoom_in, do_zoom) {
         qx = div_tree.offsetWidth / (dx * view.zoom.x) - 1,
         qy = div_tree.offsetHeight / (dy * view.zoom.y) - 1;
     }
-    const qz = {x: 1 + 0.2 * Math.atan(qx),
-                y: 1 + 0.2 * Math.atan(qy)};
+
+    const qz = {x: 1 + view.zoom.delta.in * Math.atan(qx),
+                y: 1 + view.zoom.delta.in * Math.atan(qy)};
 
     zoom_xy(point, qz, do_zoom);
 }

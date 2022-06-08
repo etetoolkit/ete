@@ -64,6 +64,12 @@ function on_keydown(event) {
         show_minimap(view.minimap.show);
         menus.minimap.refresh();
     }
+    else if (key === "t") {
+        view.zoom_sensitivity = view.zoom_sensitivity > 0.5 ?
+            0.1 : 1;
+        view.zoom.delta.in = 0.25 * view.zoom_sensitivity;
+        view.zoom.delta.out = -0.2 * view.zoom_sensitivity;
+    }
     else if (key === "p") {
         if (menus.show)
             menus.close()
@@ -72,6 +78,8 @@ function on_keydown(event) {
     }
     else if (key === "d")
         view.download.svg();
+    else if (key === "a")
+        view.aligned.zoom = !view.aligned.zoom;
     else if (key === "+") {
         const center = {x: div_tree.offsetWidth / 2,
                         y: div_tree.offsetHeight / 2};
