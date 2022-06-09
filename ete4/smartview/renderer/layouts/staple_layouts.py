@@ -23,8 +23,10 @@ class LayoutPlot(TreeLayout):
     def __init__(self, name=None, width=200, size_prop=None, color_prop=None, 
             position="aligned", column=0, 
             color_gradient=None, color="red", colors=None,
-            padding_x=10, scale=True):
-        super().__init__(name, aligned_faces=True if position == "aligned" else False)
+            padding_x=10, scale=True, legend=True, active=True):
+        super().__init__(name, 
+                aligned_faces=True if position == "aligned" else False,
+                legend=legend, active=active)
 
         self.width = width
         self.position = position
@@ -55,7 +57,7 @@ class LayoutPlot(TreeLayout):
             if type(prop) in [int, float]:
                 vals[metric][1] = min(minval, prop)
                 vals[metric][2] = max(maxval, prop)
-            elif prop is None:
+            elif prop is None or prop == "":
                 return
             else:
                 uniqvals.add(prop)
@@ -86,8 +88,17 @@ class LayoutPlot(TreeLayout):
                     self.colors = {}
                     for idx, value in enumerate(unique):
                         self.colors[value] = colors[idx % len(colors)]
+                if self.legend:
+                    tree_style.add_legend(title=self.name,
+                            variable="discrete",
+                            colormap=self.colors)
             else:
                 self.color_range = vals["color"][1:3]
+                if self.legend:
+                    tree_style.add_legend(title=self.name, 
+                            variable="continuous",
+                            value_range=self.color_range,
+                            color_range=self.color_gradient)
 
     def get_size(self, node):
         if not self.size_prop:
@@ -107,18 +118,21 @@ class LayoutPlot(TreeLayout):
         else:
             return self.colors.get(prop)
 
+    def get_legend(self):
+        return self.legend
+
 
 class LayoutBarplot(LayoutPlot):
     def __init__(self, name=None, width=200, size_prop=None,
             color_prop=None, position="aligned", column=0, 
             color_gradient=None, color="red", colors=None,
-            padding_x=10, scale=True):
+            padding_x=10, scale=True, legend=True, active=True):
 
         name = name or f'Barplot_{size_prop}_{color_prop}'
         super().__init__(name=name, width=width, size_prop=size_prop,
                 color_prop=color_prop, position=position, column=column,
                 color_gradient=color_gradient, color=color, colors=colors,
-                padding_x=padding_x, scale=scale)
+                padding_x=padding_x, scale=scale, legend=legend, active=active)
 
 
     def set_tree_style(self, tree, tree_style):

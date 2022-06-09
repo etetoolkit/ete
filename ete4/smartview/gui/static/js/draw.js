@@ -73,6 +73,8 @@ async function draw_tree() {
 
         update_aligned_panel_display();
 
+        await draw_legend(params)
+
         if (view.drawer.npanels > 1) {
             align_timeout = setTimeout(async () => { 
                 if (!align_drawing)
@@ -274,6 +276,32 @@ function update_aligned_panel_display() {
         div_aligned.style.display = "none";  // hide aligned panel
 }
 
+
+
+async function draw_legend(params) {
+    if (!params)
+        params = get_tree_params();
+    const qs = new URLSearchParams({
+        ...params, "panel": -1,
+    }).toString();
+
+    const items = await api(`/trees/${get_tid()}/draw?${qs}`);
+
+    if (items.length) {
+        const div = document.createElement("div");
+        div.style["margin-top"] = "-15px";
+        items.forEach(item => {
+            const entry = create_legend_entry(item);
+            if (entry)
+                div.appendChild(entry);
+        });
+        replace_child(div_legend, div);
+        div_legend.style.display = "block";
+    } else
+        div_legend.style.display = "none";
+
+}
+
 // Draw elements that belong to panels above 0.
 async function draw_aligned(params, npanels) {
     if (!params)
@@ -302,7 +330,7 @@ async function draw_aligned(params, npanels) {
         for (let panel_n = 1; panel_n < npanels; panel_n++) {
             const panel = panels[panel_n];
             const qs = new URLSearchParams({
-                ...params, ...panel.params, "panel": panel_n
+                ...params, ...panel.params, "panel": panel_n,
             }).toString();
 
             align_drawing = true;
@@ -613,6 +641,77 @@ function pad(y0, dy0, fraction) {
     return [y0 + (dy0 - dy)/2, dy]
 }
 
+function create_legend_entry_container(entry) {
+    const div = document.createElement("div");
+    div.classList.add("legend-entry");
+
+    const title = document.createElement("div")
+    title.innerText = entry.title;
+    title.classList.add("legend-title");
+    div.appendChild(title);
+
+    return div;
+}
+
+function create_discrete_legend_entry(entry) {
+    const div = create_legend_entry_container(entry);
+
+    const items = document.createElement("div")
+    items.classList.add("legend-items");
+    Object.entries(entry.colormap).forEach(([text, color]) => {
+        const item = document.createElement("div")
+        item.classList.add("legend-item");
+
+        const circle = document.createElement("span");
+        circle.classList.add("legend-color");
+        circle.style.background = color;
+        item.appendChild(circle);
+
+        item.appendChild(document.createTextNode(text));
+        items.appendChild(item);
+    });
+    div.appendChild(items);
+
+    return div;
+}
+
+function create_continuous_legend_entry(entry) {
+    const div = create_legend_entry_container(entry);
+
+    const item = document.createElement("div")
+    item.classList.add("legend-item");
+    item.style["margin-left"] = "10px";
+
+    const [v1, v2] = entry.value_range;
+    const value_top = document.createElement("div");
+    value_top.classList.add("legend-range");
+    value_top.appendChild(document.createTextNode(v2))
+    item.appendChild(value_top);
+
+    const rect = document.createElement("span");
+    rect.classList.add("legend-gradient");
+    const [c1, c2] = entry.color_range;
+    rect.style["background-image"] = `linear-gradient(${c2}, ${c1})`;
+    rect.style["border-radius"] = "1px";
+    item.appendChild(rect);
+
+    const value_bottom = document.createElement("div");
+    value_bottom.classList.add("legend-range");
+    value_bottom.appendChild(document.createTextNode(v1))
+    item.appendChild(value_bottom);
+
+
+    div.appendChild(item);
+
+    return div;
+}
+
+function create_legend_entry(entry) {
+    if (entry.variable === "discrete")
+        return create_discrete_legend_entry(entry)
+    else if (entry.variable === "continuous")
+        return create_continuous_legend_entry(entry)
+}
 
 function create_svg_element(name, attrs={}) {
     const element = document.createElementNS("http://www.w3.org/2000/svg", name);

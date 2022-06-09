@@ -1,5 +1,6 @@
 // Handle gui events.  
-import { view, get_tid, menus, coordinates, reset_view, show_minimap, show_help }
+import { view, get_tid, menus, coordinates, reset_view, 
+         on_drawer_change, show_minimap, show_help }
     from "./gui.js";
 import { zoom_around, zoom_aligned } from "./zoom.js";
 import { move_minimap_view } from "./minimap.js";
@@ -78,6 +79,11 @@ function on_keydown(event) {
     }
     else if (key === "d")
         view.download.svg();
+    else if (key == "o") {
+        view.drawer.name = view.drawer.type === "rect" 
+            ? "CircFaces" : "RectFaces";
+        on_drawer_change()
+    }
     else if (key === "a")
         view.aligned.zoom = !view.aligned.zoom;
     else if (key === "+") {
@@ -134,8 +140,10 @@ function get_event_zoom(event) {
     if (deltaX !== 0) {
         zoom_in = deltaX < 0;
         do_zoom.y = false;
-    } else
+    } else {
         zoom_in = deltaY < 0;
+        do_zoom.x = false;
+    }
 
     return [ zoom_in, do_zoom ]
 }

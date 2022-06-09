@@ -101,6 +101,9 @@ class Drawer:
         if self.panel in (2, 3):
             yield from self.draw_aligned_headers()
 
+        if self.panel == -1:
+            yield from self.tree_style.get_legend()
+
         else:
             point = self.xmin, self.ymin
             for it in walk(self.tree):

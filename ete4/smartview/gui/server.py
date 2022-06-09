@@ -410,6 +410,18 @@ def init_timer(fn):
 
 def load_tree(tree_id):
     "Add tree to app.trees and initialize it if not there, and return it"
+    def initialize_tree(tree):
+        tree.style = TreeStyle()
+
+        # Layout pre-render
+        for layouts in tree.layouts.values():
+            for layout in layouts:
+                if layout.active:
+                    layout.set_tree_style(tree.tree, tree.style)
+
+        tree.initialized = True
+
+
     try:
         tid, subtree = get_tid(tree_id)
         tree = app.trees[int(tid)]
@@ -418,15 +430,7 @@ def load_tree(tree_id):
             t = gdn.get_node(tree.tree, subtree)
             # Reinitialize if layouts have to be reapplied
             if not tree.initialized:
-                tree.style = TreeStyle()
-
-                # Layout pre-render
-                for layouts in tree.layouts.values():
-                    for layout in layouts:
-                        if layout.active:
-                            layout.set_tree_style(tree.tree, tree.style)
-
-                tree.initialized = True
+                initialize_tree(tree)
 
                 for node in t.traverse():
                     node.is_initialized = False
@@ -443,6 +447,7 @@ def load_tree(tree_id):
             if tree.style.ultrametric:
                 tree.tree.convert_to_ultrametric()
                 gdn.standardize(tree.tree)
+            initialize_tree(tree)
             return gdn.get_node(tree.tree, subtree)
 
     except (AssertionError, IndexError):

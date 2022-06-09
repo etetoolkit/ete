@@ -39,6 +39,9 @@ function getElementToDownload() {
     // Remove foreground nodeboxes for faster rendering
     // (Background nodes not excluded as they are purposely styled)
     Array.from(element.getElementsByClassName("fg_node")).forEach(e => e.remove());
+
+    // Add legend
+    element.appendChild(div_legend.cloneNode(true));
     return element;
 }
 
@@ -95,6 +98,34 @@ function download_pdf() {
         if (view.aligned.x > 0)
             addPixiBackground()
     };
+
+    function addLegend() {
+        const legend = toDownload.select(".legend");
+
+        previousWidth += 15
+        let y = 50;
+        const title = legend.select(".legend-title").text();
+        doc.text(title, previousWidth, 10);
+        [...legend.selectAll(".lgnd-entry")].forEach(el => {
+            const clone = select(el);
+            const circle = clone.select("circle");
+            doc.addSVG(circle.node(), previousWidth, y - 1.5);
+
+            const title = clone.select(".form-check-label > *").node();
+            doc.text(title.text, previousWidth + 20, y);
+
+            const description = clone.select(".lgnd-entry-description");
+            const [conservation, descText] = description.text().trim()
+                .split("                    ");
+            doc.text(conservation, previousWidth + 20, y + 15);
+            doc.text(descText, previousWidth + 20, y + 30, {
+                width: 130,
+                height: 50,
+            });
+
+            y += 80;
+        });
+    }
     
     const element = getElementToDownload();
     const box = div_viz.getBoundingClientRect();

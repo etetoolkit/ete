@@ -1452,3 +1452,54 @@ class ImgFace(RectFace):
 
     def draw(self, drawer):
         yield draw_img(self._box, self.content)
+
+
+class LegendFace(Face):
+
+    def __init__(self,
+            colormap,
+            title, 
+            min_fsize=6, max_fsize=15, ftype='sans-serif',
+            padding_x=0, padding_y=0):
+
+        Face.__init__(self, name=title,
+                padding_x=padding_x, padding_y=padding_y)
+
+        self._content = True
+        self.title = title
+        self.min_fsize = min_fsize
+        self.max_fsize = max_fsize
+        self._fsize = max_fsize
+        self.ftype = ftype
+
+    def __name__(self):
+        return "LegendFace"
+
+    def draw(self, drawer):
+        self._check_own_variables()
+
+        style = {'fill': self.color, 'opacity': self.opacity}
+
+        x, y, dx, dy = self._box
+        zx, zy = self.zoom
+
+        entry_h = min(15 / zy, dy / (len(self.colormap.keys()) + 2))
+
+        title_box = Box(x, y + 5, dx, entry_h)
+        text_style = {
+            'max_fsize': self.compute_fsize(title_box.dx, title_box.dy, zx, zy),
+            'text_anchor': 'middle',
+            'ftype': f'{self.ftype}, sans-serif', # default sans-serif
+            }
+
+        yield draw_text(title_box,
+                self.title,
+                style=text_style)
+
+        entry_y = y + 2 * entry_h
+        for value, color in self.colormap.items():
+            text_box = Box(x, entry_y, dx, entry_h)
+            yield draw_text(text_box,
+                    value,
+                    style=text_style)
+            ty += entry_h
