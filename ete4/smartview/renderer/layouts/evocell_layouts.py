@@ -23,7 +23,7 @@ class LayoutHumanOGs(TreeLayout):
 
 class LayoutUCSC(TreeLayout):
     def __init__(self, name="UCSC", column=5, 
-                 nodecolor="#3f8c3f", nodesize=5,
+                 nodecolor="#800000", nodesize=5,
                  textcolor="#c43b5d"):
         super().__init__(name)
         self.aligned_faces = True
@@ -33,10 +33,22 @@ class LayoutUCSC(TreeLayout):
         self.textcolor = textcolor
 
     def set_node_style(self, node):
-        if node.is_leaf():
+        # if node.is_leaf():
+        #     if node.props.get('UCSC'):
+        #         ucsc = node.props.get('UCSC')
+        #         ucsc_face = TextFace(ucsc, color=self.textcolor)
+        #         node.add_face(ucsc_face, column=self.column, position="aligned")
+        #         node.sm_style["fgcolor"] = self.nodecolor
+        #         node.sm_style["size"] = self.nodesize
+        
+         if node.is_leaf():
             if node.props.get('UCSC'):
+
                 ucsc = node.props.get('UCSC')
                 ucsc_face = TextFace(ucsc, color=self.textcolor)
                 node.add_face(ucsc_face, column=self.column, position="aligned")
-                node.sm_style["fgcolor"] = self.nodecolor
-                node.sm_style["size"] = self.nodesize
+                node.sm_style["bgcolor"] = self.nodecolor # highligh clade
+                while (node):
+                    node = node.up
+                    if node:
+                        node.sm_style["hz_line_width"] = self.nodesize
