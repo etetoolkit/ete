@@ -51,25 +51,27 @@ ITERABLE_TYPES = set([list, set, tuple, frozenset])
 _ILEGAL_NEWICK_CHARS = ":;(),\[\]\t\n\r="
 _NON_PRINTABLE_CHARS_RE = "[\x00-\x1f]+"
 
+_JPLACE_NODE_ID_RE = "\{[^():,;]+\}"
 _NHX_RE = "\[&&NHX:[^\]]*\]"
 _FLOAT_RE = "\s*[+-]?\d+\.?\d*(?:[eE][-+]?\d+)?\s*"
-#_FLOAT_RE = "[+-]?\d+\.?\d*"
-#_NAME_RE = "[^():,;\[\]]+"
+# _FLOAT_RE = "[+-]?\d+\.?\d*"
+# _NAME_RE = "[^():,;\[\]]+"
 _NAME_RE = "[^():,;]+?"
 
 # thanks to: http://stackoverflow.com/a/29452781/1006828
 _QUOTED_TEXT_RE = r"""((?=["'])(?:"[^"\\]*(?:\\[\s\S][^"\\]*)*"|'[^'\\]*(?:\\[\s\S][^'\\]*)*'))"""
-#_QUOTED_TEXT_RE = r"""["'](?:(?<=")[^"\\]*(?s:\\.[^"\\]*)*"|(?<=')[^'\\]*(?s:\\.[^'\\]*)*')""]"]"""
-#_QUOTED_TEXT_RE = r"""(?=["'])(?:"[^"\\]*(?:\\[\s\S][^"\\]*)*"|'[^'\\]*(?:\\[\s\S][^'\\]*)*')]"]")"]"""
+# _QUOTED_TEXT_RE = r"""["'](?:(?<=")[^"\\]*(?s:\\.[^"\\]*)*"|(?<=')[^'\\]*(?s:\\.[^'\\]*)*')""]"]"""
+# _QUOTED_TEXT_RE = r"""(?=["'])(?:"[^"\\]*(?:\\[\s\S][^"\\]*)*"|'[^'\\]*(?:\\[\s\S][^'\\]*)*')]"]")"]"""
 
-_QUOTED_TEXT_PREFIX='ete3_quotref_'
+_QUOTED_TEXT_PREFIX = 'ete3_quotref_'
 
 DEFAULT_DIST = 1.0
 DEFAULT_NAME = ''
 DEFAULT_SUPPORT = 1.0
 FLOAT_FORMATTER = "%0.6g"
-#DIST_FORMATTER = ":"+FLOAT_FORMATTER
+# DIST_FORMATTER = ":"+FLOAT_FORMATTER
 NAME_FORMATTER = "%s"
+
 
 def set_float_format(formatter):
     ''' Set the conversion format used to represent float distances and support
@@ -85,7 +87,8 @@ def set_float_format(formatter):
     '''
     global FLOAT_FORMATTER
     FLOAT_FORMATTER = formatter
-    #DIST_FORMATTER = ":"+FLOAT_FORMATTER
+    # DIST_FORMATTER = ":"+FLOAT_FORMATTER
+
 
 # Allowed formats. This table is used to read and write newick using
 # different convenctions. You can also add your own formats in an easy way.
@@ -119,17 +122,22 @@ def set_float_format(formatter):
 # Format 9 = (,(,(,)));
 
 NW_FORMAT = {
-  0: [['name', str, True],  ["dist", float, True],    ['support', float, True],   ["dist", float, True]], # Flexible with support
-  1: [['name', str, True],  ["dist", float, True],    ['name', str, True],      ["dist", float, True]], # Flexible with internal node names
-  2: [['name', str, False], ["dist", float, False],   ['support', float, False],  ["dist", float, False]],# Strict with support values
-  3: [['name', str, False], ["dist", float, False],   ['name', str, False],     ["dist", float, False]], # Strict with internal node names
-  4: [['name', str, False], ["dist", float, False],   [None, None, False],        [None, None, False]],
-  5: [['name', str, False], ["dist", float, False],   [None, None, False],        ["dist", float, False]],
-  6: [['name', str, False], [None, None, False],      [None, None, False],        ["dist", float, False]],
-  7: [['name', str, False], ["dist", float, False],   ["name", str, False],       [None, None, False]],
-  8: [['name', str, False], [None, None, False],      ["name", str, False],       [None, None, False]],
-  9: [['name', str, False], [None, None, False],      [None, None, False],        [None, None, False]], # Only topology with node names
-  100: [[None, None, False],  [None, None, False],      [None, None, False],        [None, None, False]] # Only Topology
+    0: [['name', str, True], ["dist", float, True], ['support', float, True], ["dist", float, True]],
+    # Flexible with support
+    1: [['name', str, True], ["dist", float, True], ['name', str, True], ["dist", float, True]],
+    # Flexible with internal node names
+    2: [['name', str, False], ["dist", float, False], ['support', float, False], ["dist", float, False]],
+    # Strict with support values
+    3: [['name', str, False], ["dist", float, False], ['name', str, False], ["dist", float, False]],
+    # Strict with internal node names
+    4: [['name', str, False], ["dist", float, False], [None, None, False], [None, None, False]],
+    5: [['name', str, False], ["dist", float, False], [None, None, False], ["dist", float, False]],
+    6: [['name', str, False], [None, None, False], [None, None, False], ["dist", float, False]],
+    7: [['name', str, False], ["dist", float, False], ["name", str, False], [None, None, False]],
+    8: [['name', str, False], [None, None, False], ["name", str, False], [None, None, False]],
+    9: [['name', str, False], [None, None, False], [None, None, False], [None, None, False]],
+    # Only topology with node names
+    100: [[None, None, False], [None, None, False], [None, None, False], [None, None, False]]  # Only Topology
 }
 
 
@@ -141,14 +149,14 @@ def format_node(node, node_type, format, dist_formatter=None,
     if name_formatter is None: name_formatter = NAME_FORMATTER
 
     if node_type == "leaf":
-        container1 = NW_FORMAT[format][0][0] # name
-        container2 = NW_FORMAT[format][1][0] # dists
+        container1 = NW_FORMAT[format][0][0]  # name
+        container2 = NW_FORMAT[format][1][0]  # dists
         converterFn1 = NW_FORMAT[format][0][1]
         converterFn2 = NW_FORMAT[format][1][1]
         flexible1 = NW_FORMAT[format][0][2]
     else:
-        container1 = NW_FORMAT[format][2][0] #support/name
-        container2 = NW_FORMAT[format][3][0] #dist
+        container1 = NW_FORMAT[format][2][0]  # support/name
+        container2 = NW_FORMAT[format][3][0]  # dist
         converterFn1 = NW_FORMAT[format][2][1]
         converterFn2 = NW_FORMAT[format][3][1]
         flexible1 = NW_FORMAT[format][2][2]
@@ -156,7 +164,7 @@ def format_node(node, node_type, format, dist_formatter=None,
     if converterFn1 == str:
         try:
             if not quoted_names:
-                FIRST_PART = re.sub("["+_ILEGAL_NEWICK_CHARS+"]", "_", \
+                FIRST_PART = re.sub("[" + _ILEGAL_NEWICK_CHARS + "]", "_", \
                                     str(getattr(node, container1)))
             else:
                 FIRST_PART = str(getattr(node, container1))
@@ -166,35 +174,35 @@ def format_node(node, node_type, format, dist_formatter=None,
         except (AttributeError, TypeError):
             FIRST_PART = "?"
 
-        FIRST_PART = name_formatter %FIRST_PART
+        FIRST_PART = name_formatter % FIRST_PART
         if quoted_names:
-            #FIRST_PART = '"%s"' %FIRST_PART.decode('string_escape').replace('"', '\\"')
-            FIRST_PART = '"%s"' %FIRST_PART
+            # FIRST_PART = '"%s"' %FIRST_PART.decode('string_escape').replace('"', '\\"')
+            FIRST_PART = '"%s"' % FIRST_PART
 
     elif converterFn1 is None:
         FIRST_PART = ""
     else:
         try:
-            FIRST_PART = support_formatter %(converterFn2(getattr(node, container1)))
+            FIRST_PART = support_formatter % (converterFn2(getattr(node, container1)))
         except (ValueError, TypeError):
             FIRST_PART = "?"
 
     if converterFn2 == str:
         try:
-            SECOND_PART = ":"+re.sub("["+_ILEGAL_NEWICK_CHARS+"]", "_", \
-                                  str(getattr(node, container2)))
+            SECOND_PART = ":" + re.sub("[" + _ILEGAL_NEWICK_CHARS + "]", "_", \
+                                       str(getattr(node, container2)))
         except (ValueError, TypeError):
             SECOND_PART = ":?"
     elif converterFn2 is None:
         SECOND_PART = ""
     else:
         try:
-            #SECOND_PART = ":%0.6f" %(converterFn2(getattr(node, container2)))
-            SECOND_PART = ":%s" %(dist_formatter %(converterFn2(getattr(node, container2))))
+            # SECOND_PART = ":%0.6f" %(converterFn2(getattr(node, container2)))
+            SECOND_PART = ":%s" % (dist_formatter % (converterFn2(getattr(node, container2))))
         except (ValueError, TypeError):
             SECOND_PART = ":?"
 
-    return "%s%s" %(FIRST_PART, SECOND_PART)
+    return "%s%s" % (FIRST_PART, SECOND_PART)
 
 
 def print_supported_formats():
@@ -203,15 +211,18 @@ def print_supported_formats():
     t.populate(4, "ABCDEFGHI")
     print(t)
     for f in NW_FORMAT:
-        print("Format", f,"=", write_newick(t, features=None, format=f))
+        print("Format", f, "=", write_newick(t, features=None, format=f))
+
 
 class NewickError(Exception):
     """Exception class designed for NewickIO errors."""
+
     def __init__(self, value):
         if value is None:
             value = ''
         value += "\nYou may want to check other newick loading flags like 'format' or 'quoted_node_names'."
         Exception.__init__(self, value)
+
 
 def read_newick(newick, root_node=None, format=0, quoted_names=False):
     """ Reads a newick tree from either a string or a file, and returns
@@ -239,7 +250,7 @@ def read_newick(newick, root_node=None, format=0, quoted_names=False):
         # "stat: path too long for Windows".  This is described in issue #258
         try:
             file_exists = os.path.exists(newick)
-        except ValueError:      # failed to stat
+        except ValueError:  # failed to stat
             file_exists = False
 
         # if newick refers to a file, read it from file; otherwise, regard it as a Newick content string.
@@ -254,11 +265,10 @@ def read_newick(newick, root_node=None, format=0, quoted_names=False):
         else:
             nw = newick
 
-
         matcher = compile_matchers(formatcode=format)
         nw = nw.strip()
         if not nw.startswith('(') and nw.endswith(';'):
-            #return _read_node_data(nw[:-1], root_node, "single", matcher, format)
+            # return _read_node_data(nw[:-1], root_node, "single", matcher, format)
             return _read_newick_from_string(nw, root_node, matcher, format, quoted_names)
         elif not nw.startswith('(') or not nw.endswith(';'):
             raise NewickError('Unexisting tree file or Malformed newick tree structure.')
@@ -267,6 +277,7 @@ def read_newick(newick, root_node=None, format=0, quoted_names=False):
 
     else:
         raise NewickError("'newick' argument must be either a filename or a newick string.")
+
 
 def _read_newick_from_string(nw, root_node, matcher, formatcode, quoted_names):
     """ Reads a newick string in the New Hampshire format. """
@@ -278,12 +289,12 @@ def _read_newick_from_string(nw, root_node, matcher, formatcode, quoted_names):
         counter = 0
         for token in re.split(_QUOTED_TEXT_RE, nw):
             counter += 1
-            if counter % 2 == 1 : # normal newick tree structure data
+            if counter % 2 == 1:  # normal newick tree structure data
                 unquoted_nw += token
-            else: # quoted text, add to dictionary and replace with reference
-                quoted_ref_id= _QUOTED_TEXT_PREFIX + str(int(counter/2))
+            else:  # quoted text, add to dictionary and replace with reference
+                quoted_ref_id = _QUOTED_TEXT_PREFIX + str(int(counter / 2))
                 unquoted_nw += quoted_ref_id
-                quoted_map[quoted_ref_id]=token[1:-1]  # without the quotes
+                quoted_map[quoted_ref_id] = token[1:-1]  # without the quotes
         nw = unquoted_nw
 
     if not nw.startswith('(') and nw.endswith(';'):
@@ -316,27 +327,27 @@ def _read_newick_from_string(nw, root_node, matcher, formatcode, quoted_names):
         subchunks = [ch.strip() for ch in chunk.split(",")]
         # We should expect that the chunk finished with a comma (if next chunk
         # is an internal sister node) or a subchunk containing closing parenthesis until the end of the tree.
-        #[leaf, leaf, '']
-        #[leaf, leaf, ')))', leaf, leaf, '']
-        #[leaf, leaf, ')))', leaf, leaf, '']
-        #[leaf, leaf, ')))', leaf), leaf, 'leaf);']
+        # [leaf, leaf, '']
+        # [leaf, leaf, ')))', leaf, leaf, '']
+        # [leaf, leaf, ')))', leaf, leaf, '']
+        # [leaf, leaf, ')))', leaf), leaf, 'leaf);']
         if subchunks[-1] != '' and not subchunks[-1].endswith(';'):
-            raise NewickError('Broken newick structure at: %s' %chunk)
+            raise NewickError('Broken newick structure at: %s' % chunk)
 
         # lets process the subchunks. Every closing parenthesis will close a
         # node and go up one level.
         for i, leaf in enumerate(subchunks):
             if leaf.strip() == '' and i == len(subchunks) - 1:
-                continue # "blah blah ,( blah blah"
+                continue  # "blah blah ,( blah blah"
             closing_nodes = leaf.split(")")
 
             # first part after splitting by ) always contain leaf info
             _read_node_data(closing_nodes[0], current_parent, "leaf", matcher, formatcode)
 
             # next contain closing nodes and data about the internal nodes.
-            if len(closing_nodes)>1:
+            if len(closing_nodes) > 1:
                 for closing_internal in closing_nodes[1:]:
-                    closing_internal =  closing_internal.rstrip(";")
+                    closing_internal = closing_internal.rstrip(";")
                     # read internal node data and go up one level
                     _read_node_data(closing_internal, current_parent, "internal", matcher, formatcode)
                     current_parent = current_parent.up
@@ -349,6 +360,7 @@ def _read_newick_from_string(nw, root_node, matcher, formatcode, quoted_names):
 
     return root_node
 
+
 def _parse_extra_features(node, NHX_string):
     """ Reads node's extra data form its NHX string. NHX uses this
     format:  [&&NHX:prop1=value1:prop2=value2] """
@@ -358,8 +370,20 @@ def _parse_extra_features(node, NHX_string):
         try:
             pname, pvalue = field.split("=")
         except ValueError as e:
-            raise NewickError('Invalid NHX format %s' %field)
+            raise NewickError('Invalid NHX format %s' % field)
         node.add_feature(pname, pvalue)
+
+
+def _parse_jplace_nodeid(node, jplace_node_id):
+    """
+    set jplace_node_id as an extra feature
+    """
+    # just removes the left { and right }
+    try:
+        node.add_feature('jplace_node_id', int(jplace_node_id[1:-1]))
+    except:
+        raise NewickError('Invalid jplace node_id format (should be integers) : %s' % (jplace_node_id[1:-1]))
+
 
 def compile_matchers(formatcode):
     matchers = {}
@@ -380,16 +404,16 @@ def compile_matchers(formatcode):
             flexible2 = NW_FORMAT[formatcode][3][2]
 
         if converterFn1 == str:
-            FIRST_MATCH = "("+_NAME_RE+")"
+            FIRST_MATCH = "(" + _NAME_RE + ")"
         elif converterFn1 == float:
-            FIRST_MATCH = "("+_FLOAT_RE+")"
+            FIRST_MATCH = "(" + _FLOAT_RE + ")"
         elif converterFn1 is None:
             FIRST_MATCH = '()'
 
         if converterFn2 == str:
-            SECOND_MATCH = "(:"+_NAME_RE+")"
+            SECOND_MATCH = "(:" + _NAME_RE + ")"
         elif converterFn2 == float:
-            SECOND_MATCH = "(:"+_FLOAT_RE+")"
+            SECOND_MATCH = "(:" + _FLOAT_RE + ")"
         elif converterFn2 is None:
             SECOND_MATCH = '()'
 
@@ -398,12 +422,12 @@ def compile_matchers(formatcode):
         if flexible2:
             SECOND_MATCH += "?"
 
-
-        matcher_str= '^\s*%s\s*%s\s*(%s)?\s*$' % (FIRST_MATCH, SECOND_MATCH, _NHX_RE)
+        matcher_str = '^\s*%s\s*%s\s*(%s)?\s*(%s)?\s*$' % (FIRST_MATCH, SECOND_MATCH, _NHX_RE, _JPLACE_NODE_ID_RE)
         compiled_matcher = re.compile(matcher_str)
         matchers[node_type] = [container1, container2, converterFn1, converterFn2, compiled_matcher]
 
     return matchers
+
 
 def _read_node_data(subnw, current_node, node_type, matcher, formatcode):
     """ Reads a leaf node from a subpart of the original newick
@@ -429,8 +453,8 @@ def _read_node_data(subnw, current_node, node_type, matcher, formatcode):
     if data:
         data = data.groups()
         # This prevents ignoring errors even in flexible nodes:
-        if subnw and data[0] is None and data[1] is None and data[2] is None:
-            raise NewickError("Unexpected newick format '%s'" %subnw)
+        if subnw and data[0] is None and data[1] is None and data[2] is None and data[3] is None:
+            raise NewickError("Unexpected newick format '%s'" % subnw)
 
         if data[0] is not None and data[0] != '':
             node.add_feature(container1, converterFn1(data[0].strip()))
@@ -441,9 +465,15 @@ def _read_node_data(subnw, current_node, node_type, matcher, formatcode):
         if data[2] is not None \
                 and data[2].startswith("[&&NHX"):
             _parse_extra_features(node, data[2])
+
+        if data[3] is not None \
+                and data[3].startswith("{"):
+            _parse_jplace_nodeid(node, data[3])
+
     else:
-        raise NewickError("Unexpected newick format '%s' " %subnw[0:50])
+        raise NewickError("Unexpected newick format '%s' " % subnw[0:50])
     return
+
 
 def write_newick(rootnode, features=None, format=1, format_root_node=True,
                  is_leaf_fn=None, dist_formatter=None, support_formatter=None,
@@ -479,6 +509,7 @@ def write_newick(rootnode, features=None, format=1, format_root_node=True,
     newick.append(";")
     return ''.join(newick)
 
+
 def _get_features_string(self, features=None):
     """ Generates the extended newick string NHX with extra data about
     a node. """
@@ -494,18 +525,18 @@ def _get_features_string(self, features=None):
             if type(raw) in ITERABLE_TYPES:
                 raw = '|'.join(map(str, raw))
             elif type(raw) == dict:
-                raw = '|'.join(map(lambda x,y: "%s-%s" %(x, y), six.iteritems(raw)))
+                raw = '|'.join(map(lambda x, y: "%s-%s" % (x, y), six.iteritems(raw)))
             elif type(raw) == str:
                 pass
             else:
                 raw = str(raw)
 
-            value = re.sub("["+_ILEGAL_NEWICK_CHARS+"]", "_", \
-                             raw)
+            value = re.sub("[" + _ILEGAL_NEWICK_CHARS + "]", "_", \
+                           raw)
             if string != "":
-                string +=":"
-            string +="%s=%s"  %(pr, str(value))
+                string += ":"
+            string += "%s=%s" % (pr, str(value))
     if string != "":
-        string = "[&&NHX:"+string+"]"
+        string = "[&&NHX:" + string + "]"
 
     return string

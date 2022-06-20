@@ -104,6 +104,44 @@ class Test_Coretype_Tree(unittest.TestCase):
         # Node instance repr
         self.assertTrue(Tree().__repr__().startswith('Tree node'))
 
+        # Test parsing of jplace newick format where {jplace_node_id} information is right after length
+        # unrooted, internal nodes labels
+        t = Tree("(((A:1.1{0},B:1.2{1})I:3.0{3},C:2.0{4})J:0.5{5},(D:0.7{6},E:0.8{7})K:0.6{8},F:0.2{9});", format=1)
+        self.assertEqual(t.search_nodes(name="C").pop().dist, 2.0)
+        self.assertEqual(t.search_nodes(name="C").pop().jplace_node_id, 4)
+        self.assertEqual(t.search_nodes(name="I").pop().dist, 3.0)
+        self.assertEqual(t.search_nodes(name="I").pop().jplace_node_id, 3)
+        # rooted, internal nodes labels
+        t = Tree(
+            "((((A:1.1{0},B:1.2{1})I:3.0{3},C:2.0{4})J:0.5{5},(D:0.7{6},E:0.8{7})K:0.6{8})L:1.0{9},F:0.2{10})R:0.1{11};",
+            format=1)
+        self.assertEqual(t.search_nodes(name="C").pop().dist, 2.0)
+        self.assertEqual(t.search_nodes(name="C").pop().jplace_node_id, 4)
+        self.assertEqual(t.search_nodes(name="L").pop().dist, 1.0)
+        self.assertEqual(t.search_nodes(name="L").pop().jplace_node_id, 9)
+        self.assertEqual(t.search_nodes(name="R").pop().dist, 0.1)
+        self.assertEqual(t.search_nodes(name="R").pop().jplace_node_id, 11)
+        # unrooted, support labels
+        t = Tree("(((A:1.1{0},B:1.2{1})0.90:3.0{3},C:2.0{4})0.70:0.5{5},(D:0.7{6},E:0.8{7})0.05:0.6{8},F:0.2{9});", format=0)
+        self.assertEqual(t.search_nodes(name="C").pop().dist, 2.0)
+        self.assertEqual(t.search_nodes(name="C").pop().jplace_node_id, 4)
+        self.assertEqual(t.search_nodes(name="E").pop().up.dist, 0.6)
+        self.assertEqual(t.search_nodes(name="E").pop().up.jplace_node_id, 8)
+        self.assertEqual(t.search_nodes(name="E").pop().up.support, 0.05)
+        # rooted, support labels
+        t = Tree(
+            "((((A:1.1{0},B:1.2{1})0.90:3.0{3},C:2.0{4})0.70:0.5{5},(D:0.7{6},E:0.8{7})0.05:0.6{8})0.25:1.0{9},F:0.2{10})0.2:0.1{11};",
+            format=0)
+        self.assertEqual(t.search_nodes(name="C").pop().dist, 2.0)
+        self.assertEqual(t.search_nodes(name="C").pop().jplace_node_id, 4)
+        self.assertEqual(t.search_nodes(name="E").pop().up.dist, 0.6)
+        self.assertEqual(t.search_nodes(name="E").pop().up.jplace_node_id, 8)
+        self.assertEqual(t.search_nodes(name="E").pop().up.support, 0.05)
+        self.assertEqual(t.search_nodes(name="F").pop().up.dist, 0.1)
+        self.assertEqual(t.search_nodes(name="F").pop().up.jplace_node_id, 11)
+        self.assertEqual(t.search_nodes(name="F").pop().up.support, 0.2)
+
+
     def test_concat_trees(self):
         t1 = Tree('((A, B), C);')
         t2 = Tree('((a, b), c);')
