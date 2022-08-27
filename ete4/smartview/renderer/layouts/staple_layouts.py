@@ -66,7 +66,6 @@ class LayoutBarplot(LayoutPlot):
                 color_prop=color_prop, position=position, column=column,
                 padding_x=padding_x)
 
-
     def set_tree_style(self, tree, tree_style):
         super().set_tree_style(tree, tree_style)
             
