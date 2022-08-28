@@ -749,10 +749,10 @@ def save(scene, imgName, w=None, h=None, dpi=90,\
         scene.render(pp, targetRect, scene.sceneRect(), ratio_mode)
     else:
         targetRect = QRectF(0, 0, w, h)
-        ii= QImage(w, h, QImage.Format_ARGB32)
+        ii= QImage(int(w), int(h), int(QImage.Format_ARGB32))
         ii.fill(QColor(Qt.white).rgb())
-        ii.setDotsPerMeterX(dpi / 0.0254) # Convert inches to meters
-        ii.setDotsPerMeterY(dpi / 0.0254)
+        ii.setDotsPerMeterX(int(dpi / 0.0254)) # Convert inches to meters
+        ii.setDotsPerMeterY(int(dpi / 0.0254))
         pp = QPainter(ii)
         pp.setRenderHint(QPainter.Antialiasing)
         pp.setRenderHint(QPainter.TextAntialiasing)
