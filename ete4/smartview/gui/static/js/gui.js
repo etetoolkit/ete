@@ -535,6 +535,7 @@ function reset_zoom(reset_zx=true, reset_zy=true, reset_za=true) {
         const min_w_h = Math.min(div_tree.offsetWidth, div_tree.offsetHeight);
         view.zoom.x = view.zoom.y = min_w_h / (view.rmin + size.width) / 2;
         view.zoom.a = view.zoom.x;
+        //view.zoom.a = 1;
     }
 }
 

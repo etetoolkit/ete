@@ -1,6 +1,6 @@
 from ....coretype.seqgroup import SeqGroup
 from ..treelayout import TreeLayout
-from ..faces import SeqMotifFace, ScaleFace
+from ..faces import AlignmentFace, SeqMotifFace, ScaleFace
 
 
 __all__ = [ "LayoutAlignment" ]
@@ -47,7 +47,7 @@ class LayoutAlignment(TreeLayout):
         seq = self.get_seq(node)
 
         if seq:
-            seqFace = SeqMotifFace(seq, seq_format=self.format, bgcolor='grey',
+            seqFace = AlignmentFace(seq, seq_format=self.format, bgcolor='grey',
                     width=self.width, height=self.height)
             node.add_face(seqFace, column=self.column, position='aligned',
                     collapsed_only=(not node.is_leaf())) 
