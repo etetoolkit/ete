@@ -407,19 +407,20 @@ def init_timer(fn):
         return return_val
     return wrapper
 
+def initialize_tree_style(tree, ultrametric=False):
+    tree.style = TreeStyle()
+    tree.style.ultrametric = ultrametric
+
+    # Layout pre-render
+    for layouts in tree.layouts.values():
+        for layout in layouts:
+            if layout.active:
+                layout.set_tree_style(tree.tree, tree.style)
+
+    tree.initialized = True
 
 def load_tree(tree_id):
     "Add tree to app.trees and initialize it if not there, and return it"
-    def initialize_tree(tree):
-        tree.style = TreeStyle()
-
-        # Layout pre-render
-        for layouts in tree.layouts.values():
-            for layout in layouts:
-                if layout.active:
-                    layout.set_tree_style(tree.tree, tree.style)
-
-        tree.initialized = True
 
 
     try:
@@ -430,7 +431,7 @@ def load_tree(tree_id):
             t = gdn.get_node(tree.tree, subtree)
             # Reinitialize if layouts have to be reapplied
             if not tree.initialized:
-                initialize_tree(tree)
+                initialize_tree_style(tree)
 
                 for node in t.traverse():
                     node.is_initialized = False
@@ -447,7 +448,7 @@ def load_tree(tree_id):
             if tree.style.ultrametric:
                 tree.tree.convert_to_ultrametric()
                 gdn.standardize(tree.tree)
-            initialize_tree(tree)
+            initialize_tree_style(tree)
             return gdn.get_node(tree.tree, subtree)
 
     except (AssertionError, IndexError):
@@ -1253,6 +1254,7 @@ def update_ultrametric(ultrametric, tid):
         if ultrametric == True:
             tree.tree.convert_to_ultrametric()
             gdn.standardize(tree.tree)
+            initialize_tree_style(tree, ultrametric=True)
         else:
             app.trees.pop(tid, None) # delete from memory
 

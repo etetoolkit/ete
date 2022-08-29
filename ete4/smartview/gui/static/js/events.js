@@ -142,7 +142,7 @@ function get_event_zoom(event) {
         do_zoom.y = false;
     } else {
         zoom_in = deltaY < 0;
-        do_zoom.x = false;
+        //do_zoom.x = false;
     }
 
     return [ zoom_in, do_zoom ]

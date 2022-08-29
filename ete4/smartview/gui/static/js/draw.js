@@ -676,13 +676,25 @@ function create_discrete_legend_entry(entry) {
 }
 
 function create_continuous_legend_entry(entry) {
+    function format_numbers(arr) {
+        return arr.map(num => {
+            num = +num
+            if (num === 0)
+                return num
+
+            const rounded = num < 0.01
+                ? num.toExponential(0)
+                : num.toFixed(3);
+            return rounded ? rounded : num
+        })
+    }
     const div = create_legend_entry_container(entry);
 
     const item = document.createElement("div")
     item.classList.add("legend-item");
     item.style["margin-left"] = "10px";
 
-    const [v1, v2] = entry.value_range;
+    const [v1, v2] = format_numbers(entry.value_range);
     const value_top = document.createElement("div");
     value_top.classList.add("legend-range");
     value_top.appendChild(document.createTextNode(v2))

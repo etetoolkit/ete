@@ -77,6 +77,7 @@ class LayoutPlot(TreeLayout):
         if self.size_prop:
             self.size_range = vals["size"][1:3]
 
+
         if self.color_prop:
             unique = vals["color"][3]
             if len(unique):
@@ -133,7 +134,6 @@ class LayoutBarplot(LayoutPlot):
                 color_prop=color_prop, position=position, column=column,
                 color_gradient=color_gradient, color=color, colors=colors,
                 padding_x=padding_x, scale=scale, legend=legend, active=active)
-
 
     def set_tree_style(self, tree, tree_style):
         super().set_tree_style(tree, tree_style)
