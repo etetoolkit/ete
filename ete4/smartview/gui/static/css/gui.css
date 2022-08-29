@@ -138,7 +138,7 @@ body {
 .legend {
     font-family: sans-serif;
     font-size: 0.8rem;
-    display: block;
+    display: none;
     position: absolute;
     top: 7px;
     right: 7px;

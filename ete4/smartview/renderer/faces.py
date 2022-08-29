@@ -1113,12 +1113,12 @@ class SeqMotifFace(Face):
 
         if self.viewport and len(self.seq):
             vx0, vx1 = self.viewport
-            is_small = ((vx1 - vx0) * zx) / (len(self.seq) / zx) < 3
-            if self.seq_format in [ "seq", "compactseq" ] and is_small:
+            too_small = ((vx1 - vx0) * zx) / (len(self.seq) / zx) < 3
+            if self.seq_format in [ "seq", "compactseq" ] and too_small:
                 self.seq_format = "[]"
                 self.regions = []
                 self.build_regions()
-            if self.seq_format == "[]" and not is_small:
+            if self.seq_format == "[]" and not too_small:
                 self.seq_format = "seq"
                 self.regions = []
                 self.build_regions()
@@ -1372,7 +1372,7 @@ class AlignmentFace(Face):
             yield draw_line(p1, p2, style={'stroke-width': self.gap_linewidth,
                                            'stroke': self.gapcolor})
         vx0, vx1 = self.viewport
-        is_small = ((vx1 - vx0) * zx) / (self.seqlength / zx) < 40
+        too_small = (self.width * zx) / (self.seqlength) < 1
 
         posw = self.poswidth * self.w_scale
         viewport_start = vx0 - self.viewport_margin / zx
@@ -1383,14 +1383,14 @@ class AlignmentFace(Face):
         sm_x0 = x0 if drawer.TYPE == "rect" else 0
         sm_end = self.seqlength - round(max(sm_x0 + w - viewport_end, 0) / posw)
 
-        if is_small or self.seq_format == "[]":
+        if too_small or self.seq_format == "[]":
             for start, end in self.blocks:
                 if end >= sm_start and start <= sm_end:
                     bstart = max(sm_start, start)
                     bend = min(sm_end, end)
                     bx = x0 + bstart * posw
                     by, bh = get_height(bx, y)
-                    box = Box(bx, by, (bend - bstart) * posw, bh)
+                    box = Box(bx, by, (bend + 1 - bstart) * posw, bh)
                     yield [ "pixi-block", box ]
 
         else:

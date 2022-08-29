@@ -15,6 +15,7 @@ async function download_newick(node_id) {
     download(view.tree + ".tree", "data:text/plain;charset=utf-8," + newick);
 }
 
+
 async function download_seqs(node_id) {
     const nid = get_tid() + (node_id ? "," + node_id : "");
     const fasta = await api(`/trees/${nid}/seq`);
@@ -33,6 +34,7 @@ function getElementToDownload() {
         const container = element.querySelector(`#${id} .div_pixi`);
         container.style.top = app.stage._bounds.minY + "px";
         container.style.left = `${-view.aligned.x}px`;
+        container.style.overflow = "hidden";
         container.replaceChild(img, container.children[0]);
     });
     
