@@ -40,11 +40,11 @@ from flask_cors import CORS
 from flask_compress import Compress
 import logging
 
-from ... import Tree
-from .. import TreeStyle, layout_modules
-from ..utils import InvalidUsage, get_random_string
-from ..renderer import nexus, gardening as gdn
-from ..renderer import drawer as drawer_module
+from ete4 import Tree
+from ete4.smartview import TreeStyle, layout_modules
+from ete4.smartview.utils import InvalidUsage, get_random_string
+from ete4.smartview.renderer import nexus, gardening as gdn
+from ete4.smartview.renderer import drawer as drawer_module
 
 
 # call initialize() to fill it up
