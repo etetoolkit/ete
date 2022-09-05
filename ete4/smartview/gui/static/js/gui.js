@@ -113,7 +113,7 @@ const view = {
     tl: {x: null, y: null},  // top-left of the view (in tree coordinates)
     zoom: {
         x: null, y: null, a: null,  // initially chosen depending on the tree size
-        delta: { in: 0.25, out: -0.2 }
+        delta: { in: 0.25, out: -0.2 },
     },
     select_text: false,  // if true, clicking and moving the mouse selects text
 

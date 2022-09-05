@@ -67,7 +67,7 @@ function on_keydown(event) {
     }
     else if (key === "t") {
         view.zoom_sensitivity = view.zoom_sensitivity > 0.5 ?
-            0.1 : 1;
+            0.3 : 1;
         view.zoom.delta.in = 0.25 * view.zoom_sensitivity;
         view.zoom.delta.out = -0.2 * view.zoom_sensitivity;
     }
@@ -133,18 +133,8 @@ function on_keydown(event) {
 
 
 function get_event_zoom(event) {
-    const { deltaX, deltaY } = event;
     const do_zoom = {x: !event.ctrlKey, y: !event.altKey};
-    let zoom_in;
-
-    if (deltaX !== 0) {
-        zoom_in = deltaX < 0;
-        do_zoom.y = false;
-    } else {
-        zoom_in = deltaY < 0;
-        do_zoom.x = false;
-    }
-
+    const zoom_in = event.deltaY < 0;
     return [ zoom_in, do_zoom ]
 }
 

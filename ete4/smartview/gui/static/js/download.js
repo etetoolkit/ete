@@ -28,13 +28,14 @@ function getElementToDownload() {
     const element = div_viz.cloneNode(true);
     // Remove aligned panel grabber
     element.querySelector("#div_aligned_grabber").remove();
+    element.querySelector("#div_aligned").style.overflow = "hidden";
     // Add pixi images to clone (canvas not downloadable)
     Object.entries(apps).forEach(([id, app]) => {
         const img = app.renderer.plugins.extract.image(app.stage);
         const container = element.querySelector(`#${id} .div_pixi`);
         container.style.top = app.stage._bounds.minY + "px";
-        container.style.left = `${-view.aligned.x}px`;
-        container.style.overflow = "hidden";
+        container.style.left = `${app.stage._bounds.minX}px`;
+        container.style.width = "auto";
         container.replaceChild(img, container.children[0]);
     });
     

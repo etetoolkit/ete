@@ -6,14 +6,12 @@ from ..faces import Face, AttrFace, TextFace,\
         CircleFace, RectFace,\
         OutlineFace, AlignLinkFace
 
-from ..draw_helpers import summary
+from ..draw_helpers import summary, Padding
 
 
 __all__ = [ "LayoutLeafName", "LayoutNumberLeaves",
         "LayoutBranchLength", "LayoutBranchSupport",
         "LayoutOutline" ]
-
-Padding = namedtuple('Padding', 'x y')
 
 class LayoutLeafName(TreeLayout):
     def __init__(self, name='Leaf name',

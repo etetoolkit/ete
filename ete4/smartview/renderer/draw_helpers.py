@@ -4,6 +4,8 @@ from math import sin, cos, pi, sqrt, atan2
 Box = namedtuple('Box', 'x y dx dy')  # corner and size of a 2D shape
 SBox = namedtuple('SBox', 'x y dx_min dx_max dy')  # slanted box
 
+Padding = namedtuple('Padding', 'x y')
+
 
 def clip_angles(a1, a2):
     "Return the angles such that a1 to a2 extend at maximum from -pi to pi"
@@ -21,14 +23,14 @@ def is_good_angle_interval(a1, a2):
     return -pi <= a1 < a2 < pi + EPSILON
 
 
-def summary(nodes):
+def summary(nodes, prop="name"):
     "Return a list of names summarizing the given list of nodes"
-    return list(OrderedDict((first_name(node), None) for node in nodes).keys())
+    return list(OrderedDict((first_prop(node, prop), None) for node in nodes).keys())
 
 
-def first_name(tree):
+def first_prop(tree, prop):
     "Return the name of the first node that has a name"
-    return next((node.name for node in tree.traverse('preorder') if node.name), '')
+    return next((node.props.get(prop) for node in tree.traverse('preorder') if node.props.get(prop)), '')
 
 
 def get_xs(box):
