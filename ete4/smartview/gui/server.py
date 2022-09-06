@@ -13,6 +13,7 @@ REST call examples:
 """
 
 import os
+from base64 import base64_decode
 
 # import sys
 # sys.path.insert(0, '..')
@@ -1133,7 +1134,7 @@ def add_tree(data):
         tree = load_tree_from_newick(tid, newick)
     elif bpickle is not None:
         print(bpickle[0:100])
-        tree = pickle.loads(b'' + bpickle)
+        tree = pickle.loads(base64_decode(bpickle))
     else:
         tree = data.get('tree', None)
         if not tree:
