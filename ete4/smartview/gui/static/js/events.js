@@ -146,7 +146,9 @@ function on_wheel(event) {
     if (div_smartview_container.contains(event.target))
         event.preventDefault();
 
-    if (!is_svg(event.target) || g_panel0.contains(event.target))
+    if (!is_svg(event.target) ||
+        g_panel0.contains(event.target) ||
+        !div_viz.contains(event.target))
         return;  // it will be done on the nodes instead
 
 
