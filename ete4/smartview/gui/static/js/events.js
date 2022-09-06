@@ -143,13 +143,12 @@ function get_event_zoom(event) {
 function on_wheel(event) {
     const g_panel0 = div_tree.children[0].children[0];
 
-    if ((!div_tree === event.target) &&
-        (!is_svg(event.target) || g_panel0.contains(event.target))) {
-        console.log(event.target)
-        return;  // it will be done on the nodes instead
-    }
+    if (div_tree === event.target)
+        event.preventDefault();
 
-    event.preventDefault();
+    if (!is_svg(event.target) || g_panel0.contains(event.target))
+        return;  // it will be done on the nodes instead
+
 
 
     const point = {x: event.pageX, y: event.pageY};
