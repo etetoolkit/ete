@@ -2,9 +2,12 @@ from ..treelayout import TreeLayout
 from ..faces import TextFace
 
 from ..draw_helpers import summary, Padding
+from .evol_events_layouts import LayoutEvolEvents
+from .ncbi_taxonomy_layouts import LayoutLastCommonAncestor
 
 
-__all__ = [ "LayoutScientificName", "LayoutProteinName", "LayoutAlias" ]
+__all__ = [ "LayoutScientificName", "LayoutProteinName", "LayoutAlias",
+            "LayoutEvolEvents", "LayoutLastCommonAncestor"]
 
 
 class _LayoutNodeProperty(TreeLayout):
