@@ -1098,7 +1098,8 @@ def get_trees_from_form():
         return [{
             'id': form.get('id'),
             'name': form['name'], 
-            'newick': form['newick'],
+            'newick': form.get('newick', None),
+            'pickle': form.get('pickle', None),
             'description': form.get('description', ''),
             'layouts': form.get('layouts', [])
             }]
