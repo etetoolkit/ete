@@ -1129,11 +1129,10 @@ def add_tree(data):
 
     del_tree(tid)  # delete if there is a tree with same id
 
-    if newick:
+    if newick is not None:
         tree = load_tree_from_newick(tid, newick)
-    elif pickle:
-        print(bpickle)
-        tree = pickle.loads(bytes(bpickle, 'utf-8'))
+    elif bpickle is not None:
+        tree = pickle.loads(b'' + bpickle)
     else:
         tree = data.get('tree', None)
         if not tree:

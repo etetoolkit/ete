@@ -18,7 +18,7 @@ try:
             if not line.startswith('#'):
                 info = line.split('\t')
                 sciName2color[(info[0])] = info[3].strip()
-                taxid2color[int(info[1])]True = info[3].strip()
+                taxid2color[int(info[1])] = info[3].strip()
 except:
     pass
 
