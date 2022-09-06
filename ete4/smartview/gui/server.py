@@ -1132,6 +1132,7 @@ def add_tree(data):
     if newick:
         tree = load_tree_from_newick(tid, newick)
     elif pickle:
+        print(pickle)
         tree = pickle.loads(bpickle)
     else:
         tree = data.get('tree', None)
