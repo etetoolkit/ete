@@ -1132,6 +1132,7 @@ def add_tree(data):
     if newick is not None:
         tree = load_tree_from_newick(tid, newick)
     elif bpickle is not None:
+        print(bpickle[0:100])
         tree = pickle.loads(b'' + bpickle)
     else:
         tree = data.get('tree', None)
