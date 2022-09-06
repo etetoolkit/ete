@@ -12,6 +12,7 @@ REST call examples:
   DELETE /users/{id}  Delete user by "id"
 """
 
+import io
 import os
 
 # import sys
@@ -1133,7 +1134,7 @@ def add_tree(data):
         tree = load_tree_from_newick(tid, newick)
     elif pickle:
         print(bpickle)
-        tree = pickle.loads(bpickle)
+        tree = pickle.loads(io.BytesIO(bpickle))
     else:
         tree = data.get('tree', None)
         if not tree:
