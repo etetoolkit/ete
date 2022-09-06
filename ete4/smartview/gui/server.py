@@ -1076,7 +1076,7 @@ def add_trees_from_request():
         trees = get_trees_from_form()
     else:
         data = get_fields(required=['name', 'newick'],  # id
-                          valid_extra=['layouts', 'description'])
+                          valid_extra=['layouts', 'description', 'pickle'])
         trees = [data]
 
     return {data['name']: add_tree(data) for data in trees}
@@ -1121,6 +1121,7 @@ def add_tree(data):
     tid = int(data['id'])
     name = data['name']
     newick = data.get('newick', None)
+    bpickle = data.get('pickle', None)
     layouts = data.get('layouts', [])
     if type(layouts) == str:
         layouts = layouts.split(",")
@@ -1129,6 +1130,8 @@ def add_tree(data):
 
     if newick:
         tree = load_tree_from_newick(tid, newick)
+    elif pickle:
+        tree = pickle.loads(bpickle)
     else:
         tree = data.get('tree', None)
         if not tree:
