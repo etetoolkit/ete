@@ -1134,7 +1134,7 @@ def add_tree(data):
         tree = load_tree_from_newick(tid, newick)
     elif bpickle is not None:
         tree = pickle.loads(b64decode(bpickle))
-        gdn.standardize(tree.tree)
+        gdn.standardize(tree)
     else:
         tree = data.get('tree', None)
         if not tree:
