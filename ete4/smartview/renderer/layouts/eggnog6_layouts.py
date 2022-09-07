@@ -99,3 +99,34 @@ class LayoutAlias(_LayoutNodeProperty):
                 summarize=summarize, color=color, ftype=ftype,
                 min_fsize=min_fsize, max_fsize=max_fsize,
                 padding_x=padding_x, padding_y=padding_y)
+
+
+
+# class LayoutPfamDomains(TreeLayout):
+
+    # def get_pfam_doms(self, node):
+        # if node.is_leaf():
+            # dom_arq = node.props.get("dom_arq")
+            # return dom_arq
+        # else:
+            # first_node = next(node.iter_leaves())
+            # return first_node.props.get('dom_arq')
+
+
+    # def parse_pfam_doms(self, dom_string):
+        # doms = []
+        # for d in doms_string.split('|'):
+            # d_info = d.split('@')
+            # dom = [int(d_info[1]), int(d_info[2]), "()", 
+                   # None, None, 'grey', 'grey',
+                   # "arial|20|black|%s" %(d_info[0])]
+            # doms.append(dom)
+        # return doms
+
+    # def set_node_style(self, node):
+        # dom_string = self.get_pfam_doms(node)
+        # if dom_string:
+            # doms = self.parse_pfam_doms(dom_string)
+            # seqFace = SeqMotifFace(seq=None, motifs = doms)
+            # node.add_face(seqFace, column=4, position="aligned",
+                    # collapsed_only=(not node.is_leaf()))

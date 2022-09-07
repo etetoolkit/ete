@@ -435,7 +435,8 @@ button.tp-tbiv_b {
 .tooltip {
   display: none;
   position: absolute;
-  /*width: 160px;*/
+  max-width:70vh;
+  overflow-wrap: break-word;
   /*background-color: #d6d6d6;*/
   background-color: #eaeaea;
   color: black;
