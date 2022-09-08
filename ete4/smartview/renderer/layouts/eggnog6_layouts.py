@@ -1,4 +1,4 @@
-from ..treelayout import TreeLayout
+from ..treelayout import TreeLayout, _LayoutNodeProperty
 from ..faces import TextFace
 
 from ..draw_helpers import summary, Padding
@@ -7,96 +7,57 @@ from .ncbi_taxonomy_layouts import LayoutLastCommonAncestor
 from .pfam_layouts import LayoutPfamDomains
 
 
-__all__ = [ "LayoutScientificName", "LayoutProteinName", "LayoutAlias",
-            "LayoutEvolEvents", "LayoutLastCommonAncestor", "LayoutPfamDomains"]
+def TitleCase(string):
+    return "".join(x.title() for x in string.replace("_", " ").split())
+
+def create_property_layout(prop, name, color, pos, column):
+    # branch_right; column 2; color black
+    class Layout(_LayoutNodeProperty):
+        def __init__(self, 
+                prop=prop, 
+                name=name,
+                pos=pos, 
+                column=column,
+                color=color,
+                *args, **kwargs):
+            super().__init__(
+                    prop=prop, 
+                    name=name,
+                    pos=pos,
+                    column=column,
+                    color=color, 
+                    *args, **kwargs)
+        def __name__(self):
+            return layout_name
+    layout_name = "Layout" + TitleCase(name)
+    Layout.__name__ = layout_name
+    globals()[layout_name] = Layout
+    return Layout
 
 
-class _LayoutNodeProperty(TreeLayout):
-    def __init__(self, prop, name=None,
-            pos='branch_right', column=2,
-            summarize=True, show_header=False,
-            color='black',
-            ftype='sans-serif',
-            min_fsize=4, max_fsize=15,
-            padding_x=5, padding_y=0):
-        super().__init__(name or f'{prop} layout')
-        self.prop = prop
-        self.pos = pos
-        self.column = column
-        self.aligned_faces = self.pos == 'aligned'
-        self.show_header = show_header
-        self.color = color
-        self.ftype = ftype
-        self.min_fsize = min_fsize
-        self.max_fsize = max_fsize
-        self.padding = Padding(padding_x, padding_y)
+prop_layout_args = [
+        [ "sci_name",     "Scientific name", "black", "branch_right" ],
+        [ "prot_name",    "Protein name",    "gray",  "aligned"      ],
+        [ "alias",        "Best name",       "black", "aligned"      ],
+        [ "cazy",         "Cazy",            "gray",  "aligned"      ],
+        [ "card",         "CARD",            "gray",  "aligned"      ],
+        [ "pdb",          "PDB",             "gray",  "aligned"      ],
+        [ "bigg",         "BIGG",            "gray",  "aligned"      ],
+        [ "goslim",       "GOslim",          "gray",  "aligned"      ],
+        [ "kegg_number",  "KEGG number",     "gray",  "aligned"      ],
+        [ "kegg_pathway", "KEGG number",     "gray",  "aligned"      ],
+        [ "kegg_module",  "KEGG module",     "gray",  "aligned"      ],
+        [ "kegg_enzyme",  "KEGG enzyme",     "gray",  "aligned"      ],
+    ]
 
-        self.summarize = summarize
-
-    def set_node_style(self, node):
-        prop = node.props.get(self.prop)
-        if prop:
-            node.add_face(TextFace(prop, name='leaf_name', 
-                            color=self.color, ftype=self.ftype,
-                            min_fsize=self.min_fsize, max_fsize=self.max_fsize,
-                            padding_x=self.padding.x, padding_y=self.padding.y),
-                    position=self.pos, column=self.column, 
-                    collapsed_only=(not node.is_leaf()))
-        elif self.summarize:
-            # Collapsed face
-            names = summary(node.children, self.prop)
-            texts = names if len(names) < 6 else (names[:3] + ['...'] + names[-2:])
-            for i, text in enumerate(texts):
-                node.add_face(TextFace(text, name='leaf_name', 
-                                color=self.color, ftype=self.ftype,
-                                min_fsize=self.min_fsize, max_fsize=self.max_fsize,
-                                padding_x=self.padding.x, padding_y=self.padding.y),
-                        position=self.pos, column=self.column, collapsed_only=True)
-
-    def set_tree_style(self, tree, tree_style):
-        if self.pos == "aligned" and self.show_header:
-            face = TextFace(self.name, padding_y=5)
-            tree_style.aligned_panel_header.add_face(face, column=self.column)
+col0 = 2
+prop_layouts = [ create_property_layout(*args, i+col0)\
+                 for i, args in enumerate(prop_layout_args) ]
 
 
+__all__ = [ *[layout.__name__ for layout in prop_layouts],
+            "LayoutScientificName", "LayoutProteinName", "LayoutBestName",
+            "LayoutEvolEvents", "LayoutLastCommonAncestor",
+            "LayoutPfamDomains", "LayoutCazy" ]
 
-class LayoutScientificName(_LayoutNodeProperty):
-    def __init__(self, prop="sci_name", name="Leaf name",
-            pos='branch_right', column=2,
-            summarize=True,
-            color='black',
-            ftype='sans-serif',
-            min_fsize=4, max_fsize=15,
-            padding_x=5, padding_y=0):
-        super().__init__(prop=prop, name=name, pos=pos, column=column,
-                summarize=summarize, color=color, ftype=ftype,
-                min_fsize=min_fsize, max_fsize=max_fsize,
-                padding_x=padding_x, padding_y=padding_y)
-
-
-class LayoutProteinName(_LayoutNodeProperty):
-    def __init__(self, prop="prot_name", name="Protein name",
-            pos='aligned', column=3,
-            summarize=True,
-            color='gray',
-            ftype='sans-serif',
-            min_fsize=4, max_fsize=15,
-            padding_x=5, padding_y=0):
-        super().__init__(prop=prop, name=name, pos=pos, column=column,
-                summarize=summarize, color=color, ftype=ftype,
-                min_fsize=min_fsize, max_fsize=max_fsize,
-                padding_x=padding_x, padding_y=padding_y)
-
-
-class LayoutAlias(_LayoutNodeProperty):
-    def __init__(self, prop="alias", name="Alias",
-            pos='aligned', column=4,
-            summarize=True,
-            color='black',
-            ftype='sans-serif',
-            min_fsize=4, max_fsize=15,
-            padding_x=5, padding_y=0):
-        super().__init__(prop=prop, name=name, pos=pos, column=column,
-                summarize=summarize, color=color, ftype=ftype,
-                min_fsize=min_fsize, max_fsize=max_fsize,
-                padding_x=padding_x, padding_y=padding_y)
+# card, pdb, bigg, GOslim, KEGG number, KEGG pathway, KEGG module, KEGG enzyme

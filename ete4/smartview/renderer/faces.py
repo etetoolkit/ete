@@ -1,10 +1,12 @@
 import base64
+from collections.abc import Iterable
 import pathlib
 import re
 from math import pi
 
 from ..utils import InvalidUsage, get_random_string
 from .draw_helpers import *
+from copy import deepcopy
 
 CHAR_HEIGHT = 1.4 # char's height to width ratio
 
@@ -62,6 +64,14 @@ def swap_pos(pos, angle):
         elif pos == 'branch_bottom':
             pos = 'branch_top'
     return pos
+
+
+def stringify(content):
+    if type(content) in (str, float, int):
+        return str(content)
+    if isinstance(content, Iterable):
+        return ",".join(map(str, content))
+    return str(content)
 
 
 class Face(object):
@@ -196,7 +206,7 @@ class TextFace(Face):
         Face.__init__(self, name=name,
                 padding_x=padding_x, padding_y=padding_y)
 
-        self._content = str(text)
+        self._content = stringify(text)
         self.color = color
         self.min_fsize = min_fsize
         self.max_fsize = max_fsize
@@ -994,7 +1004,7 @@ class SeqMotifFace(Face):
     def build_regions(self):
         """Build and sort sequence regions: seq representation and motifs"""
         seq = self.seq
-        motifs = self.motifs
+        motifs = deepcopy(self.motifs)
         
         # if only sequence is provided, build regions out of gap spaces
         if not motifs:
