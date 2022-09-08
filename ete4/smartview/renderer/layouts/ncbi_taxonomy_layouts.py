@@ -9,8 +9,8 @@ __all__ = [ "LayoutLastCommonAncestor" ]
 
 
 
-with open(Path(__file__).parent / "taxid2colors.json") as handle:
-    _taxid2colors = json.load(handle)
+with open(Path(__file__).parent / "taxid2color.json") as handle:
+    _taxid2color = json.load(handle)
 
 def get_level(node, level=0):
     if node.is_root():
@@ -41,7 +41,7 @@ class LayoutLastCommonAncestor(TreeLayout):
             return color
 
         taxid = node.props.get('taxid', None)
-        color = _taxid2colors.get(str(taxid))
+        color = _taxid2color.get(str(taxid))
         if color:
             return color
 

@@ -8,7 +8,7 @@ from .pfam_layouts import LayoutPfamDomains
 
 
 __all__ = [ "LayoutScientificName", "LayoutProteinName", "LayoutAlias",
-            "LayoutEvolEvents", "LayoutLastCommonAncestor"]
+            "LayoutEvolEvents", "LayoutLastCommonAncestor", "LayoutPfamDomains"]
 
 
 class _LayoutNodeProperty(TreeLayout):

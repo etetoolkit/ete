@@ -1,6 +1,13 @@
+import json
+from pathlib import Path
+
 from ..treelayout import TreeLayout
 from ..faces import SeqMotifFace
+from ..draw_helpers import Padding
 
+
+with open(Path(__file__).parent / "pfam2color.json") as handle:
+    _pfam2color = json.load(handle)
 
 
 class LayoutPfamDomains(TreeLayout):
@@ -30,11 +37,12 @@ class LayoutPfamDomains(TreeLayout):
 
     def parse_pfam_doms(self, dom_string):
         doms = []
-        for d in doms_string.split('|'):
-            d_info = d.split('@')
-            dom = [int(d_info[1]), int(d_info[2]), "()", 
-                   None, None, 'grey', 'grey',
-                   "arial|20|black|%s" %(d_info[0])]
+        for d in dom_string.split('|'):
+            name, start, end = d.split('@')
+            color = _pfam2color.get(name, "lightgray")
+            dom = [int(start), int(end), "()", 
+                   None, None, color, color,
+                   "arial|20|black|%s" %(name)]
             doms.append(dom)
         return doms
 
