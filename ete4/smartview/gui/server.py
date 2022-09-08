@@ -264,8 +264,7 @@ class Trees(Resource):
         elif rule == '/trees/<string:tree_id>/find':
             node = find_node(tree.tree, request.args.copy())
             node_id = ",".join(map(str, get_node_id(tree.tree, node, [])))
-            props = { k:v for k,v in node.props.items() if not k.startswith('_') }
-            return { 'id': node_id, **props }
+            return { 'id': node_id, **node.get_popup_props() }
         elif rule == '/trees/<string:tree_id>/draw':
             drawer = get_drawer(tree_id, request.args.copy())
             return list(drawer.draw())
@@ -674,10 +673,6 @@ def get_node_id(tree, node, node_id):
     return get_node_id(tree, parent, node_id)
 
 
-def get_node_props(node):
-    return { k:v for k,v in node.props.items() \
-            if not (k.startswith("_") or k == "seq") }
-
 
 def update_node_props(node, args):
     for prop, value in node.props.items():
@@ -729,7 +724,7 @@ def get_nodes_info(tree, nodes, props):
     for idx, node in enumerate(nodes):
         if props[0] == "*":
             node_id = node_ids[idx]
-            nodes_info.append({ **get_node_props(node), 'id': node_id })
+            nodes_info.append({ **node.get_popup_props(), 'id': node_id })
         else:
             node_p = { p: node.props.get(p) for p in props }
             if 'id' in props:

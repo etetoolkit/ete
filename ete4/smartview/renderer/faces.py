@@ -196,7 +196,7 @@ class TextFace(Face):
         Face.__init__(self, name=name,
                 padding_x=padding_x, padding_y=padding_y)
 
-        self._content = text
+        self._content = str(text)
         self.color = color
         self.min_fsize = min_fsize
         self.max_fsize = max_fsize
