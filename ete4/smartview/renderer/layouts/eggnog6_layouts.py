@@ -56,6 +56,5 @@ prop_layouts = [ create_property_layout(*args, i+col0)\
 
 
 __all__ = [ *[layout.__name__ for layout in prop_layouts],
-            "LayoutScientificName", "LayoutProteinName", "LayoutBestName",
             "LayoutEvolEvents", "LayoutLastCommonAncestor",
-            "LayoutPfamDomains", "LayoutCazy" ]
+            "LayoutPfamDomains", ]
