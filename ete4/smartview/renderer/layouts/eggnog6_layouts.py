@@ -59,5 +59,3 @@ __all__ = [ *[layout.__name__ for layout in prop_layouts],
             "LayoutScientificName", "LayoutProteinName", "LayoutBestName",
             "LayoutEvolEvents", "LayoutLastCommonAncestor",
             "LayoutPfamDomains", "LayoutCazy" ]
-
-# card, pdb, bigg, GOslim, KEGG number, KEGG pathway, KEGG module, KEGG enzyme
