@@ -360,7 +360,7 @@ class Drawer:
 
         # Draw collapsed node nodebox when necessary
         if is_manually_collapsed or is_small or collapsed_node.dist == 0:
-            name, properties = collapsed_node.name, collapsed_node.props
+            name, properties = collapsed_node.name, collapsed_node.get_popup_props()
             node_id = tuple(get_node_id(collapsed_node, []))\
                     if is_manually_collapsed else []
             box = draw_nodebox(self.flush_outline(ndx), name, 
@@ -527,7 +527,7 @@ class DrawerRect(Drawer):
                 yield draw_rect(box, rect_type='nodedot ' + active_node, style=nodedot_style)
 
     def draw_nodebox(self, node, node_id, box, searched_by, style=None):
-        yield draw_nodebox(box, node.name, node.props,
+        yield draw_nodebox(box, node.name, node.get_popup_props(),
                 node_id, searched_by, style)
 
     def draw_collapsed(self, collapsed_node, active_children=TreeActive(0, 0), selected_children=[]):
@@ -635,7 +635,7 @@ class DrawerCirc(Drawer):
         a1, a2 = clip_angles(a, a + da)
         if a1 < a2:
             yield draw_nodebox(Box(r, a1, dr, a2 - a1),
-                       node.name, node.props, node_id, searched_by, style)
+                       node.name, node.get_popup_props(), node_id, searched_by, style)
 
     def draw_collapsed(self, collapsed_node, active_children=TreeActive(0, 0), selected_children=[]):
         # Draw line to farthest leaf under collapsed node

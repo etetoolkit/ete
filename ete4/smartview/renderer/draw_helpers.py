@@ -114,7 +114,6 @@ def circumasec(rect):
         return Box(rmin, amin, sqrt(max(radius2)) - rmin, max(angles) - amin)
 
 # Basic drawing elements.
-
 def draw_nodebox(box, name='', properties=None, 
         node_id=None, searched_by=None, style=None):
     properties = { k:v for k,v in (properties or {}).items() \

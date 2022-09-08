@@ -1,5 +1,6 @@
 import time
 import random, string # generate random tree name if necessary
+from collections.abc import Iterable
 
 
 def timeit(method):
@@ -25,4 +26,3 @@ def get_random_string(length):
     letters = string.ascii_lowercase
     result_str = ''.join(random.choice(letters) for i in range(length))
     return result_str
-

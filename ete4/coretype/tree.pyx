@@ -73,6 +73,16 @@ DEFAULT_DIST = 1.0
 DEFAULT_DIST_ROOT = 0.0
 DEFAULT_SUPPORT = 1.0
 DEFAULT_NAME = ""
+DEFAULT_POPUP_PROPS = [ "name", "dist", "support", "hyperlink", "tooltip" ]
+
+def safe_string(prop):
+    if type(prop) in (int, float, str):
+        return prop
+    try:
+        return str(prop)
+    except:
+        return ""
+
 
 class TreeError(Exception):
     """
@@ -83,9 +93,11 @@ class TreeError(Exception):
     def __str__(self):
         return repr(self.value)
 
+
 cdef class TreeNode(object):
     cdef public dict _properties
     cdef public set features
+    cdef public list popup_prop_keys
     cdef public list _children
     cdef public object _up
     cdef public object _img_style
@@ -272,7 +284,7 @@ cdef class TreeNode(object):
                          fset=_set__collapsed_face_areas)
 
     def __init__(self, newick=None, format=0, dist=None, support=None,
-                 name=None, quoted_node_names=False):
+                 name=None, quoted_node_names=False, popup_prop_keys=None):
         self._children = []
         self._up = None
         self._properties = {}
@@ -295,6 +307,8 @@ cdef class TreeNode(object):
                 else (DEFAULT_DIST if self.up else DEFAULT_DIST_ROOT)
         self.support = support if support is not None else\
         self.support if self.support is not None else DEFAULT_SUPPORT
+
+        self.popup_prop_keys = popup_prop_keys or [ "name", "dist", "support" ]
 
     def __nonzero__(self):
         return True
@@ -365,6 +379,14 @@ cdef class TreeNode(object):
     def del_prop(self, name):
         """Permanently deletes a node's property."""
         self.props.pop(name, None)
+
+    def get_popup_props(self):
+        """Return dictionary containing web-safe properties of node to be
+        rendered in frontend popup"""
+        if not self.popup_prop_keys:
+            return {}
+        return { prop: safe_string(self.props.get(prop)) for prop in
+                self.popup_prop_keys if self.props.get(prop) }
 
     # DEPRECATED #
     def add_feature(self, pr_name, pr_value):
