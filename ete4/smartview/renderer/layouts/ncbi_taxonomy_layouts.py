@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 from ..treelayout import TreeLayout
 from ..faces import RectFace
@@ -8,7 +9,7 @@ __all__ = [ "LayoutLastCommonAncestor" ]
 
 
 
-with open("./taxid2colors.json") as handle:
+with open(Path(__file__).parent / "taxid2colors.json") as handle:
     _taxid2colors = json.load(handle)
 
 def get_level(node, level=0):
