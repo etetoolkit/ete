@@ -1114,7 +1114,6 @@ class SeqMotifFace(Face):
         return self._box
 
     def fits(self):
-        print(self._box.dy)
         return True
 
     def draw(self, drawer):
