@@ -36,7 +36,7 @@ def create_property_layout(prop, name, color, pos, column):
 
 
 prop_layout_args = [
-        [ "sci_name",     "Scientific name", "black", "branch_right" ],
+        [ "sci_name",     "Leaf name", "black", "branch_right" ],
         [ "prot_name",    "Protein name",    "gray",  "aligned"      ],
         [ "alias",        "Best name",       "black", "aligned"      ],
         [ "cazy",         "Cazy",            "gray",  "aligned"      ],
