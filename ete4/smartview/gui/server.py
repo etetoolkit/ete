@@ -380,6 +380,7 @@ class Id(Resource):
                 # raise InvalidUsage('unknown tree name %r' % name)
             # return {'id': pids[0]}
 
+
 class CustomEndpoints(Resource):
     def __init__(self, resources={}):
         super().__init__()
@@ -455,7 +456,6 @@ def load_tree(tree_id):
     except (AssertionError, IndexError):
         raise InvalidUsage(f'unknown tree id {tree_id}', 404)
 
-
 def load_tree_from_newick(tid, newick):
     """Load tree into memory from newick"""
     t = Tree(newick, format=1)
@@ -466,7 +466,6 @@ def load_tree_from_newick(tid, newick):
 
     gdn.standardize(t)
     return t
-
 
 def retrieve_layouts(layouts):
     layouts = layouts or []
