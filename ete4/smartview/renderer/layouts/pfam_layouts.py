@@ -49,6 +49,7 @@ class LayoutPfamDomains(TreeLayout):
     def set_node_style(self, node):
         dom_string = self.get_pfam_doms(node)
         if dom_string:
+            print(dom_string)
             doms = self.parse_pfam_doms(dom_string)
             fake_seq = '-' * int(node.props.get('len_alg'))
             seqFace = SeqMotifFace(seq=fake_seq, motifs=doms, width=500)
