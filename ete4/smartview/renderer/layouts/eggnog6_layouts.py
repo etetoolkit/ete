@@ -4,7 +4,7 @@ from ..faces import TextFace
 from ..draw_helpers import summary, Padding
 from .evol_events_layouts import LayoutEvolEvents
 from .ncbi_taxonomy_layouts import LayoutLastCommonAncestor
-from .pfam_layouts import LayoutPfamDomains
+from .domain_layouts import LayoutPfamDomains, LayoutSmartDomains
 
 
 def create_property_layout(prop, name, color, pos, column):
@@ -54,4 +54,4 @@ prop_layouts = [ create_property_layout(*args, i+col0)\
 
 __all__ = [ *[layout.__name__ for layout in prop_layouts],
             "LayoutEvolEvents", "LayoutLastCommonAncestor",
-            "LayoutPfamDomains", ]
+            "LayoutPfamDomains", "LayoutSmartDomains" ]
