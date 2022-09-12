@@ -75,3 +75,8 @@ class _LayoutNodeProperty(TreeLayout):
         if self.pos == "aligned" and self.show_header:
             face = TextFace(self.name, padding_y=5)
             tree_style.aligned_panel_header.add_face(face, column=self.column)
+
+
+def _TitleCase(string):
+    return "".join(x.title() for x in string.replace("_", " ").split())
+

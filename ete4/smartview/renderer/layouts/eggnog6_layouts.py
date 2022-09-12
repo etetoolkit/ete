@@ -1,4 +1,4 @@
-from ..treelayout import TreeLayout, _LayoutNodeProperty
+from ..treelayout import TreeLayout, _LayoutNodeProperty, _TitleCase
 from ..faces import TextFace
 
 from ..draw_helpers import summary, Padding
@@ -6,9 +6,6 @@ from .evol_events_layouts import LayoutEvolEvents
 from .ncbi_taxonomy_layouts import LayoutLastCommonAncestor
 from .pfam_layouts import LayoutPfamDomains
 
-
-def TitleCase(string):
-    return "".join(x.title() for x in string.replace("_", " ").split())
 
 def create_property_layout(prop, name, color, pos, column):
     # branch_right; column 2; color black
@@ -29,7 +26,7 @@ def create_property_layout(prop, name, color, pos, column):
                     *args, **kwargs)
         def __name__(self):
             return layout_name
-    layout_name = "Layout" + TitleCase(name)
+    layout_name = "Layout" + _TitleCase(name)
     Layout.__name__ = layout_name
     globals()[layout_name] = Layout
     return Layout
