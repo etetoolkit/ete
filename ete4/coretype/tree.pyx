@@ -47,7 +47,7 @@ from hashlib import md5
 from functools import cmp_to_key
 import pickle
 
-from ... import utils
+from .. import utils
 from ..parser.newick import read_newick, write_newick
 
 # the following imports are necessary to set fixed styles and faces
