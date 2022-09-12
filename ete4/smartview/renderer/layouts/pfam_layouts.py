@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from ..treelayout import TreeLayout
+from ..treelayout import TreeLayout, _TitleCase
 from ..faces import SeqMotifFace
 from ..draw_helpers import Padding
 
@@ -74,7 +74,7 @@ def create_domain_layout(prop, name, colormap, column):
                     *args, **kwargs)
         def __name__(self):
             return layout_name
-    layout_name = "Layout" + TitleCase(name)
+    layout_name = "Layout" + _TitleCase(name)
     Layout.__name__ = layout_name
     globals()[layout_name] = Layout
     return Layout
