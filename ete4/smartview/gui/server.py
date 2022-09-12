@@ -45,6 +45,7 @@ from ete4 import Tree
 from ete4.smartview import TreeStyle, layout_modules
 from ete4.smartview.utils import InvalidUsage, get_random_string
 import ete4.smartview.b64pickle as b64pickle
+from ete4.smartview.renderer import nexus, gardening as gdn
 from ete4.smartview.renderer import drawer as drawer_module
 
 
