@@ -51,7 +51,8 @@ class _LayoutDomains(TreeLayout):
         if dom_list:
             doms = self.parse_doms(dom_list)
             fake_seq = '-' * int(node.props.get('len_alg'))
-            seqFace = SeqMotifFace(seq=fake_seq, motifs=doms, width=500)
+            seqFace = SeqMotifFace(seq=fake_seq, motifs=doms, width=500,
+                    height=10)
             node.add_face(seqFace, column=self.column, 
                     position="aligned",
                     collapsed_only=(not node.is_leaf()))
