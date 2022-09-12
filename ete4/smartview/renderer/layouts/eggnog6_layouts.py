@@ -36,14 +36,14 @@ def create_property_layout(prop, name, color, pos, column):
 
 
 prop_layout_args = [
-        [ "sci_name",     "Leaf name", "black", "branch_right" ],
+        [ "sci_name",     "Scientific name", "black", "branch_right" ],
         [ "prot_name",    "Protein name",    "gray",  "aligned"      ],
-        [ "alias",        "Best name",       "black", "aligned"      ],
+        [ "best_name",    "Best name",       "black", "aligned"      ],
         [ "cazy",         "Cazy",            "gray",  "aligned"      ],
         [ "card",         "CARD",            "gray",  "aligned"      ],
         [ "pdb",          "PDB",             "gray",  "aligned"      ],
         [ "bigg",         "BIGG",            "gray",  "aligned"      ],
-        [ "goslim",       "GOslim",          "gray",  "aligned"      ],
+        [ "GOslim",       "GOslim",          "gray",  "aligned"      ],
         [ "kegg_number",  "KEGG number",     "gray",  "aligned"      ],
         [ "kegg_pathway", "KEGG number",     "gray",  "aligned"      ],
         [ "kegg_module",  "KEGG module",     "gray",  "aligned"      ],

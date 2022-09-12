@@ -11,7 +11,7 @@ with open(Path(__file__).parent / "pfam2color.json") as handle:
 
 
 class LayoutPfamDomains(TreeLayout):
-    def __init__(self, prop="dom_arq",
+    def __init__(self, prop="pfam",
             column=10, color='black',
             ftype='sans-serif',
             min_fsize=4, max_fsize=15,
@@ -29,11 +29,11 @@ class LayoutPfamDomains(TreeLayout):
 
     def get_pfam_doms(self, node):
         if node.is_leaf():
-            dom_arq = node.props.get("dom_arq")
+            dom_arq = node.props.get(self.prop)
             return dom_arq
         else:
             first_node = next(node.iter_leaves())
-            return first_node.props.get('dom_arq')
+            return first_node.props.get(self.prop)
 
     def parse_pfam_doms(self, dom_string):
         doms = []
@@ -50,7 +50,8 @@ class LayoutPfamDomains(TreeLayout):
         dom_string = self.get_pfam_doms(node)
         if dom_string:
             doms = self.parse_pfam_doms(dom_string)
-            seqFace = SeqMotifFace(seq=None, motifs = doms)
+            fake_seq = '-' * int(node.props.get('len_alg'))
+            seqFace = SeqMotifFace(seq=fake_seq, motifs=doms, width=500)
             node.add_face(seqFace, column=self.column, 
                     position="aligned",
                     collapsed_only=(not node.is_leaf()))
