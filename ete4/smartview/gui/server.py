@@ -1072,7 +1072,7 @@ def add_trees_from_request():
         trees = get_trees_from_form()
     else:
         data = get_fields(required=['name', 'newick'],  # id
-                          valid_extra=['layouts', 'description', 'pickle'])
+                          valid_extra=['layouts', 'description', 'b64pickle'])
         trees = [data]
 
     return {data['name']: add_tree(data) for data in trees}
@@ -1095,7 +1095,7 @@ def get_trees_from_form():
             'id': form.get('id'),
             'name': form['name'], 
             'newick': form.get('newick', None),
-            'pickle': form.get('pickle', None),
+            'b64pickle': form.get('b64pickle', None),
             'description': form.get('description', ''),
             'layouts': form.get('layouts', [])
             }]
