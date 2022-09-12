@@ -13,12 +13,12 @@ with open(Path(__file__).parent / "smart2color.json") as handle:
     _smart2color = json.load(handle)
 
 
-class LayoutPfamDomains(TreeLayout):
-    def __init__(self, prop="pfam",
-            column=10, colormap=colormap,
+class _LayoutDomains(TreeLayout):
+    def __init__(self, prop, name,
+            column=10, colormap={},
             min_fsize=4, max_fsize=15,
             padding_x=5, padding_y=0):
-        super().__init__("Pfam domains")
+        super().__init__(name or "Domains layout")
         self.prop = prop
         self.column = column
         self.aligned_faces = True
@@ -57,17 +57,19 @@ class LayoutPfamDomains(TreeLayout):
                     collapsed_only=(not node.is_leaf()))
 
 
-def create_domain_layout(prop, name, column):
+def create_domain_layout(prop, name, colormap, column):
     # branch_right; column 2; color black
     class Layout(_LayoutDomains):
         def __init__(self, 
                 prop=prop, 
                 name=name,
+                colormap=colormap,
                 column=column,
                 *args, **kwargs):
             super().__init__(
                     prop=prop, 
                     name=name,
+                    colormap=colormap,
                     column=column,
                     *args, **kwargs)
         def __name__(self):
@@ -87,6 +89,4 @@ col0 = 20
 domain_layouts = [ create_domain_layout(*args, i+col0)\
                  for i, args in enumerate(domain_layout_args) ]
 
-__all__ = [ *[layout.__name__ for layout in domain_layouts],
-            "LayoutEvolEvents", "LayoutLastCommonAncestor",
-            "LayoutPfamDomains", ]
+__all__ = [ *[layout.__name__ for layout in domain_layouts] ]
