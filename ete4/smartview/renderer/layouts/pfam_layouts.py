@@ -9,6 +9,9 @@ from ..draw_helpers import Padding
 with open(Path(__file__).parent / "pfam2color.json") as handle:
     _pfam2color = json.load(handle)
 
+with open(Path(__file__).parent / "smart2color.json") as handle:
+    _smart2color = json.load(handle)
+
 
 class LayoutPfamDomains(TreeLayout):
     def __init__(self, prop="pfam",
