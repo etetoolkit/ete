@@ -44,7 +44,7 @@ import logging
 from ete4 import Tree
 from ete4.smartview import TreeStyle, layout_modules
 from ete4.smartview.utils import InvalidUsage, get_random_string
-from ete4.smartview.renderer import nexus, gardening as gdn
+import ete4.smartview.b64pickle as b64pickle
 from ete4.smartview.renderer import drawer as drawer_module
 
 
@@ -1118,7 +1118,7 @@ def add_tree(data):
     tid = int(data['id'])
     name = data['name']
     newick = data.get('newick', None)
-    bpickle = data.get('pickle', None)
+    bpickle = data.get('b64pickle', None)
     layouts = data.get('layouts', [])
     if type(layouts) == str:
         layouts = layouts.split(",")
@@ -1128,7 +1128,8 @@ def add_tree(data):
     if newick is not None:
         tree = load_tree_from_newick(tid, newick)
     elif bpickle is not None:
-        tree = pickle.loads(b64decode(bpickle))
+        tree = b64pickle.loads(bpickle)
+        # tree = pickle.loads(b64decode(bpickle))
         gdn.standardize(tree)
     else:
         tree = data.get('tree', None)
