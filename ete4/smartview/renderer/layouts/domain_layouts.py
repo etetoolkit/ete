@@ -29,11 +29,10 @@ class _LayoutDomains(TreeLayout):
 
     def get_doms(self, node):
         if node.is_leaf():
-            dom_arq = node.props.get(self.prop)
-            return dom_arq
+            return node.props.get(self.prop, [])
         else:
             first_node = next(node.iter_leaves())
-            return first_node.props.get(self.prop)
+            return first_node.props.get(self.prop, [])
 
     def parse_doms(self, dom_list):
         doms = []
