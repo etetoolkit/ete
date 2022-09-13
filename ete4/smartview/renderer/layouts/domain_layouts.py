@@ -55,7 +55,7 @@ class _LayoutDomains(TreeLayout):
                 collapsed_only=(not node.is_leaf()))
 
 
-def create_domain_layout(prop, name, colormap, column):
+def create_domain_layout(prop, name, colormap, active, column):
     # branch_right; column 2; color black
     class Layout(_LayoutDomains):
         def __init__(self, 
@@ -70,6 +70,8 @@ def create_domain_layout(prop, name, colormap, column):
                     colormap=colormap,
                     column=column,
                     *args, **kwargs)
+            self.active = active
+
         def __name__(self):
             return layout_name
     layout_name = "Layout" + _TitleCase(name)
@@ -79,8 +81,8 @@ def create_domain_layout(prop, name, colormap, column):
 
 
 domain_layout_args = [ 
-        [ "pfam",  "Pfam domains",  _pfam2color  ],
-        [ "smart", "Smart domains", _smart2color ],
+        [ "pfam",  "Pfam domains",  _pfam2color,  False  ],
+        [ "smart", "Smart domains", _smart2color, False  ],
     ]
 
 col0 = 20
