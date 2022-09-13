@@ -43,7 +43,7 @@ prop_layout_args = [
         [ "pdb",          "PDB",             "gray",  "aligned",      False ],
         [ "bigg",         "BIGG",            "gray",  "aligned",      False ],
         [ "kegg_number",  "KEGG number",     "gray",  "aligned",      False ],
-        [ "kegg_pathway", "KEGG number",     "gray",  "aligned",      False ],
+        [ "kegg_pathway", "KEGG pathway",    "gray",  "aligned",      False ],
         [ "kegg_module",  "KEGG module",     "gray",  "aligned",      False ],
         [ "kegg_enzyme",  "KEGG enzyme",     "gray",  "aligned",      False ],
         # [ "GOslim",       "GOslim",          "gray",  "aligned",      False ],
