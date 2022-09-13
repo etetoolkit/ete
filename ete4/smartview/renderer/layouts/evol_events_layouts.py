@@ -6,7 +6,7 @@ __all__ = [ "LayoutEvolEvents" ]
 
 class LayoutEvolEvents(TreeLayout):
     def __init__(self, name="Evolution events", 
-            prop="evol_type",
+            prop="evol_event",
             speciation_color="blue", duplication_color="red"):
         super().__init__(name)
         
@@ -19,7 +19,6 @@ class LayoutEvolEvents(TreeLayout):
 
     def set_node_style(self, node):
         if not node.is_leaf():
-            print(node.props.get(self.prop))
             if node.props.get(self.prop, "") == "S":
                 node.sm_style["fgcolor"] = self.speciation_color
                 node.sm_style["size"] = 2
