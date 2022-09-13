@@ -19,7 +19,7 @@
     <script src="/static/external/pdfkit.standalone.js"></script>
     <script type="module" src="/static/js/gui.js"></script>
   </head>
-  <body id="div_smartview_container">
+  <body id="div_smartview_container" style="background-color:white">
     <div id="div_viz" class="tree" tabindex="-1">
         <div id="div_tree" class="tree" tabindex="-1">
             <svg></svg>
@@ -58,6 +58,10 @@
     <button id="search-trigger" class="sidebtn"
         style="top: 40px">
         Search within tree
+    </button>
+    <button id="full-screen-trigger" class="sidebtn"
+        style="top: 40px; right: 10px">
+        Full screen
     </button>
     <div id="sidenav" class="sidenav"></div>
   </body>

@@ -38,6 +38,9 @@ function init_events() {
 
     if (self !== top)  // ETE is not within an iframe
         window.addEventListener("message", on_postMessage)
+
+    document.querySelector("#full-screen-trigger").addEventListener("click", () =>
+        document.querySelector("html").requestFullscreen());
 }
 
 
