@@ -1488,8 +1488,8 @@ def add_resources(app, api, custom_api={}, custom_route={}):
 
 def run_smartview(tree=None, tree_name=None, 
         layouts=[], custom_api={}, custom_route={},
-        safe_mode=False, port=5000, run=True, 
-        serve_static=True, verbose=True):
+        safe_mode=False, host="127.0.0.1", port=5000,
+        run=True, serve_static=True, verbose=True):
     # Set tree_name to None if no tree was provided
     # Generate tree_name if none was provided
     tree_name = tree_name or get_random_string(10) if tree else None
@@ -1524,7 +1524,7 @@ def run_smartview(tree=None, tree_name=None,
         logging.getLogger('werkzeug').disabled = True
 
     if run:
-        app.run(debug=True, use_reloader=False, port=port)
+        app.run(debug=True, use_reloader=False, port=port, host=host)
     else:
         return app
 
