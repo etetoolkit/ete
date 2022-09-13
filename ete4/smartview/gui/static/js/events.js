@@ -36,11 +36,15 @@ function init_events() {
 
     document.addEventListener("touchend", on_touchend);
 
-    if (self !== top)  // ETE is not within an iframe
+    const fullScreenTrigger = document.getElementById("full-screen-trigger");
+    if (self === top)
+        fullScreenTrigger.addEventListener("click", () =>
+            document.querySelector("html").requestFullscreen());
+    else {
+       // ETE is within an iframe
+        fullScreenTrigger.style.display = "none";
         window.addEventListener("message", on_postMessage)
-
-    document.querySelector("#full-screen-trigger").addEventListener("click", () =>
-        document.querySelector("html").requestFullscreen());
+    }
 }
 
 
