@@ -1333,6 +1333,7 @@ def copy_style(tree_style):
     ts = deepcopy(tree_style)
     add_faces_to_header(ts.aligned_panel_header, header)
     add_faces_to_header(ts.aligned_panel_footer, footer)
+    print(ts)
 
     return ts
 
