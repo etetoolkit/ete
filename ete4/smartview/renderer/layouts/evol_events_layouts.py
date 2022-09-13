@@ -18,6 +18,7 @@ class LayoutEvolEvents(TreeLayout):
 
 
     def set_node_style(self, node):
+        print(self.active)
         if not node.is_leaf():
             if node.props.get(self.prop, "") == "S":
                 node.sm_style["fgcolor"] = self.speciation_color
