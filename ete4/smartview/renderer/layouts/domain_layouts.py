@@ -48,7 +48,7 @@ class _LayoutDomains(TreeLayout):
         dom_list = self.get_doms(node)
         doms = self.parse_doms(dom_list)
         fake_seq = '-' * int(node.props.get('len_alg'))
-        seqFace = SeqMotifFace(seq=fake_seq, motifs=doms, width=500,
+        seqFace = SeqMotifFace(seq=fake_seq, motifs=doms, width=250,
                 height=10)
         node.add_face(seqFace, column=self.column, 
                 position="aligned",
