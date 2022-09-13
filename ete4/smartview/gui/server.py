@@ -485,7 +485,7 @@ def retrieve_layouts(layouts):
             key, ly_name, active = name_split
             active = True if active == "on" else False
 
-        avail = app.avail_layouts.get(key, [])
+        avail = deepcopy(app.avail_layouts.get(key, []))
         if ly_name == '*':
             if active is not None:
                 for ly in avail:
@@ -500,7 +500,7 @@ def retrieve_layouts(layouts):
                 tree_layouts[key].append(match)
 
     # Add default layouts
-    tree_layouts["default"] = app.default_layouts
+    tree_layouts["default"] = deepcopy(app.default_layouts)
 
     return dict(tree_layouts)
 
@@ -1358,7 +1358,7 @@ def initialize(tree=None, layouts=[], custom_api={}, custom_route={}, safe_mode=
         name=get_random_string(10),
         style=copy_style(TreeStyle()),
         nodestyles={},
-        layouts = app.default_layouts,
+        layouts = deepcopy(app.default_layouts),
         timer = time(),
         searches = {},
         selected = {},
