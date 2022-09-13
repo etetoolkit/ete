@@ -37,14 +37,12 @@ function init_events() {
     document.addEventListener("touchend", on_touchend);
 
     const fullScreenTrigger = document.getElementById("full-screen-trigger");
-    if (self === top)
+    if (self === top) {
+        fullScreenTrigger.style.display = "block";
         fullScreenTrigger.addEventListener("click", () =>
             document.querySelector("html").requestFullscreen());
-    else {
-       // ETE is within an iframe
-        fullScreenTrigger.style.display = "none";
+    } else // ETE inside an iframe
         window.addEventListener("message", on_postMessage)
-    }
 }
 
 
