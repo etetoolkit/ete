@@ -7,7 +7,7 @@ from .ncbi_taxonomy_layouts import LayoutLastCommonAncestor
 from .domain_layouts import LayoutPfamDomains, LayoutSmartDomains
 
 
-def create_property_layout(prop, name, color, pos, column):
+def create_property_layout(prop, name, color, pos, active, column):
     # branch_right; column 2; color black
     class Layout(_LayoutNodeProperty):
         def __init__(self, 
@@ -24,6 +24,8 @@ def create_property_layout(prop, name, color, pos, column):
                     column=column,
                     color=color, 
                     *args, **kwargs)
+            self.active = active
+
         def __name__(self):
             return layout_name
     layout_name = "Layout" + _TitleCase(name)
@@ -33,18 +35,18 @@ def create_property_layout(prop, name, color, pos, column):
 
 
 prop_layout_args = [
-        [ "sci_name",     "Scientific name", "black", "branch_right" ],
-        [ "prot_name",    "Protein name",    "gray",  "aligned"      ],
-        [ "best_name",    "Best name",       "black", "aligned"      ],
-        [ "cazy",         "Cazy",            "gray",  "aligned"      ],
-        [ "card",         "CARD",            "gray",  "aligned"      ],
-        [ "pdb",          "PDB",             "gray",  "aligned"      ],
-        [ "bigg",         "BIGG",            "gray",  "aligned"      ],
-        [ "GOslim",       "GOslim",          "gray",  "aligned"      ],
-        [ "kegg_number",  "KEGG number",     "gray",  "aligned"      ],
-        [ "kegg_pathway", "KEGG number",     "gray",  "aligned"      ],
-        [ "kegg_module",  "KEGG module",     "gray",  "aligned"      ],
-        [ "kegg_enzyme",  "KEGG enzyme",     "gray",  "aligned"      ],
+        [ "sci_name",     "Scientific name", "black", "branch_right", True  ],
+        [ "best_name",    "Best name",       "black", "aligned",      True  ],
+        [ "prot_name",    "Protein name",    "gray",  "aligned",      True  ],
+        [ "cazy",         "Cazy",            "gray",  "aligned",      False ],
+        [ "card",         "CARD",            "gray",  "aligned",      False ],
+        [ "pdb",          "PDB",             "gray",  "aligned",      False ],
+        [ "bigg",         "BIGG",            "gray",  "aligned",      False ],
+        [ "kegg_number",  "KEGG number",     "gray",  "aligned",      False ],
+        [ "kegg_pathway", "KEGG number",     "gray",  "aligned",      False ],
+        [ "kegg_module",  "KEGG module",     "gray",  "aligned",      False ],
+        [ "kegg_enzyme",  "KEGG enzyme",     "gray",  "aligned",      False ],
+        # [ "GOslim",       "GOslim",          "gray",  "aligned",      False ],
     ]
 
 col0 = 2

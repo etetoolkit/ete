@@ -165,7 +165,7 @@ def update_all_sizes(tree):
 
 def update_size(node):
     if node.is_leaf():
-        node.size = (node.dist, 10)
+        node.size = (node.dist, 1)
     sumdists, nleaves = get_size(node.children)
     node.size = (abs(node.dist) + sumdists, max(1, nleaves))
 
