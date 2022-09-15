@@ -500,6 +500,8 @@ def retrieve_layouts(layouts):
                 tree_layouts[key].append(match)
 
     # Add default layouts
+    print(app.default_layouts)
+    print(deepcopy(app.default_layouts))
     tree_layouts["default"] = deepcopy(app.default_layouts)
 
     return dict(tree_layouts)
