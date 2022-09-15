@@ -83,6 +83,8 @@ class Drawers(Resource):
             return {'type': drawer_class.TYPE,
                     'npanels': drawer_class.NPANELS}
         except StopIteration:
+            print(name)
+            print(list(drawer_module.get_drawers()))
             raise InvalidUsage(f'not a valid drawer: {name}')
 
 
