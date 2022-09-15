@@ -1246,6 +1246,167 @@ class SeqMotifFace(Face):
             x += w
 
 
+class AlignmentFace(Face):
+    def __init__(self, seq, seqtype='aa',
+            gap_format='line', seq_format='[]',
+            width=None, height=None, # max height
+            fgcolor='black', bgcolor='#bcc3d0', gapcolor='gray',
+            gap_linewidth=0.2,
+            max_fsize=12, ftype='sans-serif',
+            padding_x=0, padding_y=0):
+
+        Face.__init__(self, padding_x=padding_x, padding_y=padding_y)
+
+        self.seq = seq
+        self.seqlength = len(self.seq)
+        self.seqtype = seqtype
+
+        self.autoformat = True  # block if 1px contains > 1 tile
+
+        self.seq_format = seq_format
+        self.gap_format = gap_format
+        self.gap_linewidth = gap_linewidth
+        self.compress_gaps = False
+
+        self.poswidth = 5
+        self.w_scale = 1
+        self.width = width    # sum of all regions' width if not provided
+        self.height = height  # dynamically computed if not provided
+
+        total_width = self.seqlength * self.poswidth
+        if self.width:
+            self.w_scale = self.width / total_width
+        else:
+            self.width = total_width
+
+        self.bg = _aacolors if self.seqtype == 'aa' else _ntcolors
+        # self.fgcolor = fgcolor
+        # self.bgcolor = bgcolor
+        self.gapcolor = gapcolor
+
+        # Text
+        self.ftype = ftype
+        self._min_fsize = 8
+        self.max_fsize = max_fsize
+        self._fsize = None
+
+        self.blocks = []
+        self.build_blocks()
+
+    def __name__(self):
+        return "AlignmentFace"
+
+    def get_seq(self, start, end):
+        """Retrieves sequence given start, end"""
+        return self.seq[start:end]
+
+    def build_blocks(self):
+        pos = 0
+        for reg in re.split('([^-]+)', self.seq):
+            if reg:
+                if not reg.startswith("-"):
+                    self.blocks.append([pos, pos + len(reg) - 1])
+                pos += len(reg)
+
+        self.blocks.sort()
+
+    def compute_bounding_box(self,
+            drawer,
+            point, size,
+            dx_to_closest_child,
+            bdx, bdy,
+            bdy0, bdy1,
+            pos, row,
+            n_row, n_col,
+            dx_before, dy_before):
+
+        if pos != 'branch_right' and not pos.startswith('aligned'):
+            raise InvalidUsage(f'Position {pos} not allowed for SeqMotifFace')
+
+        box = super().compute_bounding_box( 
+            drawer,
+            point, size,
+            dx_to_closest_child,
+            bdx, bdy,
+            bdy0, bdy1,
+            pos, row,
+            n_row, n_col,
+            dx_before, dy_before)
+
+        x, y, _, dy = box
+
+        zx, zy = self.zoom
+        zx = 1 if drawer.TYPE != 'circ' else zx
+        
+            # zx = drawer.zoom[0]
+            # self.zoom = (zx, zy)
+
+        if drawer.TYPE == "circ":
+            self.viewport = (0, drawer.viewport.dx)
+        else:
+            self.viewport = (drawer.viewport.x, drawer.viewport.x + drawer.viewport.dx)
+
+        self._box = Box(x, y, self.width / zx, dy)
+        return self._box
+
+    def draw(self, drawer):
+        def get_height(x, y):
+            r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
+            default_h = dy * zy * r
+            h = min([self.height or default_h, default_h]) / zy
+            # h /= r
+            return y + (dy - h) / 2, h
+
+        # Only leaf/collapsed branch_right or aligned
+        x0, y, dx, dy = self._box
+        zx, zy = self.zoom
+        zx = drawer.zoom[0] if drawer.TYPE == 'circ' else zx
+
+
+        if self.gap_format in ["line", "-"]:
+            p1 = (x0, y + dy / 2)
+            p2 = (x0 + self.width, y + dy / 2)
+            if drawer.TYPE == 'circ':
+                p1 = cartesian(p1)
+                p2 = cartesian(p2)
+            yield draw_line(p1, p2, style={'stroke-width': self.gap_linewidth,
+                                           'stroke': self.gapcolor})
+        vx0, vx1 = self.viewport
+        is_small = ((vx1 - vx0) * zx) / (self.seqlength / zx) < 40
+
+        posw = self.poswidth * self.w_scale
+        viewport_start = vx0 - self.viewport_margin / zx
+        viewport_end = vx1 + self.viewport_margin / zx
+        sm_x = max(viewport_start - x0, 0)
+        sm_start = round(sm_x / posw)
+        w = self.seqlength * posw
+        sm_x0 = x0 if drawer.TYPE == "rect" else 0
+        sm_end = self.seqlength - round(max(sm_x0 + w - viewport_end, 0) / posw)
+
+        if is_small or self.seq_format == "[]":
+            for start, end in self.blocks:
+                if end >= sm_start and start <= sm_end:
+                    bstart = max(sm_start, start)
+                    bend = min(sm_end, end)
+                    bx = x0 + bstart * posw
+                    by, bh = get_height(bx, y)
+                    box = Box(bx, by, (bend - bstart) * posw, bh)
+                    yield [ "pixi-block", box ]
+
+        else:
+            seq = self.get_seq(sm_start, sm_end)
+            sm_x = sm_x if drawer.TYPE == 'rect' else x0
+            y, h = get_height(sm_x, y)
+            sm_box = Box(sm_x, y, posw * len(seq), h)
+
+            if self.seq_format == 'compactseq' or posw * zx < self._min_fsize:
+                aa_type = "notext"
+            else:
+                aa_type = "text"
+            yield [ f'pixi-aa_{aa_type}', sm_box, seq ]
+
+
+
 class ScaleFace(Face):
     def __init__(self, name='', width=None, color='black',
             scale_range=(0, 0), tick_width=80, line_width=1,
@@ -1340,7 +1501,6 @@ class ScaleFace(Face):
         for i in range(sm_start, sm_end + 1):
             x = x0 + i * dx
             number = range_factor * x
-            print(number)
             text = self.formatter % number if self.formatter else str(number)
             self.compute_fsize(self.tick_width / len(text), dy, zx, zy)
             text_style = {
