@@ -500,8 +500,6 @@ def retrieve_layouts(layouts):
                 tree_layouts[key].append(match)
 
     # Add default layouts
-    print(app.default_layouts)
-    print(deepcopy(app.default_layouts))
     tree_layouts["default"] = deepcopy(app.default_layouts)
 
     return dict(tree_layouts)
@@ -1335,7 +1333,6 @@ def copy_style(tree_style):
     ts = deepcopy(tree_style)
     add_faces_to_header(ts.aligned_panel_header, header)
     add_faces_to_header(ts.aligned_panel_footer, footer)
-    print(ts)
 
     return ts
 
