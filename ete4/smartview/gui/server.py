@@ -52,6 +52,8 @@ from ete4.smartview.renderer import drawer as drawer_module
 # call initialize() to fill it up
 app = None
 
+DEFAULT_POPUP_PROP_KEYS = [ "name", "dist", "support", "hyperlink", "tooltip" ]
+
 
 # Dataclass containing info specific to each tree
 @dataclass
@@ -60,6 +62,7 @@ class AppTree:
     name: str = None
     style: TreeStyle = None
     nodestyles: dict = None
+    popup_prop_keys: list = None
     layouts: list = None
     timer: float = None
     initialized: bool = False
@@ -148,6 +151,11 @@ class Trees(Resource):
         elif rule == '/trees/<string:tree_id>/nodestyle':
             node = gdn.get_node(tree.tree, subtree)
             return node.sm_style
+        elif rule == '/trees/<string:tree_id>/editable_props':
+            node = gdn.get_node(tree.tree, subtree)
+            props = node.props
+            props.pop("tooltip", None)
+            return props
         elif rule == '/trees/<string:tree_id>/leaves_info':
             node = gdn.get_node(tree.tree, subtree)
             return get_nodes_info(tree.tree, node.iter_leaves(), request.args.copy())
@@ -580,7 +588,7 @@ def get_drawer(tree_id, args):
         
         return drawer_class(load_tree(tree_id), viewport, panel, zoom,
                     limits, collapsed_ids, active, selected, searches,
-                    layouts, tree.style)
+                    layouts, tree.style, tree.popup_prop_keys)
     except StopIteration:
         raise InvalidUsage(f'not a valid drawer: {drawer_name}')
     except (ValueError, AssertionError) as e:
@@ -1341,7 +1349,9 @@ def copy_style(tree_style):
 
 # App initialization.
 
-def initialize(tree=None, layouts=[], custom_api={}, custom_route={}, safe_mode=False):
+def initialize(tree=None, layouts=[], 
+        popup_prop_keys=DEFAULT_POPUP_PROP_KEYS,
+        custom_api={},  custom_route={}, safe_mode=False):
     "Initialize the database and the flask app"
     app = Flask(__name__, instance_relative_config=True)
     configure(app)
@@ -1359,6 +1369,7 @@ def initialize(tree=None, layouts=[], custom_api={}, custom_route={}, safe_mode=
         name=get_random_string(10),
         style=copy_style(TreeStyle()),
         nodestyles={},
+        popup_prop_keys=deepcopy(popup_prop_keys),
         layouts = deepcopy(app.default_layouts),
         timer = time(),
         searches = {},
@@ -1440,6 +1451,7 @@ def add_resources(app, api, custom_api={}, custom_route={}):
         '/trees/<string:tree_id>',
         '/trees/<string:tree_id>/nodeinfo',
         '/trees/<string:tree_id>/nodestyle',
+        '/trees/<string:tree_id>/editable_props',
         '/trees/<string:tree_id>/leaves_info',
         '/trees/<string:tree_id>/descendants_info',
         '/trees/<string:tree_id>/name',
@@ -1488,7 +1500,8 @@ def add_resources(app, api, custom_api={}, custom_route={}):
 
 
 def run_smartview(tree=None, tree_name=None, 
-        layouts=[], custom_api={}, custom_route={},
+        layouts=[], popup_prop_keys=DEFAULT_POPUP_PROP_KEYS,
+        custom_api={}, custom_route={},
         safe_mode=False, host="127.0.0.1", port=5000,
         run=True, serve_static=True, verbose=True):
     # Set tree_name to None if no tree was provided
@@ -1500,6 +1513,7 @@ def run_smartview(tree=None, tree_name=None,
 
     global app
     app = initialize(tree_name, layouts, 
+            popup_prop_keys=popup_prop_keys,
             custom_api=custom_api,
             custom_route=custom_route,
             safe_mode=safe_mode)

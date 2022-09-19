@@ -22,6 +22,7 @@ def get_empty_active():
     clades = Active(set(), defaultdict(lambda: 0))
     return TreeActive(nodes, clades)
 
+
 # They are all "generalized coordinates" (can be radius and angle, say).
 
 
@@ -58,6 +59,15 @@ def get_node_id(node, node_id):
     node_id.append(parent.children.index(node))
     return get_node_id(parent, node_id)
 
+def safe_string(prop):
+    if type(prop) in (int, float, str):
+        return prop
+    try:
+        return str(prop)
+    except:
+        return ""
+
+
 class Drawer:
     "Base class (needs subclassing with extra functions to draw)"
 
@@ -72,7 +82,7 @@ class Drawer:
     def __init__(self, tree, viewport=None, panel=0, zoom=(1, 1),
                  limits=None, collapsed_ids=None, 
                  active=None, selected=None, searches=None,
-                 layouts=None, tree_style=None):
+                 layouts=None, tree_style=None, popup_prop_keys=None):
         self.tree = tree
         self.viewport = Box(*viewport) if viewport else None
         self.panel = panel
@@ -83,6 +93,7 @@ class Drawer:
         self.selected = selected or {}  # looks like {node_id: (node, parents)}
         self.searches = searches or {}  # looks like {text: (results, parents)}
         self.layouts = layouts or []
+        self.popup_prop_keys = popup_prop_keys or []
         self.tree_style = tree_style
         if not self.tree_style:
             self.tree_style = TreeStyle()
@@ -360,7 +371,7 @@ class Drawer:
 
         # Draw collapsed node nodebox when necessary
         if is_manually_collapsed or is_small or collapsed_node.dist == 0:
-            name, properties = collapsed_node.name, collapsed_node.get_popup_props()
+            name, properties = collapsed_node.name, self.get_popup_props(collapsed_node)
             node_id = tuple(get_node_id(collapsed_node, []))\
                     if is_manually_collapsed else []
             box = draw_nodebox(self.flush_outline(ndx), name, 
@@ -434,6 +445,14 @@ class Drawer:
             if hits:
                 selected_children.append((text, hits))
         return selected_children
+
+    def get_popup_props(self, node):
+        """Return dictionary containing web-safe properties of node to be
+        rendered in frontend popup"""
+        if not self.popup_prop_keys:
+            return {}
+        return { prop: safe_string(node.props.get(prop)) for prop in
+                self.popup_prop_keys if node.props.get(prop) }
 
 
     # These are the 2 functions that the user overloads to choose what to draw
@@ -527,7 +546,7 @@ class DrawerRect(Drawer):
                 yield draw_rect(box, rect_type='nodedot ' + active_node, style=nodedot_style)
 
     def draw_nodebox(self, node, node_id, box, searched_by, style=None):
-        yield draw_nodebox(box, node.name, node.get_popup_props(),
+        yield draw_nodebox(box, node.name, self.get_popup_props(node),
                 node_id, searched_by, style)
 
     def draw_collapsed(self, collapsed_node, active_children=TreeActive(0, 0), selected_children=[]):
@@ -635,7 +654,7 @@ class DrawerCirc(Drawer):
         a1, a2 = clip_angles(a, a + da)
         if a1 < a2:
             yield draw_nodebox(Box(r, a1, dr, a2 - a1),
-                       node.name, node.get_popup_props(), node_id, searched_by, style)
+                       node.name, self.get_popup_props(node), node_id, searched_by, style)
 
     def draw_collapsed(self, collapsed_node, active_children=TreeActive(0, 0), selected_children=[]):
         # Draw line to farthest leaf under collapsed node

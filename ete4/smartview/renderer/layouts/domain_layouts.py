@@ -47,12 +47,13 @@ class _LayoutDomains(TreeLayout):
     def set_node_style(self, node):
         dom_list = self.get_doms(node)
         doms = self.parse_doms(dom_list)
-        fake_seq = '-' * int(node.props.get('len_alg'))
-        seqFace = SeqMotifFace(seq=fake_seq, motifs=doms, width=250,
-                height=10)
-        node.add_face(seqFace, column=self.column, 
-                position="aligned",
-                collapsed_only=(not node.is_leaf()))
+        fake_seq = '-' * int(node.props.get("len_alg", 0))
+        if doms or fake_seq:
+            seqFace = SeqMotifFace(seq=fake_seq, motifs=doms, width=250,
+                    height=10)
+            node.add_face(seqFace, column=self.column, 
+                    position="aligned",
+                    collapsed_only=(not node.is_leaf()))
 
 
 def create_domain_layout(prop, name, colormap, active, column):

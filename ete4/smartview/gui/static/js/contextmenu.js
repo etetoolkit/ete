@@ -58,6 +58,10 @@ async function on_box_contextmenu(event, box, name, properties, node_id=[]) {
 
 
 async function add_node_options(box, name, properties, node_id) {
+    const safe_properties = { ...properties };
+    if (safe_properties.tooltip)
+        delete safe_properties["tooltip"]
+
     add_button("Go to subtree at branch", () => {
         view.subtree += (view.subtree ? "," : "") + node_id;
         on_tree_change();
@@ -110,7 +114,7 @@ async function add_node_options(box, name, properties, node_id) {
                    "Remove current node from active selection.",
                    "unselect", false);
     else
-        add_button("Select node <span>Alt+Click</span>", () => activate_node(node_id, properties, "nodes"),
+        add_button("Select node <span>Alt+Click</span>", () => activate_node(node_id, safe_properties, "nodes"),
                    "Add current node from active selection.",
                    "hand", false);
 
@@ -120,7 +124,7 @@ async function add_node_options(box, name, properties, node_id) {
                    "Remove current clade from active selection.",
                    "unselect", false);
     else
-        add_button("Select clade <span>Shift+Click</span>", () => activate_node(node_id, properties, "clades"),
+        add_button("Select clade <span>Shift+Click</span>", () => activate_node(node_id, safe_properties, "clades"),
                    "Add current clade from active selection.",
                    "hand", false);
 
@@ -132,7 +136,8 @@ async function add_node_options(box, name, properties, node_id) {
 
     if (view.allow_modifications) {
         const nodestyle = await api(`/trees/${nid}/nodestyle`);
-        add_node_modifying_options(properties, nodestyle, node_id);
+        const editable_props = await api(`/trees/${nid}/editable_props`);
+        add_node_modifying_options(editable_props, nodestyle, node_id);
     }
 }
 
