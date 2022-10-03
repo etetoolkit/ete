@@ -51,6 +51,7 @@ class LayoutPlot(TreeLayout):
             self.color_gradient = ("#FFF", self.color)
 
     def set_tree_style(self, tree, tree_style):
+        super().set_tree_style(tree, tree_style)
         def update_vals(metric, node):
             p, minval, maxval, uniqvals = vals[metric]
             prop = node.props.get(p)

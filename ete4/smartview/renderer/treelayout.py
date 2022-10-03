@@ -27,8 +27,6 @@ class TreeLayout():
             self.ns(node)
 
 
-
-
 class _LayoutNodeProperty(TreeLayout):
     def __init__(self, prop, column,
             name=None, pos='aligned',
