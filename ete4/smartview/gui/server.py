@@ -155,7 +155,8 @@ class Trees(Resource):
             node = gdn.get_node(tree.tree, subtree)
             props = node.props
             props.pop("tooltip", None)
-            return props
+            props.pop("hyperlink", None)
+            return { k: v for k,v in props.items() if type(v) in (int, float, str) }
         elif rule == '/trees/<string:tree_id>/leaves_info':
             node = gdn.get_node(tree.tree, subtree)
             return get_nodes_info(tree.tree, node.iter_leaves(), request.args.copy())

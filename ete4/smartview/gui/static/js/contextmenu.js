@@ -134,11 +134,9 @@ async function add_node_options(box, name, properties, node_id) {
             url, "external-link-alt");
     }
 
-    console.log("HII")
     if (view.allow_modifications) {
         const nodestyle = await api(`/trees/${nid}/nodestyle`);
         const editable_props = await api(`/trees/${nid}/editable_props`);
-        console.log(editable_props)
         add_node_modifying_options(editable_props, nodestyle, node_id);
     }
 }
