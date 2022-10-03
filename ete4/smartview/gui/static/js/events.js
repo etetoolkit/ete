@@ -43,6 +43,8 @@ function init_events() {
             document.querySelector("html").requestFullscreen());
     } else // ETE inside an iframe
         window.addEventListener("message", on_postMessage)
+
+    legend_expand.addEventListener("mouseup", view.legend.expand)
 }
 
 

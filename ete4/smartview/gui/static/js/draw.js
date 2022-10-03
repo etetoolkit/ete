@@ -296,9 +296,9 @@ async function draw_legend(params) {
                 div.appendChild(entry);
         });
         replace_child(div_legend, div);
-        div_legend.style.display = "block";
+        div_legend_container.style.display = "block";
     } else
-        div_legend.style.display = "none";
+        div_legend_container.style.display = "none";
 
 }
 

@@ -46,7 +46,7 @@ const view = {
     allow_modifications: true,
 
     // representation
-    drawer: {name: "RectFaces", type: "rect", npanels: 1},  // default drawer
+    drawer: {name: "AlignedRectFaces", type: "rect", npanels: 2},  // default drawer
     min_size: 15,  // for less pixels, the drawer will collapse things
     current_property: "name",  // pre-selected property in the add label menu
     rmin: 0,
@@ -168,6 +168,8 @@ const view = {
     },
 
     control_panel: { show: false },
+
+    legend: { expanded: true, expand: () => expand_legend() },
 
     smart_zoom: true,
 
@@ -513,6 +515,16 @@ function get_active_layouts() {
 async function reset_layouts() {
     view.layouts = await api(`/layouts/${get_tid()}`);
     update_folder_layouts()
+}
+
+
+function expand_legend() {
+    if (view.legend.expanded)
+        div_legend_container.style.height = "10px";
+    else
+        div_legend_container.style.height = "auto";
+
+    view.legend.expanded = !view.legend.expanded;
 }
 
 

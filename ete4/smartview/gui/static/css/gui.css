@@ -146,7 +146,8 @@ body {
     resize: vertical;
     z-index: 3;
     width: 300px;
-    height: 50%;
+    height: auto;
+    max-height: 50%;
     overflow-y: auto;
     padding: 1rem;
     padding-top: 0;
@@ -154,6 +155,12 @@ body {
     border-color: #d6d6d6;
     border-width: 2px;
     border-radius: 4px;
+}
+
+.legend-expand {
+    position: absolute;
+    right: 5px;
+    top: 5px;
 }
 
 .legend-title {
