@@ -44,7 +44,7 @@ function init_events() {
     } else // ETE inside an iframe
         window.addEventListener("message", on_postMessage)
 
-    legend_expand.addEventListener("mouseup", view.legend.expand)
+    div_legend_expand.addEventListener("mouseup", view.legend.expand)
 }
 
 

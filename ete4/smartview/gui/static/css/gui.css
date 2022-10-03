@@ -155,12 +155,14 @@ body {
     border-color: #d6d6d6;
     border-width: 2px;
     border-radius: 4px;
+    transition: max-height 0.5s ease-out;
 }
 
 .legend-expand {
     position: absolute;
     right: 5px;
     top: 5px;
+    transition: transform 0.5s;
 }
 
 .legend-title {

@@ -46,7 +46,7 @@ const view = {
     allow_modifications: true,
 
     // representation
-    drawer: {name: "AlignedRectFaces", type: "rect", npanels: 2},  // default drawer
+    drawer: {name: "RectFaces", type: "rect", npanels: 2},  // default drawer
     min_size: 15,  // for less pixels, the drawer will collapse things
     current_property: "name",  // pre-selected property in the add label menu
     rmin: 0,
@@ -519,10 +519,22 @@ async function reset_layouts() {
 
 
 function expand_legend() {
-    if (view.legend.expanded)
-        div_legend_container.style.height = "10px";
-    else
-        div_legend_container.style.height = "auto";
+    if (view.legend.expanded) {
+        div_legend_container.style["overflow-y"] = "hidden";
+        div_legend_container.style.resize = "none";
+        div_legend_container.style["max-height"] = "13px";
+        div_legend_expand.style.transform = "rotate(90deg)";
+        setTimeout(() => div_legend_header.style.display = "block", 500);
+    }
+    else {
+        div_legend_header.style.display = "none";
+        div_legend_container.style["max-height"] = "50%";
+        div_legend_expand.style.transform = "none";
+        setTimeout(() => {
+            div_legend_container.style["overflow-y"] = "auto"
+            div_legend_container.style.resize = "vertical";
+        }, 500);
+    }
 
     view.legend.expanded = !view.legend.expanded;
 }
