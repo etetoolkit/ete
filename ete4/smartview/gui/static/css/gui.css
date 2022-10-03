@@ -96,7 +96,7 @@ body {
     opacity: 0;
 }
 
-.div_aligned_grabber:hover {
+.aligned:hover .div_aligned_grabber {
     opacity: 0.5;
 }
 
