@@ -8,7 +8,7 @@ class LayoutEvolEvents(TreeLayout):
     def __init__(self, name="Evolutionary events", 
             prop="evol_event",
             speciation_color="blue", 
-            duplication_color="red"
+            duplication_color="red",
             legend=True):
         super().__init__(name)
         
