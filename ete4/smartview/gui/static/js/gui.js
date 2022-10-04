@@ -530,14 +530,16 @@ function expand_legend() {
         }, 500);
     }
     else {
-        div_legend_header.style.display = "none";
         div_legend_container.style.width = "300px";
-        div_legend_container.style["max-height"] = "50%";
-        div_legend_expand.style.transform = "none";
         setTimeout(() => {
-            div_legend_container.style["overflow-y"] = "auto"
-            div_legend_container.style.resize = "vertical";
-        }, 500);
+            div_legend_header.style.display = "none";
+            div_legend_container.style["max-height"] = "50%";
+            div_legend_expand.style.transform = "none";
+            setTimeout(() => {
+                div_legend_container.style["overflow-y"] = "auto"
+                div_legend_container.style.resize = "vertical";
+            }, 500);
+        }, 500)
     }
 
     view.legend.expanded = !view.legend.expanded;
