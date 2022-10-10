@@ -567,10 +567,11 @@ class DrawerCirc(Drawer):
     def __init__(self, tree, viewport=None, panel=0, zoom=(1, 1),
                  limits=None, collapsed_ids=None, active=None,
                  selected=None, searches=None,
-                 layouts=None, tree_style=None):
+                 layouts=None, tree_style=None, 
+                 popup_prop_keys=None):
         super().__init__(tree, viewport, panel, zoom,
                          limits, collapsed_ids, active, selected, searches, 
-                         layouts, tree_style)
+                         layouts, tree_style, popup_prop_keys=popup_prop_keys)
 
         assert self.zoom[0] == self.zoom[1], 'zoom must be equal in x and y'
 
@@ -876,6 +877,7 @@ class DrawerCircFaces(DrawerCirc):
                         r, a, dr, da = face.get_box()
                         hz_padding = 2 * face.padding_x / z
                         vt_padding = 2 * face.padding_y / (z * (r or 1e-10))
+                        print(dr_max, dr, dr+hz_padding)
                         dr_max = max(dr_max, dr + hz_padding)
                         da_before = da + vt_padding
                         yield from drawn_face

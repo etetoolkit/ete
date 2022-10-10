@@ -421,7 +421,9 @@ def init_timer(fn):
     return wrapper
 
 def initialize_tree_style(tree, ultrametric=False):
+    aligned_grid_dxs = deepcopy(tree.style.aligned_grid_dxs)
     tree.style = TreeStyle()
+    tree.style.aligned_grid_dxs = aligned_grid_dxs
     tree.style.ultrametric = ultrametric
 
     # Layout pre-render
