@@ -136,7 +136,8 @@ async function add_node_options(box, name, properties, node_id) {
 
     if (view.allow_modifications) {
         const nodestyle = await api(`/trees/${nid}/nodestyle`);
-        const editable_props = await api(`/trees/${nid}/editable_props`);
+        //const editable_props = await api(`/trees/${nid}/editable_props`);
+        const editable_props = undefined;
         add_node_modifying_options(editable_props, nodestyle, node_id);
     }
 }
@@ -260,10 +261,11 @@ function format_nodestyle(style) {
 async function add_node_modifying_options(properties, nodestyle, node_id) {
     const nid = get_tid() + "," + node_id;
     nodestyle = format_nodestyle(nodestyle);
-    add_button("Edit node properties", () =>
-        add_json_editor(nid, properties, "update_props", true, "properties"),
-       "Edit the properties of this node. Changes the tree structure.",
-       "edit", true);
+    if (properties)
+        add_button("Edit node properties", () =>
+            add_json_editor(nid, properties, "update_props", true, "properties"),
+           "Edit the properties of this node. Changes the tree structure.",
+           "edit", true);
     add_button("Edit node style", () => {
         const html = get_nodestyle_html(nodestyle);
         add_json_editor(nid, nodestyle, "update_nodestyle", false, "style", html)},
