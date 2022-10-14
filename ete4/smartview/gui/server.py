@@ -592,7 +592,8 @@ def get_drawer(tree_id, args):
         return drawer_class(load_tree(tree_id), viewport, panel, zoom,
                     limits, collapsed_ids, active, selected, searches,
                     layouts, tree.style, tree.popup_prop_keys)
-    except StopIteration:
+    except StopIteration as error:
+        print(error)
         raise InvalidUsage(f'not a valid drawer: {drawer_name}')
     except (ValueError, AssertionError) as e:
         raise InvalidUsage(str(e))

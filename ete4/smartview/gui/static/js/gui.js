@@ -151,7 +151,7 @@ const view = {
 
     // minimap
     minimap: {
-        show: true,
+        show: false,
         uptodate: false,
         width: 10,
         height: 40,
