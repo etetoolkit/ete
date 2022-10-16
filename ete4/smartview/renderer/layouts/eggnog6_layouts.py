@@ -36,8 +36,8 @@ def create_property_layout(prop, name, color, pos, active, column):
 
 prop_layout_args = [
         [ "sci_name",     "Scientific name", "black", "branch_right", True  ],
-        [ "best_name",    "Best name",       "black", "aligned",      True  ],
-        [ "prot_name",    "Protein name",    "gray",  "aligned",      True  ],
+        [ "best_name",    "Best name",       "black", "aligned",      False  ],
+        [ "prot_name",    "Protein name",    "gray",  "aligned",      False  ],
         [ "cazy",         "Cazy",            "gray",  "aligned",      False ],
         [ "card",         "CARD",            "gray",  "aligned",      False ],
         [ "pdb",          "PDB",             "gray",  "aligned",      False ],

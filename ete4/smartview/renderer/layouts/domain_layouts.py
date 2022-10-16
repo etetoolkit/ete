@@ -82,7 +82,7 @@ def create_domain_layout(prop, name, colormap, active, column):
 
 
 domain_layout_args = [ 
-        [ "pfam",  "Pfam domains",  _pfam2color,  False  ],
+        [ "pfam",  "Pfam domains",  _pfam2color,  True  ],
         [ "smart", "Smart domains", _smart2color, False  ],
     ]
 

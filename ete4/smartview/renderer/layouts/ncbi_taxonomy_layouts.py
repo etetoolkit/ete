@@ -30,7 +30,7 @@ class LayoutLastCommonAncestor(TreeLayout):
             rect_width=15, column=1000):
         super().__init__(name, aligned_faces=True)
 
-        self.active = False
+        self.active = True
 
         self.rect_width = rect_width
         self.column = column
