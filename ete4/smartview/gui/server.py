@@ -593,13 +593,13 @@ def get_drawer(tree_id, args):
                     limits, collapsed_ids, active, selected, searches,
                     layouts, tree.style, tree.popup_prop_keys)
     # bypass errors for now...
-    except:
-        pass
     except StopIteration as error:
         print(error)
         raise InvalidUsage(f'not a valid drawer: {drawer_name}')
     except (ValueError, AssertionError) as e:
         raise InvalidUsage(str(e))
+    except:
+        pass
 
 
 def get_leaves(node):
