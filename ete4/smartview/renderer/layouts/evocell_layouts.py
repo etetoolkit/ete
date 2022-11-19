@@ -1,7 +1,7 @@
 from ..faces import RectFace, TextFace
 from ..treelayout import TreeLayout
 
-__all__ = [ "LayoutHumanOGs", "LayoutUCSC"]
+__all__ = [ "LayoutHumanOGs", "LayoutUCSC", "LayoutUCSCtrans"]
 
 
 class LayoutHumanOGs(TreeLayout):
