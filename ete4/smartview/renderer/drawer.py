@@ -931,7 +931,7 @@ def make_box(point, size):
 def get_rect(element, zoom=(0, 0)):
     "Return the rectangle that contains the given graphic element"
     eid = element[0]
-    if eid in ['nodebox', 'rect', 'array', 'text', 'triangle', 'html']:
+    if eid in ['nodebox', 'rect', 'array', 'text', 'triangle', 'html', 'img']:
         return element[1]
     elif eid == 'outline':
         x, y, dx_min, dx_max, dy = element[1]
@@ -978,7 +978,7 @@ def get_rect(element, zoom=(0, 0)):
 def get_asec(element, zoom=(0, 0)):
     "Return the annular sector that contains the given graphic element"
     eid = element[0]
-    if eid in ['nodebox', 'rect', 'array', 'text', 'triangle', 'html']:
+    if eid in ['nodebox', 'rect', 'array', 'text', 'triangle', 'html', 'img']:
         return element[1]
     elif eid == 'outline':
         r, a, dr_min, dr_max, da = element[1]

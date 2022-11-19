@@ -3,7 +3,7 @@ import { view, get_tid, menus, coordinates, reset_view, show_minimap, show_help 
     from "./gui.js";
 import { zoom_around, zoom_aligned } from "./zoom.js";
 import { move_minimap_view } from "./minimap.js";
-import { drag_start, drag_stop, drag_move } from "./drag.js";
+import { dragging, drag_start, drag_stop, drag_move } from "./drag.js";
 import { search } from "./search.js";
 import { select_by_command, prune_by_selection, remove_selections } from "./select.js";
 import { activate_node, deactivate_node, update_active_nodes } from "./active.js";
@@ -185,7 +185,7 @@ function on_mousedown(event) {
     // so the order in which to do the contains() tests matters.
 }
 
-function update_tooltip(event) {
+function update_tooltip(event, delay=500) {
     
     if (!event.target.getAttribute)
         return
@@ -205,6 +205,7 @@ function update_tooltip(event) {
     const style = tooltip.style;
     const data = event.target.getAttribute("data-tooltip");
     if (data) {
+        view.tooltip.target = event.target;
         tooltip.innerHTML = data;
         style.display = "block";
         const bbox = event.target.getBoundingClientRect();
@@ -212,7 +213,7 @@ function update_tooltip(event) {
         style.top = bbox.y + "px";
         clear_timeout();
     } else if (!view.tooltip.timeout)
-        view.tooltip.timeout = setTimeout(() => style.display = "none", 500);
+        view.tooltip.timeout = setTimeout(() => style.display = "none", delay);
 }
 
 // Mouse move -- move tree view if dragging, update position coordinates.
@@ -223,12 +224,26 @@ function on_mousemove(event) {
 
     [view.pos.cx, view.pos.cy] = coordinates(point);
 
-    update_tooltip(event);
+    if (dragging.moved)
+        tooltip.style.display = "none";
+    else if (view.tooltip.auto && !view.tooltip.fixed)
+        update_tooltip(event);
 }
-
 
 // Mouse up -- stop dragging.
 function on_mouseup(event) {
+    if (!dragging.moved) {
+        if (!tooltip.contains(event.target) &&
+            !(event.target.getAttribute && 
+              event.target.getAttribute("data-tooltip")) ||
+            (!view.tooltip.auto &&
+             event.target === view.tooltip.target))
+            tooltip.style.display = "none";
+        else
+            update_tooltip(event);
+        view.tooltip.fixed = !view.tooltip.fixed;
+    }
+
     drag_stop();
 }
 
@@ -351,8 +366,13 @@ async function on_postMessage(event) {
     //if (!wiew.allowed_origins.includes(event.origin))
         //return
 
-    if (event.data.downloadImg) {
+    if (event.data.downloadSvg) {
         view.download.svg();
+        return
+    }
+
+    if (event.data.downloadPdf) {
+        view.download.pdf();
         return
     }
 

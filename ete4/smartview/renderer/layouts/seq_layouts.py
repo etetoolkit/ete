@@ -1,15 +1,16 @@
 from ....coretype.seqgroup import SeqGroup
 from ..treelayout import TreeLayout
-from ..faces import SeqMotifFace, ScaleFace
+from ..faces import AlignmentFace, SeqMotifFace, ScaleFace
 
 
 __all__ = [ "LayoutAlignment" ]
 
 
 class LayoutAlignment(TreeLayout):
-    def __init__(self, alignment=None, format='seq', width=700, height=15,
+    def __init__(self, name="Alignment",
+            alignment=None, format='seq', width=700, height=15,
             column=0, range=None, summarize_inner_nodes=False):
-        super().__init__('Alignment')
+        super().__init__(name)
         self.alignment = SeqGroup(alignment) if alignment else None
         self.width = width
         self.height = height
@@ -21,11 +22,10 @@ class LayoutAlignment(TreeLayout):
         self.scale_range = range or (0, self.length)
         self.summarize_inner_nodes = summarize_inner_nodes
 
-    def set_tree_style(self, tree_style):
+    def set_tree_style(self, tree, tree_style):
         if self.length:
             face = ScaleFace(width=self.width, scale_range=self.scale_range, padding_y=10)
             tree_style.aligned_panel_header.add_face(face, column=0)
-            tree_style.collapse_size = 1
 
     def _get_seq(self, node):
         if self.alignment:
@@ -47,7 +47,7 @@ class LayoutAlignment(TreeLayout):
         seq = self.get_seq(node)
 
         if seq:
-            seqFace = SeqMotifFace(seq, seq_format=self.format, bgcolor='grey',
+            seqFace = AlignmentFace(seq, seq_format=self.format, bgcolor='grey',
                     width=self.width, height=self.height)
             node.add_face(seqFace, column=self.column, position='aligned',
                     collapsed_only=(not node.is_leaf())) 

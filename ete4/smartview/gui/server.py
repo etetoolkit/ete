@@ -38,8 +38,6 @@ from flask import Flask, request, jsonify, g, redirect, url_for
 from flask_restful import Resource, Api
 from flask_cors import CORS
 from flask_compress import Compress
-from itsdangerous import TimedJSONWebSignatureSerializer as JSONSigSerializer
-from werkzeug.security import generate_password_hash, check_password_hash
 import logging
 
 from ... import Tree
@@ -59,6 +57,7 @@ class AppTree:
     tree: Tree = None
     name: str = None
     style: TreeStyle = None
+    nodestyles: dict = None
     layouts: list = None
     timer: float = None
     initialized: bool = False
@@ -154,7 +153,7 @@ class Trees(Resource):
         elif rule == '/trees/<string:tree_id>/name':
             return tree.name
         elif rule == '/trees/<string:tree_id>/newick':
-            MAX_MB = 2
+            MAX_MB = 200
             return get_newick(tree_id, MAX_MB)
         elif rule == '/trees/<string:tree_id>/seq':
             node = gdn.get_node(tree.tree, subtree)
@@ -343,7 +342,8 @@ class Trees(Resource):
         elif rule == '/trees/<string:tree_id>/update_nodestyle':
             try:
                 node = gdn.get_node(tree.tree, subtree)
-                update_node_style(node, request.json)
+                update_node_style(node, request.json.copy())
+                tree.nodestyles[node] = request.json.copy()
                 return {'message': 'ok'}
             except AssertionError as e:
                 raise InvalidUsage(f'cannot update style of ${node_id}: {e}')
@@ -424,7 +424,7 @@ def load_tree(tree_id):
                 for layouts in tree.layouts.values():
                     for layout in layouts:
                         if layout.active:
-                            layout.set_tree_style(tree.style)
+                            layout.set_tree_style(tree.tree, tree.style)
 
                 tree.initialized = True
 
@@ -433,6 +433,9 @@ def load_tree(tree_id):
                     node._smfaces = None
                     node._collapsed_faces = None
                     node._sm_style = None
+
+                for node, args in tree.nodestyles.items():
+                    update_node_style(node, args.copy())
 
             return t
         else:
@@ -680,6 +683,7 @@ def update_node_props(node, args):
             raise InvalidUsage('property {prop} should be of type {type(value)}')
         else:
             node.add_prop(prop, newvalue)
+
 
 def update_node_style(node, args):
     newstyle = {}
@@ -1343,6 +1347,7 @@ def initialize(tree=None, layouts=[], custom_api={}, custom_route={}, safe_mode=
     app.trees = defaultdict(lambda: AppTree(
         name=get_random_string(10),
         style=copy_style(TreeStyle()),
+        nodestyles={},
         layouts = app.default_layouts,
         timer = time(),
         searches = {},

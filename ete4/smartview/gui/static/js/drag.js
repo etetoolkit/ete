@@ -4,7 +4,7 @@ import { view } from "./gui.js";
 import { update_minimap_visible_rect } from "./minimap.js";
 import { draw_tree, draw_aligned } from "./draw.js";
 
-export { drag_start, drag_stop, drag_move };
+export { dragging, drag_start, drag_stop, drag_move };
 
 
 const dragging = {

@@ -1,3 +1,5 @@
+import base64
+import pathlib
 import re
 from math import pi
 
@@ -5,6 +7,8 @@ from ..utils import InvalidUsage, get_random_string
 from .draw_helpers import *
 
 CHAR_HEIGHT = 1.4 # char's height to width ratio
+
+ALLOWED_IMG_EXTENSIONS = [ "png", "svg", "jpeg" ]
 
 _aacolors = {
     'A':"#C8C8C8" ,
@@ -952,6 +956,8 @@ class SeqMotifFace(Face):
         self.seq = seq or '-' * max([m[1] for m in motifs])
         self.seqtype = seqtype
 
+        self.autoformat = True  # block if 1px contains > 1 tile
+
         self.motifs = motifs
         self.overlaping_motif_opacity = 0.5
 
@@ -1105,6 +1111,19 @@ class SeqMotifFace(Face):
         x0, y, _, dy = self._box
         zx, zy = self.zoom
 
+        if self.viewport and len(self.seq):
+            vx0, vx1 = self.viewport
+            is_small = ((vx1 - vx0) * zx) / (len(self.seq) / zx) < 3
+            if self.seq_format in [ "seq", "compactseq" ] and is_small:
+                self.seq_format = "[]"
+                self.regions = []
+                self.build_regions()
+            if self.seq_format == "[]" and not is_small:
+                self.seq_format = "seq"
+                self.regions = []
+                self.build_regions()
+
+
         x = x0
         prev_end = -1
 
@@ -1116,10 +1135,15 @@ class SeqMotifFace(Face):
                 p2 = cartesian(p2)
             yield draw_line(p1, p2, style={'stroke-width': self.gap_linewidth,
                                            'stroke': self.gapcolor})
-        for (start, end, shape, posw, h, fg, bg, text, opacity) in self.regions:
 
-            if not self.in_aligned_viewport((start, end)):
+        for item in self.regions:
+            if len(item) == 9:
+                start, end, shape, posw, h, fg, bg, text, opacity = item
+            else:
                 continue
+            
+            # if not self.in_aligned_viewport((start / zx, end / zx)):
+                # continue
 
             posw = (posw or self.poswidth) * self.w_scale
             w = posw * (end + 1 - start)
@@ -1197,14 +1221,6 @@ class SeqMotifFace(Face):
                     aa_type = "text"
                 yield [ f'pixi-aa_{aa_type}', sm_box, seq ]
 
-            # elif shape == 'seq':
-                # seq = self.seq[start : end + 1]
-                # seq_face = SeqFace(seq, self.seqtype, posw * zx,
-                        # draw_text=True, max_fsize=self.max_fsize,
-                        # ftype=self.ftype)
-                # seq_face._box = box # assign box manually
-                # seq_face.compute_fsize(posw, h, zx, zy)
-                # yield from seq_face.draw(drawer)
 
             # Text on top of shape
             if text:
@@ -1228,6 +1244,167 @@ class SeqMotifFace(Face):
 
             # Update x to draw consecutive motifs
             x += w
+
+
+class AlignmentFace(Face):
+    def __init__(self, seq, seqtype='aa',
+            gap_format='line', seq_format='[]',
+            width=None, height=None, # max height
+            fgcolor='black', bgcolor='#bcc3d0', gapcolor='gray',
+            gap_linewidth=0.2,
+            max_fsize=12, ftype='sans-serif',
+            padding_x=0, padding_y=0):
+
+        Face.__init__(self, padding_x=padding_x, padding_y=padding_y)
+
+        self.seq = seq
+        self.seqlength = len(self.seq)
+        self.seqtype = seqtype
+
+        self.autoformat = True  # block if 1px contains > 1 tile
+
+        self.seq_format = seq_format
+        self.gap_format = gap_format
+        self.gap_linewidth = gap_linewidth
+        self.compress_gaps = False
+
+        self.poswidth = 5
+        self.w_scale = 1
+        self.width = width    # sum of all regions' width if not provided
+        self.height = height  # dynamically computed if not provided
+
+        total_width = self.seqlength * self.poswidth
+        if self.width:
+            self.w_scale = self.width / total_width
+        else:
+            self.width = total_width
+
+        self.bg = _aacolors if self.seqtype == 'aa' else _ntcolors
+        # self.fgcolor = fgcolor
+        # self.bgcolor = bgcolor
+        self.gapcolor = gapcolor
+
+        # Text
+        self.ftype = ftype
+        self._min_fsize = 8
+        self.max_fsize = max_fsize
+        self._fsize = None
+
+        self.blocks = []
+        self.build_blocks()
+
+    def __name__(self):
+        return "AlignmentFace"
+
+    def get_seq(self, start, end):
+        """Retrieves sequence given start, end"""
+        return self.seq[start:end]
+
+    def build_blocks(self):
+        pos = 0
+        for reg in re.split('([^-]+)', self.seq):
+            if reg:
+                if not reg.startswith("-"):
+                    self.blocks.append([pos, pos + len(reg) - 1])
+                pos += len(reg)
+
+        self.blocks.sort()
+
+    def compute_bounding_box(self,
+            drawer,
+            point, size,
+            dx_to_closest_child,
+            bdx, bdy,
+            bdy0, bdy1,
+            pos, row,
+            n_row, n_col,
+            dx_before, dy_before):
+
+        if pos != 'branch_right' and not pos.startswith('aligned'):
+            raise InvalidUsage(f'Position {pos} not allowed for SeqMotifFace')
+
+        box = super().compute_bounding_box( 
+            drawer,
+            point, size,
+            dx_to_closest_child,
+            bdx, bdy,
+            bdy0, bdy1,
+            pos, row,
+            n_row, n_col,
+            dx_before, dy_before)
+
+        x, y, _, dy = box
+
+        zx, zy = self.zoom
+        zx = 1 if drawer.TYPE != 'circ' else zx
+        
+            # zx = drawer.zoom[0]
+            # self.zoom = (zx, zy)
+
+        if drawer.TYPE == "circ":
+            self.viewport = (0, drawer.viewport.dx)
+        else:
+            self.viewport = (drawer.viewport.x, drawer.viewport.x + drawer.viewport.dx)
+
+        self._box = Box(x, y, self.width / zx, dy)
+        return self._box
+
+    def draw(self, drawer):
+        def get_height(x, y):
+            r = (x or 1e-10) if drawer.TYPE == 'circ' else 1
+            default_h = dy * zy * r
+            h = min([self.height or default_h, default_h]) / zy
+            # h /= r
+            return y + (dy - h) / 2, h
+
+        # Only leaf/collapsed branch_right or aligned
+        x0, y, dx, dy = self._box
+        zx, zy = self.zoom
+        zx = drawer.zoom[0] if drawer.TYPE == 'circ' else zx
+
+
+        if self.gap_format in ["line", "-"]:
+            p1 = (x0, y + dy / 2)
+            p2 = (x0 + self.width, y + dy / 2)
+            if drawer.TYPE == 'circ':
+                p1 = cartesian(p1)
+                p2 = cartesian(p2)
+            yield draw_line(p1, p2, style={'stroke-width': self.gap_linewidth,
+                                           'stroke': self.gapcolor})
+        vx0, vx1 = self.viewport
+        is_small = ((vx1 - vx0) * zx) / (self.seqlength / zx) < 40
+
+        posw = self.poswidth * self.w_scale
+        viewport_start = vx0 - self.viewport_margin / zx
+        viewport_end = vx1 + self.viewport_margin / zx
+        sm_x = max(viewport_start - x0, 0)
+        sm_start = round(sm_x / posw)
+        w = self.seqlength * posw
+        sm_x0 = x0 if drawer.TYPE == "rect" else 0
+        sm_end = self.seqlength - round(max(sm_x0 + w - viewport_end, 0) / posw)
+
+        if is_small or self.seq_format == "[]":
+            for start, end in self.blocks:
+                if end >= sm_start and start <= sm_end:
+                    bstart = max(sm_start, start)
+                    bend = min(sm_end, end)
+                    bx = x0 + bstart * posw
+                    by, bh = get_height(bx, y)
+                    box = Box(bx, by, (bend - bstart) * posw, bh)
+                    yield [ "pixi-block", box ]
+
+        else:
+            seq = self.get_seq(sm_start, sm_end)
+            sm_x = sm_x if drawer.TYPE == 'rect' else x0
+            y, h = get_height(sm_x, y)
+            sm_box = Box(sm_x, y, posw * len(seq), h)
+
+            if self.seq_format == 'compactseq' or posw * zx < self._min_fsize:
+                aa_type = "notext"
+            else:
+                aa_type = "text"
+            yield [ f'pixi-aa_{aa_type}', sm_box, seq ]
+
 
 
 class ScaleFace(Face):
@@ -1316,7 +1493,7 @@ class ScaleFace(Face):
 
         if self.viewport:
             sm_start = round(max(self.viewport[0] - self.viewport_margin - x0, 0) / dx)
-            sm_end = nticks- round(max(x0 + self.width - (self.viewport[1] +
+            sm_end = nticks - round(max(x0 + self.width - (self.viewport[1] +
                 self.viewport_margin), 0) / dx)
         else:
             sm_start, sm_end = 0, nticks
@@ -1403,3 +1580,29 @@ class HTMLFace(RectFace):
 
     def draw(self, drawer):
         yield draw_html(self._box, self.content)
+
+
+class ImgFace(RectFace):
+    def __init__(self, img_path, width, height, name="", padding_x=0, padding_y=0):
+
+        RectFace.__init__(self, width=width, height=height,
+                name=name, padding_x=padding_x, padding_y=padding_y)
+
+
+        
+        with open(img_path, "rb") as handle:
+            img = base64.b64encode(handle.read()).decode("utf-8")
+        extension = pathlib.Path(img_path).suffix[1:]
+        if extension not in ALLOWED_IMG_EXTENSIONS:
+            print("The image does not have an allowed format: " +
+                    extension + " not in " + str(ALLOWED_IMG_EXTENSIONS))
+
+        self.content = f'data:image/{extension};base64,{img}'
+
+        self.stretch = False
+
+    def __name__(self):
+        return "ImgFace"
+
+    def draw(self, drawer):
+        yield draw_img(self._box, self.content)

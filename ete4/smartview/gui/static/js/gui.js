@@ -3,7 +3,7 @@
 import { init_menus, update_folder_layouts } from "./menu.js";
 import { init_events, notify_parent, get_event_zoom } from "./events.js";
 import { update } from "./draw.js";
-import { download_newick, download_svg } from "./download.js";
+import { download_newick, download_svg, download_pdf } from "./download.js";
 import { activate_node, deactivate_node } from "./active.js";
 import { search, get_searches, remove_searches } from "./search.js";
 import { get_selections, remove_selections } from "./select.js";
@@ -41,6 +41,7 @@ const view = {
     download: {
         newick: () => download_newick(),
         svg:    () => download_svg(),
+        pdf:    () => download_pdf(),
     },
     allow_modifications: true,
 
@@ -51,6 +52,9 @@ const view = {
     rmin: 0,
     angle: {min: -180, max: 180},
     tooltip: {
+        auto: false,
+        fixed: false,
+        target: undefined,
         timeout: undefined,
     },
     aligned: {
@@ -186,7 +190,8 @@ const menus = {  // will contain the menus on the top
     show: false,
     open: () => {
         menus.show = true;
-        document.getElementById("sidenav-open").style.opacity = 0;
+        [...document.getElementsByClassName("sidebtn")]
+            .forEach(el => el.style.opacity = 0)
         div_viz.style["margin-left"] = menus.width + "px";
         const sidenav = document.getElementById("sidenav");
         sidenav.style.width = menus.width + "px";
@@ -204,7 +209,8 @@ const menus = {  // will contain the menus on the top
             sidenav.style.width = 0;
             div_viz.style["margin-left"] = 0;
             setTimeout(() => {
-                document.getElementById("sidenav-open").style.opacity = 1;
+                [...document.getElementsByClassName("sidebtn")]
+                    .forEach(el => el.style.opacity = 1)
             }, 500);
         }, 500);
     }
@@ -529,6 +535,7 @@ function reset_zoom(reset_zx=true, reset_zy=true, reset_za=true) {
         const min_w_h = Math.min(div_tree.offsetWidth, div_tree.offsetHeight);
         view.zoom.x = view.zoom.y = min_w_h / (view.rmin + size.width) / 2;
         view.zoom.a = view.zoom.x;
+        //view.zoom.a = 1;
     }
 }
 
