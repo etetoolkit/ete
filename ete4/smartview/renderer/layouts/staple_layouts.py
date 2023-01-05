@@ -106,7 +106,7 @@ class LayoutPlot(TreeLayout):
         if not self.size_prop:
             return self.width
         minval, maxval = self.size_range
-        return node.props.get(self.size_prop, 0) / maxval * self.width
+        return float(node.props.get(self.size_prop, 0)) / float(maxval) * self.width
 
     def get_color(self, node):
         if not self.color_prop:

@@ -403,6 +403,7 @@ class CircleFace(Face):
     def draw(self, drawer):
         self._check_own_variables()
         style = {'fill': self.color} if self.color else {}
+        
         yield draw_circle(self._center, self._max_radius,
                 self.name, style=style, tooltip=self.tooltip)
 
@@ -1556,6 +1557,7 @@ class PieChartFace(CircleFace):
         # self.data = [ (name, value, color, tooltip, a, da) ]
         self.data = []
         self.compute_pie(list(data))
+        self.tooltip = None
 
     def __name__(self):
         return "PieChartFace"
