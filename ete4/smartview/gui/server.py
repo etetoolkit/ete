@@ -1045,6 +1045,7 @@ def get_eval_search(expression):
         raise InvalidUsage(f'compiling expression: {e}')
 
     return lambda node: safer_eval(code, {
+        'node': node, 'parent': node.parent,
         'name': node.name, 'is_leaf': node.is_leaf(),
         'length': node.dist, 'dist': node.dist, 'd': node.dist,
         'props': node.props, 'p': node.props,
@@ -1052,7 +1053,10 @@ def get_eval_search(expression):
         'children': node.children, 'ch': node.children,
         'size': node.size, 'dx': node.size[0], 'dy': node.size[1],
         'regex': re.search,
-        'len': len, 'sum': sum, 'abs': abs, 'float': float, 'pi': pi})
+        'startswith': str.startswith, 'endswith': str.endswith,
+        'upper': str.upper, 'lower': str.lower, 'split': str.split,
+        'any': any, 'all': all, 'len': len,
+        'sum': sum, 'abs': abs, 'float': float, 'pi': pi})
 
 
 def safer_eval(code, context):
