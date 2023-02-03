@@ -125,7 +125,7 @@ class Trees(Resource):
     def get(self, tree_id=None):
         "Return data from the tree (or info about all trees if no id given)"
         rule = request.url_rule.rule  # shortcut
-        
+
         # Update tree's timer
         if rule.startswith('/trees/<string:tree_id>'):
             tid, subtree = get_tid(tree_id)
@@ -181,7 +181,7 @@ class Trees(Resource):
                         name += ",".join(map(str, get_node_id(tree.tree, leaf, [])))
                     seqs.append(name + "\n" + leaf.props.get("seq"))
             return "\n".join(seqs)
-            
+
         elif rule == '/trees/<string:tree_id>/nseq':
             node = gdn.get_node(tree.tree, subtree)
             leaves = get_leaves(node)
@@ -250,7 +250,7 @@ class Trees(Resource):
             remove_active(tree, 1)
             return {'message': 'ok'}
         elif rule == '/trees/<string:tree_id>/all_active':
-            return { 
+            return {
                 "nodes": get_nodes_info(tree.tree, tree.active.nodes.results, ["*"]),
                 "clades": get_nodes_info(tree.tree, tree.active.clades.results, ["*"]),
             }
@@ -261,7 +261,7 @@ class Trees(Resource):
             return get_nodes_info(tree.tree, active_leaves, ["*"])
         # Searches
         elif rule == '/trees/<string:tree_id>/searches':
-            searches = { 
+            searches = {
                 text: { 'nresults' : len(results), 'nparents': len(parents) }
                 for text, (results, parents) in (tree.searches or {}).items() }
             return { 'searches': searches }
@@ -489,7 +489,7 @@ def retrieve_layouts(layouts):
 
         if len(name_split) not in (2, 3):
             continue
-        
+
         if len(name_split) == 2:
             key, ly_name = name_split
             active = None
@@ -532,13 +532,13 @@ def retrieve_tree(tid):
     tree = data["tree"]
     layouts = retrieve_layouts(data["layouts"])
     return name, tree, layouts
-   
+
 
 def get_drawer(tree_id, args):
     "Return the drawer initialized as specified in the args"
     valid_keys = ['x', 'y', 'w', 'h', 'panel', 'zx', 'zy', 'za',
                   'drawer', 'min_size',
-                  'layouts', 'ultrametric', 'collapsed_ids', 
+                  'layouts', 'ultrametric', 'collapsed_ids',
                   'rmin', 'amin', 'amax']
 
     try:
@@ -588,7 +588,7 @@ def get_drawer(tree_id, args):
         active = tree.active
         selected = tree.selected
         searches = tree.searches
-        
+
         return drawer_class(load_tree(tree_id), viewport, panel, zoom,
                     limits, collapsed_ids, active, selected, searches,
                     layouts, tree.style, tree.popup_prop_keys)
@@ -732,7 +732,7 @@ def get_nodes_info(tree, nodes, props):
     no_props = len(props) == 1 and props[0] == ''
 
     if 'id' in props or no_props or '*' in props:
-        node_ids = [ ",".join(map(str, get_node_id(tree, node, []))) 
+        node_ids = [ ",".join(map(str, get_node_id(tree, node, [])))
                 for node in nodes ]
     if no_props:
         return node_ids
@@ -978,7 +978,7 @@ def remove_active_clade(node, active):
         node = parent
         if node == active_parent:
             return
-        
+
 
 def deactivate_clade(tree_id):
     tid, subtree = get_tid(tree_id)
@@ -1110,7 +1110,7 @@ def get_trees_from_form():
     else:
         return [{
             'id': form.get('id'),
-            'name': form['name'], 
+            'name': form['name'],
             'newick': form.get('newick', None),
             'b64pickle': form.get('b64pickle', None),
             'description': form.get('description', ''),
@@ -1152,7 +1152,7 @@ def add_tree(data):
         tree = data.get('tree', None)
         if not tree:
             raise InvalidUsage('Either Newick or Tree object has to be provided.')
-    
+
     app_tree = app.trees[int(tid)]
     app_tree.name = name
     app_tree.tree = tree
@@ -1238,7 +1238,7 @@ def get_layouts(layouts=[]):
         layout.module = "default"
         all_layouts[layout.name or idx] = layout
 
-        
+
     return list(all_layouts.values()), layouts_from_module
 
 
@@ -1304,7 +1304,7 @@ def purge(interval=None, max_time=30*60):
     trees = list(app.trees.keys())
     for tid in trees:
         inactivity_time = time() - app.trees[tid].timer
-        if inactivity_time > max_time: 
+        if inactivity_time > max_time:
             del_tree(tid)
     # Call self after interval
     if interval: # in seconds
@@ -1356,7 +1356,7 @@ def copy_style(tree_style):
 
 # App initialization.
 
-def initialize(tree=None, layouts=[], 
+def initialize(tree=None, layouts=[],
         popup_prop_keys=DEFAULT_POPUP_PROP_KEYS,
         custom_api={},  custom_route={}, safe_mode=False):
     "Initialize the database and the flask app"
@@ -1506,7 +1506,7 @@ def add_resources(app, api, custom_api={}, custom_route={}):
     add_custom_resources(app, api, custom_api, custom_route)
 
 
-def run_smartview(tree=None, tree_name=None, 
+def run_smartview(tree=None, tree_name=None,
         layouts=[], popup_prop_keys=DEFAULT_POPUP_PROP_KEYS,
         custom_api={}, custom_route={},
         safe_mode=False, host="127.0.0.1", port=5000,
@@ -1519,7 +1519,7 @@ def run_smartview(tree=None, tree_name=None,
         os.chdir(os.path.abspath(os.path.dirname(__file__)))
 
     global app
-    app = initialize(tree_name, layouts, 
+    app = initialize(tree_name, layouts,
             popup_prop_keys=popup_prop_keys,
             custom_api=custom_api,
             custom_route=custom_route,
@@ -1529,9 +1529,9 @@ def run_smartview(tree=None, tree_name=None,
 
     # TODO: Create app.recent_trees with paths to recently viewed trees
 
-    if tree: 
+    if tree:
         gdn.standardize(tree)
-        tree_data = { 
+        tree_data = {
             'id': 0,  # id to be replaced by actual hash
             'name': tree_name,
             'tree': tree,

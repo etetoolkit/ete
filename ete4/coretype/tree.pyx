@@ -1532,8 +1532,8 @@ cdef class TreeNode(object):
                                     layout=layout, tree_style=tree_style,
                                       units=units, dpi=dpi)
 
-    def explore(self, tree_name=None, layouts=[], show_leaf_name=True, 
-            show_branch_length=True, show_branch_support=True, 
+    def explore(self, tree_name=None, layouts=[], show_leaf_name=True,
+            show_branch_length=True, show_branch_support=True,
             popup_prop_keys=None,  # DEFAULT_POPUP_PROP_KEYS in ete4.smartview.gui.server
             host="127.0.0.1", port=5000,
             custom_api={}, custom_route={}):
@@ -1574,7 +1574,7 @@ cdef class TreeNode(object):
             default_layouts.append(layout)
 
         run_smartview(tree=self, tree_name=tree_name,
-                layouts=list(default_layouts + layouts), 
+                layouts=list(default_layouts + layouts),
                 host=host, port=port, popup_prop_keys=popup_prop_keys,
                 custom_api=custom_api, custom_route=custom_route)
 
