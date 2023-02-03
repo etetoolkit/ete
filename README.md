@@ -84,7 +84,7 @@ For question on how to use ETE in the bioinformatics context, use
 overflow](https://stackoverflow.com/questions/tagged/etetoolkit+or+ete4).
 
 [![](http://img.shields.io/badge/biostars-etetoolkit-purple.svg)](https://www.biostars.org/post/search/?query=etetoolkit+or+ete+or+ete2+or+ete3+or+ete4)
-[![](http://img.shields.io/badge/stackoverflow-etetoolkit-blue.svg)](https://stackoverflow.com/questions/tagged/etetoolkit+or+ete3)
+[![](http://img.shields.io/badge/stackoverflow-etetoolkit-blue.svg)](https://stackoverflow.com/questions/tagged/etetoolkit+or+ete3+or+ete4)
 
 For bug reports, feature requests and general discussion, use
 https://github.com/etetoolkit/ete/issues
