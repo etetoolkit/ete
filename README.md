@@ -84,8 +84,8 @@ Rather than sending direct support-related emails to the developers,
 it is better to keep the communication public.
 
 For question on how to use ETE in the bioinformatics context, use
-[Biostars](http://biostars.org) with the `etetoolkit` tag, or [[stack
-overflow]](https://stackoverflow.com/questions/tagged/etetoolkit+or+ete4).
+[Biostars](http://biostars.org) with the `etetoolkit` tag, or [stack
+overflow](https://stackoverflow.com/questions/tagged/etetoolkit+or+ete4).
 
 [![](http://img.shields.io/badge/stackoverflow-etetoolkit-blue.svg)](https://stackoverflow.com/questions/tagged/etetoolkit+or+ete3)
 
