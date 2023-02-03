@@ -1752,20 +1752,20 @@ cdef class TreeNode(object):
         are_last = are_last or []
 
         attrs = attributes or ['name']
-        desc = ', '.join(str(self.props.get(attr) or '<empty>') for attr in attrs)
-        line = self._get_branches_repr(are_last) + desc
+        desc = ', '.join(str(self.props.get(attr) or '(empty)') for attr in attrs)
+        branches = self._get_branches_repr(are_last, self.is_leaf())
 
-        return '\n'.join([line] +
+        return '\n'.join([branches + desc] +
             [node.to_str(attrs, are_last + [False]) for node in self.children[:-1]] +
             [node.to_str(attrs, are_last + [True])  for node in self.children[-1:]])
 
-    def _get_branches_repr(self, are_last):
+    def _get_branches_repr(self, are_last, is_leaf):
         """
         Return a text line representing open branches according to are_last.
 
         are_last is a list of bools. It says per level if we are the last node.
 
-        Example (with more spaces for clarity):
+        Example (with more spaces for clarity, for is_leaf=True):
         [True , False, True , True , True ] ->
         '│             │      │      └─   '
         """
@@ -1773,7 +1773,11 @@ cdef class TreeNode(object):
             return ''
 
         prefix = ''.join('  ' if is_last else '│ ' for is_last in are_last[:-1])
-        return prefix + ('└─' if are_last[-1] else '├─')
+
+        if is_leaf:
+            return prefix + ('└─ ' if are_last[-1] else '├─ ')
+        else:
+            return prefix + ('└─┬ ' if are_last[-1] else '├─┬ ')
 
     def sort_descendants(self, attr="name"):
         """
