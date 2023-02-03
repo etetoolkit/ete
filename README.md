@@ -1,12 +1,8 @@
 [![](https://travis-ci.org/etetoolkit/ete.svg?branch=ete4)](https://travis-ci.org/etetoolkit/ete)
-
 [![Join the chat at https://gitter.im/jhcepas/ete](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/jhcepas/ete?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 ![](https://coveralls.io/repos/jhcepas/ete/badge.png)
-
 [![](http://img.shields.io/badge/stackoverflow-etetoolkit-blue.svg)](https://stackoverflow.com/questions/tagged/etetoolkit+or+ete4)
-
 [![](http://img.shields.io/badge/biostars-etetoolkit-purple.svg)](https://www.biostars.org/t/etetoolkit,ete,ete2,ete3,ete4/)
-
 [![](https://img.shields.io/badge/Contributor%20Covenant-2.0-4baaaa.svg)](CODE_OF_CONDUCT.md)
 
 
