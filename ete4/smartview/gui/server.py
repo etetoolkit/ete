@@ -1115,8 +1115,8 @@ def get_trees_from_form():
         return [{
             'id': form.get('id'),
             'name': form['name'],
-            'newick': form.get('newick', None),
-            'b64pickle': form.get('b64pickle', None),
+            'newick': form.get('newick'),
+            'b64pickle': form.get('b64pickle'),
             'description': form.get('description', ''),
             'layouts': form.get('layouts', [])
             }]
@@ -1138,8 +1138,8 @@ def add_tree(data):
     "Add tree with given data and return its id"
     tid = int(data['id'])
     name = data['name']
-    newick = data.get('newick', None)
-    bpickle = data.get('b64pickle', None)
+    newick = data.get('newick')
+    bpickle = data.get('b64pickle')
     layouts = data.get('layouts', [])
     if type(layouts) == str:
         layouts = layouts.split(",")
@@ -1153,7 +1153,7 @@ def add_tree(data):
         # tree = pickle.loads(b64decode(bpickle))
         gdn.standardize(tree)
     else:
-        tree = data.get('tree', None)
+        tree = data.get('tree')
         if not tree:
             raise InvalidUsage('Either Newick or Tree object has to be provided.')
 
