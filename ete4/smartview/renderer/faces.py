@@ -1543,7 +1543,7 @@ class ScaleFace(Face):
 class PieChartFace(CircleFace):
 
     def __init__(self, radius, data, name="",
-            padding_x=0, padding_y=0):
+            padding_x=0, padding_y=0, tooltip=None):
 
         Face.__init__(self, name=name,
                 padding_x=padding_x, padding_y=padding_y)
@@ -1557,7 +1557,7 @@ class PieChartFace(CircleFace):
         # self.data = [ (name, value, color, tooltip, a, da) ]
         self.data = []
         self.compute_pie(list(data))
-        self.tooltip = None
+        self.tooltip = tooltip
 
     def __name__(self):
         return "PieChartFace"

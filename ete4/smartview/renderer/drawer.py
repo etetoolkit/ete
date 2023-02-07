@@ -877,7 +877,7 @@ class DrawerCircFaces(DrawerCirc):
                         r, a, dr, da = face.get_box()
                         hz_padding = 2 * face.padding_x / z
                         vt_padding = 2 * face.padding_y / (z * (r or 1e-10))
-                        print(dr_max, dr, dr+hz_padding)
+                        #print(dr_max, dr, dr+hz_padding)
                         dr_max = max(dr_max, dr + hz_padding)
                         da_before = da + vt_padding
                         yield from drawn_face
