@@ -494,9 +494,8 @@ def _get_features_string(self, features=None, format=0):
     elif features == []:
         features = sorted(k for k in self._properties.keys() if not k.startswith("_"))
 
-    excluded_props = set(c[0] for c in NW_FORMAT[format] if c[0] is not None)
     for pr in features:
-        if pr in self._properties and pr not in excluded_props:
+        if pr in self._properties:
             raw = self._properties[pr]
             if type(raw) in ITERABLE_TYPES:
                 raw = '|'.join(map(str, raw))
