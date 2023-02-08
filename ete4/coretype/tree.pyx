@@ -1371,7 +1371,7 @@ cdef class TreeNode(object):
           structure that will be used as a basal node.
         :branch_properties: list of branch properties (other than "support").
         """
-        from ..smartview.ete.gardening import root_at
+        from ..smartview.renderer.gardening import root_at
         return root_at(outgroup, branch_properties)
 
 
