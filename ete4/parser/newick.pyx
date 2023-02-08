@@ -107,29 +107,36 @@ def set_float_format(formatter):
 #                     \E-------|
 #                               \-G
 #
-# Format 0 = (A:0.350596,(B:0.728431,(D:0.609498,G:0.125729)1.000000:0.642905)1.000000:0.567737);
-# Format 1 = (A:0.350596,(B:0.728431,(D:0.609498,G:0.125729)E:0.642905)C:0.567737);
-# Format 2 = (A:0.350596,(B:0.728431,(D:0.609498,G:0.125729)1.000000:0.642905)1.000000:0.567737);
-# Format 3 = (A:0.350596,(B:0.728431,(D:0.609498,G:0.125729)E:0.642905)C:0.567737);
-# Format 4 = (A:0.350596,(B:0.728431,(D:0.609498,G:0.125729)));
-# Format 5 = (A:0.350596,(B:0.728431,(D:0.609498,G:0.125729):0.642905):0.567737);
-# Format 6 = (A:0.350596,(B:0.728431,(D:0.609498,G:0.125729)E)C);
-# Format 7 = (A,(B,(D,G)E)C);
-# Format 8 = (A,(B,(D,G)));
-# Format 9 = (,(,(,)));
+# Format 0   = (A:0.35,(B:0.72,(D:0.61,G:0.12)1.00:0.64)1.00:0.56);
+# Format 1   = (A:0.35,(B:0.72,(D:0.61,G:0.12)E:0.64)C:0.56);
+# Format 2   = (A:0.35,(B:0.72,(D:0.61,G:0.12)1.00:0.64)1.00:0.56);  (same as 0 for reading)
+# Format 3   = (A:0.35,(B:0.72,(D:0.61,G:0.12)E:0.64)C:0.56);        (same as 1 for reading)
+# Format 4   = (A:0.35,(B:0.72,(D:0.61,G:0.12)));
+# Format 5   = (A:0.35,(B:0.72,(D:0.61,G:0.12):0.64):0.56);
+# Format 6   = (A,(B,(D,G):0.64):0.56);
+# Format 7   = (A:0.35,(B:0.72,(D:0.61,G:0.12)E)C);
+# Format 8   = (A,(B,(D,G)E)C);
+# Format 9   = (A,(B,(D,G)));
+# Format 100 = (,(,(,)));
 
+# Each node content looks like:
+#   [container1]:[container2]
+# (the ":" is only present if there is something in container2)
+#
+#       ---------------- leaf nodes -----------------  ----------------- internal nodes ----------------
+#        --- container 1 ---   --- container 2 ---      --- container 1 ---        --- container 2 ---
 NW_FORMAT = {
-  0: [['name', str, True],  ["dist", float, True],    ['support', float, True],   ["dist", float, True]], # Flexible with support
-  1: [['name', str, True],  ["dist", float, True],    ['name', str, True],      ["dist", float, True]], # Flexible with internal node names
-  2: [['name', str, False], ["dist", float, False],   ['support', float, False],  ["dist", float, False]],# Strict with support values
-  3: [['name', str, False], ["dist", float, False],   ['name', str, False],     ["dist", float, False]], # Strict with internal node names
-  4: [['name', str, False], ["dist", float, False],   [None, None, False],        [None, None, False]],
-  5: [['name', str, False], ["dist", float, False],   [None, None, False],        ["dist", float, False]],
-  6: [['name', str, False], [None, None, False],      [None, None, False],        ["dist", float, False]],
-  7: [['name', str, False], ["dist", float, False],   ["name", str, False],       [None, None, False]],
-  8: [['name', str, False], [None, None, False],      ["name", str, False],       [None, None, False]],
-  9: [['name', str, False], [None, None, False],      [None, None, False],        [None, None, False]], # Only topology with node names
-  100: [[None, None, False],  [None, None, False],      [None, None, False],        [None, None, False]] # Only Topology
+  0:   [['name', str, True],  ["dist", float, True],   ['support', float, True],  ["dist", float, True]], # Flexible with support
+  1:   [['name', str, True],  ["dist", float, True],   ['name', str, True],       ["dist", float, True]], # Flexible with internal node names
+  2:   [['name', str, False], ["dist", float, False],  ['support', float, False], ["dist", float, False]], # Strict with support values
+  3:   [['name', str, False], ["dist", float, False],  ['name', str, False],      ["dist", float, False]], # Strict with internal node names
+  4:   [['name', str, False], ["dist", float, False],  [None, None, False],       [None, None, False]],
+  5:   [['name', str, False], ["dist", float, False],  [None, None, False],       ["dist", float, False]],
+  6:   [['name', str, False], [None, None, False],     [None, None, False],       ["dist", float, False]],
+  7:   [['name', str, False], ["dist", float, False],  ["name", str, False],      [None, None, False]],
+  8:   [['name', str, False], [None, None, False],     ["name", str, False],      [None, None, False]],
+  9:   [['name', str, False], [None, None, False],     [None, None, False],       [None, None, False]], # Only topology with node names
+  100: [[None, None, False],  [None, None, False],     [None, None, False],       [None, None, False]] # Only Topology
 }
 
 
