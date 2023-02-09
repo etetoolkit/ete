@@ -571,13 +571,19 @@ class GTDBTaxa(object):
                 node_taxid = None
 
             n.add_prop('taxid', node_taxid)
+            
             if node_taxid:
                 tmp_taxid = self.get_name_translator([node_taxid]).get(node_taxid, [None])[0]
                 #tmp_taxid = self.get_name_translator([node_taxid])[node_taxid][0] # translate to temperatoru
                 if node_taxid in merged_conversion:
                     node_taxid = merged_conversion[node_taxid]
 
-                n.add_props(sci_name = tax2name.get(node_taxid, getattr(n, taxid_attr, '')),
+                rank = tax2rank.get(tmp_taxid, 'Unknown')
+                if rank =='subspecies':
+                    sci_name = tax2name.get(tax2track.get(tmp_taxid,[])[-2], '')
+                else:
+                    sci_name = tax2name.get(node_taxid, getattr(n, taxid_attr, ''))
+                n.add_props(sci_name = sci_name,
                                common_name = tax2common_name.get(node_taxid, ''),
                                lineage = tax2track.get(tmp_taxid, []),
                                rank = tax2rank.get(tmp_taxid, 'Unknown'),
