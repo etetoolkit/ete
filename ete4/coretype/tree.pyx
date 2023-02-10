@@ -1460,7 +1460,7 @@ cdef class TreeNode(object):
         outgroup2.dist = middist
         outgroup2.support = outgroup.support
 
-        update_all_sizes(self)
+        update_all_sizes(self)  # TODO: change for update_size_from(n)
 
 
     def unroot(self, mode='legacy'):
