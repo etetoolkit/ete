@@ -438,8 +438,6 @@ def initialize_tree_style(tree, ultrametric=False):
 
 def load_tree(tree_id):
     "Add tree to app.trees and initialize it if not there, and return it"
-
-
     try:
         tid, subtree = get_tid(tree_id)
         tree = app.trees[int(tid)]
@@ -1305,6 +1303,7 @@ def update_ultrametric(ultrametric, tid):
 
 def get_tid(tree_id):
     "Return the tree id and the subtree id, with the appropriate types"
+    # Example: '3342,1,0,1,1' -> (3342, [1, 0, 1, 1])
     try:
         if type(tree_id) == int:
             return tree_id, []
@@ -1476,8 +1475,15 @@ def add_custom_resources(app, api, custom_api={}, custom_route={}):
 def add_resources(app, api, custom_api={}, custom_route={}):
     "Add all the REST endpoints"
     add = api.add_resource  # shortcut
+
     add(Drawers, '/drawers/<string:name>/<string:tree_id>')
-    add(Layouts, '/layouts', '/layouts/<string:tree_id>','/layouts/list', '/layouts/update')
+
+    add(Layouts,
+        '/layouts',
+        '/layouts/list',
+        '/layouts/update',
+        '/layouts/<string:tree_id>')
+
     add(Trees,
         '/trees',
         '/trees/<string:tree_id>',
@@ -1529,6 +1535,7 @@ def add_resources(app, api, custom_api={}, custom_route={}):
         '/trees/<string:tree_id>/update_nodestyle',
         '/trees/<string:tree_id>/reinitialize',
         '/trees/<string:tree_id>/reload')
+
     add_custom_resources(app, api, custom_api, custom_route)
 
 
