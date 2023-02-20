@@ -114,12 +114,12 @@ def circumasec(rect):
         return Box(rmin, amin, sqrt(max(radius2)) - rmin, max(angles) - amin)
 
 # Basic drawing elements.
-def draw_nodebox(box, name='', properties=None, 
+def draw_nodebox(box, name='', properties=None,
         node_id=None, searched_by=None, style=None):
     properties = { k:v for k,v in (properties or {}).items() \
             if not (k.startswith('_') or k == 'seq')}
-    return ['nodebox', box, name, 
-            properties, node_id or [], 
+    return ['nodebox', box, name,
+            properties, node_id or [],
             searched_by or [], style or {}]
 
 def draw_outline(sbox, style=None):
@@ -152,7 +152,7 @@ def draw_slice(center, r, a, da, slice_type='', style=None, tooltip=None):
 
 def draw_triangle(box, tip, triangle_type='', style=None, tooltip=None):
     """Returns array with all the information needed to draw a triangle
-    in front end. 
+    in front end.
     :box: bounds triangle
     :tip: defines tip orientation 'top', 'left' or 'right'.
     :triangle_type: will label triangle in front end (class)
@@ -175,7 +175,7 @@ def draw_rhombus(box, rhombus_type='', style=None, tooltip=None):
                (x, y + dy / 2))      # left
     return ['rhombus', rhombus, rhombus_type, style or {}, tooltip or '']
 
-def draw_arrow(box, tip, orientation='right', arrow_type='', 
+def draw_arrow(box, tip, orientation='right', arrow_type='',
         style=None, tooltip=None):
     """ Create arrow provided a bounding box """
     x, y, dx, dy = box
