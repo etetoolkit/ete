@@ -312,18 +312,17 @@ cdef class TreeNode(object):
     def __repr__(self):
         return "Tree node '%s' (%s)" %(self.name, hex(self.__hash__()))
 
-    def __and__(self, value):
-        """ This allows to execute tree&'A' to obtain the descendant node
-        whose name is A"""
-        value=str(value)
+    def __and__(self, name):
+        """Return the first descendant with the given name."""
+        # tree&'A' returns the descendant node whose name is 'A'
         try:
-            first_match = next(self.iter_search_nodes(name=value))
+            first_match = next(self.iter_search_nodes(name=str(name)))
             return first_match
         except StopIteration:
             raise TreeError("Node not found")
 
     def __add__(self, value):
-        """ This allows to sum two trees."""
+        """Sum trees. t1 + t2 returns a new tree with children=[t1, t2]."""
         # Should a make the sum with two copies of the original trees?
         if type(value) == self.__class__:
             new_root = self.__class__()
