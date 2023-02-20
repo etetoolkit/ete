@@ -324,7 +324,7 @@ async function draw_aligned(params, npanels) {
                  h: Math.max(div_tree.offsetHeight / zy + view.tl.y - view.tree_size.height,
                         view.aligned.footer.height / zy) } }
     };
-
+    
     if (view.drawer.type === "rect") {
         npanels = npanels ? Math.min(view.drawer.npanels, npanels) : view.drawer.npanels;
         for (let panel_n = 1; panel_n < npanels; panel_n++) {
@@ -514,7 +514,6 @@ function create_item(g, item, tl, zoom) {
     }
     else if (item[0] === "text") {
         const [ , box, txt, type, rotation, anchor, style] = item;
-
         const text = create_text(box, rotation, txt, style.max_fsize,
             tl, zx, zy, get_class_name(type), anchor, style);
 

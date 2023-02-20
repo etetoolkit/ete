@@ -116,6 +116,7 @@ class Drawer:
             yield from self.tree_style.get_legend()
 
         else:
+            
             point = self.xmin, self.ymin
             for it in walk(self.tree):
                 graphics = []
@@ -131,6 +132,7 @@ class Drawer:
             if self.panel == 0:  # draw in preorder the boxes we found in postorder
                 max_dx = max([box[1].dx for box in self.nodeboxes] + [0])
                 self.tree_style.aligned_grid_dxs[-1] = max_dx
+                #print(self.tree_style.aligned_grid_dxs)
                 yield from self.nodeboxes[::-1]  # (so they overlap nicely)
 
     def on_first_visit(self, point, it, graphics):
@@ -204,6 +206,7 @@ class Drawer:
 
         ndx = (drawn_size(content_graphics, self.get_box).dx if it.node.is_leaf()
                 else (dx + max(self.node_dxs.pop() or [0])))
+        
         self.node_dxs[-1].append(ndx)
 
         box = Box(x_before, y_before, ndx, dy)
@@ -272,6 +275,7 @@ class Drawer:
                     dy * self.zoom[1], active_node, nodedot_style)
 
     def draw_aligned_headers(self):
+        
         # Draw aligned panel headers
         def it_fits(box, pos):
             _, _, dx, dy = box
@@ -288,7 +292,10 @@ class Drawer:
                     yield from face.draw(self)
 
         def draw_faces_at_pos(faces, pos, iteration):
+            # set position of headers
+            
             n_col = max(faces.keys(), default = -1) + 1
+            
             dx_before = 0
             for col, face_list in sorted(faces.items()):
                 if col > 0:
@@ -305,7 +312,7 @@ class Drawer:
                         _, _, dx, dy = face.get_box()
                         hz_padding = 2 * face.padding_x / zx
                         vt_padding = 2 * face.padding_y / zy
-                        dx_max = max(dx_max, (dx or 0) + hz_padding)
+                        dx_max = max(dx_max, (dx or 0) + hz_padding) # determine the gap between headers
                         dy_before += dy + vt_padding
                         yield from drawn_face
                 # Update dx_before
