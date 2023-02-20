@@ -25,11 +25,11 @@ def is_good_angle_interval(a1, a2):
 
 def summary(nodes, prop="name"):
     "Return a list of names summarizing the given list of nodes"
-    return list(OrderedDict((first_prop(node, prop), None) for node in nodes).keys())
+    return list(OrderedDict((first_value(node, prop), None) for node in nodes).keys())
 
 
-def first_prop(tree, prop):
-    "Return the name of the first node that has a name"
+def first_value(tree, prop):
+    "Return the value of the requested property for the first node that has it"
     return next((node.props.get(prop) for node in tree.traverse('preorder') if node.props.get(prop)), '')
 
 
