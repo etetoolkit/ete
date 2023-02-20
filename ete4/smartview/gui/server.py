@@ -1545,7 +1545,7 @@ def run_smartview(tree=None, tree_name=None,
         run=True, serve_static=True, verbose=True):
     # Set tree_name to None if no tree was provided
     # Generate tree_name if none was provided
-    tree_name = tree_name or get_random_string(10) if tree else None
+    tree_name = tree_name or (get_random_string(10) if tree else None)
 
     if serve_static:
         os.chdir(os.path.abspath(os.path.dirname(__file__)))
