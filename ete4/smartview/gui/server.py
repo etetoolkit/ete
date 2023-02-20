@@ -20,7 +20,7 @@ from base64 import b64decode
 
 import re
 from importlib import reload as module_reload
-from math import pi
+from math import pi, inf
 from functools import partial
 from time import time
 from threading import Timer
@@ -122,7 +122,7 @@ class Layouts(Resource):
 
 
 class Trees(Resource):
-    def get(self, tree_id=None):
+    def get(self, tree_id=None, pname=None):
         "Return data from the tree (or info about all trees if no id given)"
         rule = request.url_rule.rule  # shortcut
 
@@ -290,6 +290,8 @@ class Trees(Resource):
             for node in t.traverse():
                 properties |= node.props.keys()
             return list(properties)
+        elif rule == '/trees/<string:tree_id>/properties/<string:pname>':
+            return get_stats(tree_id, pname)
         elif rule == '/trees/<string:tree_id>/nodecount':
             tnodes = tleaves = 0
             for node in t.traverse():
@@ -1067,6 +1069,25 @@ def safer_eval(code, context):
     return eval(code, {'__builtins__': {}}, context)
 
 
+def get_stats(tree_id, pname):
+    "Return some statistics about the given property pname"
+    pmin, pmax = inf, -inf
+    n, pmean, pmean2 = 0, 0, 0
+    try:
+        for node in load_tree(tree_id):
+            if pname in node.props:
+                value = float(node.props[pname])
+                pmin, pmax = min(pmin, value), max(pmax, value)
+                pmean = (n * pmean + value) / (n + 1)
+                pmean2 = (n * pmean2 + value*value) / (n + 1)
+                n += 1
+        assert n > 0, 'no node has the given property'
+        return {'n': n, 'min': pmin, 'max': pmax, 'mean': pmean,
+                'var': pmean2 - pmean*pmean}
+    except (ValueError, AssertionError) as e:
+        raise InvalidUsage(f'when reading property {pname}: {e}')
+
+
 def sort(tree_id, node_id, key_text, reverse):
     "Sort the (sub)tree corresponding to tree_id and node_id"
     t = load_tree(tree_id)
@@ -1473,6 +1494,7 @@ def add_resources(app, api, custom_api={}, custom_route={}):
         '/trees/<string:tree_id>/size',
         '/trees/<string:tree_id>/collapse_size',
         '/trees/<string:tree_id>/properties',
+        '/trees/<string:tree_id>/properties/<string:pname>',
         '/trees/<string:tree_id>/nodecount',
         '/trees/<string:tree_id>/ultrametric',
         '/trees/<string:tree_id>/select',  # select node
