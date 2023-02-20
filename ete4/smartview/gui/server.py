@@ -475,7 +475,6 @@ def load_tree_from_newick(tid, newick):
 
     if app.trees[int(tid)].style.ultrametric:
         t.convert_to_ultrametric()
-        gdn.standardize(t)
 
     gdn.standardize(t)
     return t
