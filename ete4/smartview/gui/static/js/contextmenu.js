@@ -40,10 +40,7 @@ async function on_box_contextmenu(event, box, name, properties, node_id=[]) {
 
         add_button("Zoom into branch <span>Dblclick</span>", () => zoom_into_box(box),  "", "zoom");
 
-        if (node_id.length > 0) {
-            await add_node_options(box, name, properties, node_id);
-        }
-
+        await add_node_options(box, name, properties, node_id);
     }
 
     add_label("Tree");
