@@ -338,21 +338,21 @@ class Trees(Resource):
                 gdn.move(gdn.get_node(t, node_id), shift)
                 return {'message': 'ok'}
             except AssertionError as e:
-                raise InvalidUsage(f'cannot move ${node_id}: {e}')
+                raise InvalidUsage(f'cannot move {node_id}: {e}')
         elif rule == '/trees/<string:tree_id>/remove':
             try:
                 node_id = request.json
                 gdn.remove(gdn.get_node(t, node_id))
                 return {'message': 'ok'}
             except AssertionError as e:
-                raise InvalidUsage(f'cannot remove ${node_id}: {e}')
+                raise InvalidUsage(f'cannot remove {node_id}: {e}')
         elif rule == '/trees/<string:tree_id>/update_props':
             try:
                 node = gdn.get_node(tree.tree, subtree)
                 update_node_props(node, request.json)
                 return {'message': 'ok'}
             except AssertionError as e:
-                raise InvalidUsage(f'cannot update props of ${node_id}: {e}')
+                raise InvalidUsage(f'cannot update props of {node_id}: {e}')
         elif rule == '/trees/<string:tree_id>/update_nodestyle':
             try:
                 node = gdn.get_node(tree.tree, subtree)
@@ -360,7 +360,7 @@ class Trees(Resource):
                 tree.nodestyles[node] = request.json.copy()
                 return {'message': 'ok'}
             except AssertionError as e:
-                raise InvalidUsage(f'cannot update style of ${node_id}: {e}')
+                raise InvalidUsage(f'cannot update style of {node_id}: {e}')
         elif rule == '/trees/<string:tree_id>/reinitialize':
             gdn.standardize(tree.tree)
             tree.initialized = False
