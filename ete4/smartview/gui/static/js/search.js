@@ -23,12 +23,10 @@ const searchError = Swal.mixin({
 async function search() {
     let search_text;
 
-    const inputValue = view.search_cache ?
-        { inputValue: view.search_cache } : {};
     const result = await Swal.fire({
         input: "text",
         position: "bottom-start",
-        ...inputValue,
+        inputValue: view.search_cache,
         inputPlaceholder: "Enter name or /r <regex> or /e <exp>",
         showClass: { popup: "swal2-search" },
         showConfirmButton: false,
@@ -131,14 +129,14 @@ function add_search_to_menu(text) {
             .on("click", async () => {
                 const qs = `text=${encodeURIComponent(text)}`;
                 await api(`/trees/${get_tid()}/search_to_selection?${qs}`);
-                store_selection(text, { 
+                store_selection(text, {
                     nresults: vsearch.results.n, nparents: vsearch.parents.n,
                 })
                 vsearch.remove();
             })
 
     const folder_results = folder.addFolder({ title: `results (${vsearch.results.n})` });
-    folder_results.addInput(vsearch.results, "opacity", 
+    folder_results.addInput(vsearch.results, "opacity",
         { min: 0, max: 1, step: 0.1 })
         .on("change", () => colorize_search(text));
     folder_results.addInput(vsearch.results, "color", { view: "color" })
