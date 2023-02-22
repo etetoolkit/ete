@@ -13,9 +13,10 @@ from ..parser.newick import NewickError
 from . import datasets as ds
 
 class Test_Coretype_Tree(unittest.TestCase):
-    """ Tests tree basics. """
-    def test_read_write_exceptions(self):
+    """Test the basic Tree class."""
 
+    def test_read_write_exceptions(self):
+        """Test that the right exceptions are risen."""
         def wrong_dist():
             t = Tree()
             t.dist = '1a'
