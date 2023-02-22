@@ -333,39 +333,43 @@ cdef class TreeNode(object):
             raise TreeError("Invalid node type")
 
     def __str__(self):
-        """ Print tree in newick format. """
-        return self.get_ascii(compact=DEFAULT_COMPACT, \
-                                show_internal=DEFAULT_SHOWINTERNAL)
+        """Return an ascii string showing the tree."""
+        return self.get_ascii(compact=DEFAULT_COMPACT,
+                              show_internal=DEFAULT_SHOWINTERNAL)
 
     def __contains__(self, item):
-        """ Check if item belongs to this node. The 'item' argument must
-        be a node instance or its associated name."""
+        """Return True if the tree contains the given item.
+
+        :param item: A node instance or its associated name.
+        """
         if isinstance(item, self.__class__):
-            return item in set(self.get_descendants())
-        elif type(item)==str:
-            return item in set([n.name for n in self.traverse()])
+            return item in self.get_descendants()
+        elif type(item) == str:
+            return any(n.name == item for n in self.traverse())
+        else:
+            raise TreeError("Invalid item type")
 
     def __len__(self):
-        """Node len returns number of children."""
+        """Return the number of leaves."""
         return len(self.get_leaves())
 
     def __iter__(self):
-        """ Iterator over leaf nodes"""
+        """Yield all the terminal nodes (leaves)."""
         return self.iter_leaves()
 
-    def add_prop(self, name, value):
-        """ Add or update node's property """
-        if name != None and value != None:
-            self.props[name] = value
+    def add_prop(self, prop_name, value):
+        """Add or update node's property to the given value."""
+        if prop_name is not None and value is not None:
+            self.props[prop_name] = value
 
     def add_props(self, **props):
         """Add or update several properties."""
-        for name, value in props.items():
-            self.add_prop(name, value)
+        for prop_name, value in props.items():
+            self.add_prop(prop_name, value)
 
-    def del_prop(self, name):
+    def del_prop(self, prop_name):
         """Permanently deletes a node's property."""
-        self.props.pop(name, None)
+        self.props.pop(prop_name, None)
 
     # DEPRECATED #
     def add_feature(self, pr_name, pr_value):
@@ -553,88 +557,84 @@ cdef class TreeNode(object):
 
 
     def prune(self, nodes, preserve_branch_length=False):
-        """Prunes the topology of a node to conserve only the selected list of leaf
-        internal nodes. The minimum number of nodes that conserve the
-        topological relationships among the requested nodes will be
-        retained. Root node is always conserved.
+        """Prune the topology conserving only the given nodes.
 
-        :var nodes: a list of node names or node objects that should be retained
+        It will only retain the minimum number of nodes that conserve the
+        topological relationships among the requested nodes. The root node is
+        always conserved.
 
-        :param False preserve_branch_length: If True, branch lengths
-          of the deleted nodes are transferred (summed up) to its
-          parent's branch, thus keeping original distances among
-          nodes.
+        :param nodes: List of node names or objects that should be kept.
+        :param bool preserve_branch_length: If True, branch lengths
+            of the deleted nodes are transferred (summed up) to its
+            parent's branch, thus keeping original distances among nodes.
 
-        **Examples:**
+        Examples::
 
-        ::
-
-          t1 = Tree('(((((A,B)C)D,E)F,G)H,(I,J)K)root;', format=1)
-          t1.prune(['A', 'B'])
+            t1 = Tree('(((((A,B)C)D,E)F,G)H,(I,J)K)root;', format=1)
+            t1.prune(['A', 'B'])
 
 
-          #                /-A
-          #          /D /C|
-          #       /F|      \-B
-          #      |  |
-          #    /H|   \-E
-          #   |  |                        /-A
-          #-root  \-G                 -root
-          #   |                           \-B
-          #   |   /-I
-          #    \K|
-          #       \-J
+            #                /-A
+            #          /D /C|
+            #       /F|      \-B
+            #      |  |
+            #    /H|   \-E
+            #   |  |                        /-A
+            #-root  \-G                 -root
+            #   |                           \-B
+            #   |   /-I
+            #    \K|
+            #       \-J
 
 
 
-          t1 = Tree('(((((A,B)C)D,E)F,G)H,(I,J)K)root;', format=1)
-          t1.prune(['A', 'B', 'C'])
+            t1 = Tree('(((((A,B)C)D,E)F,G)H,(I,J)K)root;', format=1)
+            t1.prune(['A', 'B', 'C'])
 
-          #                /-A
-          #          /D /C|
-          #       /F|      \-B
-          #      |  |
-          #    /H|   \-E
-          #   |  |                              /-A
-          #-root  \-G                  -root- C|
-          #   |                                 \-B
-          #   |   /-I
-          #    \K|
-          #       \-J
-
-
-
-          t1 = Tree('(((((A,B)C)D,E)F,G)H,(I,J)K)root;', format=1)
-          t1.prune(['A', 'B', 'I'])
+            #                /-A
+            #          /D /C|
+            #       /F|      \-B
+            #      |  |
+            #    /H|   \-E
+            #   |  |                              /-A
+            #-root  \-G                  -root- C|
+            #   |                                 \-B
+            #   |   /-I
+            #    \K|
+            #       \-J
 
 
-          #                /-A
-          #          /D /C|
-          #       /F|      \-B
-          #      |  |
-          #    /H|   \-E                    /-I
-          #   |  |                      -root
-          #-root  \-G                      |   /-A
-          #   |                             \C|
-          #   |   /-I                          \-B
-          #    \K|
-          #       \-J
 
-          t1 = Tree('(((((A,B)C)D,E)F,G)H,(I,J)K)root;', format=1)
-          t1.prune(['A', 'B', 'F', 'H'])
+            t1 = Tree('(((((A,B)C)D,E)F,G)H,(I,J)K)root;', format=1)
+            t1.prune(['A', 'B', 'I'])
 
-          #                /-A
-          #          /D /C|
-          #       /F|      \-B
-          #      |  |
-          #    /H|   \-E
-          #   |  |                              /-A
-          #-root  \-G                -root-H /F|
-          #   |                                 \-B
-          #   |   /-I
-          #    \K|
-          #       \-J
 
+            #                /-A
+            #          /D /C|
+            #       /F|      \-B
+            #      |  |
+            #    /H|   \-E                    /-I
+            #   |  |                      -root
+            #-root  \-G                      |   /-A
+            #   |                             \C|
+            #   |   /-I                          \-B
+            #    \K|
+            #       \-J
+
+            t1 = Tree('(((((A,B)C)D,E)F,G)H,(I,J)K)root;', format=1)
+            t1.prune(['A', 'B', 'F', 'H'])
+
+            #                /-A
+            #          /D /C|
+            #       /F|      \-B
+            #      |  |
+            #    /H|   \-E
+            #   |  |                              /-A
+            #-root  \-G                -root-H /F|
+            #   |                                 \-B
+            #   |   /-I
+            #    \K|
+            #       \-J
         """
         def cmp_nodes(x, y):
             # if several nodes are in the same path of two kept nodes,
@@ -688,43 +688,28 @@ cdef class TreeNode(object):
 
                 n.delete(prevent_nondicotomic=False)
 
-
     def swap_children(self):
-        """
-        Swaps current children order.
-        """
-        if len(self.children)>1:
-            self.children.reverse()
-
+        """Swap current children order (reversing it)."""
+        self.children.reverse()
 
     # #####################
     # Tree traversing
     # #####################
 
-
     def get_children(self):
-        """
-        Returns an independent list of node's children.
-        """
-        return [ch for ch in self.children]
+        """Return an independent list of the node's children."""
+        return self.children.copy()
 
     def get_sisters(self):
-        """
-        Returns an independent list of sister nodes.
-        """
+        """Return an independent list of sister nodes."""
         if self.up is not None:
-            return [ch for ch in self.up.children if ch!=self]
+            return [ch for ch in self.up.children if ch != self]
         else:
             return []
 
     def iter_leaves(self, is_leaf_fn=None):
-        """
-        Returns an iterator over the leaves under this node.
-
-        :argument None is_leaf_fn: See :func:`TreeNode.traverse` for
-          documentation.
-        """
-        for n in self.traverse(strategy="preorder", is_leaf_fn=is_leaf_fn):
+        """Yield the terminal nodes (leaves) under this node."""
+        for n in self.traverse("preorder", is_leaf_fn):
             if not is_leaf_fn:
                 if n.is_leaf():
                     yield n
@@ -733,87 +718,56 @@ cdef class TreeNode(object):
                     yield n
 
     def get_leaves(self, is_leaf_fn=None):
-        """
-        Returns the list of terminal nodes (leaves) under this node.
-
-        :argument None is_leaf_fn: See :func:`TreeNode.traverse` for
-          documentation.
-        """
-        return [n for n in self.iter_leaves(is_leaf_fn=is_leaf_fn)]
+        """Return a list of terminal nodes (leaves) under this node."""
+        return list(self.iter_leaves(is_leaf_fn))
 
     def iter_leaf_names(self, is_leaf_fn=None):
-        """
-        Returns an iterator over the leaf names under this node.
-
-        :argument None is_leaf_fn: See :func:`TreeNode.traverse` for
-          documentation.
-        """
-        for n in self.iter_leaves(is_leaf_fn=is_leaf_fn):
+        """Yield the leaf names under this node."""
+        for n in self.iter_leaves(is_leaf_fn):
             yield n.name
 
     def get_leaf_names(self, is_leaf_fn=None):
-        """
-        Returns the list of terminal node names under the current
-        node.
-
-        :argument None is_leaf_fn: See :func:`TreeNode.traverse` for
-          documentation.
-        """
-        return [name for name in self.iter_leaf_names(is_leaf_fn=is_leaf_fn)]
+        """Return a list of terminal node names under the current node."""
+        return list(self.iter_leaf_names(is_leaf_fn))
 
     def iter_descendants(self, strategy="levelorder", is_leaf_fn=None):
-        """
-        Returns an iterator over all descendant nodes.
-
-        :argument None is_leaf_fn: See :func:`TreeNode.traverse` for
-          documentation.
-        """
-        for n in self.traverse(strategy=strategy, is_leaf_fn=is_leaf_fn):
+        """Yield all descendant nodes."""
+        for n in self.traverse(strategy, is_leaf_fn):
             if n is not self:
                 yield n
 
     def get_descendants(self, strategy="levelorder", is_leaf_fn=None):
-        """
-        Returns a list of all (leaves and internal) descendant nodes.
-
-        :argument None is_leaf_fn: See :func:`TreeNode.traverse` for
-          documentation.
-        """
-        return [n for n in self.iter_descendants(strategy=strategy, \
-                                                 is_leaf_fn=is_leaf_fn)]
+        """Return a list of all descendant nodes (leaves and internal)."""
+        return list(self.iter_descendants(strategy, is_leaf_fn))
 
     def traverse(self, strategy="levelorder", is_leaf_fn=None):
-        """
-        Returns an iterator to traverse the tree structure under this
-        node.
+        """Traverse the tree structure under this node and yield the nodes.
 
-        :argument "levelorder" strategy: set the way in which tree
-           will be traversed. Possible values are: "preorder" (first
-           parent and then children) 'postorder' (first children and
-           the parent) and "levelorder" (nodes are visited in order
-           from root to leaves)
-
-        :argument None is_leaf_fn: If supplied, ``is_leaf_fn``
-           function will be used to interrogate nodes about if they
-           are terminal or internal. ``is_leaf_fn`` function should
-           receive a node instance as first argument and return True
-           or False. Use this argument to traverse a tree by
-           dynamically collapsing internal nodes matching
-           ``is_leaf_fn``.
+        :param str strategy: Set the way in which tree
+            will be traversed. Possible values are: "preorder" (first
+            parent and then children) "postorder" (first children and
+            the parent) and "levelorder" (nodes are visited in order
+            from root to leaves).
+        :param function is_leaf_fn: Function used to interrogate nodes about if
+            they are terminal or internal. The function should
+            receive a node instance as first argument and return True
+            or False. Use this argument to traverse a tree by
+            dynamically collapsing internal nodes matching `is_leaf_fn`.
         """
-        if strategy=="preorder":
-            return self._iter_descendants_preorder(is_leaf_fn=is_leaf_fn)
-        elif strategy=="levelorder":
-            return self._iter_descendants_levelorder(is_leaf_fn=is_leaf_fn)
-        elif strategy=="postorder":
-            return self._iter_descendants_postorder(is_leaf_fn=is_leaf_fn)
+        if strategy == "preorder":
+            return self._iter_descendants_preorder(is_leaf_fn)
+        elif strategy == "levelorder":
+            return self._iter_descendants_levelorder(is_leaf_fn)
+        elif strategy == "postorder":
+            return self._iter_descendants_postorder(is_leaf_fn)
+        else:
+            raise TreeError("Unknown strategy: %s" % strategy)
 
     def iter_prepostorder(self, is_leaf_fn=None):
-        """
-        Iterate over all nodes in a tree yielding every node in both
-        pre and post order. Each iteration returns a postorder flag
-        (True if node is being visited in postorder) and a node
-        instance.
+        """Yield all nodes in a tree in both pre and post order.
+
+        Each iteration returns a postorder flag (True if node is being visited
+        in postorder) and a node instance.
         """
         to_visit = [self]
         if is_leaf_fn is not None:
@@ -836,6 +790,7 @@ cdef class TreeNode(object):
                 yield (True, node)
 
     def _iter_descendants_postorder(self, is_leaf_fn=None):
+        """Yield all nodes in a tree in postorder."""
         to_visit = [self]
         if is_leaf_fn is not None:
             _leaf = is_leaf_fn
@@ -858,20 +813,16 @@ cdef class TreeNode(object):
                 yield node
 
     def _iter_descendants_levelorder(self, is_leaf_fn=None):
-        """
-        Iterate over all desdecendant nodes.
-        """
+        """Yield all descendant nodes in levelorder."""
         tovisit = deque([self])
-        while len(tovisit)>0:
+        while len(tovisit) > 0:
             node = tovisit.popleft()
             yield node
             if not is_leaf_fn or not is_leaf_fn(node):
                 tovisit.extend(node.children)
 
     def _iter_descendants_preorder(self, is_leaf_fn=None):
-        """
-        Iterator over all descendant nodes.
-        """
+        """Yield all descendant nodes in preorder."""
         to_visit = deque()
         node = self
         while node is not None:
@@ -884,79 +835,56 @@ cdef class TreeNode(object):
                 node = None
 
     def iter_ancestors(self):
-        '''versionadded: 2.2
-
-        Iterates over the list of all ancestor nodes from current node
-        to the current tree root.
-
-        '''
+        """Yield all ancestor nodes from the current node to the tree root."""
         node = self
         while node.up is not None:
             yield node.up
             node = node.up
 
     def get_ancestors(self):
-        '''versionadded: 2.2
-
-        Returns the list of all ancestor nodes from current node to
-        the current tree root.
-
-        '''
-        return [n for n in self.iter_ancestors()]
+        """Return a list of all ancestor nodes from the current node to the root."""
+        return list(self.iter_ancestors())
 
     def describe(self):
-        """
-        Prints general information about this node and its
-        connections.
-        """
-        if len(self.get_tree_root().children)==2:
+        """Print general information about this node and its connections."""
+        if len(self.get_tree_root().children) == 2:
             rooting = "Yes"
-        elif len(self.get_tree_root().children)>2:
+        elif len(self.get_tree_root().children) > 2:
             rooting = "No"
         else:
             rooting = "No children"
+
         max_node, max_dist = self.get_farthest_leaf()
         cached_content = self.get_cached_content()
+
         print("Number of leaf nodes:\t%d" % len(cached_content[self]))
         print("Total number of nodes:\t%d" % len(cached_content))
-        print("Rooted:\t%s" %rooting)
-        print("Most distant node:\t%s" %max_node.name)
-        print("Max. distance:\t%f" %max_dist)
+        print("Rooted:\t%s" % rooting)
+        print("Most distant node:\t%s" % max_node.name)
+        print("Max. distance:\t%g" % max_dist)
 
     def write(self, properties=None, outfile=None, format=0, is_leaf_fn=None,
               format_root_node=False, dist_formatter=None, support_formatter=None,
               name_formatter=None, quoted_node_names=False):
+        """Return the newick representation of current node.
+
+        :param features: List of feature names to be exported
+            using the Extended Newick Format (i.e. features=["name",
+            "dist"]). Use an empty list to export all available features
+            in each node (features=[]).
+        :param str outfile: Name of the output file. If present, it will write
+            the newick to that file instad of returning it as a string.
+        :param int format: Identifier of the newick standard used to encode the
+            tree. See tutorial for details.
+        :param bool format_root_node: If True, it allows features
+            and branch information from root node to be exported as a
+            part of the newick text string. For newick compatibility
+            reasons, this is False by default.
+
+        Example::
+
+            t.write(features=["species","name"], format=1)
         """
-        Returns the newick representation of current node. Several
-        arguments control the way in which extra data is shown for
-        every node:
-
-        :argument features: a list of feature names to be exported
-          using the Extended Newick Format (i.e. features=["name",
-          "dist"]). Use an empty list to export all available features
-          in each node (features=[])
-
-        :argument outfile: writes the output to a given file
-
-        :argument format: defines the newick standard used to encode the
-          tree. See tutorial for details.
-
-        :argument False format_root_node: If True, it allows features
-          and branch information from root node to be exported as a
-          part of the newick text string. For newick compatibility
-          reasons, this is False by default.
-
-        :argument is_leaf_fn: See :func:`TreeNode.traverse` for
-          documentation.
-
-        **Example:**
-
-        ::
-
-             t.write(features=["species","name"], format=1)
-
-        """
-
         nw = write_newick(self, properties=properties, format=format,
                           is_leaf_fn=is_leaf_fn,
                           format_root_node=format_root_node,
@@ -972,40 +900,33 @@ cdef class TreeNode(object):
             return nw
 
     def get_tree_root(self):
-        """
-        Returns the absolute root node of current tree structure.
-        """
+        """Return the absolute root node of the current tree structure."""
         root = self
         while root.up is not None:
             root = root.up
         return root
 
     def get_common_ancestor(self, *target_nodes, **kargs):
+        """Return the first common ancestor between this node and the target nodes.
+
+        :param target_nodes: Nodes to use when finding the common ancestor.
+
+        Example::
+
+            t = tree.Tree("(((A:0.1, B:0.01):0.001, C:0.1):1.0[&&NHX:name=common], (D:0.01):0.001):2.0[&&NHX:name=root];")
+            A = t.get_descendants_by_name("A")[0]
+            C = t.get_descendants_by_name("C")[0]
+            common = A.get_common_ancestor(C)
+            print("The common ancestor of nodes A and C in this tree is:", common.name)
         """
-        Returns the first common ancestor between this node and a given
-        list of 'target_nodes'.
-
-        **Examples:**
-
-        ::
-
-          t = tree.Tree("(((A:0.1, B:0.01):0.001, C:0.0001):1.0[&&NHX:name=common], (D:0.00001):0.000001):2.0[&&NHX:name=root];")
-          A = t.get_descendants_by_name("A")[0]
-          C = t.get_descendants_by_name("C")[0]
-          common =  A.get_common_ancestor(C)
-          print common.name
-
-        """
-
         get_path = kargs.get("get_path", False)
 
-        if len(target_nodes) == 1 and type(target_nodes[0]) \
-                in set([set, tuple, list, frozenset]):
+        if (len(target_nodes) == 1 and
+                type(target_nodes[0]) in [set, tuple, list, frozenset]):
             target_nodes = target_nodes[0]
 
         # Convert node names into node instances
         target_nodes = _translate_nodes(self, *target_nodes)
-
 
         if type(target_nodes) != list:
             # If only one node is provided and is the same as the seed node,
@@ -1053,13 +974,13 @@ cdef class TreeNode(object):
             return common
 
     def iter_search_nodes(self, **conditions):
-        """
-        Search nodes in an iterative way. Matches are yielded as they
-        are being found. This avoids needing to scan the full tree
-        topology before returning the first matches. Useful when
-        dealing with huge trees.
-        """
+        """Yield nodes matching the given conditions.
 
+        Example::
+
+            for node in tree.iter_search_nodes(dist=0.0, name="human"):
+                print(node.prop["support"])
+        """
         for n in self.traverse():
             conditions_passed = 0
             for key, value in conditions.items():
@@ -1070,45 +991,25 @@ cdef class TreeNode(object):
                 yield n
 
     def search_nodes(self, **conditions):
-        """
-        Returns the list of nodes matching a given set of conditions.
-
-        **Example:**
-
-        ::
-
-          tree.search_nodes(dist=0.0, name="human")
-
-        """
-        matching_nodes = []
-        for n in self.iter_search_nodes(**conditions):
-            matching_nodes.append(n)
-        return matching_nodes
+        """Return the list of nodes matching the given conditions."""
+        return list(self.iter_search_nodes(**conditions))
 
     def get_leaves_by_name(self, name):
-        """
-        Returns a list of leaf nodes matching a given name.
-        """
+        """Return a list of leaf nodes matching the given name."""
         return self.search_nodes(name=name, children=[])
 
     def is_leaf(self):
-        """
-        Return True if current node is a leaf.
-        """
+        """Return True if the current node is a leaf."""
         return len(self.children) == 0
 
     def is_root(self):
-        """
-        Returns True if current node has no parent
-        """
-        if self.up is None:
-            return True
-        else:
-            return False
+        """Return True if the current node has no parent."""
+        return self.up is None
 
     # ###########################
     # Distance related functions
     # ###########################
+
     def get_distance(self, target, target2=None, topology_only=False):
         """
         Returns the distance between two nodes. If only one target is
@@ -1360,20 +1261,14 @@ cdef class TreeNode(object):
                 tname = ''.join(next(avail_names))
             n.name = tname
 
-
     def set_outgroup_jordi(self, outgroup, branch_properties=None):
-        """
-        Returns a descendant node as the outgroup of a tree.  This function
-        can be used to root a tree or even an internal node.
+        """Set the given outgroup node at the root and return it.
 
-        :outgroup: a node instance within the same tree
-          structure that will be used as a basal node.
-        :branch_properties: list of branch properties (other than "support").
+        :param outgroup: The node too use as future root.
+        :param branch_properties: List of branch properties (other than "support").
         """
         from ..smartview.renderer.gardening import root_at
         return root_at(outgroup, branch_properties)
-
-
 
     def set_outgroup(self, outgroup):
         """
@@ -1461,7 +1356,6 @@ cdef class TreeNode(object):
 
         update_all_sizes(self)  # TODO: change for update_size_from(n)
 
-
     def unroot(self, mode='legacy'):
         """
         Unroots current node. This function is expected to be used on
@@ -1501,8 +1395,8 @@ cdef class TreeNode(object):
         drawer.show_tree(self, layout=layout,
                          tree_style=tree_style, win_name=name)
 
-    def render(self, file_name, layout=None, w=None, h=None, \
-                       tree_style=None, units="px", dpi=90):
+    def render(self, file_name, layout=None, w=None, h=None,
+               tree_style=None, units="px", dpi=90):
         """
         Renders the node structure as an image.
 
@@ -1536,22 +1430,13 @@ cdef class TreeNode(object):
             popup_prop_keys=None,  # DEFAULT_POPUP_PROP_KEYS in ete4.smartview.gui.server
             host="127.0.0.1", port=5000,
             custom_api={}, custom_route={}):
-        """
-        Starts an interactive smartview session to visualize current node
-        structure using provided TreeStyle.
+        """Launch an interactive smartview session to visualize the current node.
 
-        :tree_name string: name used to store tree in local database.
-        Automatically generated if not provided.
-
-        :tree_style TreeStyle: default TreeStyle if not provided.
-
-        :layouts: list of layout functions that will be available from the
-        front end. It is important to name functions (__name__), as they will
-        be adressed by such in the explorer.
-        By default it includes: outline, leaf_name, branch_length
-        and branch_support.
-
-        :port: port used to run the local server (127.0.0.1). Default 5000
+        :param str tree_name: Name used to store tree in local database.
+        :param layouts: List of layout functions that will be available from the
+            front end. It is important to name functions (__name__), as they will
+            be adressed by such in the explorer. By default they include:
+            outline, leaf_name, branch_length and branch_support.
         """
         from ..smartview.gui.server import run_smartview
 
@@ -1573,9 +1458,9 @@ cdef class TreeNode(object):
             default_layouts.append(layout)
 
         run_smartview(tree=self, tree_name=tree_name,
-                layouts=list(default_layouts + layouts),
-                host=host, port=port, popup_prop_keys=popup_prop_keys,
-                custom_api=custom_api, custom_route=custom_route)
+                      layouts=list(default_layouts + layouts),
+                      host=host, port=port, popup_prop_keys=popup_prop_keys,
+                      custom_api=custom_api, custom_route=custom_route)
 
     def copy(self, method="cpickle"):
         """.. versionadded: 2.1
@@ -1747,7 +1632,7 @@ cdef class TreeNode(object):
         return size
 
     def to_str(self, attributes=None, are_last=None):
-        "Return a string with a visual representation of the tree."
+        """Return a string with a visual representation of the tree."""
         are_last = are_last or []
 
         attrs = attributes or ['name']
@@ -1759,14 +1644,14 @@ cdef class TreeNode(object):
             [node.to_str(attrs, are_last + [True])  for node in self.children[-1:]])
 
     def _get_branches_repr(self, are_last, is_leaf):
-        """
-        Return a text line representing open branches according to are_last.
+        """Return a text line representing open branches according to are_last.
 
-        are_last is a list of bools. It says per level if we are the last node.
+        :param are_last: List of bools that say per level if we are the last node.
 
-        Example (with more spaces for clarity, for is_leaf=True):
-        [True , False, True , True , True ] ->
-        '│             │      │      └─   '
+        Example (with more spaces for clarity, for is_leaf=True)::
+
+            [True , False, True , True , True ] ->
+            '│             │      │      └─   '
         """
         if len(are_last) == 0:
             return ''
@@ -2671,14 +2556,10 @@ cdef class TreeNode(object):
                     output[i].append(leaf_distances[n][m])
         return output, allleaves
 
-    def add_face(self, face, column, position=None, collapsed_only=False):
+    def add_face(self, face, column, position="branch-right", collapsed_only=False):
         if isinstance(face, Face):
-            if position is None:
-                position = 'branch-right'
             self.add_face_treeview(face, column, position)
         elif isinstance(face, smartFace):
-            if position is None:
-                position = 'branch_right'
             self.add_face_smartview(face, column, position, collapsed_only)
         else:
             raise ValueError("Invalid face format")
@@ -2768,8 +2649,6 @@ cdef class TreeNode(object):
         >>> print tree
 
         """
-
-
         def get_node(nodename, dist=None):
             if nodename not in nodes_by_name:
                 nodes_by_name[nodename] = Tree(name=nodename, dist=dist)
