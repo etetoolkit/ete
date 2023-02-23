@@ -2717,33 +2717,37 @@ cdef class TreeNode(object):
         from .. import _ph
         _ph.call()
 
+
 def _translate_nodes(root, *nodes):
-    name2node = dict([ [n, None] for n in nodes if type(n) is str])
-    if name2node:
-        for n in root.traverse():
-            if n.name in name2node:
-                if name2node[n.name] is not None:
-                    raise TreeError("Ambiguous node name: "+str(n.name))
+    """Return a list of nodes that correspond to the given names or nodes."""
+    # (root, ['A', root&'B', 'C']) -> [root&'A', root&'B', root&'C']
+
+    # NOTE: It actually returns only a single node if called with a
+    #       single value, adding combinatorial complexity.
+
+    # Check first that the nodes are either strings or already TreeNodes.
+    for node in nodes:
+        if type(node) not in [str, root.__class__]:
+            raise TreeError("Invalid target node: " + str(node))
+
+    # Create a translation dictionary.
+    name2node = {name: None for name in nodes if type(name) is str}
+    if name2node:  # fill translation dict only if there are names to translate
+        for node in root.traverse():
+            if node.name in name2node:
+                if name2node[node.name] is None:  # we haven't seen it before
+                    name2node[node.name] = node
                 else:
-                    name2node[n.name] = n
+                    raise TreeError("Ambiguous node name: " + str(node.name))
 
-    if None in list(name2node.values()):
-        notfound = [key for key, value in name2node.items() if value is None]
-        raise ValueError("Node names not found: "+str(notfound))
+    notfound = [name for name, node in name2node.items() if node is None]
+    if notfound:
+        raise ValueError("Node names not found: " + str(notfound))
 
-    valid_nodes = []
-    for n in nodes:
-        if type(n) is not str:
-            if type(n) is not root.__class__ :
-                raise TreeError("Invalid target node: "+str(n))
-            else:
-                valid_nodes.append(n)
+    valid_nodes = [(name2node[n] if type(n) is str else n) for n in nodes]
 
-    valid_nodes.extend(list(name2node.values()))
-    if len(valid_nodes) == 1:
-        return valid_nodes[0]
-    else:
-        return valid_nodes
+    return valid_nodes if len(valid_nodes) > 1 else valid_nodes[0]
+
 
 # Alias
 #: .. currentmodule:: ete3
