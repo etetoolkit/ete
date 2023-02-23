@@ -48,7 +48,9 @@ from functools import cmp_to_key
 import pickle
 
 from .. import utils
-from ..parser.newick import read_newick, write_newick
+from ..parser.newick import (
+    read_newick, write_newick,
+    DEFAULT_DIST, DEFAULT_DIST_ROOT, DEFAULT_SUPPORT, DEFAULT_NAME)
 
 # the following imports are necessary to set fixed styles and faces
 # try:
@@ -69,10 +71,6 @@ __all__ = ["Tree", "TreeNode"]
 
 DEFAULT_COMPACT = False
 DEFAULT_SHOWINTERNAL = False
-DEFAULT_DIST = 1.0
-DEFAULT_DIST_ROOT = 0.0
-DEFAULT_SUPPORT = 1.0
-DEFAULT_NAME = ""
 
 
 class TreeError(Exception):
@@ -274,9 +272,9 @@ cdef class TreeNode(object):
                          fset=_set__collapsed_face_areas)
 
     def __init__(self, newick=None, format=0, dist=None, support=None,
-                 name=None, quoted_node_names=False):
+                 name=None, quoted_node_names=False, up=None):
         self._children = []
-        self._up = None
+        self._up = up
         self._properties = {}
         self._img_style = None
         # Do not initialize _faces and _collapsed_faces
@@ -290,13 +288,9 @@ cdef class TreeNode(object):
         if newick is not None:
             read_newick(newick, self, format=format, quoted_names=quoted_node_names)
 
-        self.name = name if name is not None else\
-                self.name if self.name is not None else DEFAULT_NAME
-        self.dist = dist if dist is not None else\
-                self.dist if self.dist is not None\
-                else (DEFAULT_DIST if self.up else DEFAULT_DIST_ROOT)
-        self.support = support if support is not None else\
-        self.support if self.support is not None else DEFAULT_SUPPORT
+        self.name = name if name is not None else self.name
+        self.dist = dist if dist is not None else self.dist
+        self.support = support if support is not None else self.support
 
     def __nonzero__(self):
         return True
@@ -408,7 +402,7 @@ cdef class TreeNode(object):
 
         """
         if child is None:
-            child = self.__class__()
+            child = self.__class__(up=self)
 
         if name is not None:
             child.name = name
