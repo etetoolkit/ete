@@ -99,7 +99,6 @@ cdef class TreeNode(object):
 
 
     cdef public (double, double) size
-    cdef public double d1
 
     """
     TreeNode (Tree) class is used to store a tree structure. A tree
@@ -282,7 +281,6 @@ cdef class TreeNode(object):
         self._initialized = 0 # Layout fns have not been run on node
 
         self.size = (0, 0)
-        self.d1 = 0.0
 
         # Initialize tree
         if newick is not None:
