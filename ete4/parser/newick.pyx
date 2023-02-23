@@ -204,8 +204,8 @@ def format_node(node, node_type, format, dist_formatter=None,
 
 
 def print_supported_formats():
-    from ..coretype.tree import TreeNode
-    t = TreeNode()
+    from ..coretype.tree import Tree
+    t = Tree()
     t.populate(4, "ABCDEFGHI")
     print(t)
     for f in NW_FORMAT:
@@ -219,22 +219,21 @@ class NewickError(Exception):
         value += "\nYou may want to check other newick loading flags like 'format' or 'quoted_node_names'."
         Exception.__init__(self, value)
 
+
 def read_newick(newick, root_node=None, format=0, quoted_names=False):
-    """ Reads a newick tree from either a string or a file, and returns
+    """Read a newick tree from either a string or a file, and return
     an ETE tree structure.
 
     A previously existent node object can be passed as the root of the
     tree, which means that all its new children will belong to the same
-    class as the root(This allows to work with custom TreeNode
-    objects).
+    class as the root (this allows to work with custom Tree objects).
 
     You can also take advantage from this behaviour to concatenate
     several tree structures.
     """
-
     if root_node is None:
-        from ..coretype.tree import TreeNode
-        root_node = TreeNode()
+        from ..coretype.tree import Tree
+        root_node = Tree()
 
     if isinstance(newick, six.string_types):
 

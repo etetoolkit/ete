@@ -103,7 +103,7 @@ def _parse_species(name):
     return name[:3]
 
 class EvolNode(PhyloNode):
-    """ Re-implementation of the standart TreeNode instance. It adds
+    """ Re-implementation of the standart Tree instance. It adds
     attributes and methods to work with phylogentic trees.
 
     :argument newick: path to tree in newick format, can also be a string

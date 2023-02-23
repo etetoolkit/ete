@@ -7,7 +7,7 @@ import json
 
 import sys
 
-from .. import Tree, PhyloTree, TreeNode
+from .. import Tree, PhyloTree
 from ..coretype.tree import TreeError
 from ..parser.newick import NewickError
 from . import datasets as ds
@@ -292,7 +292,7 @@ class Test_Coretype_Tree(unittest.TestCase):
 
         c1 = t.add_child(dist=1, support=1)
         c2 = t.add_child(dist=0.43, support=1)
-        n = TreeNode(name="Hola", dist=1, support=1)
+        n = Tree(name="Hola", dist=1, support=1)
         _n = c1.add_child(n)
         c3 = _n.add_sister(name="Turtle", dist="1.3")
         c4 = c2.add_child(name="A", dist="0.3")

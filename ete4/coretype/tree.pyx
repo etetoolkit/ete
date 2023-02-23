@@ -67,7 +67,7 @@ from ..smartview.renderer.face_positions import _FaceAreas, get_FaceAreas
 from ..smartview.renderer.layouts.default_layouts import LayoutLeafName,\
         LayoutBranchLength, LayoutBranchSupport
 
-__all__ = ["Tree", "TreeNode"]
+__all__ = ["Tree"]
 
 DEFAULT_COMPACT = False
 DEFAULT_SHOWINTERNAL = False
@@ -75,7 +75,7 @@ DEFAULT_SHOWINTERNAL = False
 
 class TreeError(Exception):
     """
-    A problem occurred during a TreeNode operation
+    A problem occurred during a Tree operation
     """
     def __init__(self, value=''):
         self.value = value
@@ -83,7 +83,7 @@ class TreeError(Exception):
         return repr(self.value)
 
 
-cdef class TreeNode(object):
+cdef class Tree(object):
     cdef public dict _properties
     cdef public set features
     cdef public list _children
@@ -96,13 +96,11 @@ cdef class TreeNode(object):
     cdef public int _initialized
     cdef public int _collapsed
 
-
-
     cdef public (double, double) size
 
     """
-    TreeNode (Tree) class is used to store a tree structure. A tree
-    consists of a collection of TreeNode instances connected in a
+    The Tree class is used to store a tree structure. A tree
+    consists of a collection of Tree instances connected in a
     hierarchical way. Trees can be loaded from the New Hampshire Newick
     format (newick).
 
@@ -139,12 +137,6 @@ cdef class TreeNode(object):
         t2 = Tree('(A:1,(B:1,(C:1,D:1):0.5):0.5);')
         t3 = Tree('/home/user/myNewickFile.txt')
     """
-
-    # def __getattr__(self, item):
-    #     try:
-    #         return super(TreeNode, self).__getattr__(item)
-    #     except AttributeError:
-    #         return self._properties[item]
 
     def _get_name(self):
         return self._properties.get('name', DEFAULT_NAME)
@@ -387,17 +379,14 @@ cdef class TreeNode(object):
 
     # Topology management
     def add_child(self, child=None, name=None, dist=None, support=None):
-        """
-        Adds a new child to this node. If child node is not suplied
-        as an argument, a new node instance will be created.
+        """Add a new child to this node and return it.
 
-        :argument None child: the node instance to be added as a child.
-        :argument None name: the name that will be given to the child.
-        :argument None dist: the distance from the node to the child.
-        :argument None support: the support value of child partition.
+        If child node is not suplied, a new node instance will be created.
 
-        :returns: The child node instance
-
+        :param child: Node to be added as a child.
+        :param name: Name that will be given to the child.
+        :param dist: Distance from the node to the child.
+        :param support: Support value of child partition.
         """
         if child is None:
             child = self.__class__(up=self)
@@ -449,10 +438,9 @@ cdef class TreeNode(object):
         return [ self.remove_child(child) for child in children ]
 
     def add_sister(self, sister=None, name=None, dist=None):
-        """
-        Adds a sister to this node. If sister node is not supplied
-        as an argument, a new TreeNode instance will be created and
-        returned.
+        """Add a sister to this node and return it.
+
+        If sister node is not supplied, a new Tree instance will be created.
         """
         if self.up is None:
             raise TreeError("A parent node is required to add a sister")
@@ -460,22 +448,22 @@ cdef class TreeNode(object):
             return self.up.add_child(child=sister, name=name, dist=dist)
 
     def remove_sister(self, sister=None):
-        """
-        Removes a sister node. It has the same effect as
-        **`TreeNode.up.remove_child(sister)`**
+        """Remove a sister node.
+
+        It has the same effect as self.up.remove_child(sister).
 
         If a sister node is not supplied, the first sister will be deleted
         and returned.
 
-        :argument sister: A node instance
+        :param sister: A node instance to be removed as a sister.
 
-        :return: The node removed
+        :return: The node removed.
         """
         sisters = self.get_sisters()
-        if len(sisters) > 0:
-            if sister is None:
-                sister = sisters.pop(0)
-            return self.up.remove_child(sister)
+        if not sisters:
+            raise TreeError("Cannot remove sister because there are no sisters")
+
+        return self.up.remove_child(sister or sisters[0])
 
     def delete(self, prevent_nondicotomic=True, preserve_branch_length=False):
         """
@@ -2717,7 +2705,7 @@ def _translate_nodes(root, *nodes):
     # NOTE: It actually returns only a single node if called with a
     #       single value, adding combinatorial complexity.
 
-    # Check first that the nodes are either strings or already TreeNodes.
+    # Check first that the nodes are either strings or already Trees.
     for node in nodes:
         if type(node) not in [str, root.__class__]:
             raise TreeError("Invalid target node: " + str(node))
@@ -2739,8 +2727,3 @@ def _translate_nodes(root, *nodes):
     valid_nodes = [(name2node[n] if type(n) is str else n) for n in nodes]
 
     return valid_nodes if len(valid_nodes) > 1 else valid_nodes[0]
-
-
-# Alias
-#: .. currentmodule:: ete3
-Tree = TreeNode
