@@ -318,8 +318,10 @@ cdef class Tree(object):
 
     def __str__(self):
         """Return an ascii string showing the tree."""
-        return self.get_ascii(compact=DEFAULT_COMPACT,
-                              show_internal=DEFAULT_SHOWINTERNAL)
+        py = 0 if DEFAULT_COMPACT else 1
+        # TODO: Add option to use DEFAULT_SHOWINTERNAL too.
+        lines, _ = text_art(self, py=py)
+        return '\n'.join(lines)
 
     def __contains__(self, item):
         """Return True if the tree contains the given item.
@@ -2727,3 +2729,69 @@ def _translate_nodes(root, *nodes):
     valid_nodes = [(name2node[n] if type(n) is str else n) for n in nodes]
 
     return valid_nodes if len(valid_nodes) > 1 else valid_nodes[0]
+
+
+def text_art(node, px=1, py=0, px0=0):
+    """Return a list of strings representing the node, and their middle point.
+
+    :param px, py: Padding in x and y.
+    :param px0: Padding in x for leaves.
+    """
+    if not node.children:
+        return (['─' * px0 + '╴' + node.name], 0)
+
+    lines = []
+    for child in node.children:
+        lines_child, mid = text_art(child, px, py, px0)
+
+        if len(node.children) == 1:       # only one child
+            lines += add_prefix(lines_child, px, mid, ' ',
+                                                      '─',
+                                                      ' ')
+            pos_first = mid
+            pos_last = len(lines)
+        elif child == node.children[0]:   # first child
+            lines += add_prefix(lines_child, px, mid, ' ',
+                                                      '╭',
+                                                      '│')
+            lines.extend([' ' * px + '│'] * py)  # y padding
+            pos_first = mid
+        elif child != node.children[-1]:  # a child in the middle
+            lines += add_prefix(lines_child, px, mid, '│',
+                                                      '├',
+                                                      '│')
+            lines.extend([' ' * px + '│'] * py)  # y padding
+        else:                             # last child
+            lines += add_prefix(lines_child, px, mid, '│',
+                                                      '╰',
+                                                      ' ')
+            pos_last = len(lines_child) - mid
+
+    mid = (pos_first + len(lines) - pos_last) // 2  # middle point
+
+    lines[mid] = add_base(lines[mid], px)
+
+    return lines, mid
+
+
+def add_prefix(lines, px, mid, c1, c2, c3):
+    """Return the given lines adding a prefix.
+
+    :param int px: Padding in x.
+    :param int mid: Middle point (index of the row where the node would hang).
+    :param c1, c2, c3: Character to use as prefix before, at, and after mid.
+    """
+    prefix = lambda i: ' ' * px + (c1 if i < mid else (c2 if i == mid else c3))
+
+    return [prefix(i) + line for i, line in enumerate(lines)]
+
+
+def add_base(line, px=1):
+    """Return the same line but adding a base line."""
+    # Example of change at the beginning of line: ' │' -> '─┤'
+    replacements = {
+        '│': '┤',
+        '─': '╌',
+        '├': '┼',
+        '╭': '┬'}
+    return '─' * px + replacements[line[px]] + line[px+1:]
