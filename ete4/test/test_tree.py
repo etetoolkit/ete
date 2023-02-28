@@ -425,7 +425,7 @@ class Test_Coretype_Tree(unittest.TestCase):
             t_fuzzy = Tree("(((A,B)1, C)2,(D,E)3)root;", format=1)
             t_fuzzy.sort_descendants()
             orig_nw = t_fuzzy.write()
-            ref_nodes = t_fuzzy.get_leaves()
+            ref_nodes = t_fuzzy.get_descendants()
             t_fuzzy.populate(10)
             (t_fuzzy&'1').populate(3)
             (t_fuzzy&'2').populate(5)
@@ -433,7 +433,7 @@ class Test_Coretype_Tree(unittest.TestCase):
             t_fuzzy.prune(ref_nodes)
             t_fuzzy.sort_descendants()
             self.assertEqual(orig_nw, t_fuzzy.write())
-            self.assertEqual(len(t_fuzzy.get_descendants()), (len(ref_nodes)*2)-2 )
+            self.assertEqual(len(t_fuzzy.get_descendants()), len(ref_nodes) )
 
         # Total number of nodes is correct (no single child nodes)
         t = Tree()
