@@ -69,7 +69,6 @@ from ..smartview.renderer.layouts.default_layouts import LayoutLeafName,\
 
 __all__ = ["Tree"]
 
-DEFAULT_COMPACT = False
 DEFAULT_SHOWINTERNAL = False
 
 
@@ -318,9 +317,9 @@ cdef class Tree(object):
 
     def __str__(self):
         """Return an ascii string showing the tree."""
-        py = 0 if DEFAULT_COMPACT else 1
         # TODO: Add option to use DEFAULT_SHOWINTERNAL too.
-        lines, _ = text_art(self, py=py)
+        px = 0 if DEFAULT_SHOWINTERNAL else 1
+        lines, _ = text_art(self, px=px, show_internal=DEFAULT_SHOWINTERNAL)
         return '\n'.join(lines)
 
     def __contains__(self, item):
@@ -2731,45 +2730,47 @@ def _translate_nodes(root, *nodes):
     return valid_nodes if len(valid_nodes) > 1 else valid_nodes[0]
 
 
-def text_art(node, px=1, py=0, px0=0):
+def text_art(node, px=0, py=0, px0=0, show_internal=True):
     """Return a list of strings representing the node, and their middle point.
 
     :param px, py: Padding in x and y.
     :param px0: Padding in x for leaves.
+    :param show_internal: If True, show the internal node names too.
     """
     if not node.children:
         return (['─' * px0 + '╴' + node.name], 0)
 
     lines = []
+    padding = ((px0 + 1 + len(node.name) + 1) if show_internal else 0) + px
     for child in node.children:
-        lines_child, mid = text_art(child, px, py, px0)
+        lines_child, mid = text_art(child, px, py, px0, show_internal)
 
         if len(node.children) == 1:       # only one child
-            lines += add_prefix(lines_child, px, mid, ' ',
-                                                      '─',
-                                                      ' ')
+            lines += add_prefix(lines_child, padding, mid, ' ',
+                                                           '─',
+                                                           ' ')
             pos_first = mid
             pos_last = len(lines)
         elif child == node.children[0]:   # first child
-            lines += add_prefix(lines_child, px, mid, ' ',
-                                                      '╭',
-                                                      '│')
-            lines.extend([' ' * px + '│'] * py)  # y padding
+            lines += add_prefix(lines_child, padding, mid, ' ',
+                                                           '╭',
+                                                           '│')
+            lines.extend([' ' * padding + '│'] * py)  # y padding
             pos_first = mid
         elif child != node.children[-1]:  # a child in the middle
-            lines += add_prefix(lines_child, px, mid, '│',
-                                                      '├',
-                                                      '│')
-            lines.extend([' ' * px + '│'] * py)  # y padding
+            lines += add_prefix(lines_child, padding, mid, '│',
+                                                           '├',
+                                                           '│')
+            lines.extend([' ' * padding + '│'] * py)  # y padding
         else:                             # last child
-            lines += add_prefix(lines_child, px, mid, '│',
-                                                      '╰',
-                                                      ' ')
+            lines += add_prefix(lines_child, padding, mid, '│',
+                                                           '╰',
+                                                           ' ')
             pos_last = len(lines_child) - mid
 
     mid = (pos_first + len(lines) - pos_last) // 2  # middle point
 
-    lines[mid] = add_base(lines[mid], px)
+    lines[mid] = add_base(lines[mid], px, px0, node.name, show_internal)
 
     return lines, mid
 
@@ -2786,7 +2787,7 @@ def add_prefix(lines, px, mid, c1, c2, c3):
     return [prefix(i) + line for i, line in enumerate(lines)]
 
 
-def add_base(line, px=1):
+def add_base(line, px, px0, name, show_internal):
     """Return the same line but adding a base line."""
     # Example of change at the beginning of line: ' │' -> '─┤'
     replacements = {
@@ -2794,4 +2795,11 @@ def add_base(line, px=1):
         '─': '╌',
         '├': '┼',
         '╭': '┬'}
-    return '─' * px + replacements[line[px]] + line[px+1:]
+
+    padding = ((px0 + 1 + len(name) + 1) if show_internal else 0) + px
+
+    prefix_name = '─' * px0 + (('╴' + name + '╶') if name else '──')
+
+    tail = '─' * px + replacements[line[padding]] + line[padding+1:]
+
+    return (prefix_name if show_internal else '') + tail
