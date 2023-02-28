@@ -1618,7 +1618,7 @@ cdef class Tree(object):
         are_last = are_last or []
 
         attrs = attributes or ['name']
-        desc = ', '.join(str(self.props.get(attr) or '(empty)') for attr in attrs)
+        desc = ', '.join(str(self.props.get(attr, '(empty)')) for attr in attrs)
         branches = self._get_branches_repr(are_last, self.is_leaf())
 
         return '\n'.join([branches + desc] +
