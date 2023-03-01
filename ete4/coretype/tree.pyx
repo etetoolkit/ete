@@ -69,8 +69,6 @@ from ..smartview.renderer.layouts.default_layouts import LayoutLeafName,\
 
 __all__ = ["Tree"]
 
-DEFAULT_SHOWINTERNAL = False
-
 
 class TreeError(Exception):
     """
@@ -317,10 +315,7 @@ cdef class Tree(object):
 
     def __str__(self):
         """Return an ascii string showing the tree."""
-        # TODO: Add option to use DEFAULT_SHOWINTERNAL too.
-        px = 0 if DEFAULT_SHOWINTERNAL else 1
-        lines, _ = text_art(self, px=px, internal=DEFAULT_SHOWINTERNAL)
-        return '\n'.join(lines)
+        return self.get_ascii(show_internal=False, compact=True)
 
     def __contains__(self, item):
         """Return True if the tree contains the given item.
@@ -1493,110 +1488,54 @@ cdef class Tree(object):
 
         return new_node
 
-    def _asciiArt(self, char1='-', show_internal=True, compact=False, attributes=None):
-        """
-        Returns the ASCII representation of the tree.
+    def get_ascii(self, show_internal=True, compact=False, attributes=None,
+                  px=None, py=None, px0=None, waterfall=False):
+        """Return a string containing an ascii drawing of the tree.
 
-        Code based on the PyCogent GPL project.
+        :param show_internal: If True, show the internal nodes too.
+        :param compact: If True, use exactly one line per tip.
+        :param attributes: A list of node attributes to show.
+        :param px, py, px0: Paddings (x, y, x for leaves). Overrides `compact`.
+        :param waterfall: Use a waterfall representation. Overrides
+            `show_internal`, `compact`, `px`, `py`, `px0`.
         """
-        if not attributes:
-            attributes = ["name"]
-        node_name = ', '.join(map(str, [self.props.get(v) for v in attributes
-                                        if self.props.get(v)]))
+        if not waterfall:
+            if all(padding is None for padding in [px, py, px0]):
+                px = 0 if show_internal else 1
+                py = 0 if compact else 1
+                px0 = 0
+            else:
+                px = px if px is not None else (0 if show_internal else 1)
+                py = py if py is not None else (0 if compact else 1)
+                px0 = px0 if px0 is not None else 0
 
-        LEN = max(3, len(node_name) if not self.children or show_internal else 3)
-        PAD = ' ' * LEN
-        PA = ' ' * (LEN-1)
-        if not self.is_leaf():
-            mids = []
-            result = []
-            for c in self.children:
-                if len(self.children) == 1:
-                    char2 = '/'
-                elif c is self.children[0]:
-                    char2 = '/'
-                elif c is self.children[-1]:
-                    char2 = '\\'
-                else:
-                    char2 = '-'
-                (clines, mid) = c._asciiArt(char2, show_internal, compact, attributes)
-                mids.append(mid+len(result))
-                result.extend(clines)
-                if not compact:
-                    result.append('')
-            if not compact:
-                result.pop()
-            (lo, hi, end) = (mids[0], mids[-1], len(result))
-            prefixes = [PAD] * (lo+1) + [PA+'|'] * (hi-lo-1) + [PAD] * (end-hi)
-            mid = int((lo + hi) / 2)
-            prefixes[mid] = char1 + '-'*(LEN-2) + prefixes[mid][-1]
-            result = [p+l for (p,l) in zip(prefixes, result)]
-            if show_internal:
-                stem = result[mid]
-                result[mid] = stem[0] + node_name + stem[len(node_name)+1:]
-            return (result, mid)
+            lines, _ = _ascii_art(self, show_internal, attributes, px, py, px0)
+            return '\n'.join(lines)
         else:
-            return ([char1 + '-' + node_name], 0)
-
-    def get_ascii(self, show_internal=True, compact=False, attributes=None):
-        """
-        Returns a string containing an ascii drawing of the tree.
-
-        :argument show_internal: includes internal edge names.
-        :argument compact: use exactly one line per tip.
-
-        :param attributes: A list of node attributes to shown in the
-            ASCII representation.
-
-        """
-        (lines, mid) = self._asciiArt(show_internal=show_internal,
-                                      compact=compact, attributes=attributes)
-        return '\n'+'\n'.join(lines)
-
+            return _waterfall(self, attributes)
 
     def ladderize(self, direction=0):
-        """
-        .. versionadded: 2.1
+        """Sort branches according to the size of each partition.
 
-        Sort the branches of a given tree (swapping children nodes)
-        according to the size of each partition.
-
-        ::
-
-           t =  Tree("(f,((d, ((a,b),c)),e));")
-
-           print t
-
-           #
-           #      /-f
-           #     |
-           #     |          /-d
-           # ----|         |
-           #     |     /---|          /-a
-           #     |    |    |     /---|
-           #     |    |     \---|     \-b
-           #      \---|         |
-           #          |          \-c
-           #          |
-           #           \-e
+        Example:
+           t = Tree('(f,((d,((a,b),c)),e));')
+           print(t)
+           #   ╭╴f
+           # ──┤     ╭╴d
+           #   │  ╭──┤  ╭──┬╴a
+           #   ╰──┤  ╰──┤  ╰╴b
+           #      │     ╰╴c
+           #      ╰╴e
 
            t.ladderize()
-           print t
-
-           #      /-f
-           # ----|
-           #     |     /-e
-           #      \---|
-           #          |     /-d
-           #           \---|
-           #               |     /-c
-           #                \---|
-           #                    |     /-a
-           #                     \---|
-           #                          \-b
-
+           print(t)
+           # ──┬╴f
+           #   ╰──┬╴e
+           #      ╰──┬╴d
+           #         ╰──┬╴c
+           #            ╰──┬╴a
+           #               ╰╴b
         """
-
         if not self.is_leaf():
             n2s = {}
             for n in self.get_children():
@@ -1612,48 +1551,12 @@ cdef class Tree(object):
 
         return size
 
-    def to_str(self, attributes=None, are_last=None):
-        """Return a string with a visual representation of the tree."""
-        are_last = are_last or []
+    def sort_descendants(self, attr='name'):
+        """Sort branches by node names.
 
-        attrs = attributes or ['name']
-        desc = ', '.join(str(self.props.get(attr, '(empty)')) for attr in attrs)
-        branches = self._get_branches_repr(are_last, self.is_leaf())
-
-        return '\n'.join([branches + desc] +
-            [n.to_str(attrs, are_last + [False]) for n in self.children[:-1]] +
-            [n.to_str(attrs, are_last + [True])  for n in self.children[-1:]])
-
-    def _get_branches_repr(self, are_last, is_leaf):
-        """Return a text line representing open branches according to are_last.
-
-        :param are_last: List of bools that say per level if we are the last node.
-
-        Example (with more spaces for clarity, for is_leaf=True)::
-
-            [True , False, True , True , True ] ->
-            '│             │      │      └─   '
-        """
-        if len(are_last) == 0:
-            return ''
-
-        prefix = ''.join('  ' if is_last else '│ ' for is_last in are_last[:-1])
-
-        if is_leaf:
-            return prefix + ('└─ ' if are_last[-1] else '├─ ')
-        else:
-            return prefix + ('└─┬ ' if are_last[-1] else '├─┬ ')
-
-    def sort_descendants(self, attr="name"):
-        """
-        .. versionadded: 2.1
-
-        Sort the branches of a given tree by node names. After the
-        tree is sorted. Note that if duplicated names are present,
+        After the tree is sorted, if duplicated names are present,
         extra criteria should be added to sort nodes.
-
         """
-
         node2content = self.get_cached_content(store_attr=attr, container_type=list)
 
         for n in self.traverse():
@@ -2730,53 +2633,58 @@ def _translate_nodes(root, *nodes):
     return valid_nodes if len(valid_nodes) > 1 else valid_nodes[0]
 
 
-def text_art(node, px=0, py=0, px0=0, internal=True):
+def _ascii_art(node, show_internal=True, attributes=None, px=0, py=0, px0=0):
     """Return a list of strings representing the node, and their middle point.
 
-    :param node: Node to represent as text art.
+    :param node: Node to represent as ascii art.
+    :param show_internal: If True, show the internal node names too.
+    :param attributes: list of attribute names to show for each node.
     :param px, py: Padding in x and y.
     :param px0: Padding in x for leaves.
-    :param internal: If True, show the internal node names too.
     """
-    if not node.children:
-        return (['─' * px0 + '╴' + node.name], 0)
+    attrs = attributes or ['name']
+
+    # Node description (including all the requested attributes).
+    descr = ','.join(str(node.props.get(a, '')) or '(empty)' for a in attrs)
+
+    if node.is_leaf():
+        return (['─' * px0 + '╴' + descr], 0)
 
     lines = []
-    padding = ((px0 + 1 + len(node.name) + 1) if internal else 0) + px
+    padding = ((px0 + 1 + len(descr) + 1) if show_internal else 0) + px
     for child in node.children:
-        lines_child, mid = text_art(child, px, py, px0, internal)
+        lines_child, mid = _ascii_art(child, show_internal, attrs, px, py, px0)
 
         if len(node.children) == 1:       # only one child
-            lines += add_prefix(lines_child, padding, mid, ' ',
-                                                           '─',
-                                                           ' ')
+            lines += _add_prefix(lines_child, padding, mid, ' ',
+                                                            '─',
+                                                            ' ')
             pos_first = mid
-            pos_last = len(lines)
+            pos_last = len(lines) - py
         elif child == node.children[0]:   # first child
-            lines += add_prefix(lines_child, padding, mid, ' ',
-                                                           '╭',
-                                                           '│')
+            lines += _add_prefix(lines_child, padding, mid, ' ',
+                                                            '╭',
+                                                            '│')
             lines.extend([' ' * padding + '│'] * py)  # y padding
             pos_first = mid
         elif child != node.children[-1]:  # a child in the middle
-            lines += add_prefix(lines_child, padding, mid, '│',
-                                                           '├',
-                                                           '│')
+            lines += _add_prefix(lines_child, padding, mid, '│',
+                                                            '├',
+                                                            '│')
             lines.extend([' ' * padding + '│'] * py)  # y padding
         else:                             # last child
-            lines += add_prefix(lines_child, padding, mid, '│',
-                                                           '╰',
-                                                           ' ')
+            lines += _add_prefix(lines_child, padding, mid, '│',
+                                                            '╰',
+                                                            ' ')
             pos_last = len(lines_child) - mid
 
     mid = (pos_first + len(lines) - pos_last) // 2  # middle point
 
-    lines[mid] = add_base(lines[mid], px, px0, node.name, internal)
+    lines[mid] = _add_base(lines[mid], px, px0, descr, show_internal)
 
     return lines, mid
 
-
-def add_prefix(lines, px, mid, c1, c2, c3):
+def _add_prefix(lines, px, mid, c1, c2, c3):
     """Return the given lines adding a prefix.
 
     :param lines: List of strings, to return with prefixes.
@@ -2788,8 +2696,7 @@ def add_prefix(lines, px, mid, c1, c2, c3):
 
     return [prefix(i) + line for i, line in enumerate(lines)]
 
-
-def add_base(line, px, px0, name, internal):
+def _add_base(line, px, px0, txt, show_internal):
     """Return the same line but adding a base line."""
     # Example of change at the beginning of line: ' │' -> '─┤'
     replacements = {
@@ -2798,9 +2705,44 @@ def add_base(line, px, px0, name, internal):
         '├': '┼',
         '╭': '┬'}
 
-    padding = ((px0 + 1 + len(name) + 1) if internal else 0) + px
+    padding = ((px0 + 1 + len(txt) + 1) if show_internal else 0) + px
 
-    prefix_name = '─' * px0 + (f'╴{name}╶' if name else '──')
+    prefix_txt = '─' * px0 + (f'╴{txt}╶' if txt else '──')
 
-    return ((prefix_name if internal else '') +
+    return ((prefix_txt if show_internal else '') +
             '─' * px + replacements[line[padding]] + line[padding+1:])
+
+
+def _waterfall(node, attributes=None, are_last=None):
+    """Return a string with a waterfall visual representation of the node."""
+    attrs = attributes or ['name']
+    are_last = are_last or []
+
+    # Node description (including all the requested attributes).
+    descr = ','.join(str(node.props.get(a, '')) or '(empty)' for a in attrs)
+
+    branches = _get_branches_repr(are_last, node.is_leaf())
+
+    return '\n'.join([branches + descr] +
+        [_waterfall(n, attrs, are_last + [False]) for n in node.children[:-1]] +
+        [_waterfall(n, attrs, are_last + [True])  for n in node.children[-1:]])
+
+def _get_branches_repr(are_last, is_leaf):
+    """Return a text line representing open branches according to are_last.
+
+    :param are_last: List of bools that say per level if we are the last node.
+
+    Example (with more spaces for clarity, for is_leaf=True)::
+
+        [True , False, True , True , True ] ->
+        '│             │      │      └─   '
+    """
+    if len(are_last) == 0:
+        return ''
+
+    prefix = ''.join('  ' if is_last else '│ ' for is_last in are_last[:-1])
+
+    if is_leaf:
+        return prefix + ('└─ ' if are_last[-1] else '├─ ')
+    else:
+        return prefix + ('└─┬ ' if are_last[-1] else '├─┬ ')
