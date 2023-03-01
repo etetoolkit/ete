@@ -319,7 +319,7 @@ cdef class Tree(object):
         """Return an ascii string showing the tree."""
         # TODO: Add option to use DEFAULT_SHOWINTERNAL too.
         px = 0 if DEFAULT_SHOWINTERNAL else 1
-        lines, _ = text_art(self, px=px, show_internal=DEFAULT_SHOWINTERNAL)
+        lines, _ = text_art(self, px=px, internal=DEFAULT_SHOWINTERNAL)
         return '\n'.join(lines)
 
     def __contains__(self, item):
@@ -1621,8 +1621,8 @@ cdef class Tree(object):
         branches = self._get_branches_repr(are_last, self.is_leaf())
 
         return '\n'.join([branches + desc] +
-            [node.to_str(attrs, are_last + [False]) for node in self.children[:-1]] +
-            [node.to_str(attrs, are_last + [True])  for node in self.children[-1:]])
+            [n.to_str(attrs, are_last + [False]) for n in self.children[:-1]] +
+            [n.to_str(attrs, are_last + [True])  for n in self.children[-1:]])
 
     def _get_branches_repr(self, are_last, is_leaf):
         """Return a text line representing open branches according to are_last.
@@ -2730,20 +2730,21 @@ def _translate_nodes(root, *nodes):
     return valid_nodes if len(valid_nodes) > 1 else valid_nodes[0]
 
 
-def text_art(node, px=0, py=0, px0=0, show_internal=True):
+def text_art(node, px=0, py=0, px0=0, internal=True):
     """Return a list of strings representing the node, and their middle point.
 
+    :param node: Node to represent as text art.
     :param px, py: Padding in x and y.
     :param px0: Padding in x for leaves.
-    :param show_internal: If True, show the internal node names too.
+    :param internal: If True, show the internal node names too.
     """
     if not node.children:
         return (['─' * px0 + '╴' + node.name], 0)
 
     lines = []
-    padding = ((px0 + 1 + len(node.name) + 1) if show_internal else 0) + px
+    padding = ((px0 + 1 + len(node.name) + 1) if internal else 0) + px
     for child in node.children:
-        lines_child, mid = text_art(child, px, py, px0, show_internal)
+        lines_child, mid = text_art(child, px, py, px0, internal)
 
         if len(node.children) == 1:       # only one child
             lines += add_prefix(lines_child, padding, mid, ' ',
@@ -2770,7 +2771,7 @@ def text_art(node, px=0, py=0, px0=0, show_internal=True):
 
     mid = (pos_first + len(lines) - pos_last) // 2  # middle point
 
-    lines[mid] = add_base(lines[mid], px, px0, node.name, show_internal)
+    lines[mid] = add_base(lines[mid], px, px0, node.name, internal)
 
     return lines, mid
 
@@ -2778,6 +2779,7 @@ def text_art(node, px=0, py=0, px0=0, show_internal=True):
 def add_prefix(lines, px, mid, c1, c2, c3):
     """Return the given lines adding a prefix.
 
+    :param lines: List of strings, to return with prefixes.
     :param int px: Padding in x.
     :param int mid: Middle point (index of the row where the node would hang).
     :param c1, c2, c3: Character to use as prefix before, at, and after mid.
@@ -2787,7 +2789,7 @@ def add_prefix(lines, px, mid, c1, c2, c3):
     return [prefix(i) + line for i, line in enumerate(lines)]
 
 
-def add_base(line, px, px0, name, show_internal):
+def add_base(line, px, px0, name, internal):
     """Return the same line but adding a base line."""
     # Example of change at the beginning of line: ' │' -> '─┤'
     replacements = {
@@ -2796,10 +2798,9 @@ def add_base(line, px, px0, name, show_internal):
         '├': '┼',
         '╭': '┬'}
 
-    padding = ((px0 + 1 + len(name) + 1) if show_internal else 0) + px
+    padding = ((px0 + 1 + len(name) + 1) if internal else 0) + px
 
-    prefix_name = '─' * px0 + (('╴' + name + '╶') if name else '──')
+    prefix_name = '─' * px0 + (f'╴{name}╶' if name else '──')
 
-    tail = '─' * px + replacements[line[padding]] + line[padding+1:]
-
-    return (prefix_name if show_internal else '') + tail
+    return ((prefix_name if internal else '') +
+            '─' * px + replacements[line[padding]] + line[padding+1:])
