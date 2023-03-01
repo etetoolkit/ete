@@ -6,6 +6,7 @@ export { draw_pixi, clear_pixi, apps };
 
 // Globals
 const apps = {};  // pixi "applications" per container
+let app;
 let textures;
 let textures_loaded = false;
 
@@ -50,24 +51,19 @@ PIXI.Loader.shared
         textures_loaded = true;
     });
 
-
 function clear_pixi(container) {
     // Remove all items from stage
-    const app = apps[container.id];
+    app = apps[container.id];
 
     if (app)
         app.stage.children = [];
 }
 
-
 function draw_pixi(container, items, tl, zoom) {
-    if (!apps[container.id])
-        apps[container.id] = new PIXI.Application({
-            transparent: true,
-            resolution: 1,
-        });
-
-    const app = apps[container.id];
+    app = apps[container.id] = apps[container.id] || new PIXI.Application({
+        transparent: true,
+        resolution: 1,
+    });
 
     // Resize canvas based on container
     app.renderer.resize(container.clientWidth, container.clientHeight);
