@@ -129,7 +129,7 @@ function add_search_to_menu(text) {
     folder_style.background = vsearch.results.color;
 
     const on_change = () => {
-        folder_style.background = ssearch.results.color;
+        folder_style.background = vsearch.results.color;
         colorize_search(text);
     }
 
