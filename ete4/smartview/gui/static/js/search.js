@@ -26,7 +26,7 @@ async function search() {
     const result = await Swal.fire({
         input: "text",
         position: "bottom-start",
-        inputValue: view.search_cache,
+        inputValue: view.search_cache ?? "",
         inputPlaceholder: "Enter name (or ? for help)",
         showClass: { popup: "swal2-search" },
         showConfirmButton: false,
