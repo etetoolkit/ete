@@ -535,7 +535,6 @@ class GTDBTaxa(object):
         else:
             for n in t.traverse():
                 try:
-                    #taxaname = getattr(n, taxid_attr) #
                     taxaname = n.props.get(taxid_attr)
                     tid = self.get_name_translator([taxaname])[taxaname][0] # translate gtdb name -> id
                 except (KeyError, ValueError,AttributeError):
@@ -569,7 +568,7 @@ class GTDBTaxa(object):
                 node_taxid = n.props.get(taxid_attr)
             except (ValueError, AttributeError):
                 node_taxid = None
-
+            print(node_taxid)
             n.add_prop('taxid', node_taxid)
             
             if node_taxid:
