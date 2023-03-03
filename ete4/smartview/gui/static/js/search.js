@@ -122,6 +122,15 @@ function add_search_to_menu(text) {
         draw_tree();
     }
 
+    const folder_style = folder.controller_.view.buttonElement.style;
+
+    folder_style.background = vsearch.results.color;
+
+    const on_change = () => {
+        folder_style.background = ssearch.results.color;
+        colorize_search(text);
+    }
+
     folder.addButton({ title: "edit search" }).on("click", async () => {
         view.search_cache = text;
         const new_search = await search();
@@ -143,15 +152,15 @@ function add_search_to_menu(text) {
     const folder_results = folder.addFolder({ title: `results (${vsearch.results.n})` });
     folder_results.addInput(vsearch.results, "opacity",
         { min: 0, max: 1, step: 0.1 })
-        .on("change", () => colorize_search(text));
+        .on("change", on_change);
     folder_results.addInput(vsearch.results, "color", { view: "color" })
-        .on("change", () => colorize_search(text));
+        .on("change", on_change);
 
     const folder_parents = folder.addFolder({ title: `parents (${vsearch.parents.n})` });
     folder_parents.addInput(vsearch.parents, "color", { view: "color" })
-        .on("change", () => colorize_search(text));
+        .on("change", on_change);
     folder_parents.addInput(vsearch.parents, "width", { min: 0.1, max: 10 })
-        .on("change", () => colorize_search(text));
+        .on("change", on_change);
 
     folder.addButton({ title: "remove" }).on("click", vsearch.remove);
 }
