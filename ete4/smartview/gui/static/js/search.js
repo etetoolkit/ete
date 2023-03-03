@@ -7,6 +7,7 @@ import { store_selection } from "./select.js";
 
 export { search, get_searches, remove_searches, get_search_class, colorize_searches };
 
+
 const searchError = Swal.mixin({
     position: "bottom-start",
     showConfirmButton: false,
@@ -18,6 +19,7 @@ const searchError = Swal.mixin({
         el.addEventListener('mouseleave', Swal.resumeTimer)
     }
 });
+
 
 // Search nodes in the server and redraw the tree (with the results too).
 async function search() {
