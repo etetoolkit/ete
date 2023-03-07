@@ -40,10 +40,7 @@ async function on_box_contextmenu(event, box, name, properties, node_id=[]) {
 
         add_button("Zoom into branch <span>Dblclick</span>", () => zoom_into_box(box),  "", "zoom");
 
-        if (node_id.length > 0) {
-            await add_node_options(box, name, properties, node_id);
-        }
-
+        await add_node_options(box, name, properties, node_id);
     }
 
     add_label("Tree");
@@ -75,8 +72,8 @@ async function add_node_options(box, name, properties, node_id) {
                     text += `${k}: ${v}<br>`;
             });
         text += "</div>";
-        Swal.fire({ 
-            html: `${text}`, 
+        Swal.fire({
+            html: `${text}`,
             showConfirmButton: false });
     }, "", "info", false);
     add_button("Download branch as newick", () => download_newick(node_id),
@@ -87,7 +84,7 @@ async function add_node_options(box, name, properties, node_id) {
     if (nseq > 0)
         add_button("Download " + (nseq === 1 ? "sequence" : `leaf sequences (${nseq})`),
             () => download_seqs(node_id),
-                   "Download " + (nseq === 1 ? "sequence" : `leaf sequences (${nseq})`) 
+                   "Download " + (nseq === 1 ? "sequence" : `leaf sequences (${nseq})`)
                                + " as fasta file.",
                    "download", false);
     if ("taxid" in properties) {
@@ -130,7 +127,7 @@ async function add_node_options(box, name, properties, node_id) {
 
     if ("hyperlink" in properties) {
         const [ label, url ] = properties["hyperlink"];
-        add_button("Go to " + label, () => window.open(url), 
+        add_button("Go to " + label, () => window.open(url),
             url, "external-link-alt");
     }
 
@@ -187,7 +184,7 @@ const NODESTYLE = {
         size: "Size",
         fgcolor: "Color",
         fgopacity: "Opacity",
-    }, 
+    },
     background : {
         bgcolor: "Color",
     },
@@ -320,7 +317,7 @@ function add_tree_options() {
     if (view.allow_modifications) {
         add_button("Sort tree", () => sort(),
             "Sort all branches according to the current sorting function. " +
-            "Changes the tree structure.", 
+            "Changes the tree structure.",
             "sort", true);
         if (!view.subtree) {
             add_button("Reload tree", async () => {
@@ -348,7 +345,7 @@ function add_button(text, fn, tooltip, icon_before, icon_warning=false) {
     const content = document.createElement("div");
     content.innerHTML = text;
     button.appendChild(content)
-    if (icon_warning) 
+    if (icon_warning)
         button.appendChild(create_icon("exclamation"))
     button.addEventListener("click", event => {
         div_contextmenu.style.visibility = "hidden";

@@ -42,12 +42,12 @@ from __future__ import print_function
 from sys import stderr
 from . import clustvalidation
 from ..coretype.tree import _translate_nodes
-from .. import TreeNode, ArrayTable
+from .. import Tree, ArrayTable
 import numpy
 
 __all__ = ["ClusterNode", "ClusterTree"]
 
-class ClusterNode(TreeNode):
+class ClusterNode(Tree):
     """ Creates a new Cluster Tree object, which is a collection
     of ClusterNode instances connected in a hierarchical way, and
     representing a clustering result.
@@ -104,7 +104,7 @@ class ClusterNode(TreeNode):
         # otherwise, it is set to euclidean_dist.
 
         # Initialize basic tree features and loads the newick (if any)
-        TreeNode.__init__(self, newick)
+        Tree.__init__(self, newick)
         self._fdist = None
         self._silhouette = None
         self._intercluster_dist = None

@@ -20,7 +20,7 @@ from base64 import b64decode
 
 import re
 from importlib import reload as module_reload
-from math import pi
+from math import pi, inf
 from functools import partial
 from time import time
 from threading import Timer
@@ -122,10 +122,10 @@ class Layouts(Resource):
 
 
 class Trees(Resource):
-    def get(self, tree_id=None):
+    def get(self, tree_id=None, pname=None):
         "Return data from the tree (or info about all trees if no id given)"
         rule = request.url_rule.rule  # shortcut
-        
+
         # Update tree's timer
         if rule.startswith('/trees/<string:tree_id>'):
             tid, subtree = get_tid(tree_id)
@@ -181,7 +181,7 @@ class Trees(Resource):
                         name += ",".join(map(str, get_node_id(tree.tree, leaf, [])))
                     seqs.append(name + "\n" + leaf.props.get("seq"))
             return "\n".join(seqs)
-            
+
         elif rule == '/trees/<string:tree_id>/nseq':
             node = gdn.get_node(tree.tree, subtree)
             leaves = get_leaves(node)
@@ -250,7 +250,7 @@ class Trees(Resource):
             remove_active(tree, 1)
             return {'message': 'ok'}
         elif rule == '/trees/<string:tree_id>/all_active':
-            return { 
+            return {
                 "nodes": get_nodes_info(tree.tree, tree.active.nodes.results, ["*"]),
                 "clades": get_nodes_info(tree.tree, tree.active.clades.results, ["*"]),
             }
@@ -261,7 +261,7 @@ class Trees(Resource):
             return get_nodes_info(tree.tree, active_leaves, ["*"])
         # Searches
         elif rule == '/trees/<string:tree_id>/searches':
-            searches = { 
+            searches = {
                 text: { 'nresults' : len(results), 'nparents': len(parents) }
                 for text, (results, parents) in (tree.searches or {}).items() }
             return { 'searches': searches }
@@ -290,6 +290,8 @@ class Trees(Resource):
             for node in t.traverse():
                 properties |= node.props.keys()
             return list(properties)
+        elif rule == '/trees/<string:tree_id>/properties/<string:pname>':
+            return get_stats(tree_id, pname)
         elif rule == '/trees/<string:tree_id>/nodecount':
             tnodes = tleaves = 0
             for node in t.traverse():
@@ -336,21 +338,21 @@ class Trees(Resource):
                 gdn.move(gdn.get_node(t, node_id), shift)
                 return {'message': 'ok'}
             except AssertionError as e:
-                raise InvalidUsage(f'cannot move ${node_id}: {e}')
+                raise InvalidUsage(f'cannot move {node_id}: {e}')
         elif rule == '/trees/<string:tree_id>/remove':
             try:
                 node_id = request.json
                 gdn.remove(gdn.get_node(t, node_id))
                 return {'message': 'ok'}
             except AssertionError as e:
-                raise InvalidUsage(f'cannot remove ${node_id}: {e}')
+                raise InvalidUsage(f'cannot remove {node_id}: {e}')
         elif rule == '/trees/<string:tree_id>/update_props':
             try:
                 node = gdn.get_node(tree.tree, subtree)
                 update_node_props(node, request.json)
                 return {'message': 'ok'}
             except AssertionError as e:
-                raise InvalidUsage(f'cannot update props of ${node_id}: {e}')
+                raise InvalidUsage(f'cannot update props of {node_id}: {e}')
         elif rule == '/trees/<string:tree_id>/update_nodestyle':
             try:
                 node = gdn.get_node(tree.tree, subtree)
@@ -358,7 +360,7 @@ class Trees(Resource):
                 tree.nodestyles[node] = request.json.copy()
                 return {'message': 'ok'}
             except AssertionError as e:
-                raise InvalidUsage(f'cannot update style of ${node_id}: {e}')
+                raise InvalidUsage(f'cannot update style of {node_id}: {e}')
         elif rule == '/trees/<string:tree_id>/reinitialize':
             gdn.standardize(tree.tree)
             tree.initialized = False
@@ -436,8 +438,6 @@ def initialize_tree_style(tree, ultrametric=False):
 
 def load_tree(tree_id):
     "Add tree to app.trees and initialize it if not there, and return it"
-
-
     try:
         tid, subtree = get_tid(tree_id)
         tree = app.trees[int(tid)]
@@ -475,7 +475,6 @@ def load_tree_from_newick(tid, newick):
 
     if app.trees[int(tid)].style.ultrametric:
         t.convert_to_ultrametric()
-        gdn.standardize(t)
 
     gdn.standardize(t)
     return t
@@ -489,7 +488,7 @@ def retrieve_layouts(layouts):
 
         if len(name_split) not in (2, 3):
             continue
-        
+
         if len(name_split) == 2:
             key, ly_name = name_split
             active = None
@@ -532,13 +531,13 @@ def retrieve_tree(tid):
     tree = data["tree"]
     layouts = retrieve_layouts(data["layouts"])
     return name, tree, layouts
-   
+
 
 def get_drawer(tree_id, args):
     "Return the drawer initialized as specified in the args"
     valid_keys = ['x', 'y', 'w', 'h', 'panel', 'zx', 'zy', 'za',
                   'drawer', 'min_size',
-                  'layouts', 'ultrametric', 'collapsed_ids', 
+                  'layouts', 'ultrametric', 'collapsed_ids',
                   'rmin', 'amin', 'amax']
 
     try:
@@ -588,7 +587,7 @@ def get_drawer(tree_id, args):
         active = tree.active
         selected = tree.selected
         searches = tree.searches
-        
+
         return drawer_class(load_tree(tree_id), viewport, panel, zoom,
                     limits, collapsed_ids, active, selected, searches,
                     layouts, tree.style, tree.popup_prop_keys)
@@ -732,7 +731,7 @@ def get_nodes_info(tree, nodes, props):
     no_props = len(props) == 1 and props[0] == ''
 
     if 'id' in props or no_props or '*' in props:
-        node_ids = [ ",".join(map(str, get_node_id(tree, node, []))) 
+        node_ids = [ ",".join(map(str, get_node_id(tree, node, [])))
                 for node in nodes ]
     if no_props:
         return node_ids
@@ -978,7 +977,7 @@ def remove_active_clade(node, active):
         node = parent
         if node == active_parent:
             return
-        
+
 
 def deactivate_clade(tree_id):
     tid, subtree = get_tid(tree_id)
@@ -1045,6 +1044,7 @@ def get_eval_search(expression):
         raise InvalidUsage(f'compiling expression: {e}')
 
     return lambda node: safer_eval(code, {
+        'node': node, 'parent': node.up, 'up': node.up,
         'name': node.name, 'is_leaf': node.is_leaf(),
         'length': node.dist, 'dist': node.dist, 'd': node.dist,
         'props': node.props, 'p': node.props,
@@ -1052,7 +1052,10 @@ def get_eval_search(expression):
         'children': node.children, 'ch': node.children,
         'size': node.size, 'dx': node.size[0], 'dy': node.size[1],
         'regex': re.search,
-        'len': len, 'sum': sum, 'abs': abs, 'float': float, 'pi': pi})
+        'startswith': str.startswith, 'endswith': str.endswith,
+        'upper': str.upper, 'lower': str.lower, 'split': str.split,
+        'any': any, 'all': all, 'len': len,
+        'sum': sum, 'abs': abs, 'float': float, 'pi': pi})
 
 
 def safer_eval(code, context):
@@ -1061,6 +1064,25 @@ def safer_eval(code, context):
         if name not in context:
             raise InvalidUsage('invalid use of %r during evaluation' % name)
     return eval(code, {'__builtins__': {}}, context)
+
+
+def get_stats(tree_id, pname):
+    "Return some statistics about the given property pname"
+    pmin, pmax = inf, -inf
+    n, pmean, pmean2 = 0, 0, 0
+    try:
+        for node in load_tree(tree_id):
+            if pname in node.props:
+                value = float(node.props[pname])
+                pmin, pmax = min(pmin, value), max(pmax, value)
+                pmean = (n * pmean + value) / (n + 1)
+                pmean2 = (n * pmean2 + value*value) / (n + 1)
+                n += 1
+        assert n > 0, 'no node has the given property'
+        return {'n': n, 'min': pmin, 'max': pmax, 'mean': pmean,
+                'var': pmean2 - pmean*pmean}
+    except (ValueError, AssertionError) as e:
+        raise InvalidUsage(f'when reading property {pname}: {e}')
 
 
 def sort(tree_id, node_id, key_text, reverse):
@@ -1110,9 +1132,9 @@ def get_trees_from_form():
     else:
         return [{
             'id': form.get('id'),
-            'name': form['name'], 
-            'newick': form.get('newick', None),
-            'b64pickle': form.get('b64pickle', None),
+            'name': form['name'],
+            'newick': form.get('newick'),
+            'b64pickle': form.get('b64pickle'),
             'description': form.get('description', ''),
             'layouts': form.get('layouts', [])
             }]
@@ -1134,8 +1156,8 @@ def add_tree(data):
     "Add tree with given data and return its id"
     tid = int(data['id'])
     name = data['name']
-    newick = data.get('newick', None)
-    bpickle = data.get('b64pickle', None)
+    newick = data.get('newick')
+    bpickle = data.get('b64pickle')
     layouts = data.get('layouts', [])
     if type(layouts) == str:
         layouts = layouts.split(",")
@@ -1149,10 +1171,10 @@ def add_tree(data):
         # tree = pickle.loads(b64decode(bpickle))
         gdn.standardize(tree)
     else:
-        tree = data.get('tree', None)
+        tree = data.get('tree')
         if not tree:
             raise InvalidUsage('Either Newick or Tree object has to be provided.')
-    
+
     app_tree = app.trees[int(tid)]
     app_tree.name = name
     app_tree.tree = tree
@@ -1238,7 +1260,7 @@ def get_layouts(layouts=[]):
         layout.module = "default"
         all_layouts[layout.name or idx] = layout
 
-        
+
     return list(all_layouts.values()), layouts_from_module
 
 
@@ -1280,6 +1302,7 @@ def update_ultrametric(ultrametric, tid):
 
 def get_tid(tree_id):
     "Return the tree id and the subtree id, with the appropriate types"
+    # Example: '3342,1,0,1,1' -> (3342, [1, 0, 1, 1])
     try:
         if type(tree_id) == int:
             return tree_id, []
@@ -1304,7 +1327,7 @@ def purge(interval=None, max_time=30*60):
     trees = list(app.trees.keys())
     for tid in trees:
         inactivity_time = time() - app.trees[tid].timer
-        if inactivity_time > max_time: 
+        if inactivity_time > max_time:
             del_tree(tid)
     # Call self after interval
     if interval: # in seconds
@@ -1356,7 +1379,7 @@ def copy_style(tree_style):
 
 # App initialization.
 
-def initialize(tree=None, layouts=[], 
+def initialize(tree=None, layouts=[],
         popup_prop_keys=DEFAULT_POPUP_PROP_KEYS,
         custom_api={},  custom_route={}, safe_mode=False):
     "Initialize the database and the flask app"
@@ -1451,8 +1474,15 @@ def add_custom_resources(app, api, custom_api={}, custom_route={}):
 def add_resources(app, api, custom_api={}, custom_route={}):
     "Add all the REST endpoints"
     add = api.add_resource  # shortcut
+
     add(Drawers, '/drawers/<string:name>/<string:tree_id>')
-    add(Layouts, '/layouts', '/layouts/<string:tree_id>','/layouts/list', '/layouts/update')
+
+    add(Layouts,
+        '/layouts',
+        '/layouts/list',
+        '/layouts/update',
+        '/layouts/<string:tree_id>')
+
     add(Trees,
         '/trees',
         '/trees/<string:tree_id>',
@@ -1469,6 +1499,7 @@ def add_resources(app, api, custom_api={}, custom_route={}):
         '/trees/<string:tree_id>/size',
         '/trees/<string:tree_id>/collapse_size',
         '/trees/<string:tree_id>/properties',
+        '/trees/<string:tree_id>/properties/<string:pname>',
         '/trees/<string:tree_id>/nodecount',
         '/trees/<string:tree_id>/ultrametric',
         '/trees/<string:tree_id>/select',  # select node
@@ -1503,23 +1534,24 @@ def add_resources(app, api, custom_api={}, custom_route={}):
         '/trees/<string:tree_id>/update_nodestyle',
         '/trees/<string:tree_id>/reinitialize',
         '/trees/<string:tree_id>/reload')
+
     add_custom_resources(app, api, custom_api, custom_route)
 
 
-def run_smartview(tree=None, tree_name=None, 
+def run_smartview(tree=None, tree_name=None,
         layouts=[], popup_prop_keys=DEFAULT_POPUP_PROP_KEYS,
         custom_api={}, custom_route={},
         safe_mode=False, host="127.0.0.1", port=5000,
         run=True, serve_static=True, verbose=True):
     # Set tree_name to None if no tree was provided
     # Generate tree_name if none was provided
-    tree_name = tree_name or get_random_string(10) if tree else None
+    tree_name = tree_name or (get_random_string(10) if tree else None)
 
     if serve_static:
         os.chdir(os.path.abspath(os.path.dirname(__file__)))
 
     global app
-    app = initialize(tree_name, layouts, 
+    app = initialize(tree_name, layouts,
             popup_prop_keys=popup_prop_keys,
             custom_api=custom_api,
             custom_route=custom_route,
@@ -1529,9 +1561,9 @@ def run_smartview(tree=None, tree_name=None,
 
     # TODO: Create app.recent_trees with paths to recently viewed trees
 
-    if tree: 
+    if tree:
         gdn.standardize(tree)
-        tree_data = { 
+        tree_data = {
             'id': 0,  # id to be replaced by actual hash
             'name': tree_name,
             'tree': tree,

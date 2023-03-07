@@ -1,34 +1,22 @@
 import { view } from "./gui.js";
 import { cartesian_shifted } from "./draw.js";
 
-
 export { draw_pixi, clear_pixi, apps };
 
-//Aliases
-const Application = PIXI.Application;
-const loader = PIXI.Loader.shared;
-//const textureCache = PIXI.utils.TextureCache;
-const resources = loader.resources;
-const Sprite = PIXI.Sprite;
-const MIN_MSA_POSWIDTH = 12;
 
-
-const app_options = {
-    transparent: true,
-    resolution: 1,
-};
-    
 // Globals
-const apps = {};
-var app;
-var textures;
-var textures_loaded = false;
+const apps = {};  // pixi "applications" per container
+let app;
+let textures;
+let textures_loaded = false;
 
+// Codes for amino acids, nucleotides (DNA and RNA), and gaps.
+// See for example https://en.wikipedia.org/wiki/FASTA_format#Sequence_representation
 const aa = [
     'A', 'R', 'N',
     'D', 'C', 'Q',
     'E', 'G', 'H',
-    'I', 'L', 'K', 
+    'I', 'L', 'K',
     'M', 'F', 'P',
     'S', 'T', 'W',
     'Y', 'V', 'B',
@@ -36,38 +24,30 @@ const aa = [
     '-'
 ];
 
-const aa_notext_png = aa.map(a => {
-    return { 
-        name: `aa_notext_${a}`, 
-        url: `images/aa_notext/${a}.png` }
-});
-
-const aa_text_png = aa.map(a => {
-    return { 
-        name: `aa_text_${a}`, 
-        url: `images/aa_text/${a}.png` }
-});
-
 
 // Load texture atlas
-loader
-    .add(aa_notext_png)
-    .add(aa_text_png)
+PIXI.Loader.shared
+    .add(aa.map(a => ({name: `aa_notext_${a}`, url: `images/aa_notext/${a}.png`})))
+    .add(aa.map(a => ({name: `aa_text_${a}`,   url: `images/aa_text/${a}.png`})))
     .add("block", "images/block.png")
     .load(() => {
-        textures = { 
-            aa_notext: aa.reduce((textures, a) => {
-                textures[a] = resources[`aa_notext_${a}`].texture;
-                return textures
-            }, {}),
-            aa_text: aa.reduce((textures, a) => {
-                textures[a] = resources[`aa_text_${a}`].texture;
-                return textures
-            }, {}),
+        const resources = PIXI.Loader.shared.resources;  // shortcut
+
+        const textures_notext = {};
+        const textures_text = {};
+        for (const a of aa) {
+            textures_notext[a] = resources[`aa_notext_${a}`].texture;
+            textures_text[a] = resources[`aa_text_${a}`].texture;
+        }
+
+        textures = {
+            aa_notext: textures_notext,
+            aa_text: textures_text,
             shapes: {
                 block: resources.block.texture,
             }
         }
+
         textures_loaded = true;
     });
 
@@ -80,7 +60,10 @@ function clear_pixi(container) {
 }
 
 function draw_pixi(container, items, tl, zoom) {
-    app = apps[container.id] = apps[container.id] || new Application(app_options);
+    app = apps[container.id] = apps[container.id] || new PIXI.Application({
+        transparent: true,
+        resolution: 1,
+    });
 
     // Resize canvas based on container
     app.renderer.resize(container.clientWidth, container.clientHeight);
@@ -88,10 +71,12 @@ function draw_pixi(container, items, tl, zoom) {
     // Remove all items from stage
     app.stage.children = [];
 
-    if (textures_loaded && items.length)
+    if (textures_loaded && items.length > 0)
         draw(items, tl, zoom);
+
     return app.view;
 }
+
 
 function draw(items, tl, zoom) {
     items.forEach(seq => {
@@ -134,6 +119,8 @@ function addSprite(sprite, box, tl, zx, zy, tooltip) {
 
 
 function draw_msa(sequence, type, box, tl, zx, zy) {
+    const MIN_MSA_POSWIDTH = 12;
+
     const [ x0, y, width, posh ] = box;
 
     const posw = width / sequence.length;
@@ -145,7 +132,7 @@ function draw_msa(sequence, type, box, tl, zx, zy) {
 
     sequence.split("").forEach((s, i) => {
         if (s != "-") {
-            const sprite = new Sprite(textures[type][s])
+            const sprite = new PIXI.Sprite(textures[type][s])
             const x = x0 + i * posw;
             const tooltip = `Residue: ${s}\nPosition: ${i}`
             addSprite(sprite, [x, y, posw, posh], tl, zx, zy, tooltip);
@@ -155,6 +142,6 @@ function draw_msa(sequence, type, box, tl, zx, zy) {
 
 
 function draw_shape(shape, box, tl, zx, zy) {
-    const sprite = new Sprite(textures.shapes[shape])
+    const sprite = new PIXI.Sprite(textures.shapes[shape])
     addSprite(sprite, box, tl, zx, zy);
 }

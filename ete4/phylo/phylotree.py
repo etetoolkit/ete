@@ -40,7 +40,7 @@
 
 """
 This module defines the PhyloNode dataytype to manage phylogenetic
-trees. It inheritates the coretype TreeNode and add some special
+trees. It inheritates the coretype Tree and add some special
 features to the the node instances.
 """
 from __future__ import absolute_import
@@ -51,7 +51,7 @@ import os
 import re
 import itertools
 from collections import defaultdict
-from .. import TreeNode, SeqGroup, NCBITaxa, GTDBTaxa
+from .. import Tree, SeqGroup, NCBITaxa, GTDBTaxa
 from .reconciliation import get_reconciled_tree
 from . import spoverlap
 
@@ -306,10 +306,10 @@ def get_subparts(n):
     return subtrees
 
 
-class PhyloNode(TreeNode):
+class PhyloNode(Tree):
     """
     .. currentmodule:: ete3
-    Extends the standard :class:`TreeNode` instance. It adds
+    Extends the standard :class:`Tree` instance. It adds
     specific attributes and methods to work with phylogentic trees.
 
     :argument newick: Path to the file containing the tree or, alternatively,
@@ -372,7 +372,7 @@ class PhyloNode(TreeNode):
     #: .. currentmodule:: ete3
     #:
     #Species code associated to the node. This property can be
-    #automatically extracted from the TreeNode.name attribute or
+    #automatically extracted from the Tree.name attribute or
     #manually set (see :func:`PhyloNode.set_species_naming_function`).
     species = property(fget = _get_species, fset = _set_species)
 
@@ -385,7 +385,7 @@ class PhyloNode(TreeNode):
                             _speciesFunction=None)
         # Caution! native __init__ has to be called after setting
         # _speciesFunction to None!!
-        TreeNode.__init__(self, newick=newick, format=format, **kargs)
+        Tree.__init__(self, newick=newick, format=format, **kargs)
 
         # This will be only executed after reading the whole tree,
         # because the argument 'alignment' is not passed to the
@@ -812,7 +812,7 @@ class PhyloNode(TreeNode):
         ncbi = NCBITaxa()
         for t in target_trees:
             ncbi.get_broken_branches(t, cached_content)
-    
+
 
 
 #: .. currentmodule:: ete3
