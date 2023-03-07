@@ -578,8 +578,10 @@ class GTDBTaxa(object):
                     node_taxid = merged_conversion[node_taxid]
 
                 rank = tax2rank.get(tmp_taxid, 'Unknown')
-                if rank =='subspecies':
-                    sci_name = tax2name.get(tax2track.get(tmp_taxid,[])[-2], '')
+                if rank =='subspecies': 
+                    # if query is subspecies, return species name as sci_name, because gtdb subspecies id is not informative
+                    rankseries = tax2track.get(tmp_taxid,[]) # ['root' ,'d__Bacteria',.....'s__Moorella thermoacetica','RS_GCF_006228565.1']
+                    sci_name = tax2name.get(rankseries[-2], '')
                 else:
                     sci_name = tax2name.get(node_taxid, getattr(n, taxid_attr, ''))
                 n.add_props(sci_name = sci_name,
