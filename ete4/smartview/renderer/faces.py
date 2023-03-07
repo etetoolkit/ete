@@ -57,13 +57,13 @@ def clean_text(text):
     return re.sub(r'[^A-Za-z0-9_-]', '',  text)
 
 
-def swap_pos(pos, angle):
-    if abs(angle) >= pi / 2:
-        if pos == 'branch_top':
-            pos = 'branch_bottom'
-        elif pos == 'branch_bottom':
-            pos = 'branch_top'
-    return pos
+def swap_pos(pos):
+    if pos == 'branch_top':
+        return 'branch_bottom'
+    elif pos == 'branch_bottom':
+        return 'branch_top'
+    else:
+        return pos
 
 
 def stringify(content):
@@ -229,8 +229,8 @@ class TextFace(Face):
             n_row, n_col,
             dx_before, dy_before):
 
-        if drawer.TYPE == 'circ':
-            pos = swap_pos(pos, point[1])
+        if drawer.TYPE == 'circ' and abs(point[1]) >= pi/2:
+            pos = swap_pos(pos)
 
         box = super().compute_bounding_box(
             drawer,
@@ -355,8 +355,8 @@ class CircleFace(Face):
             n_row, n_col,
             dx_before, dy_before):
 
-        if drawer.TYPE == 'circ':
-            pos = swap_pos(pos, point[1])
+        if drawer.TYPE == 'circ' and abs(point[1]) >= pi/2:
+            pos = swap_pos(pos)
 
         box = super().compute_bounding_box(
             drawer,
@@ -456,8 +456,8 @@ class RectFace(Face):
             n_row, n_col,
             dx_before, dy_before):
 
-        if drawer.TYPE == 'circ':
-            pos = swap_pos(pos, point[1])
+        if drawer.TYPE == 'circ' and abs(point[1]) >= pi/2:
+            pos = swap_pos(pos)
 
         box = super().compute_bounding_box(
             drawer,
@@ -1465,8 +1465,8 @@ class ScaleFace(Face):
             n_row, n_col,
             dx_before, dy_before):
 
-        if drawer.TYPE == 'circ':
-            pos = swap_pos(pos, point[1])
+        if drawer.TYPE == 'circ' and abs(point[1]) >= pi/2:
+            pos = swap_pos(pos)
 
         box = super().compute_bounding_box(
             drawer,
