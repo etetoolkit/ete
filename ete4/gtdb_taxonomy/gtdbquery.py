@@ -535,7 +535,7 @@ class GTDBTaxa(object):
         else:
             for n in t.traverse():
                 try:
-                    taxaname = getattr(n, taxid_attr) #
+                    taxaname = n.props.get(taxid_attr)
                     tid = self.get_name_translator([taxaname])[taxaname][0] # translate gtdb name -> id
                 except (KeyError, ValueError,AttributeError):
                     pass
@@ -565,18 +565,26 @@ class GTDBTaxa(object):
         for n in t.traverse('postorder'):
             try:
                 #node_taxid = int(getattr(n, taxid_attr))
-                node_taxid = getattr(n, taxid_attr)
+                node_taxid = n.props.get(taxid_attr)
             except (ValueError, AttributeError):
                 node_taxid = None
-
+            
             n.add_prop('taxid', node_taxid)
+            
             if node_taxid:
                 tmp_taxid = self.get_name_translator([node_taxid]).get(node_taxid, [None])[0]
                 #tmp_taxid = self.get_name_translator([node_taxid])[node_taxid][0] # translate to temperatoru
                 if node_taxid in merged_conversion:
                     node_taxid = merged_conversion[node_taxid]
 
-                n.add_props(sci_name = tax2name.get(node_taxid, getattr(n, taxid_attr, '')),
+                rank = tax2rank.get(tmp_taxid, 'Unknown')
+                if rank =='subspecies': 
+                    # if query is subspecies, return species name as sci_name, because gtdb subspecies id is not informative
+                    rankseries = tax2track.get(tmp_taxid,[]) # ['root' ,'d__Bacteria',.....'s__Moorella thermoacetica','RS_GCF_006228565.1']
+                    sci_name = tax2name.get(rankseries[-2], '')
+                else:
+                    sci_name = tax2name.get(node_taxid, getattr(n, taxid_attr, ''))
+                n.add_props(sci_name = sci_name,
                                common_name = tax2common_name.get(node_taxid, ''),
                                lineage = tax2track.get(tmp_taxid, []),
                                rank = tax2rank.get(tmp_taxid, 'Unknown'),

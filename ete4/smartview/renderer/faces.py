@@ -201,7 +201,7 @@ class TextFace(Face):
 
     def __init__(self, text, name='', color='black',
             min_fsize=6, max_fsize=15, ftype='sans-serif',
-            padding_x=0, padding_y=0):
+            padding_x=0, padding_y=0, width=None, height=None, rotation=None):
 
         Face.__init__(self, name=name,
                 padding_x=padding_x, padding_y=padding_y)
@@ -211,6 +211,9 @@ class TextFace(Face):
         self.min_fsize = min_fsize
         self.max_fsize = max_fsize
         self._fsize = max_fsize
+        self.rotation = rotation
+        self.width = width
+        self.height = height
         self.ftype = ftype
 
     def __name__(self):
@@ -251,7 +254,12 @@ class TextFace(Face):
             dychar = self._fsize / (zy * r)
             return dxchar * len(text), dychar
 
-        width, height = fit_fontsize(self._content, dx, dy * r)
+        if self.width: 
+            width = self.width
+            _, height = fit_fontsize(self._content, dx, dy * r)
+        else:
+            width, height = fit_fontsize(self._content, dx, dy * r)
+        
 
         if pos == 'branch_top':
             box = (x, y + dy - height, width, height) # container bottom
@@ -281,8 +289,8 @@ class TextFace(Face):
                 'max_fsize': self._fsize,
                 'ftype': f'{self.ftype}, sans-serif', # default sans-serif
                 }
-        yield draw_text(self._box,
-                self._content, self.name, style=style)
+        yield draw_text(self._box, 
+                self._content, self.name, rotation=self.rotation, style=style)
 
 
 class AttrFace(TextFace):
@@ -403,6 +411,7 @@ class CircleFace(Face):
     def draw(self, drawer):
         self._check_own_variables()
         style = {'fill': self.color} if self.color else {}
+        
         yield draw_circle(self._center, self._max_radius,
                 self.name, style=style, tooltip=self.tooltip)
 
@@ -1556,6 +1565,7 @@ class PieChartFace(CircleFace):
         # self.data = [ (name, value, color, tooltip, a, da) ]
         self.data = []
         self.compute_pie(list(data))
+        self.tooltip = tooltip
 
     def __name__(self):
         return "PieChartFace"
