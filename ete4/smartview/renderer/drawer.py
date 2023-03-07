@@ -274,7 +274,6 @@ class Drawer:
                     dy * self.zoom[1], active_node, nodedot_style)
 
     def draw_aligned_headers(self):
-
         # Draw aligned panel headers
         def it_fits(box, pos):
             _, _, dx, dy = box
@@ -290,8 +289,6 @@ class Drawer:
                     yield from face.draw(self)
 
         def draw_faces_at_pos(faces, pos, iteration):
-            # set position of headers
-
             n_col = max(faces.keys(), default = -1) + 1
 
             dx_before = 0
@@ -310,7 +307,7 @@ class Drawer:
                         _, _, dx, dy = face.get_box()
                         hz_padding = 2 * face.padding_x / zx
                         vt_padding = 2 * face.padding_y / zy
-                        dx_max = max(dx_max, (dx or 0) + hz_padding) # determine the gap between headers
+                        dx_max = max(dx_max, (dx or 0) + hz_padding)
                         dy_before += dy + vt_padding
                         yield from drawn_face
                 # Update dx_before
