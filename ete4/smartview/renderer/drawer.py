@@ -128,9 +128,11 @@ class Drawer:
             if self.outline:
                 yield from self.get_outline()
 
-            if self.panel == 0:  # draw in preorder the boxes we found in postorder
+            if self.panel == 0:
                 max_dx = max([box[1].dx for box in self.nodeboxes] + [0])
                 self.tree_style.aligned_grid_dxs[-1] = max_dx
+
+                # To draw in preorder the boxes we found in postorder.
                 yield from self.nodeboxes[::-1]  # (so they overlap nicely)
 
     def on_first_visit(self, point, it, graphics):
