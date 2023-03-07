@@ -759,7 +759,7 @@ class DrawerRectFaces(DrawerRect):
                         # NOTE: This is a hack to align nicely the headers in LayoutBarPlot.
                         hfaces = self.tree_style._aligned_panel_header.get(col)  # header faces
                         if col > 0 and hfaces:
-                            dx_max = max(hface.width for hface in hfaces) + hz_padding
+                            dx_max = max(hface.width for hface in hfaces if hface) + hz_padding
 
                         dx_max = max(dx_max, (dx or 0) + hz_padding)
 
