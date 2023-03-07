@@ -746,8 +746,6 @@ class DrawerRectFaces(DrawerRect):
                 dy_before = 0
                 n_row = len(face_list)
 
-                header_setting = dict(self.tree_style._aligned_panel_header) #hacking
-
                 for row, face in enumerate(face_list):
                     face.node = node
 
@@ -758,14 +756,10 @@ class DrawerRectFaces(DrawerRect):
                         hz_padding = 2 * face.padding_x / z
                         vt_padding = 2 * face.padding_y / zy
 
-                        if col > 0 and header_setting: # hacking
-                            if header_setting.get(col):
-                                scale_mx = header_setting[col][0].width
-                                dx_max = scale_mx+hz_padding
-                            else:
-                                pass
-                        else:
-                            pass
+                        # NOTE: This is a hack to align nicely the headers in LayoutBarPlot.
+                        hfaces = self.tree_style._aligned_panel_header.get(col)  # header faces
+                        if col > 0 and hfaces:
+                            dx_max = max(hface.width for hface in hfaces) + hz_padding
 
                         dx_max = max(dx_max, (dx or 0) + hz_padding)
 
