@@ -488,6 +488,7 @@ class DrawerRect(Drawer):
     TYPE = 'rect'
 
     def in_viewport(self, box, pos=None):
+
         if not self.viewport:
             return True
 
@@ -686,7 +687,7 @@ class DrawerRectFaces(DrawerRect):
         dx_to_closest_child = min(child.dist for child in node.children)\
                 if not node.is_leaf() else node.dist
         zx, zy, za = self.zoom
-
+        
         def it_fits(box, pos):
             z = za if pos == 'aligned' else zx
             _, _, dx, dy = box
@@ -742,21 +743,38 @@ class DrawerRectFaces(DrawerRect):
                     # Avoid changing-size error when zooming very quickly
                     dxs = list(self.tree_style.aligned_grid_dxs.items())
                     dx_before = sum(v for k, v in dxs if k < col and k >= 0)
+                
                 dx_max = 0
                 dy_before = 0
                 n_row = len(face_list)
+                
+                header_setting = dict(self.tree_style._aligned_panel_header) #hacking
+
                 for row, face in enumerate(face_list):
                     face.node = node
+                    
                     drawn_face = list(draw_face(face, pos, row, n_row, n_col,
                             dx_before, dy_before))
                     if drawn_face:
                         _, _, dx, dy = face.get_box()
                         hz_padding = 2 * face.padding_x / z
                         vt_padding = 2 * face.padding_y / zy
+                        
+                        if col > 0 and header_setting: # hacking
+                            if header_setting.get(col):
+                                scale_mx = header_setting[col][0].width
+                                dx_max = scale_mx+hz_padding
+                            else:
+                                pass
+                        else:
+                            pass
+
                         dx_max = max(dx_max, (dx or 0) + hz_padding)
+                        
+                        
                         dy_before += dy + vt_padding
                         yield from drawn_face
-
+                
                 # Update dx_before
                 if pos == 'aligned'\
                         and self.tree_style.aligned_grid\
@@ -770,7 +788,6 @@ class DrawerRectFaces(DrawerRect):
                         dx_before += dx_grid
                 else:
                     dx_before += dx_max
-
         if not node.is_initialized:
             node.is_initialized = True
             node.faces = get_FaceAreas()
