@@ -465,7 +465,7 @@ def write_newick(rootnode, properties=None, format=1, format_root_node=True,
                                           support_formatter=support_formatter,
                                           name_formatter=name_formatter,
                                           quoted_names=quoted_names))
-                newick.append(_get_features_string(node, properties, format))
+                newick.append(_get_features_string(node, properties))
         else:
             if node is not rootnode and node != node.up.children[0]:
                 newick.append(",")
@@ -476,40 +476,34 @@ def write_newick(rootnode, properties=None, format=1, format_root_node=True,
                                           support_formatter=support_formatter,
                                           name_formatter=name_formatter,
                                           quoted_names=quoted_names))
-                newick.append(_get_features_string(node, properties, format))
+                newick.append(_get_features_string(node, properties))
             else:
                 newick.append("(")
 
     newick.append(";")
     return ''.join(newick)
 
-def _get_features_string(self, features=None, format=0):
-    """ Generates the extended newick string NHX with extra data about
-    a node. """
-    string = ""
+def _get_features_string(node, features=None):
+    """Return NHX extended newick string for the requested node features."""
+    # FIXME: What is the logic of this None vs []? Please someone explain.
     if features is None:
         features = []
     elif features == []:
-        features = sorted(k for k in self._properties.keys() if not k.startswith("_"))
+        features = sorted([k for k in node.props if not k.startswith('_')])
 
-    for pr in features:
-        if pr in self._properties:
-            raw = self._properties[pr]
-            if type(raw) in ITERABLE_TYPES:
-                raw = '|'.join(map(str, raw))
-            elif type(raw) == dict:
-                raw = '|'.join(map(lambda x,y: "%s-%s" %(x, y), six.iteritems(raw)))
-            elif type(raw) == str:
-                pass
-            else:
-                raw = str(raw)
+    string = ':'.join('%s=%s' % (k, _prop2text(node.props[k]))
+                      for k in features if k in node.props)
 
-            value = re.sub("["+_ILEGAL_NEWICK_CHARS+"]", "_", \
-                             raw)
-            if string != "":
-                string +=":"
-            string +="%s=%s"  %(pr, str(value))
-    if string != "":
-        string = "[&&NHX:"+string+"]"
+    return f'[&&NHX:{string}]' if string else ''
 
-    return string
+def _prop2text(prop):
+    ptype = type(prop)
+
+    if ptype in ITERABLE_TYPES:
+        text = '|'.join(str(x) for x in prop)
+    elif ptype == dict:
+        text = '|'.join(f'{x}-{y}' for x, y in prop.items())
+    else:
+        text = str(prop)
+
+    return re.sub(f'[{_ILEGAL_NEWICK_CHARS}]', '_', text)
