@@ -13,8 +13,23 @@ from ..coretype.tree import TreeError
 from ..parser.newick import NewickError
 from . import datasets as ds
 
+
+def strip(text):
+    """Return the given text stripping the empty lines and indentation."""
+    # Helps compare tree visualizations.
+    indent = min(len(line) - len(line.lstrip())
+                 for line in text.splitlines() if line.strip())
+    return '\n'.join(line[indent:].rstrip()
+        for line in text.splitlines() if line.strip())
+
+
 class Test_Coretype_Tree(unittest.TestCase):
     """Test the basic Tree class."""
+
+    def assertLooks(self, tree, text, attributes=None):
+        """Assert that tree looks like the given text (as ascii)."""
+        self.assertEqual(tree.get_ascii(compact=True, attributes=attributes),
+                         strip(text))
 
     def test_read_write_exceptions(self):
         """Test that the right exceptions are risen."""
@@ -629,6 +644,48 @@ class Test_Coretype_Tree(unittest.TestCase):
 
         self.assertEqual((t&'F').get_farthest_node(topology_only=True), (t&'A', 3.0))
         self.assertEqual((t&'F').get_farthest_node(topology_only=False), (t&'D', 11.0))
+
+    def test_rooting_jordi(self):
+        """Test the alternative rooting ("set outgroup") algorithm."""
+        t = Tree('((d,e)b,(f,g)c);', format=1)
+        self.assertLooks(t, """
+                         ╭╴b╶┬╴d
+                ╴(empty)╶┤   ╰╴e
+                         ╰╴c╶┬╴f
+                             ╰╴g
+        """)
+
+        t = t.set_outgroup_jordi(t & 'e')
+        self.assertLooks(t, """
+                ╴(empty)╶┬╴e
+                         ╰╴b╶┬╴d
+                             ╰╴c╶┬╴f
+                                 ╰╴g
+        """)
+
+        t = t.set_outgroup_jordi(t & 'd')
+        self.assertLooks(t, """
+                         ╭╴d
+                ╴(empty)╶┤   ╭╴c╶┬╴f
+                         ╰╴b╶┤   ╰╴g
+                             ╰╴e
+        """)
+
+        t = t.set_outgroup_jordi(t & 'c')
+        self.assertLooks(t, """
+                         ╭╴c╶┬╴f
+                ╴(empty)╶┤   ╰╴g
+                         ╰╴b╶┬╴e
+                             ╰╴d
+        """)
+
+        t = t.set_outgroup_jordi(t & 'b')
+        self.assertLooks(t, """
+                         ╭╴b╶┬╴e
+                ╴(empty)╶┤   ╰╴d
+                         ╰╴c╶┬╴f
+                             ╰╴g
+        """)
 
     def test_rooting(self):
         # Test set_outgroup and get_midpoint_outgroup
