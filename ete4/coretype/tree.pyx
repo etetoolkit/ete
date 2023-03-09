@@ -84,7 +84,7 @@ cdef class Tree(object):
     cdef public dict props
     cdef public set features
     cdef public list _children
-    cdef public object _up
+    cdef public Tree up
     cdef public object _img_style
     cdef public object _sm_style
     cdef public object _faces
@@ -135,43 +135,44 @@ cdef class Tree(object):
         t3 = Tree('/home/user/myNewickFile.txt')
     """
 
-    def _get_name(self):
+    @property
+    def name(self):
         return self.props.get('name', DEFAULT_NAME)
-    def _set_name(self, value):
+
+    @name.setter
+    def name(self, value):
         self.props['name'] = value
 
-    def _get_dist(self):
+    @property
+    def dist(self):
         return self.props.get('dist', DEFAULT_DIST if self.up else DEFAULT_DIST_ROOT)
-    def _set_dist(self, value):
+
+    @dist.setter
+    def dist(self, value):
         try:
             self.props['dist'] = float(value)
         except ValueError:
             raise TreeError('node dist must be a float number')
 
-    def _get_support(self):
+    @property
+    def support(self):
         return self.props.get('support', DEFAULT_SUPPORT)
-    def _set_support(self, value):
+
+    @support.setter
+    def support(self, value):
         try:
             self.props['support'] = float(value)
         except ValueError:
             raise TreeError('node support must be a float number')
 
-    def _get_up(self):
-        return self._up
-    def _set_up(self, value):
-        if type(value) == type(self) or value is None:
-            self._up = value
-        else:
-            raise TreeError("bad node_up type")
-
-    def _get_children(self):
+    @property
+    def children(self):
         return self._children
-    def _set_children(self, children):
-        if not hasattr(children, '__iter__'):
-            raise TreeError(f'Incorrect children type: {type(children)}. Children should to be iterable')
-        self._children = []
-        self.add_children(children)
 
+    @children.setter
+    def children(self, value):
+        self._children = []
+        self.add_children(value)
 
     def _get_style(self):
         if self._img_style is None:
@@ -210,16 +211,6 @@ cdef class Tree(object):
     img_style = property(fget=_get_style, fset=_set_style)
     sm_style = property(fget=_get_sm_style, fset=_set_sm_style)
 
-    #: Name for current node
-    name = property(fget=_get_name, fset=_set_name)
-    #: Branch length distance to parent node. Default = 0.0
-    dist = property(fget=_get_dist, fset=_set_dist)
-    #: Branch support for current node
-    support = property(fget=_get_support, fset=_set_support)
-    #: Pointer to parent node
-    up = property(fget=_get_up, fset=_set_up)
-    #: List containing children nodes
-    children = property(fget=_get_children, fset=_set_children)
     #: Whether layout functions have been run on node
     is_initialized = property(fget=_get_initialized, fset=_set_initialized)
     is_collapsed = property(fget=_get_collapsed, fset=_set_collapsed)
@@ -252,7 +243,7 @@ cdef class Tree(object):
     def __init__(self, newick=None, format=0, dist=None, support=None,
                  name=None, quoted_node_names=False, up=None):
         self._children = []
-        self._up = up
+        self.up = up
         self.props = {}
         self._img_style = None
         # Do not initialize _faces and _collapsed_faces
@@ -392,7 +383,7 @@ cdef class Tree(object):
 
         return child
 
-    def add_children(self, children=[]):
+    def add_children(self, children):
         for child in children:
             self.add_child(child)
         return children

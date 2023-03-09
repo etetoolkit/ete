@@ -51,7 +51,7 @@ class Test_Coretype_Tree(unittest.TestCase):
 
         self.assertRaises(TreeError, wrong_dist)
         self.assertRaises(TreeError, wrong_support)
-        self.assertRaises(TreeError, wrong_up)
+        self.assertRaises(TypeError, wrong_up)
         self.assertRaises(TreeError, wrong_children)
 
     def test_add_remove_features(self):
