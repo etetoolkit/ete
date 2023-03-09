@@ -1,11 +1,12 @@
 from __future__ import absolute_import
 from __future__ import print_function
-import unittest
+
+import sys
 import random
 import itertools
 import json
-
-import sys
+from tempfile import NamedTemporaryFile
+import unittest
 
 from .. import Tree, PhyloTree
 from ..coretype.tree import TreeError
@@ -54,45 +55,48 @@ class Test_Coretype_Tree(unittest.TestCase):
 
     def test_tree_read_and_write(self):
         """Test newick support."""
-        # Read and write newick tree from file (and support for NHX
-        # format): newick parser
-        with open("/tmp/etetemptree.nw","w") as OUT:
-            OUT.write(ds.nw_full)
+        # Read and write newick tree from/to file.
+        with NamedTemporaryFile() as f_tree:  # test reading from file
+            f_tree.write(ds.nw_full.encode('utf8'))
+            f_tree.flush()
+            t = Tree(f_tree.name)
 
-        t = Tree("/tmp/etetemptree.nw")
-        t.write(outfile='/tmp/etewritetest.nw')
-        self.assertEqual(ds.nw_full, t.write(properties=["flag","mood"]))
-        self.assertEqual(ds.nw_topo,  t.write(format=9))
+        self.assertEqual(ds.nw_full, t.write(properties=["flag", "mood"]))
+        self.assertEqual(ds.nw_topo, t.write(format=9))
         self.assertEqual(ds.nw_dist, t.write(format=5))
 
-        # Read and write newick tree from *string* (and support for NHX
-        # format)
+        with NamedTemporaryFile() as f_writetest:  # test writing to file
+            t.write(outfile=f_writetest.name)
+            self.assertEqual(Tree(f_writetest.name).write(), t.write())
+
+        # Read and write newick tree from/to string.
         t = Tree(ds.nw_full)
-        self.assertEqual(ds.nw_full, t.write(properties=["flag","mood"]))
+
+        self.assertEqual(ds.nw_full, t.write(properties=["flag", "mood"]))
         self.assertEqual(ds.nw_topo, t.write(format=9))
-        self.assertEqual( ds.nw_dist, t.write(format=5))
+        self.assertEqual(ds.nw_dist, t.write(format=5))
 
-        # Read complex newick
+        # Read complex newick.
         t = Tree(ds.nw2_full)
-        self.assertEqual(ds.nw2_full,  t.write())
+        self.assertEqual(ds.nw2_full, t.write())
 
-        # Read wierd topologies
+        # Read weird topologies.
         t = Tree(ds.nw_simple5)
-        self.assertEqual(ds.nw_simple5,  t.write(format=9))
+        self.assertEqual(ds.nw_simple5, t.write(format=9))
+
         t = Tree(ds.nw_simple6)
-        self.assertEqual(ds.nw_simple6,  t.write(format=9))
+        self.assertEqual(ds.nw_simple6, t.write(format=9))
 
-        #Read single node trees:
-        self.assertEqual(Tree("hola;").write(format=9),  "hola;")
-        self.assertEqual(Tree("(hola);").write(format=9),  "(hola);")
+        # Read single node trees.
+        self.assertEqual(Tree("hello;").write(format=9), "hello;")
+        self.assertEqual(Tree("(hello);").write(format=9), "(hello);")
 
-        #Test export root features
-        t = Tree("(((A[&&NHX:name=A],B[&&NHX:name=B])[&&NHX:name=NoName],C[&&NHX:name=C])[&&NHX:name=I],(D[&&NHX:name=D],F[&&NHX:name=F])[&&NHX:name=J])[&&NHX:name=root];")
-        self.assertEqual(t.write(format=9, properties=["name"], format_root_node=True),
-                         "(((A[&&NHX:name=A],B[&&NHX:name=B])[&&NHX:name=NoName],C[&&NHX:name=C])[&&NHX:name=I],(D[&&NHX:name=D],F[&&NHX:name=F])[&&NHX:name=J])[&&NHX:name=root];")
-        # TODO: this check fails. See with Jaime what is the expected behavior.
+        # Export root features.
+        newick = "(((A[&&NHX:name=A],B[&&NHX:name=B])[&&NHX:name=NoName],C[&&NHX:name=C])[&&NHX:name=I],(D[&&NHX:name=D],F[&&NHX:name=F])[&&NHX:name=J])[&&NHX:name=root];"
+        t = Tree(newick)
+        self.assertEqual(newick, t.write(format=9, properties=["name"], format_root_node=True))
 
-        #Test exporting ordered features
+        # Export ordered features.
         t = Tree("((A,B),C);")
         expected_nw = "((A:1[&&NHX:dist=1.0:name=A:support=1.0],B:1[&&NHX:0=0:1=1:2=2:3=3:4=4:5=5:6=6:7=7:8=8:9=9:a=a:b=b:c=c:d=d:dist=1.0:e=e:f=f:g=g:h=h:i=i:j=j:k=k:l=l:m=m:n=n:name=B:o=o:p=p:q=q:r=r:s=s:support=1.0:t=t:u=u:v=v:w=w])1:1[&&NHX:dist=1.0:name=:support=1.0],C:1[&&NHX:dist=1.0:name=C:support=1.0]);"
         features = list("abcdefghijklmnopqrstuvw0123456789")
@@ -101,8 +105,10 @@ class Test_Coretype_Tree(unittest.TestCase):
             (t & "B").add_prop(letter, letter)
         self.assertEqual(expected_nw, t.write(properties=[]))
 
+    def test_repr(self):
         # Node instance repr
-        self.assertTrue(Tree().__repr__().startswith('Tree node'))
+        self.assertTrue(Tree().__repr__().startswith('Tree'))
+        self.assertTrue(('%r' % Tree()).startswith('Tree'))
 
     def test_concat_trees(self):
         t1 = Tree('((A, B), C);')
