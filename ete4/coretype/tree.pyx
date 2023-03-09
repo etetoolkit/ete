@@ -291,7 +291,7 @@ cdef class Tree(object):
         return True
 
     def __repr__(self):
-        return "Tree node '%s' (%s)" %(self.name, hex(self.__hash__()))
+        return 'Tree "%s" (%s)' % (self.name, hex(self.__hash__()))
 
     def __and__(self, name):
         """Return the first descendant with the given name."""
@@ -300,7 +300,7 @@ cdef class Tree(object):
             first_match = next(self.iter_search_nodes(name=str(name)))
             return first_match
         except StopIteration:
-            raise TreeError("Node not found")
+            raise TreeError('No node found with name: %r' % name)
 
     def __add__(self, value):
         """Sum trees. t1 + t2 returns a new tree with children=[t1, t2]."""
