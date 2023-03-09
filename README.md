@@ -60,7 +60,7 @@ To start
     [Conda](https://conda.io/) with `mamba install cython` or `conda
     install -c conda-forge cython`)
   - Additional dependencies: `flask flask-cors flask-httpauth
-    flask-restful flask-compress sqlalchemy numpy PyQt5` (you can
+    flask-restful flask-compress numpy PyQt5` (you can
     install them with `pip install <list of dependencies>`)
 - Build and install ete4 from repo's root directory: `pip install -e .`
 
