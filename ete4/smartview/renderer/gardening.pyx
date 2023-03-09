@@ -199,7 +199,7 @@ def get_node(tree, node_id):
 
 def standardize(tree):
     "Transform from a tree not following strict newick conventions"
-    if tree.dist == -1: 
+    if tree.dist == -1:
         tree.dist = 0
 
     update_all_sizes(tree)
