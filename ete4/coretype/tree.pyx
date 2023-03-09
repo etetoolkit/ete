@@ -889,9 +889,9 @@ cdef class Tree(object):
 
         Example::
 
-            t = tree.Tree("(((A:0.1, B:0.01):0.001, C:0.1):1.0[&&NHX:name=common], (D:0.01):0.001):2.0[&&NHX:name=root];")
-            A = t.get_descendants_by_name("A")[0]
-            C = t.get_descendants_by_name("C")[0]
+            t = Tree("(((A:0.1, B:0.01):0.001, C:0.1):1.0[&&NHX:name=common], (D:0.01):0.001):2.0[&&NHX:name=root];")
+            A = t&"A"
+            C = t&"C"
             common = A.get_common_ancestor(C)
             print("The common ancestor of nodes A and C in this tree is:", common.name)
         """
