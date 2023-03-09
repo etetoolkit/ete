@@ -81,7 +81,7 @@ class TreeError(Exception):
 
 
 cdef class Tree(object):
-    cdef public dict _properties
+    cdef public dict props
     cdef public set features
     cdef public list _children
     cdef public object _up
@@ -136,33 +136,25 @@ cdef class Tree(object):
     """
 
     def _get_name(self):
-        return self._properties.get('name', DEFAULT_NAME)
+        return self.props.get('name', DEFAULT_NAME)
     def _set_name(self, value):
-        self._properties['name'] = value
+        self.props['name'] = value
 
     def _get_dist(self):
-        return self._properties.get('dist', DEFAULT_DIST if self.up else DEFAULT_DIST_ROOT)
+        return self.props.get('dist', DEFAULT_DIST if self.up else DEFAULT_DIST_ROOT)
     def _set_dist(self, value):
         try:
-            self._properties['dist'] = float(value)
+            self.props['dist'] = float(value)
         except ValueError:
             raise TreeError('node dist must be a float number')
 
     def _get_support(self):
-        return self._properties.get('support', DEFAULT_SUPPORT)
+        return self.props.get('support', DEFAULT_SUPPORT)
     def _set_support(self, value):
         try:
-            self._properties['support'] = float(value)
+            self.props['support'] = float(value)
         except ValueError:
             raise TreeError('node support must be a float number')
-
-    def _get_props(self):
-        return self._properties
-    def _set_props(self, value):
-        try:
-            self._properties = dict(value)
-        except ValueError:
-            raise TreeError('node properties must be a dict')
 
     def _get_up(self):
         return self._up
@@ -224,8 +216,6 @@ cdef class Tree(object):
     dist = property(fget=_get_dist, fset=_set_dist)
     #: Branch support for current node
     support = property(fget=_get_support, fset=_set_support)
-    #: Properties for current node (support included)
-    props = property(fget=_get_props, fset=_set_props)
     #: Pointer to parent node
     up = property(fget=_get_up, fset=_set_up)
     #: List containing children nodes
@@ -263,7 +253,7 @@ cdef class Tree(object):
                  name=None, quoted_node_names=False, up=None):
         self._children = []
         self._up = up
-        self._properties = {}
+        self.props = {}
         self._img_style = None
         # Do not initialize _faces and _collapsed_faces
         # for performance reasons (pickling)

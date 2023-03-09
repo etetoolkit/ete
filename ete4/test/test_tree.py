@@ -66,7 +66,7 @@ class Test_Coretype_Tree(unittest.TestCase):
         self.assertEqual(t.props["testf4"], set([1]))
 
         t.del_prop('testf4')
-        self.assertTrue('testf4' not in t._properties)
+        self.assertTrue('testf4' not in t.props)
 
     def test_tree_read_and_write(self):
         """Test newick support."""
