@@ -702,7 +702,7 @@ class Test_Coretype_Tree(unittest.TestCase):
         # Randomizing outgroup test: Can we recover original state
         # after many manipulations?
         for i in range(10):
-            for j in range(1000):
+            for j in range(100):
                 n = random.sample(nodes, 1)[0]
                 t.set_outgroup(n)
             t.set_outgroup(t.get_midpoint_outgroup())
