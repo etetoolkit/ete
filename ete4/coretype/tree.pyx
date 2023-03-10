@@ -938,12 +938,8 @@ cdef class Tree(object):
                 print(node.prop["support"])
         """
         for n in self.traverse():
-            conditions_passed = 0
-            for key, value in conditions.items():
-                if (hasattr(n, key) and getattr(n, key) == value)\
-                  or n.props.get(key) == value:
-                    conditions_passed +=1
-            if conditions_passed == len(conditions):
+            if all(n.props.get(key) == value
+                   for key, value in conditions.items()):
                 yield n
 
     def search_nodes(self, **conditions):
