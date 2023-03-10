@@ -837,12 +837,25 @@ class Test_Coretype_Tree(unittest.TestCase):
         text = t.get_ascii()
         self.assertTrue(len(text) > 10 and '\n' in text)
 
-        # These would print to the console directly, we cannot check easily
-        # that they work as expected:
-        #Tree().describe()
-        #Tree('(a,b,c);').describe()
-        #Tree('(a,(b,c));').describe()
-
+    def test_describe(self):
+        self.assertEqual(Tree().describe(),
+                         'Number of leaf nodes: 1\n'
+                         'Total number of nodes: 1\n'
+                         'Rooted: No children\n'
+                         'Most distant node: \n'
+                         'Max. distance: 0')
+        self.assertEqual(Tree('(a,b,c);').describe(),
+                         'Number of leaf nodes: 3\n'
+                         'Total number of nodes: 4\n'
+                         'Rooted: No\n'
+                         'Most distant node: a\n'
+                         'Max. distance: 1')
+        self.assertEqual(Tree('(a,(b,c));').describe(),
+                         'Number of leaf nodes: 3\n'
+                         'Total number of nodes: 5\n'
+                         'Rooted: Yes\n'
+                         'Most distant node: b\n'
+                         'Max. distance: 2')
 
     def test_treeid(self):
         t = Tree()

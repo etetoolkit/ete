@@ -801,22 +801,23 @@ cdef class Tree(object):
         return list(self.iter_ancestors())
 
     def describe(self):
-        """Print general information about this node and its connections."""
+        """Return a string with information on this node and its connections."""
         if len(self.get_tree_root().children) == 2:
-            rooting = "Yes"
+            rooting = 'Yes'
         elif len(self.get_tree_root().children) > 2:
-            rooting = "No"
+            rooting = 'No'
         else:
-            rooting = "No children"
+            rooting = 'No children'
 
         max_node, max_dist = self.get_farthest_leaf()
         cached_content = self.get_cached_content()
 
-        print("Number of leaf nodes:\t%d" % len(cached_content[self]))
-        print("Total number of nodes:\t%d" % len(cached_content))
-        print("Rooted:\t%s" % rooting)
-        print("Most distant node:\t%s" % max_node.name)
-        print("Max. distance:\t%g" % max_dist)
+        return '\n'.join([
+            'Number of leaf nodes: %d' % len(cached_content[self]),
+            'Total number of nodes: %d' % len(cached_content),
+            'Rooted: %s' % rooting,
+            'Most distant node: %s' % max_node.name,
+            'Max. distance: %g' % max_dist])
 
     def write(self, properties=None, outfile=None, format=0, is_leaf_fn=None,
               format_root_node=False, dist_formatter=None, support_formatter=None,
