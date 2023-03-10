@@ -655,7 +655,7 @@ class Test_Coretype_Tree(unittest.TestCase):
                              ╰╴g
         """)
 
-        t = t.set_outgroup_jordi(t & 'e')
+        t = t.set_outgroup_jordi(t['e'])
         self.assertLooks(t, """
                 ╴(empty)╶┬╴e
                          ╰╴b╶┬╴d
@@ -663,7 +663,7 @@ class Test_Coretype_Tree(unittest.TestCase):
                                  ╰╴g
         """)
 
-        t = t.set_outgroup_jordi(t & 'd')
+        t = t.set_outgroup_jordi(t['d'])
         self.assertLooks(t, """
                          ╭╴d
                 ╴(empty)╶┤   ╭╴c╶┬╴f
@@ -671,7 +671,7 @@ class Test_Coretype_Tree(unittest.TestCase):
                              ╰╴e
         """)
 
-        t = t.set_outgroup_jordi(t & 'c')
+        t = t.set_outgroup_jordi(t['c'])
         self.assertLooks(t, """
                          ╭╴c╶┬╴f
                 ╴(empty)╶┤   ╰╴g
@@ -679,7 +679,7 @@ class Test_Coretype_Tree(unittest.TestCase):
                              ╰╴d
         """)
 
-        t = t.set_outgroup_jordi(t & 'b')
+        t = t.set_outgroup_jordi(t['b'])
         self.assertLooks(t, """
                          ╭╴b╶┬╴e
                 ╴(empty)╶┤   ╰╴d
