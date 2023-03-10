@@ -1926,27 +1926,28 @@ cdef class Tree(object):
         return result
 
     def _diff(self, t2, output='topology', attr_t1='name', attr_t2='name', color=True):
-        """
-        .. versionadded:: 2.3
+        """Return the difference between two tree topologies.
 
-        Show or return the difference between two tree topologies.
-
-        :param [raw|table|topology|diffs|diffs_tab] output: Output type
-
+        :param [raw|table|topology|diffs|diffs_tab] output: Output type.
         """
         from ..tools import ete_diff
+
         difftable = ete_diff.treediff(self, t2, attr1=attr_t1, attr2=attr_t2)
-        if output == "topology":
+
+        # TODO: Fix the show_difftable*() functions and return get_difftable*() here.
+        if output == 'topology':
             ete_diff.show_difftable_topo(difftable, attr_t1, attr_t2, usecolor=color)
-        elif output == "diffs":
+        elif output == 'diffs':
             ete_diff.show_difftable(difftable)
-        elif output == "diffs_tab":
+        elif output == 'diffs_tab':
             ete_diff.show_difftable_tab(difftable)
         elif output == 'table':
             rf, rf_max, _, _, _, _, _ = self.robinson_foulds(t2, attr_t1=attr_t1, attr_t2=attr_t2)[:2]
             ete_diff.show_difftable_summary(difftable, rf, rf_max)
-        else:
+        elif output == 'raw':
             return difftable
+        else:
+            raise TreeError(f'Unknown output for diff: {output}')
 
     def iter_edges(self, cached_content = None):
         '''
