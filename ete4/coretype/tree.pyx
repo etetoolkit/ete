@@ -272,16 +272,28 @@ cdef class Tree(object):
         return True
 
     def __repr__(self):
-        return 'Tree "%s" (%s)' % (self.name, hex(self.__hash__()))
+        return 'Tree %r (%s)' % (self.name, hex(self.__hash__()))
 
-    def __and__(self, name):
-        """Return the first descendant with the given name."""
-        # tree&'A' returns the descendant node whose name is 'A'
+    def __getitem__(self, node_id):
+        """Return the node that matches the given node_id."""
         try:
-            first_match = next(self.iter_search_nodes(name=str(name)))
-            return first_match
+            if type(node_id) == str:    # node_id can be the name of a node
+                return next(n for n in self.traverse() if n.name == node_id)
+            elif type(node_id) == int:  # or the index of a child
+                return self.children[node_id]
+            else:                       # or a list/tuple of a descendant
+                node = self
+                for i in node_id:
+                    node = node.children[i]
+                return node
         except StopIteration:
-            raise TreeError('No node found with name: %r' % name)
+            raise TreeError(f'No node found with name: {node_id}')
+        except (IndexError, TypeError) as e:
+            raise TreeError(f'Invalid node_id: {node_id}')
+
+    def __and__(self, node_id):
+        # tree&'A' returns the descendant node whose name is 'A'.
+        return self[node_id]
 
     def __add__(self, value):
         """Sum trees. t1 + t2 returns a new tree with children=[t1, t2]."""
@@ -726,47 +738,33 @@ cdef class Tree(object):
         Each iteration returns a postorder flag (True if node is being visited
         in postorder) and a node instance.
         """
+        is_leaf_fn = is_leaf_fn or self.__class__.is_leaf
         to_visit = [self]
-        if is_leaf_fn is not None:
-            _leaf = is_leaf_fn
-        else:
-            _leaf = self.__class__.is_leaf
 
         while to_visit:
             node = to_visit.pop(-1)
-            try:
-                node = node[1]
-            except TypeError:
-                # PREORDER ACTIONS
+            if type(node) != list:
                 yield (False, node)
-                if not _leaf(node):
-                    # ADD CHILDREN
+                if not is_leaf_fn(node):  # add children
                     to_visit.extend(reversed(node.children + [[1, node]]))
-            else:
-                #POSTORDER ACTIONS
+            else:  # postorder actions
+                node = node[1]
                 yield (True, node)
 
     def _iter_descendants_postorder(self, is_leaf_fn=None):
         """Yield all nodes in a tree in postorder."""
+        is_leaf_fn = is_leaf_fn or self.__class__.is_leaf
         to_visit = [self]
-        if is_leaf_fn is not None:
-            _leaf = is_leaf_fn
-        else:
-            _leaf = self.__class__.is_leaf
 
         while to_visit:
             node = to_visit.pop(-1)
-            try:
-                node = node[1]
-            except TypeError:
-                # PREORDER ACTIONS
-                if not _leaf(node):
-                    # ADD CHILDREN
+            if type(node) != list:  # preorder actions
+                if not is_leaf_fn(node):  # add children
                     to_visit.extend(reversed(node.children + [[1, node]]))
                 else:
                     yield node
-            else:
-                #POSTORDER ACTIONS
+            else:  # postorder actions
+                node = node[1]
                 yield node
 
     def _iter_descendants_levelorder(self, is_leaf_fn=None):
