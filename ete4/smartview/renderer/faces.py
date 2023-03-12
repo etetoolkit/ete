@@ -1553,8 +1553,8 @@ class PieChartFace(CircleFace):
     def __init__(self, radius, data, name="",
             padding_x=0, padding_y=0, tooltip=None):
 
-        super().__init__(self, name=name,
-            padding_x=padding_x, padding_y=padding_y, tooltip=tooltip)
+        Face.__init__(self, name=name,
+            padding_x=padding_x, padding_y=padding_y)
 
         self.radius = radius
         # Drawing private properties
