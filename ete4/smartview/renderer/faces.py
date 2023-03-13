@@ -1559,7 +1559,7 @@ class PieChartFace(CircleFace):
     def __init__(self, radius, data, name="",
             padding_x=0, padding_y=0, tooltip=None):
 
-        super().__init__(self, name=name,
+        super().__init__(self, name=name, color=None,
             padding_x=padding_x, padding_y=padding_y, tooltip=tooltip)
 
         self.radius = radius
