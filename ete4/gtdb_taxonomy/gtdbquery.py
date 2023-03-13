@@ -65,8 +65,7 @@ import warnings
 __all__ = ["GTDBTaxa", "is_taxadb_up_to_date"]
 
 DB_VERSION = 2
-#DEFAULT_GTDBTAXADB = os.path.join(os.environ.get('HOME', '/'), '.etetoolkit', 'gtdbtaxa.sqlite')
-DEFAULT_GTDBTAXADB = os.path.join(os.path.dirname(os.path.realpath(__file__)), '.gtdb', 'gtdbtaxa.sqlite')
+DEFAULT_GTDBTAXADB = os.environ.get('XDG_DATA_HOME', os.environ['HOME'] + '/.local/share') + '/etetoolkit/gtdbtaxa.sqlite'
 DEFAULT_GTDBTAXADUMP = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'gtdbdump', 'gtdbr202dump.tar.gz')
 
 def is_taxadb_up_to_date(dbfile=DEFAULT_GTDBTAXADB):

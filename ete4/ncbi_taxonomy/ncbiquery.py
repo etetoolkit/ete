@@ -64,7 +64,7 @@ import warnings
 __all__ = ["NCBITaxa", "is_taxadb_up_to_date"]
 
 DB_VERSION = 2
-DEFAULT_TAXADB = os.path.join(os.environ.get('HOME', '/'), '.etetoolkit', 'taxa.sqlite')
+DEFAULT_TAXADB = os.environ.get('XDG_DATA_HOME', os.environ['HOME'] + '/.local/share') + '/etetoolkit/taxa.sqlite'
 
 
 def is_taxadb_up_to_date(dbfile=DEFAULT_TAXADB):
