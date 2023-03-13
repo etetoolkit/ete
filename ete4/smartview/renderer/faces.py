@@ -417,7 +417,6 @@ class CircleFace(Face):
     def draw(self, drawer):
         self._check_own_variables()
         style = {'fill': self.color} if self.color else {}
-
         yield draw_circle(self._center, self._max_radius,
                 self.name, style=style, tooltip=self.tooltip)
 
