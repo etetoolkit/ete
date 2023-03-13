@@ -271,7 +271,7 @@ class Trees(Resource):
         elif rule == '/trees/<string:tree_id>/find':
             node = find_node(tree.tree, request.args.copy())
             node_id = ",".join(map(str, get_node_id(tree.tree, node, [])))
-            return { 'id': node_id, **node.get_popup_props() }
+            return {'id': node_id}
         elif rule == '/trees/<string:tree_id>/draw':
             drawer = get_drawer(tree_id, request.args.copy())
             return list(drawer.draw())
@@ -735,7 +735,7 @@ def get_nodes_info(tree, nodes, props):
     for idx, node in enumerate(nodes):
         if props[0] == "*":
             node_id = node_ids[idx]
-            nodes_info.append({ **node.get_popup_props(), 'id': node_id })
+            nodes_info.append({'id': node_id })
         else:
             node_p = { p: node.props.get(p) for p in props }
             if 'id' in props:
