@@ -46,7 +46,7 @@ const view = {
     allow_modifications: true,
 
     // representation
-    drawer: {name: "RectFaces", type: "rect", npanels: 1},  // default drawer
+    drawer: {name: "RectFaces", type: "rect", npanels: 2},  // default drawer
     min_size: 15,  // for less pixels, the drawer will collapse things
     current_property: "name",  // pre-selected property in the add label menu
     rmin: 0,
@@ -113,7 +113,7 @@ const view = {
     tl: {x: null, y: null},  // top-left of the view (in tree coordinates)
     zoom: {
         x: null, y: null, a: null,  // initially chosen depending on the tree size
-        delta: { in: 0.25, out: -0.2 }
+        delta: { in: 0.25, out: -0.2 },
     },
     select_text: false,  // if true, clicking and moving the mouse selects text
 
@@ -151,7 +151,7 @@ const view = {
 
     // minimap
     minimap: {
-        show: true,
+        show: false,
         uptodate: false,
         width: 10,
         height: 40,
@@ -168,6 +168,8 @@ const view = {
     },
 
     control_panel: { show: false },
+
+    legend: { expanded: true, expand: () => expand_legend() },
 
     smart_zoom: true,
 
@@ -513,6 +515,34 @@ function get_active_layouts() {
 async function reset_layouts() {
     view.layouts = await api(`/layouts/${get_tid()}`);
     update_folder_layouts()
+}
+
+
+function expand_legend() {
+    if (view.legend.expanded) {
+        div_legend_container.style["overflow-y"] = "hidden";
+        div_legend_container.style.resize = "none";
+        div_legend_container.style["max-height"] = "8px";
+        div_legend_expand.style.transform = "rotate(90deg)";
+        setTimeout(() => {
+            div_legend_header.style.display = "block";
+            div_legend_container.style.width = "60px";
+        }, 500);
+    }
+    else {
+        div_legend_container.style.width = "300px";
+        setTimeout(() => {
+            div_legend_header.style.display = "none";
+            div_legend_container.style["max-height"] = "50%";
+            div_legend_expand.style.transform = "none";
+            setTimeout(() => {
+                div_legend_container.style["overflow-y"] = "auto"
+                div_legend_container.style.resize = "vertical";
+            }, 500);
+        }, 500)
+    }
+
+    view.legend.expanded = !view.legend.expanded;
 }
 
 

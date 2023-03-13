@@ -1,5 +1,6 @@
 // Handle gui events.  
-import { view, get_tid, menus, coordinates, reset_view, show_minimap, show_help }
+import { view, get_tid, menus, coordinates, reset_view,
+         on_drawer_change, show_minimap, show_help }
     from "./gui.js";
 import { zoom_around, zoom_aligned } from "./zoom.js";
 import { move_minimap_view } from "./minimap.js";
@@ -35,8 +36,15 @@ function init_events() {
 
     document.addEventListener("touchend", on_touchend);
 
-    if (self !== top)  // ETE is not within an iframe
+    const fullScreenTrigger = document.getElementById("full-screen-trigger");
+    if (self === top) {
+        fullScreenTrigger.style.display = "block";
+        fullScreenTrigger.addEventListener("click", () =>
+            document.querySelector("html").requestFullscreen());
+    } else // ETE inside an iframe
         window.addEventListener("message", on_postMessage)
+
+    div_legend_expand.addEventListener("mouseup", view.legend.expand)
 }
 
 
@@ -64,6 +72,12 @@ function on_keydown(event) {
         show_minimap(view.minimap.show);
         menus.minimap.refresh();
     }
+    else if (key === "t") {
+        view.zoom_sensitivity = view.zoom_sensitivity > 0.5 ?
+            0.3 : 1;
+        view.zoom.delta.in = 0.25 * view.zoom_sensitivity;
+        view.zoom.delta.out = -0.2 * view.zoom_sensitivity;
+    }
     else if (key === "p") {
         if (menus.show)
             menus.close()
@@ -72,6 +86,13 @@ function on_keydown(event) {
     }
     else if (key === "d")
         view.download.svg();
+    else if (key == "o") {
+        view.drawer.name = view.drawer.type === "rect"
+            ? "CircFaces" : "RectFaces";
+        on_drawer_change()
+    }
+    else if (key === "a")
+        view.aligned.zoom = !view.aligned.zoom;
     else if (key === "+") {
         const center = {x: div_tree.offsetWidth / 2,
                         y: div_tree.offsetHeight / 2};
@@ -119,16 +140,8 @@ function on_keydown(event) {
 
 
 function get_event_zoom(event) {
-    const { deltaX, deltaY } = event;
     const do_zoom = {x: !event.ctrlKey, y: !event.altKey};
-    let zoom_in;
-
-    if (deltaX !== 0) {
-        zoom_in = deltaX < 0;
-        do_zoom.y = false;
-    } else
-        zoom_in = deltaY < 0;
-
+    const zoom_in = event.deltaY < 0;
     return [ zoom_in, do_zoom ]
 }
 
@@ -137,7 +150,9 @@ function get_event_zoom(event) {
 function on_wheel(event) {
     const g_panel0 = div_tree.children[0].children[0];
 
-    if (!is_svg(event.target) || g_panel0.contains(event.target))
+    if (!is_svg(event.target) ||
+        g_panel0.contains(event.target) ||
+        !div_viz.contains(event.target))
         return;  // it will be done on the nodes instead
 
     event.preventDefault();

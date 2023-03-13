@@ -4,5 +4,7 @@ from . import evol_events_layouts
 from . import etecompare_layouts
 from . import ncbi_taxonomy_layouts
 from . import seq_layouts
+from . import domain_layouts
 from . import spongilla_layouts
 from . import evocell_layouts
+from . import eggnog6_layouts

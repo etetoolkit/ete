@@ -18,10 +18,21 @@ def sort(tree, key=None, reverse=False):
 
 
 def root_at(node, bprops=None):
-    "Return the tree of which node is part of, rerooted at the given node"
-    # bprops is a list of extra branch properties (other than "support").
-    if not node.up:
-        return node
+    """Return the tree of which node is part of, rerooted at the given node.
+
+    :param node: Node where to set root (future first child of the new root).
+    :param bprops: List of extra branch properties (other than "support").
+    """
+    old_root, node_id = get_root_id(node)
+
+    assert old_root.dist == 0, 'cannot reroot tree with non-zero root length'
+    assert not old_root.name, 'cannot reroot tree with a named root'
+    assert node != old_root, 'cannot reroot tree on (empty) root'
+
+    if node.up == old_root:  # node is a direct child of the (empty) root
+        old_root.children.remove(node)      # the "node in which we root" is
+        old_root.children.insert(0, node)   # the 1st child of the (empty) root
+        return old_root  # keep the same (empty) root as before
 
     future_root = split_branch(node, bprops)
 
@@ -41,10 +52,10 @@ def split_branch(node, bprops=None):
     "Add an intermediate parent to the given node and return it"
     parent = node.up
 
-    parent.remove_child(node)  # detach from parent
+    pos_in_parent = parent.children.index(node)  # save its position in parent
+    parent.children.pop(pos_in_parent)  # detach from parent
 
-    intermediate = node.__class__('')  # create intermediate node
-    intermediate.remove_children()
+    intermediate = Tree()  # create intermediate node
     intermediate.add_child(node)
 
     if node.dist >= 0:  # split dist between the new and old nodes
@@ -57,8 +68,8 @@ def split_branch(node, bprops=None):
         if prop in node.props:
             intermediate.props[prop] = node.props[prop]
 
-
-    parent.add_child(intermediate)
+    parent.children.insert(pos_in_parent, intermediate)  # put new where old was
+    intermediate.up = parent
 
     update_size(node)
     update_size(intermediate)
@@ -199,7 +210,7 @@ def get_node(tree, node_id):
 
 def standardize(tree):
     "Transform from a tree not following strict newick conventions"
-    if tree.dist == -1: 
+    if tree.dist == -1:
         tree.dist = 0
 
     update_all_sizes(tree)

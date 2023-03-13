@@ -69,7 +69,7 @@ except IOError:
 
 print("\nInstalling ETE (%s) \n" %ETE_VERSION)
 print()
-    
+
 MOD_NAME = "ete4"
 
 LONG_DESCRIPTION="""
@@ -92,10 +92,10 @@ Visit http://etetoolkit.org for more info.
 """
 
 extensions = [
-        Extension('ete4.coretype.tree', ['ete4/coretype/tree.pyx']), 
-        Extension('ete4.parser.newick', ['ete4/parser/newick.pyx']), 
-        Extension('ete4.smartview.renderer.gardening', ['ete4/smartview/renderer/gardening.pyx']), 
-        Extension('ete4.smartview.renderer.face_positions', ['ete4/smartview/renderer/face_positions.pyx']), 
+        Extension('ete4.coretype.tree', ['ete4/coretype/tree.pyx']),
+        Extension('ete4.parser.newick', ['ete4/parser/newick.pyx']),
+        Extension('ete4.smartview.renderer.gardening', ['ete4/smartview/renderer/gardening.pyx']),
+        Extension('ete4.smartview.renderer.face_positions', ['ete4/smartview/renderer/face_positions.pyx']),
             ],
 
 try:
@@ -117,13 +117,13 @@ try:
         package_data = {
 
         },
-        data_files = [("%s/tools" %MOD_NAME, 
+        data_files = [("%s/tools" %MOD_NAME,
                        ["%s/tools/ete_build.cfg" %MOD_NAME])],
 
         # metadata for upload to PyPI
-        author = "Jaime Huerta-Cepas, Jordi Burguet-Castells",
+        author = "Jaime Huerta-Cepas, Jordi Burguet-Castell",
         author_email = "jhcepas@gmail.com",
-        maintainer = "Jaime Huerta-Cepas, Jordi Burguet-Castells",
+        maintainer = "Jaime Huerta-Cepas, Jordi Burguet-Castell",
         maintainer_email = "jhcepas@gmail.com",
         platforms = "OS Independent",
         license = "GPLv3",
@@ -144,7 +144,7 @@ try:
         #     ('sql', glob('scripts/*.sql')),
         #     ('examples', glob('examples/*'))])
     )
- 
+
 except:
     print("\033[91m - Errors found! - \033[0m")
     raise

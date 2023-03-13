@@ -4,6 +4,8 @@ from math import sin, cos, pi, sqrt, atan2
 Box = namedtuple('Box', 'x y dx dy')  # corner and size of a 2D shape
 SBox = namedtuple('SBox', 'x y dx_min dx_max dy')  # slanted box
 
+Padding = namedtuple('Padding', 'x y')
+
 
 def clip_angles(a1, a2):
     "Return the angles such that a1 to a2 extend at maximum from -pi to pi"
@@ -21,14 +23,14 @@ def is_good_angle_interval(a1, a2):
     return -pi <= a1 < a2 < pi + EPSILON
 
 
-def summary(nodes):
+def summary(nodes, prop="name"):
     "Return a list of names summarizing the given list of nodes"
-    return list(OrderedDict((first_name(node), None) for node in nodes).keys())
+    return list(OrderedDict((first_value(node, prop), None) for node in nodes).keys())
 
 
-def first_name(tree):
-    "Return the name of the first node that has a name"
-    return next((node.name for node in tree.traverse('preorder') if node.name), '')
+def first_value(tree, prop):
+    "Return the value of the requested property for the first node that has it"
+    return next((node.props.get(prop) for node in tree.traverse('preorder') if node.props.get(prop)), '')
 
 
 def get_xs(box):
@@ -112,13 +114,12 @@ def circumasec(rect):
         return Box(rmin, amin, sqrt(max(radius2)) - rmin, max(angles) - amin)
 
 # Basic drawing elements.
-
-def draw_nodebox(box, name='', properties=None, 
+def draw_nodebox(box, name='', properties=None,
         node_id=None, searched_by=None, style=None):
     properties = { k:v for k,v in (properties or {}).items() \
             if not (k.startswith('_') or k == 'seq')}
-    return ['nodebox', box, name, 
-            properties, node_id or [], 
+    return ['nodebox', box, name,
+            properties, node_id or [],
             searched_by or [], style or {}]
 
 def draw_outline(sbox, style=None):
@@ -151,7 +152,7 @@ def draw_slice(center, r, a, da, slice_type='', style=None, tooltip=None):
 
 def draw_triangle(box, tip, triangle_type='', style=None, tooltip=None):
     """Returns array with all the information needed to draw a triangle
-    in front end. 
+    in front end.
     :box: bounds triangle
     :tip: defines tip orientation 'top', 'left' or 'right'.
     :triangle_type: will label triangle in front end (class)
@@ -174,7 +175,7 @@ def draw_rhombus(box, rhombus_type='', style=None, tooltip=None):
                (x, y + dy / 2))      # left
     return ['rhombus', rhombus, rhombus_type, style or {}, tooltip or '']
 
-def draw_arrow(box, tip, orientation='right', arrow_type='', 
+def draw_arrow(box, tip, orientation='right', arrow_type='',
         style=None, tooltip=None):
     """ Create arrow provided a bounding box """
     x, y, dx, dy = box

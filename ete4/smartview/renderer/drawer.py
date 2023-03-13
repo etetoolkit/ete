@@ -11,7 +11,7 @@ from time import time
 from .walk import walk
 from .. import TreeStyle
 from .face_positions import FACE_POSITIONS, get_FaceAreas
-from .draw_helpers import * 
+from .draw_helpers import *
 
 Size = namedtuple('Size', 'dx dy')  # size of a 2D shape (sizes are always >= 0)
 TreeActive = namedtuple('TreeActive', 'nodes clades')
@@ -21,6 +21,7 @@ def get_empty_active():
     nodes = Active(set(), defaultdict(lambda: 0))
     clades = Active(set(), defaultdict(lambda: 0))
     return TreeActive(nodes, clades)
+
 
 # They are all "generalized coordinates" (can be radius and angle, say).
 
@@ -58,6 +59,15 @@ def get_node_id(node, node_id):
     node_id.append(parent.children.index(node))
     return get_node_id(parent, node_id)
 
+def safe_string(prop):
+    if type(prop) in (int, float, str):
+        return prop
+    try:
+        return str(prop)
+    except:
+        return ""
+
+
 class Drawer:
     "Base class (needs subclassing with extra functions to draw)"
 
@@ -70,9 +80,9 @@ class Drawer:
     NPANELS = 1 # number of drawing panels (including the aligned ones)
 
     def __init__(self, tree, viewport=None, panel=0, zoom=(1, 1),
-                 limits=None, collapsed_ids=None, 
+                 limits=None, collapsed_ids=None,
                  active=None, selected=None, searches=None,
-                 layouts=None, tree_style=None):
+                 layouts=None, tree_style=None, popup_prop_keys=None):
         self.tree = tree
         self.viewport = Box(*viewport) if viewport else None
         self.panel = panel
@@ -83,6 +93,7 @@ class Drawer:
         self.selected = selected or {}  # looks like {node_id: (node, parents)}
         self.searches = searches or {}  # looks like {text: (results, parents)}
         self.layouts = layouts or []
+        self.popup_prop_keys = popup_prop_keys or []
         self.tree_style = tree_style
         if not self.tree_style:
             self.tree_style = TreeStyle()
@@ -101,6 +112,9 @@ class Drawer:
         if self.panel in (2, 3):
             yield from self.draw_aligned_headers()
 
+        if self.panel == -1:
+            yield from self.tree_style.get_legend()
+
         else:
             point = self.xmin, self.ymin
             for it in walk(self.tree):
@@ -114,9 +128,11 @@ class Drawer:
             if self.outline:
                 yield from self.get_outline()
 
-            if self.panel == 0:  # draw in preorder the boxes we found in postorder
+            if self.panel == 0:
                 max_dx = max([box[1].dx for box in self.nodeboxes] + [0])
                 self.tree_style.aligned_grid_dxs[-1] = max_dx
+
+                # To draw in preorder the boxes we found in postorder.
                 yield from self.nodeboxes[::-1]  # (so they overlap nicely)
 
     def on_first_visit(self, point, it, graphics):
@@ -189,7 +205,7 @@ class Drawer:
         graphics += content_graphics
 
         ndx = (drawn_size(content_graphics, self.get_box).dx if it.node.is_leaf()
-                else (dx + max(self.node_dxs.pop() or [0])))
+               else (dx + max(self.node_dxs.pop() or [0])))
         self.node_dxs[-1].append(ndx)
 
         box = Box(x_before, y_before, ndx, dy)
@@ -253,7 +269,7 @@ class Drawer:
                     'fill': node_style['fgcolor'],
                     'opacity': node_style['fgopacity'],
             }
-            
+
             yield from self.draw_nodedot((x + dx, y + bdy),
                     dy * self.zoom[1], active_node, nodedot_style)
 
@@ -261,12 +277,11 @@ class Drawer:
         # Draw aligned panel headers
         def it_fits(box, pos):
             _, _, dx, dy = box
-            return dx * zx > self.MIN_SIZE\
-                    and dy * zy > self.MIN_SIZE
+            return dx * zx > self.MIN_SIZE and dy * zy > self.MIN_SIZE
 
         def draw_face(face, pos, row, n_row, n_col, dx_before, dy_before):
             if face.get_content():
-                box = face.compute_bounding_box(self, (0, 0), size, 
+                box = face.compute_bounding_box(self, (0, 0), size,
                             None, None, None, None, None,
                             pos, row, n_row, n_col,
                             dx_before, dy_before)
@@ -275,12 +290,13 @@ class Drawer:
 
         def draw_faces_at_pos(faces, pos, iteration):
             n_col = max(faces.keys(), default = -1) + 1
+
             dx_before = 0
             for col, face_list in sorted(faces.items()):
                 if col > 0:
                     # Avoid changing-size error when zooming very quickly
                     dxs = list(faces._grid_dxs.items())
-                    dx_before = sum(v for k, v in dxs if k < col and k >= 0)
+                    dx_before = sum(v for k, v in dxs if 0 <= k < col)
                 dx_max = 0
                 dy_before = 0
                 n_row = len(face_list)
@@ -357,10 +373,10 @@ class Drawer:
 
         # Draw collapsed node nodebox when necessary
         if is_manually_collapsed or is_small or collapsed_node.dist == 0:
-            name, properties = collapsed_node.name, collapsed_node.props
+            name, properties = collapsed_node.name, self.get_popup_props(collapsed_node)
             node_id = tuple(get_node_id(collapsed_node, []))\
                     if is_manually_collapsed else []
-            box = draw_nodebox(self.flush_outline(ndx), name, 
+            box = draw_nodebox(self.flush_outline(ndx), name,
                     properties, node_id, searched_by + selected_by + active_clade,
                     { 'fill': collapsed_node.sm_style.get('bgcolor') })
             self.nodeboxes.append(box)
@@ -383,7 +399,7 @@ class Drawer:
         if len(self.collapsed) == 1:
             node0.is_collapsed = True
             return node0
-        
+
         parent = node0.up
         if all(node.up == parent for node in self.collapsed[1:]) and\
            all(child in self.collapsed for child in parent.children):
@@ -402,7 +418,7 @@ class Drawer:
         node.is_initialized = False
         node._children = self.collapsed  # add avoiding parent override
         _, _, dx_min, _, dy = self.outline
-        node.dist = 0 
+        node.dist = 0
         node.size = Size(0, dy)
 
         return node
@@ -432,6 +448,14 @@ class Drawer:
                 selected_children.append((text, hits))
         return selected_children
 
+    def get_popup_props(self, node):
+        """Return dictionary containing web-safe properties of node to be
+        rendered in frontend popup"""
+        if not self.popup_prop_keys:
+            return {}
+        return { prop: safe_string(node.props.get(prop)) for prop in
+                self.popup_prop_keys if node.props.get(prop) }
+
 
     # These are the 2 functions that the user overloads to choose what to draw
     # when representing a node and a group of collapsed nodes:
@@ -459,6 +483,7 @@ class DrawerRect(Drawer):
     TYPE = 'rect'
 
     def in_viewport(self, box, pos=None):
+
         if not self.viewport:
             return True
 
@@ -514,7 +539,7 @@ class DrawerRect(Drawer):
             fill = style['fill']
             nodedot_style={'fill':fill, 'opacity': style['opacity']}
             if style['shape'] == 'circle':
-                yield draw_circle(center, radius=size, 
+                yield draw_circle(center, radius=size,
                         circle_type='nodedot ' + active_node, style=nodedot_style)
             elif style['shape'] == 'square':
                 x, y = center
@@ -524,7 +549,7 @@ class DrawerRect(Drawer):
                 yield draw_rect(box, rect_type='nodedot ' + active_node, style=nodedot_style)
 
     def draw_nodebox(self, node, node_id, box, searched_by, style=None):
-        yield draw_nodebox(box, node.name, node.props,
+        yield draw_nodebox(box, node.name, self.get_popup_props(node),
                 node_id, searched_by, style)
 
     def draw_collapsed(self, collapsed_node, active_children=TreeActive(0, 0), selected_children=[]):
@@ -545,10 +570,11 @@ class DrawerCirc(Drawer):
     def __init__(self, tree, viewport=None, panel=0, zoom=(1, 1),
                  limits=None, collapsed_ids=None, active=None,
                  selected=None, searches=None,
-                 layouts=None, tree_style=None):
+                 layouts=None, tree_style=None,
+                 popup_prop_keys=None):
         super().__init__(tree, viewport, panel, zoom,
-                         limits, collapsed_ids, active, selected, searches, 
-                         layouts, tree_style)
+                         limits, collapsed_ids, active, selected, searches,
+                         layouts, tree_style, popup_prop_keys=popup_prop_keys)
 
         assert self.zoom[0] == self.zoom[1], 'zoom must be equal in x and y'
 
@@ -605,7 +631,7 @@ class DrawerCirc(Drawer):
         a1, a2 = clip_angles(a1, a2)
         if a1 < a2:
             is_large = a2 - a1 > pi
-            yield draw_arc(cartesian((r1, a1)), cartesian((r2, a2)), 
+            yield draw_arc(cartesian((r1, a1)), cartesian((r2, a2)),
                            is_large, 'childrenline', style=style)
 
     def draw_nodedot(self, center, max_size, active_node, style):
@@ -632,7 +658,7 @@ class DrawerCirc(Drawer):
         a1, a2 = clip_angles(a, a + da)
         if a1 < a2:
             yield draw_nodebox(Box(r, a1, dr, a2 - a1),
-                       node.name, node.props, node_id, searched_by, style)
+                       node.name, self.get_popup_props(node), node_id, searched_by, style)
 
     def draw_collapsed(self, collapsed_node, active_children=TreeActive(0, 0), selected_children=[]):
         # Draw line to farthest leaf under collapsed node
@@ -666,7 +692,7 @@ class DrawerRectFaces(DrawerRect):
 
         def draw_face(face, pos, row, n_row, n_col, dx_before, dy_before):
             if face.get_content():
-                box = face.compute_bounding_box(self, point, size, 
+                box = face.compute_bounding_box(self, point, size,
                             dx_to_closest_child,
                             bdx, bdy, bdy0, bdy1,
                             pos, row, n_row, n_col,
@@ -679,7 +705,7 @@ class DrawerRectFaces(DrawerRect):
                 node_faces = node.collapsed_faces
             else:
                 node_faces = node.faces
-                
+
             faces = dict(getattr(node_faces, pos, {}))
             n_col = max(faces.keys(), default = -1) + 1
 
@@ -712,18 +738,30 @@ class DrawerRectFaces(DrawerRect):
                     # Avoid changing-size error when zooming very quickly
                     dxs = list(self.tree_style.aligned_grid_dxs.items())
                     dx_before = sum(v for k, v in dxs if k < col and k >= 0)
+
                 dx_max = 0
                 dy_before = 0
                 n_row = len(face_list)
+
                 for row, face in enumerate(face_list):
                     face.node = node
+
                     drawn_face = list(draw_face(face, pos, row, n_row, n_col,
                             dx_before, dy_before))
                     if drawn_face:
                         _, _, dx, dy = face.get_box()
                         hz_padding = 2 * face.padding_x / z
                         vt_padding = 2 * face.padding_y / zy
+
+                        # NOTE: This is a hack to align nicely the headers in LayoutBarPlot.
+                        hfaces = self.tree_style._aligned_panel_header.get(col)  # header faces
+
+                        if col > 0 and hfaces:
+                            dx_max = max((hface.width for hface in hfaces if hface.width), default=0) + hz_padding # it's possible width is none
+
                         dx_max = max(dx_max, (dx or 0) + hz_padding)
+
+
                         dy_before += dy + vt_padding
                         yield from drawn_face
 
@@ -740,7 +778,6 @@ class DrawerRectFaces(DrawerRect):
                         dx_before += dx_grid
                 else:
                     dx_before += dx_max
-
         if not node.is_initialized:
             node.is_initialized = True
             node.faces = get_FaceAreas()
@@ -754,7 +791,7 @@ class DrawerRectFaces(DrawerRect):
                 for pos in FACE_POSITIONS[:3]:
                     yield from draw_faces_at_pos(node, pos)
                 # Only run function to compute aligned grid
-                if self.tree_style.aligned_grid: 
+                if self.tree_style.aligned_grid:
                     deque(draw_faces_at_pos(node, 'aligned'))
             elif self.panel == 1:
                 yield from draw_faces_at_pos(node, 'aligned')
@@ -773,7 +810,7 @@ class DrawerRectFaces(DrawerRect):
 
         x = x if self.panel == 0 else self.xmin
 
-        yield from self.draw_node(collapsed_node, 
+        yield from self.draw_node(collapsed_node,
                 (x, y), bdx, dy/2, 0, dy, active_children, selected_children)
 
 
@@ -785,7 +822,7 @@ class DrawerCircFaces(DrawerCirc):
         dr_to_closest_child = min(child.dist for child in node.children)\
                 if not (node.is_leaf() or node.is_collapsed) else node.dist
         z = self.zoom[0]  # zx == zy
-            
+
         def it_fits(box, pos):
             r, a, dr, da = box
             return r > 0 \
@@ -808,7 +845,7 @@ class DrawerCircFaces(DrawerCirc):
                 node_faces = node.collapsed_faces
             else:
                 node_faces = node.faces
-                
+
             faces = dict(getattr(node_faces, pos, {}))
             n_col = len(faces.keys())
 
@@ -857,7 +894,7 @@ class DrawerCircFaces(DrawerCirc):
                         dr_max = max(dr_max, dr + hz_padding)
                         da_before = da + vt_padding
                         yield from drawn_face
-                
+
                 # Update dr_before
                 if pos == 'aligned'\
                         and self.tree_style.aligned_grid\
@@ -883,7 +920,7 @@ class DrawerCircFaces(DrawerCirc):
                 for pos in FACE_POSITIONS[:3]:
                     yield from draw_faces_at_pos(node, pos)
                 # Only run function to compute aligned grid
-                if self.tree_style.aligned_grid: 
+                if self.tree_style.aligned_grid:
                     deque(draw_faces_at_pos(node, 'aligned'))
             elif self.panel == 1:
                 yield from draw_faces_at_pos(node, 'aligned')
@@ -902,7 +939,7 @@ class DrawerCircFaces(DrawerCirc):
 
         r = r if self.panel == 0 else self.xmin
 
-        yield from self.draw_node(collapsed_node, 
+        yield from self.draw_node(collapsed_node,
                 (r, a), bdr, da/2, 0, da, active_children, selected_children)
 
 
@@ -915,7 +952,7 @@ class DrawerAlignCircFaces(DrawerCircFaces):
 
 
 def get_drawers():
-    return [ DrawerRect, DrawerCirc, 
+    return [ DrawerRect, DrawerCirc,
             DrawerRectFaces, DrawerCircFaces,
             DrawerAlignRectFaces, DrawerAlignCircFaces, ]
 

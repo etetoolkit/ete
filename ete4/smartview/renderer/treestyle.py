@@ -29,6 +29,8 @@ class TreeStyle(object):
         self._aligned_panel_header = _HeaderFaceContainer()
         self._aligned_panel_footer = _HeaderFaceContainer()
 
+        self._legend = []
+
     @property
     def selected_face(self):
         return self._selected_face
@@ -92,3 +94,25 @@ class TreeStyle(object):
     @aligned_panel_footer.setter
     def aligned_panel_footer(self, value):
         raise invalidUsage('Attribute "aligned_panel_footer" can only be accessed.')
+
+    def add_legend(self, title,
+            variable="discrete",
+            colormap={},
+            value_range=None,
+            color_range=None):
+
+        entry = { "title": title, "variable": variable }
+
+        if variable == "discrete" and colormap:
+            entry["colormap"] = colormap
+
+        elif variable == "continuous" and value_range and color_range:
+            entry = { **entry, "value_range": value_range, 
+                      "color_range": color_range }
+        else:
+            return
+
+        self._legend.append(entry)
+
+    def get_legend(self):
+        return list(self._legend)

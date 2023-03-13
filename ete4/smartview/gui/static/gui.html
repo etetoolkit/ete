@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="css/gui.css">
     <link rel="stylesheet" href="css/scrollbar.css">
     <link rel="stylesheet" href="css/offcanvas.css">
-    <link rel="stylesheet" href="external/bootstrap-4.min.css">
     <script src="https://kit.fontawesome.com/4403fce4a7.js" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/5.1.3/pixi.min.js"></script>
     <script src="/static/external/tweakpane-3.0.2.min.js"></script>
@@ -19,7 +18,7 @@
     <script src="/static/external/pdfkit.standalone.js"></script>
     <script type="module" src="/static/js/gui.js"></script>
   </head>
-  <body>
+  <body id="div_smartview_container" style="background-color:white">
     <div id="div_viz" class="tree" tabindex="-1">
         <div id="div_tree" class="tree" tabindex="-1">
             <svg></svg>
@@ -46,17 +45,32 @@
         <div id="tree_scale" class="tree_scale"><svg></svg></div>
     </div>
     <div id="div_contextmenu" class="contextmenu"></div>
+    <div id="div_legend_container" class="legend">
+        <a class="legend-expand" id="div_legend_expand">
+            <i class="fa fa-caret-down"></i>
+        </a>
+        <div id="div_legend_header" class="legend-title"
+             style="display:none; border:none; margin-top:0;
+                    padding-top:6px; padding-bottom:20px">
+            Legend
+        </div>
+        <div id="div_legend"></div>
+    </div>
     <div id="div_minimap" class="minimap"><svg></svg></div>
     <div id="div_visible_rect" class="visible_rect"></div>
     <span id="tooltip" class="tooltip"></span>
 
     <button id="sidenav-open" class="sidebtn"
-        style="top: 10px">
+        style="top:10px">
         Control panel
     </button>
     <button id="search-trigger" class="sidebtn"
-        style="top: 40px">
+        style="top:40px">
         Search within tree
+    </button>
+    <button id="full-screen-trigger" class="sidebtn"
+        style="top:70px; display:none">
+        Full screen
     </button>
     <div id="sidenav" class="sidenav"></div>
   </body>

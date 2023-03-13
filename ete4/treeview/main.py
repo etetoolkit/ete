@@ -633,7 +633,7 @@ def save(scene, imgName, w=None, h=None, dpi=90,\
         ext = "PNG"
     elif imgName == "%%inlineSVG":
         ipython_inline = True
-        ext = "SVG"        
+        ext = "SVG"
     elif imgName.startswith("%%return"):
         try:
             ext = imgName.split(".")[1].upper()

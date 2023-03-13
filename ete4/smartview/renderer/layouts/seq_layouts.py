@@ -25,7 +25,7 @@ class LayoutAlignment(TreeLayout):
     def set_tree_style(self, tree, tree_style):
         if self.length:
             face = ScaleFace(width=self.width, scale_range=self.scale_range, padding_y=10)
-            tree_style.aligned_panel_header.add_face(face, column=0)
+            tree_style.aligned_panel_header.add_face(face, column=self.column)
 
     def _get_seq(self, node):
         if self.alignment:
