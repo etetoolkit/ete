@@ -188,20 +188,6 @@ function download_pdf() {
 }
 
 
-// Download a file with the current view of the tree as a png.
-function download_image() {
-    // dom-to-image dependency
-    domtoimage
-        .toPng(div_viz, {
-            filter: node =>
-            // Remove foreground nodeboxes for faster rendering
-            // (Background nodes not excluded as they are purposely styled)
-            !(node.classList && [...node.classList].includes("fg_node"))
-        })
-        .then(content => download(view.tree + ".png", content));
-}
-
-
 // Apply CSS rules to elements contained in a (cloned) container
 function apply_css(container, stylesheet) {
     let styles = [];
