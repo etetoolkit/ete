@@ -38,7 +38,7 @@ function getElementToDownload() {
         container.style.width = "auto";
         container.replaceChild(img, container.children[0]);
     });
-    
+
     // Remove foreground nodeboxes for faster rendering
     // (Background nodes not excluded as they are purposely styled)
     Array.from(element.getElementsByClassName("fg_node")).forEach(e => e.remove());
@@ -129,7 +129,7 @@ function download_pdf() {
             y += 80;
         });
     }
-    
+
     const element = getElementToDownload();
     const box = div_viz.getBoundingClientRect();
     const doc = new PDFDocument({ size: [ box.width * 3/4, box.height * 3/4 ] });
@@ -207,7 +207,7 @@ function apply_css(container, stylesheet) {
     let styles = [];
     Array.from(stylesheet.rules).forEach(r => {
         const style = r.cssText;
-        if (style) 
+        if (style)
             styles.push(style);
     })
     const style_element = document.createElement("style");
