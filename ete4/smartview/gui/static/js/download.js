@@ -4,7 +4,7 @@ import { view, menus, get_tid } from "./gui.js";
 import { api } from "./api.js";
 import { apps } from "./pixi.js";
 
-export { download_newick, download_seqs, download_image, download_svg, download_pdf };
+export { download_newick, download_seqs, download_svg, download_pdf };
 
 
 
@@ -52,10 +52,10 @@ function getElementToDownload() {
 // Download a file with the current view of the tree as a svg+xml.
 function download_svg() {
     const svg = getElementToDownload();
-    apply_css(svg, document.styleSheets[0]);
+    apply_css(svg);
     const svg_xml = (new XMLSerializer()).serializeToString(svg);
     const content = "data:image/svg+xml;base64," + btoa(svg_xml);
-    download(view.tree + ".html", content);
+    download(view.tree + ".svg", content);
 }
 
 
@@ -188,18 +188,14 @@ function download_pdf() {
 }
 
 
-// Apply CSS rules to elements contained in a (cloned) container
-function apply_css(container, stylesheet) {
-    let styles = [];
-    Array.from(stylesheet.rules).forEach(r => {
-        const style = r.cssText;
-        if (style)
-            styles.push(style);
-    })
-    const style_element = document.createElement("style");
-    style_element.innerHTML = styles.join("\n");
-    container.appendChild(style_element);
+// Apply CSS rules to the elements in the given container.
+function apply_css(container) {
+    const style = document.createElement("style");
+    const rules = Array.from(document.styleSheets[0].rules);
+    style.innerHTML = rules.map(r => r.cssText).join("\n");
+    container.appendChild(style);
 }
+
 
 // Make the browser download a file.
 function download(fname, content, blob) {
