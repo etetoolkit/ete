@@ -1477,57 +1477,57 @@ def add_resources(app, api, custom_api={}, custom_route={}):
         '/layouts/update',
         '/layouts/<string:tree_id>')
 
-    add(Trees,
-        '/trees',
-        '/trees/<string:tree_id>',
-        '/trees/<string:tree_id>/nodeinfo',
-        '/trees/<string:tree_id>/nodestyle',
-        '/trees/<string:tree_id>/editable_props',
-        '/trees/<string:tree_id>/leaves_info',
-        '/trees/<string:tree_id>/descendants_info',
-        '/trees/<string:tree_id>/name',
-        '/trees/<string:tree_id>/newick',
-        '/trees/<string:tree_id>/seq',
-        '/trees/<string:tree_id>/nseq',
-        '/trees/<string:tree_id>/draw',
-        '/trees/<string:tree_id>/size',
-        '/trees/<string:tree_id>/collapse_size',
-        '/trees/<string:tree_id>/properties',
-        '/trees/<string:tree_id>/properties/<string:pname>',
-        '/trees/<string:tree_id>/nodecount',
-        '/trees/<string:tree_id>/ultrametric',
-        '/trees/<string:tree_id>/select',  # select node
-        '/trees/<string:tree_id>/unselect',  # unselect node
-        '/trees/<string:tree_id>/selections', # selections perfomed on a node
-        '/trees/<string:tree_id>/all_selections',  # name and nresults, nparents for each selection
-        '/trees/<string:tree_id>/selection/info',  # get selection info: list of node_ids or dict with their desired properties
-        '/trees/<string:tree_id>/remove_selection',
-        '/trees/<string:tree_id>/change_selection_name',
-        '/trees/<string:tree_id>/search_to_selection',  # convert search to selection
-        '/trees/<string:tree_id>/prune_by_selection',  # prune based on selection
-        '/trees/<string:tree_id>/active',
-        '/trees/<string:tree_id>/activate_node',
-        '/trees/<string:tree_id>/activate_clade',
-        '/trees/<string:tree_id>/deactivate_node',
-        '/trees/<string:tree_id>/deactivate_clade',
-        '/trees/<string:tree_id>/store_active_nodes',
-        '/trees/<string:tree_id>/store_active_clades',
-        '/trees/<string:tree_id>/remove_active_nodes',
-        '/trees/<string:tree_id>/remove_active_clades',
-        '/trees/<string:tree_id>/all_active',
-        '/trees/<string:tree_id>/all_active_leaves',
-        '/trees/<string:tree_id>/search',
-        '/trees/<string:tree_id>/searches',
-        '/trees/<string:tree_id>/remove_search',
-        '/trees/<string:tree_id>/find',
-        '/trees/<string:tree_id>/sort',
-        '/trees/<string:tree_id>/root_at',
-        '/trees/<string:tree_id>/move',
-        '/trees/<string:tree_id>/remove',
-        '/trees/<string:tree_id>/update_props',
-        '/trees/<string:tree_id>/update_nodestyle',
-        '/trees/<string:tree_id>/reinitialize',
-        '/trees/<string:tree_id>/reload')
+    tree_endpoints = [
+        '',
+        '/nodeinfo',
+        '/nodestyle',
+        '/editable_props',
+        '/leaves_info',
+        '/descendants_info',
+        '/name',
+        '/newick',
+        '/seq',
+        '/nseq',
+        '/draw',
+        '/size',
+        '/collapse_size',
+        '/properties',
+        '/<string:pname>',
+        '/nodecount',
+        '/ultrametric',
+        '/select',  # select node
+        '/unselect',  # unselect node
+        '/selections', # selections perfomed on a node
+        '/all_selections',  # name and nresults, nparents for each selection
+        '/info',  # get selection info: list of node_ids or dict with their desired properties
+        '/remove_selection',
+        '/change_selection_name',
+        '/search_to_selection',  # convert search to selection
+        '/prune_by_selection',  # prune based on selection
+        '/active',
+        '/activate_node',
+        '/activate_clade',
+        '/deactivate_node',
+        '/deactivate_clade',
+        '/store_active_nodes',
+        '/store_active_clades',
+        '/remove_active_nodes',
+        '/remove_active_clades',
+        '/all_active',
+        '/all_active_leaves',
+        '/search',
+        '/searches',
+        '/remove_search',
+        '/find',
+        '/sort',
+        '/root_at',
+        '/move',
+        '/remove',
+        '/update_props',
+        '/update_nodestyle',
+        '/reinitialize',
+        '/reload']
+    add(Trees, '/trees', *['/trees/<string:tree_id>'+e for e in tree_endpoints])
 
     add_custom_resources(app, api, custom_api, custom_route)
 
