@@ -29,12 +29,12 @@ import json
 import _pickle as pickle
 from types import FunctionType
 import shutil
+import logging
 
-from flask import Flask, request, jsonify, g, redirect, url_for
+from flask import Flask, request, jsonify, redirect, url_for
 from flask_restful import Resource, Api
 from flask_cors import CORS
 from flask_compress import Compress
-import logging
 
 from ete4 import Tree
 from ete4.smartview import TreeStyle, layout_modules
