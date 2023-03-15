@@ -5,11 +5,11 @@ Keep the data of trees and present a REST api to talk
 to the world.
 
 REST call examples:
-  GET    /users       Get all users
-  GET    /users/{id}  Get the user information identified by "id"
-  POST   /users       Create a new user
-  PUT    /users/{id}  Update the user information identified by "id"
-  DELETE /users/{id}  Delete user by "id"
+  GET    /trees       Get all trees
+  GET    /trees/{id}  Get the tree information identified by "id"
+  POST   /trees       Create a new tree
+  PUT    /trees/{id}  Update the tree information identified by "id"
+  DELETE /trees/{id}  Delete tree by "id"
 """
 
 import os
