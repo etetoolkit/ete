@@ -9,6 +9,7 @@ Contents:
    tutorial_trees
    tutorial_drawing
    tutorial_phylogeny
+   tutorial_phylomedb
    tutorial_clustering
    tutorial_xml
    tutorial_webplugin

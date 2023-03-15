@@ -1,16 +1,16 @@
-.. module:: ete3
+.. module:: ete4
   :synopsis: provides main objects and modules
 
 .. moduleauthor:: Jaime Huerta-Cepas
-.. currentmodule:: ete3
+.. currentmodule:: ete4
 
 Working With Tree Data Structures
-************************************
+*********************************
 
 .. contents::
 
 Trees
-==========
+=====
 
 Trees are a widely-used type of data structure that emulates a tree
 design with a set of linked nodes.  Formally, a tree is considered an
@@ -69,7 +69,7 @@ original newick standard is able to encode information about the tree
 topology, branch distances and node names. Nevertheless, it is not
 uncommon to find slightly different formats using the newick standard.
 
-ETE can read and write many of them: 
+ETE can read and write many of them:
 
 .. table::
 
@@ -86,7 +86,7 @@ ETE can read and write many of them:
   7        leaf branches + all names                       ((D:0.723274,F:0.567784)E,(B:0.279326,H:0.756049)B);
   8        all names                                       ((D,F)E,(B,H)B);
   9        leaf names                                      ((D,F),(B,H));
-  100      topology only                                   ((,),(,)); 
+  100      topology only                                   ((,),(,));
   ======  ============================================== =========================================================================================
 
 Formats labeled as *flexible* allow for missing information. For
@@ -101,22 +101,22 @@ Reading newick trees
 -----------------------
 
 In order to load a tree from a newick text string you can use the
-constructor :class:`TreeNode` or its :class:`Tree` alias, provided by the main module
-:mod:`ete3`. You will only need to pass a text string containing
+constructor :class:`Tree` or its :class:`Tree` alias, provided by the main module
+:mod:`ete4`. You will only need to pass a text string containing
 the newick structure and the format that should be used to parse it (0
 by default). Alternatively, you can pass the path to a text file
 containing the newick string.
 
 ::
- 
-  from ete3 import Tree
-   
+
+  from ete4 import Tree
+
   # Loads a tree structure from a newick string. The returned variable ’t’ is the root node for the tree.
   t = Tree("(A:1,(B:1,(E:1,D:1):0.5):0.5);" )
-   
+
   # Load a tree structure from a newick file.
   t = Tree("genes_tree.nh")
-   
+
   # You can also specify the newick format. For instance, for named internal nodes we will use format 1.
   t = Tree("(A:1,(B:1,(E:1,D:1)Internal_1:0.5)Internal_2:0.5)Root;", format=1)
 
@@ -131,20 +131,20 @@ instance. It also allows for format selection
 convert between newick formats.
 
 ::
-   
-  from ete3 import Tree
-   
+
+  from ete4 import Tree
+
   # Loads a tree with internal node names
   t = Tree("(A:1,(B:1,(E:1,D:1)Internal_1:0.5)Internal_2:0.5)Root;", format=1)
-   
+
   # And prints its newick using the default format
-   
-  print t.write() # (A:1.000000,(B:1.000000,(E:1.000000,D:1.000000)1.000000:0.500000)1.000000:0.500000);
-   
+
+  print(t.write()) # (A:1.000000,(B:1.000000,(E:1.000000,D:1.000000)1.000000:0.500000)1.000000:0.500000);
+
   # To print the internal node names you need to change the format:
-   
-  print t.write(format=1) # (A:1.000000,(B:1.000000,(E:1.000000,D:1.000000)Internal_1:0.500000)Internal_2:0.500000);
-   
+
+  print(t.write(format=1)) # (A:1.000000,(B:1.000000,(E:1.000000,D:1.000000)Internal_1:0.500000)Internal_2:0.500000);
+
   # We can also write into a file
   t.write(format=1, outfile="new_tree.nw")
 
@@ -168,14 +168,14 @@ that we will review in the following sections are available at any
 possible level within a tree. Moreover, this feature will allow you to
 separate large trees into smaller partitions, or concatenate several
 trees into a single structure. For this reason, you will find that the
-:class:`TreeNode` and :class:`Tree` classes are synonymous.
+:class:`Tree` and :class:`Tree` classes are synonymous.
 
 
 Basic tree attributes
 =========================
 
 Each tree node has two basic attributes used to establish its position
-in the tree: :attr:`TreeNode.up` and :attr:`TreeNode.children`.  The first is
+in the tree: :attr:`Tree.up` and :attr:`Tree.children`.  The first is
 a pointer to parent's node, while the later is a list of children
 nodes.  Although it is possible to modify the structure of a tree by
 changing these attributes, it is strongly recommend not to do
@@ -187,58 +187,58 @@ tree node instance:
 
 
 .. table::
- 
+
    ==========================     =============================================================================================  ================
-   Method                         Description                                                                                    Default value       
-   ==========================     =============================================================================================  ================ 
-     :attr:`TreeNode.dist`          stores the distance from the node to its parent (branch length). Default value = 1.0             1.0      
-     :attr:`TreeNode.support`       informs about the reliability of the partition defined by the node (i.e. bootstrap support)      1.0    
-     :attr:`TreeNode.name`          Custom node's name.                                                                              NoName      
-   ==========================     =============================================================================================  ================ 
+   Method                         Description                                                                                    Default value
+   ==========================     =============================================================================================  ================
+     :attr:`Tree.dist`          stores the distance from the node to its parent (branch length). Default value = 1.0             1.0
+     :attr:`Tree.support`       informs about the reliability of the partition defined by the node (i.e. bootstrap support)      1.0
+     :attr:`Tree.name`          Custom node's name.                                                                              NoName
+   ==========================     =============================================================================================  ================
 
 In addition, several methods are provided to perform basic operations
 on tree node instances:
 
-.. table:: 
+.. table::
 
   =================================  =============================================================================================
   Method                              Description
   =================================  =============================================================================================
-    :func:`TreeNode.is_leaf`           returns True if *node* has no children 
-    :func:`TreeNode.is_root`           returns True if *node* has no parent
-    :func:`TreeNode.get_tree_root`     returns the top-most node within the same tree structure as *node*
-    :attr:`len(TreeNode)`              returns the number of leaves under *node*
-    :attr:`print node`                 prints a text-based representation of the tree topology under *node*
+    :func:`Tree.is_leaf`           returns True if *node* has no children
+    :func:`Tree.is_root`           returns True if *node* has no parent
+    :func:`Tree.get_tree_root`     returns the top-most node within the same tree structure as *node*
+    :attr:`len(Tree)`              returns the number of leaves under *node*
+    :attr:`print(node)`                 prints a text-based representation of the tree topology under *node*
     :attr:`if node in tree`            returns true if *node* is a leaf under *tree*
     :attr:`for leaf in node`           iterates over all leaves under *node*
-    :func:`TreeNode.show`              Explore node graphically using a GUI.
+    :func:`Tree.show`              Explore node graphically using a GUI.
   =================================  =============================================================================================
 
 This is an example on how to access such attributes:
 
-:: 
+::
 
-  from ete3 import Tree
+  from ete4 import Tree
   t = Tree()
   # We create a random tree topology
-  t.populate(15) 
-  print t
-  print t.children
-  print t.get_children()
-  print t.up
-  print t.name
-  print t.dist
-  print t.is_leaf()
-  print t.get_tree_root()
-  print t.children[0].get_tree_root()
-  print t.children[0].children[0].get_tree_root()
+  t.populate(15)
+  print(t)
+  print(t.children)
+  print(t.get_children())
+  print(t.up)
+  print(t.name)
+  print(t.dist)
+  print(t.is_leaf())
+  print(t.get_tree_root())
+  print(t.children[0].get_tree_root())
+  print(t.children[0].children[0].get_tree_root())
   # You can also iterate over tree leaves using a simple syntax
   for leaf in t:
-    print leaf.name
+      print(leaf.name)
 
 
 Root node on unrooted trees?
-------------------------------
+----------------------------
 
 When a tree is loaded from external sources, a pointer to the top-most
 node is returned. This is called the tree root, and **it will exist
@@ -249,34 +249,27 @@ as trees in which master root node has more than two children.
 
 ::
 
-  from ete3 import Tree
-  unrooted_tree = Tree( "(A,B,(C,D));" )
-  print unrooted_tree
-  #
-  #     /-A      
-  #    |         
-  #----|--B      
-  #    |           
-  #    |     /-C   
-  #     \---|      
-  #          \-D 
+  from ete4 import Tree
+  unrooted_tree = Tree("(A,B,(C,D));")
 
-  rooted_tree = Tree( "((A,B),(C,D));" )
-  print rooted_tree                     
-  #
-  #          /-A
-  #     /---|
-  #    |     \-B
-  #----|
-  #    |     /-C
-  #     \---|
-  #          \-D
+  print(unrooted_tree)
+  # ╭╴A
+  #─┼╴B
+  # ╰─┬╴C
+  #   ╰╴D
 
+  rooted_tree = Tree("((A,B),(C,D));")
+
+  print(rooted_tree)
+  # ╭─┬╴A
+  #─┤ ╰╴B
+  # ╰─┬╴C
+  #   ╰╴D
 
 
 
 Browsing trees (traversing)
-=================================
+===========================
 
 One of the most basic operations for tree analysis is *tree
 browsing*. This is, essentially, visiting nodes within a tree. ETE
@@ -289,17 +282,17 @@ navigate over the hierarchical structure of a tree.
 Getting Leaves, Descendants and Node's Relatives
 ------------------------------------------------
 
-TreeNode instances contain several functions to access their
+Tree instances contain several functions to access their
 descendants. Available methods are self explanatory:
 
-.. autosummary::  
+.. autosummary::
 
    :signatures:
-   TreeNode.get_descendants
-   TreeNode.get_leaves    
-   TreeNode.get_leaf_names
-   TreeNode.get_children
-   TreeNode.get_sisters
+   Tree.get_descendants
+   Tree.get_leaves
+   Tree.get_leaf_names
+   Tree.get_children
+   Tree.get_sisters
 
 
 Traversing (browsing) trees
@@ -315,8 +308,8 @@ shows the differences in the strategy for visiting nodes (note that in
 both cases the whole tree is browsed):
 
 * preorder: 1)Visit the root, 2) Traverse the left subtree , 3) Traverse the right subtree.
-* postorder: 1) Traverse the left subtree , 2) Traverse the right subtree, 3) Visit the root 
-* levelorder (default): every node on a level before is visited going to a lower level 
+* postorder: 1) Traverse the left subtree , 2) Traverse the right subtree, 3) Visit the root
+* levelorder (default): every node on a level before is visited going to a lower level
 
 .. note::
 
@@ -325,37 +318,37 @@ both cases the whole tree is browsed):
     * Postorder traversal sequence: A, C, E, D, B, H, I, G, F (left, right, root)
     * Level-order traversal sequence: F, B, G, A, D, I, C, E, H
 
-Every node in a tree includes a :func:`TreeNode.traverse` method, which can be
+Every node in a tree includes a :func:`Tree.traverse` method, which can be
 used to visit, one by one, every node node under the current
-partition. In addition, the :func:`TreeNode.iter_descendants` method can be set
+partition. In addition, the :func:`Tree.iter_descendants` method can be set
 to use either a post- or a preorder strategy.  The only different
-between :func:`TreeNode.traverse` and :func:`TreeNode.iter_descendants` is that the
+between :func:`Tree.traverse` and :func:`Tree.iter_descendants` is that the
 first will include the root node in the iteration.
 
 
 .. autosummary::
 
    :signature:
-   TreeNode.traverse
-   TreeNode.iter_descendants
-   TreeNode.iter_leaves
+   Tree.traverse
+   Tree.iter_descendants
+   Tree.iter_leaves
 
 **strategy** can take one of the following values: ``"postorder"``, ``"preorder"`` or  ``"levelorder"``
 
 ::
 
-   # we load a tree
+   # Load a tree
    t = Tree('((((H,K)D,(F,I)G)B,E)A,((L,(N,Q)O)J,(P,S)M)C);', format=1)
-    
+
    for node in t.traverse("postorder"):
-     # Do some analysis on node
-     print node.name
-     
+       # Do some analysis on node
+       print(node.name)
+
    # If we want to iterate over a tree excluding the root node, we can
    # use the iter_descendant method
    for node in t.iter_descendants("postorder"):
-     # Do some analysis on node
-     print node.name
+       # Do some analysis on node
+       print(node.name)
 
 
 Additionally, you can implement your own traversing function using the
@@ -364,14 +357,14 @@ between a given leaf and the tree root are visited.
 
 ::
 
-   from ete3 import Tree
-   t = Tree( "(A:1,(B:1,(C:1,D:1):0.5):0.5);" )
-    
+   from ete4 import Tree
+   t = Tree("(A:1,(B:1,(C:1,D:1):0.5):0.5);")
+
    # Browse the tree from a specific leaf to the root
    node = t.search_nodes(name="C")[0]
    while node:
-      print node
-      node = node.up   
+       print(node)
+       node = node.up
 
 
 Advanced traversing (stopping criteria)
@@ -397,48 +390,39 @@ For instance, given a large tree structure, the following code will
 export the newick of the pruned version of the topology, where nodes
 grouping the same tip labels are collapsed.
 
-:: 
+::
 
-  from ete3 import Tree
+  from ete4 import Tree
   def collapsed_leaf(node):
-      if len(node2labels[node]) == 1:
-         return True
-      else:
-         return False
+      return len(node2labels[node]) == 1
 
   t = Tree("((((a,a,a)a,a)aa, (b,b)b)ab, (c, (d,d)d)cd);", format=1)
-  print t
-  # We create a cache with every node content 
+
+  print(t)
+  #       ╭╴a
+  #     ╭─┼╴a
+  #   ╭─┤ ╰╴a
+  # ╭─┤ ╰╴a
+  #─┤ ╰─┬╴b
+  # │   ╰╴b
+  # ╰─┬╴c
+  #   ╰─┬╴d
+  #     ╰╴d
+
+  # We create a cache with every node content
   node2labels = t.get_cached_content(store_attr="name")
-  print t.write(is_leaf_fn=collapsed_leaf)
-  #             /-a
-  #            |
-  #          /-|--a
-  #         |  |
-  #       /-|   \-a
-  #      |  |
-  #    /-|   \-a
-  #   |  |
-  #   |  |   /-b
-  # --|   \-|
-  #   |      \-b
-  #   |
-  #   |   /-c
-  #    \-|
-  #      |   /-d
-  #       \-|
-  #          \-d
+
+  print(t.write(is_leaf_fn=collapsed_leaf))
+  # ((aa:1,b:1)1:1,(c:1,d:1)1:1);
 
   # We can even load the collapsed version as a new tree
   t2 = Tree( t.write(is_leaf_fn=collapsed_leaf) )
-  print t2
-  #       /-aa
-  #    /-|
-  #   |   \-b
-  # --|
-  #   |   /-c
-  #    \-|
-  #       \-d
+
+  print(t2)
+  # ╭─┬╴aa
+  #─┤ ╰╴b
+  # ╰─┬╴c
+  #   ╰╴d
 
 
 Another interesting use of this approach is to find the first matching
@@ -447,32 +431,26 @@ browsing the whole tree structure.
 
 Let's say we want get all deepest nodes in a tree whose branch length
 is larger than one:
-:: 
+::
 
-  from ete3 import Tree
+  from ete4 import Tree
+
   t = Tree("(((a,b)ab:2, (c, d)cd:2)abcd:2, ((e, f):2, g)efg:2);", format=1)
+
+  print(t)
+  #   ╭─┬╴a
+  # ╭─┤ ╰╴b
+  # │ ╰─┬╴c
+  #─┤   ╰╴d
+  # │ ╭─┬╴e
+  # ╰─┤ ╰╴f
+  #   ╰╴g
+
   def processable_node(node):
-      if node.dist > 1: 
-         return True
-      else:
-         return False
+      return node.dist > 1
 
   for leaf in t.iter_leaves(is_leaf_fn=processable_node):
-      print leaf
-
-  #       /-a
-  #    /-|
-  #   |   \-b
-  # --|
-  #   |   /-c
-  #    \-|
-  #       \-d
-  #  
-  #       /-e
-  #    /-|
-  # --|   \-f
-  #   |
-  #    \-g
+      print(leaf)
 
 
 Iterating instead of Getting
@@ -481,18 +459,18 @@ Iterating instead of Getting
 As commented previously, methods starting with **get_** are all
 prepared to return results as a closed list of items. This means, for
 instance, that if you want to process all tree leaves and you ask for
-them using the :func:`TreeNode.get_leaves` method, the whole tree
+them using the :func:`Tree.get_leaves` method, the whole tree
 structure will be browsed before returning the final list of terminal
 nodes.  This is not a problem in most of the cases, but in large
 trees, you can speed up the browsing process by using iterators.
 
 Most **get_** methods have their homologous iterator functions. Thus,
-:func:`TreeNode.get_leaves` could be substituted by :func:`TreeNode.iter_leaves`. The same
-occurs with :func:`TreeNode.iter_descendants` and :func:`TreeNode.iter_search_nodes`.
+:func:`Tree.get_leaves` could be substituted by :func:`Tree.iter_leaves`. The same
+occurs with :func:`Tree.iter_descendants` and :func:`Tree.iter_search_nodes`.
 
 When iterators are used (note that is only applicable for looping),
 only one step is processed at a time. For instance,
-:func:`TreeNode.iter_search_nodes` will return one match in each
+:func:`Tree.iter_search_nodes` will return one match in each
 iteration. In practice, this makes no differences in the final result,
 but it may increase the performance of loop functions (i.e. in case of
 finding a match which interrupts the loop).
@@ -504,7 +482,7 @@ Finding nodes by their attributes
 Both terminal and internal nodes can be located by searching along the
 tree structure. Several methods are available:
 
-.. table:: 
+.. table::
 
   ==============================================       ==============================================================================================================
   method                                                Description
@@ -518,82 +496,81 @@ tree structure. Several methods are available:
 
 
 Search_all nodes matching a given criteria
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A custom list of nodes matching a given name can be easily obtain
-through the :func:`TreeNode.search_node` function.
+through the :func:`Tree.search_node` function.
 
 ::
- 
-   from ete3 import Tree
-   t = Tree( '((H:1,I:1):0.5, A:1, (B:1,(C:1,D:1):0.5):0.5);' )
-   print t
-   #                    /-H
-   #          /--------|
-   #         |          \-I
-   #         |
-   #---------|--A
-   #         |
-   #         |          /-B
-   #          \--------|
-   #                   |          /-C
-   #                    \--------|
-   #                              \-D
 
-   # I get D
-   D = t.search_nodes(name="D")[0]
+  from ete4 import Tree
 
-   # I get all nodes with distance=0.5
-   nodes = t.search_nodes(dist=0.5)
-   print len(nodes), "nodes have distance=0.5"
+  t = Tree('((H:1,I:1):0.5, A:1, (B:1,(C:1,D:1):0.5):0.5);')
 
-   # We can limit the search to leaves and node names (faster method).
-   D = t.get_leaves_by_name(name="D")
-   print D
+  print(t)
+  # ╭─┬╴H
+  #─┤ ╰╴I
+  # ├╴A
+  # ╰─┬╴B
+  #   ╰─┬╴C
+  #     ╰╴D
+
+  # I get D
+  D = t&"D"
+
+  # I get all nodes with distance=0.5
+  nodes = t.search_nodes(dist=0.5)
+  print(len(nodes), "nodes have distance=0.5")
+
+  # We can limit the search to leaves and node names (faster method).
+  D = t.get_leaves_by_name("D")
+  print(D)
 
 
 
 Search nodes matching a given criteria (iteration)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A limitation of the :func:`TreeNode.search_nodes` method is that you cannot use
+A limitation of the :func:`Tree.search_nodes` method is that you cannot use
 complex conditional statements to find specific nodes.  When search
 criteria is too complex, you may need to create your own search
 function.
 
 ::
 
-  from ete3 import Tree
+  from ete4 import Tree
 
   def search_by_size(node, size):
       "Finds nodes with a given number of leaves"
       matches = []
-      for n in node.traverse(): 
-         if len(n) == size: 
-            matches.append(n)
+      for n in node.traverse():
+          if len(n) == size:
+              matches.append(n)
       return matches
 
   t = Tree()
   t.populate(40)
   # returns nodes containing 6 leaves
-  search_by_size(t, size=6) 
+  search_by_size(t, size=6)
+
 
 Find the first common ancestor
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 Searching for the first common ancestor of a given set of nodes it is
 a handy way of finding internal nodes.
 
 ::
 
-  from ete3 import Tree
-  t = Tree( "((H:0.3,I:0.1):0.5, A:1, (B:0.4,(C:0.5,(J:1.3, (F:1.2, D:0.1):0.5):0.5):0.5):0.5);" )
-  print t
+  from ete4 import Tree
+
+  t = Tree("((H:0.3,I:0.1):0.5, A:1, (B:0.4,(C:0.5,(J:1.3, (F:1.2, D:0.1):0.5):0.5):0.5):0.5);")
   ancestor = t.get_common_ancestor("C", "J", "B")
-  
+
 
 
 Custom searching functions
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A limitation of the previous methods is that you cannot use complex
 conditional statements to find specific nodes. However you can user
@@ -602,70 +579,74 @@ strategy would look like this:
 
 ::
 
-  from ete3 import Tree
+  from ete4 import Tree
+
   t = Tree("((H:0.3,I:0.1):0.5, A:1, (B:0.4,(C:1,D:1):0.5):0.5);")
+
   # Create a small function to filter your nodes
   def conditional_function(node):
-      if node.dist > 0.3:
-          return True
-      else:
-          return False
-   
+      return node.dist > 0.3
+
   # Use previous function to find matches. Note that we use the traverse
   # method in the filter function. This will iterate over all nodes to
   # assess if they meet our custom conditions and will return a list of
   # matches.
   matches = filter(conditional_function, t.traverse())
-  print len(matches), "nodes have distance >0.3"
-   
+  print(len(matches), "nodes have distance > 0.3")
+
   # depending on the complexity of your conditions you can do the same
   # in just one line with the help of lambda functions:
-  matches = filter(lambda n: n.dist>0.3 and n.is_leaf(), t.traverse() )
-  print len(matches), "nodes have distance >0.3 and are leaves"
+  matches = filter(lambda n: n.dist>0.3 and n.is_leaf(), t.traverse())
+  print(len(matches), "nodes have distance >0.3 and are leaves")
 
 
-Shortcuts 
-^^^^^^^^^^^^
+Shortcuts
+^^^^^^^^^
 
 Finally, ETE implements a built-in method to find the first node
 matching a given name, which is one of the most common tasks needed
 for tree analysis. This can be done through the operator &
-(AND). Thus, TreeNode&”A” will always return the first node whose name
+(AND). Thus, Tree&”A” will always return the first node whose name
 is “A” and that is under the tree “MyTree”. The syntaxis may seem
 confusing, but it can be very useful in some situations.
 
 ::
 
-  from ete3 import Tree
+  from ete4 import Tree
+
   t = Tree("((H:0.3,I:0.1):0.5, A:1, (B:0.4,(C:1,(J:1, (F:1, D:1):0.5):0.5):0.5):0.5);")
+
   # Get the node D in a very simple way
   D = t&"D"
+
   # Get the path from B to the root
   node = D
   path = []
   while node.up:
-    path.append(node)
-    node = node.up
-  print t
+      path.append(node)
+      node = node.up
+
   # I substract D node from the total number of visited nodes
-  print "There are", len(path)-1, "nodes between D and the root"
+  print("There are", len(path)-1, "nodes between D and the root")
+
   # Using parentheses you can use by-operand search syntax as a node
   # instance itself
   Dsparent= (t&"C").up
   Bsparent= (t&"B").up
   Jsparent= (t&"J").up
+
   # I check if nodes belong to certain partitions
-  print "It is", Dsparent in Bsparent, "that C's parent is under B's ancestor"
-  print "It is", Dsparent in Jsparent, "that C's parent is under J's ancestor"
+  print("It is", Dsparent in Bsparent, "that C's parent is under B's ancestor")
+  print("It is", Dsparent in Jsparent, "that C's parent is under J's ancestor")
 
 .. _check_monophyly:
 
 Checking the monophyly of attributes within a tree
-========================================================
+==================================================
 
 Although monophyly is actually a phylogenetic concept used to refer to
 a set of species that group exclusively together within a tree
-partition, the idea can be easily exported to any type of trees. 
+partition, the idea can be easily exported to any type of trees.
 
 Therefore, we could consider that a set of values for a given node
 attribute present in our tree is monophyletic, if such values group
@@ -674,47 +655,38 @@ corresponding relationship connecting such values (para or
 poly-phyletic) could be also be inferred.
 
 
-The :func:`TreeNode.check_monophyly` method will do so when a given
-tree is queried for any custom attribute. 
+The :func:`Tree.check_monophyly` method will do so when a given
+tree is queried for any custom attribute.
 
-:: 
+::
 
-  from ete3 import Tree
+  from ete4 import Tree
+
   t =  Tree("((((((a, e), i), o),h), u), ((f, g), j));")
-  print t
-
-  #                   /-a
-  #                /-|
-  #             /-|   \-e
-  #            |  |
-  #          /-|   \-i
-  #         |  |
-  #       /-|   \-o
-  #      |  |
-  #    /-|   \-h
-  #   |  |
-  #   |   \-u
-  # --|
-  #   |      /-f
-  #   |   /-|
-  #    \-|   \-g
-  #      |
-  #       \-j
-
+  print(t)
+  #         ╭─┬╴a
+  #       ╭─┤ ╰╴e
+  #     ╭─┤ ╰╴i
+  #   ╭─┤ ╰╴o
+  # ╭─┤ ╰╴h
+  #─┤ ╰╴u
+  # │ ╭─┬╴f
+  # ╰─┤ ╰╴g
+  #   ╰╴j
 
   # We can check how, indeed, all vowels are not monophyletic in the
   # previous tree, but polyphyletic (a foreign label breaks its monophyly)
-  print t.check_monophyly(values=["a", "e", "i", "o", "u"], target_attr="name")
+  print(t.check_monophyly(values=["a", "e", "i", "o", "u"], target_attr="name"))
 
   # however, the following set of vowels are monophyletic
-  print t.check_monophyly(values=["a", "e", "i", "o"], target_attr="name")  
+  print(t.check_monophyly(values=["a", "e", "i", "o"], target_attr="name"))
 
   # A special case of polyphyly, called paraphyly, is also used to
   # define certain type of grouping. See this wikipedia article for
   # disambiguation: http://en.wikipedia.org/wiki/Paraphyly
-  print t.check_monophyly(values=["i", "o"], target_attr="name")    
+  print(t.check_monophyly(values=["i", "o"], target_attr="name"))
 
-Finally, the :func:`TreeNode.get_monophyletic` method is also
+Finally, the :func:`Tree.get_monophyletic` method is also
 provided, which allows to return a list of nodes within a tree where a
 given set of attribute values are monophyletic. Note that, although a
 set of values are not monophyletic regarding the whole tree, several
@@ -722,61 +694,61 @@ independent monophyletic partitions could be found within the same
 topology.
 
 For instance, in the following example, all clusters within the same
-tree exclusively grouping a custom set of annotations are obtained. 
+tree exclusively grouping a custom set of annotations are obtained.
 
-:: 
+::
 
-   from ete3 import Tree
-   t =  Tree("((((((4, e), i), o),h), u), ((3, 4), (i, june)));")
-   # we annotate the tree using external data
-   colors = {"a":"red", "e":"green", "i":"yellow", 
-             "o":"black", "u":"purple", "4":"green",
-             "3":"yellow", "1":"white", "5":"red", 
-             "june":"yellow"}
-   for leaf in t:
-       leaf.add_features(color=colors.get(leaf.name, "none"))
-   print t.get_ascii(attributes=["name", "color"], show_internal=False)
+  from ete4 import Tree
 
-   #                   /-4, green
-   #                /-|
-   #             /-|   \-e, green
-   #            |  |
-   #          /-|   \-i, yellow
-   #         |  |
-   #       /-|   \-o, black
-   #      |  |
-   #    /-|   \-h, none
-   #   |  |
-   #   |   \-u, purple
-   # --|
-   #   |      /-3, yellow
-   #   |   /-|
-   #   |  |   \-4, green
-   #    \-|
-   #      |   /-i, yellow
-   #       \-|
-   #          \-june, yellow
+  t = Tree("((((((4, e), i), o),h), u), ((3, 4), (i, june)));")
 
-   print "Green-yellow clusters:" 
-   # And obtain clusters exclusively green and yellow
-   for node in t.get_monophyletic(values=["green", "yellow"], target_attr="color"):
-      print node.get_ascii(attributes=["color", "name"], show_internal=False)
+  # Annotate the tree using external data
+  colors = {"a":"red", "e":"green", "i":"yellow",
+            "o":"black", "u":"purple", "4":"green",
+            "3":"yellow", "1":"white", "5":"red",
+            "june":"yellow"}
+  for leaf in t:
+      leaf.add_props(color=colors.get(leaf.name, "none"))
 
-   # Green-yellow clusters:
-   #  
-   #       /-green, 4
-   #    /-|
-   # --|   \-green, e
-   #   |
-   #    \-yellow, i
-   #  
-   #       /-yellow, 3
-   #    /-|
-   #   |   \-green, 4
-   # --|
-   #   |   /-yellow, i
-   #    \-|
-   #       \-yellow, june
+  print(t.get_ascii(attributes=["name", "color"], show_internal=False))
+  #           ╭╴4,green
+  #         ╭─┤
+  #       ╭─┤ ╰╴e,green
+  #       │ │
+  #     ╭─┤ ╰╴i,yellow
+  #     │ │
+  #   ╭─┤ ╰╴o,black
+  #   │ │
+  # ╭─┤ ╰╴h,none
+  # │ │
+  # │ ╰╴u,purple
+  #─┤
+  # │   ╭╴3,yellow
+  # │ ╭─┤
+  # │ │ ╰╴4,green
+  # ╰─┤
+  #   │ ╭╴i,yellow
+  #   ╰─┤
+  #     ╰╴june,yellow
+
+  print("Green-yellow clusters:")
+  # And obtain clusters exclusively green and yellow
+  for node in t.get_monophyletic(values=["green", "yellow"], target_attr="color"):
+      print(node.get_ascii(attributes=["color", "name"], show_internal=False))
+
+  # Green-yellow clusters:
+  #   ╭╴green,4
+  # ╭─┤
+  #─┤ ╰╴green,e
+  # │
+  # ╰╴yellow,i
+  #   ╭╴yellow,3
+  # ╭─┤
+  # │ ╰╴green,4
+  #─┤
+  # │ ╭╴yellow,i
+  # ╰─┤
+  #   ╰╴yellow,june
 
 .. note::
 
@@ -788,113 +760,112 @@ tree exclusively grouping a custom set of annotations are obtained.
 
 .. _cache_node_content:
 
-Caching tree content for faster lookup operations 
-======================================================
+Caching tree content for faster lookup operations
+=================================================
 
 If your program needs to access to the content of different nodes very
 frequently, traversing the tree to get the leaves of each node over
 and over will produce significant slowdowns in your algorithm.  From
-version 2.2 ETE provides a convenient methods to cache frequent data. 
+version 2.2 ETE provides a convenient methods to cache frequent data.
 
-The method :func:`TreeNode.get_cached_content` returns a dictionary in
+The method :func:`Tree.get_cached_content` returns a dictionary in
 which keys are node instances and values represent the content of such
 nodes. By default, content is understood as a list of leave nodes, so
 looking up size or tip names under a given node will be
 instant. However, specific attributes can be cached by setting a
-custom :attr:`store_attr` value. 
+custom :attr:`store_attr` value.
 
 ::
 
-   from ete3 import Tree
-   t = Tree()
-   t.populate(50)
+  from ete4 import Tree
+  t = Tree()
+  t.populate(50)
 
-   node2leaves = t.get_cached_content()
+  node2leaves = t.get_cached_content()
 
-   # lets now print the size of each node without the need of
-   # recursively traverse 
-   for n in t.traverse():
-       print "node %s contains %s tips" %(n.name, len(node2leaves[n]))
-  
+  # lets now print the size of each node without the need of
+  # recursively traverse
+  for n in t.traverse():
+      print("node %s contains %s tips" % (n.name, len(node2leaves[n])))
+
 
 Node annotation
-=========================
+===============
 
 Every node contains three basic attributes: name
-(:attr:`TreeNode.name`), branch length (:attr:`TreeNode.dist`) and
-branch support (:attr:`TreeNode.support`). These three values are
+(:attr:`Tree.name`), branch length (:attr:`Tree.dist`) and
+branch support (:attr:`Tree.support`). These three values are
 encoded in the newick format.  However, any extra data could be linked
 to trees. This is called tree annotation.
 
-The :func:`TreeNode.add_feature` and :func:`TreeNode.add_features`
+The :func:`Tree.add_prop` and :func:`Tree.add_props`
 methods allow to add extra attributes (features) to any node.  The
 first allows to add one one feature at a time, while the second can be
 used to add many features with the same call.
 
 Once extra features are added, you can access their values at any time
 during the analysis of a tree. To do so, you only need to access to
-the :attr:`TreeNode.feature_name` attributes.
+the :attr:`Tree.feature_name` attributes.
 
-Similarly, :func:`TreeNode.del_feature` can be used to delete an
+Similarly, :func:`Tree.del_feature` can be used to delete an
 attribute.
 
 ::
- 
-   import random
-   from ete3 import Tree
-   # Creates a tree
-   t = Tree( '((H:0.3,I:0.1):0.5, A:1, (B:0.4,(C:0.5,(J:1.3, (F:1.2, D:0.1):0.5):0.5):0.5):0.5);' )
 
-   # Let's locate some nodes using the get common ancestor method
-   ancestor=t.get_common_ancestor("J", "F", "C")
-   # the search_nodes method (I take only the first match )
-   A = t.search_nodes(name="A")[0]
-   # and using the shorcut to finding nodes by name
-   C= t&"C"
-   H= t&"H"
-   I= t&"I"
+  import random
+  from ete4 import Tree
 
-   # Let's now add some custom features to our nodes. add_features can be
-   # used to add many features at the same time.
-   C.add_features(vowel=False, confidence=1.0)
-   A.add_features(vowel=True, confidence=0.5)
-   ancestor.add_features(nodetype="internal")
+  t = Tree('((H:0.3,I:0.1):0.5, A:1, (B:0.4,(C:0.5,(J:1.3, (F:1.2, D:0.1):0.5):0.5):0.5):0.5);')
 
-   # Or, using the oneliner notation
-   (t&"H").add_features(vowel=False, confidence=0.2)
+  # Let's locate some nodes using the get common ancestor method
+  ancestor = t.get_common_ancestor("J", "F", "C")
 
-   # But we can automatize this. (note that i will overwrite the previous
-   # values)
-   for leaf in t.traverse():
+  A = t&"A"
+  C = t&"C"
+  H = t&"H"
+  I = t&"I"
+
+  # Let's now add some custom features to our nodes. add_props can be
+  # used to add many features at the same time.
+  C.add_props(vowel=False, confidence=1.0)
+  A.add_props(vowel=True, confidence=0.5)
+  ancestor.add_props(nodetype="internal")
+
+  # Or, using the oneliner notation
+  (t&"H").add_props(vowel=False, confidence=0.2)
+
+  # But we can automatize this. (note that i will overwrite the previous
+  # values)
+  for leaf in t.traverse():
       if leaf.name in "AEIOU":
-         leaf.add_features(vowel=True, confidence=random.random())
+          leaf.add_props(vowel=True, confidence=random.random())
       else:
-         leaf.add_features(vowel=False, confidence=random.random())
+          leaf.add_props(vowel=False, confidence=random.random())
 
-   # Now we use these information to analyze the tree.
-   print "This tree has", len(t.search_nodes(vowel=True)), "vowel nodes"
-   print "Which are", [leaf.name for leaf in t.iter_leaves() if leaf.vowel==True]
+  # Now we use these information to analyze the tree.
+  print("This tree has", len(t.search_nodes(vowel=True)), "vowel nodes")
+  print("Which are", [leaf.name for leaf in t.iter_leaves() if leaf.props['vowel']])
 
-   # But features may refer to any kind of data, not only simple
-   # values. For example, we can calculate some values and store them
-   # within nodes.
-   #
-   # Let's detect leaf nodes under "ancestor" with distance higher thatn
-   # 1. Note that I'm traversing a subtree which starts from "ancestor"
-   matches = [leaf for leaf in ancestor.traverse() if leaf.dist>1.0]
+  # But features may refer to any kind of data, not only simple
+  # values. For example, we can calculate some values and store them
+  # within nodes.
+  #
+  # Let's detect leaf nodes under "ancestor" with distance higher thatn
+  # 1. Note that I'm traversing a subtree which starts from "ancestor"
+  matches = [leaf for leaf in ancestor.traverse() if leaf.dist>1.0]
 
-   # And save this pre-computed information into the ancestor node
-   ancestor.add_feature("long_branch_nodes", matches)
+  # And save this pre-computed information into the ancestor node
+  ancestor.add_props(long_branch_nodes=matches)
 
-   # Prints the precomputed nodes
-   print "These are nodes under ancestor with long branches", \
-      [n.name for n in ancestor.long_branch_nodes]
+  # Prints the precomputed nodes
+  print("These are nodes under ancestor with long branches",
+        [n.name for n in ancestor.props['long_branch_nodes']])
 
-   # We can also use the add_feature() method to dynamically add new features.
-   label = raw_input("custom label:")
-   value = raw_input("custom label value:")
-   ancestor.add_feature(label, value)
-   print "Ancestor has now the [", label, "] attribute with value [", value, "]"  
+  # We can also use the add_props() method to dynamically add new features.
+  label = input("custom label:")
+  value = input("custom label value:")
+  ancestor.add_props(label=value)
+  print("Ancestor has now the [", label, "] attribute with value [", value, "]")
 
 
 Unfortunately, newick format does not support adding extra features to
@@ -923,11 +894,11 @@ as plain text.
 
 The NHX format is automatically detected when reading a newick file,
 and the detected node features are added using the
-:func:`TreeNode.add_feature` method.  Consequently, you can access the
+:func:`Tree.add_prop` method.  Consequently, you can access the
 information by using the normal ETE's feature notation:
 ``node.feature_name``. Similarly, features added to a tree can
 be included within the normal newick representation using the NHX
-notation. For this, you can call the :func:`TreeNode.write` method
+notation. For this, you can call the :func:`Tree.write` method
 using the :attr:`features` argument, which is expected to be a list
 with the features names that you want to include in the newick
 string. Note that all nodes containing the suplied features will be
@@ -936,9 +907,9 @@ exposed into the newick string. Use an empty features list
 string.
 
 ::
-   
+
   import random
-  from ete3 import Tree
+  from ete4 import Tree
   # Creates a normal tree
   t = Tree('((H:0.3,I:0.1):0.5, A:1,(B:0.4,(C:0.5,(J:1.3,(F:1.2, D:0.1):0.5):0.5):0.5):0.5);')
   print t
@@ -947,16 +918,16 @@ string.
   # Let's label leaf nodes
   for leaf in t.traverse():
       if leaf.name in "AEIOU":
-        leaf.add_features(vowel=True, confidence=random.random())
+        leaf.add_props(vowel=True, confidence=random.random())
       else:
-        leaf.add_features(vowel=False, confidence=random.random())
-   
+        leaf.add_props(vowel=False, confidence=random.random())
+
   # Let's detect leaf nodes under "ancestor" with distance higher thatn
   # 1. Note that I'm traversing a subtree which starts from "ancestor"
   matches = [leaf for leaf in ancestor.traverse() if leaf.dist>1.0]
-   
+
   # And save this pre-computed information into the ancestor node
-  ancestor.add_feature("long_branch_nodes", matches)
+  ancestor.add_prop("long_branch_nodes", matches)
   print
   print "NHX notation including vowel and confidence attributes"
   print
@@ -964,7 +935,7 @@ string.
   print
   print "NHX notation including all node's data"
   print
-   
+
   # Note that when all features are requested, only those with values
   # equal to text-strings or numbers are considered. "long_branch_nodes"
   # is not included into the newick string.
@@ -1017,7 +988,7 @@ sizes, shared nodes and duplicated feature names.
   in several subtrees)
 - result["max_rf"] = Maximum robinson-foulds distance expected for this comparison
 - result["norm_rf"] = normalized robinson-foulds distance (from 0 to 1)
-- result["effective_tree_size"] = the size of the compared trees, which are pruned to the common shared nodes. 
+- result["effective_tree_size"] = the size of the compared trees, which are pruned to the common shared nodes.
 - result["ref_edges_in_source"] = compatibility score of the target tree with
   respect to the source tree (how many edges in reference are found in the
   source)
@@ -1028,35 +999,35 @@ sizes, shared nodes and duplicated feature names.
 - result["common_edges"] = a set of common edges between source tree and reference
 - result["source_edges"] = the set of edges found in the source tree
 - result["ref_edges"] = the set of edges found in the reference tree
-- result["treeko_dist"] = TreeKO speciation distance for comparisons including duplication nodes. 
+- result["treeko_dist"] = TreeKO speciation distance for comparisons including duplication nodes.
 
 
 
 
-Robinson-foulds distance 
--------------------------------- 
+Robinson-foulds distance
+--------------------------------
 .. versionadded 2.2
 
 
 Two tree topologies can be compared using ETE and the Robinson-Foulds
-(RF) metric. The method :func:`TreeNode.robinson_foulds` available for
+(RF) metric. The method :func:`Tree.robinson_foulds` available for
 any ETE tree node allows to:
 
  - compare two tree topologies by their name labels (default) or any
-   other annotated feature in the tree. 
+   other annotated feature in the tree.
 
  - compare topologies of different size and content. When two trees
    contain a different set of labels, only shared leaves will be used.
 
  - examine size and content of matching and missing partitions. Since
    the method return the list of partitions found in both trees,
-   details about matching partitions can be obtained easily. 
+   details about matching partitions can be obtained easily.
 
-.. versionchanged 2.3 
+.. versionchanged 2.3
 
   - allows to discard edges from the comparison based on their support value.
- 
-  - allows to automatically expand polytomies (multifurcations) in source and target trees.  
+
+  - allows to automatically expand polytomies (multifurcations) in source and target trees.
 
   - a command line tool providing most used features is available: `ete compare`
 
@@ -1065,8 +1036,8 @@ In the following example, several of above mentioned features are
 shown:
 
 ::
- 
-  from ete3 import Tree
+
+  from ete4 import Tree
   t1 = Tree('(((a,b),c), ((e, f), g));')
   t2 = Tree('(((a,c),b), ((e, f), g));')
   rf, max_rf, common_leaves, parts_t1, parts_t2 = t1.robinson_foulds(t2)
@@ -1097,27 +1068,27 @@ Modifying Tree Topology
 Creating Trees from Scratch
 ---------------------------
 
-If no arguments are passed to the :class:`TreeNode` class constructor,
+If no arguments are passed to the :class:`Tree` class constructor,
 an empty tree node will be returned. Such an orphan node can be used
-to populate a tree from scratch. For this, the :attr:`TreeNode.up`,
-and :attr:`TreeNode.children` attributes should never be used (unless
+to populate a tree from scratch. For this, the :attr:`Tree.up`,
+and :attr:`Tree.children` attributes should never be used (unless
 it is strictly necessary). Instead, several methods exist to
 manipulate the topology of a tree:
 
 
-.. autosummary:: 
+.. autosummary::
 
    :signature:
-   TreeNode.populate
-   TreeNode.add_child
-   TreeNode.add_child
-   TreeNode.delete 
-   TreeNode.detach
+   Tree.populate
+   Tree.add_child
+   Tree.add_child
+   Tree.delete
+   Tree.detach
 
 
 ::
 
-  from ete3 import Tree
+  from ete4 import Tree
   t = Tree() # Creates an empty tree
   A = t.add_child(name="A") # Adds a new child to the current tree root
                              # and returns it
@@ -1166,15 +1137,15 @@ As currently implemented, there is a difference between detaching and
 deleting a node. The former disconnects a complete partition from the
 tree structure, so all its descendants are also disconnected from the
 tree. There are two methods to perform this action:
-:func:`TreeNode.remove_child` and :func:`TreeNode.detach`. In
+:func:`Tree.remove_child` and :func:`Tree.detach`. In
 contrast, deleting a node means eliminating such node without
 affecting its descendants. Children from the deleted node are
 automatically connected to the next possible parent. This is better
 understood with the following example:
 
-:: 
+::
 
-  from ete3 import Tree
+  from ete4 import Tree
   # Loads a tree. Note that we use format 1 to read internal node names
   t = Tree('((((H,K)D,(F,I)G)B,E)A,((L,(N,Q)O)J,(P,S)M)C);', format=1)
   print "original tree looks like this:"
@@ -1255,9 +1226,9 @@ Pruning trees
 
 Pruning a tree means to obtain the topology that connects a certain
 group of items by removing the unnecessary edges. To facilitate this
-task, ETE implements the :func:`TreeNode.prune` method, which can be
+task, ETE implements the :func:`Tree.prune` method, which can be
 used by providing the list of terminal and/or internal nodes that must
-be kept in the tree. 
+be kept in the tree.
 
 From version 2.2, this function includes also the
 `preserve_branch_length` flag, which allows to remove nodes from a
@@ -1265,7 +1236,7 @@ tree while keeping original distances among remaining nodes.
 
 ::
 
-  from ete3 import Tree
+  from ete4 import Tree
   # Let's create simple tree
   t = Tree('((((H,K),(F,I)G),E),((L,(N,Q)O),(P,S)));', format=1)
   print "Original tree looks like this:"
@@ -1313,7 +1284,7 @@ Concatenating trees
 Given that all tree nodes share the same basic properties, they can be
 connected freely. In fact, any node can add a whole subtree as a
 child, so we can actually *cut & paste* partitions. To do so, you only
-need to call the :func:`TreeNode.add_child` method using another tree
+need to call the :func:`Tree.add_child` method using another tree
 node as a first argument. If such a node is the root node of a
 different tree, you will concatenate two structures. But caution!!,
 this kind of operations may result into circular tree structures if
@@ -1325,7 +1296,7 @@ take care about not creating circular structures by mistake.
 
 ::
 
-  from ete3 import Tree
+  from ete4 import Tree
   # Loads 3 independent trees
   t1 = Tree('(A,(B,C));')
   t2 = Tree('((D,E), (F,G));')
@@ -1391,7 +1362,7 @@ Copying (duplicating) trees
 =============================
 
 ETE provides several strategies to clone tree structures. The method
-:func:`TreeNode.copy()` can be used to produce a new independent tree
+:func:`Tree.copy()` can be used to produce a new independent tree
 object with the exact topology and features as the original. However,
 as trees may involve many intricate levels of branches and nested
 features, 4 different methods are available to create a tree copy:
@@ -1422,12 +1393,12 @@ features, 4 different methods are available to create a tree copy:
 ::
 
 
-   from ete3 import Tree
+   from ete4 import Tree
    t = Tree("((A, B)Internal_1:0.7, (C, D)Internal_2:0.5)root:1.3;", format=1)
    # we add a custom annotation to the node named A
-   (t & "A").add_features(label="custom Value")
+   (t & "A").add_props(label="custom Value")
    # we add a complex feature to the A node, consisting of a list of lists
-   (t & "A").add_features(complex=[[0,1], [2,3], [1,11], [1,0]])
+   (t & "A").add_props(complex=[[0,1], [2,3], [1,11], [1,0]])
    print t.get_ascii(attributes=["name", "dist", "label", "complex"])
 
    #                         /-A, 0.0, custom Value, [[0, 1], [2, 3], [1, 11], [1, 0]]
@@ -1450,7 +1421,7 @@ features, 4 different methods are available to create a tree copy:
    #           |               /-C, 0.0
    #            \Internal_2, 0.5
    #                           \-D, 0.0
-   
+
    # Extended newick copy will transfer custom annotations as text
    # strings, so complex features are lost.
 
@@ -1484,8 +1455,9 @@ features, 4 different methods are available to create a tree copy:
 
 .. _resolve_polytomy:
 
+
 Solving multifurcations
-=============================
+=======================
 
 When a tree contains a polytomy (a node with more than 2 children),
 the method :func:`resolve_polytomy` can be used to convert the node
@@ -1497,9 +1469,9 @@ requirement for some external software.
 The method can be used on a very specific node while keeping the rest
 of the tree intact by disabling the :attr:`recursive` flag.
 
-:: 
+::
 
-  from ete3 import Tree
+  from ete4 import Tree
   t = Tree("(( (a, b, c), (d, e, f, g)), (f, i, h));")
   print t
 
@@ -1552,7 +1524,7 @@ of the tree intact by disabling the :attr:`recursive` flag.
   t.resolve_polytomy(recursive=True)
   print t
 
-  #  
+  #
   #                 /-b
   #             /--|
   #         /--|    \-c
@@ -1590,7 +1562,7 @@ differentiated between rooted and unrooted, is by counting the number
 of branches of the current root node. Thus, if the root node has more
 than two child branches, the tree is considered unrooted. By contrast,
 when only two main branches exist under the root node, the tree is
-considered rooted. 
+considered rooted.
 
 Having an unrooted tree means that any internal branch within the tree
 could be regarded as the root node, and there is no conceptual reason
@@ -1606,13 +1578,13 @@ unrooted trees, the multifurcations at the current root node are
 solved.
 
 In order to root an unrooted tree or re-root a tree structure, ETE
-implements the :func:`TreeNode.set_outgroup` method, which is present
-in any tree node instance.  Similarly, the :func:`TreeNode.unroot`
+implements the :func:`Tree.set_outgroup` method, which is present
+in any tree node instance.  Similarly, the :func:`Tree.unroot`
 method can be used to perform the opposite action.
 
 ::
 
-  from ete3 import Tree
+  from ete4 import Tree
   # Load an unrooted tree. Note that three branches hang from the root
   # node. This usually means that no information is available about
   # which of nodes is more basal.
@@ -1674,7 +1646,7 @@ to its parent tree structure.
 
 ::
 
-  from ete3 import Tree
+  from ete4 import Tree
   t = Tree('(((A,C),((H,F),(L,M))),((B,(J,K)),(E,D)));')
   print "Original tree:"
   print t
@@ -1735,14 +1707,14 @@ Working with branch distances
 =============================
 
 The branch length between one node an its parent is encoded as the
-:attr:`TreeNode.dist` attribute. Together with tree topology, branch
+:attr:`Tree.dist` attribute. Together with tree topology, branch
 lengths define the relationships among nodes.
 
 
 Getting distances between nodes
 -------------------------------
 
-The :func:`TreeNode.get_distance` method can be used to calculate the
+The :func:`Tree.get_distance` method can be used to calculate the
 distance between two connected nodes. There are two ways of using this
 method: a) by querying the distance between two descendant nodes (two
 nodes are passed as arguments) b) by querying the distance between the
@@ -1751,52 +1723,45 @@ current node and any other relative node (parental or descendant).
 
 ::
 
-  from ete3 import Tree
-   
-  # Loads a tree with branch lenght information. Note that if no
-  # distance info is provided in the newick, it will be initialized with
-  # the default dist value = 1.0
+  from ete4 import Tree
+
+  # Load a tree with branch lenght information.
   nw = """(((A:0.1, B:0.01):0.001, C:0.0001):1.0,
   (((((D:0.00001,I:0):0,F:0):0,G:0):0,H:0):0,
   E:0.000001):0.0000001):2.0;"""
   t = Tree(nw)
-  print t
-  #                              /-A
-  #                    /--------|
-  #          /--------|          \-B
-  #         |         |
-  #         |          \-C
-  #         |
-  #         |                                                  /-D
-  #         |                                        /--------|
-  #---------|                              /--------|          \-I
-  #         |                             |         |
-  #         |                    /--------|          \-F
-  #         |                   |         |
-  #         |          /--------|          \-G
-  #         |         |         |
-  #          \--------|          \-H
-  #                   |
-  #                    \-E
-  #
+
+  print(t)
+  #   ╭─┬╴A
+  # ╭─┤ ╰╴B
+  # │ ╰╴C
+  # │       ╭─┬╴D
+  #─┤     ╭─┤ ╰╴I
+  # │   ╭─┤ ╰╴F
+  # │ ╭─┤ ╰╴G
+  # ╰─┤ ╰╴H
+  #   ╰╴E
+
   # Locate some nodes
   A = t&"A"
   C = t&"C"
-  # Calculate distance from current node
-  print "The distance between A and C is",  A.get_distance("C")
-  # Calculate distance between two descendants of current node
-  print "The distance between A and C is",  t.get_distance("A","C")
-  # Calculate the toplogical distance (number of nodes in between)
-  print "The number of nodes between A and D is ",  \
-      t.get_distance("A","D", topology_only=True)
 
+  # Calculate distance from current node
+  print("The distance between A and C is", A.get_distance("C"))
+
+  # Calculate distance between two descendants of current node
+  print("The distance between A and C is", t.get_distance("A","C"))
+
+  # Calculate the toplogical distance (number of nodes in between)
+  print("The number of nodes between A and D is ",
+        t.get_distance("A","D", topology_only=True))
 
 
 Additionally to this, ETE incorporates two more methods to calculate
 the most distant node from a given point in a tree. You can use the
-:func:`TreeNode.get_farthest_node` method to retrieve the most distant
+:func:`Tree.get_farthest_node` method to retrieve the most distant
 point from a node within the whole tree structure. Alternatively,
-:func:`TreeNode.get_farthest_leaf` will return the most distant
+:func:`Tree.get_farthest_leaf` will return the most distant
 descendant (always a leaf). If more than one node matches the farthest
 distance, the first occurrence is returned.
 
@@ -1810,17 +1775,21 @@ above mentioned methods.
 
   # Calculate the farthest node from E within the whole structure
   farthest, dist = (t&"E").get_farthest_node()
-  print "The farthest node from E is", farthest.name, "with dist=", dist
+
+  print("The farthest node from E is", farthest.name, "with dist=", dist)
+
   # Calculate the farthest node from E within the whole structure,
   # regarding the number of nodes in between as distance value
   # Note that the result is differnt.
   farthest, dist = (t&"E").get_farthest_node(topology_only=True)
-  print "The farthest (topologically) node from E is", \
-      farthest.name, "with", dist, "nodes in between"
+
+  print("The farthest (topologically) node from E is",
+        farthest.name, "with", dist, "nodes in between")
+
   # Calculate farthest node from an internal node
   farthest, dist = t.get_farthest_node()
-  print "The farthest node from root is", farthest.name, "with dist=", dist
-  #
+  print("The farthest node from root is", farthest.name, "with dist=", dist)
+
   # The program results in the following information:
   #
   # The distance between A and C is 0.1011
@@ -1840,81 +1809,54 @@ In order to obtain a balanced rooting of the tree, you can set as the tree
 outgroup that partition which splits the tree in two equally distant clusters
 (using branch lengths). This is called the midpoint outgroup.
 
-The :func:`TreeNode.get_midpoint_outgroup` method will return the
+The :func:`Tree.get_midpoint_outgroup` method will return the
 outgroup partition that splits current node into two balanced branches
 in terms of node distances.
 
 ::
 
-  from ete3 import Tree
-  # generates a random tree
+  from ete4 import Tree
+
+  # Generate a random tree
   t = Tree();
   t.populate(15);
-  print t
-  #
-  #
-  #                    /-qogjl
-  #          /--------|
-  #         |          \-vxbgp
-  #         |
-  #         |          /-xyewk
-  #---------|         |
-  #         |         |                    /-opben
-  #         |         |                   |
-  #         |         |          /--------|                    /-xoryn
-  #          \--------|         |         |          /--------|
-  #                   |         |         |         |         |          /-wdima
-  #                   |         |          \--------|          \--------|
-  #                   |         |                   |                    \-qxovz
-  #                   |         |                   |
-  #                   |         |                    \-isngq
-  #                    \--------|
-  #                             |                    /-neqsc
-  #                             |                   |
-  #                             |                   |                              /-waxkv
-  #                             |          /--------|                    /--------|
-  #                             |         |         |          /--------|          \-djeoh
-  #                             |         |         |         |         |
-  #                             |         |          \--------|          \-exmsn
-  #                              \--------|                   |
-  #                                       |                   |          /-udspq
-  #                                       |                    \--------|
-  #                                       |                              \-buxpw
-  #                                       |
-  #                                        \-rkzwd
+
+  print(t)
+  #   ╭─┬╴aaf
+  # ╭─┤ ╰─┬╴aag
+  # │ │   ╰╴aah
+  # │ ╰─┬╴aai
+  # │   ╰╴aaj
+  #─┤   ╭─┬╴aak
+  # │   │ ╰─┬╴aal
+  # │ ╭─┤   ╰╴aam
+  # │ │ │ ╭─┬╴aan
+  # ╰─┤ ╰─┤ ╰╴aao
+  #   │   ╰─┬╴aaa
+  #   │     ╰╴aab
+  #   ╰─┬╴aac
+  #     ╰─┬╴aad
+  #       ╰╴aae
+
   # Calculate the midpoint node
   R = t.get_midpoint_outgroup()
+
   # and set it as tree outgroup
   t.set_outgroup(R)
-  print t
-  #                              /-opben
-  #                             |
-  #                    /--------|                    /-xoryn
-  #                   |         |          /--------|
-  #                   |         |         |         |          /-wdima
-  #                   |          \--------|          \--------|
-  #          /--------|                   |                    \-qxovz
-  #         |         |                   |
-  #         |         |                    \-isngq
-  #         |         |
-  #         |         |          /-xyewk
-  #         |          \--------|
-  #         |                   |          /-qogjl
-  #         |                    \--------|
-  #---------|                              \-vxbgp
-  #         |
-  #         |                    /-neqsc
-  #         |                   |
-  #         |                   |                              /-waxkv
-  #         |          /--------|                    /--------|
-  #         |         |         |          /--------|          \-djeoh
-  #         |         |         |         |         |
-  #         |         |          \--------|          \-exmsn
-  #          \--------|                   |
-  #                   |                   |          /-udspq
-  #                   |                    \--------|
-  #                   |                              \-buxpw
-  #                   |
-  #                    \-rkzwd
 
-
+  print(t)
+  #     ╭─┬╴aak
+  #     │ ╰─┬╴aal
+  #   ╭─┤   ╰╴aam
+  #   │ │ ╭─┬╴aan
+  # ╭─┤ ╰─┤ ╰╴aao
+  # │ │   ╰─┬╴aaa
+  # │ │     ╰╴aab
+  #─┤ ╰─┬╴aac
+  # │   ╰─┬╴aad
+  # │     ╰╴aae
+  # │ ╭─┬╴aaf
+  # ╰─┤ ╰─┬╴aag
+  #   │   ╰╴aah
+  #   ╰─┬╴aai
+  #     ╰╴aaj
