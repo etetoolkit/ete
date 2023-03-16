@@ -1,44 +1,3 @@
-# #START_LICENSE###########################################################
-#
-#
-# This file is part of the Environment for Tree Exploration program
-# (ETE).  http://etetoolkit.org
-#
-# ETE is free software: you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# ETE is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
-# License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with ETE.  If not, see <http://www.gnu.org/licenses/>.
-#
-#
-#                     ABOUT THE ETE PACKAGE
-#                     =====================
-#
-# ETE is distributed under the GPL copyleft license (2008-2015).
-#
-# If you make use of ETE in published work, please cite:
-#
-# Jaime Huerta-Cepas, Joaquin Dopazo and Toni Gabaldon.
-# ETE: a python Environment for Tree Exploration. Jaime BMC
-# Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
-#
-# Note that extra references to the specific methods implemented in
-# the toolkit may be available in the documentation.
-#
-# More info at http://etetoolkit.org. Contact: huerta@embl.de
-#
-#
-# #END_LICENSE#############################################################
-from __future__ import absolute_import
-from __future__ import print_function
-
 import sys
 import time
 from collections import defaultdict
@@ -74,7 +33,7 @@ def autocommit(targetconn = conn):
 def encode(x):
     return bytes.decode(encodebytes(pickle.dumps(x, 2)))
 
-def decode(x):   
+def decode(x):
     x = str.encode(x)
     return pickle.loads(decodebytes(x))
 
@@ -464,7 +423,7 @@ def get_seq_name_dict():
     execute(cmd, seqcursor)
     return dict(seqcursor.fetchall())
 
-    
+
 def get_all_seq_names():
     cmd = 'SELECT name FROM seqid2name'
     execute(cmd, seqcursor)
@@ -499,7 +458,7 @@ def get_seq(seqid, seqtype):
     execute(cmd, seqcursor)
     return seqcursor.fetchone()[0]
 
-    
+
 def get_seq_species():
     cmd = 'SELECT DISTINCT taxid FROM species;'
     execute(cmd, seqcursor)
@@ -537,4 +496,3 @@ def commit(dbconn=None):
     if not dbconn:
         dbconn = conn
     conn.commit()
-

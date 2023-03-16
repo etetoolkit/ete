@@ -1,44 +1,3 @@
-# #START_LICENSE###########################################################
-#
-#
-# This file is part of the Environment for Tree Exploration program
-# (ETE).  http://etetoolkit.org
-#
-# ETE is free software: you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# ETE is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
-# License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with ETE.  If not, see <http://www.gnu.org/licenses/>.
-#
-#
-#                     ABOUT THE ETE PACKAGE
-#                     =====================
-#
-# ETE is distributed under the GPL copyleft license (2008-2015).
-#
-# If you make use of ETE in published work, please cite:
-#
-# Jaime Huerta-Cepas, Joaquin Dopazo and Toni Gabaldon.
-# ETE: a python Environment for Tree Exploration. Jaime BMC
-# Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
-#
-# Note that extra references to the specific methods implemented in
-# the toolkit may be available in the documentation.
-#
-# More info at http://etetoolkit.org. Contact: huerta@embl.de
-#
-#
-# #END_LICENSE#############################################################
-from __future__ import absolute_import
-from __future__ import print_function
-
 import os
 from ...utils import print_table
 from .configobj import ConfigObj
@@ -51,13 +10,13 @@ def build_supermatrix_workflow(wname):
         cog_selector, alg_concatenator, treebuilder = map(lambda x: "@%s" %x, wname.split("-"))
     except ValueError:
         raise ConfigError("Invalid supermatrix workflow: %s" %wname)
-    
+
     workflow = {wname: {
         "_app": "supermatrix",
         "_cog_selector": cog_selector,
-        "_alg_concatenator": alg_concatenator, 
+        "_alg_concatenator": alg_concatenator,
         "_aa_tree_builder": treebuilder,
-        "_nt_tree_builder": treebuilder, 
+        "_nt_tree_builder": treebuilder,
         "_appset":"@builtin_apps"}
     }
     return workflow
@@ -68,17 +27,17 @@ def build_genetree_workflow(wname):
                                                          wname.split("-"))
     except ValueError:
         raise ConfigError("Invalid genetree workflow: %s" %wname)
-    
+
     workflow = {wname: {
         "_app": "genetree",
         "_aa_aligner": aligner,
-        "_aa_alg_cleaner": trimmer, 
+        "_aa_alg_cleaner": trimmer,
         "_aa_model_tester": modeltester,
         "_aa_tree_builder": treebuilder,
         "_nt_aligner": aligner,
         "_nt_alg_cleaner": trimmer,
         "_nt_model_tester": modeltester,
-        "_nt_tree_builder": treebuilder, 
+        "_nt_tree_builder": treebuilder,
         "_appset":"@builtin_apps"}
     }
     return workflow
@@ -89,8 +48,8 @@ def list_workflows(config, target_type=None):
         print()
         avail_meta = [(k, config["workflow_desc"].get(k, ""), len(v)) for k,v in config.get('supermatrix_meta_workflow', {}).items()]
         print_table(avail_meta, fix_col_width=[45, 60, 10], header=["Worflow name", "Description", "threads"], title="Supermatrix shortcut workflow names", row_line=True)
-        
-    if not target_type or target_type == 'genetree':        
+
+    if not target_type or target_type == 'genetree':
         print()
         avail_meta = [(k, config["workflow_desc"].get(k, ""), len(v)) for k,v in config.get('genetree_meta_workflow', {}).items()]
         print_table(avail_meta, fix_col_width=[45, 60, 10], header=["Worflow name", "Description", "threads"], title="GeneTree shortcut workflow names", row_line=True)
@@ -105,7 +64,7 @@ def list_apps(config, target_apps = None):
                 pass
             else:
                 continue
-                        
+
         avail_blocks = [[blockname, block["_app"], block.get("_desc", "")] for blockname, block in config.items() if block.get("_app") in validapps]
         print_table(avail_blocks, header=["name", "app type", "desc."], max_col_width=70, title=appname, row_line=True)
         print()
@@ -178,24 +137,24 @@ def parse_block(blockname, conf):
                 check_block_link(conf, blockname, i, attr)
         else:
             check_block_link(conf, blockname, conf[blockname][attr], attr)
-            
-    # Check for missing attributes     
+
+    # Check for missing attributes
     for tag, tester in CHECKERS.items():
         if tag[0] == blocktype and (tester[2] and tag[1] not in conf[blockname]):
             raise ConfigError('[%s] attribute expected in block [%s]' %(tag[1], blockname))
-            
+
 def check_config(fname):
     conf = ConfigObj(fname, list_values=True)
 
     # expand meta_workflows
     for meta_name, meta_wf in conf["genetree_meta_workflow"].items():
-        for wkname in meta_wf:        
+        for wkname in meta_wf:
             conf.update(build_genetree_workflow(wkname.lstrip("@")))
     for meta_name, meta_wf in conf["supermatrix_meta_workflow"].items():
-        for wkname in meta_wf:        
+        for wkname in meta_wf:
             conf.update(build_supermatrix_workflow(wkname.lstrip("@")))
-            
-    # expand inherits options 
+
+    # expand inherits options
     for k, v in list(conf.items()):
         if '_inherits' in v:
             base = v['_inherits']
@@ -433,7 +392,7 @@ CHECKERS = {
 
     ("pmodeltest", "_aa_models"): (is_text, {}, True),
     ("pmodeltest", "_nt_models"): (is_text, {}, True),
-        
+
     ("raxml", "_aa_model"): (is_text, {}, True),
     ("raxml", "_method"): (is_choice, {"choices":set(['GAMMA', 'CAT'])}, True),
     ("raxml", "_bootstrap"): (is_raxml_bootstrap, {}, True),

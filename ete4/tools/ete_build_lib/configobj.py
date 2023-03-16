@@ -1,41 +1,3 @@
-# #START_LICENSE###########################################################
-#
-#
-# This file is part of the Environment for Tree Exploration program
-# (ETE).  http://etetoolkit.org
-#
-# ETE is free software: you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# ETE is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
-# License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with ETE.  If not, see <http://www.gnu.org/licenses/>.
-#
-#
-#                     ABOUT THE ETE PACKAGE
-#                     =====================
-#
-# ETE is distributed under the GPL copyleft license (2008-2015).
-#
-# If you make use of ETE in published work, please cite:
-#
-# Jaime Huerta-Cepas, Joaquin Dopazo and Toni Gabaldon.
-# ETE: a python Environment for Tree Exploration. Jaime BMC
-# Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
-#
-# Note that extra references to the specific methods implemented in
-# the toolkit may be available in the documentation.
-#
-# More info at http://etetoolkit.org. Contact: huerta@embl.de
-#
-#
-# #END_LICENSE#############################################################
 # configobj.py
 # A config file reader/writer that supports nested sections in config files.
 # Copyright (C) 2005-2010 Michael Foord, Nicola Larosa
@@ -1287,7 +1249,7 @@ class ConfigObj(Section):
                 h = open(infile, 'r') # before it was 'rb' for handling encodings. This is Py3 safe
                 infile = str(h.read()).splitlines() or []
                 h.close()
-                
+
             elif self.file_error:
                 # raise an error if the file doesn't exist
                 raise IOError('Config file not found: "%s".' % self.filename)
@@ -1344,7 +1306,7 @@ class ConfigObj(Section):
             #further checking or conversion (Jaime)
             #
             #infile = self._handle_bom(infile)
-            
+
             # infile is now *always* a list
             #
             # Set the newlines attribute (first line ending it finds)
@@ -1360,7 +1322,7 @@ class ConfigObj(Section):
 
             infile = [line.rstrip('\r\n') for line in infile]
 
-            
+
         self._parse(infile)
         # if we had any errors, now is the time to raise them
         if self._errors:
@@ -1527,7 +1489,7 @@ class ConfigObj(Section):
         #if isinstance(infile, str):
             # infile read from a file will be a single string
         #    return infile.splitlines(True)
-        
+
         infile = infile.splitlines(True)
         print( infile)
         print(len(infile), type(infile), type(infile[0]))

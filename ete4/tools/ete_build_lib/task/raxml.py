@@ -1,42 +1,3 @@
-# #START_LICENSE###########################################################
-#
-#
-# This file is part of the Environment for Tree Exploration program
-# (ETE).  http://etetoolkit.org
-#
-# ETE is free software: you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# ETE is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
-# License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with ETE.  If not, see <http://www.gnu.org/licenses/>.
-#
-#
-#                     ABOUT THE ETE PACKAGE
-#                     =====================
-#
-# ETE is distributed under the GPL copyleft license (2008-2015).
-#
-# If you make use of ETE in published work, please cite:
-#
-# Jaime Huerta-Cepas, Joaquin Dopazo and Toni Gabaldon.
-# ETE: a python Environment for Tree Exploration. Jaime BMC
-# Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
-#
-# Note that extra references to the specific methods implemented in
-# the toolkit may be available in the documentation.
-#
-# More info at http://etetoolkit.org. Contact: huerta@embl.de
-#
-#
-# #END_LICENSE#############################################################
-from __future__ import absolute_import
 import os
 import sys
 import logging
@@ -59,15 +20,15 @@ class Raxml(TreeTask):
                  seqtype, conf, confname, parts_id=None):
         GLOBALS["citator"].add('raxml')
 
-        model_string = "PROT" if seqtype == "aa" else "GTR" 
+        model_string = "PROT" if seqtype == "aa" else "GTR"
         if model and model.startswith('pmodeltest-'):
             fullmodel = model.replace('pmodeltest-', '')
             basemodel = fullmodel.split("+")[0].split("!")[0]
             if seqtype == "nt" and basemodel != "GTR":
                 log.warning("Raxml supports only the GTR model, but model selection returned %s. Consider using Phyml if this is important." %basemodel)
-                
+
             # overwrites default options if model selection says so
-            
+
             if "+G" in fullmodel:
                 model_string += "GAMMA"
             elif "!G" in fullmodel:
@@ -76,22 +37,22 @@ class Raxml(TreeTask):
             else:
                 if seqtype == "aa":
                     model_string += conf[confname]["_method"]
-                
+
             if seqtype == "aa":
                 model_string += basemodel.upper()
-                
+
             if "+I" in fullmodel and "GAMMA" in model_string:
                 model_string += "I"
             elif "!I" in fullmodel:
                 pass
             else:
                 if "I" in conf[confname]["_model_suffix"] and "GAMMA" in model_string:
-                    model_string += "I" 
+                    model_string += "I"
 
             if "+F" in fullmodel:
                 if seqtype == "aa":
                     model_string += "F"
-            if "!F" in fullmodel:                
+            if "!F" in fullmodel:
                 pass
             else:
                 if "F" in conf[confname]["_model_suffix"] and seqtype == "aa":
@@ -101,11 +62,11 @@ class Raxml(TreeTask):
             model_string += conf[confname]["_method"]
             if seqtype == "aa":
                 model_string += model if model else conf[confname]["_aa_model"]
-            model_string += conf[confname]["_model_suffix"]                        
+            model_string += conf[confname]["_model_suffix"]
 
         self.model_string = model_string
         self.model = model_string
-        
+
         base_args = OrderedDict()
         self.bootstrap = conf[confname].get("_bootstrap", None)
 
@@ -294,7 +255,3 @@ class Raxml(TreeTask):
                     n.support = 0
 
         TreeTask.store_data(self, tree.write(), {})
-
-
-
-

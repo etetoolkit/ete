@@ -1,47 +1,10 @@
-# #START_LICENSE###########################################################
-#
-#
-# This file is part of the Environment for Tree Exploration program
-# (ETE).  http://etetoolkit.org
-#
-# ETE is free software: you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# ETE is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
-# License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with ETE.  If not, see <http://www.gnu.org/licenses/>.
-#
-#
-#                     ABOUT THE ETE PACKAGE
-#                     =====================
-#
-# ETE is distributed under the GPL copyleft license (2008-2015).
-#
-# If you make use of ETE in published work, please cite:
-#
-# Jaime Huerta-Cepas, Joaquin Dopazo and Toni Gabaldon.
-# ETE: a python Environment for Tree Exploration. Jaime BMC
-# Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
-#
-# Note that extra references to the specific methods implemented in
-# the toolkit may be available in the documentation.
-#
-# More info at http://etetoolkit.org. Contact: huerta@embl.de
-#
-#
-# #END_LICENSE#############################################################
-#!/usr/bin/python
+#!/usr/bin/python3
+
 """
-this module defines the evolutionary Model that can be linked
+This module defines the evolutionary Model that can be linked
 to phylogeny, and computed by one of codeml, gerp, slr.
 """
-from __future__ import absolute_import
+
 from re       import sub
 from warnings import warn
 
@@ -286,7 +249,7 @@ class Model:
             "CN+": "blue",
             "PS" : "orange",
             "PS+": "red"}
-        
+
         :returns: a list of colors dependending categories of sites that are among:
           - CN+ > 0.99 probabylity of beloging to conserved class of site
           - CN  > 0.95 probabylity of beloging to conserved class of site
@@ -315,7 +278,7 @@ class Model:
 
         :param val: type of estimation, can be BEB or NEB (only
            positive-selection models have BEB)
-        
+
         :returns: a list of categories among:
           - CN+ > 0.99 probabylity of beloging to conserved class of site
           - CN  > 0.95 probabylity of beloging to conserved class of site
@@ -374,4 +337,3 @@ Model.__doc__ = Model.__doc__ % \
                              for x in sorted(sorted(AVAIL.keys()),key=lambda x: \
                                 AVAIL[x]['typ'],
                                 reverse=True)]))
-
