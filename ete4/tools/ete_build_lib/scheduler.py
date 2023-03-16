@@ -1,44 +1,3 @@
-# #START_LICENSE###########################################################
-#
-#
-# This file is part of the Environment for Tree Exploration program
-# (ETE).  http://etetoolkit.org
-#
-# ETE is free software: you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# ETE is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
-# License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with ETE.  If not, see <http://www.gnu.org/licenses/>.
-#
-#
-#                     ABOUT THE ETE PACKAGE
-#                     =====================
-#
-# ETE is distributed under the GPL copyleft license (2008-2015).
-#
-# If you make use of ETE in published work, please cite:
-#
-# Jaime Huerta-Cepas, Joaquin Dopazo and Toni Gabaldon.
-# ETE: a python Environment for Tree Exploration. Jaime BMC
-# Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
-#
-# Note that extra references to the specific methods implemented in
-# the toolkit may be available in the documentation.
-#
-# More info at http://etetoolkit.org. Contact: huerta@embl.de
-#
-#
-# #END_LICENSE#############################################################
-from __future__ import absolute_import
-from __future__ import print_function
-
 import sys
 import os
 import signal
@@ -81,7 +40,7 @@ def cmp_to_key(mycmp):
         def __ne__(self, other):
             return mycmp(self.obj, other.obj) != 0
     return K
-    
+
 def debug(_signal, _frame):
     import pdb
     pdb.set_trace()
@@ -281,7 +240,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
                                     if execution:
                                         with open(pjoin(GLOBALS[task.configid]["_outpath"], "commands.log"), "a") as CMD_LOGGER:
                                             print('\t'.join([task.tname, task.taskid, j.jobname, j.jobid, j.get_launch_cmd()]), file=CMD_LOGGER)
-                                            
+
                                         job_queue.put([j.jobid, j.cores, cmd, j.status_file])
                                 BUG.add(j.jobid)
 
@@ -412,7 +371,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
                     main_tree.write(outfile=final_tree_file+".nw", properties=None)
                     main_tree.write(outfile=final_tree_file+ ".nwx", properties=None,
                                     format_root_node=True)
-                    if (main_tree.props.get('tree_phylip_alg')): 
+                    if (main_tree.props.get('tree_phylip_alg')):
                         log.log(28, "Writing final tree alignment @@13:%s@@1:\n   %s",
                                 threadname, final_tree_file+".used_alg.fa")
 
@@ -423,8 +382,8 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
                             print(">%s\n%s" %(realname, seq), file=OUT)
                         OUT.close()
 
-                    
-                    if (main_tree.props.get('alg_path')): 
+
+                    if (main_tree.props.get('alg_path')):
                         log.log(28, "Writing root node alignment @@13:%s@@1:\n   %s",
                                 threadname, final_tree_file+".fa")
 
@@ -435,7 +394,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
                             print(">%s\n%s" %(realname, seq), file=OUT)
                         OUT.close()
 
-                    if (main_tree.props.get('clean_alg_path')): 
+                    if (main_tree.props.get('clean_alg_path')):
                         log.log(28, "Writing root node trimmed alignment @@13:%s@@1:\n   %s",
                                 threadname, final_tree_file+".trimmed.fa")
 
@@ -567,7 +526,7 @@ def background_job_launcher(job_queue, run_detached, schedule_time, max_cores):
                 waiting_jobs = job_queue.qsize() + len(pending_jobs)
             except NotImplementedError: # OSX does not support qsize
                 waiting_jobs = len(pending_jobs)
-                
+
             log.log(28, "@@8:Launched@@1: %s jobs. %d(R), %s(W). Cores usage: %s/%s",
                     launched, len(running_jobs), waiting_jobs, cores_used, max_cores)
             for _d in dups:
@@ -655,7 +614,7 @@ def launch_detached(cmd):
     if pid1 == 0:
         pid2 = os.fork()
 
-        if pid2 == 0:	
+        if pid2 == 0:
             os.setsid()
             pid3 = os.fork()
             if pid3 == 0:
@@ -678,4 +637,3 @@ def launch_detached(cmd):
             os._exit(0)
     else:
         return
-

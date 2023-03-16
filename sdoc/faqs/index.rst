@@ -3,71 +3,65 @@ Frequently Asked Questions (FAQs)
 .. contents::
 
 
-General 
-============
+General
+=======
 
 How do I use ETE?
------------------------------------------------------------------
+-----------------
 
-From 2.1 version, ETE includes a basic standalone program that can be
-used to quickly visualize your trees. Type ``ete3`` in a terminal to
-access the program. For instance:
+ETE includes a basic standalone program that can be used to quickly
+visualize your trees. Type ``ete4 explore -t`` in a terminal to access
+the program. For instance:
 
-  ``# ete3 "((A,B),C);"``
+  ``ete4 explore -t "((A,B),C);"``
 
-or 
+or
 
-  ``# ete3 mytreefile.nw``
+  ``ete4 explore -t mytreefile.nw``
 
 
-However, ETE is not a standalone program. The ``ete3`` script is a
+However, ETE is not a standalone program. The ``ete4`` script is a
 very simple implementation and does not allow for fancy
 customization. The main goal of ETE is to provide a Python programming
 library, so you can create your own scripts to manipulate and
-visualize phylogenetic trees. Many examples are available `here
-<http:://etetoolkit.org/releases/ete3/examples-ete3.tar.gz>`_ and
+visualize phylogenetic trees. Many examples are available
 along with the ETE tutorial.
 
 
 Tree Browsing
-===============
+=============
 
 
 How do I find a leaf by its name?
------------------------------------------------------------------
-You can use the :func:`TreeNode.search_nodes` function: 
+---------------------------------
 
-:: 
-  
-  matching_nodes = tree.search_nodes(name="Tip1")
-  
-Or use the following shortcut (not that it assumes no duplicated
-names)
+You can use the following shortcut (note that it assumes no duplicated
+names):
 
-:: 
+::
 
   node = tree&"Tip1"
 
 How do I visit all nodes within a tree?
------------------------------------------
+---------------------------------------
 
 There are many ways, but this is the easiest one:
 
-:: 
+::
 
   for node in t.traverse():
-      print node.name
+      print(node.name)
 
 Can I control the order in which nodes are visited?
------------------------------------------------------
+---------------------------------------------------
 
 Yes, currently 3 strategies are implemented: pre-order, post-order and
 level-over. You can check the differences at
-http://packages.python.org/ete3/tutorial/tutorial_trees.html#traversing-browsing-trees
-      
+http://packages.python.org/ete4/tutorial/tutorial_trees.html#traversing-browsing-trees
+
 
 What's the difference between :func:`Tree.get_leaves` and :func:`Tree.iter_leaves`?
---------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------
 
 All methods starting with :attr:`get_` (i.e. get_leaves,
 get_descendants, etc.) return an independent list of items. This means
@@ -93,13 +87,13 @@ traversing operations don't need to be repeated:
   #
   for n in nodes_in_preorder:
       pass # Do something else
-  
+
 
 Reading and writing tree
-===========================
+========================
 
 How do I load a tree with internal node names?
------------------------------------------------
+----------------------------------------------
 
 Newick format can be slightly different across programs. ETE allows to
 read and write several newick subformats, including support for
@@ -120,18 +114,18 @@ internal node labeling:
   7        leaf branches + all names                       ((D:0.723274,F:0.567784)E,(B:0.279326,H:0.756049)B);
   8        all names                                       ((D,F)E,(B,H)B);
   9        leaf names                                      ((D,F),(B,H));
-  100      topology only                                   ((,),(,)); 
+  100      topology only                                   ((,),(,));
   ======  ============================================== =========================================================================================
 
 In order to load (or write) a tree with internal node names, you can
 specify format 1:
 
-:: 
-   
-   from ete3 import Tree
-   t = Tree("myTree.nw", format=1)
+::
 
-   t.write(format=1)
+  from ete4 import Tree
+  t = Tree("myTree.nw", format=1)
+
+  t.write(format=1)
 
 
 How do I export tree node annotations using the Newick format?
@@ -143,31 +137,31 @@ when calling tree.write() function. For instance:
 
 ::
 
-   tree.write(features=["name", "dist"])
+  tree.write(features=["name", "dist"])
 
 If you want all node features to be exported in the newick string, use
 "features=[]":
 
 ::
 
-   tree.write(features=[])
+  tree.write(features=[])
 
 
 
 Tree visualization
-===================
+==================
 
 Can ETE draw circular trees?
-----------------------------------
+----------------------------
 
 Yes, starting from version 2.1, ete can render trees in circular
 mode. Install the latest version from
-http://pypi.python.org/pypi/ete3 or by executing ``easy_install -U
-ete3``.
+http://pypi.python.org/pypi/ete4 or by executing ``easy_install -U
+ete4``.
 
 
 What are all these dotted lines that appear in my circular trees?
--------------------------------------------------------------------
+-----------------------------------------------------------------
 
 Opposite to other popular visualization software, ETE's drawing engine
 will try by all means to avoid overlaps among lines and all other
@@ -189,26 +183,26 @@ the optimal one will be used.
 
 
 Why some circular trees are too large?
--------------------------------------------------------------------
+--------------------------------------
 
 In order to avoid overlaps among elements of the tree (i.e. node
 faces), ETE will expand branch lengths until the desired layout is
-fully satisfied. 
+fully satisfied.
 
 
 How do I export tree images as SVG
------------------------------------------------------------------
+----------------------------------
 
 Image format is automatically detected from the filename extension.
 The following code will automatically render the tree as a vector
 image.
 
 ::
-                
-        tree.render("mytree.svg")
+
+ tree.render("mytree.svg")
 
 How do I visualize internal node names?
-----------------------------------------
+---------------------------------------
 
 You will need to change the default tree layout. By creating your
 custom layout functions, you will be able to add, remove or modify
@@ -217,31 +211,31 @@ almost any element of the tree image.
 A basic example would read as follow:
 
 ::
-    
-    from ete3 import Tree, faces, AttrFace, TreeStyle
-     
+
+    from ete4 import Tree, faces, AttrFace, TreeStyle
+
     def my_layout(node):
         if node.is_leaf():
              # If terminal node, draws its name
              name_face = AttrFace("name")
-        else:                
+        else:
              # If internal node, draws label with smaller font size
              name_face = AttrFace("name", fsize=10)
         # Adds the name face to the image at the preferred position
         faces.add_face_to_node(name_face, node, column=0, position="branch-right")
-     
+
     ts = TreeStyle()
     # Do not add leaf names automatically
     ts.show_leaf_name = False
-    # Use my custom layout 
+    # Use my custom layout
     ts.layout_fn = my_layout
-         
+
     t = Tree("((B,(E,(A,G)M1_t1)M_1_t2)M2_t3,(C,D)M2_t1)M2_t2;", format=8)
     # Tell ETE to use your custom Tree Style
     t.show(tree_style=ts)
 
-Can the visualization of trees with very unbalanced tree branches be improved? 
---------------------------------------------------------------------------------
+Can the visualization of trees with very unbalanced tree branches be improved?
+------------------------------------------------------------------------------
 
 Yes, the experience of visualizing trees with extreme differences in
 branch lengths can be improved in several ways.
@@ -250,13 +244,13 @@ branch lengths can be improved in several ways.
 branches in your tree to make all nodes to end at the same length.
 
 ::
-   
-    from ete3 import Tree, TreeStyle
 
-    t = Tree()
-    t.populate(50, random_branches=True)
-    t.convert_to_ultrametric()
-    t.show()
+  from ete4 import Tree, TreeStyle
+
+  t = Tree()
+  t.populate(50, random_branches=True)
+  t.convert_to_ultrametric()
+  t.show()
 
 
 2) You can enable the :attr:`force_topology` option in
@@ -265,14 +259,11 @@ the tree drawing engine (Note that in this case, actual tree branches
 are not modified)
 
 ::
-   
-    from ete3 import Tree, TreeStyle
 
-    t = Tree()
-    t.populate(50, random_branches=True)
-    ts = TreeStyle()
-    ts.force_topology = True
-    t.show(tree_style=ts)
+  from ete4 import Tree, TreeStyle
 
-
-
+  t = Tree()
+  t.populate(50, random_branches=True)
+  ts = TreeStyle()
+  ts.force_topology = True
+  t.show(tree_style=ts)

@@ -1,42 +1,3 @@
-# #START_LICENSE###########################################################
-#
-#
-# This file is part of the Environment for Tree Exploration program
-# (ETE).  http://etetoolkit.org
-#
-# ETE is free software: you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# ETE is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
-# License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with ETE.  If not, see <http://www.gnu.org/licenses/>.
-#
-#
-#                     ABOUT THE ETE PACKAGE
-#                     =====================
-#
-# ETE is distributed under the GPL copyleft license (2008-2015).
-#
-# If you make use of ETE in published work, please cite:
-#
-# Jaime Huerta-Cepas, Joaquin Dopazo and Toni Gabaldon.
-# ETE: a python Environment for Tree Exploration. Jaime BMC
-# Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
-#
-# Note that extra references to the specific methods implemented in
-# the toolkit may be available in the documentation.
-#
-# More info at http://etetoolkit.org. Contact: huerta@embl.de
-#
-#
-# #END_LICENSE#############################################################
-from __future__ import absolute_import
 from os.path import join as pjoin
 import logging
 from collections import defaultdict
@@ -120,7 +81,7 @@ class ConcatAlg(ConcatAlgTask):
                     alg_seqtypes.add(job.seqtype)
                 else:
                     alg_seqtypes.add("nt")
-                    
+
                 dataid = db.get_dataid(tid, datatype)
                 job2alg[job.nodeid] = db.get_data(dataid)
             elif job.ttype == "acleaner":
@@ -131,7 +92,7 @@ class ConcatAlg(ConcatAlgTask):
                     clean_alg_seqtypes.add(job.seqtype)
                 else:
                     clean_alg_seqtypes.add("nt")
-                    
+
                 dataid = db.get_dataid(tid, datatype)
                 job2acleaner[job.nodeid] = db.get_data(dataid)
             elif job.ttype == "mchooser":
@@ -147,26 +108,26 @@ class ConcatAlg(ConcatAlgTask):
             log.warning("Concatenating alignments")
             self.job2alg = job2alg
             seqtypes = alg_seqtypes
-                
+
         if len(seqtypes) > 1:
             raise TaskError("Mixed nt/aa concatenated alignments not yet supported")
         else:
             seqtype = seqtypes.pop()
 
         log.warning("Using %s concatenated alignment" %seqtype)
-            
+
         if seqtype == "aa":
             self.default_model = self.conf[self.confname]["_default_aa_model"]
         elif seqtype == "nt":
-            self.default_model = self.conf[self.confname]["_default_nt_model"]            
-        self.seqtype = seqtype            
+            self.default_model = self.conf[self.confname]["_default_nt_model"]
+        self.seqtype = seqtype
 
         if self.cog_ids - set(self.job2alg):
             log.error("Missing %s algs", len(self.cog_ids -
                                              set(self.job2alg)))
             missing = self.cog_ids - set(self.job2alg)
             raise TaskError(self, "Missing algs (%d): i.e. %s" %(len(missing),missing[:10]))
-        
+
         alg_data = [(self.job2alg[nid],
                      self.job2model.get(nid, self.default_model))
                     for nid in self.job2alg]
@@ -289,5 +250,3 @@ def get_concatenated_alg(alg_filenames, models=None,
     if seq_sizes[0] != expected_total_length:
         raise Exception("The size of concatenated alg is not what expected")
     return concat, partitions, sp2alg, valid_species, concat_alg_lengths
-
-

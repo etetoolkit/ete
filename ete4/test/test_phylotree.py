@@ -1,42 +1,26 @@
-from __future__ import absolute_import
-from __future__ import print_function
 import unittest
 
 from .. import PhyloTree, SeqGroup
 from .datasets import *
 
+# Tree used by the tests.
+example_tree = '((Dme_001,Dme_002),(((Cfa_001,Mms_001),((((Hsa_001,Hsa_003),Ptr_001),Mmu_001),((Hsa_004,Ptr_004),Mmu_004))),(Ptr_002,(Hsa_002,Mmu_002))));'
+#   ╭───┬╴Dme_001
+#   │   ╰╴Dme_002
+#   │       ╭───┬╴Cfa_001
+#───┤       │   ╰╴Mms_001
+#   │   ╭───┤           ╭───┬╴Hsa_001
+#   │   │   │       ╭───┤   ╰╴Hsa_003
+#   │   │   │   ╭───┤   ╰╴Ptr_001
+#   ╰───┤   ╰───┤   ╰╴Mmu_001
+#       │       │   ╭───┬╴Hsa_004
+#       │       ╰───┤   ╰╴Ptr_004
+#       │           ╰╴Mmu_004
+#       ╰───┬╴Ptr_002
+#           ╰───┬╴Hsa_002
+#               ╰╴Mmu_002
+
 class Test_phylo_module(unittest.TestCase):
-
-    # ALL TESTS USE THIS EXAMPLE TREE
-    #
-    #                    /-Dme_001
-    #          /--------|
-    #         |          \-Dme_002
-    #         |
-    #         |                              /-Cfa_001
-    #         |                    /--------|
-    #         |                   |          \-Mms_001
-    #         |                   |
-    #---------|                   |                                        /-Hsa_001
-    #         |                   |                              /--------|
-    #         |          /--------|                    /--------|          \-Hsa_003
-    #         |         |         |                   |         |
-    #         |         |         |          /--------|          \-Ptr_001
-    #         |         |         |         |         |
-    #         |         |         |         |          \-Mmu_001
-    #         |         |          \--------|
-    #          \--------|                   |                    /-Hsa_004
-    #                   |                   |          /--------|
-    #                   |                    \--------|          \-Ptr_004
-    #                   |                             |
-    #                   |                              \-Mmu_004
-    #                   |
-    #                   |          /-Ptr_002
-    #                    \--------|
-    #                             |          /-Hsa_002
-    #                              \--------|
-    #                                        \-Mmu_002
-
 
     def test_link_alignmets(self):
         """ Phylotree can be linked to SeqGroup objects"""
@@ -85,7 +69,7 @@ class Test_phylo_module(unittest.TestCase):
         """ Tests ortholgy prediction using the sp overlap"""
         # Creates a gene phylogeny with several duplication events at
         # different levels.
-        t = PhyloTree('((Dme_001,Dme_002),(((Cfa_001,Mms_001),((((Hsa_001,Hsa_003),Ptr_001),Mmu_001),((Hsa_004,Ptr_004),Mmu_004))),(Ptr_002,(Hsa_002,Mmu_002))));')
+        t = PhyloTree(example_tree)
 
         # Scans the tree using the species overlap algorithm and detect all
         # speciation and duplication events
@@ -196,7 +180,7 @@ class Test_phylo_module(unittest.TestCase):
         """ Tests ortholgy prediction using sp overlap"""
         # Creates a gene phylogeny with several duplication events at
         # different levels.
-        t = PhyloTree('((Dme_001,Dme_002),(((Cfa_001,Mms_001),((((Hsa_001,Hsa_003),Ptr_001),Mmu_001),((Hsa_004,Ptr_004),Mmu_004))),(Ptr_002,(Hsa_002,Mmu_002))));')
+        t = PhyloTree(example_tree)
 
         # Scans the tree using the species overlap algorithm
         seed = t.search_nodes(name="Hsa_001")[0]
@@ -308,14 +292,14 @@ class Test_phylo_module(unittest.TestCase):
         # gene loss, duplication, etc.
         expected_recon = "((Dme_001:1,Dme_002:1)1:1[&&NHX:evoltype=D],(((Cfa_001:1,Mms_001:1)1:1[&&NHX:evoltype=S],((Hsa_001:1,Ptr_001:1)1:1[&&NHX:evoltype=S],Mmu_001:1)1:1[&&NHX:evoltype=S])1:1[&&NHX:evoltype=S],((Mms:1[&&NHX:evoltype=L],Cfa:1[&&NHX:evoltype=L])1:1[&&NHX:evoltype=L],(((Hsa:1[&&NHX:evoltype=L],Ptr_002:1)1:1[&&NHX:evoltype=L],Mmu:1[&&NHX:evoltype=L])1:1[&&NHX:evoltype=L],((Ptr:1[&&NHX:evoltype=L],Hsa_002:1)1:1[&&NHX:evoltype=L],Mmu_002:1)1:1[&&NHX:evoltype=S])1:1[&&NHX:evoltype=D])1:1[&&NHX:evoltype=L])1:1[&&NHX:evoltype=D])[&&NHX:evoltype=S];"
 
-        self.assertEqual(recon_tree.write(properties=["evoltype"], format=9), 
+        self.assertEqual(recon_tree.write(properties=["evoltype"], format=9),
                          PhyloTree(expected_recon).write(properties=["evoltype"],format=9))
 
     def test_miscelaneus(self):
         """ Test several things """
         # Creates a gene phylogeny with several duplication events at
         # different levels.
-        t = PhyloTree('((Dme_001,Dme_002),(((Cfa_001,Mms_001),((((Hsa_001,Hsa_003),Ptr_001),Mmu_001),((Hsa_004,Ptr_004),Mmu_004))),(Ptr_002,(Hsa_002,Mmu_002))));')
+        t = PhyloTree(example_tree)
 
         # Create a dictionary with relative ages for the species present in
         # the phylogenetic tree.  Note that ages are only relative numbers to

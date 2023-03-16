@@ -37,7 +37,7 @@ function init_menus(trees) {
 
 
 function create_menu_basic(menu, trees) {
-    
+
     // trees
     if (trees.length > 1) {
         const options = trees.reduce((opt, t) => ({ ...opt, [t]: t }), {});
@@ -56,11 +56,11 @@ function create_menu_basic(menu, trees) {
         .on("change", on_drawer_change);
 
     // min collapse size
-    menu.addInput(view, "min_size", { label: "collapse", 
+    menu.addInput(view, "min_size", { label: "collapse",
         min: 1, max: 100, step: 1 }).on("change", update);
 
     // ultrametric
-    menu.addInput(view, "ultrametric", { label: "ultrametric" }).on("change", 
+    menu.addInput(view, "ultrametric", { label: "ultrametric" }).on("change",
         async () => {
             await api(`/trees/${get_tid()}/ultrametric`);
             update();
@@ -79,7 +79,7 @@ function create_menu_basic(menu, trees) {
     // tree scale legend
     menu.addInput(view.tree_scale, "show", { label: "show tree scale legend" })
         .on("change", draw_tree_scale);
-    
+
     // tooltip
     menu.addInput(view.tooltip, "auto", { label: "tooltip on hover" });
 
@@ -97,7 +97,7 @@ function create_menu_basic(menu, trees) {
         set_boxes_clickable(!view.select_text);
     });
 
-    // upload 
+    // upload
     if (view.upload)
         menu.addButton({ title: "upload" }).on("click", view.upload);
 
@@ -105,7 +105,7 @@ function create_menu_basic(menu, trees) {
     const folder_download = menu.addFolder({ title: "Download",
                                                     expanded: false });
     folder_download.addButton({ title: "newick" }).on("click", view.download.newick);
-    folder_download.addButton({ title: "html" }).on("click", view.download.svg);
+    folder_download.addButton({ title: "svg" }).on("click", view.download.svg);
     folder_download.addButton({ title: "pdf" }).on("click", view.download.pdf);
 
     //menu.addButton({ title: "share view" }).on("click", view.share_view);
@@ -156,9 +156,9 @@ function add_folder_circular(menu) {
     }
     folder_circ.addInput(view, "rmin", { label: "min radius",
         format: v => v.toFixed(4) }).on("change", update_with_minimap);
-    folder_circ.addInput(view.angle, "min", { label: "min angle", 
+    folder_circ.addInput(view.angle, "min", { label: "min angle",
         min: -180, max: 180, step: 1 }).on("change", update_with_minimap);
-    folder_circ.addInput(view.angle, "max", { label: "max angle", 
+    folder_circ.addInput(view.angle, "max", { label: "max angle",
         min: -180, max: 180, step: 1 }).on("change", update_with_minimap);
 
     //add_folder_style(menu);
@@ -169,11 +169,11 @@ function add_folder_circular(menu) {
 
 function create_menu_selection(menu) {
     // filled dynamically in collapsed.js and select.js
-    view.active.nodes.folder = menu.addFolder({ 
+    view.active.nodes.folder = menu.addFolder({
         title: `Active nodes (${view.active.nodes.nodes.length})` });
     add_folder_active("nodes");
 
-    view.active.clades.folder = menu.addFolder({ 
+    view.active.clades.folder = menu.addFolder({
         title: `Active clades (${view.active.clades.nodes.length})` });
     add_folder_active("clades");
 
@@ -225,16 +225,16 @@ function add_folder_searches(menu) {
 
 function add_folder_info(menu) {
     const folder_info = menu.addFolder({ title: "Info", expanded: false });
-    
-    menus.subtree = folder_info.addInput(view, "subtree", 
+
+    menus.subtree = folder_info.addInput(view, "subtree",
         { value: view.subtree }).on("change", on_tree_change);
-    
+
     const folder_nodes = folder_info.addFolder({ title: "Nodes", expanded: true });
-    folder_nodes.addMonitor(view, "nnodes", 
+    folder_nodes.addMonitor(view, "nnodes",
         { label: "visible", format: v => v.toFixed(0) });
-    folder_nodes.addMonitor(view, "tnodes", 
+    folder_nodes.addMonitor(view, "tnodes",
         { label: "total", view: "text" });
-    folder_nodes.addMonitor(view, "tleaves", 
+    folder_nodes.addMonitor(view, "tleaves",
         { label: "leaves", format: v => v.toFixed(0) });
 
     folder_info.addButton({ title: "show details" })
@@ -256,12 +256,12 @@ function add_folder_zoom(menu) {
     const folder_zoom = menu.addFolder({ title: "Zoom", expanded: false });
 
     folder_zoom.addInput(view.zoom, "x", {
-        label: "Adjust zoom x", 
+        label: "Adjust zoom x",
         format: v => v.toFixed(1),
         min: 1, max: div_tree.offsetWidth / view.tree_size.width }).on("change", update);
 
     folder_zoom.addInput(view.zoom, "a", {
-        label: "Adjust zoom a", 
+        label: "Adjust zoom a",
         format: v => v.toFixed(1),
         min: 1, max: div_tree.offsetWidth / view.tree_size.width }).on("change", update);
 
@@ -286,7 +286,7 @@ function set_boxes_clickable(clickable) {
 function add_folder_style(menu) {
     const folder_style = menu.addFolder({ title: "Style", expanded: false });
 
-    const folder_node = folder_style.addFolder({ title: "Node", 
+    const folder_node = folder_style.addFolder({ title: "Node",
                                                  expaded: false });
 
     const folder_box = folder_node.addFolder({ title: "Box", expanded: false });
@@ -435,7 +435,7 @@ function add_folder_tree_scale(menu) {
     const folder_scale = menu.addFolder(
         { title: "Tree scale legend", expanded: false });
 
-    folder_scale.addInput(view.tree_scale, "length", 
+    folder_scale.addInput(view.tree_scale, "length",
         { label: "width (px)", min: 10, max: 300 })
         .on("change", draw_tree_scale);
 
@@ -443,7 +443,7 @@ function add_folder_tree_scale(menu) {
         .on("change", draw_tree_scale);
 
     folder_scale.addInput(view.tree_scale, "show")
-        .on("change", draw_tree_scale); 
+        .on("change", draw_tree_scale);
 }
 
 
@@ -451,29 +451,29 @@ function add_folder_aligned(menu) {
     const folder_aligned = menu.addFolder(
         { title: "Aligned panel", expanded: false });
 
-    folder_aligned.addInput(view.aligned, "timeout", 
+    folder_aligned.addInput(view.aligned, "timeout",
         { label: "Refresh rate (ms)", min: 0, max: 1000 });
 
 
-    folder_aligned.addInput(view.aligned, "adjust_zoom", 
+    folder_aligned.addInput(view.aligned, "adjust_zoom",
         { label: "adjust zoom" });
 
-    folder_aligned.addInput(view.aligned.header, "show", 
+    folder_aligned.addInput(view.aligned.header, "show",
         { label: "show header" })
         .on("change",() => draw_aligned());
 
-    folder_aligned.addInput(view.aligned.footer, "show", 
+    folder_aligned.addInput(view.aligned.footer, "show",
         { label: "show footer" })
         .on("change",() => draw_aligned());
 
-    folder_aligned.addInput(view.aligned, "pos", { label: "position", 
+    folder_aligned.addInput(view.aligned, "pos", { label: "position",
                                                  min: 0, max: 100 })
         .on("change", () => div_aligned.style.width = `${100 - view.aligned.pos}%`);
 
     folder_aligned.addInput(view.aligned, "adjust_pos", { label: "adjust position" })
         .on("change", () => update_aligned_panel_display());
 
-    folder_aligned.addInput(view.aligned, "padding", { label: "padding from tree", 
+    folder_aligned.addInput(view.aligned, "padding", { label: "padding from tree",
                                                  min: 0, max: 600 })
         .on("change", () => update_aligned_panel_display());
 }

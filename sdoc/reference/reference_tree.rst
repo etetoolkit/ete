@@ -1,10 +1,10 @@
 Master Tree class
 ==================================
 
-.. currentmodule:: ete3
+.. currentmodule:: ete4
 
-.. autoclass:: ete3.TreeNode
+.. autoclass:: ete4.Tree
    :members:
-   :no-undoc-members: 
+   :no-undoc-members:
 
-.. autoclass:: ete3.Tree
+.. autoclass:: ete4.Tree

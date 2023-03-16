@@ -1,9 +1,9 @@
 PhylomeDB3 Connector
 ==================================
 
-.. currentmodule:: ete3
+.. currentmodule:: ete4
 
-.. autoclass:: ete3.PhylomeDB3Connector
+.. autoclass:: ete4.PhylomeDB3Connector
    :inherited-members:
    :members:
-   :no-undoc-members: 
+   :no-undoc-members:

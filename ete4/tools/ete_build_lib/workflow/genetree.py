@@ -1,42 +1,3 @@
-# #START_LICENSE###########################################################
-#
-#
-# This file is part of the Environment for Tree Exploration program
-# (ETE).  http://etetoolkit.org
-#
-# ETE is free software: you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# ETE is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
-# License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with ETE.  If not, see <http://www.gnu.org/licenses/>.
-#
-#
-#                     ABOUT THE ETE PACKAGE
-#                     =====================
-#
-# ETE is distributed under the GPL copyleft license (2008-2015).
-#
-# If you make use of ETE in published work, please cite:
-#
-# Jaime Huerta-Cepas, Joaquin Dopazo and Toni Gabaldon.
-# ETE: a python Environment for Tree Exploration. Jaime BMC
-# Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
-#
-# Note that extra references to the specific methods implemented in
-# the toolkit may be available in the documentation.
-#
-# More info at http://etetoolkit.org. Contact: huerta@embl.de
-#
-#
-# #END_LICENSE#############################################################
-from __future__ import absolute_import
 import re
 from subprocess import check_output
 import logging
@@ -257,7 +218,7 @@ def process_task(task, wkname, npr_conf, nodeid2info):
         nodeid2info[nodeid]["size"] = task.size
         nodeid2info[nodeid]["target_seqs"] = task.target_seqs
         nodeid2info[nodeid]["out_seqs"] = task.out_seqs
-        
+
         if alignerclass:
             alg_task = alignerclass(nodeid, task.multiseq_file,
                                     seqtype, conf, alignerconf)
@@ -265,7 +226,7 @@ def process_task(task, wkname, npr_conf, nodeid2info):
             log.warning("Skipping alignment phase, using original sequences")
             alg_task = ManualAlg(nodeid, task.multiseq_file,
                                  seqtype, conf, alignerconf)
-            
+
         alg_task.size = task.size
         new_tasks.append(alg_task)
 
@@ -370,17 +331,17 @@ def process_task(task, wkname, npr_conf, nodeid2info):
                         open(source_alg, "w").write(db.get_task_data(taskid, DATATYPES.alg_fasta))
 
                     nt_alg = switch_to_codon(source_alg, kept_columns=kept_columns)
-                    
+
                     db.add_task_data(taskid, DATATYPES.alg_nt_fasta, nt_alg.write())
                     db.add_task_data(taskid, DATATYPES.alg_nt_phylip, nt_alg.write(format='iphylip_relaxed'))
 
                 npr_conf = IterConfig(conf, wkname, task.size, "nt")
                 seqtype = "nt"
-                
+
                 # This is necessary for connecting to supermatrix workflows
                 task.alg_nt_fasta_file = alg_fasta_file
                 task.alg_nt_phylip_file = alg_phylip_file
-                    
+
 
             if mtesterclass:
                 next_task = mtesterclass(nodeid, alg_fasta_file,

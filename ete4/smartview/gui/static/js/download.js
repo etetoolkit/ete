@@ -4,7 +4,7 @@ import { view, menus, get_tid } from "./gui.js";
 import { api } from "./api.js";
 import { apps } from "./pixi.js";
 
-export { download_newick, download_seqs, download_image, download_svg, download_pdf };
+export { download_newick, download_seqs, download_svg, download_pdf };
 
 
 
@@ -38,7 +38,7 @@ function getElementToDownload() {
         container.style.width = "auto";
         container.replaceChild(img, container.children[0]);
     });
-    
+
     // Remove foreground nodeboxes for faster rendering
     // (Background nodes not excluded as they are purposely styled)
     Array.from(element.getElementsByClassName("fg_node")).forEach(e => e.remove());
@@ -52,10 +52,10 @@ function getElementToDownload() {
 // Download a file with the current view of the tree as a svg+xml.
 function download_svg() {
     const svg = getElementToDownload();
-    apply_css(svg, document.styleSheets[0]);
+    apply_css(svg);
     const svg_xml = (new XMLSerializer()).serializeToString(svg);
     const content = "data:image/svg+xml;base64," + btoa(svg_xml);
-    download(view.tree + ".html", content);
+    download(view.tree + ".svg", content);
 }
 
 
@@ -129,7 +129,7 @@ function download_pdf() {
             y += 80;
         });
     }
-    
+
     const element = getElementToDownload();
     const box = div_viz.getBoundingClientRect();
     const doc = new PDFDocument({ size: [ box.width * 3/4, box.height * 3/4 ] });
@@ -188,32 +188,14 @@ function download_pdf() {
 }
 
 
-// Download a file with the current view of the tree as a png.
-function download_image() {
-    // dom-to-image dependency
-    domtoimage
-        .toPng(div_viz, {
-            filter: node =>
-            // Remove foreground nodeboxes for faster rendering
-            // (Background nodes not excluded as they are purposely styled)
-            !(node.classList && [...node.classList].includes("fg_node"))
-        })
-        .then(content => download(view.tree + ".png", content));
+// Apply CSS rules to the elements in the given container.
+function apply_css(container) {
+    const style = document.createElement("style");
+    const rules = Array.from(document.styleSheets[0].rules);
+    style.innerHTML = rules.map(r => r.cssText).join("\n");
+    container.appendChild(style);
 }
 
-
-// Apply CSS rules to elements contained in a (cloned) container
-function apply_css(container, stylesheet) {
-    let styles = [];
-    Array.from(stylesheet.rules).forEach(r => {
-        const style = r.cssText;
-        if (style) 
-            styles.push(style);
-    })
-    const style_element = document.createElement("style");
-    style_element.innerHTML = styles.join("\n");
-    container.appendChild(style_element);
-}
 
 // Make the browser download a file.
 function download(fname, content, blob) {

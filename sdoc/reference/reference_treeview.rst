@@ -1,6 +1,6 @@
-.. module:: ete3.treeview
+.. module:: ete4.treeview
 
-Treeview module 
+Treeview module
 *************************
 
 .. contents::
@@ -8,15 +8,15 @@ Treeview module
 TreeStyle
 ====================
 
-.. autoclass:: ete3.TreeStyle
+.. autoclass:: ete4.TreeStyle
 
-.. autoclass:: ete3.FaceContainer
+.. autoclass:: ete4.FaceContainer
    :members:
 
 NodeStyle
 =====================
 
-.. autoclass:: ete3.NodeStyle
+.. autoclass:: ete4.NodeStyle
 
 
 Faces
@@ -24,63 +24,63 @@ Faces
 
 .. autofunction:: add_face_to_node
 
-.. autoclass:: ete3.Face
+.. autoclass:: ete4.Face
    :members:
    :no-undoc-members:
 
-.. autoclass:: ete3.TextFace
+.. autoclass:: ete4.TextFace
    :members:
    :no-undoc-members:
 
-.. autoclass:: ete3.AttrFace
+.. autoclass:: ete4.AttrFace
    :members:
    :no-undoc-members:
 
-.. autoclass:: ete3.ImgFace
+.. autoclass:: ete4.ImgFace
    :members:
    :no-undoc-members:
 
-.. autoclass:: ete3.CircleFace
+.. autoclass:: ete4.CircleFace
    :members:
    :no-undoc-members:
 
-.. autoclass:: ete3.RectFace
+.. autoclass:: ete4.RectFace
    :members:
    :no-undoc-members:
 
-.. autoclass:: ete3.StackedBarFace
+.. autoclass:: ete4.StackedBarFace
    :members:
    :no-undoc-members:
 
-.. autoclass:: ete3.SequenceFace
+.. autoclass:: ete4.SequenceFace
    :members:
    :no-undoc-members:
 
-.. autoclass:: ete3.SeqMotifFace
+.. autoclass:: ete4.SeqMotifFace
    :members:
    :no-undoc-members:
 
-.. autoclass:: ete3.BarChartFace
+.. autoclass:: ete4.BarChartFace
    :members:
    :no-undoc-members:
 
-.. autoclass:: ete3.PieChartFace
+.. autoclass:: ete4.PieChartFace
    :members:
    :no-undoc-members:
 
-.. autoclass:: ete3.ProfileFace
+.. autoclass:: ete4.ProfileFace
    :members:
    :no-undoc-members:
 
-.. autoclass:: ete3.TreeFace
+.. autoclass:: ete4.TreeFace
    :members:
    :no-undoc-members:
 
-.. autoclass:: ete3.StaticItemFace
+.. autoclass:: ete4.StaticItemFace
    :members:
    :no-undoc-members:
 
-.. autoclass:: ete3.DynamicItemFace
+.. autoclass:: ete4.DynamicItemFace
    :members:
    :no-undoc-members:
 
@@ -96,5 +96,3 @@ Color names
 .. py:data:: COLOR_SCHEMES
 
 .. autofunction:: random_color
-
-

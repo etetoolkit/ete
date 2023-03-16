@@ -21,7 +21,7 @@
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
 #
-# ETE is distributed under the GPL copyleft license (2008-2017)
+# ETE is distributed under the GPL copyleft license (2008-2023)
 #
 # If you make use of ETE in published work, please cite:
 #
