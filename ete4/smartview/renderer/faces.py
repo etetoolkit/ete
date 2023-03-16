@@ -1421,7 +1421,7 @@ class AlignmentFace(Face):
             seq = self.get_seq(sm_start, sm_end)
             sm_x = sm_x if drawer.TYPE == 'rect' else x0
             y, h = get_height(sm_x, y)
-            sm_box = Box(sm_x, y, posw * len(seq), h)
+            sm_box = Box(sm_x+sm_x0, y, posw * len(seq), h)
 
             if self.seq_format == 'compactseq' or posw * zx < self._min_fsize:
                 aa_type = "notext"
