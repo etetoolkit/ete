@@ -218,7 +218,7 @@ def parse_paml (pamout, model):
         model._tree._label_as_paml()
     # starts parsing
     for i, line in enumerate (all_lines):
-        if line is '\n':
+        if line == '\n':
             continue
         # codon frequency
         if line.startswith('Codon frequencies under model'):
@@ -342,6 +342,3 @@ def _get_labels_from_paml (tree, relations, pamout, model):
     branches = copy(model.branches)
     for b in model.branches:
         model.branches[b] = branches[old2new[b]]
-
-
-
