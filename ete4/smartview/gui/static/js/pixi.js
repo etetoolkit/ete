@@ -24,25 +24,40 @@ const aa = [
     '-'
 ];
 
+const gradients = [
+    'a', 'b', 'c',
+    'd', 'e', 'f',
+    'g', 'h', 'i',
+    'j', 'k', 'l',
+    'm', 'n', 'o',
+    'p', 'q', 'r', 
+    's', 't'
+];
 
 // Load texture atlas
 PIXI.Loader.shared
     .add(aa.map(a => ({name: `aa_notext_${a}`, url: `images/aa_notext/${a}.png`})))
     .add(aa.map(a => ({name: `aa_text_${a}`,   url: `images/aa_text/${a}.png`})))
+    .add(gradients.map(gradient => ({name: `gradients_${gradient}`, url: `images/gradients/${gradient}.png`})))
     .add("block", "images/block.png")
     .load(() => {
         const resources = PIXI.Loader.shared.resources;  // shortcut
 
         const textures_notext = {};
         const textures_text = {};
+        const textures_gradients = {};
         for (const a of aa) {
             textures_notext[a] = resources[`aa_notext_${a}`].texture;
             textures_text[a] = resources[`aa_text_${a}`].texture;
+        }
+        for (const gradient of gradients) {
+            textures_gradients[gradient] = resources[`gradients_${gradient}`].texture;
         }
 
         textures = {
             aa_notext: textures_notext,
             aa_text: textures_text,
+            gradients:textures_gradients,
             shapes: {
                 block: resources.block.texture,
             }
@@ -83,7 +98,7 @@ function draw(items, tl, zoom) {
         const [ el, box ] = [ seq[0], seq[1] ];
         const type = el.split("-")[1]
         const [ zx, zy ] = [ zoom.x, zoom.y ];
-        if (["aa_notext", "aa_text", "nt_notext", "nt_text"].includes(type))
+        if (["aa_notext", "aa_text", "nt_notext", "nt_text", 'gradients'].includes(type))
             draw_msa(seq[2], type, box, tl, zx, zy);
         else
             draw_shape(type, box, tl, zx, zy)
