@@ -1,7 +1,5 @@
 import re
 import os
-import six
-from six.moves import map
 
 __all__ = ["read_newick", "write_newick", "print_supported_formats"]
 
@@ -195,7 +193,7 @@ def read_newick(newick, root_node=None, format=0, quoted_names=False):
         from ..coretype.tree import Tree
         root_node = Tree()
 
-    if isinstance(newick, six.string_types):
+    if isinstance(newick, str):
 
         # try to determine whether the file exists.
         # For very large trees, if newick contains the content of the tree, rather than a file name,
