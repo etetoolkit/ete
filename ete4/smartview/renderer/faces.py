@@ -1416,7 +1416,12 @@ class AlignmentFace(Face):
                     by, bh = get_height(bx, y)
                     box = Box(bx, by, (bend + 1 - bstart) * posw, bh)
                     yield [ "pixi-block", box ]
-
+        elif self.seq_format == "gradients":
+            seq = self.get_seq(sm_start, sm_end)
+            sm_x = sm_x if drawer.TYPE == 'rect' else x0
+            y, h = get_height(sm_x, y)
+            sm_box = Box(sm_x+sm_x0, y, posw * len(seq), h)
+            yield [ f'pixi-gradients', sm_box, seq ]
         else:
             seq = self.get_seq(sm_start, sm_end)
             sm_x = sm_x if drawer.TYPE == 'rect' else x0
