@@ -19,6 +19,13 @@ and pick it from `./node_modules/sweetalert2/dist/sweetalert2.min.js`.
 
 * https://github.com/foliojs/pdfkit
 
+One can take it with:
+
+    npm install --save pdfkit
+
+pick it from `./node_modules/pdfkit/js`, and minify it with `minify
+pdfkit.standalone.js > pdfkit.standalone.min.js`.
+
 
 ## SVG to PDF
 
