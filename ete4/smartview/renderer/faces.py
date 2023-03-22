@@ -429,7 +429,7 @@ class RectFace(Face):
             ftype='sans-serif',
             tooltip=None,
             name="",
-            padding_x=0, padding_y=0, stroke=None, stroke_width=0):
+            padding_x=0, padding_y=0, stroke_color=None, stroke_width=0):
 
         Face.__init__(self, name=name, padding_x=padding_x, padding_y=padding_y)
 
@@ -445,6 +445,8 @@ class RectFace(Face):
         self.ftype = ftype
         self.min_fsize = min_fsize
         self.max_fsize = max_fsize
+        self.stroke_color = stroke_color
+        self.stroke_width = stroke_width
 
         self.tooltip = tooltip
 
@@ -549,7 +551,7 @@ class RectFace(Face):
         style = {
             'fill': self.color, 
             'opacity': self.opacity,
-            'stroke': self.stroke,
+            'stroke': self.stroke_color,
             'stroke_width': self.stroke_width
             }
         if self.text and circ_drawer:
