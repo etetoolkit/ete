@@ -25,6 +25,11 @@ DB_VERSION = 2
 DEFAULT_GTDBTAXADB = os.environ.get('XDG_DATA_HOME', os.environ['HOME'] + '/.local/share') + '/etetoolkit/gtdbtaxa.sqlite'
 DEFAULT_GTDBTAXADUMP = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'gtdbdump', 'gtdbr202dump.tar.gz')
 
+# TODO: Change DEFAULT_GTDBTAXADUMP and where it is used in
+# update_taxonomy_database and/or update_db, and download it whenever
+# it is appropriate from
+# https://github.com/etetoolkit/ete-data/raw/main/gtdbdump/gtdbr202dump.tar.gz
+
 def is_taxadb_up_to_date(dbfile=DEFAULT_GTDBTAXADB):
     """Check if a valid and up-to-date gtdbtaxa.sqlite database exists
     If dbfile= is not specified, DEFAULT_TAXADB is assumed
