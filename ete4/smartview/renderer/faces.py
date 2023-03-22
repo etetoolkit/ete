@@ -546,7 +546,7 @@ class RectFace(Face):
         self._check_own_variables()
 
         circ_drawer = drawer.TYPE == 'circ'
-         style = {
+        style = {
             'fill': self.color, 
             'opacity': self.opacity,
             'stroke': self.stroke,
