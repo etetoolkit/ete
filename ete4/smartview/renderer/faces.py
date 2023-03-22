@@ -429,7 +429,7 @@ class RectFace(Face):
             ftype='sans-serif',
             tooltip=None,
             name="",
-            padding_x=0, padding_y=0):
+            padding_x=0, padding_y=0, stroke=None, stroke_width=0):
 
         Face.__init__(self, name=name, padding_x=padding_x, padding_y=padding_y)
 
@@ -546,7 +546,12 @@ class RectFace(Face):
         self._check_own_variables()
 
         circ_drawer = drawer.TYPE == 'circ'
-        style = {'fill': self.color, 'opacity': self.opacity}
+         style = {
+            'fill': self.color, 
+            'opacity': self.opacity,
+            'stroke': self.stroke,
+            'stroke_width': self.stroke_width
+            }
         if self.text and circ_drawer:
             rect_id = get_random_string(10)
             style['id'] = rect_id
