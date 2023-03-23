@@ -443,16 +443,18 @@ def write_newick(rootnode, properties=None, format=1, format_root_node=True,
 
 def _get_features_string(node, features=None):
     """Return NHX extended newick string for the requested node features."""
-    # FIXME: What is the logic of this None vs []? Please someone explain.
     if features is None:
-        features = []
-    elif features == []:
-        features = sorted([k for k in node.props if not k.startswith('_')])
+        return ''  # special case: if not set, we write no extended string
 
-    string = ':'.join('%s=%s' % (k, _prop2text(node.props[k]))
-                      for k in features if k in node.props)
+    if not features:  # features == []
+        features = sorted(k for k in node.props  # special case: all node props
+                              if not k.startswith('_'))  # except _private
+        # TODO: Should we add...  and k not in ['name', 'dist', 'support']  ?
 
-    return f'[&&NHX:{string}]' if string else ''
+    pairs_str = ':'.join('%s=%s' % (k, _prop2text(node.props[k]))
+                            for k in features if k in node.props)
+
+    return f'[&&NHX:{pairs_str}]' if pairs_str else ''
 
 def _prop2text(prop):
     ptype = type(prop)
