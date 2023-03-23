@@ -2593,7 +2593,7 @@ def _ascii_art(node, show_internal=True, attributes=None, px=0, py=0, px0=0):
                                                             '─',
                                                             ' ')
             pos_first = mid
-            pos_last = len(lines) - py
+            pos_last = len(lines) - mid
         elif child == node.children[0]:   # first child
             lines += _add_prefix(lines_child, padding, mid, ' ',
                                                             '╭',
