@@ -101,9 +101,9 @@ NW_FORMAT = {
 def format_node(node, node_type, format, dist_formatter=None,
                 support_formatter=None, name_formatter=None,
                 quoted_names=False):
-    if dist_formatter is None: dist_formatter = FLOAT_FORMATTER
-    if support_formatter is None: support_formatter = FLOAT_FORMATTER
-    if name_formatter is None: name_formatter = NAME_FORMATTER
+    dist_formatter = dist_formatter or FLOAT_FORMATTER
+    support_formatter = support_formatter or FLOAT_FORMATTER
+    name_formatter = name_formatter or NAME_FORMATTER
 
     if node_type == "leaf":
         container1 = NW_FORMAT[format][0][0] # name
