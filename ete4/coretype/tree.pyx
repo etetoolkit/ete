@@ -373,14 +373,12 @@ cdef class Tree(object):
         Removes a child from this node (parent and child
         nodes still exit but are no longer connected).
         """
-        from ..smartview.renderer.gardening import update_sizes_from
         try:
             self.children.remove(child)
         except ValueError as e:
             raise TreeError("child not found")
         else:
             child.up = None
-            update_sizes_from(self)
             return child
 
     def remove_children(self):
@@ -1192,7 +1190,6 @@ cdef class Tree(object):
           structure that will be used as a basal node.
 
         """
-        from ..smartview.renderer.gardening import update_sizes_from
         outgroup = _translate_nodes(self, outgroup)
 
         if self == outgroup:
@@ -1266,8 +1263,6 @@ cdef class Tree(object):
         outgroup.dist = middist
         outgroup2.dist = middist
         outgroup2.support = outgroup.support
-
-        update_sizes_from(self)
 
     def unroot(self, mode='legacy'):
         """
