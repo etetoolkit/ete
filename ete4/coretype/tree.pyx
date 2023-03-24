@@ -305,22 +305,17 @@ cdef class Tree(object):
 
     # DEPRECATED #
     def add_feature(self, pr_name, pr_value):
-        """
-        Add or update a node's feature.
-        """
+        """Add or update a node's feature."""
         print("\nWARNING! add_feature is DEPRECATED use add_prop instead\n")
         self.add_prop(pr_name, pr_value)
 
     def add_features(self, **features):
-        """
-        Add or update several features. """
+        """Add or update several features."""
         print("\nWARNING! add_features is DEPRECATED use add_props instead\n")
         self.add_props(**features)
 
     def del_feature(self, pr_name):
-        """
-        Permanently deletes a node's feature.
-        """
+        """Permanently deletes a node's feature."""
         print("\nWARNING! del_feature is DEPRECATED use del_prop instead\n")
         self.del_prop(pr_name)
     # DEPRECATED #
