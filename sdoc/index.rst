@@ -17,9 +17,6 @@ Welcome to the ETE Toolkit documentation!
    tutorial/index
    reference/index
 
-   tools/index
-
-
 
 Indices and tables
 ==================

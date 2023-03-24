@@ -59,30 +59,27 @@ else:
 __all__ = ["EvolNode", "EvolTree"]
 
 def _parse_species(name):
-    '''
-    just to return specie name from fasta description
-    '''
-    return name[:3]
+    return name[:3]  # just to return specie name from fasta description
 
 class EvolNode(PhyloNode):
-    """ Re-implementation of the standart Tree instance. It adds
+    """Re-implementation of the standart Tree instance. It adds
     attributes and methods to work with phylogentic trees.
 
-    :argument newick: path to tree in newick format, can also be a string
-    :argument alignment: path to alignment, can also be a string.
-    :argument fasta alg_format: alignment format.
-    :argument sp_naming_function: function to infer species name.
-    :argument format: type of newick format
-    :argument binpath: path to binaries, in case codeml or SLR are not in global path.
-
+    :param newick: Path to tree in newick format, can also be a string
+    :param alignment: Path to alignment, can also be a string.
+    :param fasta alg_format: Alignment format.
+    :param sp_naming_function: Function to infer species name.
+    :param format: Type of newick format
+    :param binpath: Path to binaries, in case codeml or SLR are not in global path.
     """
 
     def __init__(self, newick=None, alignment=None, alg_format="fasta",
                  sp_naming_function=_parse_species, format=0,
-                  binpath='', **kwargs):
-        '''
-        freebranch: path to find codeml output of freebranch model.
-        '''
+                 binpath='', **kwargs):
+        """Initialize tree node.
+
+        :param freebranch: Path to find codeml output of freebranch model.
+        """
         # _update names?
         self.workdir = '/tmp/ete3-tmp/'
         if not binpath:
@@ -445,45 +442,45 @@ class EvolNode(PhyloNode):
 
 
     def get_most_likely(self, altn, null):
-        '''
-        Returns pvalue of LRT between alternative model and null model.
+        """Return pvalue of LRT between alternative model and null model.
 
-        usual comparison are:
+        Usual comparison are:
 
-        ============ ======= ===========================================
-         Alternative  Null    Test
-        ============ ======= ===========================================
-          M2          M1      PS on sites (M2 prone to miss some sites)
-                              (Yang 2000).
-          M3          M0      test of variability among sites
-          M8          M7      PS on sites
-                              (Yang 2000)
-          M8          M8a     RX on sites?? think so....
-          bsA         bsA1    PS on sites on specific branch
-                              (Zhang 2005)
-          bsA         M1      RX on sites on specific branch
-                              (Zhang 2005)
-          bsC         M1      different omegas on clades branches sites
-                              ref: Yang Nielsen 2002
-          bsD         M3      different omegas on clades branches sites
-                              (Yang Nielsen 2002, Bielawski 2004)
-          b_free      b_neut  foreground branch not neutral (w != 1)
-                               - RX if P<0.05 (means that w on frg=1)
-                               - PS if P>0.05 and wfrg>1
-                               - CN if P>0.05 and wfrg>1
-                               (Yang Nielsen 2002)
-          b_free      M0      different ratio on branches
-                              (Yang Nielsen 2002)
-        ============ ======= ===========================================
+        .. table::
 
-        **Note that M1 and M2 models are making reference to the new versions
-        of these models, with continuous omega rates (namely M1a and M2a in the
-        PAML user guide).**
+            =========== ======= ===========================================
+            Alternative  Null   Test
+            =========== ======= ===========================================
+            M2          M1      PS on sites (M2 prone to miss some sites)
+                                (Yang 2000).
+            M3          M0      test of variability among sites
+            M8          M7      PS on sites
+                                (Yang 2000)
+            M8          M8a     RX on sites?? think so....
+            bsA         bsA1    PS on sites on specific branch
+                                (Zhang 2005)
+            bsA         M1      RX on sites on specific branch
+                                (Zhang 2005)
+            bsC         M1      different omegas on clades branches sites
+                                ref: Yang Nielsen 2002
+            bsD         M3      different omegas on clades branches sites
+                                (Yang Nielsen 2002, Bielawski 2004)
+            b_free      b_neut  foreground branch not neutral (w != 1)
+                                - RX if P<0.05 (means that w on frg=1)
+                                - PS if P>0.05 and wfrg>1
+                                - CN if P>0.05 and wfrg>1
+                                (Yang Nielsen 2002)
+            b_free      M0      different ratio on branches
+                                (Yang Nielsen 2002)
+            =========== ======= ===========================================
 
-        :argument altn: model with higher number of parameters (np)
-        :argument null: model with lower number of parameters (np)
+        Note that M1 and M2 models are making reference to the new
+        versions of these models, with continuous omega rates (namely
+        M1a and M2a in the PAML user guide).
 
-        '''
+        :param altn: model with higher number of parameters (np).
+        :param null: model with lower number of parameters (np).
+        """
         altn = self.get_evol_model(altn)
         null = self.get_evol_model(null)
         if null.np > altn.np:
@@ -507,14 +504,14 @@ class EvolNode(PhyloNode):
             exit(self.get_most_likely.__doc__)
 
     def change_dist_to_evol(self, evol, model, fill=False):
-        '''
-        change dist/branch length of the tree to a given evolutionary
-        variable (dN, dS, w or bL), default is bL.
 
-        :argument evol: evolutionary variable
-        :argument model: Model object from which to retrieve evolutionary variables
-        :argument False fill: do not affects only dist parameter, each node will be annotated with all evolutionary variables (nodel.dN, node.w...).
-        '''
+        """Change dist/branch length of tree to a given evolutionary variable.
+
+        :param evol: Evolutionary variable (dN, dS, w, bL, by default bL).
+        :param model: Model obj from which to retrieve evolutionary variables.
+        :param fill: In addition to changing the dist parameter, annotate nodes
+            with all evolutionary variables (add to their props: dN, w...).
+        """
         # branch-site outfiles do not give specific branch info
         if not model.branches:
             return
