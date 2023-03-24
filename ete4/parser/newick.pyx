@@ -1,7 +1,5 @@
 import re
 import os
-import six
-from six.moves import map
 
 __all__ = ["read_newick", "write_newick", "print_supported_formats"]
 
@@ -103,9 +101,9 @@ NW_FORMAT = {
 def format_node(node, node_type, format, dist_formatter=None,
                 support_formatter=None, name_formatter=None,
                 quoted_names=False):
-    if dist_formatter is None: dist_formatter = FLOAT_FORMATTER
-    if support_formatter is None: support_formatter = FLOAT_FORMATTER
-    if name_formatter is None: name_formatter = NAME_FORMATTER
+    dist_formatter = dist_formatter or FLOAT_FORMATTER
+    support_formatter = support_formatter or FLOAT_FORMATTER
+    name_formatter = name_formatter or NAME_FORMATTER
 
     if node_type == "leaf":
         container1 = NW_FORMAT[format][0][0] # name
@@ -195,7 +193,7 @@ def read_newick(newick, root_node=None, format=0, quoted_names=False):
         from ..coretype.tree import Tree
         root_node = Tree()
 
-    if isinstance(newick, six.string_types):
+    if isinstance(newick, str):
 
         # try to determine whether the file exists.
         # For very large trees, if newick contains the content of the tree, rather than a file name,
@@ -445,16 +443,18 @@ def write_newick(rootnode, properties=None, format=1, format_root_node=True,
 
 def _get_features_string(node, features=None):
     """Return NHX extended newick string for the requested node features."""
-    # FIXME: What is the logic of this None vs []? Please someone explain.
     if features is None:
-        features = []
-    elif features == []:
-        features = sorted([k for k in node.props if not k.startswith('_')])
+        return ''  # special case: if not set, we write no extended string
 
-    string = ':'.join('%s=%s' % (k, _prop2text(node.props[k]))
-                      for k in features if k in node.props)
+    if not features:  # features == []
+        features = sorted(k for k in node.props  # special case: all node props
+                              if not k.startswith('_'))  # except _private
+        # TODO: Should we add...  and k not in ['name', 'dist', 'support']  ?
 
-    return f'[&&NHX:{string}]' if string else ''
+    pairs_str = ':'.join('%s=%s' % (k, _prop2text(node.props[k]))
+                            for k in features if k in node.props)
+
+    return f'[&&NHX:{pairs_str}]' if pairs_str else ''
 
 def _prop2text(prop):
     ptype = type(prop)

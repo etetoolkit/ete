@@ -174,11 +174,16 @@ def update_all_sizes(tree):
     update_size(tree)
 
 
+def update_sizes_from(node):
+    "Update the sizes from the given node to the root of the tree"
+    while node:
+        update_size(node)
+        node = node.up
+
+
 def update_size(node):
-    if node.is_leaf():
-        node.size = (node.dist, 1)
     sumdists, nleaves = get_size(node.children)
-    node.size = (abs(node.dist) + sumdists, max(1, nleaves))
+    node.size = (node.dist + sumdists, max(1, nleaves))
 
 
 cdef (double, double) get_size(nodes):

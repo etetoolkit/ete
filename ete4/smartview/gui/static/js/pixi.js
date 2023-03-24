@@ -51,14 +51,18 @@ PIXI.Loader.shared
         textures_loaded = true;
     });
 
+// Remove all items from app.stage.
 function clear_pixi(container) {
-    // Remove all items from stage
     app = apps[container.id];
 
     if (app)
         app.stage.children = [];
 }
 
+
+// Create PIXI.Application object for the given container if it
+// doesn't exist and keep it in apps, draw the given items (adding
+// them to app.stage) and return the app.view.
 function draw_pixi(container, items, tl, zoom) {
     app = apps[container.id] = apps[container.id] || new PIXI.Application({
         transparent: true,
@@ -78,69 +82,78 @@ function draw_pixi(container, items, tl, zoom) {
 }
 
 
+// Add items to app.stage.
 function draw(items, tl, zoom) {
-    items.forEach(seq => {
-        const [ el, box ] = [ seq[0], seq[1] ];
-        const type = el.split("-")[1]
-        const [ zx, zy ] = [ zoom.x, zoom.y ];
-        if (["aa_notext", "aa_text", "nt_notext", "nt_text"].includes(type))
-            draw_msa(seq[2], type, box, tl, zx, zy);
-        else
-            draw_shape(type, box, tl, zx, zy)
-    })
+    items.forEach(item => {
+        const [el, box] = [item[0], item[1]];  // el === "pixi-TYPE"
+        const type = el.split("-")[1]  // "aa_text" or "aa_notext"
+
+        const [zx, zy] = [zoom.x, zoom.y];
+
+        // Interpret (and draw) the item depending on its "type".
+        if (["aa_notext", "aa_text", "nt_notext", "nt_text"].includes(type)) {
+            const sequence = item[2];
+            draw_msa(sequence, type, box, tl, zx, zy);
+        }
+        else {
+            draw_shape(type, box, tl, zx, zy);
+        }
+    });
 }
 
 
+// Add the given sprite to app.stage, placing it according to the
+// requested box, top-left corner, and taking into account the zoom.
 function addSprite(sprite, box, tl, zx, zy, tooltip) {
-    const [ x, y, dx, dy ] = box;
+    const [x, y, dx, dy] = box;
 
-    let [ sx, sy ] = [ x, y ];
-    const [ sw, sh ] = [ dx * zx, dy * zy ];
+    if (view.drawer.type === "rect") {
+        sprite.x = zx * (x - tl.x);
+        sprite.y = zy * (y - tl.y);
+    }
+    else {  // "circ"
+        const p = cartesian_shifted(sx + dx/2, sy + dy/2, tl, zx);
+        sprite.x = p.x;
+        sprite.y = p.y;
 
-    if (view.drawer.type === "rect")
-        [ sx, sy ] = [ (sx - tl.x) * zx, (sy - tl.y) * zy ];
-    else {
-        ({x:sx, y:sy} = cartesian_shifted(sx + dx/2, sy + dy/2, tl, zx));
         sprite.anchor.set(0.5, 0.5);
         sprite.rotation = y + dy/2;
     }
-    sprite.x = sx;
-    sprite.y = sy;
-    sprite.width = sw;
-    sprite.height = sh;
 
-    if (tooltip) {
+    sprite.width = zx * dx;
+    sprite.height = zy * dy;
+
+    if (tooltip)
         sprite.accessibleTitle = tooltip;
-    }
 
-    // Add to stage
     app.stage.addChild(sprite);
 }
 
 
+// Add a lot of sprites to app.stage, one per letter in the given sequence.
 function draw_msa(sequence, type, box, tl, zx, zy) {
     const MIN_MSA_POSWIDTH = 12;
 
-    const [ x0, y, width, posh ] = box;
+    const [x, y, dx, dy] = box;
 
-    const posw = width / sequence.length;
+    const sdx = dx / sequence.length;  // single sprite dx
 
     if (view.aligned.adjust_zoom)
-        view.aligned.max_zoom = MIN_MSA_POSWIDTH / posw;
+        view.aligned.max_zoom = MIN_MSA_POSWIDTH / sdx;
     else
         view.aligned.max_zoom = undefined;
 
     sequence.split("").forEach((s, i) => {
         if (s != "-") {
-            const sprite = new PIXI.Sprite(textures[type][s])
-            const x = x0 + i * posw;
-            const tooltip = `Residue: ${s}\nPosition: ${i}`
-            addSprite(sprite, [x, y, posw, posh], tl, zx, zy, tooltip);
+            const sprite = new PIXI.Sprite(textures[type][s]);
+            const tooltip = `Residue: ${s}\nPosition: ${i}`;
+            addSprite(sprite, [x + i * sdx, y, sdx, dy], tl, zx, zy, tooltip);
         }
-    })
+    });
 }
 
 
+// Add a shape sprite to app.stage.
 function draw_shape(shape, box, tl, zx, zy) {
     const sprite = new PIXI.Sprite(textures.shapes[shape])
     addSprite(sprite, box, tl, zx, zy);
