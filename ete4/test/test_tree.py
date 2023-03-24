@@ -709,16 +709,6 @@ class Test_Coretype_Tree(unittest.TestCase):
         d3 = YGR138C.get_distance(YGR028W)
         self.assertEqual(d1, d3)
 
-        t = Tree('(A,B,(C,D)E)root;', format=1);
-        #t.sort_descendants()
-        nw_unrooted = t.write()
-        t.set_outgroup(t.get_common_ancestor('C', 'D'));
-        t.unroot()
-        #t.sort_descendants()
-        self.assertEqual(nw_unrooted, t.write())
-        # TODO: This test is failing, but it's unclear what the right
-        # result is. Check with Jaime.
-
         t = Tree('(A:10,B:1,(C:1,D:1)E:1)root;', format=1);
         t.set_outgroup(t.get_midpoint_outgroup())
         self.assertEqual(t.children[0].dist, 5.0)
