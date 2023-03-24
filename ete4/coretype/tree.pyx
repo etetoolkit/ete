@@ -899,7 +899,7 @@ cdef class Tree(object):
                 print(node.prop["support"])
         """
         for n in self.traverse():
-            if all(n.props.get(key) == value
+            if all(n.props.get(key) == value or getattr(n, key, None) == value
                    for key, value in conditions.items()):
                 yield n
 
