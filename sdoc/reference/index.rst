@@ -22,8 +22,6 @@ Current modules:
    reference_clustering
    reference_nexml
    reference_phyloxml
-   reference_phylomedb
    reference_seqgroup
-   reference_webplugin
    reference_evoltree
    reference_ncbi

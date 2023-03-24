@@ -32,7 +32,7 @@ all elements into python instances, which will be hierarchically
 connected to the Nexml root instance.
 
 Every NeXML XML element has its own python class. Content and
-attributes can be handled through the "set_" and "get_" methods
+attributes can be handled through the `set_` and `get_` methods
 existing in all objects. Nexml classes can be imported from the
 :mod:`ete4.nexml` module.
 
