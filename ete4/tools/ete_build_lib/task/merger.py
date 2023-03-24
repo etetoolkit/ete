@@ -182,7 +182,7 @@ class TreeMerger(TreeMergeTask):
         ttree_content = self.main_tree.get_cached_content()
         for n, content in ttree_content.items():
             cid = generate_id([_n.name for _n in content])
-            n.add_feature("cladeid", cid)
+            n.add_property("cladeid", cid)
 
         #ttree.write(outfile=self.pruned_tree)
         self.task_tree = ttree

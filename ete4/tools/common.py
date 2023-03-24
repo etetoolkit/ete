@@ -119,11 +119,11 @@ def parse_value(fvalue):
         func_arg = func_match.groups()[1]
     #RETURN SOMETHING
 
-def dump(t, features=None):
+def dump(t, properties=None):
     #if getattr(args, "output", None):
     #    t.write(format=0, features=features)
     #else:
-    print(t.write(format=0, features=features))
+    print(t.write(format=0, properties=properties))
 
 def populate_main_args(main_args_p):
     main_args = main_args_p.add_argument_group('GENERAL OPTIONS')

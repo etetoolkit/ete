@@ -409,7 +409,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
                         log.log(28, "Generating tree image for @@13:%s@@1:\n   %s",
                                 threadname, final_tree_file+".png")
                         for lf in main_tree:
-                            lf.add_feature("sequence", alg.get_seq(lf.props.get('safename')))
+                            lf.add_property("sequence", alg.get_seq(lf.props.get('safename')))
                         try:
                             from .visualize import draw_tree
                             draw_tree(main_tree, GLOBALS[configid], final_tree_file+".png")

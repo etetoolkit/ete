@@ -74,6 +74,6 @@ def run(args):
                 if hasattr(target_node, aname):
                     log.warning('Overwriting annotation for node" [%s]"' %nodenames)
                 else:
-                    target_node.add_feature(aname, acast(attr_value))
+                    target_node.add_property(aname, acast(attr_value))
 
-        dump(tree, features=features)
+        dump(tree, properties=features)

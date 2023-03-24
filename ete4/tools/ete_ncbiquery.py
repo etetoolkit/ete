@@ -126,13 +126,13 @@ def run(args):
 
         id2name = ncbi.get_taxid_translator([n.name for n in t.traverse()])
         for n in t.traverse():
-            n.add_features(taxid=n.name)
-            n.add_features(sci_name=str(id2name.get(int(n.name), "?")))
+            n.add_properties(taxid=n.name)
+            n.add_properties(sci_name=str(id2name.get(int(n.name), "?")))
             n.name = "%s - %s" %(id2name.get(int(n.name), n.name), n.name)
             lineage = ncbi.get_lineage(n.taxid)
-            n.add_features(named_lineage = '|'.join(ncbi.translate_to_names(lineage)))
-        dump(t, features=["taxid", "name", "rank", "bgcolor", "sci_name",
-                          "collapse_subspecies", "named_lineage"])
+            n.add_properties(named_lineage = '|'.join(ncbi.translate_to_names(lineage)))
+        dump(t, properties=["taxid", "name", "rank", "bgcolor", "sci_name",
+                            "collapse_subspecies", "named_lineage"])
     elif args.descendants:
         log.info("Dumping NCBI taxonomy of %d taxa..." %(len(all_taxids)))
         print('# ' + '\t'.join(["Taxid", "Sci.Name", "Rank", "descendant_taxids", "descendant_names"]))

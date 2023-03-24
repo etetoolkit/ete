@@ -162,7 +162,7 @@ def split_tree(task_tree_node, task_outgroups, main_tree, alg_path, npr_conf, th
                     log.log(20, "Calculating node sequence stats...")
                     mx, mn, avg, std = get_seqs_identity(ALG,
                                                          [__n.name for __n in n2content[_n]])
-                    _n.add_features(seqs_max_ident=mx, seqs_min_ident=mn,
+                    _n.add_properties(seqs_max_ident=mx, seqs_min_ident=mn,
                                     seqs_mean_ident=avg, seqs_std_ident=std)
                     log.log(20, "mx=%s, mn=%s, avg=%s, std=%s" %(mx, mn, avg, std))
 
@@ -175,8 +175,8 @@ def split_tree(task_tree_node, task_outgroups, main_tree, alg_path, npr_conf, th
 
 
             else:
-                _n.add_features(seqs_max_ident=None, seqs_min_ident=None,
-                                seqs_mean_ident=None, seqs_std_ident=None)
+                _n.add_properties(seqs_max_ident=None, seqs_min_ident=None,
+                                  seqs_mean_ident=None, seqs_std_ident=None)
 
             if "min_support" in wkfilter:
                 # If we are optimizing only lowly supported nodes, and nodes are
@@ -564,7 +564,7 @@ def assembly_tree(runid):
 
         # Restore original gene names
         for leaf in tree.iter_leaves():
-            leaf.add_features(safename=leaf.name)
+            leaf.add_properties(safename=leaf.name)
             #leaf.name = leaf.realname
             leaf.name = leaf.props.get('realname')
 
@@ -577,7 +577,7 @@ def assembly_tree(runid):
             main_tree = tree
 
         iter_name = "Iter_%04d_%dseqs" %(iternumber, size)
-        tree.add_features(iternumber=iternumber)
+        tree.add_properties(iternumber=iternumber)
         iternumber += 1
 
     return main_tree, iternumber

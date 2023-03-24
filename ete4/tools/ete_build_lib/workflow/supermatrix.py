@@ -18,7 +18,7 @@ def annotate_node(t, final_task):
     # Annotate cladeid in the whole tree
     for n in t.traverse():
         if n.is_leaf():
-            n.add_feature("realname", db.get_seq_name(n.name))
+            n.add_property("realname", db.get_seq_name(n.name))
             #n.name = n.realname
         if hasattr(n, "cladeid"):
             cladeid2node[n.cladeid] = n
@@ -26,14 +26,14 @@ def annotate_node(t, final_task):
     alltasks = GLOBALS[final_task.configid]["_nodeinfo"][final_task.nodeid]["tasks"]
     npr_iter = get_iternumber(final_task.threadid)
     n = cladeid2node[t.cladeid]
-    n.add_features(size=final_task.size)
+    n.add_properties(size=final_task.size)
     for task in alltasks:
         params = ["%s %s" %(k,v) for k,v in  task.args.items()
                   if not k.startswith("_")]
         params = " ".join(params)
 
         if task.ttype == "tree":
-            n.add_features(tree_model=task.model,
+            n.add_properties(tree_model=task.model,
                            tree_seqtype=task.seqtype,
                            tree_type=task.tname,
                            tree_cmd=params,
@@ -42,13 +42,13 @@ def annotate_node(t, final_task):
                            npr_iter=npr_iter)
 
         elif task.ttype == "treemerger":
-            n.add_features(treemerger_type=task.tname,
-                           treemerger_rf="RF=%s [%s]" %(task.rf[0], task.rf[1]),
-                           treemerger_out_match_dist = task.outgroup_match_dist,
-                           treemerger_out_match = task.outgroup_match)
+            n.add_properties(treemerger_type=task.tname,
+                             treemerger_rf="RF=%s [%s]" %(task.rf[0], task.rf[1]),
+                             treemerger_out_match_dist = task.outgroup_match_dist,
+                             treemerger_out_match = task.outgroup_match)
 
         elif task.ttype == "concat_alg":
-            n.add_features(concatalg_cogs="%d"%task.used_cogs,
+            n.add_properties(concatalg_cogs="%d"%task.used_cogs,
                            alg_path=task.alg_fasta_file)
 
 def process_task(task, wkname, npr_conf, nodeid2info):

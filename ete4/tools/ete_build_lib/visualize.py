@@ -155,8 +155,8 @@ def annotate_tree_with_ncbi(tree):
     ncbi.connect_database()
     name2sp = ncbi.get_name_translator(tree.get_species())
     for lf in tree.iter_leaves():
-        lf.add_features(taxid=name2sp.get(lf.species, [0])[0])
-        lf.add_features(genename=re.sub('\{[^}]+\}', '', lf.name).strip())
+        lf.add_properties(taxid=name2sp.get(lf.species, [0])[0])
+        lf.add_properties(genename=re.sub('\{[^}]+\}', '', lf.name).strip())
     ncbi.annotate_tree(tree, attr_name='taxid')
 
 def spname(name):

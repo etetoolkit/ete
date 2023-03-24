@@ -194,7 +194,7 @@ def load_node_size(n):
         size = 0
         for ch in n.children:
             size += load_node_size(ch)
-    n.add_feature("_size", size)
+    n.add_property("_size", size)
     return size
 
 def render_tree(tree, fname):
@@ -504,7 +504,7 @@ def npr_layout(node):
             faces.add_face_to_node(seq_face, node, 0, position="aligned")
 
 
-    if "treemerger_type" in node.features:
+    if "treemerger_type" in node.properties:
         ttype=faces.AttrFace("tree_type", fsize=8, fgcolor="DarkBlue")
         faces.add_face_to_node(ttype, node, 0, position="branch-top")
         #ttype.background.color = "DarkOliveGreen"

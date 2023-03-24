@@ -18,7 +18,7 @@ def annotate_node(t, final_task):
     # Annotate cladeid in the whole tree
     for n in t.traverse():
         if n.is_leaf():
-            n.add_feature("realname", db.get_seq_name(n.name))
+            n.add_property("realname", db.get_seq_name(n.name))
             #n.name = n.realname
         if n.props.get("cladeid"):
             cladeid2node[n.props.get("cladeid")] = n
@@ -26,54 +26,52 @@ def annotate_node(t, final_task):
     alltasks = GLOBALS[final_task.configid]["_nodeinfo"][final_task.nodeid]["tasks"]
     npr_iter = get_iternumber(final_task.threadid)
     n = cladeid2node[t.props.get("cladeid")]
-    n.add_features(size=final_task.size)
+    n.add_properties(size=final_task.size)
     for task in alltasks:
         params = ["%s %s" %(k,v) for k,v in task.args.items()
                   if not k.startswith("_")]
         params = " ".join(params)
 
         if task.ttype == "msf":
-            n.add_features(msf_outseqs=task.out_seqs,
-                           msf_file=task.multiseq_file)
+            n.add_properties(msf_outseqs=task.out_seqs,
+                             msf_file=task.multiseq_file)
 
         elif task.ttype == "acleaner":
-            n.add_features(clean_alg_mean_ident=task.mean_ident,
-                           clean_alg_std_ident=task.std_ident,
+            n.add_properties(clean_alg_mean_ident=task.mean_ident,
+                             clean_alg_std_ident=task.std_ident,
                            clean_alg_max_ident=task.max_ident,
                            clean_alg_min_ident=task.min_ident,
                            clean_alg_type=task.tname,
                            clean_alg_cmd=params,
                            clean_alg_path=task.clean_alg_fasta_file)
         elif task.ttype == "alg":
-            n.add_features(alg_mean_ident=task.mean_ident,
-                           alg_std_ident=task.std_ident,
-                           alg_max_ident=task.max_ident,
-                           alg_min_ident=task.min_ident,
-                           alg_type=task.tname,
-                           alg_cmd=params,
-                           alg_path=task.alg_fasta_file)
+            n.add_properties(alg_mean_ident=task.mean_ident,
+                             alg_std_ident=task.std_ident,
+                             alg_max_ident=task.max_ident,
+                             alg_min_ident=task.min_ident,
+                             alg_type=task.tname,
+                             alg_cmd=params,
+                             alg_path=task.alg_fasta_file)
 
         elif task.ttype == "tree":
-            n.add_features(tree_model=task.model,
-                           tree_seqtype=task.seqtype,
-                           tree_type=task.tname,
-                           tree_cmd=params,
-                           tree_path=task.tree_file,
-                           tree_constrain=task.constrain_tree,
-                           tree_phylip_alg=task.alg_phylip_file,
-                           npr_iter=npr_iter)
+            n.add_properties(tree_model=task.model,
+                             tree_seqtype=task.seqtype,
+                             tree_type=task.tname,
+                             tree_cmd=params,
+                             tree_path=task.tree_file,
+                             tree_constrain=task.constrain_tree,
+                             tree_phylip_alg=task.alg_phylip_file,
+                             npr_iter=npr_iter)
         elif task.ttype == "mchooser":
-            n.add_features(modeltester_models=task.models,
-                           modeltester_type=task.tname,
-                           modeltester_params=params,
-                           modeltester_bestmodel=task.best_model,
-                           )
+            n.add_properties(modeltester_models=task.models,
+                             modeltester_type=task.tname,
+                             modeltester_params=params,
+                             modeltester_bestmodel=task.best_model)
         elif task.ttype == "treemerger":
-            n.add_features(treemerger_type=task.tname,
-                           treemerger_rf="RF=%s [%s]" %(task.rf[0], task.rf[1]),
-                           treemerger_out_match_dist = task.outgroup_match_dist,
-                           treemerger_out_match = task.outgroup_match,
-            )
+            n.add_properties(treemerger_type=task.tname,
+                             treemerger_rf="RF=%s [%s]" % (task.rf[0], task.rf[1]),
+                             treemerger_out_match_dist = task.outgroup_match_dist,
+                             treemerger_out_match = task.outgroup_match)
 
 def get_trimal_conservation(alg_file, trimal_bin):
     output = bytes.decode(check_output("%s -ssc -in %s" % (trimal_bin,
