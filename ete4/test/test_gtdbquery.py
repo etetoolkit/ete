@@ -5,21 +5,26 @@ import unittest
 
 from .. import PhyloTree, GTDBTaxa
 from ..gtdb_taxonomy import gtdbquery
+from pathlib import Path
 
 DATABASE_PATH = "test_tmp/testgtdb.sqlite"
-
+DATABASE_PATH = os.environ.get('XDG_DATA_HOME', os.environ['HOME'] + '/.local/share') + '/etetoolkit/gtdbtaxa.sqlite'
+DEFAULT_GTDBTAXADUMP = os.path.join(Path(os.path.realpath(__file__)).parent.parent, "gtdb_taxonomy/gtdbdump/gtdbr202dump.tar.gz")
 class Test_gtdbquery(unittest.TestCase):
 
     def test_00_update_database(self):
+        #print(os.path.join(Path(os.path.realpath(__file__)).parent.parent, "gtdb_taxonomy/gtdbdump/gtdbr202dump.tar.gz"))
+        gtdb = GTDBTaxa()
+        gtdb.update_taxonomy_database(DEFAULT_GTDBTAXADUMP)
 
         if not os.path.exists(DATABASE_PATH):
             gtdbquery.update_db(DATABASE_PATH)
     
     def test_01tree_annotation(self):
         tree = PhyloTree('((c__Alicyclobacillia, c__Bacilli), s__Caballeronia udeis);', sp_naming_function=lambda name: name)
-        tree.annotate_gtdb_taxa(dbfile=DATABASE_PATH)
+        tree.annotate_gtdb_taxa(dbfile=DATABASE_PATH, taxid_attr="name")
         self.assertEqual(tree.props.get('sci_name'), 'd__Bacteria')
-
+        
         firmicutes = (tree&'c__Bacilli').up
         self.assertEqual(firmicutes.props.get('taxid'), "p__Firmicutes")
         self.assertEqual(firmicutes.props.get('sci_name'), "p__Firmicutes")

@@ -532,7 +532,7 @@ class GTDBTaxa(object):
 
                 rank = tax2rank.get(tmp_taxid, 'Unknown')
                 if rank != 'subspecies':
-                    sci_name = tax2name.get(node_taxid, '')
+                    sci_name = tax2name.get(tmp_taxid, '')
                 else:
                     # For subspecies, gtdb taxid (like 'RS_GCF_0062.1') is not informative. Better use the species one.
                     track = tax2track[tmp_taxid]  # like ['root', 'd__Bacteria', ..., 's__Moorella', 'RS_GCF_0062.1']
