@@ -7,3 +7,5 @@ you should have codeml and slr in your path:
  * SLR, from here: http://www.ebi.ac.uk/goldman-srv/SLR/
 
 download, compile and install both of the programs, in order to be able to run the examples.
+
+The data for this examples can be downloaded from https://github.com/etetoolkit/ete-data/tree/main/examples/evol_data
