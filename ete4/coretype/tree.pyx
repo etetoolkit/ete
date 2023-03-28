@@ -291,7 +291,11 @@ cdef class Tree(object):
 
     def add_prop(self, prop_name, value):
         """Add or update node's property to the given value."""
-        if prop_name is not None and value is not None:
+        if prop_name == 'dist':
+            self.dist = value
+        elif prop_name == 'support':
+            self.support = value
+        elif prop_name is not None and value is not None:
             self.props[prop_name] = value
 
     def add_props(self, **props):
@@ -305,22 +309,17 @@ cdef class Tree(object):
 
     # DEPRECATED #
     def add_feature(self, pr_name, pr_value):
-        """
-        Add or update a node's feature.
-        """
+        """Add or update a node's feature."""
         print("\nWARNING! add_feature is DEPRECATED use add_prop instead\n")
         self.add_prop(pr_name, pr_value)
 
     def add_features(self, **features):
-        """
-        Add or update several features. """
+        """Add or update several features."""
         print("\nWARNING! add_features is DEPRECATED use add_props instead\n")
         self.add_props(**features)
 
     def del_feature(self, pr_name):
-        """
-        Permanently deletes a node's feature.
-        """
+        """Permanently deletes a node's feature."""
         print("\nWARNING! del_feature is DEPRECATED use del_prop instead\n")
         self.del_prop(pr_name)
     # DEPRECATED #
@@ -373,14 +372,12 @@ cdef class Tree(object):
         Removes a child from this node (parent and child
         nodes still exit but are no longer connected).
         """
-        from ..smartview.renderer.gardening import update_sizes_from
         try:
             self.children.remove(child)
         except ValueError as e:
             raise TreeError("child not found")
         else:
             child.up = None
-            update_sizes_from(self)
             return child
 
     def remove_children(self):
@@ -899,7 +896,7 @@ cdef class Tree(object):
                 print(node.prop["support"])
         """
         for n in self.traverse():
-            if all(n.props.get(key) == value
+            if all(n.props.get(key) == value or getattr(n, key, None) == value
                    for key, value in conditions.items()):
                 yield n
 
@@ -1192,7 +1189,6 @@ cdef class Tree(object):
           structure that will be used as a basal node.
 
         """
-        from ..smartview.renderer.gardening import update_sizes_from
         outgroup = _translate_nodes(self, outgroup)
 
         if self == outgroup:
@@ -1266,8 +1262,6 @@ cdef class Tree(object):
         outgroup.dist = middist
         outgroup2.dist = middist
         outgroup2.support = outgroup.support
-
-        update_sizes_from(self)
 
     def unroot(self, mode='legacy'):
         """

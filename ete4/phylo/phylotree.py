@@ -265,47 +265,39 @@ def get_subparts(n):
 
 
 class PhyloNode(Tree):
-    """
-    .. currentmodule:: ete3
-    Extends the standard :class:`Tree` instance. It adds
+    """Representation of a phylogenetic tree.
+
+    Extends the standard :class:`Tree` instance by adding
     specific attributes and methods to work with phylogentic trees.
 
-    :argument newick: Path to the file containing the tree or, alternatively,
-      the text string containing the same information.
-
-    :argument alignment: file containing a multiple sequence alignment.
-
-    :argument alg_format:  "fasta", "phylip" or "iphylip" (interleaved)
-
-    :argument format: sub-newick format
+    :param newick: Path to the file containing the tree or, alternatively,
+        the text string containing the same information.
+    :param alignment: File containing a multiple sequence alignment.
+    :param alg_format: "fasta", "phylip" or "iphylip" (interleaved).
+    :param format: sub-newick format.
 
       .. table::
 
           ======  ==============================================
           FORMAT  DESCRIPTION
           ======  ==============================================
-          0        flexible with support values
-          1        flexible with internal node names
-          2        all branches + leaf names + internal supports
-          3        all branches + all names
-          4        leaf branches + leaf names
-          5        internal and leaf branches + leaf names
-          6        internal branches + leaf names
-          7        leaf branches + all names
-          8        all names
-          9        leaf names
-          100      topology only
+          0       flexible with support values
+          1       flexible with internal node names
+          2       all branches + leaf names + internal supports
+          3       all branches + all names
+          4       leaf branches + leaf names
+          5       internal and leaf branches + leaf names
+          6       internal branches + leaf names
+          7       leaf branches + all names
+          8       all names
+          9       leaf names
+          100     topology only
           ======  ==============================================
 
-    :argument sp_naming_function: Pointer to a parsing python
-       function that receives nodename as first argument and returns
-       the species name (see
-       :func:`PhyloNode.set_species_naming_function`. By default, the
-       3 first letter of nodes will be used as species identifiers.
-
-
-
-    :returns: a tree node object which represents the base of the tree.
+    :param sp_naming_function: function that gets a nodename and
+        returns the species name (see
+        :func:`PhyloNode.set_species_naming_function`). By default,
+        the 3 first letter of nodes will be used as species identifiers.
     """
 
     def _get_species(self):
@@ -448,7 +440,7 @@ class PhyloNode(Tree):
         return spoverlap.get_evol_events_from_leaf(self, sos_thr=sos_thr)
 
     def get_descendant_evol_events(self, sos_thr=0.0):
-        """ Returns a list of **all** duplication and speciation
+        """ Returns a list of all duplication and speciation
         events detected after this node. Nodes are assumed to be
         duplications when a species overlap is found between its child
         linages. Method is described more detail in:

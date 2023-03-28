@@ -191,9 +191,9 @@ tree node instance:
    ==========================     =============================================================================================  ================
    Method                         Description                                                                                    Default value
    ==========================     =============================================================================================  ================
-     :attr:`Tree.dist`          stores the distance from the node to its parent (branch length). Default value = 1.0             1.0
-     :attr:`Tree.support`       informs about the reliability of the partition defined by the node (i.e. bootstrap support)      1.0
-     :attr:`Tree.name`          Custom node's name.                                                                              NoName
+     :attr:`Tree.dist`            stores the distance from the node to its parent (branch length). Default value = 1.0           1.0
+     :attr:`Tree.support`         informs about the reliability of the partition defined by the node (i.e. bootstrap support)    1.0
+     :attr:`Tree.name`            Custom node's name.                                                                            NoName
    ==========================     =============================================================================================  ================
 
 In addition, several methods are provided to perform basic operations
@@ -204,14 +204,14 @@ on tree node instances:
   =================================  =============================================================================================
   Method                              Description
   =================================  =============================================================================================
-    :func:`Tree.is_leaf`           returns True if *node* has no children
-    :func:`Tree.is_root`           returns True if *node* has no parent
-    :func:`Tree.get_tree_root`     returns the top-most node within the same tree structure as *node*
-    :attr:`len(Tree)`              returns the number of leaves under *node*
-    :attr:`print(node)`                 prints a text-based representation of the tree topology under *node*
-    :attr:`if node in tree`            returns true if *node* is a leaf under *tree*
-    :attr:`for leaf in node`           iterates over all leaves under *node*
-    :func:`Tree.show`              Explore node graphically using a GUI.
+    :func:`Tree.is_leaf`             returns True if *node* has no children
+    :func:`Tree.is_root`             returns True if *node* has no parent
+    :func:`Tree.get_tree_root`       returns the top-most node within the same tree structure as *node*
+    :attr:`len(Tree)`                returns the number of leaves under *node*
+    :attr:`print(node)`              prints a text-based representation of the tree topology under *node*
+    :attr:`if node in tree`          returns true if *node* is a leaf under *tree*
+    :attr:`for leaf in node`         iterates over all leaves under *node*
+    :func:`Tree.show`                Explore node graphically using a GUI.
   =================================  =============================================================================================
 
 This is an example on how to access such attributes:
@@ -977,7 +977,7 @@ Calculate distances between trees
 .. versionadded 2.3
 
 
-The :Tree:`compare` function allows to calculate distances between two trees
+The :class:`Tree.compare` function allows to calculate distances between two trees
 based on any node feature (i.e. name, species, other tags) using robinson-foulds
 and edge compatibility distances. It automatically handles differences in tree
 sizes, shared nodes and duplicated feature names.

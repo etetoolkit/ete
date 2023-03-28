@@ -143,7 +143,7 @@ def run(args):
         ref_tree_attr = args.ref_tree_attr
         if args.ref_attr_parser:
             for leaf in rtree:
-                leaf.add_feature('_tempattr', re.search(args.ref_attr_parser, getattr(leaf, args.ref_tree_attr)).groups()[0])
+                leaf.add_property('_tempattr', re.search(args.ref_attr_parser, getattr(leaf, args.ref_tree_attr)).groups()[0])
             ref_tree_attr = '_tempattr'
         else:
             ref_tree_attr = args.ref_tree_attr
@@ -166,7 +166,7 @@ def run(args):
             src_tree_attr = args.src_tree_attr
             if args.src_attr_parser:
                 for leaf in stree:
-                    leaf.add_feature('name', re.search(
+                    leaf.add_property('name', re.search(
                         args.src_attr_parser, getattr(leaf, args.src_tree_attr)).groups()[0])
                 src_tree_attr = 'name'
             elif args.src_tree_attr:
@@ -259,7 +259,7 @@ def run(args):
             dup_rate = numpy.mean(refnode2dups[node]) if has_dup_data else "NA"
             dup_dev = numpy.std(refnode2dups[node]) if has_dup_data else "NA"
 
-            node.add_features(
+            node.add_properties(
                 maptrees_total = total,
                 maptrees_observerd = observed,
                 maptrees_support = avg_observed,
@@ -267,9 +267,8 @@ def run(args):
                 maptrees_treeko_support = avg_treeko_observed,
                 maptrees_observed_dups = dups_observed,
                 maptrees_visited = trees_visited,
-                maptrees_dup_rate = dup_rate,
+                maptrees_dup_rate = dup_rate)
 
-            )
             data.append([node.write(format=9),
                          #str(node),
                          total,

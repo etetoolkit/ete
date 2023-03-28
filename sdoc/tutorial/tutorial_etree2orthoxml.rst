@@ -1,18 +1,18 @@
-.. module:: ete3
+.. module:: ete4
   :synopsis: Converts evolutionary events into OrthoXML format
 
 .. moduleauthor:: Jaime Huerta-Cepas
-.. currentmodule:: ete3
+.. currentmodule:: ete4
 
 .. _etree2orthoxml:
 
 SCRIPTS: orthoXML
-************************************
+*****************
 
 .. contents::
 
 OrthoXML parser
-============================
+===============
 
 :attr:`etree2orthoxml` is a python script distributed as a part of the
 ETE toolkit package. It uses an automatic python parser generated on
@@ -29,9 +29,9 @@ way.
 
 
 The following example will create a basic orthoXML document
-:: 
+::
 
-    from ete3 import orthoxml
+    from ete4 import orthoxml
     # Creates an empty orthoXML object
     oxml = orthoxml.orthoXML()
 
@@ -60,8 +60,8 @@ The following example will create a basic orthoXML document
     #</ortho:orthoXML>
 
 
-The etree2orthoxml script 
-================================
+The etree2orthoxml script
+=========================
 
 :attr:`etree2orthoxml` is a standalone python script that allows to
 read a phylogenetic tree in newick format and export their
@@ -69,7 +69,7 @@ evolutionary events (duplication and speciation events) as an orthoXML
 document. The program is installed along with ETE, so it should be
 found in your path. Alternatively you can found it in the script
 folder of the latest ETE package release
-(http://etetoolkit.org/releases/ete3/).
+(http://etetoolkit.org/releases/ete4/).
 
 To work, :attr:`etree2orthoxml` requires only one argument containing
 the newick representation of a tree or the name of the file that
@@ -88,7 +88,7 @@ the `etetoolkit mailing list
 feedback or improvement to the code.
 
 Usage
-----------------
+-----
 
 ::
 
@@ -98,14 +98,14 @@ Usage
                          [--evoltype_attr EVOLTYPE_ATTR] [--database DATABASE]
                          [--show] [--ascii] [--newick]
                          tree_file
-    
+
    etree2orthoxml is a python script that extracts evolutionary events
    (speciation and duplication) from a newick tree and exports them as a
    OrthoXML file.
-    
+
    positional arguments:
      tree_file             A tree file (or text string) in newick format.
-    
+
    optional arguments:
      -h, --help            show this help message and exit
      --sp_delimiter SPECIES_DELIMITER
@@ -141,12 +141,12 @@ Usage
 
 
 
-Example: Using custom evolutionary annotation 
-------------------------------------------------------
+Example: Using custom evolutionary annotation
+---------------------------------------------
 
 If all internal nodes in the provided tree are correctly label as
 duplication or speciation nodes, automatic detection of events can be
-disabled using the :attr:`--skip_ortholog_detection` flag. 
+disabled using the :attr:`--skip_ortholog_detection` flag.
 
 Node labeling should be provided using the extended newick
 format. Duplication nodes should contain the label :attr:`evoltype`
@@ -158,7 +158,7 @@ set to :attr:`D`, while speciation nodes should be set to
 In the following example, we force the HUMAN clade to be considered a
 speciation node.
 
-:: 
+::
 
    # etree2orthoxml --skip_ortholog_detection '((HUMAN_A, HUMAN_B)[&&NHX:evoltype=S], MOUSE_B)[&&NHX:evoltype=S];'
 
@@ -191,9 +191,9 @@ speciation node.
 
 
 You can avoid tree reformatting when node labels are slightly
-different by using the :attr:`evoltype_attr`: 
+different by using the :attr:`evoltype_attr`:
 
-:: 
+::
 
    # etree2orthoxml --evoltype_attr E --skip_ortholog_detection '((HUMAN_A, HUMAN_B)[&&NHX:E=S], MOUSE_B)[&&NHX:E=S];'
 
@@ -201,9 +201,9 @@ However, more complex modifications on raw trees can be easily
 performed using the core methods of the ETE library, so they match the
 requirements of the :attr:`etree2orthoxml` script.
 
-:: 
+::
 
-   from ete3 import Tree
+   from ete4 import Tree
    # Having the followin tree
    t = Tree('((HUMAN_A, HUMAN_B)[&&NHX:speciation=N], MOUSE_B)[&&NHX:speciation=Y];')
 
@@ -211,8 +211,8 @@ requirements of the :attr:`etree2orthoxml` script.
    for node in t.traverse():
       if not node.is_leaf():
          etype = "D" if node.speciation == "N" else "S"
-         node.add_features(evoltype=etype)
- 
+         node.add_properties(evoltype=etype)
+
    # We the export a newick string that is compatible with etree2orthoxml script
    t.write(features=["evoltype"], format_root_node=True)
 
@@ -220,8 +220,8 @@ requirements of the :attr:`etree2orthoxml` script.
    # '((HUMAN_A:1,HUMAN_B:1)1:1[&&NHX:evoltype=D],MOUSE_B:1)1:1[&&NHX:evoltype=S];'
 
 
-Example: Automatic detection of species names 
---------------------------------------------------
+Example: Automatic detection of species names
+---------------------------------------------
 As different databases and software may produce slightly different
 newick tree formats, the script provides several customization
 options.
@@ -229,12 +229,12 @@ options.
 In gene family trees, species names are usually encoded as a part of
 leaf names (i.e. P53_HUMAN). If such codification follows a simple
 rule, :attr:`etree2orthoxml` can automatically detect species name and
-used to populate the relevant sections within the orthoXML document. 
+used to populate the relevant sections within the orthoXML document.
 
 For this, the :attr:`sp_delimiter` and :attr:`sp_field` arguments can
 be used. Note how species are correctly detected in the following example:
 
-:: 
+::
 
    # etree2orthoxml --database TestDB --evoltype_attr E --skip_ortholog_detection --sp_delimiter '_' --sp_field 0  '((HUMAN_A, HUMAN_B)[&&NHX:E=S], MOUSE_B)[&&NHX:E=S];'
    <orthoXML>
@@ -270,11 +270,11 @@ Example: Tree rooting
 
 When evolutionary events are expected to be automatically inferred
 from tree topology, outgroup information can be passed to the program to
-root the tree before performing the detection. 
+root the tree before performing the detection.
 
 ::
 
-   # etree2orthoxml --ascii --root FLY_1 FLY_2 --sp_delimiter '_' --sp_field 0  '((HUMAN_A, HUMAN_B), MOUSE_B, (FLY_1, FLY_2));' 
+   # etree2orthoxml --ascii --root FLY_1 FLY_2 --sp_delimiter '_' --sp_field 0  '((HUMAN_A, HUMAN_B), MOUSE_B, (FLY_1, FLY_2));'
 
 
 
@@ -329,27 +329,3 @@ root the tree before performing the detection.
                </orthologGroup>
            </groups>
        </orthoXML>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

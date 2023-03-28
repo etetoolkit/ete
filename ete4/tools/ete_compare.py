@@ -96,7 +96,7 @@ def run(args):
         src_tree_attr = args.src_tree_attr
         if args.src_attr_parser:
             for leaf in stree:
-                leaf.add_feature('tempattr', re.search(
+                leaf.add_property('tempattr', re.search(
                     args.src_attr_parser, getattr(leaf, args.src_tree_attr)).groups()[0])
             src_tree_attr = 'tempattr'
 
@@ -107,7 +107,7 @@ def run(args):
             ref_tree_attr = args.ref_tree_attr
             if args.ref_attr_parser:
                 for leaf in rtree:
-                    leaf.add_feature('tempattr', re.search(
+                    leaf.add_property('tempattr', re.search(
                         args.ref_attr_parser, getattr(leaf, args.ref_tree_attr)).groups()[0])
                 ref_tree_attr = 'tempattr'
 

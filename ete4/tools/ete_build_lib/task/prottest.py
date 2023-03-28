@@ -95,8 +95,8 @@ class Prottest(ModelTesterTask):
                 m = re.search('Log-likelihood:\s+(-?\d+\.\d+)',
                               open(stats_file).read())
                 lk = float(m.groups()[0])
-                tree.add_feature("lk", lk)
-                tree.add_feature("model", phyml_job.args["--model"])
+                tree.add_property("lk", lk)
+                tree.add_property("model", phyml_job.args["--model"])
                 lks.append([float(tree.lk), tree.model, tree])
         elif self.lk_mode == "raxml":
             for job in self.jobs:
@@ -105,8 +105,8 @@ class Prottest(ModelTesterTask):
                 lk = open(pjoin(raxml_job.jobdir, "RAxML_log.%s"
                                 %raxml_job.args["-n"])).readline().split()[1]
                 tree = PhyloTree(raxml_job.args["-t"])
-                tree.add_feature("lk", lk)
-                tree.add_feature("model", raxml_job.model)
+                tree.add_property("lk", lk)
+                tree.add_property("model", raxml_job.model)
                 lks.append([float(tree.lk), tree.model, tree])
 
         # sort lks in ASC order
