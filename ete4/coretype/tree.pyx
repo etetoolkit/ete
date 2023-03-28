@@ -291,7 +291,11 @@ cdef class Tree(object):
 
     def add_prop(self, prop_name, value):
         """Add or update node's property to the given value."""
-        if prop_name is not None and value is not None:
+        if prop_name == 'dist':
+            self.dist = value
+        elif prop_name == 'support':
+            self.support = value
+        elif prop_name is not None and value is not None:
             self.props[prop_name] = value
 
     def add_props(self, **props):
