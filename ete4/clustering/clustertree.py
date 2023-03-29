@@ -57,13 +57,13 @@ class ClusterNode(Tree):
     profile = property(fget=_get_prof, fset=_set_profile)
     deviation = property(fget=_get_std, fset=_set_forbidden)
 
-    def __init__(self, newick = None, text_array = None, \
-                 fdist=clustvalidation.default_dist):
+    def __init__(self, newick=None, text_array=None,
+                 fdist=clustvalidation.default_dist, up=None):
         # Default dist is spearman_dist when scipy module is loaded
         # otherwise, it is set to euclidean_dist.
 
         # Initialize basic tree features and loads the newick (if any)
-        Tree.__init__(self, newick)
+        Tree.__init__(self, newick, up=up)
         self._fdist = None
         self._silhouette = None
         self._intercluster_dist = None
