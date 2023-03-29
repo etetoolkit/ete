@@ -764,7 +764,9 @@ def update_db(dbfile, targz_file=None):
     t, synonyms = load_gtdb_tree_from_dump(tar)
 
     prepostorder = [int(node.name) for post, node in t.iter_prepostorder()]
-    pickle.dump(prepostorder, open(dbfile+'.traverse.pkl', "wb"), 2)
+
+    with open(dbfile+'.traverse.pkl', 'wb') as fout:
+        pickle.dump(prepostorder, fout, 2)
 
     print("Updating database: %s ..." %dbfile)
     generate_table(t)
@@ -831,12 +833,15 @@ def upload_data(dbfile):
     #     db.execute("INSERT INTO merged (taxid_old, taxid_new) VALUES (?, ?);", (taxid_old, taxid_new))
     # print()
     # db.commit()
-    for i, line in enumerate(open("taxa.tab")):
-        if i%5000 == 0 :
-            print('\rInserting taxids:      % 6d' %i, end=' ', file=sys.stderr)
-            sys.stderr.flush()
-        taxid, parentid, spname, common, rank, lineage = line.strip('\n').split('\t')
-        db.execute("INSERT INTO species (taxid, parent, spname, common, rank, track) VALUES (?, ?, ?, ?, ?, ?);", (taxid, parentid, spname, common, rank, lineage))
+
+    with open('taxa.tab') as f_taxa:
+        for i, line in enumerate(f_taxa):
+            if i % 5000 == 0:
+                print('\rInserting taxids: %8d' % i, end=' ', file=sys.stderr)
+                sys.stderr.flush()
+            taxid, parentid, spname, common, rank, lineage = line.strip('\n').split('\t')
+            db.execute(('INSERT INTO species          (taxid, parent, spname, common, rank, track) '
+                        'VALUES (?, ?, ?, ?, ?, ?)'), (taxid, parentid, spname, common, rank, lineage))
     print()
     db.commit()
 
