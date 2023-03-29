@@ -295,7 +295,7 @@ cdef class Tree(object):
             self.dist = value
         elif prop_name == 'support':
             self.support = value
-        elif prop_name is not None and value is not None:
+        else:
             self.props[prop_name] = value
 
     def add_props(self, **props):
