@@ -2,6 +2,7 @@
 # the __all__ variable.
 from warnings import warn
 
+from .config import ETE_DATA_HOME, ETE_CONFIG_HOME, ETE_CACHE_HOME
 from .ncbi_taxonomy import *
 from .gtdb_taxonomy import *
 from .coretype.tree import *
@@ -23,7 +24,4 @@ try:
 except ImportError as e:
     pass
 
-try:
-    from .version import __version__
-except ImportError:
-     __version__ = 'unknown'
+from .version import __version__
