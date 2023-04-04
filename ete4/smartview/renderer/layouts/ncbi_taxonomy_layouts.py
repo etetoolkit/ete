@@ -1,15 +1,22 @@
+import os
 import json
-from pathlib import Path
 
 from ..treelayout import TreeLayout
 from ..faces import RectFace
 
+from ete4.config import ETE_DATA_HOME, update_ete_data
 
 __all__ = [ "LayoutLastCommonAncestor" ]
 
 
+taxid2color_file = ETE_DATA_HOME + '/taxid2color.json'
 
-with open(Path(__file__).parent / "taxid2color.json") as handle:
+if not os.path.exists(taxid2color_file):
+    url = ('https://github.com/etetoolkit/ete-data/raw/main'
+           '/layouts/taxid2color.json')
+    update_ete_data(taxid2color_file, url)
+
+with open(taxid2color_file) as handle:
     _taxid2color = json.load(handle)
 
 def get_level(node, level=0):

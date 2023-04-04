@@ -1,15 +1,32 @@
+import os
 import json
-from pathlib import Path
 
 from ..treelayout import TreeLayout, _TitleCase
 from ..faces import SeqMotifFace
 from ..draw_helpers import Padding
 
+from ete4.config import ETE_DATA_HOME, update_ete_data
 
-with open(Path(__file__).parent / "pfam2color.json") as handle:
+
+pfam2color_file = ETE_DATA_HOME + '/pfam2color.json'
+
+if not os.path.exists(pfam2color_file):
+    url = ('https://github.com/etetoolkit/ete-data/raw/main'
+           '/layouts/pfam2color.json')
+    update_ete_data(pfam2color_file, url)
+
+with open(pfam2color_file) as handle:
     _pfam2color = json.load(handle)
 
-with open(Path(__file__).parent / "smart2color.json") as handle:
+
+smart2color_file = ETE_DATA_HOME + '/smart2color.json'
+
+if not os.path.exists(smart2color_file):
+    url = ('https://github.com/etetoolkit/ete-data/raw/main'
+           '/layouts/smart2color.json')
+    update_ete_data(smart2color_file, url)
+
+with open(smart2color_file) as handle:
     _smart2color = json.load(handle)
 
 

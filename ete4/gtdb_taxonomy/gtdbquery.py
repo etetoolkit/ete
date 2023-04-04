@@ -13,7 +13,7 @@ import math
 import tarfile
 import warnings
 
-from ete4 import ETE_DATA_HOME
+from ete4 import ETE_DATA_HOME, update_ete_data
 
 # from ..coretype.tree  import Tree
 # from ..phylo.phylotree  import Tree
@@ -27,10 +27,6 @@ DB_VERSION = 2
 DEFAULT_GTDBTAXADB = ETE_DATA_HOME + '/gtdbtaxa.sqlite'
 DEFAULT_GTDBTAXADUMP = ETE_DATA_HOME + '/gtdb202dump.tar.gz'
 
-# TODO: Change DEFAULT_GTDBTAXADUMP and where it is used in
-# update_taxonomy_database and/or update_db, and download it whenever
-# it is appropriate from
-# https://github.com/etetoolkit/ete-data/raw/main/gtdbdump/gtdbr202dump.tar.gz
 
 def is_taxadb_up_to_date(dbfile=DEFAULT_GTDBTAXADB):
     """Check if a valid and up-to-date gtdbtaxa.sqlite database exists
@@ -70,8 +66,8 @@ class GTDBTaxa(object):
             print('GTDB database not present yet (first time used?)', file=sys.stderr)
             urlbase = ('https://github.com/etetoolkit/ete-data/raw/main'
                        '/gtdb_taxonomy/gtdb202')
-            os.system(f'wget -nv -O {DEFAULT_GTDBTAXADB}.traverse.pkl {urlbase}/gtdbtaxa.sqlite.traverse.pkl')
-            os.system(f'wget -nv -O {DEFAULT_GTDBTAXADUMP} {urlbase}/gtdb202dump.tar.gz')
+            update_ete_data(f'{DEFAULT_GTDBTAXADB}.traverse.pkl', f'{urlbase}/gtdbtaxa.sqlite.traverse.pkl')
+            update_ete_data(f'{DEFAULT_GTDBTAXADUMP}', f'{urlbase}/gtdb202dump.tar.gz')
 
             self.update_taxonomy_database(taxdump_file=DEFAULT_GTDBTAXADUMP)
 

@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from .. import PhyloTree, GTDBTaxa, ETE_DATA_HOME
+from .. import PhyloTree, GTDBTaxa, ETE_DATA_HOME, update_ete_data
 from ..gtdb_taxonomy import gtdbquery
 
 DATABASE_PATH = ETE_DATA_HOME + '/gtdbtaxa.sqlite'
@@ -16,7 +16,7 @@ class Test_gtdbquery(unittest.TestCase):
         if not os.path.exists(DEFAULT_GTDBTAXADUMP):
             url = ('https://github.com/etetoolkit/ete-data/raw/main'
                    '/gtdb_taxonomy/gtdb202/gtdb202dump.tar.gz')
-            os.system(f'wget -nv -O {DEFAULT_GTDBTAXADUMP} {url}')
+            update_ete_data(DEFAULT_GTDBTAXADUMP, url)
         gtdb.update_taxonomy_database(DEFAULT_GTDBTAXADUMP)
 
         if not os.path.exists(DATABASE_PATH):
