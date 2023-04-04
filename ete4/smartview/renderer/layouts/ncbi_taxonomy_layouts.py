@@ -59,10 +59,10 @@ class LayoutLastCommonAncestor(TreeLayout):
         if node.props.get('sci_name'):
             lca = node.props.get('sci_name')
             color = self.get_color(node)
-            
+
             level = get_level(node, level=self.column)
-            lca_face = RectFace(self.rect_width, float('inf'), 
-                    color = color, 
+            lca_face = RectFace(self.rect_width, float('inf'),
+                    color = color,
                     text = lca,
                     fgcolor = "white",
                     padding_x = 1, padding_y = 1)

@@ -55,7 +55,7 @@ class _LayoutDomains(TreeLayout):
         doms = []
         for name, start, end in dom_list:
             color = self.colormap.get(name, "lightgray")
-            dom = [int(start), int(end), "()", 
+            dom = [int(start), int(end), "()",
                    None, None, color, color,
                    "arial|20|black|%s" %(name)]
             doms.append(dom)
@@ -68,7 +68,7 @@ class _LayoutDomains(TreeLayout):
         if doms or fake_seq:
             seqFace = SeqMotifFace(seq=fake_seq, motifs=doms, width=250,
                     height=10)
-            node.add_face(seqFace, column=self.column, 
+            node.add_face(seqFace, column=self.column,
                     position="aligned",
                     collapsed_only=(not node.is_leaf()))
 
@@ -76,14 +76,14 @@ class _LayoutDomains(TreeLayout):
 def create_domain_layout(prop, name, colormap, active, column):
     # branch_right; column 2; color black
     class Layout(_LayoutDomains):
-        def __init__(self, 
-                prop=prop, 
+        def __init__(self,
+                prop=prop,
                 name=name,
                 colormap=colormap,
                 column=column,
                 *args, **kwargs):
             super().__init__(
-                    prop=prop, 
+                    prop=prop,
                     name=name,
                     colormap=colormap,
                     column=column,
@@ -98,7 +98,7 @@ def create_domain_layout(prop, name, colormap, active, column):
     return Layout
 
 
-domain_layout_args = [ 
+domain_layout_args = [
         [ "pfam",  "Pfam domains",  _pfam2color,  True  ],
         [ "smart", "Smart domains", _smart2color, False  ],
     ]
