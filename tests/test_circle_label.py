@@ -1,11 +1,9 @@
-from __future__ import absolute_import
-from __future__ import print_function
 import os
 import sys
 
 import math
 
-from .. import Tree, CircleFace, RectFace, TextFace, add_face_to_node, TreeStyle
+from ete4 import Tree, CircleFace, RectFace, TextFace, add_face_to_node, TreeStyle
 
 NEWLINE = '\n'
 TAB = '\t'
@@ -19,7 +17,7 @@ def node_layout(annotation):
   def _node_layout(node):
     global _circle_tested
     node.img_style["size"] = 0
-    
+
     if node.is_leaf():
         if node.name not in annotation:
             print('Got unknown leaf "%s"' % (node.name))
@@ -120,5 +118,3 @@ ts.show_branch_length = True
 
 t.show(tree_style=ts)
 #t.render('S032.png', tree_style=ts)
-    
-

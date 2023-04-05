@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 import unittest
 from .datasets import *
 from .test_tree import *

@@ -1,8 +1,8 @@
 import os
 import unittest
 
-from .. import PhyloTree, GTDBTaxa, ETE_DATA_HOME, update_ete_data
-from ..gtdb_taxonomy import gtdbquery
+from ete4 import PhyloTree, GTDBTaxa, ETE_DATA_HOME, update_ete_data
+from ete4.gtdb_taxonomy import gtdbquery
 
 DATABASE_PATH = ETE_DATA_HOME + '/gtdbtaxa.sqlite'
 DEFAULT_GTDBTAXADUMP = ETE_DATA_HOME + '/gtdb202dump.tar.gz'

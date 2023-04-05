@@ -1,8 +1,10 @@
-from __future__ import absolute_import
 import unittest
+
 import numpy
-from .. import ClusterTree, ArrayTable
+
+from ete4 import ClusterTree, ArrayTable
 from .datasets import *
+
 
 class Test_Coretype_ArrayTable(unittest.TestCase):
     """ Tests reading clustering or phylogenetic profile data"""
@@ -33,7 +35,7 @@ class Test_Coretype_ArrayTable(unittest.TestCase):
                                   0.23000000000000001, -0.29999999999999999])
 
         A.remove_column("col4")
-        self.assert_(A.get_column_vector("col4") is None )
+        self.assertTrue(A.get_column_vector("col4") is None)
 
         Abis = A.merge_columns({"merged1": \
                                     ["col1", "col2"],\
@@ -41,7 +43,8 @@ class Test_Coretype_ArrayTable(unittest.TestCase):
                                     ["col5", "col6"]}, \
                                    "mean")
 
-        self.assert_((numpy.round(Abis.get_column_vector("merged1"),3)==numpy.array([-1.02, -1.35, -1.03, -1.1, -1.15, -1.075, -1.37, -1.39 ])).all()==True )
+        self.assertTrue((numpy.round(Abis.get_column_vector("merged1"), 3) ==
+                         numpy.array([-1.02, -1.35, -1.03, -1.1, -1.15, -1.075, -1.37, -1.39 ])).all())
         # Continue this......
 
 if __name__ == '__main__':

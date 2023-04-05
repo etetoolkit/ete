@@ -1,7 +1,7 @@
 import unittest
 
-from ..coretype.tree import Tree
-from ..tools import ete_diff as ediff
+from ete4.coretype.tree import Tree
+from ete4.tools import ete_diff as ediff
 
 
 example1_nw = '(((ao:1,(ap:1,aq:1)1:1)1:1,(ar:1,(as:1,at:1)1:1)1:1)1:1,((aa:1,ab:1)1:1,((ac:1,(ad:1,(ae:1,(af:1,(ag:1,ah:1)1:1)1:1)1:1)1:1)1:1,((ai:1,(aj:1,(ak:1,al:1)1:1)1:1)1:1,(am:1,an:1)1:1)1:1)1:1)1:1);'

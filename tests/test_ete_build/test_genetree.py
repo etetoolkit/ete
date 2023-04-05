@@ -1,9 +1,8 @@
-from __future__ import absolute_import
-from __future__ import print_function
-
 import os
 import multiprocessing
+
 CPUS = min(20, max(1, multiprocessing.cpu_count()-1))
+
 import unittest
 
 from ...tools import ete

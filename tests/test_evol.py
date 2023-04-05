@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import unittest
-from ..evol import EvolTree
+from ete4.evol import EvolTree
 from random import random as rnd
 from copy import deepcopy
 import os

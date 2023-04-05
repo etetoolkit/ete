@@ -1,8 +1,6 @@
-from __future__ import absolute_import
-from __future__ import print_function
 import unittest
 
-from .. import ClusterTree
+from ete4 import ClusterTree
 from .datasets import *
 
 class Test_ClusterTree(unittest.TestCase):

@@ -4,8 +4,8 @@ CPUS = min(20, max(1, multiprocessing.cpu_count()))
 
 import unittest
 
-from ..tools import ete
-from ..evol.control import AVAIL
+from ete4.tools import ete
+from ete4.evol.control import AVAIL
 
 BASEPATH = os.path.abspath(os.path.split(os.path.realpath(__file__))[0])
 DATAPATH = os.path.join(BASEPATH, "ete_evol_data", "S_example")
@@ -19,7 +19,7 @@ class Test_ete_evol(unittest.TestCase):
                f'    --mark Pan_troglodytes --noimg'
                f'    --alg {SDATAPATH}/ali.fasta -t {SDATAPATH}/tree.nw'
                f'    --clear_all -o {OUTPATH} --cpu {CPUS}'
-               f'    --model ') + ' '.join(model for model in AVAIL if not 'XX' in model))
+               f'    --model ') + ' '.join(model for model in AVAIL if not 'XX' in model)
 
         print(cmd)
         args = cmd.split()

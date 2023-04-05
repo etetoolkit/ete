@@ -1,6 +1,6 @@
 import unittest
 
-from .. import PhyloTree, SeqGroup
+from ete4 import PhyloTree, SeqGroup
 from .datasets import *
 
 # Tree used by the tests.

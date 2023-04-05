@@ -5,9 +5,9 @@ import json
 from tempfile import NamedTemporaryFile
 import unittest
 
-from .. import Tree, PhyloTree
-from ..coretype.tree import TreeError
-from ..parser.newick import NewickError
+from ete4 import Tree, PhyloTree
+from ete4.coretype.tree import TreeError
+from ete4.parser.newick import NewickError
 from . import datasets as ds
 
 
@@ -135,7 +135,7 @@ class Test_Coretype_Tree(unittest.TestCase):
 
     def test_newick_formats(self):
         """Test different newick subformats."""
-        from ..parser.newick import print_supported_formats, NW_FORMAT
+        from ete4.parser.newick import print_supported_formats, NW_FORMAT
         #print_supported_formats()
 
         # Let's stress a bit

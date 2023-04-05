@@ -1,4 +1,7 @@
-# test datasets
+"""
+Some example datasets to use in the tests.
+"""
+
 nw_simple1 = '((A, (B,C)),D);'
 nw_simple2 = '((D, (B,C)),A);'
 nw_simple3 = '((B, (A,C)),D);'

@@ -1,11 +1,9 @@
-from __future__ import absolute_import
-from __future__ import print_function
 import unittest
 import os
 import time
-from .. import nexml, phyloxml
+from ete4 import nexml, phyloxml
 
-ETEPATH = os.path.abspath(os.path.split(os.path.realpath(__file__))[0]+'/../../')
+ETEPATH = os.path.abspath(os.path.split(os.path.realpath(__file__))[0]+'/../')
 
 class Test_PhyloXML(unittest.TestCase):
     def test_phyloxml_parser(self):

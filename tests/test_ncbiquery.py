@@ -1,16 +1,16 @@
-from __future__ import absolute_import
 import os
 import unittest
 
-from .. import PhyloTree, NCBITaxa
-from ..ncbi_taxonomy import ncbiquery
+from ete4 import PhyloTree, NCBITaxa
+from ete4.ncbi_taxonomy import ncbiquery
 
 DATABASE_PATH = "test_tmp/testdb.sqlite"
+
 
 class Test_ncbiquery(unittest.TestCase):
 
   def test_00_update_database(self):
-    
+
     if not os.path.exists(DATABASE_PATH):
       ncbiquery.update_db(DATABASE_PATH)
 
@@ -60,15 +60,15 @@ class Test_ncbiquery(unittest.TestCase):
     #Out[9]: [9606, 63221, 741158, 2665952, 2665953, 1425170]
     # New Taxonomies of Homo in NCBI, {2665952: 'environmental samples', 2665953: 'Homo sapiens environmental sample'}
     self.assertEqual(set(out), set([9606, 63221, 741158, 1425170, 2665952, 2665953, 2813598, 2813599]))
-    
+
     out = ncbi.get_descendant_taxa("9605", intermediate_nodes=False)
     #Out[10]: [63221, 741158, 2665953, 1425170]
     self.assertEqual(set(out), set([63221, 741158, 2665953, 1425170, 2813599]))
-    
+
     out = ncbi.get_descendant_taxa("9596", intermediate_nodes=False, rank_limit="species")
     #Out[11]: [9597, 9598]
     self.assertEqual(set(out), set([9597, 9598]))
-    
+
   def test_get_topology(self):
     ncbi = NCBITaxa(dbfile=DATABASE_PATH)
     t1 = ncbi.get_topology([9606, 7507, 9604])
@@ -79,20 +79,22 @@ class Test_ncbiquery(unittest.TestCase):
 
     # Test taxid synonyms
     self.assertEqual(ncbi.get_topology(["42099"]).write(properties=["species"], format=5), "1223560:1;")
+    # TODO: Check if we just need to change  1223560:1 -> 1223560:0
+    # (What does this test mean?)
 
-    
+
     for target in [9604, 9443, "9443"]:
       t1 = ncbi.get_descendant_taxa(target, return_tree=True)
       t2 = ncbi.get_topology([target])
       t3 = ncbi.get_topology(ncbi.get_descendant_taxa(target))
       t4 = ncbi.get_topology(list(map(str, ncbi.get_descendant_taxa(target))))
-      
+
       self.assertEqual(set(t1.get_leaf_names()), set(t2.get_leaf_names()))
       self.assertEqual(set(t2.get_leaf_names()), set(t3.get_leaf_names()))
       self.assertEqual(set(t3.get_leaf_names()), set(t4.get_leaf_names()))
       diffs1 = t1.compare(t2, unrooted=True)
       diffs2 = t2.compare(t3, unrooted=True)
-      diffs3 = t3.compare(t4, unrooted=True)      
+      diffs3 = t3.compare(t4, unrooted=True)
       self.assertEqual(diffs1["rf"], 0.0)
       self.assertEqual(diffs2["rf"], 0.0)
       self.assertEqual(diffs3["rf"], 0.0)
@@ -106,5 +108,3 @@ class Test_ncbiquery(unittest.TestCase):
 
 if __name__ == '__main__':
   unittest.main()
-
-  
