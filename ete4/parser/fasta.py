@@ -13,7 +13,7 @@ def read_fasta(source, obj=None, header_delimiter="\t", fix_duplicates=True):
     else:
         SC = obj
 
-    names = set([])
+    names = set()
     seq_id = -1
 
     # Prepares handle from which read sequences
@@ -66,6 +66,9 @@ def read_fasta(source, obj=None, header_delimiter="\t", fix_duplicates=True):
             # append to seq_string
             SC.id2seq[seq_id] += s
 
+    if os.path.isfile(source):
+        _source.close()
+
     if seq_name and SC.id2seq[seq_id] == "":
         print(seq_name,"has no sequence", file=STDERR)
         return None
@@ -86,8 +89,7 @@ def write_fasta(sequences, outfile = None, seqwidth = 80):
                        name, seq, comment in sequences])
 
     if outfile is not None:
-        OUT = open(outfile,"w")
-        OUT.write(text)
-        OUT.close()
+        with open(outfile, 'w') as fout:
+            fout.write(text)
     else:
         return text
