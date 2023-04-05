@@ -11,53 +11,41 @@ from ..parser.paml import read_paml, write_paml
 from ..parser.phylip import read_phylip, write_phylip
 
 
-__all__ = ["SeqGroup"]
+__all__ = ['SeqGroup']
+
 
 class SeqGroup(object):
-    """
-    SeqGroup class can be used to store a set of sequences (aligned
-    or not).
+    """Class to store a set of sequences (aligned or not)."""
 
+    def __init__(self, sequences=None, format='fasta', fix_duplicates=True, **kwargs):
+        """Return a SeqGroup object.
 
-    :argument sequences: Path to the file containing the sequences or,
-        alternatively, the text string containing the same
-        information.
+        :param sequences: Path to the file containing the sequences or,
+            alternatively, the text string containing the same
+            information.
 
-    :argument fasta format: the format in which sequences are
-        encoded. Current supported formats are: ``fasta``, ``phylip``
-        (phylip sequencial) and ``iphylip`` (phylip
-        interleaved). Phylip format forces sequence names to a maximum
-        of 10 chars. To avoid this effect, you can use the relaxed
-        phylip format: ``phylip_relaxed`` and ``iphylip_relaxed``.
+        :param fasta format: the format in which sequences are
+            encoded. Current supported formats are: ``fasta``, ``phylip``
+            (phylip sequencial) and ``iphylip`` (phylip
+            interleaved). Phylip format forces sequence names to a maximum
+            of 10 chars. To avoid this effect, you can use the relaxed
+            phylip format: ``phylip_relaxed`` and ``iphylip_relaxed``.
 
-    ::
+        ::
 
-     msf = ">seq1\\nAAAAAAAAAAA\\n>seq2\\nTTTTTTTTTTTTT\\n"
-     seqs = SeqGroup(msf, format="fasta")
-     print seqs.get_seq("seq1")
-     """
+          msf = '>seq1\\nAAAAAAAAAAA\\n>seq2\\nTTTTTTTTTTTTT\\n'
+          seqs = SeqGroup(msf, format='fasta')
+          print seqs.get_seq('seq1')
+        """
 
-    def __len__(self):
-        return len(self.id2seq)
-
-    def __contains__(self, item):
-        return item in self.name2id
-
-    def __str__(self):
-        return write_fasta(self)
-
-    def __iter__(self):
-        return self.iter_entries()
-
-    def __init__(self, sequences=None , format="fasta", fix_duplicates=True, **kwargs):
         self.parsers = {
-            "fasta": [read_fasta, write_fasta, {}],
-            "phylip": [read_phylip, write_phylip, {"interleaved":False, "relaxed":False}],
-            "iphylip": [read_phylip, write_phylip, {"interleaved":True, "relaxed":False}],
-            "phylip_relaxed": [read_phylip, write_phylip, {"interleaved":False, "relaxed":True}],
-            "iphylip_relaxed": [read_phylip, write_phylip, {"interleaved":True, "relaxed":True}],
-            "paml"   : [read_paml  , write_paml  , kwargs                   ]
-            }
+            'fasta': [read_fasta, write_fasta, {}],
+            'phylip': [read_phylip, write_phylip, {'interleaved': False, 'relaxed': False}],
+            'iphylip': [read_phylip, write_phylip, {'interleaved': True, 'relaxed': False}],
+            'phylip_relaxed': [read_phylip, write_phylip, {'interleaved': False, 'relaxed': True}],
+            'iphylip_relaxed': [read_phylip, write_phylip, {'interleaved': True, 'relaxed': True}],
+            'paml': [read_paml, write_paml, kwargs]
+        }
 
         self.id2name = {}
         self.name2id = {}
@@ -71,53 +59,68 @@ class SeqGroup(object):
                 args = self.parsers[format][2]
                 read(sequences, obj=self, fix_duplicates=fix_duplicates, **args)
             else:
-                raise ValueError("Unsupported format: [%s]" %format)
+                raise ValueError('Unsupported format: [%s]' % format)
+
+    def __len__(self):
+        return len(self.id2seq)
+
+    def __contains__(self, item):
+        return item in self.name2id
+
+    def __str__(self):
+        return write_fasta(self)
+
+    def __iter__(self):
+        return self.iter_entries()
 
     def __repr__(self):
-        return "SeqGroup (%s)" %hex(self.__hash__())
+        return 'SeqGroup (%s)' % hex(self.__hash__())
 
-    def write(self, format="fasta", outfile=None):
-        """ Returns the text representation of the sequences in the
-        supplied given format (default=FASTA). If "oufile" argument is
-        used, the result is written into the given path."""
+    def write(self, format='fasta', outfile=None):
+        """Return the text representation of the sequences.
 
+        :param format: The format for the output representation (default=FASTA).
+        :param outfile: If given, the result is written to that file.
+        """
         format = format.lower()
         if format in self.parsers:
             write = self.parsers[format][1]
             args = self.parsers[format][2]
             return write(self, outfile, **args)
         else:
-            raise ValueError("Unsupported format: [%s]" %format)
+            raise ValueError('Unsupported format: [%s]' % format)
 
     def iter_entries(self):
-        """ Returns an iterator over all sequences in the
-        collection. Each item is a tuple with the sequence name,
-        sequence, and sequence comments """
+        """Return an iterator over all sequences in the collection.
+
+        Each item is a tuple with the sequence name, sequence, and sequence comments.
+        """
         for i, seq in self.id2seq.items():
-            yield self.id2name[i], seq,  self.id2comment.get(i, [])
+            yield self.id2name[i], seq, self.id2comment.get(i, [])
 
     def get_seq(self, name):
-        """ Returns the sequence associated to a given entry name."""
+        """Return the sequence associated to a given entry name."""
         return self.id2seq[self.name2id[name]]
 
     def get_entries(self):
-        """ Returns the list of entries currently stored."""
+        """Return the list of entries currently stored."""
         keys = list(self.id2seq.keys())
         seqs = list(self.id2seq.values())
         comments = [self.id2comment.get(x, []) for x in  keys]
         names = [self.id2name[x] for x in keys]
         return list(zip(names, seqs, comments))
 
-    def set_seq(self, name, seq, comments = None):
-        """Updates or adds a sequence """
-        if comments is None:
-            comments = []
+    def set_seq(self, name, seq, comments=None):
+        """Add or update a sequence."""
+        comments = comments or []
+
         name = name.strip()
-        seq = seq.replace(" ", "")
-        seq = seq.replace("\t", "")
-        seq = seq.replace("\n", "")
-        seq = seq.replace("\r", "")
+
+        for c in ' \t\n\r':
+            seq = seq.replace(c, '')
+
         seqid = self.name2id.get(name, max([0]+list(self.name2id.values()))+1)
+
         self.name2id[name] = seqid
         self.id2name[seqid] = name
         self.id2comment[seqid] = comments
