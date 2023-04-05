@@ -1,6 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
-
 import sys
 import os
 from argparse import ArgumentParser
@@ -24,7 +21,7 @@ def _main():
     parser.add_argument("--debug", dest="debug", action="store_true")
     parser.add_argument("--dir", dest='directory', type=str, default='')
     parser.add_argument("--cpu", dest='cores', type=int, default=1)
-    parser.add_argument(dest="targets", nargs="*")    
+    parser.add_argument(dest="targets", nargs="*")
     args = parser.parse_args()
     APPSPATH = os.path.expanduser("~/.etetoolkit/ext_apps-latest/")
     ETEHOMEDIR = os.path.expanduser("~/.etetoolkit/")
@@ -37,9 +34,9 @@ def _main():
         # if not, try a user local copy
         APPSPATH = pjoin(ETEHOMEDIR, 'ext_apps-latest')
 
-    
+
     TARGET_DIR = args.directory
-    
+
     while not pexist(TARGET_DIR):
         TARGET_DIR = input('target directory? [%s]:' %ETEHOMEDIR).strip()
         if TARGET_DIR == '':
@@ -64,4 +61,3 @@ def _main():
     sys.path.insert(0, pjoin(TARGET_DIR, 'ext_apps-latest'))
     import compile_all
     errors = compile_all.compile_all(targets=args.targets, verbose=args.verbose, cores=args.cores)
-

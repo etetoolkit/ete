@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
 import sys
 import os
 import re
@@ -135,7 +133,7 @@ def get_call(appname, apps_path, exec_path, cores):
     except KeyError:
         return None
 
-    bin_path = apps_path 
+    bin_path = apps_path
     tmp_path = os.path.join(exec_path, "tmp")
     #apps_base = apps_path.rstrip("/x86-64").rstrip("/x86-32")
     cmd = re.sub("%BIN%", bin_path, cmd)
@@ -168,7 +166,7 @@ def test_apps(apps):
                 # print (out)
                 # print (err)
                 errors += 1
-                
+
                 #log.debug(test_cmd)
                 #log.debug(subprocess.check_output(test_cmd.rstrip("wc -l")), shell=True)
     if errors:

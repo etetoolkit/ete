@@ -1,6 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
-
 import re
 import os
 import sys
@@ -29,14 +26,14 @@ def iter_fasta_seqs(source):
     for line in _source:
         line = line.strip()
         if line.startswith('#') or not line:
-            continue       
+            continue
         elif line.startswith('>'):
             # yield seq if finished
             if seq_name and not seq_chunks:
                 raise ValueError("Error parsing fasta file. %s has no sequence" %seq_name)
             elif seq_name:
                 yield seq_name, ''.join(seq_chunks)
-                
+
             seq_name = line[1:].split('\t')[0].strip()
             seq_chunks = []
         else:
@@ -44,23 +41,26 @@ def iter_fasta_seqs(source):
                 raise Exception("Error reading sequences: Wrong format.")
             seq_chunks.append(line.replace(" ",""))
 
+    if os.path.isfile(source):
+        _source.close()
+
     # return last sequence
     if seq_name and not seq_chunks:
         raise ValueError("Error parsing fasta file. %s has no sequence" %seq_name)
     elif seq_name:
-        yield seq_name, ''.join(seq_chunks)        
+        yield seq_name, ''.join(seq_chunks)
 
-        
+
 def load_sequences(args, seqtype, target_seqs, target_species, cached_seqs):
     seqfile = getattr(args, "%s_seed_file" %seqtype)
-    skipped_seqs = 0                   
-    loaded_seqs = {} 
-                   
+    skipped_seqs = 0
+    loaded_seqs = {}
+
     log.log(28, "Reading %s sequences from %s...", seqtype, seqfile)
     fix_dups = True if args.rename_dup_seqnames else False
     if args.seq_name_parser:
         NAME_PARSER = re.compile(args.seq_name_parser)
-        
+
     seq_repl = {}
     # Clear problematic symbols
     if not args.no_seq_correct:
@@ -85,10 +85,10 @@ def load_sequences(args, seqtype, target_seqs, target_species, cached_seqs):
                 percent = (len(loaded_seqs) / float(len(target_seqs))) * 100.0
             else:
                 percent = 0
-                estimated_time = -1            
+                estimated_time = -1
             print("loaded:%07d skipped:%07d scanned:%07d %0.1f%%" %\
                   (len(loaded_seqs), skipped_seqs, c1, percent), end='\n', file=sys.stderr)
-        
+
         if args.seq_name_parser:
             name_match = re.search(NAME_PARSER, raw_seqname)
             if name_match:
@@ -97,19 +97,19 @@ def load_sequences(args, seqtype, target_seqs, target_species, cached_seqs):
                 raise ConfigError("Could not parse sequence name: %s" %raw_seqname)
         else:
             seq_name = raw_seqname
-        
+
         if target_seqs and loaded_seqs == len(target_seqs):
-            break 
+            break
         elif target_seqs and seqname not in target_seqs:
             skipped_seqs += 1
             continue
         elif target_species and seqname.split(args.spname_delimiter, 1)[0] not in target_species:
             skipped_seqs += 1
             continue
-            
+
         if seq_repl:
             seq = SEQ_PARSER.sub(lambda m: seq_repl[m.groups()[0]], seq)
-            
+
         if cached_seqs:
             try:
                 seqid = cached_seqs[seqname]
@@ -124,11 +124,11 @@ def load_sequences(args, seqtype, target_seqs, target_species, cached_seqs):
                 seqname = seqname + "_%d"%dupnames[seqname]
             else:
                 raise DataError("Duplicated sequence name [%s] found. Fix manually or use --rename-dup-seqnames to continue" %(seqname))
-            
-            
+
+
         loaded_seqs[seqname] = seqid
         db.add_seq(seqid, seq, seqtype)
-        if not cached_seqs:            
+        if not cached_seqs:
             db.add_seq_name(seqid, seqname)
     print('\n', file=sys.stderr)
     db.seqconn.commit()
@@ -136,7 +136,7 @@ def load_sequences(args, seqtype, target_seqs, target_species, cached_seqs):
 
 
 
-    
+
         # if not args.no_seq_checks:
         #     # Load unknown symbol inconsistencies
         #     if seqtype == "nt" and set(seq) - NT:
@@ -278,4 +278,3 @@ def hash_names(target_names):
     hash2name = {k: v[0] for k,v in hash2name.items()}
     name2hash = {v: k for k,v in hash2name.items()}
     return name2hash, hash2name
-

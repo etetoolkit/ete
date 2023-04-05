@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 import os
 import logging
 log = logging.getLogger("main")
@@ -29,12 +28,12 @@ class TCoffee(AlgTask):
         args[""] = pjoin(GLOBALS["input_dir"], self.multiseq_file)
         for k, v in self.args.items():
             args[k] = v
-        args["-outfile"] = "mcoffee.fasta" 
+        args["-outfile"] = "mcoffee.fasta"
         job = Job(self.conf["app"]["tcoffee"], args, parent_ids=[self.nodeid])
         job.add_input_file(self.multiseq_file)
         job.cores = self.conf["threading"]["tcoffee"]
         self.jobs.append(job)
-        
+
     def finish(self):
         alg = SeqGroup(os.path.join(self.jobs[0].jobdir, "mcoffee.fasta"))
         fasta = alg.write(format="fasta")

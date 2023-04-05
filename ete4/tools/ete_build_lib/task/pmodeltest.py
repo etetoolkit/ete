@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 import logging
 log = logging.getLogger("main")
 
@@ -27,7 +26,7 @@ class PModelTest(ModelTesterTask):
             base_args["-m"] = conf[confname]["_nt_models"]
             self.models = conf[confname]["_nt_models"]
         task_name = "PModelTest-[%s]" %self.models
-        
+
         ModelTesterTask.__init__(self, nodeid, "mchooser", task_name,
                                  base_args, conf[confname])
 
@@ -46,20 +45,15 @@ class PModelTest(ModelTesterTask):
 
     def finish(self):
         main_job = self.jobs[0]
-        aic_table = pjoin(main_job.jobdir, "pmodeltest.txt")        
-        best = open(aic_table).readline().split('\t')        
+        aic_table = pjoin(main_job.jobdir, "pmodeltest.txt")
+        best = open(aic_table).readline().split('\t')
         best_model = "pmodeltest-%s" %(best[0].strip())
         if "--nogam" not in self.args and "+G" not in best_model:
             best_model += "!G"
         if "--nofrq" not in self.args and "+F" not in best_model:
-            best_model += "!F"            
+            best_model += "!F"
         if "--noinv" not in self.args and "+I" not in best_model:
             best_model += "!I"
-                
+
         log.log(22, "%s model selection output:\n%s" %(best_model, open(aic_table).read()))
         ModelTesterTask.store_data(self, best_model, aic_table)
-
-
-
-
-

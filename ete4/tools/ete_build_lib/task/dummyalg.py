@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 import os
 import sys
 import logging
@@ -27,7 +26,7 @@ class ManualAlg(AlgTask):
 
     def load_jobs(self):
         pass
-    
+
     def finish(self):
         # Uses the original MSF file as alignment
         alg_file = os.path.join(self.multiseq_file)
@@ -42,8 +41,8 @@ class ManualAlg(AlgTask):
 
         lengths = set([len(seq) for seq in alg.id2seq.values()])
         if len(lengths) > 1:
-            raise TaskError("Original sequences are not aligned!")            
-        
+            raise TaskError("Original sequences are not aligned!")
+
         fasta = alg.write(format="fasta")
         phylip = alg.write(format="iphylip_relaxed")
         AlgTask.store_data(self, fasta, phylip)

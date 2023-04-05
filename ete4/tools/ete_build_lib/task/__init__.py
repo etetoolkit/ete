@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 # Multi sequence file handlers
 from .msf import *
 
