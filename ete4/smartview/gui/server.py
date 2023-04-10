@@ -1105,8 +1105,10 @@ def add_trees_from_request():
     if request.form:
         trees = get_trees_from_form()
     else:
-        data = get_fields(required=['name', 'newick'],  # id
-                          valid_extra=['layouts', 'description', 'b64pickle'])
+        extra = ['layouts', 'description', 'b64pickle', 'popup_prop_keys']
+
+        data = get_fields(required=['name', 'newick', 'id'],
+                          valid_extra=extra)
         trees = [data]
 
     return {data['name']: add_tree(data) for data in trees}
@@ -1131,8 +1133,8 @@ def get_trees_from_form():
             'newick': form.get('newick'),
             'b64pickle': form.get('b64pickle'),
             'description': form.get('description', ''),
-            'layouts': form.get('layouts', [])
-            }]
+            'layouts': form.get('layouts', []),
+            'popup_prop_keys': form.get('popup_prop_keys', [])}]
 
 
 def get_file_contents(fp):
@@ -1155,7 +1157,10 @@ def add_tree(data):
     bpickle = data.get('b64pickle')
     layouts = data.get('layouts', [])
     if type(layouts) == str:
-        layouts = layouts.split(",")
+        layouts = layouts.split(',')
+    popup_prop_keys = data.get('popup_prop_keys', [])
+    if type(popup_prop_keys) == str:
+        popup_prop_keys = popup_prop_keys.split(',')
 
     del_tree(tid)  # delete if there is a tree with same id
 
@@ -1173,6 +1178,7 @@ def add_tree(data):
     app_tree.name = name
     app_tree.tree = tree
     app_tree.layouts = retrieve_layouts(layouts)
+    app_tree.popup_prop_keys = popup_prop_keys
 
     print("Tree added to app.trees")
 
