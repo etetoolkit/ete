@@ -385,7 +385,7 @@ async function set_query_string_values() {
 
     for (const [param, value] of params) {
         if (param === "tree")
-            view.tree = trees[value] || value;
+            view.tree = value;
         else if (param === "subtree")
             view.subtree = value;
         else if (param === "x")
