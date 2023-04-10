@@ -134,6 +134,15 @@ cdef class Tree(object):
         self._children = []
         self.add_children(value)
 
+    @property
+    def id(self):
+        reversed_id = []
+        node = self
+        while node.up:
+            reversed_id.append(node.up.children.index(node))
+            node = node.up
+        return reversed_id[::-1]
+
     def _get_style(self):
         if self._img_style is None:
             self._img_style = NodeStyle()
