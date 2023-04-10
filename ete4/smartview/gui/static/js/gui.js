@@ -14,7 +14,7 @@ import { api, api_put, escape_html } from "./api.js";
 import { remove_collapsed } from "./collapse.js";
 
 export { view, menus, on_tree_change, on_drawer_change, show_minimap,
-         tree_command, get_tid, on_box_click, on_box_wheel, 
+         tree_command, get_tid, on_box_click, on_box_wheel,
          on_box_mouseenter, on_box_mouseleave, coordinates,
          reset_view, show_help, sort, get_active_layouts };
 
@@ -504,9 +504,9 @@ function reset_node_count() {
 
 function get_active_layouts() {
     return  Object.entries(view.layouts).reduce((all, [key, lys]) => {
-        Object.entries(lys).forEach(([ly, val]) => { 
-            if (val === true) 
-                all.push(`${key}:${ly}`) 
+        Object.entries(lys).forEach(([ly, val]) => {
+            if (val === true)
+                all.push(`${key}:${ly}`)
         });
         return all;
     }, []);
@@ -787,14 +787,14 @@ function on_box_wheel(event, box) {
 
 
 function on_box_mouseenter(node_id, properties) {
-    notify_parent("hover", { 
+    notify_parent("hover", {
         eventType: "mouseenter",
         node: { id: String(node_id), ...properties } })
 }
 
 
 function on_box_mouseleave(node_id, properties) {
-    notify_parent("hover", { 
+    notify_parent("hover", {
         eventType: "mouseleave",
         node: { id: String(node_id), ...properties } })
 }
