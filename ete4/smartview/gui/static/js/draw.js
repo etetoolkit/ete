@@ -569,17 +569,17 @@ function create_item(g, item, tl, zoom) {
     }
     else if (item[0] === "array") {
         const [ , box, array] = item;
-        const [x0, y0, dx0, dy0] = box;
+        const [x0, y, dx0, dy] = box;
         const dx = dx0 / array.length / zx;
 
-        const [y, dy] = pad(y0, dy0, view.array.padding);
+        //const [y, dy] = pad(y0, dy0, view.array.padding);
 
         const g = create_svg_element("g");
         for (let i = 0, x = x0; i < array.length; i++, x+=dx) {
             const r = view.drawer.type === "rect" ?
-                create_rect([x, y, dx, dy], tl, zx, zy) :
+                create_rect([x, y, dx, dy], tl, zx, zy, "", {rounded:null}) :
                 create_asec([x, y, dx, dy], tl, zx);
-            r.style.stroke = `hsl(${array[i]}, 100%, 50%)`;
+            r.style.fill = array[i]; //`hsl(${array[i]}, 100%, 50%)`;
             g.appendChild(r);
         }
 
