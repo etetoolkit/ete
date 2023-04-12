@@ -17,7 +17,7 @@ def pickle_pack(data):
 def pickle_unpack(data):
     return pickle.loads(base64.b64decode(data))
 
-def b64gzip_pack(data):    
+def b64gzip_pack(data):
     return base64.b64encode(gzip.compress(bytes(data, 'utf-8'))).decode()
 
 def b64gzip_unpack(data):
@@ -26,56 +26,56 @@ def b64gzip_unpack(data):
 
 def dumps(t, encoder='pickle', pack=False):
     OUT = io.StringIO()
-    if encoder not in ['pickle', 'json']: 
+    if encoder not in ['pickle', 'json']:
         raise Exception("Invalid encoder")
 
     for i, n in enumerate(t.traverse()):
         n.props['__id'] = i
-    next_nodes = [t]        
-    
-    while next_nodes: 
-        n = next_nodes.pop() 
+    next_nodes = [t]
+
+    while next_nodes:
+        n = next_nodes.pop()
         next_nodes.extend(n.children)
-        
-        if encoder == 'json': 
+
+        if encoder == 'json':
             packed_content = json.dumps(n.props)
         elif encoder == 'pickle':
             packed_content = pickle_pack(n.props)
 
         print('p', n.props['__id'], packed_content, sep='\t', file=OUT)
-        
-        if n.up: 
+
+        if n.up:
             print('t', n.props['__id'], n.up.props['__id'], sep='\t', file=OUT)
-        else: 
+        else:
             print('t', n.props['__id'], '', sep='\t', file=OUT)
 
-    if pack: 
+    if pack:
         return b64gzip_pack(OUT.getvalue())
-    else: 
+    else:
         return OUT.getvalue()
 
 def loads(INPUT, encoder='pickle', unpack=False):
-    if unpack: 
+    if unpack:
         INPUT = b64gzip_unpack(INPUT).decode()
 
-    if encoder not in ['pickle', 'json']: 
+    if encoder not in ['pickle', 'json']:
         raise Exception("Invalid encoder")
     id2node = {}
     root = None
-    for line in io.StringIO(INPUT).readlines(): 
+    for line in io.StringIO(INPUT).readlines():
         etype, nid, b = map(str.strip, line.split('\t'))
         if nid not in id2node:
-            node = id2node[nid] = Tree() 
+            node = id2node[nid] = Tree()
 
-        if etype == 'p':                         
-            if encoder == 'pickle': 
+        if etype == 'p':
+            if encoder == 'pickle':
                 node.props = pickle_unpack(b)
-            if encoder == 'json': 
+            if encoder == 'json':
                 node.props = json.loads(b)
-        elif etype == 't': 
-            if b: 
+        elif etype == 't':
+            if b:
                 id2node[b].add_child(node)
                 node.up = id2node[b]
-            else: 
+            else:
                 root = node
     return root
