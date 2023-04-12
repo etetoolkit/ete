@@ -78,10 +78,10 @@ class Test_ncbiquery(unittest.TestCase):
     self.assertEqual(sorted(t2.get_leaf_names()), ["678", "7507", "9606"])
 
     # Test taxid synonyms
-    self.assertEqual(ncbi.get_topology(["42099"]).write(properties=["species"], format=5), "1223560:1;")
-    # TODO: Check if we just need to change  1223560:1 -> 1223560:0
-    # (What does this test mean?)
-
+    self.assertEqual(ncbi.get_topology(["42099"]).write(properties=["species"], format=5), "1223560:0;")
+    # The id 42099 is for https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=42099
+    # which corresponds to "Phytopythium vexans DAOM BR484", which has id 1223560
+    # https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=1223560
 
     for target in [9604, 9443, "9443"]:
       t1 = ncbi.get_descendant_taxa(target, return_tree=True)
