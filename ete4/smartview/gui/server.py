@@ -1178,7 +1178,8 @@ def add_tree(data):
     app_tree.name = name
     app_tree.tree = tree
     app_tree.layouts = retrieve_layouts(layouts)
-    app_tree.popup_prop_keys = popup_prop_keys
+    if popup_prop_keys: # if data doesn't come from post, this popup_prop_keys will be empty
+        app_tree.popup_prop_keys = popup_prop_keys
 
     print("Tree added to app.trees")
 
