@@ -1101,7 +1101,7 @@ def sort(tree_id, node_id, key_text, reverse):
 
 
 def add_trees_from_request():
-    "Add trees to the app dict return a dict of {name: id}"
+    "Add trees to the app dict and return a dict of {name: id}"
     if request.form:
         trees = get_trees_from_form()
     else:

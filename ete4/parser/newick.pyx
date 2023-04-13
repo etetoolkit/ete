@@ -406,14 +406,17 @@ def _read_node_data(subnw, current_node, node_type, matcher, formatcode):
         raise NewickError("Unexpected newick format '%s' " %subnw[0:50])
     return
 
+
 def write_newick(rootnode, properties=None, format=1, format_root_node=True,
                  is_leaf_fn=None, dist_formatter=None, support_formatter=None,
                  name_formatter=None, quoted_names=False):
     """ Iteratively export a tree structure and returns its NHX
     representation. """
     newick = []
-    leaf = is_leaf_fn if is_leaf_fn else lambda n: not bool(n.children)
-    for postorder, node in rootnode.iter_prepostorder(is_leaf_fn=is_leaf_fn):
+
+    leaf = is_leaf_fn or (lambda n: not n.children)
+
+    for postorder, node in rootnode.iter_prepostorder(is_leaf_fn=leaf):
         if postorder:
             newick.append(")")
             if node.up is not None or format_root_node:
