@@ -1158,7 +1158,7 @@ def add_tree(data):
     layouts = data.get('layouts', [])
     if type(layouts) == str:
         layouts = layouts.split(',')
-    popup_prop_keys = data.get('popup_prop_keys', [])
+    popup_prop_keys = data.get('popup_prop_keys', DEFAULT_POPUP_PROP_KEYS)
     if type(popup_prop_keys) == str:
         popup_prop_keys = popup_prop_keys.split(',')
 
