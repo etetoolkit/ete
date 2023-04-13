@@ -3,7 +3,6 @@ Prototype of the "future ete format", an alternative to the newick format,
 that encodes types too (and is probably faster).
 """
 
-import sys
 import io
 import json
 import pickle
