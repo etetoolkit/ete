@@ -552,7 +552,7 @@ class RectFace(Face):
             'fill': self.color, 
             'opacity': self.opacity,
             'stroke': self.stroke_color,
-            'stroke_width': self.stroke_width
+            'stroke-width': self.stroke_width
             }
         if self.text and circ_drawer:
             rect_id = get_random_string(10)
