@@ -1,24 +1,21 @@
-from collections import namedtuple
-
 from ..treelayout import TreeLayout
 from ..nodestyle import NodeStyle
-from ..faces import Face, AttrFace, TextFace,\
-        CircleFace, RectFace,\
-        OutlineFace, AlignLinkFace
+from ..faces import AttrFace, TextFace, OutlineFace, AlignLinkFace
 
 from ..draw_helpers import summary, Padding
 
 
-__all__ = [ "LayoutLeafName", "LayoutNumberLeaves",
-        "LayoutBranchLength", "LayoutBranchSupport",
-        "LayoutOutline" ]
+__all__ = ['LayoutLeafName', 'LayoutNumberLeaves',
+           'LayoutBranchLength', 'LayoutBranchSupport',
+           'LayoutOutline']
+
 
 class LayoutLeafName(TreeLayout):
     def __init__(self, name='Leaf name',
-            pos='branch_right', color='black',
-            ftype='sans-serif',
-            min_fsize=4, max_fsize=15,
-            padding_x=5, padding_y=0):
+                 pos='branch_right', color='black',
+                 ftype='sans-serif',
+                 min_fsize=4, max_fsize=15,
+                 padding_x=5, padding_y=0):
         super().__init__(name)
         self.pos = pos
         self.aligned_faces = self.pos == 'aligned'
@@ -28,7 +25,8 @@ class LayoutLeafName(TreeLayout):
         self.max_fsize = max_fsize
         self.padding = Padding(padding_x, padding_y)
 
-        self.face = AttrFace(attr='name', name='leaf_name',
+        self.face = AttrFace(
+            attr='name', name='leaf_name',
             ftype=self.ftype,
             min_fsize=self.min_fsize, max_fsize=self.max_fsize,
             color=self.color, padding_x=self.padding.x, padding_y=self.padding.y)
@@ -41,7 +39,7 @@ class LayoutLeafName(TreeLayout):
             names = summary(node.children)
             texts = names if len(names) < 6 else (names[:3] + ['...'] + names[-2:])
             for i, text in enumerate(texts):
-                node.add_face(TextFace(text, name='leaf_name', 
+                node.add_face(TextFace(text, name='leaf_name',
                                 color=self.color, ftype=self.ftype,
                                 min_fsize=self.min_fsize, max_fsize=self.max_fsize,
                                 padding_x=self.padding.x, padding_y=self.padding.y),
@@ -52,7 +50,7 @@ class LayoutNumberLeaves(TreeLayout):
     def __init__(self, name="Number of leaves",
             pos='branch_right', collapsed_only=True,
             formatter='(%s)', color="black",
-            min_fsize=4, max_fsize=15, ftype="sans-serif", 
+            min_fsize=4, max_fsize=15, ftype="sans-serif",
             padding_x=5, padding_y=0):
 
         super().__init__(name)
@@ -83,15 +81,15 @@ class LayoutNumberLeaves(TreeLayout):
                 node.add_face(nleaves_face, position=pos, column=0)
 
 
-def _get_layout_branch_attr(attr, pos, name=None, 
+def _get_layout_branch_attr(attr, pos, name=None,
                            formatter=None, color='black',
-                           ftype='sans-serif', 
+                           ftype='sans-serif',
                            min_fsize=6, max_fsize=15,
                            padding_x=0, padding_y=0):
     branch_attr_face = AttrFace(attr,
             formatter=formatter,
             name=name or f'branch_{attr}',
-            color=color, ftype=ftype, 
+            color=color, ftype=ftype,
             min_fsize=min_fsize, max_fsize=max_fsize,
             padding_x=padding_x,
             padding_y=padding_y)
@@ -105,9 +103,9 @@ def _get_layout_branch_attr(attr, pos, name=None,
 
 class LayoutBranchLength(TreeLayout):
     def __init__(self, name='Branch length',
-            pos='branch_top', 
+            pos='branch_top',
             formatter='%0.5s',
-            color='#8d8d8d', ftype="sans-serif", 
+            color='#8d8d8d', ftype="sans-serif",
             min_fsize=6, max_fsize=15,
             padding_x=2, padding_y=0):
         super().__init__(name)
@@ -124,14 +122,14 @@ class LayoutBranchLength(TreeLayout):
                 formatter=formatter,
                 name='Branch length',
                 pos=pos,
-                color=color, ftype=self.ftype, 
+                color=color, ftype=self.ftype,
                 min_fsize=min_fsize, max_fsize=max_fsize,
                 padding_x=padding_x, padding_y=padding_y)
 
 
 class LayoutBranchSupport(TreeLayout):
     def __init__(self, name='Branch support',
-            pos='branch_bottom', 
+            pos='branch_bottom',
             formatter='%0.4s',
             color='#fa8072',  ftype="sans-serif",
             min_fsize=6, max_fsize=15,
@@ -150,25 +148,25 @@ class LayoutBranchSupport(TreeLayout):
                 formatter=formatter,
                 name="Branch support",
                 pos=pos,
-                color=color, ftype=self.ftype, 
+                color=color, ftype=self.ftype,
                 min_fsize=min_fsize, max_fsize=max_fsize,
                 padding_x=padding_x, padding_y=padding_y)
 
 
 class LayoutOutline(TreeLayout):
     def __init__(self, name=None,
-            stroke_color="black", stroke_width=0.5, 
+            stroke_color="black", stroke_width=0.5,
             color="lightgray", opacity=0.3, collapsing_height=5):
         super().__init__(None)
 
         self.always_render = True
 
-        self.face = OutlineFace(stroke_color="black", stroke_width=stroke_width, 
+        self.face = OutlineFace(stroke_color="black", stroke_width=stroke_width,
             color=color, opacity=opacity, collapsing_height=collapsing_height)
 
     def set_node_style(self, node):
         if not node.is_leaf():
-            node.add_face(self.face, 
+            node.add_face(self.face,
                     position="branch_right", column=0,
                     collapsed_only=True)
 
