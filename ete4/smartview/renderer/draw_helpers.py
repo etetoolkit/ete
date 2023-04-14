@@ -30,7 +30,8 @@ def summary(nodes, prop="name"):
 
 def first_value(tree, prop):
     "Return the value of the requested property for the first node that has it"
-    return next((node.props.get(prop) for node in tree.traverse('preorder') if node.props.get(prop)), '')
+    return next((node.props.get(prop) for node in tree.traverse('preorder')
+                 if node.props.get(prop)), '')
 
 
 def get_xs(box):
