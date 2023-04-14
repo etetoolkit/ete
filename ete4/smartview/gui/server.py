@@ -39,7 +39,7 @@ from flask_compress import Compress
 from ete4 import Tree
 from ete4.smartview import TreeStyle, layout_modules
 from ete4.smartview.utils import InvalidUsage, get_random_string
-import ete4.smartview.b64pickle as b64pickle
+from ete4.parser import ete_format
 from ete4.smartview.renderer import nexus, gardening as gdn
 from ete4.smartview.renderer import drawer as drawer_module
 
@@ -1167,7 +1167,7 @@ def add_tree(data):
     if newick is not None:
         tree = load_tree_from_newick(tid, newick)
     elif bpickle is not None:
-        tree = b64pickle.loads(bpickle, unpack=True)
+        tree = ete_format.loads(bpickle, unpack=True)
         gdn.standardize(tree)
     else:
         tree = data.get('tree')

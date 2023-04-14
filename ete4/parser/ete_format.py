@@ -10,6 +10,7 @@ import base64
 import gzip
 from ete4 import Tree
 
+
 def pickle_pack(data):
     return base64.b64encode(pickle.dumps(data)).decode()
 
@@ -25,8 +26,8 @@ def b64gzip_unpack(data):
 
 def dumps(t, encoder='pickle', pack=False):
     OUT = io.StringIO()
-    if encoder not in ['pickle', 'json']:
-        raise Exception("Invalid encoder")
+
+    assert encoder in ['pickle', 'json'], f'Invalid encoder: {encoder}'
 
     for i, n in enumerate(t.traverse()):
         n.props['__id'] = i
@@ -53,12 +54,13 @@ def dumps(t, encoder='pickle', pack=False):
     else:
         return OUT.getvalue()
 
+
 def loads(INPUT, encoder='pickle', unpack=False):
     if unpack:
         INPUT = b64gzip_unpack(INPUT).decode()
 
-    if encoder not in ['pickle', 'json']:
-        raise Exception("Invalid encoder")
+    assert encoder in ['pickle', 'json'], f'Invalid encoder: {encoder}'
+
     id2node = {}
     root = None
     for line in io.StringIO(INPUT).readlines():
