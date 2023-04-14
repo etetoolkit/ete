@@ -1,4 +1,4 @@
-from ..treelayout import TreeLayout, _LayoutNodeProperty, _TitleCase
+from ..treelayout import TreeLayout, _LayoutNodeProperty, cased_name
 from ..faces import TextFace
 
 from ..draw_helpers import summary, Padding
@@ -10,25 +10,16 @@ from .domain_layouts import LayoutPfamDomains, LayoutSmartDomains
 def create_property_layout(prop, name, color, pos, active, column):
     # branch_right; column 2; color black
     class Layout(_LayoutNodeProperty):
-        def __init__(self, 
-                prop=prop, 
-                name=name,
-                pos=pos, 
-                column=column,
-                color=color,
-                *args, **kwargs):
-            super().__init__(
-                    prop=prop, 
-                    name=name,
-                    pos=pos,
-                    column=column,
-                    color=color, 
-                    *args, **kwargs)
+        def __init__(self, prop=prop, name=name, pos=pos, column=column, color=color,
+                     *args, **kwargs):
+            super().__init__(prop=prop, name=name, pos=pos, column=column, color=color,
+                             *args, **kwargs)
             self.active = active
 
         def __name__(self):
             return layout_name
-    layout_name = "Layout" + _TitleCase(name)
+
+    layout_name = "Layout" + cased_name(name)
     Layout.__name__ = layout_name
     globals()[layout_name] = Layout
     return Layout
