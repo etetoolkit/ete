@@ -577,7 +577,7 @@ function create_item(g, item, tl, zoom) {
             const r = view.drawer.type === "rect" ?
                 create_rect([x, y, dx, dy], tl, zx, zy, "", {rounded: null}) :
                 create_asec([x, y, dx, dy], tl, zx, "", {id: null});
-            r.style.stroke = array[i];
+            r.style.fill = array[i];
             g.appendChild(r);
         }
 
