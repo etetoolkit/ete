@@ -1344,7 +1344,7 @@ cdef class Tree(object):
 
     def explore(self, tree_name=None, layouts=[], show_leaf_name=True,
             show_branch_length=True, show_branch_support=True,
-            popup_prop_keys=None,  # DEFAULT_POPUP_PROP_KEYS in ete4.smartview.gui.server
+            popup_prop_keys=None,
             host="127.0.0.1", port=5000,
             custom_api={}, custom_route={}):
         """Launch an interactive smartview session to visualize the current node.

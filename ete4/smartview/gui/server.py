@@ -47,7 +47,8 @@ from ete4.smartview.renderer import drawer as drawer_module
 # call initialize() to fill it up
 app = None
 
-DEFAULT_POPUP_PROP_KEYS = [ "name", "dist", "support", "hyperlink", "tooltip" ]
+# Minimum set of properties that will be always shown in the node popup.
+MIN_POPUP_PROP_KEYS = ['name', 'dist', 'support', 'hyperlink', 'tooltip']
 
 
 # Dataclass containing info specific to each tree
@@ -1158,9 +1159,8 @@ def add_tree(data):
     layouts = data.get('layouts', [])
     if type(layouts) == str:
         layouts = layouts.split(',')
-    popup_prop_keys = data.get('popup_prop_keys', DEFAULT_POPUP_PROP_KEYS)
-    if type(popup_prop_keys) == str:
-        popup_prop_keys = popup_prop_keys.split(',')
+    popup_prop_keys = list(dict.fromkeys(  # to remove duplicates
+        MIN_POPUP_PROP_KEYS + (data.get('popup_prop_keys') or [])))
 
     del_tree(tid)  # delete if there is a tree with same id
 
@@ -1380,7 +1380,7 @@ def copy_style(tree_style):
 # App initialization.
 
 def initialize(tree=None, layouts=[],
-        popup_prop_keys=DEFAULT_POPUP_PROP_KEYS,
+        popup_prop_keys=None,
         custom_api={},  custom_route={}, safe_mode=False):
     "Initialize the database and the flask app"
     app = Flask(__name__, instance_relative_config=True)
@@ -1390,6 +1390,9 @@ def initialize(tree=None, layouts=[],
     add_resources(app, api, custom_api, custom_route)
 
     app.safe_mode = safe_mode
+
+    popup_prop_keys = list(dict.fromkeys(  # to remove duplicates
+        MIN_POPUP_PROP_KEYS + (popup_prop_keys or [])))
 
     # App associated layouts
     # Layouts will be accessible for each tree independently
@@ -1539,7 +1542,7 @@ def add_resources(app, api, custom_api={}, custom_route={}):
 
 
 def run_smartview(tree=None, tree_name=None,
-        layouts=[], popup_prop_keys=DEFAULT_POPUP_PROP_KEYS,
+        layouts=[], popup_prop_keys=None,
         custom_api={}, custom_route={},
         safe_mode=False, host="127.0.0.1", port=5000,
         run=True, serve_static=True, verbose=True):
@@ -1567,7 +1570,8 @@ def run_smartview(tree=None, tree_name=None,
             'id': 0,  # id to be replaced by actual hash
             'name': tree_name,
             'tree': tree,
-            'layouts': []
+            'layouts': [],
+            'popup_prop_keys': popup_prop_keys,
         }
         with app.app_context():
             tid = add_tree(tree_data)
