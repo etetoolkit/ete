@@ -790,22 +790,21 @@ cdef class Tree(object):
               name_formatter=None, quoted_node_names=False):
         """Return the newick representation of current node.
 
-        :param features: List of feature names to be exported
-            using the Extended Newick Format (i.e. features=["name",
-            "dist"]). Use an empty list to export all available features
-            in each node (features=[]).
+        :param list properties: Names of properties to be exported in all nodes
+            using the Extended Newick Format. If None, do not export any, and
+            if [] export all available properties.
         :param str outfile: Name of the output file. If present, it will write
             the newick to that file instad of returning it as a string.
         :param int format: Identifier of the newick standard used to encode the
             tree. See tutorial for details.
-        :param bool format_root_node: If True, it allows features
+        :param bool format_root_node: If True, it allows properties
             and branch information from root node to be exported as a
             part of the newick text string. For newick compatibility
             reasons, this is False by default.
 
         Example::
 
-            t.write(features=["species","name"], format=1)
+            t.write(features=['species', 'sci_name'], format=1)
         """
         nw = write_newick(self, properties=properties, format=format,
                           is_leaf_fn=is_leaf_fn,
