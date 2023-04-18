@@ -1,38 +1,45 @@
 from collections import namedtuple
 
-FACE_POSITIONS = ["branch_right", "branch_top", "branch_bottom", "aligned"]
 
-_FaceAreas = namedtuple('_FaceAreas', FACE_POSITIONS)
+# Positions in a node where you can put faces (maybe NODE_POSITIONS
+# would be a better name).
+FACE_POSITIONS = ['branch_right', 'branch_top', 'branch_bottom', 'aligned']
 
-def get_FaceAreas(branch_top=None, branch_bottom=None,
-                  branch_right=None, aligned=None):
-    return _FaceAreas(
-            branch_top or _FaceContainer(),
-            branch_bottom or _FaceContainer(),
-            branch_right or _FaceContainer(),
-            aligned or _FaceContainer())
+Faces = namedtuple('Faces', FACE_POSITIONS)
 
 
-cdef class _FaceContainer(dict):
-    """Create a grid of faces.
 
-    You can add faces to different columns.
+cdef class Grid(dict):
+    """Grid (dict that for each column assigns a list of items).
+
+    The idea is to use it with faces, like this:
+
+    d[col] == [face1, face2, ...]  # faces stacked in the column col
     """
 
-    def add_face(self, object face, int column):
-        """Add the face to the specified column."""
+    def add_face(self, object face, int column=0):
+        """Add the given face to the specified column."""
         self.setdefault(column, []).append(face)
 
 
-cdef class _HeaderFaceContainer(_FaceContainer):
-    """Create a grid of faces for a header.
+cdef class AlignedGrid(Grid):
+    """Grid that also allows to store the horizontal size of each column (dxs).
 
-    You can add faces to different columns.
+    The idea is to use it for headers and footers in the aligned panel.
     """
 
     cdef public dict _grid_dxs
 
     def __init__(self, facecontainer=None):
-        _FaceContainer.__init__(self)
+        super().__init__(self)
 
         self._grid_dxs = {}
+
+
+def make_faces():
+    """Return a named tuple that for each position can store a grid of faces."""
+    return Faces(
+        branch_right=Grid(),
+        branch_top=Grid(),
+        branch_bottom=Grid(),
+        aligned=Grid())

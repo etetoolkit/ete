@@ -10,7 +10,7 @@ from time import time
 
 from .walk import walk
 from .. import TreeStyle
-from .face_positions import FACE_POSITIONS, get_FaceAreas
+from .face_positions import FACE_POSITIONS, make_faces
 from .draw_helpers import *
 
 Size = namedtuple('Size', 'dx dy')  # size of a 2D shape (sizes are always >= 0)
@@ -781,8 +781,8 @@ class DrawerRectFaces(DrawerRect):
                     dx_before += dx_max
         if not node.is_initialized:
             node.is_initialized = True
-            node.faces = get_FaceAreas()
-            node.collapsed_faces = get_FaceAreas()
+            node.faces = make_faces()
+            node.collapsed_faces = make_faces()
             for layout in self.layouts:
                 layout.set_node_style(node)
 

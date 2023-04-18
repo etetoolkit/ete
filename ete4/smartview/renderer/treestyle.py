@@ -3,7 +3,7 @@ from collections import defaultdict
 
 
 from .faces import SelectedRectFace
-from .face_positions import FACE_POSITIONS, _HeaderFaceContainer
+from .face_positions import FACE_POSITIONS, AlignedGrid
 from ..utils import InvalidUsage
 from .nodestyle import NodeStyle
 
@@ -26,8 +26,8 @@ class TreeStyle(object):
         self._active_face_pos = "branch_right"
 
         # Aligned panel headers
-        self._aligned_panel_header = _HeaderFaceContainer()
-        self._aligned_panel_footer = _HeaderFaceContainer()
+        self._aligned_panel_header = AlignedGrid()
+        self._aligned_panel_footer = AlignedGrid()
 
         self._legend = []
 

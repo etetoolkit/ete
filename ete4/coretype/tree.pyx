@@ -23,9 +23,9 @@ except ImportError:
 
 from ..smartview import Face as smartFace
 from ..smartview.renderer.nodestyle import NodeStyle as smNodeStyle
-from ..smartview.renderer.face_positions import _FaceAreas, get_FaceAreas
-from ..smartview.renderer.layouts.default_layouts import LayoutLeafName,\
-        LayoutBranchLength, LayoutBranchSupport
+from ..smartview.renderer.face_positions import Faces, make_faces
+from ..smartview.renderer.layouts.default_layouts import (
+    LayoutLeafName, LayoutBranchLength, LayoutBranchSupport)
 
 __all__ = ["Tree"]
 
@@ -185,30 +185,27 @@ cdef class Tree(object):
     is_initialized = property(fget=_get_initialized, fset=_set_initialized)
     is_collapsed = property(fget=_get_collapsed, fset=_set_collapsed)
 
-    def _set_face_areas(self, value):
-        if isinstance(value, _FaceAreas):
-            self._smfaces = value
-        else:
-            raise ValueError("[%s] is not a valid FaceAreas instance" %type(value))
-    def _get_face_areas(self):
-        if not hasattr(self, "_smfaces") or self._smfaces is None:
-            self._smfaces = get_FaceAreas()
+    @property
+    def faces(self):
+        if self._smfaces is None:
+            self._smfaces = make_faces()
         return self._smfaces
 
-    def _set__collapsed_face_areas(self, value):
-        if isinstance(value, _FaceAreas):
-            self._collapsed_faces = value
-        else:
-            raise ValueError("[%s] is not a valid FaceAreas instance" %type(value))
-    def _get_collapsed_face_areas(self):
-        if not hasattr(self, "_collapsed_faces") or self._collapsed_faces is None:
-            self._collapsed_faces = get_FaceAreas()
+    @faces.setter
+    def faces(self, value):
+        assert isinstance(value, Faces), 'Not a Faces instance: %r' % value
+        self._smfaces = value
+
+    @property
+    def collapsed_faces(self):
+        if self._collapsed_faces is None:
+            self._collapsed_faces = make_faces()
         return self._collapsed_faces
 
-    faces = property(fget=_get_face_areas, \
-                         fset=_set_face_areas)
-    collapsed_faces = property(fget=_get_collapsed_face_areas, \
-                         fset=_set__collapsed_face_areas)
+    @collapsed_faces.setter
+    def collapsed_faces(self, value):
+        assert isinstance(value, Faces), 'Not a Faces instance: %r' % value
+        self._collapsed_faces = value
 
     def __init__(self, newick=None, format=0, dist=None, support=None,
                  name=None, quoted_node_names=False, up=None):
@@ -2379,13 +2376,14 @@ cdef class Tree(object):
                     output[i].append(leaf_distances[n][m])
         return output, allleaves
 
-    def add_face(self, face, column, position="branch-right", collapsed_only=False):
+    def add_face(self, face, column=0, position='branch-right',
+                 collapsed_only=False):
         if isinstance(face, Face):
             self.add_face_treeview(face, column, position)
         elif isinstance(face, smartFace):
             self.add_face_smartview(face, column, position, collapsed_only)
         else:
-            raise ValueError("Invalid face format")
+            raise ValueError('Invalid face format for: %r' % face)
 
     def add_face_treeview(self, face, column, position="branch-right"):
         """
@@ -2415,32 +2413,28 @@ cdef class Tree(object):
         else:
             raise ValueError("not a Face instance")
 
-    def add_face_smartview(self, face, column, position="branch-right", collapsed_only=False):
-        """
-        .. versionadded: 2.1
+    def add_face_smartview(self, face, column, position='branch-right',
+                           collapsed_only=False):
+        """Add a fixed face to the node.
 
-        Add a fixed face to the node.  This type of faces will be
-        always attached to nodes, independently of the layout
-        function.
+        This type of faces will be always attached to nodes, independently of
+        the layout function.
 
-        :argument face: a Face or inherited instance
-        :argument column: An integer number starting from 0
-        :argument "branch-right" position: Posible values are:
-          "branch-right", "branch-top", "branch-bottom", "float",
-          "aligned"
+        :param face: Face to add.
+        :param int column: Column number where the face will go. Starts at 0.
+        :param str position: Position to place the face in the node. Posible
+            values are: "branch-right", "branch-top", "branch-bottom", "aligned"
         """
+        # TODO: Is it true that "This type of faces will be always attached
+        # to nodes, independently of the layout function"? And why?
         from ..smartview.renderer.face_positions import FACE_POSITIONS
 
-        if position not in FACE_POSITIONS:
-            raise ValueError("face position not in %s" %FACE_POSITIONS)
+        assert position in FACE_POSITIONS, 'Invalid position %r' % position
 
-        if isinstance(face, smartFace):
-            if collapsed_only:
-                getattr(self.collapsed_faces, position).add_face(face, column=column)
-            else:
-                getattr(self.faces, position).add_face(face, column=column)
+        if collapsed_only:
+            getattr(self.collapsed_faces, position).add_face(face, column=column)
         else:
-            raise ValueError("not a Face instance")
+            getattr(self.faces, position).add_face(face, column=column)
 
     def set_style(self, node_style):
         """

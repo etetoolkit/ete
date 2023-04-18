@@ -47,12 +47,11 @@ class LayoutLeafName(TreeLayout):
 
 
 class LayoutNumberLeaves(TreeLayout):
-    def __init__(self, name="Number of leaves",
-            pos='branch_right', collapsed_only=True,
-            formatter='(%s)', color="black",
-            min_fsize=4, max_fsize=15, ftype="sans-serif",
-            padding_x=5, padding_y=0):
-
+    def __init__(self, name='Number of leaves',
+                 pos='branch_right', collapsed_only=True,
+                 formatter='(%s)', color='black',
+                 min_fsize=4, max_fsize=15, ftype='sans-serif',
+                 padding_x=5, padding_y=0):
         super().__init__(name)
         self.pos = pos
         self.aligned_faces = self.pos == 'aligned'
@@ -69,16 +68,17 @@ class LayoutNumberLeaves(TreeLayout):
 
     def set_node_style(self, node):
         if not node.is_leaf():
-            nleaves = str(len(node))
-            nleaves_face = TextFace(f'{self.formatter}' % nleaves, color=self.color,
-                    min_fsize=self.min_fsize, max_fsize=self.max_fsize, ftype=self.ftype,
-                    padding_x=self.padding.x, padding_y=self.padding.y)
+            face = TextFace(
+                self.formatter % len(node),  # number of leaves
+                color=self.color,
+                min_fsize=self.min_fsize, max_fsize=self.max_fsize,
+                ftype=self.ftype,
+                padding_x=self.padding.x, padding_y=self.padding.y)
 
-            node.add_face(nleaves_face, position=self.pos, column=1,
-                    collapsed_only=True)
+            node.add_face(face, position=self.pos, column=1, collapsed_only=True)
 
             if not self.collapsed_only:
-                node.add_face(nleaves_face, position=pos, column=0)
+                node.add_face(face, position=self.pos, column=0)
 
 
 def _get_layout_branch_attr(attr, pos, name=None,
@@ -93,6 +93,7 @@ def _get_layout_branch_attr(attr, pos, name=None,
             min_fsize=min_fsize, max_fsize=max_fsize,
             padding_x=padding_x,
             padding_y=padding_y)
+
     def layout_fn(node):
         if not node.is_leaf() and node.dist > 0:
             node.add_face(branch_attr_face, position=pos, column=0)
