@@ -448,10 +448,10 @@ def _get_features_string(node, features=None):
     if features is None:
         return ''  # special case: if not set, we write no extended string
 
-    if not features:  # features == []
+    if features == []:
         features = sorted(k for k in node.props  # special case: all node props
-                              if not k.startswith('_'))  # except _private
-        # TODO: Should we add...  and k not in ['name', 'dist', 'support']  ?
+                              if not k.startswith('_')  # except _private
+                              and k not in ['name', 'dist', 'support'])
 
     pairs_str = ':'.join('%s=%s' % (k, _prop2text(node.props[k]))
                             for k in features if k in node.props)
