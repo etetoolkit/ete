@@ -52,7 +52,7 @@ class TreeStyle(object):
             self._selected_face_pos = pos
         else:
             raise ValueError(f'{pos} is not a valid Face position. ' +
-                    'Please provide one of the following values' + 
+                    'Please provide one of the following values' +
                     ', '.join(FACE_POSITIONS + '.'))
 
     @property
@@ -76,7 +76,7 @@ class TreeStyle(object):
             self._active_face_pos = pos
         else:
             raise ValueError(f'{pos} is not a valid Face position. ' +
-                    'Please provide one of the following values' + 
+                    'Please provide one of the following values' +
                     ', '.join(FACE_POSITIONS + '.'))
 
     @property
@@ -107,7 +107,7 @@ class TreeStyle(object):
             entry["colormap"] = colormap
 
         elif variable == "continuous" and value_range and color_range:
-            entry = { **entry, "value_range": value_range, 
+            entry = { **entry, "value_range": value_range,
                       "color_range": color_range }
         else:
             return
