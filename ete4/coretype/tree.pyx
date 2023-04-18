@@ -136,12 +136,13 @@ cdef class Tree(object):
 
     @property
     def id(self):
+        """Return node_id (list of relative hops from root to node)."""
         reversed_id = []
         node = self
         while node.up:
             reversed_id.append(node.up.children.index(node))
             node = node.up
-        return reversed_id[::-1]
+        return reversed_id[::-1]  # will look like  [0, 0, 1, 0]
 
     def _get_style(self):
         if self._img_style is None:
