@@ -47,10 +47,6 @@ from ete4.smartview.renderer import drawer as drawer_module
 # call initialize() to fill it up
 app = None
 
-# Minimum set of properties that will be always shown in the node popup.
-MIN_POPUP_PROP_KEYS = ['name', 'dist', 'support', 'hyperlink', 'tooltip']
-
-
 # Dataclass containing info specific to each tree
 @dataclass
 class AppTree:
@@ -58,13 +54,14 @@ class AppTree:
     name: str = None
     style: TreeStyle = None
     nodestyles: dict = None
-    popup_prop_keys: list = None
+    popup_props: list = None
     layouts: list = None
     timer: float = None
     initialized: bool = False
     selected: dict = None
     active: namedtuple = None  # active nodes
     searches: dict = None
+
 
 # REST api.
 
@@ -586,7 +583,7 @@ def get_drawer(tree_id, args):
 
         return drawer_class(load_tree(tree_id), viewport, panel, zoom,
                     limits, collapsed_ids, active, selected, searches,
-                    layouts, tree.style, tree.popup_prop_keys)
+                    layouts, tree.style, tree.popup_props)
     # bypass errors for now...
     except StopIteration as error:
         print(error)
@@ -1106,7 +1103,7 @@ def add_trees_from_request():
     if request.form:
         trees = get_trees_from_form()
     else:
-        extra = ['layouts', 'description', 'b64pickle', 'popup_prop_keys']
+        extra = ['layouts', 'description', 'b64pickle', 'popup_props']
 
         data = get_fields(required=['name', 'newick', 'id'],
                           valid_extra=extra)
@@ -1135,7 +1132,7 @@ def get_trees_from_form():
             'b64pickle': form.get('b64pickle'),
             'description': form.get('description', ''),
             'layouts': form.get('layouts', []),
-            'popup_prop_keys': form.get('popup_prop_keys', [])}]
+            'popup_props': form.get('popup_props', None)}]
 
 
 def get_file_contents(fp):
@@ -1159,8 +1156,7 @@ def add_tree(data):
     layouts = data.get('layouts', [])
     if type(layouts) == str:
         layouts = layouts.split(',')
-    popup_prop_keys = list(dict.fromkeys(  # to remove duplicates
-        MIN_POPUP_PROP_KEYS + (data.get('popup_prop_keys') or [])))
+    popup_props = data.get('popup_props')
 
     del_tree(tid)  # delete if there is a tree with same id
 
@@ -1178,7 +1174,7 @@ def add_tree(data):
     app_tree.name = name
     app_tree.tree = tree
     app_tree.layouts = retrieve_layouts(layouts)
-    app_tree.popup_prop_keys = popup_prop_keys
+    app_tree.popup_props = popup_props
 
     print("Tree added to app.trees")
 
@@ -1380,7 +1376,7 @@ def copy_style(tree_style):
 # App initialization.
 
 def initialize(tree=None, layouts=[],
-        popup_prop_keys=None,
+        popup_props=None,
         custom_api={},  custom_route={}, safe_mode=False):
     "Initialize the database and the flask app"
     app = Flask(__name__, instance_relative_config=True)
@@ -1391,9 +1387,6 @@ def initialize(tree=None, layouts=[],
 
     app.safe_mode = safe_mode
 
-    popup_prop_keys = list(dict.fromkeys(  # to remove duplicates
-        MIN_POPUP_PROP_KEYS + (popup_prop_keys or [])))
-
     # App associated layouts
     # Layouts will be accessible for each tree independently
     app.default_layouts, app.avail_layouts = get_layouts(layouts)
@@ -1402,7 +1395,7 @@ def initialize(tree=None, layouts=[],
         name=get_random_string(10),
         style=copy_style(TreeStyle()),
         nodestyles={},
-        popup_prop_keys=deepcopy(popup_prop_keys),
+        popup_props=deepcopy(popup_props),
         layouts = deepcopy(app.default_layouts),
         timer = time(),
         searches = {},
@@ -1542,7 +1535,7 @@ def add_resources(app, api, custom_api={}, custom_route={}):
 
 
 def run_smartview(tree=None, tree_name=None,
-        layouts=[], popup_prop_keys=None,
+        layouts=[], popup_props=None,
         custom_api={}, custom_route={},
         safe_mode=False, host="127.0.0.1", port=5000,
         run=True, serve_static=True, verbose=True):
@@ -1555,7 +1548,7 @@ def run_smartview(tree=None, tree_name=None,
 
     global app
     app = initialize(tree_name, layouts,
-            popup_prop_keys=popup_prop_keys,
+            popup_props=popup_props,
             custom_api=custom_api,
             custom_route=custom_route,
             safe_mode=safe_mode)
@@ -1571,7 +1564,7 @@ def run_smartview(tree=None, tree_name=None,
             'name': tree_name,
             'tree': tree,
             'layouts': [],
-            'popup_prop_keys': popup_prop_keys,
+            'popup_props': popup_props,
         }
         with app.app_context():
             tid = add_tree(tree_data)

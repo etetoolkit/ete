@@ -1344,16 +1344,17 @@ cdef class Tree(object):
 
     def explore(self, tree_name=None, layouts=[], show_leaf_name=True,
             show_branch_length=True, show_branch_support=True,
-            popup_prop_keys=None,
+            popup_props=None,
             host="127.0.0.1", port=5000,
             custom_api={}, custom_route={}):
         """Launch an interactive smartview session to visualize the current node.
 
         :param str tree_name: Name used to store tree in local database.
-        :param layouts: List of layout functions that will be available from the
+        :param list layouts: Layouts that will be available from the
             front end. It is important to name functions (__name__), as they will
-            be adressed by such in the explorer. By default they include:
-            outline, leaf_name, branch_length and branch_support.
+            be adressed by such in the explorer.
+        :param list popup_props: Properties to show in the popup of a node, in
+            addition to basic ones (name, dist, support...). If None, show all.
         """
         from ..smartview.gui.server import run_smartview
 
@@ -1376,7 +1377,7 @@ cdef class Tree(object):
 
         run_smartview(tree=self, tree_name=tree_name,
                       layouts=list(default_layouts + layouts),
-                      host=host, port=port, popup_prop_keys=popup_prop_keys,
+                      host=host, port=port, popup_props=popup_props,
                       custom_api=custom_api, custom_route=custom_route)
 
     def copy(self, method="cpickle"):

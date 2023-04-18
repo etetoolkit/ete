@@ -82,7 +82,7 @@ class Drawer:
     def __init__(self, tree, viewport=None, panel=0, zoom=(1, 1),
                  limits=None, collapsed_ids=None,
                  active=None, selected=None, searches=None,
-                 layouts=None, tree_style=None, popup_prop_keys=None):
+                 layouts=None, tree_style=None, popup_props=None):
         self.tree = tree
         self.viewport = Box(*viewport) if viewport else None
         self.panel = panel
@@ -93,7 +93,7 @@ class Drawer:
         self.selected = selected or {}  # looks like {node_id: (node, parents)}
         self.searches = searches or {}  # looks like {text: (results, parents)}
         self.layouts = layouts or []
-        self.popup_prop_keys = popup_prop_keys or []
+        self.popup_props = popup_props
         self.tree_style = tree_style
         if not self.tree_style:
             self.tree_style = TreeStyle()
@@ -451,11 +451,10 @@ class Drawer:
     def get_popup_props(self, node):
         """Return dictionary containing web-safe properties of node to be
         rendered in frontend popup"""
-        if not self.popup_prop_keys:
-            return {}
-        return { prop: safe_string(node.props.get(prop)) for prop in
-                self.popup_prop_keys if node.props.get(prop) }
+        keys = (['name', 'dist', 'support', 'hyperlink', 'tooltip'] +
+            (list(node.props.keys()) if self.popup_props is None else self.popup_props))
 
+        return {k: safe_string(node.props[k]) for k in keys if k in node.props}
 
     # These are the 2 functions that the user overloads to choose what to draw
     # when representing a node and a group of collapsed nodes:
@@ -571,10 +570,10 @@ class DrawerCirc(Drawer):
                  limits=None, collapsed_ids=None, active=None,
                  selected=None, searches=None,
                  layouts=None, tree_style=None,
-                 popup_prop_keys=None):
+                 popup_props=None):
         super().__init__(tree, viewport, panel, zoom,
                          limits, collapsed_ids, active, selected, searches,
-                         layouts, tree_style, popup_prop_keys=popup_prop_keys)
+                         layouts, tree_style, popup_props=popup_props)
 
         assert self.zoom[0] == self.zoom[1], 'zoom must be equal in x and y'
 
