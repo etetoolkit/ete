@@ -676,19 +676,21 @@ class DrawerCirc(Drawer):
 
 class DrawerRectFaces(DrawerRect):
 
-    def draw_node(self, node, point, bdx, bdy, bdy0, bdy1, active_children=TreeActive(0, 0), selected_children=[]):
+    def draw_node(self, node, point, bdx, bdy, bdy0, bdy1,
+                  active_children=TreeActive(0, 0), selected_children=[]):
         size = self.content_size(node)
+
         # Space available for branch-right Face position
-        dx_to_closest_child = min(child.dist for child in node.children)\
-                if not node.is_leaf() else node.dist
+        dx_to_closest_child = (node.dist if node.is_leaf() else
+                               min(child.dist for child in node.children))
         zx, zy, za = self.zoom
 
         def it_fits(box, pos):
             z = za if pos == 'aligned' else zx
             _, _, dx, dy = box
-            return dx * z > self.MIN_SIZE\
-                    and dy * zy > self.MIN_SIZE\
-                    and self.in_viewport(box, pos)
+            return (dx * z > self.MIN_SIZE and
+                    dy * zy > self.MIN_SIZE and
+                    self.in_viewport(box, pos))
 
         def draw_face(face, pos, row, n_row, n_col, dx_before, dy_before):
             if face.get_content():
@@ -707,7 +709,7 @@ class DrawerRectFaces(DrawerRect):
                 node_faces = node.faces
 
             faces = dict(getattr(node_faces, pos, {}))
-            n_col = max(faces.keys(), default = -1) + 1
+            n_col = max(faces.keys(), default=-1) + 1
 
             z = za if pos == 'aligned' else zx
 
@@ -967,7 +969,8 @@ def make_box(point, size):
 
 def get_rect(element, zoom=(0, 0)):
     "Return the rectangle that contains the given graphic element"
-    eid = element[0]
+    eid = element[0]  # elements are tuples with element-id in the 1st place
+
     if eid in ['nodebox', 'rect', 'array', 'text', 'triangle', 'html', 'img']:
         return element[1]
     elif eid == 'outline':
@@ -1014,7 +1017,8 @@ def get_rect(element, zoom=(0, 0)):
 
 def get_asec(element, zoom=(0, 0)):
     "Return the annular sector that contains the given graphic element"
-    eid = element[0]
+    eid = element[0]  # elements are tuples with element-id in the 1st place
+
     if eid in ['nodebox', 'rect', 'array', 'text', 'triangle', 'html', 'img']:
         return element[1]
     elif eid == 'outline':
