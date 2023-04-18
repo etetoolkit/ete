@@ -1,4 +1,4 @@
-from collections import namedtuple, OrderedDict
+from collections import namedtuple
 
 FACE_POSITIONS = ["branch_right", "branch_top", "branch_bottom", "aligned"]
 
