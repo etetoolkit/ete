@@ -208,7 +208,8 @@ cdef class Tree(object):
         self._collapsed_faces = value
 
     def __init__(self, newick=None, format=0, dist=None, support=None,
-                 name=None, quoted_node_names=False, up=None):
+                 name=None, quoted_node_names=False, up=None, parser='auto'):
+        # TODO: implement the parser= argument
         self._children = []
         self.up = up
         self.props = {}

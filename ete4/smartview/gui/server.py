@@ -404,7 +404,9 @@ class CustomEndpoints(Resource):
 
 # Auxiliary functions.
 
+# TODO: Simplify and remove the need to use the init_timer decorator.
 def init_timer(fn):
+    """Decorator that guesses the tid being changed and resets its timer."""
     def wrapper(*args, **kwargs):
         if type(args[0]) == int:
             tid = args[0]
@@ -1176,16 +1178,12 @@ def add_tree(data):
     app_tree.layouts = retrieve_layouts(layouts)
     app_tree.popup_props = popup_props
 
-    print("Tree added to app.trees")
-
-    start = time()
-    print('Dumping tree...')
     # Write tree data as a temporary pickle file
     obj = { 'name': name, 'layouts': layouts, 'tree': tree }
     with open(f'/tmp/{tid}.pickle', 'wb') as handle:
         pickle.dump(obj, handle)
-
-    print(f'Dump: {time() - start}')
+    # TODO: Do not store trees immediately, only after some time
+    # (with Timer)
 
     return tid
 
@@ -1316,15 +1314,17 @@ def del_tree(tid):
 
 
 def purge(interval=None, max_time=30*60):
-    """Delete trees that have been inactive for a certain period of time
-        :interval: if set, recursively calls purge after given interval.
-        :max_time: maximum inactivity time in seconds. Default 30 min.
+    """Delete trees that have been inactive for a certain period of time.
+
+    :param int interval: if set, will keep calling purge after that number of seconds.
+    :param int max_time: maximum inactivity time in seconds. Default is 30 min.
     """
     trees = list(app.trees.keys())
     for tid in trees:
         inactivity_time = time() - app.trees[tid].timer
         if inactivity_time > max_time:
             del_tree(tid)
+
     # Call self after interval
     if interval: # in seconds
         print(f'Current trees in memory: {len(list(app.trees.keys()))}')
@@ -1539,6 +1539,8 @@ def run_smartview(tree=None, tree_name=None,
         custom_api={}, custom_route={},
         safe_mode=False, host="127.0.0.1", port=5000,
         run=True, serve_static=True, verbose=True):
+    # TODO: Change popup_props to include_props and exclude_props.
+
     # Set tree_name to None if no tree was provided
     # Generate tree_name if none was provided
     tree_name = tree_name or (get_random_string(10) if tree else None)
