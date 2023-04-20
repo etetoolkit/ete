@@ -853,6 +853,14 @@ class Test_Coretype_Tree(unittest.TestCase):
                 n.swap_children()
                 self.assertEqual(t.get_topology_id(), orig_id)
 
+    def test_node_id(self):
+        t = Tree('((a,b)x,(c,d)y);', format=1)
+
+        self.assertEqual(t.id, [])
+        self.assertEqual(t['x'].id, [0])
+        self.assertEqual(t['y'].id, [1])
+        self.assertEqual(t['a'].id, [0,0])
+        self.assertEqual(t['d'].id, [1,1])
 
     def test_ultrametric(self):
 
