@@ -1428,13 +1428,13 @@ cdef class Tree(object):
 
         return new_node
 
-    def get_ascii(self, show_internal=True, compact=False, attributes=None,
+    def get_ascii(self, show_internal=True, compact=False, properties=None,
                   px=None, py=None, px0=0, waterfall=False):
         """Return a string containing an ascii drawing of the tree.
 
         :param show_internal: If True, show the internal nodes too.
         :param compact: If True, use exactly one line per tip.
-        :param attributes: A list of node attributes to show.
+        :param properties: A list of node properties to show.
         :param px, py, px0: Paddings (x, y, x for leaves). Overrides `compact`.
         :param waterfall: Use a waterfall representation. Overrides
             `show_internal`, `compact`, `px`, `py`, `px0`.
@@ -1443,11 +1443,11 @@ cdef class Tree(object):
             px = px if px is not None else (0 if show_internal else 1)
             py = py if py is not None else (0 if compact else 1)
 
-            lines, _ = _ascii_art(self, show_internal, attributes, px, py, px0)
+            lines, _ = _ascii_art(self, show_internal, properties, px, py, px0)
             return '\n'.join(lines)
         else:
             px = px if px is not None else 1
-            return _waterfall(self, attributes, px)
+            return _waterfall(self, properties, px)
 
     def ladderize(self, direction=0):
         """Sort branches according to the size of each partition.
@@ -2566,19 +2566,19 @@ def _translate_nodes(root, *nodes):
     return valid_nodes if len(valid_nodes) > 1 else valid_nodes[0]
 
 
-def _ascii_art(node, show_internal=True, attributes=None, px=0, py=0, px0=0):
+def _ascii_art(node, show_internal=True, properties=None, px=0, py=0, px0=0):
     """Return a list of strings representing the node, and their middle point.
 
     :param node: Node to represent as ascii art.
     :param show_internal: If True, show the internal node names too.
-    :param attributes: list of attribute names to show for each node.
+    :param properties: list of property names to show for each node.
     :param px, py: Padding in x and y.
     :param px0: Padding in x for leaves.
     """
-    attrs = attributes or ['name']
+    props = properties or ['name']
 
-    # Node description (including all the requested attributes).
-    descr = ','.join(str(node.props.get(a, '')) or '(empty)' for a in attrs)
+    # Node description (including all the requested properties).
+    descr = ','.join(str(node.props.get(p, '')) or '(empty)' for p in props)
 
     if node.is_leaf():
         return (['─' * px0 + '╴' + descr], 0)
@@ -2586,7 +2586,7 @@ def _ascii_art(node, show_internal=True, attributes=None, px=0, py=0, px0=0):
     lines = []
     padding = ((px0 + 1 + len(descr) + 1) if show_internal else 0) + px
     for child in node.children:
-        lines_child, mid = _ascii_art(child, show_internal, attrs, px, py, px0)
+        lines_child, mid = _ascii_art(child, show_internal, props, px, py, px0)
 
         if len(node.children) == 1:       # only one child
             lines += _add_prefix(lines_child, padding, mid, ' ',
@@ -2646,19 +2646,19 @@ def _add_base(line, px, px0, txt, show_internal):
             '─' * px + replacements[line[padding]] + line[padding+1:])
 
 
-def _waterfall(node, attributes=None, px=1, are_last=None):
+def _waterfall(node, properties=None, px=1, are_last=None):
     """Return a string with a waterfall visual representation of the node."""
-    attrs = attributes or ['name']
+    props = properties or ['name']
     are_last = are_last or []
 
-    # Node description (including all the requested attributes).
-    descr = ','.join(str(node.props.get(a, '')) or '(empty)' for a in attrs)
+    # Node description (including all the requested properties).
+    descr = ','.join(str(node.props.get(p, '')) or '(empty)' for p in props)
 
     branches = _get_branches_repr(are_last, node.is_leaf(), px)
 
     return '\n'.join([branches + descr] +
-        [_waterfall(n, px, attrs, are_last + [False]) for n in node.children[:-1]] +
-        [_waterfall(n, px, attrs, are_last + [True])  for n in node.children[-1:]])
+        [_waterfall(n, props, px, are_last + [False]) for n in node.children[:-1]] +
+        [_waterfall(n, props, px, are_last + [True])  for n in node.children[-1:]])
 
 def _get_branches_repr(are_last, is_leaf, px):
     """Return a text line representing open branches according to are_last.

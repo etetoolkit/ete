@@ -191,7 +191,7 @@ def process_task(task, wkname, npr_conf, nodeid2info):
                             colorify(', '.join(["%s"%tax2name[x] for x in broken_clades]), "wr"))
                     target_cladeids = set()
                     for branch in broken_branches:
-                        print(branch.get_ascii(attributes=['spname', 'taxid'], compact=True))
+                        print(branch.get_ascii(properties=['spname', 'taxid'], compact=True))
                         print(["%s"%tax2name[x] for x in broken_branches[branch]])
                         target_cladeids.add(branch.cladeid)
 

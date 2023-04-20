@@ -855,12 +855,12 @@ if __name__ == "__main__":
 
     descendants = gtdb.get_descendant_taxa('c__Thorarchaeia', collapse_subspecies=True, return_tree=True)
     print(descendants.write(properties=None))
-    print(descendants.get_ascii(attributes=['sci_name', 'taxid','rank']))
+    print(descendants.get_ascii(properties=['sci_name', 'taxid','rank']))
     tree = gtdb.get_topology(["p__Huberarchaeota", "o__Peptococcales", "f__Korarchaeaceae", "s__Korarchaeum"], intermediate_nodes=True, collapse_subspecies=True, annotate=True)
-    print(tree.get_ascii(attributes=["taxid",  "sci_name", "rank"]))
+    print(tree.get_ascii(properties=["taxid",  "sci_name", "rank"]))
 
     tree = PhyloTree('((c__Thorarchaeia, c__Lokiarchaeia_A), s__Caballeronia udeis);', sp_naming_function=lambda name: name)
     tax2name, tax2track, tax2rank = gtdb.annotate_tree(tree, taxid_attr="name")
-    print(tree.get_ascii(attributes=["taxid","name", "sci_name", "rank"]))
+    print(tree.get_ascii(properties=["taxid","name", "sci_name", "rank"]))
 
     print(gtdb.get_name_lineage(['RS_GCF_006228565.1','GB_GCA_001515945.1']))

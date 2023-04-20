@@ -170,7 +170,7 @@ def run(args):
                 t = Tree(tfile, format=args.src_newick_format)
 
             print(t.get_ascii(show_internal=args.show_internal_names,
-                              attributes=args.show_attributes))
+                              properties=args.show_attributes))
         return
 
     global FACES
