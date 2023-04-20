@@ -110,7 +110,7 @@ class Test_Coretype_Tree(unittest.TestCase):
 
         # Export ordered features.
         t = Tree("((A,B),C);")
-        expected_nw = "((A:1[&&NHX:dist=1.0:name=A:support=1.0],B:1[&&NHX:0=0:1=1:2=2:3=3:4=4:5=5:6=6:7=7:8=8:9=9:a=a:b=b:c=c:d=d:dist=1.0:e=e:f=f:g=g:h=h:i=i:j=j:k=k:l=l:m=m:n=n:name=B:o=o:p=p:q=q:r=r:s=s:support=1.0:t=t:u=u:v=v:w=w])1:1[&&NHX:dist=1.0:name=:support=1.0],C:1[&&NHX:dist=1.0:name=C:support=1.0]);"
+        expected_nw = "((A:1,B:1[&&NHX:0=0:1=1:2=2:3=3:4=4:5=5:6=6:7=7:8=8:9=9:a=a:b=b:c=c:d=d:e=e:f=f:g=g:h=h:i=i:j=j:k=k:l=l:m=m:n=n:o=o:p=p:q=q:r=r:s=s:t=t:u=u:v=v:w=w])1:1,C:1);"
         features = list("abcdefghijklmnopqrstuvw0123456789")
         random.shuffle(features)
         for letter in features:
