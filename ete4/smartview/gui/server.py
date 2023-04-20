@@ -37,11 +37,13 @@ from flask_cors import CORS
 from flask_compress import Compress
 
 from ete4 import Tree
+from ete4.parser.newick import NewickError
 from ete4.smartview import TreeStyle, layout_modules
 from ete4.smartview.utils import InvalidUsage, get_random_string
 from ete4.parser import ete_format
 from ete4.smartview.renderer import nexus, gardening as gdn
 from ete4.smartview.renderer import drawer as drawer_module
+from ete4 import treematcher as tm
 
 
 # call initialize() to fill it up
@@ -1019,7 +1021,7 @@ def get_search_function(text):
 def get_command_search(text):
     "Return the appropriate node search function according to the command"
     parts = text.split(None, 1)
-    if parts[0] not in ['/r', '/e']:
+    if parts[0] not in ['/r', '/e', '/t']:
         raise InvalidUsage('invalid command %r' % parts[0])
     if len(parts) != 2:
         raise InvalidUsage('missing argument to command %r' % parts[0])
@@ -1029,6 +1031,8 @@ def get_command_search(text):
         return lambda node: re.search(arg, node.name)
     elif command == '/e':  # eval expression
         return get_eval_search(arg)
+    elif command == '/t':  # topological search
+        return get_topological_search(arg)
     else:
         raise InvalidUsage('invalid command %r' % command)
 
@@ -1061,6 +1065,16 @@ def safer_eval(code, context):
         if name not in context:
             raise InvalidUsage('invalid use of %r during evaluation' % name)
     return eval(code, {'__builtins__': {}}, context)
+
+
+def get_topological_search(pattern):
+    "Return a function of a node that sees if it matches the given pattern"
+    try:
+        tree_pattern = tm.TreePattern(pattern)
+    except NewickError as e:
+        raise InvalidUsage('invalid pattern %r: %s' % (pattern, e))
+
+    return lambda node: tm.match(tree_pattern, node)
 
 
 def get_stats(tree_id, pname):
