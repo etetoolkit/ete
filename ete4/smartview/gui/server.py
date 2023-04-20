@@ -1163,7 +1163,11 @@ def add_tree(data):
     if type(layouts) == str:
         layouts = layouts.split(',')
     include_props = data.get('include_props')
+    if type(include_props) == str:
+        include_props = include_props.split(',')
     exclude_props = data.get('exclude_props')
+    if type(exclude_props) == str:
+        exclude_props = exclude_props.split(',')
 
     del_tree(tid)  # delete if there is a tree with same id
 
