@@ -1341,18 +1341,19 @@ cdef class Tree(object):
                                       units=units, dpi=dpi)
 
     def explore(self, tree_name=None, layouts=[], show_leaf_name=True,
-            show_branch_length=True, show_branch_support=True,
-            popup_props=None,
-            host="127.0.0.1", port=5000,
-            custom_api={}, custom_route={}):
-        """Launch an interactive smartview session to visualize the current node.
+                show_branch_length=True, show_branch_support=True,
+                include_props=None, exclude_props=None,
+                host='127.0.0.1', port=5000,
+                custom_api={}, custom_route={}):
+        """Launch an interactive smartview session to visualize the tree.
 
         :param str tree_name: Name used to store tree in local database.
         :param list layouts: Layouts that will be available from the
-            front end. It is important to name functions (__name__), as they will
-            be adressed by such in the explorer.
-        :param list popup_props: Properties to show in the popup of a node, in
-            addition to basic ones (name, dist, support...). If None, show all.
+            front end. It is important to name functions (__name__), as they
+            will be adressed by that name in the explorer.
+        :param list include_props: Properties to show in the nodes popup.
+            If None, show all.
+        :param list exclude_props: Properties to exclude from the nodes popup.
         """
         from ..smartview.gui.server import run_smartview
 
@@ -1375,7 +1376,8 @@ cdef class Tree(object):
 
         run_smartview(tree=self, tree_name=tree_name,
                       layouts=list(default_layouts + layouts),
-                      host=host, port=port, popup_props=popup_props,
+                      include_props=include_props, exclude_props=exclude_props,
+                      host=host, port=port,
                       custom_api=custom_api, custom_route=custom_route)
 
     def copy(self, method="cpickle"):

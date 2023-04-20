@@ -54,7 +54,8 @@ class AppTree:
     name: str = None
     style: TreeStyle = None
     nodestyles: dict = None
-    popup_props: list = None
+    include_props: list = None
+    exclude_props: list = None
     layouts: list = None
     timer: float = None
     initialized: bool = False
@@ -583,9 +584,10 @@ def get_drawer(tree_id, args):
         selected = tree.selected
         searches = tree.searches
 
-        return drawer_class(load_tree(tree_id), viewport, panel, zoom,
-                    limits, collapsed_ids, active, selected, searches,
-                    layouts, tree.style, tree.popup_props)
+        return drawer_class(
+            load_tree(tree_id), viewport, panel, zoom,
+            limits, collapsed_ids, active, selected, searches,
+            layouts, tree.style, tree.include_props, tree.exclude_props)
     # bypass errors for now...
     except StopIteration as error:
         print(error)
@@ -1105,8 +1107,8 @@ def add_trees_from_request():
     if request.form:
         trees = get_trees_from_form()
     else:
-        extra = ['layouts', 'description', 'b64pickle', 'popup_props']
-
+        extra = ['layouts', 'description', 'b64pickle',
+                 'include_props', 'exclude_props']
         data = get_fields(required=['name', 'newick', 'id'],
                           valid_extra=extra)
         trees = [data]
@@ -1134,7 +1136,9 @@ def get_trees_from_form():
             'b64pickle': form.get('b64pickle'),
             'description': form.get('description', ''),
             'layouts': form.get('layouts', []),
-            'popup_props': form.get('popup_props', None)}]
+            'include_props': form.get('include_props', None),
+            'exclude_props': form.get('exclude_props', None),
+        }]
 
 
 def get_file_contents(fp):
@@ -1158,7 +1162,8 @@ def add_tree(data):
     layouts = data.get('layouts', [])
     if type(layouts) == str:
         layouts = layouts.split(',')
-    popup_props = data.get('popup_props')
+    include_props = data.get('include_props')
+    exclude_props = data.get('exclude_props')
 
     del_tree(tid)  # delete if there is a tree with same id
 
@@ -1176,7 +1181,8 @@ def add_tree(data):
     app_tree.name = name
     app_tree.tree = tree
     app_tree.layouts = retrieve_layouts(layouts)
-    app_tree.popup_props = popup_props
+    app_tree.include_props = include_props
+    app_tree.exclude_props = exclude_props
 
     # Write tree data as a temporary pickle file
     obj = { 'name': name, 'layouts': layouts, 'tree': tree }
@@ -1375,8 +1381,8 @@ def copy_style(tree_style):
 # App initialization.
 
 def initialize(tree=None, layouts=[],
-        popup_props=None,
-        custom_api={},  custom_route={}, safe_mode=False):
+               include_props=None, exclude_props=None,
+               custom_api={},  custom_route={}, safe_mode=False):
     "Initialize the database and the flask app"
     app = Flask(__name__, instance_relative_config=True)
     configure(app)
@@ -1394,7 +1400,8 @@ def initialize(tree=None, layouts=[],
         name=get_random_string(10),
         style=copy_style(TreeStyle()),
         nodestyles={},
-        popup_props=deepcopy(popup_props),
+        include_props=deepcopy(include_props),
+        exclude_props=deepcopy(exclude_props),
         layouts = deepcopy(app.default_layouts),
         timer = time(),
         searches = {},
@@ -1534,12 +1541,11 @@ def add_resources(app, api, custom_api={}, custom_route={}):
 
 
 def run_smartview(tree=None, tree_name=None,
-        layouts=[], popup_props=None,
+        layouts=[],
+        include_props=None, exclude_props=None,
         custom_api={}, custom_route={},
         safe_mode=False, host="127.0.0.1", port=5000,
         run=True, serve_static=True, verbose=True):
-    # TODO: Change popup_props to include_props and exclude_props.
-
     # Set tree_name to None if no tree was provided
     # Generate tree_name if none was provided
     tree_name = tree_name or (get_random_string(10) if tree else None)
@@ -1548,11 +1554,11 @@ def run_smartview(tree=None, tree_name=None,
         os.chdir(os.path.abspath(os.path.dirname(__file__)))
 
     global app
-    app = initialize(tree_name, layouts,
-            popup_props=popup_props,
-            custom_api=custom_api,
-            custom_route=custom_route,
-            safe_mode=safe_mode)
+    app = initialize(
+        tree_name, layouts,
+        include_props=include_props, exclude_props=exclude_props,
+        custom_api=custom_api, custom_route=custom_route, safe_mode=safe_mode)
+
     # purge inactive trees every 15 minutes
     purge(interval=15*60, max_time=30*60)
 
@@ -1565,7 +1571,8 @@ def run_smartview(tree=None, tree_name=None,
             'name': tree_name,
             'tree': tree,
             'layouts': [],
-            'popup_props': popup_props,
+            'include_props': include_props,
+            'exclude_props': exclude_props,
         }
         with app.app_context():
             tid = add_tree(tree_data)

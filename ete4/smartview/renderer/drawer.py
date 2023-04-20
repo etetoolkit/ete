@@ -82,7 +82,8 @@ class Drawer:
     def __init__(self, tree, viewport=None, panel=0, zoom=(1, 1),
                  limits=None, collapsed_ids=None,
                  active=None, selected=None, searches=None,
-                 layouts=None, tree_style=None, popup_props=None):
+                 layouts=None, tree_style=None,
+                 include_props=None, exclude_props=None):
         self.tree = tree
         self.viewport = Box(*viewport) if viewport else None
         self.panel = panel
@@ -93,7 +94,8 @@ class Drawer:
         self.selected = selected or {}  # looks like {node_id: (node, parents)}
         self.searches = searches or {}  # looks like {text: (results, parents)}
         self.layouts = layouts or []
-        self.popup_props = popup_props
+        self.include_props = include_props
+        self.exclude_props = exclude_props
         self.tree_style = tree_style
         if not self.tree_style:
             self.tree_style = TreeStyle()
@@ -373,7 +375,9 @@ class Drawer:
 
         # Draw collapsed node nodebox when necessary
         if is_manually_collapsed or is_small or collapsed_node.dist == 0:
-            name, properties = collapsed_node.name, self.get_popup_props(collapsed_node)
+            name = collapsed_node.name
+            properties = self.get_popup_props(collapsed_node)
+
             node_id = tuple(get_node_id(collapsed_node, []))\
                     if is_manually_collapsed else []
             box = draw_nodebox(self.flush_outline(ndx), name,
@@ -449,12 +453,15 @@ class Drawer:
         return selected_children
 
     def get_popup_props(self, node):
-        """Return dictionary containing web-safe properties of node to be
-        rendered in frontend popup"""
-        keys = (['name', 'dist', 'support', 'hyperlink', 'tooltip'] +
-            (list(node.props.keys()) if self.popup_props is None else self.popup_props))
+        """Return dictionary of web-safe node properties (to use in a popup)."""
+        include_props = (self.include_props if self.include_props is not None
+                         else node.props)
 
-        return {k: safe_string(node.props[k]) for k in keys if k in node.props}
+        return {k: safe_string(node.props[k]) for k in include_props
+                    if k in node.props and k not in (self.exclude_props or [])}
+        # NOTE: We do it this way so the properties appear in the
+        # order given in include_props.
+
 
     # These are the 2 functions that the user overloads to choose what to draw
     # when representing a node and a group of collapsed nodes:
@@ -570,10 +577,12 @@ class DrawerCirc(Drawer):
                  limits=None, collapsed_ids=None, active=None,
                  selected=None, searches=None,
                  layouts=None, tree_style=None,
-                 popup_props=None):
+                 include_props=None, exclude_props=None):
         super().__init__(tree, viewport, panel, zoom,
                          limits, collapsed_ids, active, selected, searches,
-                         layouts, tree_style, popup_props=popup_props)
+                         layouts, tree_style,
+                         include_props=include_props,
+                         exclude_props=exclude_props)
 
         assert self.zoom[0] == self.zoom[1], 'zoom must be equal in x and y'
 
