@@ -125,13 +125,15 @@ class Test_Coretype_Tree(unittest.TestCase):
     def test_concat_trees(self):
         t1 = Tree('((A, B), C);')
         t2 = Tree('((a, b), c);')
+
         concat_tree = t1 + t2
         concat_tree.sort_descendants()
         self.assertEqual(concat_tree.write(format=9), '(((A,B),C),((a,b),c));')
+
         t3 = PhyloTree('((a, b), c);')
+
         mixed_types = lambda: t1 + t3
         self.assertRaises(TreeError, mixed_types)
-
 
     def test_newick_formats(self):
         """Test different newick subformats."""
@@ -597,7 +599,6 @@ class Test_Coretype_Tree(unittest.TestCase):
         n.reverse()
         self.assertEqual(n, t.get_children())
 
-
     def test_distances(self):
         # Distances: get_distance, get_farthest_node,
         # get_farthest_descendant, get_midpoint_outgroup
@@ -714,7 +715,6 @@ class Test_Coretype_Tree(unittest.TestCase):
         self.assertEqual(t.children[0].dist, 5.0)
         self.assertEqual(t.children[1].dist, 5.0)
 
-
     def test_unroot(self):
         t = Tree("(('a':0.5, 'b':0.5):0.5, ('c':0.2, 'd':0.2):0.8):1;" )
         t2 = Tree("(('a':0.5, 'b':0.5):0.5, ('c':0.2, 'd':0.2):0.8):1;" )
@@ -764,7 +764,6 @@ class Test_Coretype_Tree(unittest.TestCase):
 
 
         #self.assertEqual(cache_name_lof[t], [t.name])
-
 
     def test_rooting2(self):
         """Test branch support and distances after rooting."""
@@ -874,7 +873,6 @@ class Test_Coretype_Tree(unittest.TestCase):
         t.populate(100, random_branches=True)
         t.convert_to_ultrametric(100, "balanced")
         self.assertEqual(set([round(t.get_distance(n), 6) for n in t]), set([100.0]))
-
 
     def test_expand_polytomies_rf(self):
         gtree = Tree('((a:1, (b:1, (c:1, d:1):1):1), (e:1, (f:1, g:1):1):1);')
@@ -990,7 +988,6 @@ class Test_Coretype_Tree(unittest.TestCase):
         s3 = Tree('(((A, C)0.9, (E, D))0.98, (B,F)0.95);')
         self.assertEqual(_astuple(s3.compare(ref1)),
                          (1.0, 8, 8, 0.0, 0.0, 6, 1, "NA"))
-
 
     def test_tree_diff(self):
         # this is the result of 100 Ktreedist runs on random trees, using rooted
@@ -1255,10 +1252,6 @@ class Test_Coretype_Tree(unittest.TestCase):
             self.assertEqual(rf_max, real_max)
             self.assertEqual(rf, RF)
 
-
-
-
-
     def test_monophyly(self):
         # Testing monophyly checks
         t =  Tree("((((((a, e), i), o),h), u), ((f, g), j));")
@@ -1341,7 +1334,6 @@ class Test_Coretype_Tree(unittest.TestCase):
         mono_nodes = t.get_monophyletic(values=["green", "yellow"], target_attr="color")
         self.assertEqual(set(mono_nodes), green_yellow_nodes)
 
-
     def test_copy(self):
         t = Tree("((A, B)Internal_1:0.7, (C, D)Internal_2:0.5)root:1.3;", format=1)
         # we add a custom annotation to the node named A
@@ -1361,7 +1353,6 @@ class Test_Coretype_Tree(unittest.TestCase):
         self.assertEqual((t_nwx & "A").props['label'], "custom Value")
         self.assertEqual((t_pkl & "A").props['complex'][0], [0,1])
         self.assertEqual((t_deep & "A").props['testfn'](), "YES")
-
 
     def test_cophenetic_matrix(self):
         t = Tree(ds.nw_full)
