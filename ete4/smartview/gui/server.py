@@ -1325,9 +1325,8 @@ def purge(interval=None, max_time=30*60):
         if inactivity_time > max_time:
             del_tree(tid)
 
-    # Call self after interval
-    if interval: # in seconds
-        print(f'Current trees in memory: {len(list(app.trees.keys()))}')
+    if interval:  # if set, we will call ourselves in the future
+        print('Current trees in memory:', len(app.trees))
         Timer(interval, purge, [interval, max_time]).start()
 
 
