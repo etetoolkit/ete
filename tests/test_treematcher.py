@@ -2,7 +2,6 @@
 Tests related to the treematcher module.
 """
 
-from tempfile import TemporaryFile
 import unittest
 
 from ete4 import Tree
