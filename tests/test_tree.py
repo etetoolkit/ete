@@ -854,7 +854,12 @@ class Test_Coretype_Tree(unittest.TestCase):
                 self.assertEqual(t.get_topology_id(), orig_id)
 
     def test_node_id(self):
+        """Test the node_id corresponding to a node inside a tree."""
         t = Tree('((a,b)x,(c,d)y);', format=1)
+        #    ╭╴x [0]╶┬╴a [0,0]
+        #╴[]╶┤       ╰╴b [0,1]
+        #    ╰╴y [1]╶┬╴c [1,0]
+        #            ╰╴d [1,1]
 
         self.assertEqual(t.id, [])
         self.assertEqual(t['x'].id, [0])
