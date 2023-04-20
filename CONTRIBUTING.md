@@ -21,8 +21,9 @@ example).
 ## Bug reporting and feature requests
 
 The preferred way to report a problem or request/disccuss new features
-is by opening a new issue at https://github.com/etetoolkit/ete/issues .
-Please check for duplicate reports.
+is by opening a new issue at https://github.com/etetoolkit/ete/issues
+. Please check if there is already such an open issue before creating
+a new one.
 
 
 ## Running tests
@@ -45,8 +46,6 @@ python -m unittest tests.test_nexus
 ```
 
 Eventually we will fix the remaining tests, and then we expect to run them all with:
-
-then while having a `virtualenv` active or while using some other python container run::
 
 ```sh
 python -m unittest tests.test_all
