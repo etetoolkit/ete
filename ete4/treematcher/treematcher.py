@@ -17,12 +17,16 @@ class TreePattern(Tree):
     It stores in the node names the constraints for that node.
     """
 
-    def __init__(self, *args, **kargs):
-        Tree.__init__(self, *args, quoted_node_names=True, format=1, **kargs)
+    def __init__(self, pattern='', up=None):
+        # We expect a newick with quoted names, which will be the
+        # conditions to check for in each node. No need to end with ";".
+        newick = pattern.strip().rstrip(';') + ';'
+        Tree.__init__(self, newick, quoted_node_names=True, format=1)
 
+        # Add the "code" property to each node, with its compiled condition.
         for node in self.traverse():
-            if node.name:
-                node.props['code'] = compile(node.name, '<string>', 'eval')
+            node.props['code'] = compile(node.name or 'True',
+                                         '<string>', 'eval')
 
     def __str__(self):
         return self.get_ascii(show_internal=True)
@@ -30,6 +34,9 @@ class TreePattern(Tree):
 
 def match(pattern, tree):
     """Return True if the pattern matches the given tree."""
+    if pattern.children and len(tree.children) != len(pattern.children):
+        return False  # no match if there's not the same number of children
+
     context = {
         'tree': tree, 'node': tree,
         'name': tree.name, 'up': tree.up, 'is_leaf': tree.is_leaf,
@@ -44,21 +51,19 @@ def match(pattern, tree):
         'any': any, 'all': all, 'len': len,
         'sum': sum, 'abs': abs, 'float': float}
 
-    if not safer_eval(pattern.props.get('code', 'True'), context):
-        return False
+    if not safer_eval(pattern.props['code'], context):
+        return False  # no match if the condition for this node if false
 
     if not pattern.children:
-        return True
-
-    if len(tree.children) != len(pattern.children):
-        return False
+        return True  # if the condition was true and pattern ends here, we match
 
     # Check all possible comparisons between pattern children and tree children.
     for ch_perm in permutations(pattern.children):
         if all(match(sub_pattern, tree.children[i])
                for i, sub_pattern in enumerate(ch_perm)):
             return True
-    return False
+
+    return False  # no match if no permutation of children satisfied sub-matches
 
 
 def search(pattern, tree):

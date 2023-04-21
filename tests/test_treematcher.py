@@ -26,7 +26,7 @@ class TestTreematcher(unittest.TestCase):
           "len(ch) > 2",
           "name in ['hello', 'bye']"
         )
-        "(len(name) < 3 or name == 'accept') and d >= 0.5";
+        "(len(name) < 3 or name == 'accept') and d >= 0.5"
         """)
 
         self.assertEqual(str(pattern), strip("""
