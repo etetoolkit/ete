@@ -24,7 +24,7 @@ def loads(text, format=1):
 
 
 def get_trees(text):
-    "Return the trees as {name: newick} with all the name transformations done"
+    """Return trees as {name: newick} with all the name transformations done."""
     if not re.match(r'^#NEXUS\s*\n', text, flags=re.I):
         raise NexusError('text does not start with "#NEXUS"')
 
@@ -53,7 +53,7 @@ def get_trees(text):
 
 
 def apply_translations(translate, newick):
-    "Return newick with the node names translated according to the given dict"
+    """Return newick with node names translated according to the given dict."""
     if not translate:
         return newick
 
@@ -67,12 +67,12 @@ def apply_translations(translate, newick):
 
 
 def get_section(text, section_name):
-    "Return the commands ({name: [args]}) that correspond to the given section"
+    """Return commands ({name: [args]}) that correspond to the given section."""
     return get_sections(text).get(section_name.upper(), {})
 
 
 def get_sections(text):
-    "Return {section: commands} read from the full text of a nexus file"
+    """Return {section: commands} read from the full text of a nexus file."""
     pattern = r'\nBEGIN\s+(\w+)\s*;(.*?)\nEND\s*;'
 
     sections = {}
@@ -84,7 +84,7 @@ def get_sections(text):
 
 
 def get_commands(text_section):
-    "Return a dict that for each command has a list with its arguments"
+    """Return a dict that for each command has a list with its arguments."""
     pattern = r';.*?(?=;)'
 
     commands = {}
