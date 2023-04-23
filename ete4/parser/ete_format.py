@@ -8,7 +8,7 @@ import json
 import pickle
 import base64
 import gzip
-from ete4 import Tree
+import ete4
 
 
 def pickle_pack(data):
@@ -66,7 +66,7 @@ def loads(INPUT, encoder='pickle', unpack=False):
     for line in io.StringIO(INPUT).readlines():
         etype, nid, b = map(str.strip, line.split('\t'))
         if nid not in id2node:
-            node = id2node[nid] = Tree()
+            node = id2node[nid] = ete4.Tree()
 
         if etype == 'p':
             if encoder == 'pickle':
