@@ -240,40 +240,57 @@ variables, with their straightforward interpretation: <b>node</b>,
 <b>properties</b> / <b>p</b>, <b>children</b> / <b>ch</b>, <b>size</b>,
 <b>dx</b>, <b>dy</b>, <b>regex</b>.</p><br /><br />
 
+<h3>Topological search</h3><br />
+
+<p>Similar to the expression search, if you prefix your text with <b>/t</b>
+(the <i>topological command</i>), you can write a newick tree with quoted
+names in each node containing an eval command. This will select the nodes
+that satisfy the full subtree of expressions that you passed.</p><br /><br />
+
 <h3>Examples of searches and possible matches</h3>
 
 </div>
 
 <table style="margin: 0 auto">
 <tbody>
+
 <tr><td></td><td>&nbsp;&nbsp;&nbsp;</td><td></td></tr>
 <tr><td style="text-align: left"><b>citrobacter</b></td><td></td>
 <td style="text-align: left">
 will match nodes named "Citrobacter werkmanii" and "Citrobacter youngae"
 </td></tr>
+
 <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
 <tr><td style="text-align: left"><b>UBA</b></td><td></td>
 <td style="text-align: left">
 will match "spx UBA2009" but not "Rokubacteriales"
 </td></tr>
+
 <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
 <tr><td style="text-align: left"><b>/r sp\\d\\d</b></td><td></td>
 <td style="text-align: left">
 will match any name that contains "sp" followed by (at least)
 two digits, like "Escherichia sp002965065" and "Citrobacter sp005281345"
 </td></tr>
+
 <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
 <tr><td style="text-align: left"><b>/e d &gt; 1</b></td><td></td>
 <td style="text-align: left">
 will match nodes with a length &gt; 1
 </td></tr>
+
 <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
-<tr><td style="text-align: left">
-<b>/e is_leaf and p['species'] == 'Homo'</b>
-</td><td></td>
+<tr><td style="text-align: left"><b>/e is_leaf and p['species'] == 'Homo'</b></td><td></td>
 <td style="text-align: left">
 will match leaf nodes with property "species" equal to "Homo"
 </td></tr>
+
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td style="text-align: left"><b>/t ("is_leaf","d > 1")"name=='AB'"</b></td><td></td>
+<td style="text-align: left">
+will match nodes named "AB" that have two children, one that is a leaf and another that has a length &gt; 1
+</td></tr>
+
 </tbody>
 </table>
 
