@@ -11,6 +11,7 @@ from .. import utils
 from ..parser.newick import (
     read_newick, write_newick,
     DEFAULT_DIST, DEFAULT_DIST_ROOT, DEFAULT_SUPPORT, DEFAULT_NAME)
+from ..parser import nexus, ete_format, file_extract
 
 # the following imports are necessary to set fixed styles and faces
 # try:
@@ -209,7 +210,6 @@ cdef class Tree(object):
 
     def __init__(self, newick=None, format=0, dist=None, support=None,
                  name=None, quoted_node_names=False, up=None, parser='auto'):
-        # TODO: implement the parser= argument
         self._children = []
         self.up = up
         self.props = {}
@@ -222,7 +222,43 @@ cdef class Tree(object):
 
         # Initialize tree
         if newick is not None:
-            read_newick(newick, self, format=format, quoted_names=quoted_node_names)
+            assert parser in ['newick', 'nexus', 'ete', 'auto']
+            if parser == 'auto':
+                try:
+                    read_newick(newick, self, format=format, quoted_names=quoted_node_names)
+                except Exception as e1:
+                    try:
+                        text = file_extract.file_extract(newick)
+                        name_nexus, newick = list(nexus.get_trees(text).items())[0]
+                        read_newick(newick, self, format=format, quoted_names=quoted_node_names)
+                        if name_nexus:
+                            self.name = name_nexus
+                    except Exception as e2:
+                        try:
+                            t = ete_format.loads(newick)
+                            self.name = t.name
+                            self.dist = t.dist
+                            self.support = t.support
+                            self.children = t.children
+                        except Exception as e3:
+                            raise TreeError('Unrecognized format. Exceptions: '
+                                            f'(newick) {e1} -- '
+                                            f'(nexus) {e2} -- '
+                                            f'(ete) {e3}')
+            elif parser == 'newick':
+                read_newick(newick, self, format=format, quoted_names=quoted_node_names)
+            elif parser == 'nexus':
+                text = file_extract.file_extract(newick)
+                name_nexus, newick = list(nexus.get_trees(text).items())[0]
+                read_newick(newick, self, format=format, quoted_names=quoted_node_names)
+                if name_nexus:
+                    self.name = name_nexus
+            elif parser == 'ete':
+                t = ete_format.loads(newick)
+                self.name = t.name
+                self.dist = t.dist
+                self.support = t.support
+                self.children = t.children
 
         self.name = name if name is not None else self.name
         self.dist = dist if dist is not None else self.dist

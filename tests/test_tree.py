@@ -259,35 +259,35 @@ class Test_Coretype_Tree(unittest.TestCase):
         # Check errors reading numbers
         error_nw1 = "((A:0.813705,(E:0.545591,D:0.411772)error:0.137245)1.000000:0.976306,C:0.074268);"
         for f in [0, 2]:
-            self.assertRaises(NewickError, Tree, error_nw1, format=f)
+            self.assertRaises(NewickError, Tree, error_nw1, format=f, parser='newick')
 
         error_nw2 = "((A:0.813705,(E:0.545error,D:0.411772)1.0:0.137245)1.000000:0.976306,C:0.074268);"
         for f in [0, 1, 2]:
-            self.assertRaises(NewickError, Tree, error_nw2, format=f)
+            self.assertRaises(NewickError, Tree, error_nw2, format=f, parser='newick')
 
 
         error_nw3 = "((A:0.813705,(E:0.545error,D:0.411772)1.0:0.137245)1.000000:0.976306,C:0.074268);"
         for f in [0, 1, 2]:
-            self.assertRaises(NewickError, Tree, error_nw2, format=f)
+            self.assertRaises(NewickError, Tree, error_nw2, format=f, parser='newick')
 
         # Check errors derived from reading names with weird or illegal chars
         base_nw = "((NAME1:0.813705,(NAME2:0.545,NAME3:0.411772)NAME6:0.137245)NAME5:0.976306,NAME4:0.074268);"
         valid_names = ['[name]', '[name', '"name"', "'name'", "'name", 'name', '[]\'"&%$!*.']
         error_names = ['error)', '(error', "erro()r",  ":error", "error:", "err:or", ",error", "error,"]
         for ename in error_names:
-            self.assertRaises(NewickError, Tree, base_nw.replace('NAME2', ename), format=1)
+            self.assertRaises(NewickError, Tree, base_nw.replace('NAME2', ename), format=1, parser='newick')
             if not ename.startswith(','):
-                self.assertRaises(NewickError, Tree, base_nw.replace('NAME6', ename), format=1)
+                self.assertRaises(NewickError, Tree, base_nw.replace('NAME6', ename), format=1, parser='newick')
 
         for vname in valid_names:
             expected_names = set(['NAME1', vname, 'NAME3', 'NAME4'])
-            self.assertEqual(set([n.name for n in Tree(base_nw.replace('NAME2', vname), format=1)]),
+            self.assertEqual(set([n.name for n in Tree(base_nw.replace('NAME2', vname), format=1, parser='newick')]),
                              expected_names)
 
         # invalid NHX format
-        self.assertRaises(NewickError, Tree, "(((A, B), C)[&&NHX:nameI]);")
+        self.assertRaises(NewickError, Tree, "(((A, B), C)[&&NHX:nameI]);", parser='newick')
         # unsupported newick stream
-        self.assertRaises(NewickError, Tree, [1,2,3])
+        self.assertRaises(AssertionError, Tree, [1,2,3], parser='newick')
 
     def test_quoted_names(self):
         complex_name = "((A:0.0001[&&NHX:hello=true],B:0.011)90:0.01[&&NHX:hello=true],(C:0.01, D:0.001)hello:0.01);"
@@ -296,9 +296,9 @@ class Test_Coretype_Tree(unittest.TestCase):
         #escaped quotes
         nw2 = '''(("A:\\"0.1\\"":1,"%s":2)"C:'0.00'":3,"D'sd''\'":4);''' %complex_name
         for nw in [nw1, nw2]:
-            self.assertRaises(NewickError, Tree, newick=nw)
-            self.assertRaises(NewickError, Tree, newick=nw, quoted_node_names=True, format=0)
-            t = Tree(newick=nw, format=1, quoted_node_names=True)
+            self.assertRaises(NewickError, Tree, newick=nw, parser='newick')
+            self.assertRaises(NewickError, Tree, newick=nw, quoted_node_names=True, format=0, parser='newick')
+            t = Tree(newick=nw, format=1, quoted_node_names=True, parser='newick')
             self.assertTrue(any(n for n in t if n.name == '%s'%complex_name))
             # test writing and reloading tree
             nw_back = t.write(quoted_node_names=True, format=1)
