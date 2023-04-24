@@ -35,8 +35,10 @@ SHELL_COLORS = {
 def color(string, color):
     return "%s%s%s" %(SHELL_COLORS[color], string, SHELL_COLORS[None])
 
+
 def clear_color(string):
     return re.sub("\\033\[[^m]+m", "", string)
+
 
 def print_table(items, header=None, wrap=True, max_col_width=20,
                 wrap_style="wrap", row_line=False, fix_col_width=False, title=None):
@@ -154,24 +156,22 @@ def print_table(items, header=None, wrap=True, max_col_width=20,
             else:
                 print(' | '.join(['='*c2maxw[col] for col in range(len(extra_line)) ]))
 
-def ask_filename(text):
-    fname = ""
-    while not os.path.exists(fname):
-        fname = input(text)
-    return fname
 
-def ask(string,valid_values,default=-1,case_sensitive=False):
-    """ Asks for a keyborad answer """
-    v = None
-    if not case_sensitive:
-        valid_values = [value.lower() for value in valid_values]
-    while v not in valid_values:
-        v = input("%s [%s]" % (string,','.join(valid_values) ))
-        if v == '' and default>=0:
-            v = valid_values[default]
-        if not case_sensitive:
-            v = v.lower()
-    return v
+
+def ask(string, valid_values, default=-1, case_sensitive=False):
+    """Keep asking until we get a valid answer and return it."""
+    while True:
+        answer = input('%s [%s] ' % (string, ','.join(valid_values)))
+
+        if not answer and default >= 0:
+            return valid_values[default]
+
+        if case_sensitive and answer in valid_values:
+            return answer
+        elif (not case_sensitive and
+              answer.lower() in [v.lower() for v in valid_values]):
+            return answer.lower()
+
 
 def timeit(f):
     def a_wrapper_accepting_arguments(*args, **kargs):
