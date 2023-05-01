@@ -407,7 +407,7 @@ class TreeStyle(object):
 
         for ly in layout:
             # Validates layout function
-            if (type(ly) == types.FunctionType or type(ly) == types.MethodType or ly is None):
+            if callable(ly) is True or ly is None:
                 self._layout_handler.append(ly)
             else:
                 from . import layouts
