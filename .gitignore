@@ -1,6 +1,8 @@
 build
 *.pyc
 *~
+.vscode
+
 #*#
 doc/_build/
 sdoc/_build/
