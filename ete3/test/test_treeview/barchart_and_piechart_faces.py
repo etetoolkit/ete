@@ -2,7 +2,7 @@ import sys
 import random
 from ... import Tree, faces, TreeStyle, COLOR_SCHEMES
 
-schema_names = COLOR_SCHEMES.keys()
+schema_names = sorted(COLOR_SCHEMES.keys())
 
 def layout(node):
     if node.is_leaf():

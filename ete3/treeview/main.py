@@ -682,7 +682,7 @@ def save(scene, imgName, w=None, h=None, dpi=90,\
     if ext == "SVG":
         svg = QSvgGenerator()
         targetRect = QRectF(0, 0, w, h)
-        svg.setSize(QSize(w, h))
+        svg.setSize(QSize(int(w), int(h)))
         svg.setViewBox(targetRect)
         svg.setTitle("Generated with ETE http://etetoolkit.org")
         svg.setDescription("Generated with ETE http://etetoolkit.org")
@@ -703,7 +703,9 @@ def save(scene, imgName, w=None, h=None, dpi=90,\
             compatible_code = str(ba)
             print('from memory')
         else:
-            compatible_code = open(imgName).read()
+            with open(imgName) as f:
+                compatible_code = f.read()
+            
         # Fix a very annoying problem with Radial gradients in
         # inkscape and browsers...
         compatible_code = compatible_code.replace("xml:id=", "id=")
@@ -718,8 +720,8 @@ def save(scene, imgName, w=None, h=None, dpi=90,\
         elif imgName == '%%return':
             return x_scale, y_scale, compatible_code
         else:
-            open(imgName, "w").write(compatible_code)
-
+            with open(imgName, "w") as f:
+                f.write(compatible_code)
 
     elif ext == "PDF" or ext == "PS":
         if ext == "PS":
@@ -749,10 +751,10 @@ def save(scene, imgName, w=None, h=None, dpi=90,\
         scene.render(pp, targetRect, scene.sceneRect(), ratio_mode)
     else:
         targetRect = QRectF(0, 0, w, h)
-        ii= QImage(w, h, QImage.Format_ARGB32)
+        ii= QImage(int(w), int(h), QImage.Format_ARGB32)
         ii.fill(QColor(Qt.white).rgb())
-        ii.setDotsPerMeterX(dpi / 0.0254) # Convert inches to meters
-        ii.setDotsPerMeterY(dpi / 0.0254)
+        ii.setDotsPerMeterX(int(dpi / 0.0254)) # Convert inches to meters
+        ii.setDotsPerMeterY(int(dpi / 0.0254))
         pp = QPainter(ii)
         pp.setRenderHint(QPainter.Antialiasing)
         pp.setRenderHint(QPainter.TextAntialiasing)
