@@ -31,7 +31,7 @@ class _SelectorItem(QGraphicsRectItem):
     def paint(self, p, option, widget):
         p.setPen(self.Color)
         p.setBrush(QBrush(Qt.NoBrush))
-        p.drawRect(self.rect().x(),self.rect().y(),self.rect().width(),self.rect().height())
+        p.drawRect(QRectF(self.rect().x(),self.rect().y(),self.rect().width(),self.rect().height()))
         return
         # Draw info text
         font = QFont("Arial",13)
@@ -128,7 +128,7 @@ class _GUI(QMainWindow):
         # Shows the whole tree by default
         #self.view.fitInView(self.scene.sceneRect(), Qt.KeepAspectRatio)
         splitter.setCollapsible(1, True)
-        splitter.setSizes([self.scene.sceneRect().width(), 10])
+        splitter.setSizes([int(self.scene.sceneRect().width()), 10])
 
         self.view.fitInView(0, 0, self.scene.sceneRect().width(), 200, Qt.KeepAspectRatio)
 

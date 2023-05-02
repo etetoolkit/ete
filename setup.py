@@ -128,10 +128,13 @@ try:
         long_description = LONG_DESCRIPTION,
         classifiers = CLASSIFIERS,
         provides = [MOD_NAME],
-        keywords = 'tree, tree reconstruction, tree visualization, tree comparison, phylogeny, phylogenetics, phylogenomics',
-        url = 'http://etetoolkit.org',
-        download_url = 'http://etetoolkit.org/static/releases/ete4/',
-
+        keywords = "tree, tree reconstruction, tree visualization, tree comparison, phylogeny, phylogenetics, phylogenomics",
+        url = "http://etetoolkit.org",
+        project_urls = {
+            "Documentation": "http://etetoolkit.org/docs/latest/tutorial/index.html",
+            "Source": "https://github.com/etetoolkit/ete",
+        },
+        download_url = "http://etetoolkit.org/static/releases/ete3/",
 
         ext_modules = cythonize(extensions),
         # scripts=glob('scripts/*.py'),

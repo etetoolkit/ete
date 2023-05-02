@@ -43,12 +43,10 @@ class TreeError(Exception):
 
 cdef class Tree(object):
     cdef public dict props
-    cdef public set features
     cdef public list _children
     cdef public Tree up
     cdef public object _img_style
     cdef public object _sm_style
-    cdef public object _faces
     cdef public object _smfaces
     cdef public object _collapsed_faces
     cdef public int _initialized
@@ -1622,7 +1620,7 @@ cdef class Tree(object):
         :param name attr_t2: Compare trees using a custom node
                               attribute as a node name in target tree.
 
-        :param False attr_t2: If True, consider trees as unrooted.
+        :param False unrooted_trees: If True, consider trees as unrooted.
 
         :param False expand_polytomies: If True, all polytomies in the reference
            and target tree will be expanded into all possible binary
@@ -2440,14 +2438,15 @@ cdef class Tree(object):
 
         from ..treeview.main import  _FaceAreas, FaceContainer, FACE_POSITIONS
 
-        if self._faces is None:
-            self._faces = _FaceAreas()
+        if "_faces" not in self.props:
+            self.props["_faces"] = _FaceAreas()
 
         if position not in FACE_POSITIONS:
             raise ValueError("face position not in %s" %FACE_POSITIONS)
 
-        if isinstance(face, Face):
-            getattr(self._faces, position).add_face(face, column=column)
+        if isinstance(face, Face):            
+            getattr(self.props["_faces"], position).add_face(face, column=column)            
+            
         else:
             raise ValueError("not a Face instance")
 

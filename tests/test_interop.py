@@ -22,7 +22,7 @@ class Test_Interoperability(unittest.TestCase):
         for node in skb_tree.traverse():
             node.test = node.name
         tree = Tree.from_skbio(skb_tree, map_attributes=["test"])
-        newick = tree.write(format_root_node=True, format=1, features=["test"])
+        newick = tree.write(format_root_node=True, format=1, properties=["test"])
         expected = "(B:0.1[&&NHX:test=B],(D:1[&&NHX:test=D],E:1.5[&&NHX:test=E])C:0.2[&&NHX:test=C])A:1[&&NHX:test=A];"
         self.assertEqual(newick, expected)
 

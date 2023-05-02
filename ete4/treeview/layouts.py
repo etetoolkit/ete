@@ -153,7 +153,7 @@ def evol_layout(node):
         if node.collapsed == 1:
             node.img_style["draw_descendants"]= False
     leaf_color = "#000000"
-    if not node.is_root() and 'w' in node.features:
+    if not node.is_root() and 'w' in node.props:
         node.img_style["shape"] = 'circle'
         if (node.w > 900):
             node._w = 3

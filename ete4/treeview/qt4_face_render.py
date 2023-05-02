@@ -333,7 +333,7 @@ def update_node_faces(node, n2f, img):
         #  ...
 
         # In case there are fixed faces
-        fixed_faces =  getattr(getattr(node, "faces", None) , position, {})
+        fixed_faces =  getattr(node.props.get("_faces"), position, {})
 
         # _temp_faces should be initialized by the set_style function
         all_faces = getattr(node.props.get("_temp_faces"), position)

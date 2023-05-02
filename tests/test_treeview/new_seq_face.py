@@ -1,9 +1,9 @@
 # We will need to create Qt4 items
-from ...treeview.qt import QtCore
-from ...treeview.qt import QGraphicsRectItem, QColor, QPen, QBrush
-from ...treeview.qt import QGraphicsSimpleTextItem, QFont
+from ete4.treeview.qt import QtCore
+from ete4.treeview.qt import QGraphicsRectItem, QColor, QPen, QBrush
+from ete4.treeview.qt import QGraphicsSimpleTextItem, QFont
 
-from ... import faces, TreeStyle, PhyloTree, TextFace, SequenceFace
+from ete4 import faces, TreeStyle, PhyloTree, TextFace, SequenceFace
 from random import random
 
 _aafgcolors = {

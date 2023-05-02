@@ -56,6 +56,7 @@ class Test_ncbiquery(unittest.TestCase):
     self.assertEqual(set(name2id['Bacteria']), set([2]))
 
     out = ncbi.get_descendant_taxa("9605", intermediate_nodes=True)
+
     print(out)
     #Out[9]: [9606, 63221, 741158, 2665952, 2665953, 1425170]
     # New Taxonomies of Homo in NCBI, {2665952: 'environmental samples', 2665953: 'Homo sapiens environmental sample'}

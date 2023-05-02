@@ -46,7 +46,7 @@ for leaf in t.iter_leaves():
 #
 # The sequence attribute is considered as node feature, so you can
 # even include sequences in your extended newick format!
-print t.write(features=["sequence"], format=9)
+print t.write(properties=["sequence"], format=9)
 #
 #
 # (((seqA[&&NHX:sequence=MAEIPDETIQQFMALT---HNIAVQYLSEFGDLNEALNSYYASQTDDIKDRREEAHQF
@@ -56,7 +56,7 @@ print t.write(features=["sequence"], format=9)
 # ETIQQFMALTNVSHNIAVQYLSEFGDLNEAL--------------REEAHQ----------FMALTNVSH]);
 #
 # And yes, you can save this newick text and reload it into a PhyloTree instance.
-sametree = PhyloTree(t.write(features=["sequence"]))
+sametree = PhyloTree(t.write(properties=["sequence"]))
 print "Recovered tree with sequence features:"
 print sametree
 #

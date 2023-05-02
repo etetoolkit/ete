@@ -1,5 +1,5 @@
 import random
-from ... import Tree, TreeStyle, NodeStyle, faces, AttrFace, TreeFace
+from ete4 import Tree, TreeStyle, NodeStyle, faces, AttrFace, TreeFace
 
 # Tree Style used to render small trees used as leaf faces
 small_ts = TreeStyle()
@@ -26,7 +26,7 @@ def get_example_tree():
     t = Tree()
     t.populate(20, random_branches=True)
 
-    # Some random features in all nodes
+    # Some random properties in all nodes
     for n in t.traverse():
         n.add_properties(weight=random.randint(0, 50))
 

@@ -1,6 +1,6 @@
 import sys
 import random
-from ... import Tree, faces, TreeStyle, COLOR_SCHEMES
+from ete4 import Tree, faces, TreeStyle, COLOR_SCHEMES
 
 schema_names = COLOR_SCHEMES.keys()
 
