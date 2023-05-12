@@ -59,17 +59,17 @@
 
 % HEADER FORMAT
 
-\renewcommand{\chaptermark}[1]{\markboth{\emph{ #1}}{}} 
-\renewcommand{\sectionmark}[1]{\markright{ \emph{#1}}{}} 
+\renewcommand{\chaptermark}[1]{\markboth{\emph{ #1}}{}}
+\renewcommand{\sectionmark}[1]{\markright{ \emph{#1}}{}}
 
-\fancyhf{} 
-\fancyhead[LE,RO]{\small\upshape\thepage} 
+\fancyhf{}
+\fancyhead[LE,RO]{\small\upshape\thepage}
 
-\fancyhead[LO]{\scriptsize\upshape\rightmark} 
-\fancyhead[RE]{\scriptsize\upshape\leftmark} 
+\fancyhead[LO]{\scriptsize\upshape\rightmark}
+\fancyhead[RE]{\scriptsize\upshape\leftmark}
 \fancypagestyle{plain}{% this is for beginning of chapter: empty
-  \fancyhead{} % get rid of headers 
-  \renewcommand{\headrulewidth}{0.5pt} % and the line 
+  \fancyhead{} % get rid of headers
+  \renewcommand{\headrulewidth}{0.5pt} % and the line
 }
 
 \fancyhead[LE,RO]{\fontfamily{ppl}\upshape\thepage}  % page number
@@ -88,11 +88,11 @@
 \fancypagestyle{plain}{
   \fancyhead{} %get rid of the headers on plain pages
   \renewcommand{\headrulewidth}{0pt} % and the line
-} 
+}
 \fancypagestyle{empty}{
   \fancyhead{} %get rid of the headers on plain pages
   \renewcommand{\headrulewidth}{0pt} % and the line
-} 
+}
 % Code for creating empty pages
 % No headers on empty pages before new chapter
 \makeatletter
@@ -113,15 +113,15 @@
 
 
 \newcounter{code}
-\newenvironment{CodeEnv}[1] {% caption as parameter 
-  \stepcounter{code} 
-   \vspace{3ex}    \hrule  \vspace{1ex} 
-   \textbf{Example \thecode } 
+\newenvironment{CodeEnv}[1] {% caption as parameter
+  \stepcounter{code}
+   \vspace{3ex}    \hrule  \vspace{1ex}
+   \textbf{Example \thecode }
   \vspace{1ex}     \hrule     \vspace{1ex}
    #1
-  \vspace{1ex} \hrule 
-  \vspace{3ex} 
-} 
+  \vspace{1ex} \hrule
+  \vspace{3ex}
+}
 \end_preamble
 \options ,procnames
 \use_default_options true
@@ -173,8 +173,8 @@
 \paperpagestyle fancy
 \tracking_changes false
 \output_changes false
-\author "" 
-\author "" 
+\author ""
+\author ""
 \end_header
 
 \begin_body
@@ -204,7 +204,7 @@ ETE is a python programming toolkit that assists in the automated manipulation,
 \end_layout
 
 \begin_layout Quote
-ETE is currently developed at the 
+ETE is currently developed at the
 \begin_inset CommandInset href
 LatexCommand href
 name "comparative genomics group"
@@ -212,7 +212,7 @@ target "http://www.crg.es/comparative_genomics"
 
 \end_inset
 
- in the 
+ in the
 \begin_inset CommandInset href
 LatexCommand href
 name "Centre for Genomic Regulation (CRG)"
@@ -222,7 +222,7 @@ target "http://www.crg.es"
 
 .
  Barcelona, Spain.
- 
+
 \end_layout
 
 \begin_layout Quote
@@ -231,12 +231,12 @@ You can cite ETE as:
 
 \begin_layout Quote
 Jaime Huerta-Cepas, Joaquín Dopazo and Toni Gabaldón.
- 
+
 \series bold
 ETE: A python Environment for Tree Exploration
 \series default
 .
- (2009, unpublished) 
+ (2009, unpublished)
 \begin_inset space ~
 \end_inset
 
@@ -248,7 +248,7 @@ ETE: A python Environment for Tree Exploration
 \begin_inset space ~
 \end_inset
 
-(check 
+(check
 \begin_inset CommandInset href
 LatexCommand href
 target "http://etetoolkit.org"
@@ -276,7 +276,7 @@ About this tutorial
 This document compiles a set of guided examples about general ETE usage.
  It does not aim to cover exhaustively all available ETE's methods and parameter
 s, but to illustrate most important aspects of each module.
- A comprehensive reference guide for programmers can also be found at 
+ A comprehensive reference guide for programmers can also be found at
 \begin_inset CommandInset href
 LatexCommand href
 target "http://etetoolkit.org/"
@@ -286,7 +286,7 @@ target "http://etetoolkit.org/"
 .
  In addition, examples used in this tutorial and documentation updates can
  be downloaded from the same web site.
- 
+
 \end_layout
 
 \begin_layout Chapter
@@ -356,7 +356,7 @@ In bioinformatics, trees are the result of many analyses, such as phylogenetics
  Moreover a programmable tree drawing engine is implemented that can be
  used to automatize the graphical rendering of trees with customized node-specif
 ic visualizations.
- 
+
 \end_layout
 
 \begin_layout Section
@@ -367,11 +367,11 @@ Understanding Tree Topology
 A tree is a succession of TreeNodes connected in a hierarchical way.
  Therefore, the topology of a tree is defined by the connections of its
  nodes.
- Each node instance has two basic attributes: 
+ Each node instance has two basic attributes:
 \series bold
 node.up
 \series default
- and 
+ and
 \series bold
 node.children
 \series default
@@ -381,7 +381,7 @@ node.children
  Although it is possible to modify the structure of a tree by changing these
  attributes, we strongly recommend not to do it.
  Several methods are provided to manipulate each node's connections in a
- safe way (see 
+ safe way (see
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "sec:Modifying-Tree-Topology"
@@ -389,18 +389,18 @@ reference "sec:Modifying-Tree-Topology"
 \end_inset
 
 ).
- Other three attributes are always present in a tree node instance: i) 
+ Other three attributes are always present in a tree node instance: i)
 \series bold
 node.support
 \series default
 , which stores the branch support of the partition defined by a given node
  (i.e.
- bootstrap value) ii) 
+ bootstrap value) ii)
 \series bold
 node.dist
 \series default
 , which stores the branch length/distance from a given node to its parent
- iii) and 
+ iii) and
 \series bold
 node.name
 \series default
@@ -409,7 +409,7 @@ node.name
  in a hierarchical way.
  Given that all nodes in a tree are the same type, any node of the tree
  contains the same basic methods and attributes.
- 
+
 \end_layout
 
 \begin_layout Standard
@@ -423,25 +423,25 @@ When a tree is loaded, a pointer to the top-most node is returned.
  manipulate all the possible sub-trees within a general tree structure.
  Thus, once a tree is loaded, it can be split in different subparts that
  will function as independent trees instances.
- 
+
 \end_layout
 
 \begin_layout Standard
 In order to evaluate the basic attributes of a node, you can use the following
  methods:
 \series bold
- tree.is_leaf(), 
+ tree.is_leaf(),
 \series default
-returns True if node has no children; 
+returns True if node has no children;
 \series bold
 tree.is_root()
 \series default
-, returns True if node has no parent; 
+, returns True if node has no parent;
 \series bold
 len(node)
 \series default
 , returns the number of terminal nodes (leaves) under a given internal node;
- and 
+ and
 \series bold
 len(node.children)
 \series default
@@ -454,7 +454,7 @@ len(node.children)
 \series default
  ii)
 \series bold
- if leaf in node: print 
+ if leaf in node: print
 \begin_inset Quotes eld
 \end_inset
 
@@ -462,7 +462,7 @@ true
 \begin_inset Quotes erd
 \end_inset
 
- 
+
 \series default
 iii)
 \series bold
@@ -952,7 +952,7 @@ leaf names, all distances, branch support
 \begin_layout Plain Layout
 
 \size scriptsize
-0 (flexible) 
+0 (flexible)
 \series bold
 (default)
 \end_layout
@@ -972,7 +972,7 @@ leaf names, all distances, branch support
 
 \begin_layout Plain Layout
 List of supported newick formats.
- 
+
 \end_layout
 
 \end_inset
@@ -992,19 +992,19 @@ List of supported newick formats.
 \begin_layout Standard
 Formats labeled as
 \series bold
- flexible 
+ flexible
 \series default
 allow missing information.
  For instance, format 0 will be able to load a newick tree even if they
  not contain branch support information (it will be initialized with the
  default value), however, format 2 will rise a parsing error.
  If you want to control that your newick files strictly follow a given pattern
- you should use 
+ you should use
 \series bold
 strict
 \series default
  format definitions.
- 
+
 \end_layout
 
 \begin_layout Subsection*
@@ -1013,15 +1013,15 @@ Reading newick trees
 
 \begin_layout Standard
 In order to load a tree from a newick text string you can use the constructor
- 
+
 \series bold
 Tree()
 \series default
 ,
 \series bold
- 
+
 \series default
-provided by the main module 
+provided by the main module
 \series bold
 ete2
 \series default
@@ -1030,7 +1030,7 @@ ete2
  the format that should be used to parse it (0 by default).
  Alternatively, you can pass the path to a text file containing the newick
  string.
- 
+
 \end_layout
 
 \begin_layout Standard
@@ -1075,7 +1075,7 @@ Writing newick trees
 
 \begin_layout Standard
 Any ETE tree can be exported to the newick standard.
- To do it, you must call the method 
+ To do it, you must call the method
 \series bold
 write(),
 \series default
@@ -1083,7 +1083,7 @@ write(),
  default).
  This method will return the text string representing a given tree.
  You can also specify an output file.
- 
+
 \end_layout
 
 \begin_layout Standard
@@ -1139,7 +1139,7 @@ Once loaded into the Environment for Tree Exploration, trees can be manipulated
  a tree.
  Moreover, this feature will allow you to separate large trees into smaller
  partitions, or concatenate several trees into a single structure.
- 
+
 \end_layout
 
 \begin_layout Section
@@ -1152,7 +1152,7 @@ One of the most basic operations related with tree analysis is tree browsing,
  In order to facilitate this, ETE provides a number of methods to search
  for specific nodes or to navigate over the hierarchical structure of a
  tree.
- 
+
 \end_layout
 
 \begin_layout Subsection
@@ -1161,17 +1161,17 @@ Getting leaves, Descendants and Node's Relatives
 
 \begin_layout Standard
 The list of internal or leaf nodes within a given partition can be obtained
- by using the 
+ by using the
 \series bold
 get_leaves()
 \series default
- and 
+ and
 \series bold
 get_descendants()
 \series default
  methods.
  The former will return the list of terminal nodes (leaves) under a given
- internal node, while 
+ internal node, while
 \series bold
 get_descendants()
 \series default
@@ -1179,7 +1179,7 @@ get_descendants()
  tree node.
  You can iterate over the returned list of nodes or filter those meeting
  certain properties.
- 
+
 \end_layout
 
 \begin_layout Standard
@@ -1220,28 +1220,28 @@ end{CodeEnv}
 
 \begin_layout Standard
 In addition, other methods are available to find nodes according to their
- hierarchical relationships, namely: 
+ hierarchical relationships, namely:
 \series bold
-get_sisters() 
+get_sisters()
 \series default
 ,
 \series bold
- get_children() 
+ get_children()
 \series default
-and 
+and
 \series bold
 get_common_ancestor()
 \series default
 .
  Note that get_children returns an independent list of children rather than
- the 
+ the
 \series bold
 node.children
 \series default
  attribute.
  This allows you to operate with such list without affecting the integrity
  of the tree.
- The 
+ The
 \series bold
 get_common_ancestor()
 \series default
@@ -1294,9 +1294,9 @@ Often, when processing trees, all nodes need to be visited.
  This is called tree traversing.
  There are different ways to traverse a tree structure depending on the
  order in which children nodes are visited.
- ETE implements the two most common strategies: 
+ ETE implements the two most common strategies:
 \series bold
-pre- 
+pre-
 \series default
 and
 \series bold
@@ -1344,13 +1344,13 @@ Visit the root.
 
 \end_deeper
 \begin_layout Standard
-Every node in a tree includes a 
+Every node in a tree includes a
 \series bold
-traverse() 
+traverse()
 \series default
 method, which can be used to visit, one by one, every node node under the
  current partition.
- 
+
 \end_layout
 
 \begin_layout Standard
@@ -1447,18 +1447,18 @@ name "sub:Finding-Nodes-by"
 Both terminal and internal nodes can be located by searching along the tree
  structure.
  You can find, for instance, all nodes matching a given name.
- The 
+ The
 \series bold
 search_nodes()
 \series default
  method is the most direct way to find specific nodes.
- Given that every node has its own 
+ Given that every node has its own
 \series bold
 search_nodes
 \series default
  method, you can start your search from different points of the tree.
  Any node's attribute can be used as a filter to find nodes.
- 
+
 \end_layout
 
 \begin_layout Standard
@@ -1541,17 +1541,17 @@ end{CodeEnv}
 \end_layout
 
 \begin_layout Standard
-Finally, ETE implements a built-in method to find the 
+Finally, ETE implements a built-in method to find the
 \series bold
 first node matching a given name
 \series default
 , which is one of the most common tasks needed for tree analysis.
- This can be done through the operator 
+ This can be done through the operator
 \series bold
 &
 \series default
  (AND).
- Thus, 
+ Thus,
 \series bold
 MyTree&
 \begin_inset Quotes erd
@@ -1561,9 +1561,9 @@ A
 \begin_inset Quotes erd
 \end_inset
 
- 
+
 \series default
-will always return the first node whose name is 
+will always return the first node whose name is
 \begin_inset Quotes eld
 \end_inset
 
@@ -1571,7 +1571,7 @@ A
 \begin_inset Quotes erd
 \end_inset
 
- and that is under the tree 
+ and that is under the tree
 \begin_inset Quotes eld
 \end_inset
 
@@ -1581,7 +1581,7 @@ MyTree
 
 .
  The syntaxis may seem confusing, but it can be very useful in some situations.
- 
+
 \end_layout
 
 \begin_layout Standard
@@ -1625,13 +1625,13 @@ Iterating instead of Getting
 \end_layout
 
 \begin_layout Standard
-Methods starting with 
+Methods starting with
 \series bold
 “get_”
 \series default
  are all prepared to return results as a closed list of items.
  This means, for instance, that if you want to process all tree leaves and
- you ask for them using the 
+ you ask for them using the
 \series bold
 get_leaves()
 \series default
@@ -1642,25 +1642,25 @@ get_leaves()
 \end_layout
 
 \begin_layout Standard
-Most 
+Most
 \series bold
 “get_”-like
 \series default
  methods have their homologous iterator function.
- Thus, 
+ Thus,
 \series bold
 get_leaves()
 \series default
- can sometimes be substituted by 
+ can sometimes be substituted by
 \series bold
 iter_leaves()
 \series default
 .
- The same occurs with 
+ The same occurs with
 \series bold
 iter_descendants()
 \series default
- and 
+ and
 \series bold
 iter_search_nodes().
 \end_layout
@@ -1668,7 +1668,7 @@ iter_search_nodes().
 \begin_layout Standard
 When iterators are used (note that is only applicable for looping), only
  one step is processed at a time.
- For example, 
+ For example,
 \series bold
 iter_search_nodes()
 \series default
@@ -1715,7 +1715,7 @@ end{CodeEnv}
 \end_layout
 
 \begin_layout Section
-Extending Node's Features 
+Extending Node's Features
 \begin_inset CommandInset label
 LatexCommand label
 name "sec:Extending-Node's-Features"
@@ -1734,13 +1734,13 @@ Although newick standard was only thought to contain branch lengths and
  or even as a reference to a more complex python structure (i.e.
  lists, dictionaries or any other python object).
  Thus, for example, with ETE it is possible to have fully annotated trees.
- The methods 
+ The methods
 \series bold
 add feature()
 \series default
 ,
 \series bold
- add_features()
+ add_props()
 \series default
  and
 \series bold
@@ -1748,13 +1748,13 @@ add feature()
 \series default
  are prepared to handle the task of adding and deleting information to a
  given node.
- 
+
 \end_layout
 
 \begin_layout Standard
 Once extra features are added, you can access their values at any time during
  the analysis of a tree.
- To do so, you only need to access to the 
+ To do so, you only need to access to the
 \series bold
 node.featurename
 \series default
@@ -1805,7 +1805,7 @@ Unfortunately, newick format does not support adding extra features to a
  developed to read and write tree based information.
  Some of these new formats are based in a completely new standard (PhyloXML,
  NeXML), while others are extensions of the original newick formar (NHX
- 
+
 \begin_inset CommandInset href
 LatexCommand href
 target "http://phylosoft.org/NHX/"
@@ -1817,7 +1817,7 @@ target "http://phylosoft.org/NHX/"
  which uses the original newick standard and adds the possibility of saving
  additional date related to each tree node.
  Here is an example of a extended newick representation in which extra informati
-on is added to an internal node: 
+on is added to an internal node:
 \end_layout
 
 \begin_layout LyX-Code
@@ -1833,18 +1833,18 @@ As you can notice, extra node features in the NHX format are enclosed between
  encoded information is expected to be text-formattable.
  In the future, support for more advanced formats such as PhyloXML will
  be included.
- 
+
 \end_layout
 
 \begin_layout Standard
 The NHX format is automatically detected when reading a newick file, and
- the detected node features are added using the 
+ the detected node features are added using the
 \begin_inset Quotes eld
 \end_inset
 
 
 \series bold
-add_feature()
+add_prop()
 \series default
 
 \begin_inset Quotes erd
@@ -1852,20 +1852,20 @@ add_feature()
 
  method.
  Consequently, you can access the information by using the normal ETE's
- feature notation: 
+ feature notation:
 \series bold
 node.featurename
 \series default
 .
  Similarly, features added to a tree can be included within the normal newick
  representation using the NHX notation.
- For this, you can call the 
+ For this, you can call the
 \series bold
-write() 
+write()
 \series default
-method using the 
+method using the
 \series bold
-features 
+features
 \series default
 argument, which is expected to be a list with the features names that you
  want to include in the newick string.
@@ -1930,31 +1930,31 @@ Creating Trees from Scratch
 \end_layout
 
 \begin_layout Standard
-If no arguments are passed to the 
+If no arguments are passed to the
 \series bold
 Tree
 \series default
  class constructor, an empty tree node will be returned.
  Then, you can use such an orphan node to populate a tree from scratch.
- For this, you should never manipulate the 
+ For this, you should never manipulate the
 \series bold
 up
 \series default
 , and
 \series bold
- children 
+ children
 \series default
 attributes of a node (unless it is strictly necessary).
  Instead, you must use the methods created to this end.
- 
+
 \series bold
 add_child()
 \series default
-, 
+,
 \series bold
 add_sister()
 \series default
-, and 
+, and
 \series bold
 populate()
 \series default
@@ -1962,7 +1962,7 @@ populate()
  While the two first adds one node at a time, populate() is able to create
  a custom number of random nodes.
  This is useful to quickly create random trees.
- 
+
 \end_layout
 
 \begin_layout Standard
@@ -2010,11 +2010,11 @@ As currently implemented, there is a difference between removing or deleting
  a node.
  The former (removing) detaches a node's partition from the tree structure,
  so all its descendants are also disconnected from the tree.
- There are two methods to perform this action: 
+ There are two methods to perform this action:
 \series bold
 node.remove_child(ch)
 \series default
- and 
+ and
 \series bold
 child.detach()
 \series default
@@ -2069,7 +2069,7 @@ Pruning trees
 \begin_layout Standard
 Pruning a tree means to obtain the topology that connects a certain group
  of items by removing the unnecessary edges.
- To facilitate this task, ETE implements the 
+ To facilitate this task, ETE implements the
 \series bold
 prune()
 \series default
@@ -2078,7 +2078,7 @@ prune()
  of nodes that must be removed.
  In any case, the result is a pruned tree containing the topology that connects
  a custom set of nodes.
- 
+
 \end_layout
 
 \begin_layout Standard
@@ -2125,16 +2125,16 @@ Concatenating trees
 Given that all tree nodes share the same basic properties, they can be connected
  freely.
  In fact, any node can add a whole subtree as a child, so we can actually
- 
+
 \shape italic
 \size small
 cut & paste
 \shape default
 \size default
  partitions.
- To do so, you only need to call the 
+ To do so, you only need to call the
 \series bold
-add_child() 
+add_child()
 \series default
 method using another tree node as a first argument.
  If such a node is the root node of a different tree, you will concatenate
@@ -2146,7 +2146,7 @@ method using another tree node as a first argument.
  to the performance of the program.
  For this reason, users should take care about not creating circular structures
  by mistake.
- 
+
 \end_layout
 
 \begin_layout Standard
@@ -2218,11 +2218,11 @@ Tree rooting is understood as the technique by with a given tree is conceptually
  By setting the root node between a given edge/branch of the tree structure
  the tree is polarized, meaning that the two branches under the root node
  are the most basal nodes.
- In practice, this is usually done by setting an 
+ In practice, this is usually done by setting an
 \series bold
 outgroup
 \series default
- 
+
 \series bold
 node
 \series default
@@ -2230,17 +2230,17 @@ node
  The second one will be, obviously, the brother node.
  When you set an outgroup on unrooted trees, the multifurcations at the
  current root node are solved.
- 
+
 \end_layout
 
 \begin_layout Standard
 In order to root an unrooted tree or re-root a tree structure, ETE implements
- the 
+ the
 \series bold
 set_outgroup()
 \series default
  method, which is present in any tree node instance.
- Similarly, the 
+ Similarly, the
 \series bold
 unroot()
 \series default
@@ -2284,7 +2284,7 @@ end{CodeEnv}
 \end_layout
 
 \begin_layout Standard
-Note that although 
+Note that although
 \series bold
 rooting
 \series default
@@ -2333,14 +2333,14 @@ Working with branch distances
 \end_layout
 
 \begin_layout Standard
-The branch length between one node an its parent is encoded as the 
+The branch length between one node an its parent is encoded as the
 \series bold
 node.dist
 \series default
  attribute.
  Together with tree topology, branch lengths define the relationships among
  nodes.
- 
+
 \end_layout
 
 \begin_layout Subsection
@@ -2348,7 +2348,7 @@ Getting distances between nodes
 \end_layout
 
 \begin_layout Standard
-The 
+The
 \series bold
 get_distance()
 \series default
@@ -2362,13 +2362,13 @@ get_distance()
 \begin_layout Standard
 Additionally to this, ETE incorporates two more methods to calculate the
  most distant node from a given point in a tree.
- You can use the 
+ You can use the
 \series bold
 get_farthest_node()
 \series default
  method to retrieve the most distant point from a node within the whole
  tree structure.
- Alternatively, 
+ Alternatively,
 \series bold
 get_farthest_leaf()
 \series default
@@ -2380,16 +2380,16 @@ get_farthest_leaf()
 \begin_layout Standard
 Distance between nodes can also be computed as the number of nodes between
  them (considering all branch lengths equal to 1.0).
- To do so, the 
+ To do so, the
 \series bold
 topology_only
 \series default
- argument must be set to 
+ argument must be set to
 \series bold
-True 
+True
 \series default
 for all the above mentioned methods.
- 
+
 \end_layout
 
 \begin_layout Standard
@@ -2429,7 +2429,7 @@ end{CodeEnv}
 \end_layout
 
 \begin_layout Subsection
-getting midpoint outgroup 
+getting midpoint outgroup
 \begin_inset CommandInset label
 LatexCommand label
 name "sub:getting-midpoint-outgroup"
@@ -2447,13 +2447,13 @@ In order to obtain a balanced rooting of the tree, you can set as the tree
 \end_layout
 
 \begin_layout Standard
-The 
+The
 \series bold
 get_midpoint_outgroup()
 \series default
  method will return the outgroup partition that splits current node into
  two balanced branches in terms of node distances.
- 
+
 \end_layout
 
 \begin_layout Standard
@@ -2516,7 +2516,7 @@ ETE's treeview extension provides a highly programmable drawing system to
 \series bold
  faces
 \series default
- and 
+ and
 \series bold
 layout
 \series default
@@ -2528,13 +2528,13 @@ layout
 \series default
  defines the general aspect of a given tree node (size, color, background,
  line type, etc.).
- Node 
+ Node
 \series bold
 faces
 \series default
  are small graphical pieces (representing, for instance, any node's extra
  information) that are added to nodes and that drawn at the same node position.
- Finally, 
+ Finally,
 \series bold
 layouts functions
 \series default
@@ -2548,16 +2548,16 @@ layouts functions
 Treeview extension provides an interactive Graphical User Interface (GUI)
  to visualize trees using custom layouts.
  Alternatively, images can be directly rendered as PNG or PDF files.
- Every node within a given tree structure has its own 
+ Every node within a given tree structure has its own
 \series bold
-show() 
+show()
 \series default
 and
 \series bold
  render()
 \series default
  methods, thus allowing to visualize or render its subtree structure.
- 
+
 \end_layout
 
 \begin_layout Section
@@ -2577,9 +2577,9 @@ ETE's tree drawing engine is fully integrated with a built-in graphical
 
 \begin_layout Standard
 To start the visualization of a given tree or subtree, you can simply call
- the 
+ the
 \series bold
-show() 
+show()
 \series default
 method present in every node:
 \end_layout
@@ -2593,7 +2593,7 @@ t = Tree(
 \begin_inset Quotes eld
 \end_inset
 
- ((A,B),C); 
+ ((A,B),C);
 \begin_inset Quotes erd
 \end_inset
 
@@ -2613,7 +2613,7 @@ A
 \begin_inset Quotes erd
 \end_inset
 
-, 
+,
 \begin_inset Quotes eld
 \end_inset
 
@@ -2632,12 +2632,12 @@ ancestor.show()
 One of the advantages of this on-line GUI visualization is that you can
  use it to interrupt a given program/analysis, explore trees, manipulate
  them, and continuing with the execution thread.
- Note that 
+ Note that
 \series bold
 changes made using the GUI will be kept in the tree structure after quiting
- the visualization interface 
+ the visualization interface
 \series default
-(Figure 
+(Figure
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "fig:GUI tree manipulation"
@@ -2670,7 +2670,7 @@ status collapsed
 \begin_inset Caption
 
 \begin_layout Plain Layout
-Interactive manipulation of a tree using the GUI 
+Interactive manipulation of a tree using the GUI
 \begin_inset CommandInset label
 LatexCommand label
 name "fig:GUI tree manipulation"
@@ -2697,7 +2697,7 @@ name "fig:GUI tree manipulation"
 \begin_layout Standard
 The GUI allow many operations to be performed graphically, however it does
  not implement all the possibilities of the programming toolkit.
- These are some of the allowed GUI options: 
+ These are some of the allowed GUI options:
 \end_layout
 
 \begin_layout Standard
@@ -2728,7 +2728,7 @@ status open
 ETE's GUI screenshot showing some of its options.
 
 \series default
- 
+
 \series bold
 A)
 \series default
@@ -2740,17 +2740,17 @@ A)
  Manipulate tree topology (add/remove nodes, populate partitions, cut and
  paste nodes).
  Browse tree topology (expand and collapse partitions).
- 
+
 \series bold
 C)
 \series default
  Extract newick representation of any sub part of the tree.
 
 \series bold
- D) 
+ D)
 \series default
 Zoom in/out of node tree regions.
- 
+
 \series bold
 E)
 \series default
@@ -2758,12 +2758,12 @@ E)
  Allows to find nodes meeting custom criteria.
 
 \series bold
- F) 
+ F)
 \series default
 Show branch lengths, support values and force strict tree topology
 \series bold
 .
- G) 
+ G)
 \series default
 Export image as PDF.
 \end_layout
@@ -2795,11 +2795,11 @@ Alternatively, images can be directly written info a file.
 \end_layout
 
 \begin_layout Standard
-To generate an image, the 
+To generate an image, the
 \series bold
 render()
 \series default
- method should be used instead of 
+ method should be used instead of
 \series bold
 show()
 \series default
@@ -2811,7 +2811,7 @@ show()
  However, you can change this by setting a custom width and height.
  If only one of this values is provided, the other is imputed to keep the
  original aspect ratio.
- 
+
 \end_layout
 
 \begin_layout Standard
@@ -2856,15 +2856,15 @@ Customizing tree aspect
 
 \begin_layout Standard
 There are three basic elements that control the general aspect of trees:
- 
+
 \series bold
 node's style
 \series default
-, 
+,
 \series bold
 node's faces
 \series default
- and 
+ and
 \series bold
 layouts functions
 \series default
@@ -2872,7 +2872,7 @@ layouts functions
  In brief, layout functions can be used to set the rules that control the
  way in which certain nodes are drawn (setting its style and adding specific
  faces).
- 
+
 \end_layout
 
 \begin_layout Subsection
@@ -2887,20 +2887,20 @@ style
 ' is a set of special node attributes that are used by the drawing algorithm
  to set the colours, and general aspect of nodes and branches.
  Styles are internally encoded as python dictionaries.
- Each node has its own style dictionary, which is accessible as 
+ Each node has its own style dictionary, which is accessible as
 \series bold
 node.img_style
 \series default
 .
  A default style is associated to every tree node, but you can modify them
  at any time.
- Note that 
+ Note that
 \series bold
 nodes styles must only be modified inside a layout function
 \series default
 .
  Otherwise, custom settings may be missing or overwritten by default values.
- 
+
 \end_layout
 
 \begin_layout Standard
@@ -2973,7 +2973,7 @@ node.img_style[“bgcolor”]
 \begin_layout Plain Layout
 
 \size scriptsize
-Color (in RGB format) used to draw the background of node's partition 
+Color (in RGB format) used to draw the background of node's partition
 \end_layout
 
 \end_inset
@@ -3079,7 +3079,7 @@ node.img_style[“line_type”]
 
 \size scriptsize
 Line style used to draw node's brach.
- 
+
 \end_layout
 
 \end_inset
@@ -3090,7 +3090,7 @@ Line style used to draw node's brach.
 \begin_layout Plain Layout
 
 \size scriptsize
-0=Solid, 1=Dashed 
+0=Solid, 1=Dashed
 \end_layout
 
 \end_inset
@@ -3115,7 +3115,7 @@ node.img_style[“shape”]
 
 \size scriptsize
 Shape used to draw the node.
- 
+
 \end_layout
 
 \end_inset
@@ -3126,7 +3126,7 @@ Shape used to draw the node.
 \begin_layout Plain Layout
 
 \size scriptsize
-“square”, 
+“square”,
 \begin_inset Quotes eld
 \end_inset
 
@@ -3134,7 +3134,7 @@ sphere
 \begin_inset Quotes erd
 \end_inset
 
-, 
+,
 \begin_inset Quotes eld
 \end_inset
 
@@ -3258,27 +3258,27 @@ Node's faces
  are more sophisticated drawing features associated to nodes.
  They represent independent images that can be linked to nodes, usually
  representing a given node's feature.
- Faces can be loaded 
+ Faces can be loaded
 \series bold
 from external image files
 \series default
-, 
+,
 \series bold
 created from scratch
 \series default
- using any drawing library, 
+ using any drawing library,
 \series bold
 or generated as text labels
 \series default
 .
- 
+
 \end_layout
 
 \begin_layout Standard
 The complexity of faces may go from simple text tags to complete plots showing
  the average expression pattern associated to a given partition in a microarray
  clustering tree.
- Given that faces can be loaded from external images and added 
+ Given that faces can be loaded from external images and added
 \shape italic
 on the fly
 \shape default
@@ -3286,16 +3286,16 @@ on the fly
  drawing engine.
  For instance, the statistical framework R could be used to analyze a given
  node's property, and to generate a plot that can be used as a node's face.
- 
+
 \end_layout
 
 \begin_layout Standard
 To create a face, the following general constructors can be used, which
- are 
+ are
 \series bold
 available through the face module
 \series default
-: 
+:
 \end_layout
 
 \begin_layout Standard
@@ -3387,7 +3387,7 @@ text
 \size scriptsize
 Create a text face based on a given node attribute
 \series default
- 
+
 \end_layout
 
 \end_inset
@@ -3420,7 +3420,7 @@ attrName
 \begin_inset Caption
 
 \begin_layout Plain Layout
-Basic node's face constructors 
+Basic node's face constructors
 \end_layout
 
 \end_inset
@@ -3435,9 +3435,9 @@ Basic node's face constructors
 
 \begin_layout Standard
 Once a face is created, it can be linked to one or more nodes.
- To do so, you must use the 
+ To do so, you must use the
 \series bold
-add_face_to_node() 
+add_face_to_node()
 \series default
 method within the
 \series bold
@@ -3450,7 +3450,7 @@ method within the
  relative position in which they will be placed.
  Each node reserves a virtual space that controls how faces are positioned.
  The position of each face is determined by an imaginary grid at the right
- side of each node (Figure 
+ side of each node (Figure
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "fig:faces positions"
@@ -3460,22 +3460,22 @@ reference "fig:faces positions"
 ).
  Each column from the grid is internally treated as a stack of faces.
  Thus, faces can be added to any column and its row position will be determined
- by insertion order: 
+ by insertion order:
 \series bold
 first inserted is first row
 \series default
 .
  In the case of trees leaves, nodes can handle an independent list of faces
  that will be drawn aligned with the farthest leaf in the tree.
- To add an aligned face you can use the 
+ To add an aligned face you can use the
 \series bold
-aligned=True 
+aligned=True
 \series default
 argument
 \series bold
- 
+
 \series default
-when calling the 
+when calling the
 \series bold
 add_face_to_node()
 \series default
@@ -3553,7 +3553,7 @@ Layout functions
  In practice, layout functions are used to define the set of rules that
  control nodes style attributes and the faces that will be linked to them.
  Of course, such rules can be based on a previous node analysis.
- For instance: 
+ For instance:
 \family typewriter
 \size small
 if node has more than 5 descendants, then add a text label, set a different
@@ -3569,15 +3569,15 @@ if node has more than 5 descendants, then add a text label, set a different
 
 \begin_layout Standard
 In order to apply your custom layouts functions, function's name (the reference
- to it) can be passed to both 
+ to it) can be passed to both
 \series bold
 render()
 \series default
- and 
+ and
 \series bold
 show()
 \series default
- methods: 
+ methods:
 \family typewriter
 node.render(
 \begin_inset Quotes eld
@@ -3587,7 +3587,7 @@ filename.pdf
 \begin_inset Quotes erd
 \end_inset
 
-, layout=mypythonFn) 
+, layout=mypythonFn)
 \family default
 \series bold
 or
@@ -3687,7 +3687,7 @@ Phylogenetic trees are the result of most evolutionary analyses.
 \end_layout
 
 \begin_layout Standard
-The 
+The
 \series bold
 PhyloTree
 \series default
@@ -3704,13 +3704,13 @@ PhyloTree
 \series bold
 PhyloTree
 \series default
- instances extend the 
+ instances extend the
 \series bold
 Tree
 \series default
  class with several specific method that apply only for the analysis of
  phylogenetic trees.
- 
+
 \end_layout
 
 \begin_layout Section
@@ -3724,16 +3724,16 @@ PhyloTree
 \series default
  instances allow molecular phylogenies to be linked to the Multiple Sequence
  Alignments (MSA).
- To associate a MSA with a phylogenetic tree you can use the 
+ To associate a MSA with a phylogenetic tree you can use the
 \series bold
 link_to_alignment()
 \series default
  method present in any PhyloTree instance, which receives the path of an
  MSA file as first argument or, alternatively, a text string containing
  the MSA.
- Currently, 
+ Currently,
 \series bold
-the following sequence file formats are supported: 
+the following sequence file formats are supported:
 \end_layout
 
 \begin_layout Standard
@@ -3879,19 +3879,19 @@ Supported Multi Sequence File formats
 \series bold
 Fasta
 \series default
- format is assumed by default, but you can change this by setting the 
+ format is assumed by default, but you can change this by setting the
 \series bold
 alg_format
 \series default
  argument.
- Given that such formats are not only applicable for MSA but also for 
+ Given that such formats are not only applicable for MSA but also for
 \series bold
 Unaligned Sequences
 \series default
 , you may also associate sequences of different lengths with tree nodes.
  Alternatively to this method, MSAs can be directly passed to the PhyloTree
  constructor and sequences will be automatically linked with terminal nodes:
- i.e.) 
+ i.e.)
 \series bold
 PhyloTree(
 \begin_inset Quotes eld
@@ -3901,7 +3901,7 @@ mytreeFile
 \begin_inset Quotes erd
 \end_inset
 
-, 
+,
 \begin_inset Quotes eld
 \end_inset
 
@@ -3917,7 +3917,7 @@ iphylip
 \begin_inset Quotes erd
 \end_inset
 
-) 
+)
 \end_layout
 
 \begin_layout Standard
@@ -3935,7 +3935,7 @@ status open
 
 
 \backslash
-tiny 
+tiny
 \end_layout
 
 \end_inset
@@ -4006,7 +4006,7 @@ status open
 
 
 \backslash
-tiny 
+tiny
 \end_layout
 
 \end_inset
@@ -4023,7 +4023,7 @@ status open
 
 
 \backslash
-tiny 
+tiny
 \backslash
 begin{verbatim}
 \end_layout
@@ -4084,7 +4084,7 @@ status open
 
 
 \backslash
-tiny 
+tiny
 \end_layout
 
 \end_inset
@@ -4101,7 +4101,7 @@ status open
 
 
 \backslash
-tiny 
+tiny
 \backslash
 begin{verbatim}
 \end_layout
@@ -4162,7 +4162,7 @@ Examples of the supported multi sequence file formats
 \begin_layout Standard
 As currently implemented, sequence linking process is not strict, which
  means that a perfect match between all node names and sequences names is
- 
+
 \series bold
 not required
 \series default
@@ -4181,7 +4181,7 @@ not required
  node.sequence
 \series default
  attribute.
- 
+
 \end_layout
 
 \begin_layout Standard
@@ -4239,7 +4239,7 @@ PhyloTree instances allow to deal with leaf names and species names separately.
  to its source species.
  However, PhyloTree instances can automatically deal with this issue.
  Thus, when a phylogenetic tree is loaded, species names (codes, key names
- or fingerprints) are automatically derived from the 
+ or fingerprints) are automatically derived from the
 \series bold
 three first letters of leaf names
 \series default
@@ -4247,29 +4247,29 @@ three first letters of leaf names
  Although, you can indeed change this behavior by using a custom parsin
  function.
  By doing this, you can easily load taxonomy-aware molecular phylogenies.
- The attribute 
+ The attribute
 \series bold
 node.species
 \series default
  will be present in every node and stores the inferred species name, while
- the method 
+ the method
 \series bold
 get_species()
 \series default
  can be used to retrieve all species names under a given ancestral node.
- 
+
 \end_layout
 
 \begin_layout Standard
-There are two ways of setting the automatic species name generation: 
+There are two ways of setting the automatic species name generation:
 \end_layout
 
 \begin_layout Enumerate
 using the
 \series bold
- 
+
 \series default
-PhyloTree 
+PhyloTree
 \series bold
 sp_naming_function
 \series default
@@ -4279,35 +4279,35 @@ sp_naming_function
 \end_layout
 
 \begin_layout Enumerate
-using the 
+using the
 \series bold
 set_species_naming_function
 \series default
  method (present in all tree nodes), which can be used to change the behavior
  in a previously loaded tree, or to set different parsing function to different
- 
+
 \end_layout
 
 \begin_layout Enumerate
 parts of the tree.
- 
+
 \end_layout
 
 \begin_layout Standard
-In both cases, possible values are 
+In both cases, possible values are
 \series bold
-None 
+None
 \series default
 (to disable automatic generation of species names)
 \series bold
- 
+
 \series default
-or the 
+or the
 \series bold
 reference to a custom python function
 \series default
 .
- 
+
 \end_layout
 
 \begin_layout Standard
@@ -4364,7 +4364,7 @@ Nodes in molecular phylogenies can be interpreted as evolutionary events.
  In any case, because nodes represent ancestral events, they can be located
  at a given moment in the evolution.
  This is, we can date evolutionary events.
- 
+
 \end_layout
 
 \begin_layout Standard
@@ -4395,24 +4395,24 @@ In brief, the relative age of any evolutionary event can be established
  Although this task can be done manually, ETE implements a method to automatize
  the process.
  Thus, by defining a python dictionary containing the conversion between
- 
+
 \series bold
 species names
 \series default
- and the considered 
+ and the considered
 \series bold
-taxonomic levels, 
+taxonomic levels,
 \series default
 phylogenetic nodes can be easily dated.
- The 
+ The
 \series bold
-get_age() 
+get_age()
 \series default
 method, found in every node, can be used to this end.
  Obviously, the more taxonomic levels are defined, the more precise is time
  estimation.
  For instance, if we consider a tree in which several vertebrate species
- are represented, we could define an age dictionary like this: 
+ are represented, we could define an age dictionary like this:
 \end_layout
 
 \begin_layout LyX-Code
@@ -4420,7 +4420,7 @@ method, found in every node, can be used to this end.
 \end_layout
 
 \begin_layout LyX-Code
-# regarding vertebrates: 1: hominids, 2:primates, 
+# regarding vertebrates: 1: hominids, 2:primates,
 \end_layout
 
 \begin_layout LyX-Code
@@ -4432,11 +4432,11 @@ method, found in every node, can be used to this end.
 \end_layout
 
 \begin_layout LyX-Code
-taxa_levels = { 
+taxa_levels = {
 \end_layout
 
 \begin_layout LyX-Code
-  
+
 \begin_inset Quotes eld
 \end_inset
 
@@ -4448,7 +4448,7 @@ Human
 \end_layout
 
 \begin_layout LyX-Code
-  
+
 \begin_inset Quotes eld
 \end_inset
 
@@ -4460,7 +4460,7 @@ Chimp
 \end_layout
 
 \begin_layout LyX-Code
-  
+
 \begin_inset Quotes eld
 \end_inset
 
@@ -4472,7 +4472,7 @@ Macaca
 \end_layout
 
 \begin_layout LyX-Code
-  
+
 \begin_inset Quotes eld
 \end_inset
 
@@ -4480,11 +4480,11 @@ Mouse
 \begin_inset Quotes erd
 \end_inset
 
-: 3, # Mammals 
+: 3, # Mammals
 \end_layout
 
 \begin_layout LyX-Code
-  
+
 \begin_inset Quotes eld
 \end_inset
 
@@ -4496,7 +4496,7 @@ Cow
 \end_layout
 
 \begin_layout LyX-Code
-  
+
 \begin_inset Quotes eld
 \end_inset
 
@@ -4508,7 +4508,7 @@ Frog
 \end_layout
 
 \begin_layout LyX-Code
-  
+
 \begin_inset Quotes eld
 \end_inset
 
@@ -4520,7 +4520,7 @@ Zebrafish
 \end_layout
 
 \begin_layout LyX-Code
-  
+
 \begin_inset Quotes eld
 \end_inset
 
@@ -4539,12 +4539,12 @@ Takifugu
 In which each number refers to a taxonomic group, and older taxonomic groups
  have higher values.
  Then, any internal node could be easily mapped to an evolutionary period
- by executing: 
+ by executing:
 \series bold
 node.get_date(vertebrates_taxa_levels)
 \series default
 .
- 
+
 \end_layout
 
 \begin_layout Standard
@@ -4592,7 +4592,7 @@ Species aware rooting
 \end_layout
 
 \begin_layout Plain Layout
-As commented in section 
+As commented in section
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "sec:Tree-Rooting"
@@ -4602,14 +4602,14 @@ reference "sec:Tree-Rooting"
 , rooting provides polarity to trees.
  In phylogenetics, this means establishing which nodes are more ancient
  than others.
- Therefore, the 
+ Therefore, the
 \series bold
-set_outgroup() 
+set_outgroup()
 \series default
 method can be used to set the most ancient node in the tree (terminal or
  ancestral).
  When non reliable information is available about species ages, finding
- the midpoint outgroup (see 
+ the midpoint outgroup (see
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "sub:getting-midpoint-outgroup"
@@ -4629,31 +4629,31 @@ reference "sec:Dating-Phylogenetic-Nodes"
 \end_inset
 
  to automatize the rooting process.
- 
+
 \end_layout
 
 \begin_layout Plain Layout
-The 
+The
 \series bold
 get_farthest_oldest_leaf()
 \series default
  method receives a species age dictionary as first argument, and returns
- the leaf node 
+ the leaf node
 \end_layout
 
 \begin_layout Plain Layout
 must be passed as single argument.
  Age conversion dictionary has only to containing the relative age of species.
- 
+
 \end_layout
 
 \begin_layout Plain Layout
-Every node in a PhyloTree instance contains ith ETE using the 
+Every node in a PhyloTree instance contains ith ETE using the
 \series bold
 get_oldest_farthest_node()
 \series default
  present in every node tree.
- 
+
 \end_layout
 
 \begin_layout Plain Layout
@@ -4681,7 +4681,7 @@ Detecting evolutionary events
 There are several ways to automatically detect duplication and speciation
  nodes within molecular phylogenies.
  ETE provides the two most extended methodologies.
- One implements the algorithm described in 
+ One implements the algorithm described in
 \begin_inset Note Greyedout
 status open
 
@@ -4698,25 +4698,25 @@ status open
  algorithm [Page and Charleston, 1997].
  By detecting evolutionary events, orthology and paralogy relationships
  among sequences are also inferred.
- 
+
 \end_layout
 
 \begin_layout Standard
-Both methods, species overlap and tree reconciliation, can be used to 
+Both methods, species overlap and tree reconciliation, can be used to
 \series bold
 label each tree node as a duplication or speciation event
 \series default
 .
 
 \series bold
- 
+
 \series default
 Thus, after applying any of the algorithms, original tree nodes will contain
- a new attribute named 
+ a new attribute named
 \series bold
 evoltype
 \series default
-, which can take the following values: 
+, which can take the following values:
 \series bold
 
 \begin_inset Quotes eld
@@ -4726,7 +4726,7 @@ D
 \begin_inset Quotes erd
 \end_inset
 
- (duplication), 
+ (duplication),
 \begin_inset Quotes eld
 \end_inset
 
@@ -4734,7 +4734,7 @@ S
 \begin_inset Quotes erd
 \end_inset
 
- (speciation), 
+ (speciation),
 \begin_inset Quotes eld
 \end_inset
 
@@ -4746,7 +4746,7 @@ L
 \series default
 .
  Additionally, a list of all the detected events is returned.
- Each event is a python object of type 
+ Each event is a python object of type
 \series bold
 EvolEvent
 \series default
@@ -4757,7 +4757,7 @@ EvolEvent
 
 \family typewriter
 \size footnotesize
-event.etype:   event type ( 
+event.etype:   event type (
 \begin_inset Quotes eld
 \end_inset
 
@@ -4765,7 +4765,7 @@ D
 \begin_inset Quotes erd
 \end_inset
 
-, 
+,
 \begin_inset Quotes eld
 \end_inset
 
@@ -4773,7 +4773,7 @@ S
 \begin_inset Quotes erd
 \end_inset
 
- or 
+ or
 \begin_inset Quotes eld
 \end_inset
 
@@ -4796,7 +4796,7 @@ event.in_seqs:  A list of sequences at one side of the event .
 \family typewriter
 \size footnotesize
 event.out_seqs: A list of sequences at the other side of the event.
- 
+
 \end_layout
 
 \begin_layout Description
@@ -4819,40 +4819,40 @@ Other attributes may be found in events instances, however they are not
 \end_layout
 
 \begin_layout Standard
-If an event represents a duplication, 
+If an event represents a duplication,
 \family typewriter
 in_seqs
 \series bold
- 
+
 \family default
-are all paralogous 
+are all paralogous
 \series default
 to
 \family typewriter
  out_seqs
 \family default
 .
- Similarly, if an event represents a speciation, 
+ Similarly, if an event represents a speciation,
 \family typewriter
 in_seqs
 \series bold
- 
+
 \family default
-are all orthologous 
+are all orthologous
 \series default
 to
 \family typewriter
  out_seqs
 \family default
 .
- 
+
 \end_layout
 
 \begin_layout Standard
 While tree reconciliation must always be used from an internal node, species
  overlap allows to track only all the evolutionary events involving a specific
  tree leaf.
- 
+
 \end_layout
 
 \begin_layout Subsection
@@ -4860,7 +4860,7 @@ Species Overlap (SO) algorithm
 \end_layout
 
 \begin_layout Standard
-In order to apply the SO algorithm, you can use the 
+In order to apply the SO algorithm, you can use the
 \series bold
 node.get_descendant_evol_events()
 \series default
@@ -4873,19 +4873,19 @@ node.get_descendant_evol_events()
 \end_layout
 
 \begin_layout Standard
-By default the 
+By default the
 \series bold
 species overlap score (SOS) threshold
 \series default
  is set to 0.0, which means that a single species in common between two node
  branches will rise a duplication event.
  This has been shown to preform the best with real data, however you can
- adjust the threshold using the 
+ adjust the threshold using the
 \series bold
 sos_thr
 \series default
  argument present in both methods.
- 
+
 \end_layout
 
 \begin_layout Standard
@@ -4933,7 +4933,7 @@ Tree reconciliation algorithm uses a predefined species tree to infer the
  genes losses that explain a given gene tree topology.
  By doing this, it infers also the duplication and speciation events.
  To perform a strict tree reconciliation analysis over a given node in a
- molecular phylogeny you can use the 
+ molecular phylogeny you can use the
 \series bold
 node.reconcile()
 \series default
@@ -4942,7 +4942,7 @@ node.reconcile()
  of the species represented in the gene tree.
  Moreover, leaf names in the species tree must match the species names in
  the gene tree (by default, the first 3 letters of the gene tree leaf names)
- (see 
+ (see
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "sec:Using-Taxonomic-Data"
@@ -4950,21 +4950,21 @@ reference "sec:Using-Taxonomic-Data"
 \end_inset
 
 ).
- 
+
 \end_layout
 
 \begin_layout Standard
-As a result, the 
+As a result, the
 \series bold
 reconcile()
 \series default
  method will label the original gene tree nodes as duplication or speciation,
- will return the list of inferred events, and will return a new 
+ will return the list of inferred events, and will return a new
 \series bold
 reconcilied tree
 \series default
 , in which inferred gene losses are present and labeled.
- 
+
 \end_layout
 
 \begin_layout Standard
@@ -5008,14 +5008,14 @@ Visualization of phylogenetic trees
 \end_layout
 
 \begin_layout Standard
-A special set of visualization rules (see chapter 
+A special set of visualization rules (see chapter
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "cha:The-Programmable-Tree"
 
 \end_inset
 
-) are provided with the phylogenetic extension as the 
+) are provided with the phylogenetic extension as the
 \series bold
 phylogeny
 \series default
@@ -5025,11 +5025,11 @@ phylogeny
  and taxonomic information.
  However, you can change/extend this layout by providing a custom layout
  function.
- 
+
 \end_layout
 
 \begin_layout Standard
-The 
+The
 \series bold
 SeqFace()
 \series default
@@ -5098,7 +5098,7 @@ d in a tree structure called a dendrogram.
 \end_layout
 
 \begin_layout Standard
-ETE provides the 
+ETE provides the
 \series bold
 ClusterTree
 \series default
@@ -5116,40 +5116,40 @@ ClusterTree
 \end_layout
 
 \begin_layout Standard
-ClusterTrees can be linked to a numerical matrix by using the 
+ClusterTrees can be linked to a numerical matrix by using the
 \series bold
 link_to_arraytable()
 \series default
  method (in nodes) or by passing the reference to the matrix (filename or
- text string) as the 
+ text string) as the
 \series bold
 text_arraytable
 \series default
  argument of PhyloTree constructor.
- Once this is done, the 
+ Once this is done, the
 \series bold
 node.profile, node.deviation, node.silhouette, node.dunn, node.intracluster_dist
  and node.intercluster_dist
 \series default
  attributes will are automatically available.
- As well as the 
+ As well as the
 \series bold
 iter_leaf_profiles()
 \series default
-, 
+,
 \series bold
 get_leaf_profiles()
 \series default
-, 
+,
 \series bold
 get_silhouette()
 \series default
- and 
+ and
 \series bold
 get_dunn()
 \series default
  methods.
- 
+
 \end_layout
 
 \begin_layout Standard
@@ -5189,14 +5189,14 @@ end{CodeEnv}
 \end_layout
 
 \begin_layout Section
-Visualization of matrix associated Trees 
+Visualization of matrix associated Trees
 \end_layout
 
 \begin_layout Standard
 Clustering or not, any ClusterTree instance, associated to a numerical matrix,
  can be visualized together with the graphical representation of its node's
  numeric profiles.
- To this end, the 
+ To this end, the
 \series bold
 ProfileFace
 \series default
@@ -5246,19 +5246,19 @@ Types of ProfileFaces
 You can create your own layout functions add one or more ProfileFace instances
  to any cluster tree node (leaf or internal).
  Moreover, three basic layouts are provided that use different styles of
- ProfileFace instances: 
+ ProfileFace instances:
 \series bold
 heatmap
 \series default
-, 
+,
 \series bold
 line_profiles
 \series default
-, 
+,
 \series bold
 bar_profiles
 \series default
-, 
+,
 \series bold
 cbar_profiles
 \series default
@@ -5310,20 +5310,20 @@ If associated matrix represents the dataset used to produce a given tree,
  clustering validation values can be used to assess the quality of partitions.
  To do so, you will need to set the distance function that was used to calculate
  distances among items (leaf nodes).
- ETE implements three common distance methods in bioinformatics : 
+ ETE implements three common distance methods in bioinformatics :
 \series bold
 euclidean
 \series default
-, 
+,
 \series bold
 pearson
 \series default
- correlation and 
+ correlation and
 \series bold
 spearman
 \series default
  correlation distances.
- 
+
 \end_layout
 
 \begin_layout Standard
@@ -5409,7 +5409,7 @@ Image resulting from a microarray clustering validation analysis.
 
 \begin_layout Plain Layout
 .
- 
+
 \end_layout
 
 \end_inset
@@ -5448,7 +5448,7 @@ Basis of the phylomeDB API usage
 \begin_layout Standard
 In order to explore the database resources, you have to create a connector
  to the database, which will be used to query it.
- To do so, you must use the 
+ To do so, you must use the
 \series bold
 PhylomeDBConnector
 \series default
@@ -5494,20 +5494,20 @@ end{CodeEnv}
 \begin_layout Standard
 The PhylomeDBConnector constructor will return a pointer to the DB that
  you can use to perform queries.
- All methods starting by 
+ All methods starting by
 \series bold
 get_
 \series default
  can be used to retrieve information from the database.
  A complete list of available methods can be found in the ETE's programming
- guide (available at 
+ guide (available at
 \begin_inset CommandInset href
 LatexCommand href
 target "etetoolkit.org"
 
 \end_inset
 
-) or explored by executing 
+) or explored by executing
 \series bold
 dir(PhylomeDBConnector)
 \series default
@@ -5535,11 +5535,11 @@ Given that each phylogenetic tree was reconstructed using a a single gene
 \end_layout
 
 \begin_layout Standard
-You can obtain a full list of phylomes through the 
+You can obtain a full list of phylomes through the
 \series bold
 get_phylomes()
 \series default
- and a full list of seed sequence in a phylome using the 
+ and a full list of seed sequence in a phylome using the
 \series bold
 get_seed_ids()
 \series default
@@ -5551,12 +5551,12 @@ get_seed_ids()
  get_proteomes_in_phylome()
 \series default
  method.
- PhylomeDB uses its own sequence identifiers, but you can use the 
+ PhylomeDB uses its own sequence identifiers, but you can use the
 \series bold
 search_id()
 \series default
  to find a match from an external sequence ID.
- 
+
 \end_layout
 
 \begin_layout Standard

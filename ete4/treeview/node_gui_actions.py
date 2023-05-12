@@ -25,14 +25,14 @@ class NewickDialog(QDialog):
         nw = self.node.write(format=f, features=features)
         self._conf.newickBox.setText(nw)
 
-    def add_feature(self):
+    def add_prop(self):
         aName = str(self._conf.attrName.text()).strip()
         if aName != '' and not self._conf.features_list.findItems(aName, Qt.MatchCaseSensitive):
             self._conf.features_list.addItem(aName)
             self.update_newick()
 
 
-    def del_feature(self):
+    def del_prop(self):
         r = self._conf.features_list.currentRow()
         self._conf.features_list.takeItem(r)
         self.update_newick()

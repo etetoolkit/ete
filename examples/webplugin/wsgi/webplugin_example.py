@@ -151,10 +151,10 @@ is_not_leaf = lambda node: not node.is_leaf()
 # ==============================================================================
 
 def collapse(node):
-    node.add_feature("hide", 1)
-    node.add_feature("bsize", 25)
-    node.add_feature("shape", "sphere")
-    node.add_feature("fgcolor", "#bbbbbb")
+    node.add_prop("hide", 1)
+    node.add_prop("bsize", 25)
+    node.add_prop("shape", "sphere")
+    node.add_prop("fgcolor", "#bbbbbb")
 
 def expand(node):
     try:
@@ -169,12 +169,12 @@ def swap_branches(node):
     node.children.reverse()
 
 def set_red(node):
-    node.add_feature("fgcolor", "#ff0000")
-    node.add_feature("bsize", 40)
-    node.add_feature("shape", "sphere")
+    node.add_prop("fgcolor", "#ff0000")
+    node.add_prop("bsize", 40)
+    node.add_prop("shape", "sphere")
 
 def set_bg(node):
-    node.add_feature("bgcolor", "#CEDBC4")
+    node.add_prop("bgcolor", "#CEDBC4")
 
 def set_as_root(node):
     node.get_tree_root().set_outgroup(node)
@@ -200,9 +200,9 @@ def search_by_feature(tree, search_term):
         for n in tree.traverse():
             if hasattr(n, attr) and \
                     re.search(term,  str(getattr(n, attr)), re.IGNORECASE):
-                n.add_feature("bsize", 16)
-                n.add_feature("shape", "sphere")
-                n.add_feature("fgcolor", "#BB8C2B")
+                n.add_prop("bsize", 16)
+                n.add_prop("shape", "sphere")
+                n.add_prop("fgcolor", "#BB8C2B")
 
 
 # ==============================================================================
@@ -308,9 +308,9 @@ def tree_renderer(tree, treeid, application):
         text_features_avail.setdefault(feature_key, [name, 0, col, fsize, fcolor, prefix, suffix])
         text_features_avail[feature_key][1] += 1
 
-    tree.add_feature("fgcolor", "#833DB4")
-    tree.add_feature("shape", "sphere")
-    tree.add_feature("bsize", "8")
+    tree.add_prop("fgcolor", "#833DB4")
+    tree.add_prop("shape", "sphere")
+    tree.add_prop("bsize", "8")
     tree.dist = 0
 
     # This are the features that I wanto to convert into image
@@ -554,4 +554,3 @@ application.register_action("divider", "face", None, None, external_links_divide
 
 application.register_action("Default layout", "layout", main_layout, None, None)
 application.register_action("Clean layout", "layout", main_layout, None, None)
-
