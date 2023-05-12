@@ -9,11 +9,11 @@ BUGFIXES
 * Fixed 'paste newick' functionality on the GUI
 * Fixed :func:`PhyloNode.is_monophyletic` and moved to
   :func:`TreeNode.check_monophyly`.
-* Fixed consistency issued in :func:`TreeNode.sort_descendants` function. 
+* Fixed consistency issued in :func:`TreeNode.sort_descendants` function.
 
 SCRIPTS
 ==========
-* Improvements in the standalone visualization script (a.k.a. ete3) 
+* Improvements in the standalone visualization script (a.k.a. ete3)
 * Added the :ref:`etree2orthoxml script <etree2orthoxml>`, which
   provides conversion between phylogenetic tree and the orthoXML
   format
@@ -56,16 +56,16 @@ NEW FEATURES
     content. Such a dictionary might be used as a cache to speed up
     functions that require intensive use of node
     traversing. :ref:`See tutorial and examples <cache_node_content>`
-  
+
   * Improved :func:`TreeNode.get_ascii` function for text-based
     visualization of trees. A new `attributes` argument can be passed
     to display node attributes within the ASCII tree representation.
 
-    :: 
+    ::
 
         from ete3 import Tree
         t = Tree("((A, B)Internal_1:0.7, (C, D)Internal_2:0.5)root:1.3;", format=1)
-        t.add_features(size=4)
+        t.add_props(size=4)
         print t.get_ascii(attributes=["name", "dist", "size"])
         #
         #                            /-A, 0.0
@@ -124,14 +124,14 @@ NEW FEATURES
     described in `Treeko <http://treeko.cgenomics.org>`_. :ref:`See tutorial and examples <treeko_trees>`
 
 
-    .. seealso:: .. figure:: ../treeko_logo.png 
-                    :scale: 70% 
+    .. seealso:: .. figure:: ../treeko_logo.png
+                    :scale: 70%
 
       `TreeKO: a duplication-aware algorithm for the comparison of phylogenetic trees. <http://www.ncbi.nlm.nih.gov/pubmed/21335609>`_
 
       Marcet-Houben M, Gabaldón T.
 
-      Nucleic Acids Res. 2011 May;39(10):e66. doi: 10.1093/nar/gkr087. 
+      Nucleic Acids Res. 2011 May;39(10):e66. doi: 10.1093/nar/gkr087.
 
 
   * Added :func:`PhyloNode.split_by_dups` method, which returns a list
@@ -140,10 +140,10 @@ NEW FEATURES
 
   * Added :func:`PhyloNode.collapse_lineage_specific_expansions` method,
     which returns a pruned version of a tree, where nodes representing
-    lineage specific expansions are converted into a single leaf node. 
+    lineage specific expansions are converted into a single leaf node.
     :ref:`See tutorial and examples <collapse_expansions>`
 
-* **News on sequence and multiple sequence alignment parsing:** 
+* **News on sequence and multiple sequence alignment parsing:**
 
   * added the option to disable the automatic correction of duplicated
     names when loading :class:`SeqGroup` data from phylip and fasta
@@ -159,22 +159,22 @@ NEW FEATURES
     functionality. This way, you can keep separate styling templates
     and combine them as necessary.
 
-     :: 
-     
+     ::
+
        from ete3 import TreeStyle
-        
+
        def color_leaves(node):
            if node.is_leaf():
               node.img_style["fgcolor"] = "red"
-        
+
        def size_internal(node):
            if not node.is_leaf():
               node.img_style["size"] = 15
-        
+
        ts = TreeStyle()
        # provide a list of layout functions, instead of a single one
        ts.layout_fn = [color_leaves, size_internal]
-     
+
 
   * :attr:`COLOR_SCHEMES` and :attr:`SVG_COLORS` dictionaries are
     provided for easy access to color codes and several predefined
@@ -182,7 +182,7 @@ NEW FEATURES
     also available as a generator of RGB colors (where saturation and
     lightness can be fixed).
 
-    :: 
+    ::
 
         from ete3 import random_color, COLOR_SCHEMES, SVG_COLORS
 
@@ -198,7 +198,7 @@ NEW FEATURES
 
       .. figure:: ../../examples/treeview/rotated_faces.png
               :scale: 75 %
-      
+
   * Improved :class:`SequenceFace`: Sequence sites are now rendered
     one by one, allowing interaction with each of them and getting rid
     of the previous pixmap size limitation. Site image dimensions and
@@ -209,7 +209,7 @@ NEW FEATURES
     face type allows to represent sequences as a succession of
     domain/motif elements or to represent sequence positions as color
     points. Gaps can also be taken into account and therefore shown as
-    as a black space or a flat line.  
+    as a black space or a flat line.
 
       .. figure:: ../../examples/treeview/seqmotif.png
               :scale: 75 %
@@ -222,7 +222,7 @@ NEW FEATURES
       .. figure:: ../../examples/treeview/float_piechart.png
               :scale: 65 %
 
-      .. figure:: ../../examples/treeview/barcharts.png 
+      .. figure:: ../../examples/treeview/barcharts.png
               :scale: 55 %
 
 
@@ -237,4 +237,3 @@ NEW FEATURES
     from a terminal.
   * Added keyboard-based node navigation (click on a node and play the
     arrow keys).
-

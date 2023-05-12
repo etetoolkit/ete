@@ -1,4 +1,4 @@
-from ... import Tree, TreeStyle, add_face_to_node, TextFace
+from ete4 import Tree, TreeStyle, add_face_to_node, TextFace
 
 from random import randint
 

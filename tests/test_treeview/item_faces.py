@@ -2,11 +2,11 @@
 import colorsys
 import random
 
-from ... import Tree, faces, TreeStyle, NodeStyle, Face
+from ete4 import Tree, faces, TreeStyle, NodeStyle, Face
 
 # We will need to create Qt4 items
-from ...treeview.qt import QtCore, Qt
-from ...treeview.qt import QGraphicsRectItem, QGraphicsSimpleTextItem, \
+from ete4.treeview.qt import QtCore, Qt
+from ete4.treeview.qt import QGraphicsRectItem, QGraphicsSimpleTextItem, \
     QGraphicsEllipseItem, QColor, QPen, QBrush
 
 class InteractiveItem(QGraphicsRectItem):

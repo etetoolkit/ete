@@ -11,20 +11,20 @@ A = t.search_nodes(name="A")[0]
 C= t&"C"
 H= t&"H"
 I= t&"I"
-# Let's now add some custom features to our nodes. add_features can be
+# Let's now add some custom features to our nodes. add_props can be
 #  used to add many features at the same time.
-C.add_features(vowel=False, confidence=1.0)
-A.add_features(vowel=True, confidence=0.5)
-ancestor.add_features(nodetype="internal")
+C.add_props(vowel=False, confidence=1.0)
+A.add_props(vowel=True, confidence=0.5)
+ancestor.add_props(nodetype="internal")
 # Or, using the oneliner notation
-(t&"H").add_features(vowel=False, confidence=0.2)
+(t&"H").add_props(vowel=False, confidence=0.2)
 # But we can automatize this. (note that i will overwrite the previous
 # values)
 for leaf in t.traverse():
     if leaf.name in "AEIOU":
-        leaf.add_features(vowel=True, confidence=random.random())
+        leaf.add_props(vowel=True, confidence=random.random())
     else:
-        leaf.add_features(vowel=False, confidence=random.random())
+        leaf.add_props(vowel=False, confidence=random.random())
 # Now we use these information to analyze the tree.
 print "This tree has", len(t.search_nodes(vowel=True)), "vowel nodes"
 print "Which are", [leaf.name for leaf in t.iter_leaves() if leaf.vowel==True]
@@ -36,12 +36,12 @@ print "Which are", [leaf.name for leaf in t.iter_leaves() if leaf.vowel==True]
 # 1. Note that I'm traversing a subtree which starts from "ancestor"
 matches = [leaf for leaf in ancestor.traverse() if leaf.dist>1.0]
 # And save this pre-computed information into the ancestor node
-ancestor.add_feature("long_branch_nodes", matches)
+ancestor.add_prop("long_branch_nodes", matches)
 # Prints the precomputed nodes
 print "These are nodes under ancestor with long branches", \
     [n.name for n in ancestor.long_branch_nodes]
-# We can also use the add_feature() method to dynamically add new features.
+# We can also use the add_prop() method to dynamically add new features.
 label = raw_input("custom label:")
 value = raw_input("custom label value:")
-ancestor.add_feature(label, value)
+ancestor.add_prop(label, value)
 print "Ancestor has now the [", label, "] attribute with value [", value, "]"

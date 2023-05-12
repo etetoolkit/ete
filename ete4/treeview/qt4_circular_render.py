@@ -168,7 +168,7 @@ def render_circular(root_node, n2i, rot_step):
         else:
             r, xoffset = get_min_radius(w, h, angle, parent_radius + item.widths[0])
             item.radius = r
-            node.add_features(rad=item.radius)
+            node.add_props(rad=item.radius)
 
         #if xoffset: # DEBUG ONLY. IF Scale is correct, this should not be printed
         #    print "Offset detected in node", xoffset

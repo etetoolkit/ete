@@ -53,8 +53,8 @@ class NCBITaxa(object):
     Provides a local transparent connector to the NCBI taxonomy database.
     """
 
-    def __init__(self, dbfile=None, taxdump_file=None, memory=False):
 
+    def __init__(self, dbfile=None, taxdump_file=None, memory=False, update=True):
         if not dbfile:
             self.dbfile = DEFAULT_TAXADB
         else:
@@ -73,7 +73,7 @@ class NCBITaxa(object):
         self.db = None
         self._connect()
 
-        if not is_taxadb_up_to_date(self.dbfile):
+        if not is_taxadb_up_to_date(self.dbfile) and update:
             print('NCBI database format is outdated. Upgrading', file=sys.stderr)
             self.update_taxonomy_database(taxdump_file)
 
@@ -332,7 +332,7 @@ class NCBITaxa(object):
             elif intermediate_nodes:
                 return list(map(int, [n.name for n in tree.get_descendants()]))
             else:
-                return map(int, [n.name for n in tree])
+                return list(map(int, [n.name for n in tree]))
 
         elif intermediate_nodes:
             return [tid for tid, count in descendants.items()]
@@ -371,11 +371,11 @@ class NCBITaxa(object):
             visited = set()
             start = prepostorder.index(root_taxid)
             try:
-            	end = prepostorder.index(root_taxid, start+1)
-            	subtree = prepostorder[start:end+1]
+                end = prepostorder.index(root_taxid, start+1)
+                subtree = prepostorder[start:end+1]
             except ValueError:
                 # If root taxid is not found in postorder, must be a tip node
-            	subtree = [root_taxid]
+                subtree = [root_taxid]
             leaves = set([v for v, count in Counter(subtree).items() if count == 1])
             nodes[root_taxid] = PhyloTree(name=str(root_taxid))
             current_parent = nodes[root_taxid]

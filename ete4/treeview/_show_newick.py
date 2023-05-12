@@ -56,12 +56,12 @@ class Ui_Newick(object):
 
         self.retranslateUi(Newick)
         self.nwFormat.activated.connect(Newick.update_newick)
-        self.pushButton.released.connect(Newick.add_feature)
-        self.pushButton_2.released.connect(Newick.del_feature)
+        self.pushButton.released.connect(Newick.add_prop)
+        self.pushButton_2.released.connect(Newick.del_prop)
         self.useAllFeatures.released.connect(Newick.set_custom_features)
 
         #QObject.connect(self.nwFormat, SIGNAL("activated(QString)"), Newick.update_newick)
-        #QObject.connect(self.pushButton, SIGNAL("released()"), Newick.add_feature)
+        #QObject.connect(self.pushButton, SIGNAL("released()"), Newick.add_prop)
         #QObject.connect(self.pushButton_2, SIGNAL("released()"), Newick.del_feature)
         #QObject.connect(self.useAllFeatures, SIGNAL("released()"), Newick.set_custom_features)
         #QMetaObject.connectSlotsByName(Newick)

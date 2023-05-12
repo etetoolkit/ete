@@ -22,7 +22,7 @@ def get_example_tree():
 
     # Some random features in all nodes
     for n in t.traverse():
-        n.add_features(weight=random.randint(0, 50))
+        n.add_props(weight=random.randint(0, 50))
 
     # Create an empty TreeStyle
     ts = TreeStyle()
@@ -46,4 +46,3 @@ if __name__ == "__main__":
 
     #t.render("bubble_map.png", w=600, dpi=300, tree_style=ts)
     t.show(tree_style=ts)
-

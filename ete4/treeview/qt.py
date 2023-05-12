@@ -1,6 +1,6 @@
 try:
     from PyQt4 import QtGui, QtCore
-    from PyQt4.QtCore import (Qt, QPointF, QRect, QRectF, QBuffer, QByteArray,
+    from PyQt4.QtCore import (Qt, QPointF, QRect, QLineF, QRectF, QBuffer, QByteArray,
                               QThread, QIODevice, QMetaObject, QModelIndex, QObject, QRegExp, QSize,
                               QSizeF,QVariant )
     from PyQt4.QtGui import (QAction, QApplication, QBrush, QCheckBox, QColor,
@@ -25,7 +25,13 @@ try:
 
 except ImportError:
     from PyQt5 import QtGui, QtCore
-    from PyQt5.QtCore import (Qt, QPointF, QRect, QRectF, QBuffer, QByteArray,
+
+    # Fixes incompatibilities due to new overflow checking when converting integers introduced in qt 5.12
+    # https://www.riverbankcomputing.com/static/Docs/PyQt5/incompatibilities.html#pyqt-v5-12
+    import sip
+    sip.enableoverflowchecking(False)
+
+    from PyQt5.QtCore import (Qt, QPointF, QLineF, QRect, QRectF, QBuffer, QByteArray,
                               QThread, QIODevice, QMetaObject, QModelIndex, QObject, QRegExp, QSize,
                               QSizeF,  QVariant) #QString
     from PyQt5.QtSvg import QGraphicsSvgItem, QSvgGenerator

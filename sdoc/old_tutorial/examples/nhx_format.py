@@ -8,14 +8,14 @@ ancestor=t.get_common_ancestor("J", "F", "C")
 # Let's label  leaf nodes
 for leaf in t.traverse():
     if leaf.name in "AEIOU":
-        leaf.add_features(vowel=True, confidence=random.random())
+        leaf.add_props(vowel=True, confidence=random.random())
     else:
-        leaf.add_features(vowel=False, confidence=random.random())
+        leaf.add_props(vowel=False, confidence=random.random())
 # Let's detect leaf nodes under "ancestor" with distance higher thatn
 # 1. Note that I'm traversing a subtree which starts from "ancestor"
 matches = [leaf for leaf in ancestor.traverse() if leaf.dist>1.0]
 # And save this pre-computed information into the ancestor node
-ancestor.add_feature("long_branch_nodes", matches)
+ancestor.add_prop("long_branch_nodes", matches)
 print
 print "NHX notation including vowel and confidence attributes"
 print

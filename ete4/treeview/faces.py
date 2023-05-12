@@ -18,9 +18,9 @@ except ImportError:
 from .qt import (QGraphicsRectItem, QGraphicsLineItem,
                  QGraphicsPolygonItem, QGraphicsEllipseItem,
                  QPen, QColor, QBrush, QPolygonF, QFont,
-                 QPixmap, QFontMetrics, QPainter,
+                 QPixmap, QFontMetrics, QPainter, QPainterPath,
                  QRadialGradient, QGraphicsSimpleTextItem, QGraphicsTextItem,
-                 QGraphicsItem, Qt,  QPointF, QRect, QRectF, QGraphicsSvgItem)
+                 QGraphicsItem, Qt, QLineF, QPointF, QRect, QRectF, QGraphicsSvgItem)
 
 from .main import add_face_to_node, _Background, _Border, COLOR_SCHEMES
 
@@ -515,19 +515,19 @@ class ProfileFace(Face):
 
         # Draw axis and scale
         p.setPen(QColor("black"))
-        p.drawRect(x2,y,profile_width, profile_height-1)
+        p.drawRect(QRectF(x2,y,profile_width, profile_height-1))
         p.setFont(QFont("Verdana",8))
-        p.drawText(profile_width,y+10,"%0.3f" %self.max_value)
-        p.drawText(profile_width,y+profile_height,"%0.3f" %self.min_value)
+        p.drawText(QPointF(profile_width,y+10), "%0.3f" %self.max_value)
+        p.drawText(QPointF(profile_width,y+profile_height), "%0.3f" %self.min_value)
 
         dashedPen = QPen(QBrush(QColor("#ddd")), 0)
         dashedPen.setStyle(Qt.DashLine)
 
         # Draw hz grid
         p.setPen(dashedPen)
-        p.drawLine(x2+1, mean_line_y, profile_width-2, mean_line_y )
-        p.drawLine(x2+1, line2_y, profile_width-2, line2_y )
-        p.drawLine(x2+1, line3_y, profile_width-2, line3_y )
+        p.drawLine(QLineF(x2+1, mean_line_y, profile_width-2, mean_line_y ))
+        p.drawLine(QLineF(x2+1, line2_y, profile_width-2, line2_y ))
+        p.drawLine(QLineF(x2+1, line3_y, profile_width-2, line3_y ))
 
 
         # Draw bars
@@ -558,17 +558,17 @@ class ProfileFace(Face):
 
             # Draw bar border
             p.setPen(QColor("black"))
-            #p.drawRect(x1+2,mean_y1, x_alpha-3, profile_height-mean_y1+1)
+            #p.drawRect(QRectF(x1+2,mean_y1, x_alpha-3, profile_height-mean_y1+1))
             # Fill bar with custom color
-            p.fillRect(x1+3,profile_height-mean_y1, x_alpha-4, mean_y1-1, QBrush(customColor))
+            p.fillRect(QRectF(x1+3,profile_height-mean_y1, x_alpha-4, mean_y1-1), QBrush(customColor))
 
             # Draw error bars
             if dev1 != 0:
                 dev_up_y1   = int((mean1+dev1 - self.min_value) * y_alpha)
                 dev_down_y1 = int((mean1-dev1 - self.min_value) * y_alpha)
-                p.drawLine(x1+x_alpha/2, profile_height-dev_up_y1 ,x1+x_alpha/2, profile_height-dev_down_y1 )
-                p.drawLine(x1-1+x_alpha/2,  profile_height-dev_up_y1, x1+1+x_alpha/2, profile_height-dev_up_y1 )
-                p.drawLine(x1-1+x_alpha/2,  profile_height-dev_down_y1, x1+1+x_alpha/2, profile_height-dev_down_y1 )
+                p.drawLine(QLineF(1+x_alpha/2, profile_height-dev_up_y1 ,x1+x_alpha/2, profile_height-dev_down_y1 ))
+                p.drawLine(QLineF(x1-1+x_alpha/2,  profile_height-dev_up_y1, x1+1+x_alpha/2, profile_height-dev_up_y1 ))
+                p.drawLine(QLineF(x1-1+x_alpha/2,  profile_height-dev_down_y1, x1+1+x_alpha/2, profile_height-dev_down_y1 ))
 
     def draw_centered_bar_profile(self):
         # Calculate vector
@@ -604,20 +604,20 @@ class ProfileFace(Face):
 
         # Draw axis and scale
         p.setPen(QColor("black"))
-        p.drawRect(x2,y,profile_width, profile_height-1)
+        p.drawRect(QRectF(x2,y,profile_width), profile_height-1)
         p.setFont(QFont("Verdana",8))
-        p.drawText(profile_width,y+10,"%0.3f" %self.max_value)
-        p.drawText(profile_width,y+profile_height,"%0.3f" %self.min_value)
-        p.drawText(profile_width,mean_line_y,"%0.3f" %self.center_v)
+        p.drawText(QPointF(profile_width,y+10), "%0.3f" %self.max_value)
+        p.drawText(QPointF(profile_width,y+profile_height), "%0.3f" %self.min_value)
+        p.drawText(QPointF(profile_width,mean_line_y), "%0.3f" %self.center_v)
 
         dashedPen = QPen(QBrush(QColor("#ddd")), 0)
         dashedPen.setStyle(Qt.DashLine)
 
         # Draw hz grid
         p.setPen(dashedPen)
-        p.drawLine(x2+1, mean_line_y, profile_width-2, mean_line_y )
-        p.drawLine(x2+1, line2_y, profile_width-2, line2_y )
-        p.drawLine(x2+1, line3_y, profile_width-2, line3_y )
+        p.drawLine(QLineF(x2+1, mean_line_y, profile_width-2, mean_line_y ))
+        p.drawLine(QLineF(x2+1, line2_y, profile_width-2, line2_y ))
+        p.drawLine(QLineF(x2+1, line3_y, profile_width-2, line3_y ))
 
 
         # Draw bars
@@ -659,24 +659,24 @@ class ProfileFace(Face):
             #p.drawRect(x1+2,mean_y1, x_alpha-3, profile_height-mean_y1+1)
             # Fill bar with custom color
             if mean1<self.center_v:
-                p.fillRect(x1+3, mean_line_y, x_alpha-4, mean_y1, QBrush(customColor))
+                p.fillRect(QRectF(x1+3, mean_line_y, x_alpha-4, mean_y1), QBrush(customColor))
             else:
-                p.fillRect(x1+3, mean_line_y-mean_y1, x_alpha-4, mean_y1+1, QBrush(customColor))
+                p.fillRect(QRectF(x1+3, mean_line_y-mean_y1, x_alpha-4, mean_y1+1), QBrush(customColor))
 
             # Draw error bars
             if dev1 != 0:
                 if mean1<self.center_v:
                     dev_up_y1   = int((mean1+dev1 - self.center_v) * y_alpha_down)
                     dev_down_y1 = int((mean1-dev1 - self.center_v) * y_alpha_down)
-                    p.drawLine(x1+x_alpha/2, mean_line_y+dev_up_y1 ,x1+x_alpha/2, mean_line_y+dev_down_y1 )
-                    p.drawLine(x1-1+x_alpha/2, mean_line_y+dev_up_y1 ,x1+1+x_alpha/2, mean_line_y+dev_up_y1 )
-                    p.drawLine(x1-1+x_alpha/2, mean_line_y+dev_down_y1 ,x1+1+x_alpha/2, mean_line_y+dev_down_y1 )
+                    p.drawLine(QLineF(x1+x_alpha/2, mean_line_y+dev_up_y1 ,x1+x_alpha/2, mean_line_y+dev_down_y1 ))
+                    p.drawLine(QLineF(x1-1+x_alpha/2, mean_line_y+dev_up_y1 ,x1+1+x_alpha/2, mean_line_y+dev_up_y1 ))
+                    p.drawLine(QLineF(x1-1+x_alpha/2, mean_line_y+dev_down_y1 ,x1+1+x_alpha/2, mean_line_y+dev_down_y1 ))
                 else:
                     dev_up_y1   = int((mean1+dev1 - self.center_v) * y_alpha_up)
                     dev_down_y1 = int((mean1-dev1 - self.center_v) * y_alpha_up)
-                    p.drawLine(x1+x_alpha/2, mean_line_y-dev_up_y1 ,x1+x_alpha/2, mean_line_y-dev_down_y1 )
-                    p.drawLine(x1-1+x_alpha/2, mean_line_y-dev_up_y1 ,x1+1+x_alpha/2, mean_line_y-dev_up_y1 )
-                    p.drawLine(x1-1+x_alpha/2, mean_line_y-dev_down_y1 ,x1+1+x_alpha/2, mean_line_y-dev_down_y1 )
+                    p.drawLine(QLineF(x1+x_alpha/2, mean_line_y-dev_up_y1 ,x1+x_alpha/2, mean_line_y-dev_down_y1 ))
+                    p.drawLine(QLineF(x1-1+x_alpha/2, mean_line_y-dev_up_y1 ,x1+1+x_alpha/2, mean_line_y-dev_up_y1 ))
+                    p.drawLine(QLineF(x1-1+x_alpha/2, mean_line_y-dev_down_y1 ,x1+1+x_alpha/2, mean_line_y-dev_down_y1 ))
 
     def draw_line_profile(self):
         # Calculate vector
@@ -709,20 +709,20 @@ class ProfileFace(Face):
 
         # Draw axis and scale
         p.setPen(QColor("black"))
-        p.drawRect(x2,y,profile_width, profile_height-1)
+        p.drawRect(QRectF(x2,y,profile_width, profile_height-1))
         p.setFont(QFont("Verdana",8))
-        p.drawText(profile_width,y+10,"%0.3f" %self.max_value)
-        p.drawText(profile_width,y+profile_height,"%0.3f" %self.min_value)
-        p.drawText(profile_width,mean_line_y+5,"%0.3f" %self.center_v)
+        p.drawText(QPointF(profile_width,y+10), "%0.3f" %self.max_value)
+        p.drawText(QPointF(profile_width,y+profile_height), "%0.3f" %self.min_value)
+        p.drawText(QPointF(profile_width,mean_line_y+5), "%0.3f" %self.center_v)
 
         dashedPen = QPen(QBrush(QColor("#ddd")), 0)
         dashedPen.setStyle(Qt.DashLine)
 
         # Draw hz grid
         p.setPen(dashedPen)
-        p.drawLine(x2+1, mean_line_y, profile_width-2, mean_line_y )
-        p.drawLine(x2+1, line2_y, profile_width-2, line2_y )
-        p.drawLine(x2+1, line3_y, profile_width-2, line3_y )
+        p.drawLine(QLineF(x2+1, mean_line_y, profile_width-2, mean_line_y ))
+        p.drawLine(QLineF(x2+1, line2_y, profile_width-2, line2_y ))
+        p.drawLine(QLineF(x2+1, line3_y, profile_width-2, line3_y ))
 
         # Draw lines
         for pos in range(0,vlength-1):
@@ -737,7 +737,7 @@ class ProfileFace(Face):
             # Draw vt grid
             if x2 < profile_width:
                 p.setPen(dashedPen)
-                p.drawLine(x2, y+1, x2, profile_height-2)
+                p.drawLine(QLineF(x2, y+1, x2, profile_height-2))
 
             # If nan values, continue
             if not isfinite(mean1) or not isfinite(mean2):
@@ -754,11 +754,11 @@ class ProfileFace(Face):
                 dev_y2   = (dev2 - self.min_value) * y_alpha
                 # Draw red deviation lines
                 p.setPen(QColor("red"))
-                p.drawLine(x1, profile_height-dev_y1, x2, profile_height-dev_y2)
-                p.drawLine(x1, profile_height+dev_y1, x2, profile_height+dev_y2)
+                p.drawLine(QLineF(x1, profile_height-dev_y1, x2, profile_height-dev_y2))
+                p.drawLine(QLineF(x1, profile_height+dev_y1, x2, profile_height+dev_y2))
             # Draw blue mean line
             p.setPen(QColor("blue"))
-            p.drawLine(x1, profile_height-mean_y1, x2, profile_height-mean_y2)
+            p.drawLine(QLineF(x1, profile_height-mean_y1, x2, profile_height-mean_y2))
 
 
     def draw_heatmap_profile(self):
@@ -812,7 +812,7 @@ class ProfileFace(Face):
                     customColor = colors[100]
 
                 # Fill bar with custom color
-                p.fillRect(x1, y, x_alpha, y_step, QBrush(customColor))
+                p.fillRect(QRectF(x1, y, x_alpha, y_step), QBrush(customColor))
             y+= y_step
             x2 = 0
         p.end()
@@ -899,8 +899,8 @@ class OLD_SequenceFace(Face):
                 letter_pen = QPen(QColor(self.aafg.get(letter,"black" )))
 
             p.setPen(letter_pen)
-            p.fillRect(x,0,width, height,letter_brush)
-            p.drawText(x, y, letter)
+            p.fillRect(QRectF(x,0,width, height,letter_brush))
+            p.drawText(QPointF(x, y), letter)
             x += float(width)/len(self.seq)
         p.end()
 
@@ -1180,7 +1180,7 @@ class _PieChartItem(QGraphicsRectItem):
             col = self.colors[i]
             painter.setBrush(QBrush(QColor(col)))
             angle_span = (p/100.) * a
-            painter.drawPie(self.rect(), angle_start, angle_span )
+            painter.drawPie(self.rect(), int(angle_start), int(angle_span) )
             angle_start += angle_span
 
 
@@ -1433,26 +1433,26 @@ class _BarChartItem(QGraphicsRectItem):
 
         if self.draw_border:
             p.setPen(QColor("black"))
-            p.drawRect(x, y + 1, plot_width, plot_height)
+            p.drawRect(QRectF(x, y + 1, plot_width, plot_height))
 
         if self.draw_scale:
             p.setFont(QFont("Verdana", self.scale_fsize))
             font_height = QFontMetrics(p.font()).height()
             max_string = "% 7.2f" %max_value
             min_string = "% 7.2f" %min_value
-            p.drawText(plot_width + margin, font_height-2, max_string)
-            p.drawText(plot_width + margin, plot_height - 2, min_string)
-            p.drawLine(plot_width + margin - 1, 1, plot_width + margin - 1, plot_height+1)
-            p.drawLine(plot_width + margin - 1, 1, plot_width + margin + 2, 1)
-            p.drawLine(plot_width + margin - 1, plot_height+1, plot_width + margin + 2, plot_height+1)
+            p.drawText(QPointF(plot_width + margin, font_height-2), max_string)
+            p.drawText(QPointF(plot_width + margin, plot_height - 2), min_string)
+            p.drawLine(QLineF(plot_width + margin - 1, 1, plot_width + margin - 1, plot_height+1))
+            p.drawLine(QLineF(plot_width + margin - 1, 1, plot_width + margin + 2, 1))
+            p.drawLine(QLineF(plot_width + margin - 1, plot_height+1, plot_width + margin + 2, plot_height+1))
 
         if self.draw_grid:
             dashedPen = QPen(QBrush(QColor("#ddd")), 0)
             dashedPen.setStyle(Qt.DashLine)
             p.setPen(dashedPen)
-            p.drawLine(x+1, mean_line_y, plot_width - 2, mean_line_y)
-            p.drawLine(x+1, line2_y, plot_width - 2, line2_y )
-            p.drawLine(x+1, line3_y, plot_width - 2, line3_y )
+            p.drawLineQLineF((x+1, mean_line_y, plot_width - 2, mean_line_y))
+            p.drawLine(QLineF(x+1, line2_y, plot_width - 2, line2_y ))
+            p.drawLine(QLineF(x+1, line3_y, plot_width - 2, line3_y ))
 
         # Draw bars
         p.setFont(QFont("Verdana", self.label_fsize))
@@ -1470,8 +1470,8 @@ class _BarChartItem(QGraphicsRectItem):
                 p.save()
                 p.translate(x1, plot_height+2)
                 p.rotate(90)
-                p.drawText(0, -x_alpha, label_height, x_alpha, Qt.AlignVCenter, str(self.labels[pos]))
-                #p.drawRect(0, -x_alpha, label_height, x_alpha)
+                p.drawText(QRectF(0, -x_alpha, label_height, x_alpha), Qt.AlignVCenter, str(self.labels[pos]))
+                #p.drawRect(QRectF(0, -x_alpha, label_height, x_alpha))
                 p.restore()
 
             # If nan value, skip
@@ -1485,16 +1485,16 @@ class _BarChartItem(QGraphicsRectItem):
             p.setPen(QColor("black"))
 
             # Fill bar with custom color
-            p.fillRect(x1, height - mean_y1, x_alpha, mean_y1, QBrush(color))
+            p.fillRect(QRectF(x1, height - mean_y1, x_alpha, mean_y1), QBrush(color))
 
             # Draw error bars
             if std != 0:
                 dev_up_y1   = int((val + std - min_value) * y_alpha)
                 dev_down_y1 = int((val - std - min_value) * y_alpha)
                 center_x = x1 + (x_alpha / 2)
-                p.drawLine(center_x, plot_height - dev_up_y1, center_x, plot_height - dev_down_y1)
-                p.drawLine(center_x + 1, plot_height - dev_up_y1, center_x -1, plot_height - dev_up_y1)
-                p.drawLine(center_x + 1, plot_height - dev_down_y1, center_x -1, plot_height - dev_down_y1)
+                p.drawLine(QLineF(center_x, plot_height - dev_up_y1, center_x, plot_height - dev_down_y1))
+                p.drawLine(QLineF(center_x + 1, plot_height - dev_up_y1, center_x -1, plot_height - dev_up_y1))
+                p.drawLine(QLineF(center_x + 1, plot_height - dev_down_y1, center_x -1, plot_height - dev_down_y1))
 
 
 
@@ -1572,20 +1572,20 @@ class SequenceItem(QGraphicsRectItem):
                 if self.draw_text and self.poswidth >= 8:
                     br = QBrush(QColor(self.bg.get(letter, "white")))
                     p.setPen(blackPen)
-                    p.fillRect(x, 0, self.poswidth, self.posheight, br)
+                    p.fillRect(QRectF(x, 0, self.poswidth, self.posheight), br)
                     qfont.setPixelSize(min(self.posheight, self.poswidth))
                     p.setFont(qfont)
                     p.setBrush(QBrush(QColor("black")))
-                    p.drawText(x, 0, self.poswidth, self.posheight,
+                    p.drawText(QRectF(x, 0, self.poswidth, self.posheight),
                                Qt.AlignCenter |  Qt.AlignVCenter,
                                letter)
                 elif letter == "-" or letter == ".":
                     p.setPen(blackPen)
-                    p.drawLine(x, self.posheight/2, x+self.poswidth, self.posheight/2)
+                    p.drawLine(QLineF(x, self.posheight/2, x+self.poswidth, self.posheight/2))
 
                 else:
                     br = QBrush(QColor(self.bg.get(letter, "white")))
-                    p.fillRect(x, 0, max(1, self.poswidth), self.posheight, br)
+                    p.fillRect(QRectF(x, 0, max(1, self.poswidth), self.posheight), br)
                     #p.setPen(QPen(QColor(self.bg.get(letter, "black"))))
                     #p.drawLine(x, 0, x, self.posheight)
                 current_pixel = int(x)
@@ -2374,3 +2374,69 @@ class DiamondFace(StaticItemFace, Face):
 
     def _height(self):
         return self.height
+
+
+class ArrowFace(Face):
+
+    """
+
+    Creates a color-stripped arrow representation for synteny visualization
+
+    :param width: width of the arrow (min of 10)
+    :param height: height of arrow (min of 10)
+    :param strand: defines gene orientation. "-" entails left-oriented arrows
+                   while "+" strand right-oriented arrows.
+    :param colors: array containing values to color stripes
+
+    """
+
+    def __init__(self, width, height, strand, colors):
+        Face.__init__(self)
+        self.width = width
+        self.height = height
+        self.strand = strand
+        self.colors = colors
+
+    def _width(self):
+        return self.width
+
+    def _height(self):
+        return self.height
+
+    def update_items(self):
+        return
+
+    def update_pixmap(self):
+        # Create pixmap
+        self.pixmap = QPixmap(self.width, self.height)
+        self.pixmap.fill(QColor("white"))
+        p = QPainter(self.pixmap)
+
+        # Create pen
+        solidPen = QPen(QBrush(QColor("black")), 0)
+        solidPen.setStyle(Qt.SolidLine)
+        p.setPen(solidPen)
+
+        # Define bands width and arrow height taking padding into account
+        rect_w = (self.width - 10) / len(self.colors)
+        rect_h = self.height - 10
+
+        # Draw each of the color bands and the arrow pointer depending on the
+        # strand (+,right/-,left)
+        for i, color in enumerate(self.colors):
+            if self.strand == "+":
+                p.fillRect(3 + i*rect_w, 5, math.ceil(rect_w), rect_h, QColor(color))
+                if i == (len(self.colors) - 1):
+                    path = QPainterPath()
+                    path.moveTo(3+(i+1)*rect_w, 5)
+                    path.lineTo(7+(i+1)*rect_w, 5+rect_h / 2)
+                    path.lineTo(3+(i+1)*rect_w, 5+rect_h)
+                    p.fillPath(path, QColor(color))
+            elif self.strand == "-":
+                p.fillRect(7 + i*rect_w, 5, math.ceil(rect_w), rect_h, QColor(color))
+                if i == 0:
+                    path = QPainterPath()
+                    path.moveTo(7, 5)
+                    path.lineTo(3, 5+rect_h / 2)
+                    path.lineTo(7, 5+rect_h)
+                    p.fillPath(path, QColor(color))

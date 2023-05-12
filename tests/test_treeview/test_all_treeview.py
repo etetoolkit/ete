@@ -6,13 +6,19 @@ import os
 ETEPATH = os.path.abspath(os.path.split(os.path.realpath(__file__))[0]+'/../')
 sys.path.insert(0, ETEPATH)
 
-from ... import Tree, TreeStyle, NodeStyle, PhyloTree, faces, random_color
-from ...treeview.faces import *
-from ...treeview.main import _NODE_TYPE_CHECKER, FACE_POSITIONS
+from ete4 import Tree, TreeStyle, NodeStyle, PhyloTree, faces, random_color
+from ete4.treeview.faces import *
+from ete4.treeview.main import _NODE_TYPE_CHECKER, FACE_POSITIONS
 
-from . import (face_grid, bubble_map, item_faces, node_style, node_background,
-               face_positions, face_rotation, seq_motif_faces,
-               barchart_and_piechart_faces, phylotree_visualization)
+try:  # when we run the script directly
+    import face_grid, bubble_map, item_faces, node_style, node_background, \
+        face_positions, face_rotation, seq_motif_faces, \
+        barchart_and_piechart_faces, phylotree_visualization
+except ImportError:  # when run with unittest or pytest
+    from . import face_grid, bubble_map, item_faces, node_style, \
+        node_background, face_positions, face_rotation, seq_motif_faces, \
+        barchart_and_piechart_faces, phylotree_visualization
+
 
 CONT = 0
 class Test_Coretype_Treeview(unittest.TestCase):
@@ -31,6 +37,7 @@ class Test_Coretype_Treeview(unittest.TestCase):
         t_bubble = TreeFace(t, ts)
         n = main_tree.add_child()
         n.add_face(t_bubble, 0, "aligned")
+        t.show()
 
         t, ts = item_faces.get_example_tree()
         t_items = TreeFace(t, ts)
