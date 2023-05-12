@@ -10,7 +10,7 @@ from ete4 import Tree, TreeStyle, NodeStyle, PhyloTree, faces, random_color
 from ete4.treeview.faces import *
 from ete4.treeview.main import _NODE_TYPE_CHECKER, FACE_POSITIONS
 
-import face_grid, bubble_map, item_faces, node_style, node_background, \
+from . import face_grid, bubble_map, item_faces, node_style, node_background, \
                face_positions, face_rotation, seq_motif_faces, \
                barchart_and_piechart_faces, phylotree_visualization
 
