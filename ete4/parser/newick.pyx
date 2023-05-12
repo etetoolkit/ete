@@ -419,6 +419,10 @@ def write_newick(rootnode, properties=None, format=1, format_root_node=True,
     newick.append(";")
     return ''.join(newick)
 
+# TODO: Change the semantics when reading properties/features. It should be:
+#   properties=None (default) -> write all extended properties
+#   properties=[]             -> do not write any extended properties
+# Or wait until we change this parser for the new version in tree-explorer...
 def _get_features_string(node, features=None):
     """Return NHX extended newick string for the requested node features."""
     if features is None:
