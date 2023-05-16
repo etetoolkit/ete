@@ -23,9 +23,9 @@ def strip(text):
 class Test_Coretype_Tree(unittest.TestCase):
     """Test the basic Tree class."""
 
-    def assertLooks(self, tree, text, properties=None):
+    def assertLooks(self, tree, text):
         """Assert that tree looks like the given text (as ascii)."""
-        self.assertEqual(tree.get_ascii(compact=True, properties=properties),
+        self.assertEqual(tree.get_ascii(compact=True, props=['name']),
                          strip(text))
 
     def test_read_write_exceptions(self):
@@ -126,7 +126,7 @@ class Test_Coretype_Tree(unittest.TestCase):
         """Test that the ascii representation (to use when printing) works."""
         t = Tree('((a,b)x,(c,d)y);', format=1)
 
-        self.assertEqual(t.get_ascii(), strip("""
+        self.assertEqual(t.get_ascii(props=['name']), strip("""
                      ╭╴a
                  ╭╴x╶┤
                  │   ╰╴b
@@ -135,13 +135,13 @@ class Test_Coretype_Tree(unittest.TestCase):
                  ╰╴y╶┤
                      ╰╴d
         """))
-        self.assertEqual(t.get_ascii(compact=True, show_internal=False), strip("""
+        self.assertEqual(t.get_ascii(compact=True, show_internal=False, props=['name']), strip("""
          ╭─┬╴a
         ─┤ ╰╴b
          ╰─┬╴c
            ╰╴d
         """))
-        self.assertEqual(t.get_ascii(waterfall=True), strip("""
+        self.assertEqual(t.get_ascii(props=['name'], waterfall=True), strip("""
         (empty)
         ├─┐x
         │ ├─╴a
@@ -150,7 +150,7 @@ class Test_Coretype_Tree(unittest.TestCase):
           ├─╴c
           └─╴d
         """))
-        self.assertEqual(t.get_ascii(properties=['dist', 'support']), strip("""
+        self.assertEqual(t.get_ascii(props=['dist', 'support']), strip("""
                            ╭╴1.0,1.0
                  ╭╴1.0,1.0╶┤
                  │         ╰╴1.0,1.0

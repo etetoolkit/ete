@@ -7,10 +7,11 @@ from functools import cmp_to_key
 import pickle
 import logging
 
+from . import text_viz
 from .. import utils
 from ..parser.newick import (
     read_newick, write_newick,
-    DEFAULT_DIST, DEFAULT_DIST_ROOT, DEFAULT_SUPPORT, DEFAULT_NAME)
+    DEFAULT_DIST, DEFAULT_DIST_ROOT, DEFAULT_SUPPORT)
 from ..parser import nexus, ete_format, file_extract
 
 # the following imports are necessary to set fixed styles and faces
@@ -96,11 +97,11 @@ cdef class Tree(object):
 
     @property
     def name(self):
-        return self.props.get('name', DEFAULT_NAME)
+        return self.props.get('name', '')
 
     @name.setter
     def name(self, value):
-        self.props['name'] = value
+        self.props['name'] = str(value)
 
     @property
     def dist(self):
@@ -309,8 +310,18 @@ cdef class Tree(object):
             raise TreeError("Invalid node type")
 
     def __str__(self):
-        """Return an ascii string showing the tree."""
-        return self.get_ascii(show_internal=False, compact=True)
+        """Return a string with an ascii drawing of the tree."""
+        return self.to_str(show_internal=False, compact=True, props=['name'])
+
+    def to_str(self, show_internal=True, compact=False, props=None,
+               px=None, py=None, px0=0, waterfall=False):
+        return text_viz.to_str(self, show_internal, compact, props,
+                               px, py, px0, waterfall)
+
+    def get_ascii(self, show_internal=True, compact=False, props=None,
+                  px=None, py=None, px0=0, waterfall=False):
+        # NOTE: This function exists only for compatiblity with older versions.
+        return self.to_str(show_internal, compact, props, px, py, px0, waterfall)
 
     def __contains__(self, item):
         """Return True if the tree contains the given item.
@@ -1464,27 +1475,6 @@ cdef class Tree(object):
 
         return new_node
 
-    def get_ascii(self, show_internal=True, compact=False, properties=None,
-                  px=None, py=None, px0=0, waterfall=False):
-        """Return a string containing an ascii drawing of the tree.
-
-        :param show_internal: If True, show the internal nodes too.
-        :param compact: If True, use exactly one line per tip.
-        :param properties: A list of node properties to show.
-        :param px, py, px0: Paddings (x, y, x for leaves). Overrides `compact`.
-        :param waterfall: Use a waterfall representation. Overrides
-            `show_internal`, `compact`, `px`, `py`, `px0`.
-        """
-        if not waterfall:
-            px = px if px is not None else (0 if show_internal else 1)
-            py = py if py is not None else (0 if compact else 1)
-
-            lines, _ = _ascii_art(self, show_internal, properties, px, py, px0)
-            return '\n'.join(lines)
-        else:
-            px = px if px is not None else 1
-            return _waterfall(self, properties, px)
-
     def ladderize(self, direction=0):
         """Sort branches according to the size of each partition.
 
@@ -2444,9 +2434,9 @@ cdef class Tree(object):
         if position not in FACE_POSITIONS:
             raise ValueError("face position not in %s" %FACE_POSITIONS)
 
-        if isinstance(face, Face):            
-            getattr(self.props["_faces"], position).add_face(face, column=column)            
-            
+        if isinstance(face, Face):
+            getattr(self.props["_faces"], position).add_face(face, column=column)
+
         else:
             raise ValueError("not a Face instance")
 
@@ -2601,119 +2591,3 @@ def _translate_nodes(root, *nodes):
     valid_nodes = [(name2node[n] if type(n) is str else n) for n in nodes]
 
     return valid_nodes if len(valid_nodes) > 1 else valid_nodes[0]
-
-
-def _ascii_art(node, show_internal=True, properties=None, px=0, py=0, px0=0):
-    """Return a list of strings representing the node, and their middle point.
-
-    :param node: Node to represent as ascii art.
-    :param show_internal: If True, show the internal node names too.
-    :param properties: list of property names to show for each node.
-    :param px, py: Padding in x and y.
-    :param px0: Padding in x for leaves.
-    """
-    props = properties or ['name']
-
-    # Node description (including all the requested properties).
-    descr = ','.join(str(node.props.get(p, '')) or '(empty)' for p in props)
-
-    if node.is_leaf():
-        return (['─' * px0 + '╴' + descr], 0)
-
-    lines = []
-    padding = ((px0 + 1 + len(descr) + 1) if show_internal else 0) + px
-    for child in node.children:
-        lines_child, mid = _ascii_art(child, show_internal, props, px, py, px0)
-
-        if len(node.children) == 1:       # only one child
-            lines += _add_prefix(lines_child, padding, mid, ' ',
-                                                            '─',
-                                                            ' ')
-            pos_first = mid
-            pos_last = len(lines) - mid
-        elif child == node.children[0]:   # first child
-            lines += _add_prefix(lines_child, padding, mid, ' ',
-                                                            '╭',
-                                                            '│')
-            lines.extend([' ' * padding + '│'] * py)  # y padding
-            pos_first = mid
-        elif child != node.children[-1]:  # a child in the middle
-            lines += _add_prefix(lines_child, padding, mid, '│',
-                                                            '├',
-                                                            '│')
-            lines.extend([' ' * padding + '│'] * py)  # y padding
-        else:                             # last child
-            lines += _add_prefix(lines_child, padding, mid, '│',
-                                                            '╰',
-                                                            ' ')
-            pos_last = len(lines_child) - mid
-
-    mid = (pos_first + len(lines) - pos_last) // 2  # middle point
-
-    lines[mid] = _add_base(lines[mid], px, px0, descr, show_internal)
-
-    return lines, mid
-
-def _add_prefix(lines, px, mid, c1, c2, c3):
-    """Return the given lines adding a prefix.
-
-    :param lines: List of strings, to return with prefixes.
-    :param int px: Padding in x.
-    :param int mid: Middle point (index of the row where the node would hang).
-    :param c1, c2, c3: Character to use as prefix before, at, and after mid.
-    """
-    prefix = lambda i: ' ' * px + (c1 if i < mid else (c2 if i == mid else c3))
-
-    return [prefix(i) + line for i, line in enumerate(lines)]
-
-def _add_base(line, px, px0, txt, show_internal):
-    """Return the same line but adding a base line."""
-    # Example of change at the beginning of line: ' │' -> '─┤'
-    replacements = {
-        '│': '┤',
-        '─': '╌',
-        '├': '┼',
-        '╭': '┬'}
-
-    padding = ((px0 + 1 + len(txt) + 1) if show_internal else 0) + px
-
-    prefix_txt = '─' * px0 + (f'╴{txt}╶' if txt else '──')
-
-    return ((prefix_txt if show_internal else '') +
-            '─' * px + replacements[line[padding]] + line[padding+1:])
-
-
-def _waterfall(node, properties=None, px=1, are_last=None):
-    """Return a string with a waterfall visual representation of the node."""
-    props = properties or ['name']
-    are_last = are_last or []
-
-    # Node description (including all the requested properties).
-    descr = ','.join(str(node.props.get(p, '')) or '(empty)' for p in props)
-
-    branches = _get_branches_repr(are_last, node.is_leaf(), px)
-
-    return '\n'.join([branches + descr] +
-        [_waterfall(n, props, px, are_last + [False]) for n in node.children[:-1]] +
-        [_waterfall(n, props, px, are_last + [True])  for n in node.children[-1:]])
-
-def _get_branches_repr(are_last, is_leaf, px):
-    """Return a text line representing open branches according to are_last.
-
-    :param are_last: List of bools that say per level if we are the last node.
-    :param is_leaf: says if the node to represent in this line has no children.
-    :param px: Padding in x.
-
-    Example (for is_leaf=True, px=6)::
-
-        [True , False, True , True , True ] ->
-        '│             │      │      ├──────╴'
-    """
-    if len(are_last) == 0:
-        return ''
-
-    prefix = ''.join((' ' if is_last else '│') + ' ' * px
-                     for is_last in are_last[:-1])
-
-    return (prefix   + ('└' if are_last[-1] else '├') +
-            '─' * px + ('╴' if is_leaf      else '┐'))

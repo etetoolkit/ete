@@ -29,7 +29,13 @@ class TreePattern(Tree):
                                          '<string>', 'eval')
 
     def __str__(self):
-        return self.get_ascii(show_internal=True)
+        return self.to_str(show_internal=True, props=['name'])
+
+    def match(tree):
+        return match(self, tree)
+
+    def search(tree):
+        return search(self, tree)
 
 
 def match(pattern, tree):
