@@ -1,5 +1,4 @@
 import os
-import string
 import textwrap
 from sys import stderr as STDERR
 
