@@ -325,8 +325,8 @@ def check_name(model):
     '''
     check that model name corresponds to one of the available
     '''
-    if sub('\..*', '', model) in AVAIL:
-        return model, AVAIL [sub('\..*', '', model)]
+    if sub(r'\..*', '', model) in AVAIL:
+        return model, AVAIL [sub(r'\..*', '', model)]
 
 
 

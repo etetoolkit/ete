@@ -130,14 +130,14 @@ class Face(object):
 
     **border and inner_border sub-parameters:**
 
-    :param 0 (inner\_)border.type: 0=solid, 1=dashed, 2=dotted
-    :param None (inner\_)border.width: a positive integer number. Zero
+    :param 0 (inner\\_)border.type: 0=solid, 1=dashed, 2=dotted
+    :param None (inner\\_)border.width: a positive integer number. Zero
                              indicates a cosmetic pen. This means that
                              the pen width is always drawn one pixel
                              wide, independent of the transformation
                              set on the painter. A "None" value means
                              invisible border.
-    :param black (inner\_)border.color: RGB or color name in :data:`SVG_COLORS`
+    :param black (inner\\_)border.color: RGB or color name in :data:`SVG_COLORS`
 
     See also specific options for each face type.
 

@@ -20,7 +20,7 @@ def tracktime(f):
 
 _LINE_TYPE_CHECKER = lambda x: x in (0,1,2)
 _SIZE_CHECKER = lambda x: isinstance(x, int)
-_COLOR_MATCH = re.compile("^#[A-Fa-f\d]{6}$")
+_COLOR_MATCH = re.compile(r"^#[A-Fa-f\d]{6}$")
 _COLOR_CHECKER = lambda x: x.lower() in SVG_COLORS or re.match(_COLOR_MATCH, x)
 _NODE_TYPE_CHECKER = lambda x: x in ["sphere", "circle", "square"]
 _BOOL_CHECKER =  lambda x: isinstance(x, bool) or x in (0,1)
@@ -664,13 +664,13 @@ def save(scene, imgName, w=None, h=None, dpi=90,\
         else:
             with open(imgName) as f:
                 compatible_code = f.read()
-            
+
         # Fix a very annoying problem with Radial gradients in
         # inkscape and browsers...
         compatible_code = compatible_code.replace("xml:id=", "id=")
-        compatible_code = re.sub('font-size="(\d+)"', 'font-size="\\1pt"', compatible_code)
+        compatible_code = re.sub(r'font-size="(\d+)"', 'font-size="\\1pt"', compatible_code)
         compatible_code = compatible_code.replace('\n', ' ')
-        compatible_code = re.sub('<g [^>]+>\s*</g>', '', compatible_code)
+        compatible_code = re.sub(r'<g [^>]+>\s*</g>', '', compatible_code)
         # End of fix
         if ipython_inline:
             from IPython.core.display import SVG

@@ -423,10 +423,10 @@ class EvolNode(PhyloNode):
         from re import sub
         if int(format) == 11:
             nwk = ' %s 1\n' % (len(self))
-            nwk += sub('\[&&NHX:mark=([ #0-9.]*)\]', r'\1', \
+            nwk += sub(r'\[&&NHX:mark=([ #0-9.]*)\]', r'\1', \
                        write_newick(self, properties=['mark'],format=9))
         elif int(format)==10:
-            nwk = sub('\[&&NHX:mark=([ #0-9.]*)\]', r'\1', \
+            nwk = sub(r'\[&&NHX:mark=([ #0-9.]*)\]', r'\1', \
                       write_newick(self, properties=['mark'],format=9))
         else:
             nwk = write_newick(self, properties=properties,format=format)
