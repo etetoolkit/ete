@@ -40,13 +40,13 @@ class Test_Coretype_SeqGroup(unittest.TestCase):
         """Test phylip read and write."""
         # PHYLIP INTERLEAVED
         with open("/tmp/ete_test_iphylip.txt", "w") as fp:
-            fp.write(phylip_interlived)
+            fp.write(phylip_interleaved)
 
         SEQS = SeqGroup("/tmp/ete_test_iphylip.txt", format="iphylip")
-        SEQS2 = SeqGroup(phylip_interlived, format="iphylip")
+        SEQS2 = SeqGroup(phylip_interleaved, format="iphylip")
         self.assertEqual(SEQS.write(), SEQS2.write())
         SEQS.write(format="iphylip",  outfile="/tmp/ete_write_file")
-        self.assertEqual(SEQS.write(format="iphylip"), phylip_interlived)
+        self.assertEqual(SEQS.write(format="iphylip"), phylip_interleaved)
 
         # Test SeqGroup obj integrity
         self.assertEqual(SEQS.get_seq("CYS1_DICDI"), CYS1_DICDI)
