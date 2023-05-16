@@ -569,7 +569,7 @@ def add_face_to_node(face, node, column, aligned=False, position="branch-right")
     if aligned == True:
         position = "aligned"
 
-    if node.props.get("_temp_faces", None):        
+    if node.props.get("_temp_faces", None):
         getattr(node.props["_temp_faces"], position).add_face(face, column)
     else:
          raise Exception("This function can only be called within a layout function. Use node.add_face() instead")
