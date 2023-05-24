@@ -48,14 +48,26 @@ function getElementToDownload() {
     return element;
 }
 
+function getLegendToDownload() {
+        const element = div_legend.cloneNode(true);
+        return element;
+}
 
 // Download a file with the current view of the tree as a svg+xml.
 function download_svg() {
+    // download tree
     const svg = getElementToDownload();
     apply_css(svg);
     const svg_xml = (new XMLSerializer()).serializeToString(svg);
     const content = "data:image/svg+xml;base64," + btoa(svg_xml);
     download(view.tree + ".svg", content);
+
+    // download legend
+    const legend = getLegendToDownload();
+    apply_css(legend);
+    const legend_xml = (new XMLSerializer()).serializeToString(legend);
+    const legend_content = "data:image/svg+xml;base64," + btoa(legend_xml);
+    download(view.tree + "_legend.svg", legend_content);
 }
 
 
