@@ -43,29 +43,24 @@ function getElementToDownload() {
     // (Background nodes not excluded as they are purposely styled)
     Array.from(element.getElementsByClassName("fg_node")).forEach(e => e.remove());
 
-    // Add legend
-    element.appendChild(div_legend.cloneNode(true));
     return element;
 }
 
-function getLegendToDownload() {
-        const element = div_legend.cloneNode(true);
-        return element;
-}
 
-// Download a file with the current view of the tree as a svg+xml.
+// Download a file with the current view of the tree as a svg+xml,
+// and another file with the legend.
 function download_svg() {
-    // download tree
-    const svg = getElementToDownload();
-    apply_css(svg);
-    const svg_xml = (new XMLSerializer()).serializeToString(svg);
-    const content = "data:image/svg+xml;base64," + btoa(svg_xml);
-    download(view.tree + ".svg", content);
+    // Download tree
+    const tree_svg = getElementToDownload();
+    apply_css(tree_svg);
+    const tree_xml = (new XMLSerializer()).serializeToString(tree_svg);
+    const tree_content = "data:image/svg+xml;base64," + btoa(tree_xml);
+    download(view.tree + ".svg", tree_content);
 
-    // download legend
-    const legend = getLegendToDownload();
-    apply_css(legend);
-    const legend_xml = (new XMLSerializer()).serializeToString(legend);
+    // Download legend
+    const legend_svg = div_legend.cloneNode(true);
+    apply_css(legend_svg);
+    const legend_xml = (new XMLSerializer()).serializeToString(legend_svg);
     const legend_content = "data:image/svg+xml;base64," + btoa(legend_xml);
     download(view.tree + "_legend.svg", legend_content);
 }
@@ -143,6 +138,12 @@ function download_pdf() {
     }
 
     const element = getElementToDownload();
+
+    // Add legend
+    element.appendChild(div_legend.cloneNode(true));
+    // NOTE: We may want to simplify this. Maybe we prefer to have the legend
+    // in a separate file, as we do for download_svg().
+
     const box = div_viz.getBoundingClientRect();
     const doc = new PDFDocument({ size: [ box.width * 3/4, box.height * 3/4 ] });
 
