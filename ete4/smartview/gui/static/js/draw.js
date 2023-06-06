@@ -695,8 +695,8 @@ function create_continuous_legend_entry(entry) {
 
     const rect = document.createElement("span");
     rect.classList.add("legend-gradient");
-    const [c1, c2] = entry.color_range;
-    rect.style["background-image"] = `linear-gradient(${c2}, ${c1})`;
+    const colorRange = entry.color_range.join(',')
+    rect.style["background-image"] = `linear-gradient(${colorRange})`;
     rect.style["border-radius"] = "1px";
     item.appendChild(rect);
 
