@@ -571,15 +571,19 @@ function create_item(g, item, tl, zoom) {
         const [ , box, array, tooltip] = item;
         const [x0, y, dx0, dy] = box;
         const dx = dx0 / array.length / zx;
+        
         const g = create_svg_element("g");
         for (let i = 0, x = x0; i < array.length; i++, x+=dx) {
             const r = view.drawer.type === "rect" ?
                 create_rect([x, y, dx, dy], tl, zx, zy, "", {rounded: null}) :
                 create_asec([x, y, dx, dy], tl, zx, "", {id: null});
             r.style.fill = array[i];
-            r.setAttribute("data-tooltip", tooltip)
+            if (tooltip) {
+                r.setAttribute("data-tooltip", tooltip);
+            }
             g.appendChild(r);
         }
+
         return g;
     }
 }
