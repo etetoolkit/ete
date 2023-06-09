@@ -66,6 +66,22 @@ installed, which can be done with `conda install -c conda-forge
 gcc_linux-64`)
 
 
+## Exploring a tree
+
+To simply load a tree and start exploring it interactively, you can
+start a python session and write:
+
+```py
+from ete4 import Tree
+
+t = Tree(file_with_newick)
+
+t.explore()
+```
+
+It will print a url that you can open with the browser to explore the tree.
+
+
 # Gallery of examples
 
 ![](https://raw.githubusercontent.com/jhcepas/ete/master/sdoc/gallery.png)
