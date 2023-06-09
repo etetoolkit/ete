@@ -54,14 +54,11 @@ To start
   https://github.com/etetoolkit/ete.git` (or `git clone
   git@github.com:etetoolkit/ete.git` if you have the right
   permissions)
-- Change to ete4 branch `git checkout ete4`
 - Install dependecies
-  - [Cython](https://cython.org/) (you can install it through
-    [Conda](https://conda.io/) with `mamba install cython` or `conda
-    install -c conda-forge cython`)
-  - Additional dependencies: `flask flask-cors flask-httpauth
-    flask-restful flask-compress numpy PyQt5` (you can
-    install them with `pip install <list of dependencies>`)
+  - If you are using [conda](https://conda.io/): `conda install -c
+    conda-forge cython flask flask-cors flask-httpauth flask-restful
+    flask-compress numpy matplotlib pyqt`
+  - Otherwise, you can install them with `pip install <dependencies>`
 - Build and install ete4 from repo's root directory: `pip install -e .`
 
 (In Linux there may be some cases where the gcc library must be
