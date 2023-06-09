@@ -24,7 +24,7 @@ Its main features include:
 - Comparing trees
 - Phylogenetic functions
   - orthology detection
-  - phylogenetic distance?
+  - phylogenetic distance
 - Command line tools
   - phylogenetic reconstruction protocols
   - tree comparison
