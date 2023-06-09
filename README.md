@@ -49,17 +49,15 @@ http://twitter.com/etetoolkit
 
 ## Installation of ETE v4
 
-To start
-- Clone this repo to local computer with `git clone
-  https://github.com/etetoolkit/ete.git` (or `git clone
-  git@github.com:etetoolkit/ete.git` if you have the right
-  permissions)
+To install ETE you can follow these steps:
+
+- Clone this repository (`git clone https://github.com/etetoolkit/ete.git`)
 - Install dependecies
   - If you are using [conda](https://conda.io/): `conda install -c
     conda-forge cython flask flask-cors flask-httpauth flask-restful
     flask-compress numpy matplotlib pyqt`
   - Otherwise, you can install them with `pip install <dependencies>`
-- Build and install ete4 from repo's root directory: `pip install -e .`
+- Build and install ete4 from the repository's root directory: `pip install -e .`
 
 (In Linux there may be some cases where the gcc library must be
 installed, which can be done with `conda install -c conda-forge
