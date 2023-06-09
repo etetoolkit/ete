@@ -571,7 +571,7 @@ function create_item(g, item, tl, zoom) {
         const [ , box, array, tooltip] = item;
         const [x0, y, dx0, dy] = box;
         const dx = dx0 / array.length / zx;
-        
+
         const g = create_svg_element("g");
         for (let i = 0, x = x0; i < array.length; i++, x+=dx) {
             const r = view.drawer.type === "rect" ?
