@@ -195,8 +195,8 @@ def draw_arrow(box, tip, orientation='right', arrow_type='',
                  (x + tip, y + dy))
     return ['polygon', arrow, arrow_type, style or {}, tooltip or '']
 
-def draw_array(box, a):
-    return ['array', box, a]
+def draw_array(box, a, tooltip=None):
+    return ['array', box, a, tooltip or '']
 
 def draw_html(box, html, html_type='', style=None):
     return ['html', box, html, html_type, style or {}]
