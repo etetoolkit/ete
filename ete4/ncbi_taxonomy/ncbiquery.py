@@ -18,11 +18,13 @@ import math
 import tarfile
 import warnings
 
+from ete4 import ETE_DATA_HOME, update_ete_data
+
 
 __all__ = ["NCBITaxa", "is_taxadb_up_to_date"]
 
 DB_VERSION = 2
-DEFAULT_TAXADB = os.environ.get('XDG_DATA_HOME', os.environ['HOME'] + '/.local/share') + '/etetoolkit/taxa.sqlite'
+DEFAULT_TAXADB = ETE_DATA_HOME + '/taxa.sqlite'
 
 
 def is_taxadb_up_to_date(dbfile=DEFAULT_TAXADB):
