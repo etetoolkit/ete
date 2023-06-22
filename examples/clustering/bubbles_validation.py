@@ -29,7 +29,7 @@ def mylayout(node):
     cbarsFace = ProfileFace(matrix_max,matrix_min,matrix_avg,200,70,"cbars")
 
     # If node is a leaf
-    if node.is_leaf():
+    if node.is_leaf:
         # And a line profile
         add_face_to_node(profileFace, node, 0, aligned=True)
         node.img_style["size"]=0
@@ -63,4 +63,3 @@ def mylayout(node):
 ts = TreeStyle()
 ts.layout_fn = mylayout
 t.children[0].show(tree_style=ts)
-

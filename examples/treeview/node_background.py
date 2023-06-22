@@ -1,7 +1,7 @@
 from ete3 import Tree, faces, AttrFace, TreeStyle, NodeStyle
 
 def layout(node):
-    if node.is_leaf():
+    if node.is_leaf:
         N = AttrFace("name", fsize=30)
         faces.add_face_to_node(N, node, 0, position="aligned")
 

@@ -26,7 +26,7 @@ t = PhyloTree("(((seqA,seqB),seqC),seqD);", alignment=fasta_txt, alg_format="fas
 
 #We can now access the sequence of every leaf node
 print "These are the nodes and its sequences:"
-for leaf in t.iter_leaves():
+for leaf in t.leaves():
     print leaf.name, leaf.sequence
 #seqD MAEAPDETIQQFMALTNVSHNIAVQYLSEFGDLNEAL--------------REEAH
 #seqC MAEIPDATIQ---ALTNVSHNIAVQYLSEFGDLNEALNSYYASQTDDQPDRREEAH
@@ -37,7 +37,7 @@ for leaf in t.iter_leaves():
 t.link_to_alignment(alignment=iphylip_txt, alg_format="iphylip")
 # Let's check that sequences have changed
 print "These are the nodes and its re-linked sequences:"
-for leaf in t.iter_leaves():
+for leaf in t.leaves():
     print leaf.name, leaf.sequence
 #seqD MAEAPDETIQQFMALTNVSHNIAVQYLSEFGDLNEAL--------------REEAHQ----------FMALTNVSH
 #seqC MAEIPDATIQ---ALTNVSHNIAVQYLSEFGDLNEALNSYYASQTDDQPDRREEAHQFMALTNVSH----------

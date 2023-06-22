@@ -45,7 +45,7 @@ class _LayoutDomains(TreeLayout):
         self.padding = Padding(padding_x, padding_y)
 
     def get_doms(self, node):
-        if node.is_leaf():
+        if node.is_leaf:
             return node.props.get(self.prop, [])
         else:
             first_node = next(node.iter_leaves())
@@ -70,7 +70,7 @@ class _LayoutDomains(TreeLayout):
                     height=10)
             node.add_face(seqFace, column=self.column,
                     position="aligned",
-                    collapsed_only=(not node.is_leaf()))
+                    collapsed_only=(not node.is_leaf))
 
 
 def create_domain_layout(prop, name, colormap, active, column):

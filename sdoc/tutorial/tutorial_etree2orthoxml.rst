@@ -209,7 +209,7 @@ requirements of the :attr:`etree2orthoxml` script.
 
    # We read the speciation tag from nodes and convert it into a vaild evoltree label
    for node in t.traverse():
-      if not node.is_leaf():
+      if not node.is_leaf:
          etype = "D" if node.speciation == "N" else "S"
          node.add_properties(evoltype=etype)
 

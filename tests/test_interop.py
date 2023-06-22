@@ -5,8 +5,8 @@ from ete4 import Tree
 class Test_Interoperability(unittest.TestCase):
     def test_parent_child_table(self):
         tree = Tree.from_parent_child_table([("A", "B", 0.1), ("A", "C", 0.2), ("C", "D", 1), ("C", "E", 1.5)])
-        newick = tree.write(format_root_node=True, format=1, properties=None)
-        self.assertEqual(newick, "(B:0.1,(D:1,E:1.5)C:0.2)A:0;")
+        newick = tree.write(format_root_node=True, parser=1, props=[])
+        self.assertEqual(newick, "(B:0.1,(D:1,E:1.5)C:0.2)A;")
 
 
   # Disabled temporarily. following error is reported:

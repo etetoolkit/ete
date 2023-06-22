@@ -33,7 +33,7 @@ class LayoutAlignment(TreeLayout):
         return node.props.get("seq", None)
 
     def get_seq(self, node):
-        if node.is_leaf():
+        if node.is_leaf:
             return self._get_seq(node)
 
         if self.summarize_inner_nodes:
@@ -42,7 +42,7 @@ class LayoutAlignment(TreeLayout):
         else:
             first_leaf = next(node.iter_leaves())
             return self._get_seq(first_leaf)
-    
+
     def set_node_style(self, node):
         seq = self.get_seq(node)
 
@@ -50,4 +50,4 @@ class LayoutAlignment(TreeLayout):
             seqFace = AlignmentFace(seq, seq_format=self.format, bgcolor='grey',
                     width=self.width, height=self.height)
             node.add_face(seqFace, column=self.column, position='aligned',
-                    collapsed_only=(not node.is_leaf())) 
+                    collapsed_only=(not node.is_leaf))

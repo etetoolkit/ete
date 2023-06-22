@@ -160,4 +160,4 @@ class LayoutBarplot(LayoutPlot):
             face = RectFace(width, None, color=color,
                     tooltip=tooltip, padding_x=self.padding_x)
             node.add_face(face, position=self.position, column=self.column,
-                    collapsed_only=not node.is_leaf())
+                    collapsed_only=not node.is_leaf)

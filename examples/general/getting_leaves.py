@@ -20,7 +20,7 @@ print "This tree has", nleaves, "terminal nodes [proper way: len(tree) ]"
 # Counts leaves within the tree
 ninternal = 0
 for node in t.get_descendants():
-    if not node.is_leaf():
+    if not node.is_leaf:
         ninternal +=1
 print "This tree has", ninternal,  "internal nodes"
 # Counts nodes with whose distance is higher than 0.3

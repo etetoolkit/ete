@@ -35,7 +35,7 @@ def get_example_tree():
     t.add_face(bottom_c0_r0, column=0, position="branch-bottom")
     t.add_face(bottom_c1_r0, column=1, position="branch-bottom")
 
-    for leaf in t.iter_leaves():
+    for leaf in t.leaves():
         leaf.add_face(aligned_c0_r1, 0, "aligned")
         leaf.add_face(aligned_c0_r0, 0, "aligned")
         leaf.add_face(aligned_c1_r1, 0, "aligned")

@@ -280,7 +280,7 @@ def calculate_optimal_scale(root_node, n2i, rot_step, img):
     # decir, sin tener en cuenta branch lengths.
     for node in root_node.traverse('preorder', is_leaf_fn=_leaf):
         visited_nodes.append(node)
-        ndist = node.dist if not img.force_topology else 1.0
+        ndist = (node.dist or 1) if not img.force_topology else 1.0
         item = n2i[node]
         # Uses size of all node parts, except branch length
         w = sum(item.widths[1:5])
@@ -303,7 +303,7 @@ def calculate_optimal_scale(root_node, n2i, rot_step, img):
     best_scale = None
     for node in visited_nodes:
         item = n2i[node]
-        ndist = node.dist if not img.force_topology else 1.0
+        ndist = (node.dist or 1) if not img.force_topology else 1.0
         if best_scale is None:
             best_scale = (n2minradius[node] - n2sumwidth[node]) / ndist if ndist else 0.0
         else:

@@ -69,7 +69,7 @@ orderCarnivora."""
 def mylayout(node):
     # If node is a leaf, add the nodes name and a its scientific
     # name
-    if node.is_leaf():
+    if node.is_leaf:
         # Add an static face that handles the node name
         faces.add_face_to_node(nameFace, node, column=0)
         # We can also create faces on the fly
@@ -125,11 +125,10 @@ def mylayout(node):
 
     # If leaf is "Hsa" (homo sapiens), highlight it using a
     # different background.
-    if node.is_leaf() and node.name.startswith("Hsa"):
+    if node.is_leaf and node.name.startswith("Hsa"):
         node.img_style["bgcolor"] = "#9db0cf"
 
 # And, finally, Visualize the tree using my own layout function
 ts = TreeStyle()
 ts.layout_fn = mylayout
 t.render("img_faces.png", w=600, tree_style = ts)
-

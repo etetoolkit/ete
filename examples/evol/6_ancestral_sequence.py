@@ -34,7 +34,7 @@ I.guiding_lines_type = 2
 I.guiding_lines_color = "#CCCCCC"
 for n in sorted (tree.get_descendants()+[tree],
                  key=lambda x: x.node_id):
-    if n.is_leaf(): continue
+    if n.is_leaf: continue
     anc_face = faces.SequenceFace (n.sequence, 'aa', fsize=10, bg_colors={})
     I.aligned_foot.add_face(anc_face, 1)
     I.aligned_foot.add_face(faces.TextFace('node_id: #%d '%(n.node_id),

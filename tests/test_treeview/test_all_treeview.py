@@ -133,7 +133,7 @@ class Test_Coretype_Treeview(unittest.TestCase):
             global CONT
             if CONT >= len(chars):
                 CONT = 0
-            if node.is_leaf():
+            if node.is_leaf:
                 node.img_style["size"] = 0
                 F2= AttrFace("name", tight_text=True)
                 F= TextFace(chars[CONT], tight_text=True)

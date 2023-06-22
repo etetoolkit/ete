@@ -9,7 +9,7 @@ import os
 import re
 import itertools
 from collections import defaultdict
-from .. import Tree, SeqGroup, NCBITaxa, GTDBTaxa
+from ete4 import Tree, SeqGroup, NCBITaxa, GTDBTaxa
 from .reconciliation import get_reconciled_tree
 from . import spoverlap
 
@@ -87,7 +87,7 @@ def _get_subtrees(tree, full_copy=False, properties=None, newick_only=False):
         return ''.join([pre, node.name, fstring, post])
 
     if newick_only:
-        id_match = re.compile("([^0-9])?(\d+)([^0-9])?")
+        id_match = re.compile(r"([^0-9])?(\d+)([^0-9])?")
         for nw in sp_trees:
             yield re.sub(id_match, _nodereplacer, str(nw)+";")
     else:
@@ -96,7 +96,7 @@ def _get_subtrees(tree, full_copy=False, properties=None, newick_only=False):
             # using tuples, so str representation is actually a newick :)
             t = PhyloTree(str(nw)+";")
             # Map properties from original tree
-            for leaf in t.iter_leaves():
+            for leaf in t.leaves():
                 _nid = int(leaf.name)
                 for p in properties:
                     leaf.add_prop(p, getattr(nid2node[_nid], f))
@@ -143,7 +143,7 @@ def iter_sptrees(sptrees, nid2node, properties=None, newick_only=False):
         return ''.join([pre, node.name, fstring, post])
 
     if newick_only:
-        id_match = re.compile("([^0-9])(\d+)([^0-9])")
+        id_match = re.compile(r"([^0-9])(\d+)([^0-9])")
         for nw in sptrees:
             yield re.sub(id_match, _nodereplacer, str(nw)+";")
     else:
@@ -152,7 +152,7 @@ def iter_sptrees(sptrees, nid2node, properties=None, newick_only=False):
             # using tuples, so str representation is actually a newick :)
             t = PhyloTree(str(nw)+";")
             # Map properties from original tree
-            for leaf in t.iter_leaves():
+            for leaf in t.leaves():
                 _nid = int(leaf.name)
                 for p in properties:
                     leaf.add_prop(p, getattr(nid2node[_nid], p))
@@ -167,7 +167,7 @@ def _get_subtrees_recursive(node, full_copy=True):
 
     # saves a list of duplication nodes under current node
     dups = []
-    for _n in node.iter_leaves(is_leaf_fn=is_dup):
+    for _n in node.leaves(is_leaf_fn=is_dup):
         if is_dup(_n):
             dups.append(_n)
 
@@ -236,7 +236,7 @@ def get_subparts(n):
             subtrees.extend(get_subparts(ch))
     else:
         to_visit = []
-        for _n in n.iter_leaves(is_leaf_fn=is_dup):
+        for _n in n.leaves(is_leaf_fn=is_dup):
             if is_dup(_n):
                 to_visit.append(_n)
 
@@ -326,8 +326,9 @@ class PhyloNode(Tree):
     #manually set (see :func:`PhyloNode.set_species_naming_function`).
     species = property(fget = _get_species, fset = _set_species)
 
-    def __init__(self, newick=None, alignment=None, alg_format="fasta", \
-                 sp_naming_function=_parse_species, format=0, **kargs):
+    def __init__(self, newick=None, children=None, alignment=None,
+                 alg_format="fasta", sp_naming_function=_parse_species,
+                 parser=0, **kargs):
 
         # _update names?
         self.props = {}
@@ -335,7 +336,8 @@ class PhyloNode(Tree):
                             _speciesFunction=None)
         # Caution! native __init__ has to be called after setting
         # _speciesFunction to None!!
-        Tree.__init__(self, newick=newick, format=format, **kargs)
+        Tree.__init__(self, data=newick, children=children,
+                      parser=parser, **kargs)
 
         # This will be only executed after reading the whole tree,
         # because the argument 'alignment' is not passed to the
@@ -382,7 +384,7 @@ class PhyloNode(Tree):
             try:
                 n.add_prop("sequence",alg.get_seq(n.name))
             except KeyError:
-                if n.is_leaf():
+                if n.is_leaf:
                     missing_leaves.append(n.name)
                 else:
                     missing_internal.append(n.name)
@@ -397,12 +399,12 @@ class PhyloNode(Tree):
 
     def get_species(self):
         """ Returns the set of species covered by its partition. """
-        return set([l.species for l in self.iter_leaves()])
+        return set([l.species for l in self.leaves()])
 
     def iter_species(self):
         """ Returns an iterator over the species grouped by this node. """
         spcs = set([])
-        for l in self.iter_leaves():
+        for l in self.leaves():
             if l.species not in spcs:
                 spcs.add(l.species)
                 yield l.species
@@ -462,20 +464,20 @@ class PhyloNode(Tree):
 
         """
 
-        root = self.get_tree_root()
+        root = self.root
         outgroup_dist  = 0
         outgroup_node  = self
         outgroup_age = 0 # self.get_age(species2age)
 
-        for leaf in root.iter_leaves(is_leaf_fn=is_leaf_fn):
+        for leaf in root.leaves(is_leaf_fn=is_leaf_fn):
             if leaf.get_age(species2age) > outgroup_age:
-                outgroup_dist = leaf.get_distance(self)
+                outgroup_dist = leaf.get_distance(self, leaf)
                 outgroup_node = leaf
                 outgroup_age = species2age[leaf.get_species().pop()]
             elif leaf.get_age(species2age) == outgroup_age:
-                dist = leaf.get_distance(self)
+                dist = leaf.get_distance(self, leaf)
                 if dist>outgroup_dist:
-                    outgroup_dist  = leaf.get_distance(self)
+                    outgroup_dist  = leaf.get_distance(self, leaf)
                     outgroup_node  = leaf
                     outgroup_age = species2age[leaf.get_species().pop()]
         return outgroup_node
@@ -542,8 +544,8 @@ class PhyloNode(Tree):
                 if size > outgroup_size:
                     update = True
                 elif size == outgroup_size:
-                    dist = self.get_distance(leaf)
-                    outgroup_dist = self.get_distance(outgroup_node)
+                    dist = self.get_distance(self, leaf)
+                    outgroup_dist = self.get_distance(self, outgroup_node)
                     if dist > outgroup_dist:
                         update = True
 
@@ -607,11 +609,11 @@ class PhyloNode(Tree):
                 if  len(n2species[node]) > 1 and len(n2species[node]) != sp_subtotal:
                     node.props['evoltype'] = 'D'
                     dups += 1
-                elif node.is_leaf():
+                elif node.is_leaf:
                     node._leaf = True
             #print dups
         else:
-            for node in t.iter_leaves():
+            for node in t.leaves():
                 node._leaf = True
         subtrees = _get_subtrees_recursive(t)
         return len(subtrees), 0, subtrees
@@ -648,11 +650,11 @@ class PhyloNode(Tree):
                 if  len(n2species[node]) > 1 and len(n2species[node]) != sp_subtotal:
                     node.props['evoltype'] = 'D'
                     dups += 1
-                elif node.is_leaf():
+                elif node.is_leaf:
                     node._leaf = True
             #print dups
         else:
-            for node in t.iter_leaves():
+            for node in t.leaves():
                 node._leaf = True
         sp_trees = get_subparts(t)
         return sp_trees
@@ -676,7 +678,7 @@ class PhyloNode(Tree):
         n2leaves = prunned.get_cached_content()
         is_expansion = lambda n: (len(n2sp[n])==1 and len(n2leaves[n])>1
                                   and (species is None or species & n2sp[n]))
-        for n in prunned.get_leaves(is_leaf_fn=is_expansion):
+        for n in prunned.leaves(is_leaf_fn=is_expansion):
             repre = list(n2leaves[n])[0]
             repre.detach()
             if n is not prunned:

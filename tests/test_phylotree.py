@@ -1,10 +1,10 @@
 import unittest
 
 from ete4 import PhyloTree, SeqGroup
-from .datasets import *
+from . import datasets as ds
 
 # Tree used by the tests.
-example_tree = '((Dme_001,Dme_002),(((Cfa_001,Mms_001),((((Hsa_001,Hsa_003),Ptr_001),Mmu_001),((Hsa_004,Ptr_004),Mmu_004))),(Ptr_002,(Hsa_002,Mmu_002))));'
+example_tree = '((Dme_001:1,Dme_002:1):1,(((Cfa_001:1,Mms_001:1):1,((((Hsa_001:1,Hsa_003:1):1,Ptr_001:1):1,Mmu_001:1):1,((Hsa_004:1,Ptr_004:1):1,Mmu_004:1):1):1):1,(Ptr_002:1,(Hsa_002:1,Mmu_002:1):1):1):1):0;'
 #   ╭───┬╴Dme_001
 #   │   ╰╴Dme_002
 #   │       ╭───┬╴Cfa_001
@@ -56,13 +56,13 @@ class Test_phylo_module(unittest.TestCase):
 
         t = PhyloTree("(((seqA,seqB),seqC),seqD);", alignment=fasta, alg_format="fasta")
 
-        for l in t.get_leaves():
+        for l in t.leaves():
             self.assertEqual(l.props.get('sequence'), alg1.get_seq(l.name))
 
         # The associated alignment can be changed at any time
         t.link_to_alignment(alignment=alg2, alg_format="iphylip")
 
-        for l in t.get_leaves():
+        for l in t.leaves():
             self.assertEqual(l.props.get('sequence'), alg2.get_seq(l.name))
 
     def test_get_sp_overlap_on_all_descendants(self):
@@ -76,23 +76,23 @@ class Test_phylo_module(unittest.TestCase):
         events = t.get_descendant_evol_events()
 
         # Check that all duplications are detected
-        dup1 = t.get_common_ancestor("Hsa_001", "Hsa_004")
+        dup1 = t.common_ancestor(["Hsa_001", "Hsa_004"])
         self.assertEqual(dup1.props.get('evoltype'), "D")
 
-        dup2 = t.get_common_ancestor("Dme_001", "Dme_002")
+        dup2 = t.common_ancestor(["Dme_001", "Dme_002"])
         self.assertEqual(dup2.props.get('evoltype'), "D")
 
-        dup3 = t.get_common_ancestor("Hsa_001", "Hsa_002")
+        dup3 = t.common_ancestor(["Hsa_001", "Hsa_002"])
         self.assertEqual(dup3.props.get('evoltype'), "D")
 
-        dup4 = t.get_common_ancestor("Hsa_001", "Hsa_003")
+        dup4 = t.common_ancestor(["Hsa_001", "Hsa_003"])
         self.assertEqual(dup4.props.get('evoltype'), "D")
 
 
 
         # All other nodes should be speciation
         for node in t.traverse():
-            if not node.is_leaf() and \
+            if not node.is_leaf and \
                    node not in set([dup1, dup2, dup3, dup4]):
                 self.assertEqual(node.props.get('evoltype'), "S")
 
@@ -159,22 +159,22 @@ class Test_phylo_module(unittest.TestCase):
 
         # Test different sos_thr
         t = PhyloTree('(((SP1_a, SP2_a), (SP3_a, SP1_b)), (SP1_c, SP2_c));')
-        seed = (t & 'SP1_a')
+        seed = t['SP1_a']
         events = t.get_descendant_evol_events(0.1)
-        self.assertEqual(t.get_common_ancestor(seed, 'SP3_a').props.get('evoltype'), 'D')
-        self.assertEqual(t.get_common_ancestor(seed, 'SP1_c').props.get('evoltype'), 'D')
+        self.assertEqual(t.common_ancestor([seed, 'SP3_a']).props.get('evoltype'), 'D')
+        self.assertEqual(t.common_ancestor([seed, 'SP1_c']).props.get('evoltype'), 'D')
 
         t = PhyloTree('(((SP1_a, SP2_a), (SP3_a, SP1_b)), (SP1_c, SP2_c));')
-        seed = (t & 'SP1_a')
+        seed = t['SP1_a']
         events = t.get_descendant_evol_events(0.5)
-        self.assertEqual(t.get_common_ancestor(seed, 'SP3_a').props.get('evoltype'), 'S')
-        self.assertEqual(t.get_common_ancestor(seed, 'SP1_c').props.get('evoltype'), 'D')
+        self.assertEqual(t.common_ancestor([seed, 'SP3_a']).props.get('evoltype'), 'S')
+        self.assertEqual(t.common_ancestor([seed, 'SP1_c']).props.get('evoltype'), 'D')
 
-        t = PhyloTree('(((SP1_a, SP2_a), (SP3_a, SP1_b)), (SP1_c, SP2_c));')
-        seed = (t & 'SP1_a')
+        t = PhyloTree('(((SP1_a:1, SP2_a:1):1, (SP3_a:1, SP1_b:1):1):1, (SP1_c:1, SP2_c:1):1):0;')
+        seed = t['SP1_a']
         events = seed.get_my_evol_events(0.75)
-        self.assertEqual(t.get_common_ancestor(seed, 'SP3_a').props.get('evoltype'), 'S')
-        self.assertEqual(t.get_common_ancestor(seed, 'SP1_c').props.get('evoltype'), 'S')
+        self.assertEqual(t.common_ancestor([seed, 'SP3_a']).props.get('evoltype'), 'S')
+        self.assertEqual(t.common_ancestor([seed, 'SP1_c']).props.get('evoltype'), 'S')
 
     def test_get_sp_overlap_on_a_seed(self):
         """ Tests ortholgy prediction using sp overlap"""
@@ -183,28 +183,28 @@ class Test_phylo_module(unittest.TestCase):
         t = PhyloTree(example_tree)
 
         # Scans the tree using the species overlap algorithm
-        seed = t.search_nodes(name="Hsa_001")[0]
+        seed = t['Hsa_001']
         events = seed.get_my_evol_events()
 
         # Check that duplications are detected
-        dup1 = t.get_common_ancestor("Hsa_001", "Hsa_004")
+        dup1 = t.common_ancestor(["Hsa_001", "Hsa_004"])
         #print(dup1)
         self.assertEqual(dup1.props.get('evoltype'), "D")
 
         # This duplication is not in the seed path
-        dup2 = t.get_common_ancestor("Dme_001", "Dme_002")
+        dup2 = t.common_ancestor(["Dme_001", "Dme_002"])
         self.assertTrue(not hasattr(dup2, "evoltype"))
 
-        dup3 = t.get_common_ancestor("Hsa_001", "Hsa_002")
+        dup3 = t.common_ancestor(["Hsa_001", "Hsa_002"])
         self.assertEqual(dup3.props.get('evoltype'), "D")
 
-        dup4 = t.get_common_ancestor("Hsa_001", "Hsa_003")
+        dup4 = t.common_ancestor(["Hsa_001", "Hsa_003"])
         self.assertEqual(dup4.props.get('evoltype'), "D")
 
         # All other nodes should be speciation
         node = seed
         while node:
-            if not node.is_leaf() and \
+            if not node.is_leaf and \
                    node not in set([dup1, dup2, dup3, dup4]):
                 self.assertEqual(node.props.get('evoltype'), "S")
             node = node.up
@@ -261,23 +261,23 @@ class Test_phylo_module(unittest.TestCase):
         self.assertEqual(expected_orthologs, orthologs)
 
         # Test different sos_thr
-        t = PhyloTree('(((SP1_a, SP2_a), (SP3_a, SP1_b)), (SP1_c, SP2_c));')
-        seed = (t & 'SP1_a')
+        t = PhyloTree('(((SP1_a:1, SP2_a:1):1, (SP3_a:1, SP1_b:1):1):1, (SP1_c:1, SP2_c:1):1):0;')
+        seed = t['SP1_a']
         events = seed.get_my_evol_events(0.1)
-        self.assertEqual(t.get_common_ancestor(seed, 'SP3_a').props.get('evoltype'), 'D')
-        self.assertEqual(t.get_common_ancestor(seed, 'SP1_c').props.get('evoltype'), 'D')
+        self.assertEqual(t.common_ancestor([seed, 'SP3_a']).props.get('evoltype'), 'D')
+        self.assertEqual(t.common_ancestor([seed, 'SP1_c']).props.get('evoltype'), 'D')
 
-        t = PhyloTree('(((SP1_a, SP2_a), (SP3_a, SP1_b)), (SP1_c, SP2_c));')
-        seed = (t & 'SP1_a')
+        t = PhyloTree('(((SP1_a:1, SP2_a:1):1, (SP3_a:1, SP1_b:1):1):1, (SP1_c:1, SP2_c:1):1):0;')
+        seed = t['SP1_a']
         events = seed.get_my_evol_events(0.50)
-        self.assertEqual(t.get_common_ancestor(seed, 'SP3_a').props.get('evoltype'), 'S')
-        self.assertEqual(t.get_common_ancestor(seed, 'SP1_c').props.get('evoltype'), 'D')
+        self.assertEqual(t.common_ancestor([seed, 'SP3_a']).props.get('evoltype'), 'S')
+        self.assertEqual(t.common_ancestor([seed, 'SP1_c']).props.get('evoltype'), 'D')
 
-        t = PhyloTree('(((SP1_a, SP2_a), (SP3_a, SP1_b)), (SP1_c, SP2_c));')
-        seed = (t & 'SP1_a')
+        t = PhyloTree('(((SP1_a:1, SP2_a:1):1, (SP3_a:1, SP1_b:1):1):1, (SP1_c:1, SP2_c:1):1):0;')
+        seed = t['SP1_a']
         events = seed.get_my_evol_events(0.75)
-        self.assertEqual(t.get_common_ancestor(seed, 'SP3_a').props.get('evoltype'), 'S')
-        self.assertEqual(t.get_common_ancestor(seed, 'SP1_c').props.get('evoltype'), 'S')
+        self.assertEqual(t.common_ancestor([seed, 'SP3_a']).props.get('evoltype'), 'S')
+        self.assertEqual(t.common_ancestor([seed, 'SP1_c']).props.get('evoltype'), 'S')
 
     def test_reconciliation(self):
         """ Tests ortholgy prediction based on the species reconciliation method"""
@@ -292,8 +292,8 @@ class Test_phylo_module(unittest.TestCase):
         # gene loss, duplication, etc.
         expected_recon = "((Dme_001:1,Dme_002:1)1:1[&&NHX:evoltype=D],(((Cfa_001:1,Mms_001:1)1:1[&&NHX:evoltype=S],((Hsa_001:1,Ptr_001:1)1:1[&&NHX:evoltype=S],Mmu_001:1)1:1[&&NHX:evoltype=S])1:1[&&NHX:evoltype=S],((Mms:1[&&NHX:evoltype=L],Cfa:1[&&NHX:evoltype=L])1:1[&&NHX:evoltype=L],(((Hsa:1[&&NHX:evoltype=L],Ptr_002:1)1:1[&&NHX:evoltype=L],Mmu:1[&&NHX:evoltype=L])1:1[&&NHX:evoltype=L],((Ptr:1[&&NHX:evoltype=L],Hsa_002:1)1:1[&&NHX:evoltype=L],Mmu_002:1)1:1[&&NHX:evoltype=S])1:1[&&NHX:evoltype=D])1:1[&&NHX:evoltype=L])1:1[&&NHX:evoltype=D])[&&NHX:evoltype=S];"
 
-        self.assertEqual(recon_tree.write(properties=["evoltype"], format=9),
-                         PhyloTree(expected_recon).write(properties=["evoltype"],format=9))
+        self.assertEqual(recon_tree.write(props=["evoltype"], parser=9),
+                         PhyloTree(expected_recon).write(props=["evoltype"], parser=9))
 
     def test_miscelaneus(self):
         """ Test several things """
@@ -316,17 +316,17 @@ class Test_phylo_module(unittest.TestCase):
 
 
         # Check that dup ages are correct
-        dup1 = t.get_common_ancestor("Hsa_001", "Hsa_004")
+        dup1 = t.common_ancestor(["Hsa_001", "Hsa_004"])
         self.assertEqual(dup1.get_age(sp2age), 2)
-        dup2 = t.get_common_ancestor("Dme_001", "Dme_002")
+        dup2 = t.common_ancestor(["Dme_001", "Dme_002"])
         self.assertEqual(dup2.get_age(sp2age), 4)
-        dup3 = t.get_common_ancestor("Hsa_001", "Hsa_002")
+        dup3 = t.common_ancestor(["Hsa_001", "Hsa_002"])
         self.assertEqual(dup3.get_age(sp2age), 3)
-        dup4 = t.get_common_ancestor("Hsa_001", "Hsa_003")
+        dup4 = t.common_ancestor(["Hsa_001", "Hsa_003"])
         self.assertEqual(dup4.get_age(sp2age), 1)
 
         # Check rooting options
-        expected_root = t.search_nodes(name="Dme_002")[0]
+        expected_root = t['Dme_002']
         expected_root.dist += 2.3
         self.assertEqual(t.get_farthest_oldest_leaf(sp2age), expected_root)
         #print t
@@ -343,7 +343,7 @@ class Test_phylo_module(unittest.TestCase):
             n.support = 1
         collapsed_hsa = '((Dme_001:1,Dme_002:1)1:1,(((Cfa_001:1,Mms_001:1)1:1,(((Ptr_001:1,Hsa_001:1)1:1,Mmu_001:1)1:1,((Hsa_004:1,Ptr_004:1)1:1,Mmu_004:1)1:1)1:1)1:1,(Ptr_002:1,(Hsa_002:1,Mmu_002:1)1:1)1:1)1:1);'
         t2 = t.collapse_lineage_specific_expansions(['Hsa'])
-        self.assertEqual(str(collapsed_hsa), str(t2.write(properties=["species"], format=2)))
+        self.assertEqual(str(collapsed_hsa), str(t2.write(props=["species"], parser=2)))
         with self.assertRaises(TypeError):
             print(t.collapse_lineage_specific_expansions('Hsa'))
 

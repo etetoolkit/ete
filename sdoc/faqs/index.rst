@@ -215,7 +215,7 @@ A basic example would read as follow:
     from ete4 import Tree, faces, AttrFace, TreeStyle
 
     def my_layout(node):
-        if node.is_leaf():
+        if node.is_leaf:
              # If terminal node, draws its name
              name_face = AttrFace("name")
         else:

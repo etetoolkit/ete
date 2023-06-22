@@ -5,7 +5,7 @@ tree = Tree()
 tree.populate(10000)
 # This code should be faster
 t1 = time.time()
-for leaf in tree.iter_leaves():
+for leaf in tree.leaves():
     if "aw" in leaf.name:
         print "found a match:", leaf.name,
         break

@@ -17,7 +17,7 @@ def annotate_node(t, final_task):
     cladeid2node = {}
     # Annotate cladeid in the whole tree
     for n in t.traverse():
-        if n.is_leaf():
+        if n.is_leaf:
             n.add_property("realname", db.get_seq_name(n.name))
             #n.name = n.realname
         if n.props.get("cladeid"):

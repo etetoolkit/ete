@@ -34,10 +34,10 @@ def get_reconciled_tree(node, sptree, events):
             node.add_prop("evoltype", "D")
             e = EvolEvent()
             e.etype = "D"
-            e.inparalogs = node.children[0].get_leaf_names()
-            e.outparalogs = node.children[1].get_leaf_names()
-            e.in_seqs  = node.children[0].get_leaf_names()
-            e.out_seqs = node.children[1].get_leaf_names()
+            e.inparalogs = node.children[0].leaf_names()
+            e.outparalogs = node.children[1].leaf_names()
+            e.in_seqs  = node.children[0].leaf_names()
+            e.out_seqs = node.children[1].leaf_names()
             events.append(e)
             return newnode, events
 
@@ -54,10 +54,10 @@ def get_reconciled_tree(node, sptree, events):
             node.add_prop("evoltype", "S")
             e = EvolEvent()
             e.etype = "S"
-            e.inparalogs = node.children[0].get_leaf_names()
-            e.orthologs = node.children[1].get_leaf_names()
-            e.in_seqs  = node.children[0].get_leaf_names()
-            e.out_seqs = node.children[1].get_leaf_names()
+            e.inparalogs = node.children[0].leaf_names()
+            e.orthologs = node.children[1].leaf_names()
+            e.in_seqs  = node.children[0].leaf_names()
+            e.out_seqs = node.children[1].leaf_names()
             events.append(e)
             return template, events
     elif len(node.children)==0:
@@ -71,9 +71,9 @@ def _replace_on_template(orig_template, node):
     nodespcs = node.get_species()
     spseed = list(nodespcs)[0]  # any sp name woulbe ok
     # Set an start point
-    subtopo = template.search_nodes(children=[], name=spseed)[0]
+    subtopo = list(template.search_nodes(children=[], name=spseed))[0]
     # While subtopo does not cover all child species
-    while len(nodespcs - set(subtopo.get_leaf_names() ) )>0:
+    while len(nodespcs - set(subtopo.leaf_names() ) )>0:
         subtopo= subtopo.up
     # Puts original partition on the expected topology template
     nodecp = copy.deepcopy(node)
@@ -86,21 +86,21 @@ def _replace_on_template(orig_template, node):
         return template, nodecp
 
 def _get_expected_topology(t, species):
-    missing_sp = set(species) - set(t.get_leaf_names())
+    missing_sp = set(species) - set(t.leaf_names())
     if missing_sp:
         raise KeyError("* The following species are not contained in the species tree: "+ ','.join(missing_sp) )
 
-    node = t.search_nodes(children=[], name=list(species)[0])[0]
+    node = list(t.search_nodes(children=[], name=list(species)[0]))[0]
 
     sps = set(species)
-    while sps-set(node.get_leaf_names()) != set([]):
+    while sps-set(node.leaf_names()) != set([]):
         node = node.up
     template = copy.deepcopy(node)
     # make get_species() to work
     #template._speciesFunction = _get_species_on_TOL
     template.set_species_naming_function(_get_species_on_TOL)
     template.detach()
-    for n in [template]+template.get_descendants():
+    for n in [template]+list(template.descendants()):
         n.add_prop("evoltype", "L")
         n.dist = 1
     return template
@@ -141,12 +141,12 @@ def get_reconciled_tree_zmasek(gtree, sptree, inplace=False):
 
     # initialization
     sp2node = dict()
-    for node in sptree.get_leaves(): sp2node[node.species] = node
+    for node in sptree.leaves(): sp2node[node.species] = node
 
     # set/compute the mapping function M(g) for the
     # leaf nodes in the gene tree (see paper for details)
     species = sptree.get_species()
-    for node in gtree.get_leaves():
+    for node in gtree.leaves():
         node.add_prop("M",sp2node[node.species])
 
     # visit each internal node in the gene tree

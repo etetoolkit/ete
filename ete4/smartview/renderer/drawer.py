@@ -170,7 +170,7 @@ class Drawer:
         self.bdy_dys.append([])
 
         dx, dy = self.content_size(it.node)
-        if it.node.is_leaf():
+        if it.node.is_leaf:
             return self.on_last_visit((x + dx, y + dy), it, graphics)
         else:
             self.node_dxs.append([])
@@ -206,7 +206,7 @@ class Drawer:
             active_children, selected_children))
         graphics += content_graphics
 
-        ndx = (drawn_size(content_graphics, self.get_box).dx if it.node.is_leaf()
+        ndx = (drawn_size(content_graphics, self.get_box).dx if it.node.is_leaf
                else (dx + max(self.node_dxs.pop() or [0])))
         self.node_dxs[-1].append(ndx)
 
@@ -232,8 +232,8 @@ class Drawer:
         self.bdy_dys[-1].append( (bdy, dy) )
 
         # Collapsed nodes will be drawn from self.draw_collapsed()
-        if not node.is_collapsed or node.is_leaf():
-            bdy0_, bdy1_ = (0, dy) if node.is_leaf() else (bdy0, bdy1)
+        if not node.is_collapsed or node.is_leaf:
+            bdy0_, bdy1_ = (0, dy) if node.is_leaf else (bdy0, bdy1)
             yield from self.draw_node(node, point, dx, bdy, bdy0_, bdy1_,
                     active_children, selected_children)
 
@@ -344,7 +344,7 @@ class Drawer:
         graphics = []
 
         node0 = self.collapsed[0]
-        uncollapse = len(self.collapsed) == 1 and node0.is_leaf()
+        uncollapse = len(self.collapsed) == 1 and node0.is_leaf
 
         x, y, _, _, _ = self.outline
         collapsed_node = self.get_collapsed_node()
@@ -689,7 +689,7 @@ class DrawerRectFaces(DrawerRect):
         size = self.content_size(node)
 
         # Space available for branch-right Face position
-        dx_to_closest_child = (node.dist if node.is_leaf() else
+        dx_to_closest_child = (node.dist if node.is_leaf else
                                min(child.dist for child in node.children))
         zx, zy, za = self.zoom
 
@@ -711,7 +711,7 @@ class DrawerRectFaces(DrawerRect):
                     yield from face.draw(self)
 
         def draw_faces_at_pos(node, pos):
-            if node.is_collapsed and not node.is_leaf():
+            if node.is_collapsed and not node.is_leaf:
                 node_faces = node.collapsed_faces
             else:
                 node_faces = node.faces
@@ -830,7 +830,7 @@ class DrawerCircFaces(DrawerCirc):
         size = self.content_size(node)
         # Space available for branch-right Face position
         dr_to_closest_child = min(child.dist for child in node.children)\
-                if not (node.is_leaf() or node.is_collapsed) else node.dist
+                if not (node.is_leaf or node.is_collapsed) else node.dist
         z = self.zoom[0]  # zx == zy
 
         def it_fits(box, pos):
@@ -851,7 +851,7 @@ class DrawerCircFaces(DrawerCirc):
                     yield from face.draw(self)
 
         def draw_faces_at_pos(node, pos):
-            if node.is_collapsed and not node.is_leaf():
+            if node.is_collapsed and not node.is_leaf:
                 node_faces = node.collapsed_faces
             else:
                 node_faces = node.faces

@@ -68,7 +68,7 @@ class LayoutGenomicContext(TreeLayout):
                         text=text,
                         padding_x=2, padding_y=2)
                 node.add_face(arrow, position="aligned", column=idx,
-                        collapsed_only=(not node.is_leaf()))
+                        collapsed_only=(not node.is_leaf))
 
     def get_tooltip(self, gene):
         if self.tooltip_props is None:
@@ -92,7 +92,7 @@ class LayoutGenomicContext(TreeLayout):
         return "<br>".join(f'{k}: {v}' for k,v in props.items())
 
     def get_context(self, node):
-        if node.is_leaf():
+        if node.is_leaf:
             return node.props.get("_context")
 
         if not self.collapse_by_conservation:
@@ -116,8 +116,8 @@ class LayoutGenomicContext(TreeLayout):
             color, n = Counter(colors).most_common(1)[0]
             if n / ntips >= self.collapse_conservation\
                 and color != self.non_conserved_color:
-                context.append({ 
-                    **color2genes[color], 
+                context.append({
+                    **color2genes[color],
                     "vertical_conservation": n / ntips })
             else:
                 context.append({ "color": self.non_conserved_color })

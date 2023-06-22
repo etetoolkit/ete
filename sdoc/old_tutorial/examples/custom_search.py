@@ -14,5 +14,5 @@ matches = filter(conditional_function, t.traverse())
 print len(matches), "nodes have distance >0.3"
 # depending on the complexity of your conditions you can do the same
 # in just one line with the help of lambda functions:
-matches = filter(lambda n: n.dist>0.3 and n.is_leaf(), t.traverse() )
+matches = filter(lambda n: n.dist>0.3 and n.is_leaf, t.traverse() )
 print len(matches), "nodes have distance >0.3 and are leaves"

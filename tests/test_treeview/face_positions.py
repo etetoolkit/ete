@@ -83,7 +83,7 @@ def get_example_tree():
     for node in t.traverse():
         # If node is a leaf, add the nodes name and a its scientific
         # name
-        if node.is_leaf():
+        if node.is_leaf:
             node.add_face(aligned, column=0, position="aligned")
             node.add_face(aligned, column=1, position="aligned")
             node.add_face(aligned, column=3, position="aligned")
@@ -100,4 +100,3 @@ def get_example_tree():
 if __name__ == "__main__":
     t, ts = get_example_tree()
     t.show(tree_style=ts)
-

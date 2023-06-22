@@ -251,7 +251,7 @@ class Trees(Resource):
                 "clades": get_nodes_info(tree.tree, tree.active.clades.results, ["*"]),
             }
         elif rule == '/trees/<string:tree_id>/all_active_leaves':
-            active_leaves = set( n for n in tree.active.nodes.results if n.is_leaf() )
+            active_leaves = set( n for n in tree.active.nodes.results if n.is_leaf )
             for n in tree.active.clades.results:
                 active_leaves.update(set(n.iter_leaves()))
             return get_nodes_info(tree.tree, active_leaves, ["*"])
@@ -292,7 +292,7 @@ class Trees(Resource):
             tnodes = tleaves = 0
             for node in t.traverse():
                 tnodes += 1
-                if node.is_leaf():
+                if node.is_leaf:
                     tleaves += 1
             return {'tnodes': tnodes, 'tleaves': tleaves}
         elif rule == '/trees/<string:tree_id>/ultrametric':
@@ -601,7 +601,7 @@ def get_drawer(tree_id, args):
 
 
 def get_leaves(node):
-    if node.is_leaf():
+    if node.is_leaf:
         leaves = [ node ]
     else:
         leaves = node.iter_leaves()
@@ -1046,7 +1046,7 @@ def get_eval_search(expression):
 
     return lambda node: safer_eval(code, {
         'node': node, 'parent': node.up, 'up': node.up,
-        'name': node.name, 'is_leaf': node.is_leaf(),
+        'name': node.name, 'is_leaf': node.is_leaf,
         'length': node.dist, 'dist': node.dist, 'd': node.dist,
         'props': node.props, 'p': node.props,
         'get': dict.get,
@@ -1107,7 +1107,7 @@ def sort(tree_id, node_id, key_text, reverse):
 
     def key(node):
         return safer_eval(code, {
-            'node': node, 'name': node.name, 'is_leaf': node.is_leaf(),
+            'node': node, 'name': node.name, 'is_leaf': node.is_leaf,
             'length': node.dist, 'dist': node.dist, 'd': node.dist,
             'size': node.size, 'dx': node.size[0], 'dy': node.size[1],
             'children': node.children, 'ch': node.children,

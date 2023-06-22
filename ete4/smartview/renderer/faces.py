@@ -142,7 +142,7 @@ class Face(object):
 
         elif pos == 'branch_right':  # right of node
             avail_dx = dx_to_closest_child / n_col\
-                    if not (self.node.is_leaf() or self.node.is_collapsed)\
+                    if not (self.node.is_leaf or self.node.is_collapsed)\
                     else None
             avail_dy = min([bdy, dy - bdy, bdy - bdy0, bdy1 - bdy]) * 2 / n_row
             x = x + bdx + dx_before
@@ -549,7 +549,7 @@ class RectFace(Face):
 
         circ_drawer = drawer.TYPE == 'circ'
         style = {
-            'fill': self.color, 
+            'fill': self.color,
             'opacity': self.opacity,
             'stroke': self.stroke_color,
             'stroke-width': self.stroke_width
@@ -875,7 +875,7 @@ class AlignLinkFace(Face):
                 'opacity': self.opacity,
                 }
         if drawer.panel == 0 and drawer.viewport and\
-          (self.node.is_leaf() or self.node.is_collapsed)\
+          (self.node.is_leaf or self.node.is_collapsed)\
           and self.line:
             p1, p2 = self.line
             yield draw_line(p1, p2, 'align-link', style=style)

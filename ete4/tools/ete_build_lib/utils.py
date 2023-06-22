@@ -188,7 +188,7 @@ def merge_arg_dicts(source, target, parent=""):
     return target
 
 def load_node_size(n):
-    if n.is_leaf():
+    if n.is_leaf:
         size = 1
     else:
         size = 0
@@ -496,7 +496,7 @@ def get_latest_nprdp(basedir):
     return None
 
 def npr_layout(node):
-    if node.is_leaf():
+    if node.is_leaf:
         name = faces.AttrFace("name", fsize=12)
         faces.add_face_to_node(name, node, 0, position="branch-right")
         if hasattr(node, "sequence"):

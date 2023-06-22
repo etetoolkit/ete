@@ -69,7 +69,7 @@ class Model:
         str_mark = ''
         str_line = '\n        mark:%-5s, omega: %-10s, node_ids: %-4s, name: %s'
         for i, node in enumerate(self._tree.traverse()):
-            if node.is_root():
+            if node.is_root:
                 str_mark += str_line % (self.branches[node.props.get('node_id')]['mark'],
                                         'None',
                                         node.props.get('node_id'), node.name or 'ROOT')
@@ -108,7 +108,6 @@ class Model:
         """
         has_mark = any(n.props.get('mark') for n in self._tree.iter_descendants())
         for i, node in enumerate(self._tree.traverse()):
-            #if node.is_root(): continue
             if has_mark and self.properties['allow_mark']:
                 self.branches[node.props.get('node_id')] = {'mark': node.props.get('mark') or ' #0'}
             elif 'branch' in self.properties['typ']:

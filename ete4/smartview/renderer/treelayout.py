@@ -60,7 +60,7 @@ class _LayoutNodeProperty(TreeLayout):
                     min_fsize=self.min_fsize, max_fsize=self.max_fsize,
                     padding_x=self.padding.x, padding_y=self.padding.y),
                 position=self.pos, column=self.column,
-                collapsed_only=(not node.is_leaf()))
+                collapsed_only=(not node.is_leaf))
         elif self.summarize:
             # Collapsed face
             names = summary(node.children, self.prop)

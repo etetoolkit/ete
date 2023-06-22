@@ -10,7 +10,6 @@ from __future__ import absolute_import
 from ..tools.utils import which
 from .utils import translate
 from .model import Model, PARAMS, AVAIL
-from ..parser.newick import write_newick
 from .. import PhyloNode, SeqGroup
 from warnings import warn
 import sys
@@ -112,7 +111,7 @@ class EvolNode(PhyloNode):
         nid needs to be a list in order to keep count through recursivity
         """
         for node in self.get_children():
-            if node.is_leaf():
+            if node.is_leaf:
                 continue
             nid[0] += 1
             node.add_prop('node_id', nid[0])

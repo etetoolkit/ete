@@ -5,7 +5,7 @@ from ete3 import Tree, faces, TreeStyle, COLOR_SCHEMES
 schema_names = COLOR_SCHEMES.keys()
 
 def layout(node):
-    if not node.is_leaf():
+    if not node.is_leaf:
         size = random.randint(20,50)
         F= faces.PieChartFace([10,20,60,10],
                               colors=COLOR_SCHEMES[random.sample(schema_names, 1)[0]],

@@ -430,11 +430,11 @@ When a tree is loaded, a pointer to the top-most node is returned.
 In order to evaluate the basic attributes of a node, you can use the following
  methods:
 \series bold
- tree.is_leaf(),
+ tree.is_leaf,
 \series default
 returns True if node has no children;
 \series bold
-tree.is_root()
+tree.is_root
 \series default
 , returns True if node has no parent;
 \series bold

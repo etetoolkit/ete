@@ -50,12 +50,12 @@ def SINGLECELL(a,b,support,attr1,attr2):
     len_axb = 0
 
 
-    for leaf_a in a[0].iter_leaves():
-        for leaf_b in b[0].iter_leaves():
+    for leaf_a in a[0].leaves():
+        for leaf_b in b[0].leaves():
             len_axb += 1
             dist.append(pearson[leaf_a.name][leaf_b.name])
 
-    dist = np.percentile(dist,50)/(1 - 1 / (len([i for i in b[0].iter_leaves()])))
+    dist = np.percentile(dist,50)/(1 - 1 / (len([i for i in b[0].leaves()])))
 
     return dist
 
@@ -95,8 +95,8 @@ def EUCL_DIST_B(a,b,support,attr1,attr2):
     '''
 
 
-    dist_a = sum([descendant.dist for descendant in a[0].iter_leaves() if getattr(descendant,attr1) in(a[1] - b[1])]) / len([i for i in a[0].iter_leaves()])
-    dist_b = sum([descendant.dist for descendant in b[0].iter_leaves() if getattr(descendant,attr2) in(b[1] - a[1])]) / len([i for i in b[0].iter_leaves()])
+    dist_a = sum([descendant.dist for descendant in a[0].leaves() if getattr(descendant,attr1) in(a[1] - b[1])]) / len([i for i in a[0].leaves()])
+    dist_b = sum([descendant.dist for descendant in b[0].leaves() if getattr(descendant,attr2) in(b[1] - a[1])]) / len([i for i in b[0].leaves()])
 
     return 1 - ((float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)) / 2
 
@@ -117,8 +117,8 @@ def EUCL_DIST_B_ALL(a,b,support,attr1,attr2):
     '''
 
 
-    dist_a = sum([descendant.dist for descendant in a[0].iter_leaves()]) / len([i for i in a[0].iter_leaves()])
-    dist_b = sum([descendant.dist for descendant in b[0].iter_leaves()]) / len([i for i in b[0].iter_leaves()])
+    dist_a = sum([descendant.dist for descendant in a[0].leaves()]) / len([i for i in a[0].leaves()])
+    dist_b = sum([descendant.dist for descendant in b[0].leaves()]) / len([i for i in b[0].leaves()])
 
     return 1 - ((float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)) / 2
 
@@ -143,16 +143,16 @@ def EUCL_DIST_B_FULL(a,b,support,attr1,attr2):
 
 
     def _get_leaves_paths(t,attr,support):
-        leaves = t.get_leaves()
+        leaves = list(t.leaves())
         leave_branches = set()
 
         for n in leaves:
-            if n.is_root():
+            if n.is_root:
                 continue
             movingnode = n
             length = 0
             nodes = 0
-            while not movingnode.is_root():
+            while not movingnode.is_root:
                 nodes += 1
                 if support:
                     length += movingnode.dist * movingnode.support
@@ -163,8 +163,8 @@ def EUCL_DIST_B_FULL(a,b,support,attr1,attr2):
 
         return leave_branches
 
-    dist_a = sum([descendant[1] for descendant in _get_leaves_paths(a[0],attr1,support) if descendant[0] in(a[1] - b[1])]) / len([i for i in a[0].iter_leaves()])
-    dist_b = sum([descendant[1] for descendant in _get_leaves_paths(b[0],attr2,support) if descendant[0] in(b[1] - a[1])]) / len([i for i in b[0].iter_leaves()])
+    dist_a = sum([descendant[1] for descendant in _get_leaves_paths(a[0],attr1,support) if descendant[0] in(a[1] - b[1])]) / len([i for i in a[0].leaves()])
+    dist_b = sum([descendant[1] for descendant in _get_leaves_paths(b[0],attr2,support) if descendant[0] in(b[1] - a[1])]) / len([i for i in b[0].leaves()])
 
     return 1 - ((float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)) / 2
 
@@ -374,15 +374,15 @@ def be_distance(t1,t2,support, attr1,attr2):
 
     # Get total distance from leaf to root
     def _get_leaves_paths(t,attr,support):
-        leaves = t.get_leaves()
+        leaves = list(t.leaves())
         leave_branches = set()
 
         for n in leaves:
-            if n.is_root():
+            if n.is_root:
                 continue
             movingnode = n
             length = 0
-            while not movingnode.is_root():
+            while not movingnode.is_root:
                 if support:
                     length += movingnode.dist * movingnode.support
                 else:
@@ -420,23 +420,23 @@ def cc_distance(t1,t2,support,attr1,attr2):
     '''
     def cophenetic_compared_matrix(t_source,t_compare,attr1,attr2,support):
 
-        leaves = t_source.get_leaves()
+        leaves = list(t_source.leaves())
         paths = {getattr(x,attr1): set() for x in leaves}
 
         # get the paths going up the tree
         # we get all the nodes up to the last one and store them in a set
 
         for n in leaves:
-            if n.is_root():
+            if n.is_root:
                 continue
             movingnode = n
-            while not movingnode.is_root():
+            while not movingnode.is_root:
                 paths[getattr(n,attr1)].add(movingnode)
                 movingnode = movingnode.up
 
         # We set the paths for leaves not in the source tree as empty to indicate they are non-existent
 
-        for i in (set(getattr(x,attr2) for x in t_compare.get_leaves()) - set(getattr(x,attr1) for x in t_source.get_leaves())):
+        for i in (set(getattr(x,attr2) for x in t_compare.leaves()) - set(getattr(x,attr1) for x in t_source.leaves())):
             paths[i] = set()
 
         # now we want to get all pairs of nodes using itertools combinations. We need AB AC etc but don't need BA CA
@@ -626,7 +626,7 @@ def treediff(t1, t2, attr1 = 'name', attr2 = 'name', dist_fn=EUCL_DIST, support=
                     pass
 
                 dist, side1, side2, diff, n1, n2 = (matrix[r][c],
-                                                    [l.name for l in parts1[r][0].iter_leaves()], [l.name for l in parts2[r][0].iter_leaves()],
+                                                    [l.name for l in parts1[r][0].leaves()], [l.name for l in parts2[r][0].leaves()],
                                                     parts1[r][1].symmetric_difference(parts2[c][1]),
                                                     parts1[r][0], parts2[c][0])
                 difftable.append([dist, b_dist, side1, side2, diff, n1, n2])
@@ -776,13 +776,13 @@ def show_difftable_topo(difftable, attr1, attr2, usecolor=False, extended=None):
         n2 = Tree(n2.write(properties=[attr2]))
         n1.ladderize()
         n2.ladderize()
-        for leaf in n1.iter_leaves():
+        for leaf in n1.leaves():
             leaf.name = getattr(leaf, attr1)
             if leaf.name in diff:
                 leaf.name += " ***"
                 if usecolor:
                     leaf.name = color(leaf.name, "red")
-        for leaf in n2.iter_leaves():
+        for leaf in n2.leaves():
             leaf.name = getattr(leaf, attr2)
             if leaf.name in diff:
                 leaf.name += " ***"
@@ -1144,10 +1144,10 @@ def run(args):
 
         if args.ncbi:
 
-            taxids = set([getattr(leaf, rattr) for leaf in t1.iter_leaves()])
-            taxids.update([getattr(leaf, tattr) for leaf in t2.iter_leaves()])
+            taxids = set([getattr(leaf, rattr) for leaf in t1.leaves()])
+            taxids.update([getattr(leaf, tattr) for leaf in t2.leaves()])
             taxid2name = ncbi.get_taxid_translator(taxids)
-            for leaf in  t1.get_leaves()+t2.get_leaves():
+            for leaf in list(t1.leaves()) + list(t2.leaves()):
                 try:
                     leaf.name=taxid2name.get(int(leaf.name), leaf.name)
                 except ValueError:
@@ -1166,11 +1166,11 @@ def run(args):
 
             pearson = pearson_corr(rdict,tdict)
 
-            for leaf in t1.iter_leaves():
+            for leaf in t1.leaves():
                 # we can't pass dicts or lists due to an incompatibility with get_cached_content so we give a string and then parse it
                 leaf.pearson=json.dumps(pearson)
 
-            for leaf in t2.iter_leaves():
+            for leaf in t2.leaves():
                 # we can't pass dicts or lists due to an incompatibility with get_cached_content so we give a string and then parse it
                 leaf.pearson=json.dumps(pearson)
 

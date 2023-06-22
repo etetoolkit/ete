@@ -37,9 +37,9 @@ END;
             newicks = {name: t.write() for name, t in trees.items()}
 
             assert newicks == {
-                'tree1': '((1:1,2:1)1:1,3:1);',
-                'tree2': '((Scarabaeus:1,Drosophila:1)1:1,Aranaeus:1);',
-                'tree3': '((Scarabaeus:1,Drosophila:1)1:1,Aranaeus:1);'}
+                'tree1': '((1,2),3);',
+                'tree2': '((Scarabaeus,Drosophila),Aranaeus);',
+                'tree3': '((Scarabaeus,Drosophila),Aranaeus);'}
 
 
     def test_loads_bad_file(self):
@@ -73,8 +73,8 @@ end;
         trees = nexus.get_trees(text)
 
         assert trees == {
-            'one': '(Ephedra:1,Gnetum:1,(Welwitschia:1,(Ginkgo:1,Pinus:1):1):1):0;',
-            'two': '(Ephedra:1,Welwitschia:1,(Pinus:1,(Gnetum:1,Ginkgo:1):1):1):0;'}
+            'one': '(Ephedra,Gnetum,(Welwitschia,(Ginkgo,Pinus)));',
+            'two': '(Ephedra,Welwitschia,(Pinus,(Gnetum,Ginkgo)));'}
 
     def test_loads_without_trees(self):
         with TemporaryFile(mode='w+t') as fp:

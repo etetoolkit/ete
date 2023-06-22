@@ -2,7 +2,7 @@ from ete4 import Tree, faces, AttrFace, TreeStyle, NodeStyle
 
 def layout(node):
     # If node is a leaf, add the nodes name and a its scientific name
-    if node.is_leaf():
+    if node.is_leaf:
         faces.add_face_to_node(AttrFace("name"), node, column=0)
 
 def get_example_tree():
@@ -50,7 +50,7 @@ def get_example_tree():
     style2["hz_line_width"] = 2
     style2["vt_line_type"] = 1 # 0 solid, 1 dashed, 2 dotted
     style2["hz_line_type"] = 1
-    for l in t.iter_leaves():
+    for l in t.leaves():
         l.img_style = style2
 
     ts = TreeStyle()
@@ -63,4 +63,3 @@ if __name__ == "__main__":
     t, ts = get_example_tree()
     t.show(tree_style=ts)
     #t.render("node_style.png", w=400, tree_style=ts)
-

@@ -26,7 +26,7 @@ nameFace = faces.AttrFace("name", fsize=8)
 # Creates my own layout function that uses previous faces
 def mylayout(node):
     # If node is a leaf
-    if node.is_leaf():
+    if node.is_leaf:
         # And a line profile
         faces.add_face_to_node(profileFace, node, 0, aligned=True)
         node.img_style["size"]=0

@@ -7,7 +7,7 @@ small_ts.show_leaf_name = True
 small_ts.scale = 10
 
 def layout(node):
-    if node.is_leaf():
+    if node.is_leaf:
         # Add node name to laef nodes
         N = AttrFace("name", fsize=14, fgcolor="black")
         faces.add_face_to_node(N, node, 0)

@@ -62,7 +62,7 @@ def main_layout(node):
     # Add faces to leaf nodes. This allows me to add the faces from
     # the global variable LEAVE_FACES, which is set by the application
     # controler according to the arguments passed through the URL.
-    if node.is_leaf():
+    if node.is_leaf:
 
         for f, fkey, pos in LEAVE_FACES:
             if hasattr(node, fkey):
@@ -82,7 +82,7 @@ def main_layout(node):
     # Set node aspect. This controls which node features are used to
     # control the style of the tree. You can add or modify this
     # features, as well as their behaviour
-    if node.is_leaf():
+    if node.is_leaf:
         node.img_style["shape"] = "square"
         node.img_style["size"] = 4
     else:
@@ -134,10 +134,10 @@ def main_layout(node):
 #
 # ==============================================================================
 
-can_expand = lambda node: not node.is_leaf() and (hasattr(node, "hide") and node.hide==True)
-can_collapse = lambda node: not node.is_leaf() and (not hasattr(node, "hide") or node.hide==False)
-is_leaf = lambda node: node.is_leaf()
-is_not_leaf = lambda node: not node.is_leaf()
+can_expand = lambda node: not node.is_leaf and (hasattr(node, "hide") and node.hide==True)
+can_collapse = lambda node: not node.is_leaf and (not hasattr(node, "hide") or node.hide==False)
+is_leaf = lambda node: node.is_leaf
+is_not_leaf = lambda node: not node.is_leaf
 
 # ==============================================================================
 # Handler function definitions:
@@ -177,7 +177,7 @@ def set_bg(node):
     node.add_prop("bgcolor", "#CEDBC4")
 
 def set_as_root(node):
-    node.get_tree_root().set_outgroup(node)
+    node.root.set_outgroup(node)
 
 def phylomedb_clean_layout(node):
     phylomedb_layout(node)
@@ -258,7 +258,7 @@ def search_in_ensmbl(aindex, nodeid, treeid, text, node):
 
 def external_links_divider(aindex, nodeid, treeid, text, node):
     ''' Used to show a separator in the popup menu'''
-    if node.is_leaf():
+    if node.is_leaf:
         return """<li
         style="background:#eee;font-size:8pt;"><b>External
         links</b></li>"""
