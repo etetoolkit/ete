@@ -374,7 +374,7 @@ class Drawer:
         self.node_dxs[-1].append(ndx)
 
         # Draw collapsed node nodebox when necessary
-        if is_manually_collapsed or is_small or collapsed_node.dist == 0:
+        if is_manually_collapsed or is_small or dist(collapsed_node) == 0:
             name = collapsed_node.name
             properties = self.get_popup_props(collapsed_node)
 
@@ -504,11 +504,7 @@ class DrawerRect(Drawer):
 
     def content_size(self, node):
         "Return the size of the node's content"
-        return Size(abs(node.dist), node.size[1])
-
-    def children_size(self, node):
-        "Return the size of the node's children"
-        return Size(node.size[0] - abs(node.dist), node.size[1])
+        return Size(dist(node), node.size[1])
 
     def is_small(self, box):
         zx, zy, _ = self.zoom
@@ -613,11 +609,7 @@ class DrawerCirc(Drawer):
 
     def content_size(self, node):
         "Return the size of the node's content"
-        return Size(abs(node.dist), node.size[1] * self.dy2da)
-
-    def children_size(self, node):
-        "Return the size of the node's children"
-        return Size(node.size[0] - abs(node.dist), node.size[1] * self.dy2da)
+        return Size(dist(node), node.size[1] * self.dy2da)
 
     def is_small(self, box):
         z = self.zoom[0]  # zx == zy in this drawer
@@ -689,8 +681,8 @@ class DrawerRectFaces(DrawerRect):
         size = self.content_size(node)
 
         # Space available for branch-right Face position
-        dx_to_closest_child = (node.dist if node.is_leaf else
-                               min(child.dist for child in node.children))
+        dx_to_closest_child = (dist(node) if node.is_leaf else
+                               min(dist(child) for child in node.children))
         zx, zy, za = self.zoom
 
         def it_fits(box, pos):
@@ -815,8 +807,8 @@ class DrawerRectFaces(DrawerRect):
         if self.is_fully_collapsed(collapsed_node):
             bdx = 0
         else:
-            x = x - collapsed_node.dist
-            bdx = collapsed_node.dist
+            x = x - dist(collapsed_node)
+            bdx = dist(collapsed_node)
 
         x = x if self.panel == 0 else self.xmin
 
@@ -829,8 +821,8 @@ class DrawerCircFaces(DrawerCirc):
     def draw_node(self, node, point, bdr, bda, bda0, bda1, active_children=TreeActive(0, 0), selected_children=[]):
         size = self.content_size(node)
         # Space available for branch-right Face position
-        dr_to_closest_child = min(child.dist for child in node.children)\
-                if not (node.is_leaf or node.is_collapsed) else node.dist
+        dr_to_closest_child = min(dist(child) for child in node.children)\
+                if not (node.is_leaf or node.is_collapsed) else dist(node)
         z = self.zoom[0]  # zx == zy
 
         def it_fits(box, pos):
@@ -944,8 +936,8 @@ class DrawerCircFaces(DrawerCirc):
         if self.is_fully_collapsed(collapsed_node):
             bdr = 0
         else:
-            r = r - collapsed_node.dist
-            bdr = collapsed_node.dist
+            r = r - dist(collapsed_node)
+            bdr = dist(collapsed_node)
 
         r = r if self.panel == 0 else self.xmin
 
@@ -1096,6 +1088,11 @@ def drawn_size(elements, get_box, min_x=None):
         x_min = max(x_min, min_x)
 
     return Size(x_max - x_min, y_max - y_min)
+
+
+def dist(node):
+    """Return the distance of a node, with default values if not set."""
+    return float(node.props.get('dist', 0 if node.up is None else 1))
 
 
 def stack(sbox, box):
