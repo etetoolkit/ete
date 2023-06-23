@@ -222,7 +222,7 @@ def standardize(tree):
     update_all_sizes(tree)
 
     for node in tree.traverse():
-        if not node.is_leaf:
+        if not node.is_leaf and node.name is not None:
             name_split = node.name.rsplit(":", 1)
             if len(name_split) > 1:
                 # Whether node name contains the support value
