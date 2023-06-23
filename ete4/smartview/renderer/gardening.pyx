@@ -178,19 +178,24 @@ def update_sizes_from(node):
 
 
 def update_size(node):
+    """Update the size of the given node."""
     sumdists, nleaves = get_size(node.children)
-    node.size = (node.dist + sumdists, max(1, nleaves))
+    dx = float(node.props.get('dist', 0 if node.up is None else 1)) + sumdists
+    node.size = (dx, max(1, nleaves))
 
 
 cdef (double, double) get_size(nodes):
-    "Return the size of all the nodes stacked"
+    """Return the size of all the nodes stacked."""
     # The size of a node is (sumdists, nleaves) with sumdists the dist to
     # its furthest leaf (including itself) and nleaves its number of leaves.
     cdef double sumdists, nleaves
-    sumdists = nleaves = 0
+
+    sumdists = 0
+    nleaves = 0
     for node in nodes:
         sumdists = max(sumdists, node.size[0])
         nleaves += node.size[1]
+
     return sumdists, nleaves
 
 
