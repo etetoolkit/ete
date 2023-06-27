@@ -40,8 +40,8 @@ from ete4 import Tree
 from ete4.parser.newick import NewickError
 from ete4.smartview import TreeStyle, layout_modules
 from ete4.smartview.utils import InvalidUsage, get_random_string
-from ete4.parser import ete_format
-from ete4.smartview.renderer import nexus, gardening as gdn
+from ete4.parser import ete_format, nexus
+from ete4.smartview.renderer import gardening as gdn
 from ete4.smartview.renderer import drawer as drawer_module
 from ete4 import treematcher as tm
 
