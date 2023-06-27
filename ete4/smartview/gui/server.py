@@ -103,6 +103,8 @@ class Layouts(Resource):
         elif rule == '/layouts/list':
             return { module: [ [ ly.name, ly.description ] for ly in layouts if ly.name ]
                     for module, layouts in app.avail_layouts.items() }
+        else:
+            raise InvalidUsage(f'invalid GET endpoint: {rule}')
 
         layouts = {}
         for module, lys in avail_layouts.items():
@@ -115,6 +117,8 @@ class Layouts(Resource):
 
         if rule == '/layouts/update':
             update_app_available_layouts()
+        else:
+            raise InvalidUsage(f'invalid PUT endpoint: {rule}')
 
 
 class Trees(Resource):
@@ -297,6 +301,8 @@ class Trees(Resource):
             return {'tnodes': tnodes, 'tleaves': tleaves}
         elif rule == '/trees/<string:tree_id>/ultrametric':
             return tree.style.ultrametric
+        else:
+            raise InvalidUsage(f'invalid GET endpoint: {rule}')
 
     def post(self):
         "Add tree(s)"
@@ -369,6 +375,8 @@ class Trees(Resource):
             load_tree(tid)
 
             return {'message': 'ok'}
+        else:
+            raise InvalidUsage(f'invalid PUT endpoint: {rule}')
 
     def delete(self, tree_id):
         "Delete tree and all references to it"
