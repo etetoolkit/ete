@@ -16,25 +16,31 @@ import os
 import re
 from importlib import reload as module_reload
 from math import pi, inf
-from functools import partial
 from time import time
 from threading import Timer
 from datetime import datetime
-from contextlib import contextmanager
 from collections import defaultdict, namedtuple
 from copy import copy, deepcopy
 from dataclasses import dataclass
 import gzip
 import json
 import _pickle as pickle
-from types import FunctionType
 import shutil
 import logging
 
+import brotli
+
+from bottle import (
+    get, post, put, redirect, static_file,
+    request, response, error, abort, HTTPError, run)
+
+# TODO: Remove all flask here
 from flask import Flask, request, jsonify, redirect, url_for
 from flask_restful import Resource, Api
 from flask_cors import CORS
 from flask_compress import Compress
+
+
 
 from ete4 import Tree
 from ete4.parser.newick import NewickError
@@ -44,6 +50,31 @@ from ete4.parser import ete_format, nexus
 from ete4.smartview.renderer import gardening as gdn
 from ete4.smartview.renderer import drawer as drawer_module
 from ete4 import treematcher as tm
+
+
+# Make sure we send the errors as json too.
+@error(400)
+@error(404)
+def json_error(error):
+    response.content_type = 'application/json'
+    return json.dumps({'message': error.body})
+
+
+def req_json():
+    """Return what request.json would return, but gracefully aborting."""
+    try:
+        return json.loads(request.body.read())
+    except json.JSONDecodeError as e:
+        abort(400, f'bad json content: {e}')
+
+
+def nice_html(content, title='Tree Explorer'):
+    return f"""
+<!DOCTYPE html>
+<html><head><title>{title}</title>
+<link rel="icon" type="image/png" href="/static/icon.png">
+<link rel="stylesheet" href="/static/upload.css"></head>
+<body><div class="centered">{content}</div></body></html>"""
 
 
 # call initialize() to fill it up
@@ -66,24 +97,75 @@ class AppTree:
     searches: dict = None
 
 
-# REST api.
+# Routes.
 
+@get('/')
+def callback():
+    if g_trees:
+        if len(g_trees) == 1:
+            name = list(g_trees.keys())[0]
+            redirect(f'/static/gui.html?tree={name}')
+        else:
+            trees = '\n'.join('<li><a href="/static/gui.html?tree='
+                              f'{name}">{name}</li>' for name in g_trees)
+            return nice_html(f'<h1>Loaded Trees</h1><ul>\n{trees}\n</ul>')
+    else:
+        return nice_html("""<h1>Tree Explorer</h1>
+<p>No trees loaded.</p>
+<p>See the <a href="/help">help page</a> for more information.</p>""")
+
+@get('/help')
+def callback():
+    return nice_html("""<h1>Help</h1>
+You can go to the <a href="/static/upload.html">upload page</a>, see
+a <a href="/">list of loaded trees</a>, or
+<a href="http://etetoolkit.org/">consult the documentation</a>.""")
+
+@get('/static/<path:path>')
+def callback(path):
+    return static_file(path, f'{DIR}/static')
+
+@get('/drawers/<name>/<tree_id>')
+def callback(name, tree_id):
+    """Return type (rect/circ) and number of panels of the drawer."""
+    try:
+        tree_id, _ = get_tid(tree_id)
+
+        # NOTE: Apparently we need to know the tree_id we are
+        # referring to because it checks if there are aligned faces in
+        # it to see if we are using a DrawerAlignX drawer (instead of
+        # DrawerX).
+        tree_layouts = sum(app.trees[int(tree_id)].layouts.values(), [])
+        if (name not in ['Rect', 'Circ'] and
+            any(getattr(ly, 'aligned_faces', False) and ly.active
+                for ly in tree_layouts)):
+            name = 'Align' + name
+        # TODO: We probably want to get rid of all this.
+
+        drawer_class = next(d for d in drawer_module.get_drawers()
+                            if d.__name__[len('Drawer'):] == name)
+        return {'type': drawer_class.TYPE,
+                'npanels': drawer_class.NPANELS}
+    except StopIteration:
+        raise InvalidUsage(f'not a valid drawer: {name}')
+
+ #### I AM HERE RIGHT NOW
 class Drawers(Resource):
     def get(self, name=None, tree_id=None):
         "Return data from the drawer. In aligned mode if aligned faces"
         try:
             tree_id, _ = get_tid(tree_id)
-            if name not in ['Rect', 'Circ'] and\
-                    any(getattr(ly, 'aligned_faces', False) and ly.active\
-                        for ly in sum(app.trees[int(tree_id)].layouts.values(),[])):
+
+            tree_layouts = sum(app.trees[int(tree_id)].layouts.values(), [])
+            if (name not in ['Rect', 'Circ'] and
+                any(getattr(ly, 'aligned_faces', False) and ly.active
+                    for ly in tree_layouts)):
                 name = 'Align' + name
             drawer_class = next(d for d in drawer_module.get_drawers()
-                if d.__name__[len('Drawer'):] == name)
+                                if d.__name__[len('Drawer'):] == name)
             return {'type': drawer_class.TYPE,
                     'npanels': drawer_class.NPANELS}
         except StopIteration:
-            print(name)
-            print(list(drawer_module.get_drawers()))
             raise InvalidUsage(f'not a valid drawer: {name}')
 
 
@@ -1234,55 +1316,45 @@ def modify_tree_fields(tree_id):
 def update_app_available_layouts():
     try:
         module_reload(layout_modules)
-        avail_layouts = get_layouts_from_getters(layout_modules)
+        app.avail_layouts = get_layouts_from_getters()
+        app.avail_layouts.pop('default_layouts', None)
     except Exception as e:
-        raise "Error while updating app layouts.\n{e}"
-    else:
-        avail_layouts.pop("default_layouts", None)
-        app.avail_layouts = avail_layouts
+        raise Exception(f'Error while updating app layouts: {e}')
 
 
-def get_layouts_from_getters(layout_modules):
-    def get_modules(ly_modules):
-        return ( getattr(ly_modules, module) for module in dir(ly_modules)\
-                if not module.startswith("__")) # and module != "default_layouts")
-    def get_layouts(module):
-        return ( getattr(module, getter)() for getter in dir(module)\
-                if not getter.startswith("_")\
-                and getter.startswith("Layout") )
+def get_layouts_from_getters():
+    """Return a dict {name: [layout1, ...]} for all layout submodules."""
+    # The list contains, for every submodule of layout_modules, an
+    # instance of all the LayoutX classes that the submodule contains.
+    submodules = [getattr(layout_modules, module) for module in dir(layout_modules)
+                  if not module.startswith('__')]
 
     all_layouts = {}
-    all_modules = get_modules(layout_modules)
-    for module in all_modules:
-        layouts = get_layouts(module)
-        name = module.__name__.split(".")[-1]
-        all_layouts[name] = list(layouts)
-        # Set _module attr for future reference (update_layouts)
-        for ly in all_layouts[name]:
-            ly.module = name
+    for module in submodules:
+        name = module.__name__.split('.')[-1]
 
-        # if type(next(layouts, None)) == FunctionType:
-            # Simple file with layout function getters
-            # all_layouts[name] = list(layouts)
-        # else:
-            # # Module of layout function getters
-            # all_layouts[module.__name__] = []
-            # for inner_mod in get_modules(module):
-                # all_layouts[module.__name__].extend(get_layouts(inner_mod))
+        layouts = [getattr(module, getter)() for getter in dir(module)
+                   if getter.startswith('Layout')]
+
+        for layout in layouts:  # TODO: is this necessary? remove if not
+            layout.module = name  # set for future reference
+
+        all_layouts[name] = layouts
 
     return all_layouts
 
+
 # Layout related functions
-def get_layouts(layouts=[]):
+def get_layouts(layouts=None):
     # Get layouts from their getters in layouts module:
     # smartview/redender/layouts
-    layouts_from_module = get_layouts_from_getters(layout_modules)
+    layouts_from_module = get_layouts_from_getters()
 
     # Get default layouts
     default_layouts = layouts_from_module.pop("default_layouts")
 
     all_layouts = {}
-    for idx, layout in enumerate(default_layouts + layouts):
+    for idx, layout in enumerate(default_layouts + (layouts or [])):
         layout.module = "default"
         all_layouts[layout.name or idx] = layout
 
@@ -1406,9 +1478,9 @@ def copy_style(tree_style):
 
 # App initialization.
 
-def initialize(tree=None, layouts=[],
+def initialize(tree=None, layouts=None,
                include_props=None, exclude_props=None,
-               custom_api={},  custom_route={}, safe_mode=False):
+               custom_api={}, custom_route={}, safe_mode=False):
     "Initialize the database and the flask app"
     app = Flask(__name__, instance_relative_config=True)
     configure(app)
