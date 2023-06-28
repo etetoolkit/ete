@@ -187,7 +187,45 @@ def callback():
     #     }
     # }
 
- #### I AM HERE RIGHT NOW
+@get('/layouts/list')
+def callback():
+    return {module: [[ly.name, ly.description] for ly in layouts if ly.name]
+            for module, layouts in app.avail_layouts.items()}
+    # The response will look like:
+    # {"context_layouts": [["Genomic context", ""]],
+    #  "domain_layouts":  [["Pfam domains", ""], ["Smart domains",""]],
+    #  ...
+    #  "staple_layouts": [["Barplot_None_None", ""]]}
+
+@get('/layouts/<tree_id>')
+def callback(tree_id):
+    # Return dict that, for every layout module in the tree, has a dict
+    # with the names of its layouts and whether they are active or not.
+    tid = get_tid(tree_id)[0]
+    tree_layouts = app.trees[int(tid)].layouts
+
+    layouts = {}
+    for module, lys in tree_layouts.items():
+        layouts[module] = {l.name: l.active for l in lys if l.name}
+
+    return layouts
+    # The response will look like:
+    # {
+    #     "default": {
+    #         "Branch length": true,
+    #         "Branch support": true,
+    #         "Leaf name": true,
+    #         "Number of leaves": false
+    #     }
+    # }
+
+@put('/layouts/update')
+def callback():
+    update_app_available_layouts()
+
+
+# TODO: Remove this class (its functionality should be covered by the
+# bottle functions above).
 class Layouts(Resource):
     def get(self, tree_id=None):
         rule = request.url_rule.rule  # shortcut
@@ -221,6 +259,8 @@ class Layouts(Resource):
         else:
             raise InvalidUsage(f'invalid PUT endpoint: {rule}')
 
+
+ #### I AM HERE RIGHT NOW
 
 class Trees(Resource):
     def get(self, tree_id=None, pname=None):
