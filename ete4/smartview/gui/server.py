@@ -149,7 +149,8 @@ def callback(name, tree_id):
     except StopIteration:
         raise InvalidUsage(f'not a valid drawer: {name}')
 
- #### I AM HERE RIGHT NOW
+# TODO: Remove this class (its functionality should be covered by the
+# bottle functions above).
 class Drawers(Resource):
     def get(self, name=None, tree_id=None):
         "Return data from the drawer. In aligned mode if aligned faces"
@@ -168,7 +169,25 @@ class Drawers(Resource):
         except StopIteration:
             raise InvalidUsage(f'not a valid drawer: {name}')
 
+@get('/layouts')
+def callback():
+    # Return dict that, for every layout module, has a dict with the
+    # names of its layouts and whether they are active or not.
+    app.trees.pop('default')  # FIXME: Why do we do this??
 
+    return {'default': {layout.name: layout.active
+                        for layout in app.default_layouts if layout.name}}
+    # The response will look like:
+    # {
+    #     "default": {
+    #         "Branch length": true,
+    #         "Branch support": true,
+    #         "Leaf name": true,
+    #         "Number of leaves": false
+    #     }
+    # }
+
+ #### I AM HERE RIGHT NOW
 class Layouts(Resource):
     def get(self, tree_id=None):
         rule = request.url_rule.rule  # shortcut
