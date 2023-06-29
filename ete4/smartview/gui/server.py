@@ -373,6 +373,167 @@ def callback(tree_id):
     tree, _ = touch_and_get(tree_id)
     return get_selection_info(tree, request.query)
 
+@get('/trees/<tree_id>/search_to_selection')
+def callback(tree_id):
+    search_to_selection(tree_id, request.query)
+    return {'message': 'ok'}
+
+@get('/trees/<tree_id>/prune_by_selection')
+def callback(tree_id):
+    prune_by_selection(tree_id, request.query)
+    return {'message': 'ok'}
+
+@get('/trees/<tree_id>/active')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+    node = tree.tree[subtree]
+
+    response.content_type = 'application/json'
+    if get_active_clade(node, tree.active.clades.results):
+        return 'active_clade'
+    elif node in tree.active.nodes.results:
+        return 'active_node'
+    else:
+        return ''
+
+@get('/trees/<tree_id>/activate_node')
+def callback(tree_id):
+    activate_node(tree_id)
+    return {'message': 'ok'}
+
+@get('/trees/<tree_id>/deactivate_node')
+def callback(tree_id):
+    deactivate_node(tree_id)
+    return {'message': 'ok'}
+
+@get('/trees/<tree_id>/activate_clade')
+def callback(tree_id):
+    activate_clade(tree_id)
+    return {'message': 'ok'}
+
+@get('/trees/<tree_id>/deactivate_clade')
+def callback(tree_id):
+    deactivate_clade(tree_id)
+    return {'message': 'ok'}
+
+@get('/trees/<tree_id>/store_active_nodes')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+    nresults, nparents = store_active(tree, 0, request.query)
+    return {'message': 'ok', 'nresults': nresults, 'nparents': nparents}
+
+@get('/trees/<tree_id>/store_active_clades')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+    nresults, nparents = store_active(tree, 1, request.query)
+    return {'message': 'ok', 'nresults': nresults, 'nparents': nparents}
+
+@get('/trees/<tree_id>/remove_active_nodes')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+    remove_active(tree, 0)
+    return {'message': 'ok'}
+
+@get('/trees/<tree_id>/remove_active_clades')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+    remove_active(tree, 1)
+    return {'message': 'ok'}
+
+@get('/trees/<tree_id>/all_active')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+    return {
+        'nodes': get_nodes_info(tree.tree, tree.active.nodes.results, ['*']),
+        'clades': get_nodes_info(tree.tree, tree.active.clades.results, ['*']),
+    }
+
+@get('/trees/<tree_id>/all_active_leaves')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+
+    active_leaves = set(n for n in tree.active.nodes.results if n.is_leaf)
+    for n in tree.active.clades.results:
+        active_leaves.update(set(n.leaves()))
+
+    return get_nodes_info(tree.tree, active_leaves, ['*'])
+
+# Searches
+@get('/trees/<tree_id>/searches')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+    return {'searches': {text: {'nresults': len(results), 'nparents': len(parents)}
+                         for text, (results, parents) in (tree.searches or {}).items()}}
+
+@get('/trees/<tree_id>/search')
+def callback(tree_id):
+    nresults, nparents = store_search(tree_id, request.query)
+    return {'message': 'ok', 'nresults': nresults, 'nparents': nparents}
+
+@get('/trees/<tree_id>/remove_search')
+def callback(tree_id):
+    removed = remove_search(tree_id, request.query)
+    return {'message': 'ok' if removed else 'search not found'}
+
+# Find
+@get('/trees/<tree_id>/find')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+    node = find_node(tree.tree, request.query)
+    node_id = ','.join(map(str, node.id))
+    return {'id': node_id}
+
+@get('/trees/<tree_id>/draw')
+def callback(tree_id):
+    drawer = get_drawer(tree_id, request.query)
+    response.content_type = 'application/json'
+    return list(drawer.draw())
+
+@get('/trees/<tree_id>/size')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+    width, height = tree.tree[subtree].size
+    return {'width': width, 'height': height}
+
+@get('/trees/<tree_id>/collapse_size')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+    response.content_type = 'application/json'
+    return tree.style.collapse_size
+
+@get('/trees/<tree_id>/properties')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+
+    props = set()
+    for node in tree.tree[subtree].traverse():
+        props |= node.props.keys()
+
+    response.content_type = 'application/json'
+    return list(props)
+
+@get('/trees/<tree_id>/properties/<pname>')
+def callback(tree_id, pname):
+    return get_stats(tree_id, pname)
+
+@get('/trees/<tree_id>/properties/nodecount')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+
+    tnodes = tleaves = 0
+    for node in tree.tree[subtree].traverse():
+        tnodes += 1
+        if node.is_leaf:
+            tleaves += 1
+
+    return {'tnodes': tnodes, 'tleaves': tleaves}
+
+@get('/trees/<tree_id>/properties/ultrametric')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+    return tree.style.ultrametric
+
+
 
 #### I AM HERE RIGHT NOW
 
