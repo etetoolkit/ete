@@ -1284,8 +1284,7 @@ cdef class Tree(object):
     def explore(self, tree_name=None, layouts=[], show_leaf_name=True,
                 show_branch_length=True, show_branch_support=True,
                 include_props=None, exclude_props=None,
-                host='127.0.0.1', port=5000,
-                custom_api={}, custom_route={}):
+                host='127.0.0.1', port=5000):
         """Launch an interactive smartview session to visualize the tree.
 
         :param str tree_name: Name used to store tree in local database.
@@ -1318,8 +1317,7 @@ cdef class Tree(object):
         run_smartview(tree=self, tree_name=tree_name,
                       layouts=list(default_layouts + layouts),
                       include_props=include_props, exclude_props=exclude_props,
-                      host=host, port=port,
-                      custom_api=custom_api, custom_route=custom_route)
+                      host=host, port=port)
 
     def copy(self, method="cpickle"):
         """.. versionadded: 2.1

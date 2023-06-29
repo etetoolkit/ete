@@ -533,6 +533,97 @@ def callback(tree_id):
     tree, subtree = touch_and_get(tree_id)
     return tree.style.ultrametric
 
+@post('/trees')
+def callback():
+    ids = add_trees_from_request()
+    response.status = 201
+    return {'message': 'ok', 'ids': ids}
+
+@put('/trees/<tree_id>')
+def callback(tree_id):
+    modify_tree_fields(tree_id)
+    return {'message': 'ok'}
+
+@put('/trees/<tree_id>/sort')
+def callback(tree_id):
+    node_id, key_text, reverse = req_json()
+    sort(tree_id, node_id, key_text, reverse)
+    return {'message': 'ok'}
+
+@put('/trees/<tree_id>/root_at')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+
+    if subtree:
+        abort(400, 'operation not allowed with subtree')
+
+    node_id = req_json()
+    tree.tree.set_outgroup(tree.tree[node_id])
+    return {'message': 'ok'}
+
+@put('/trees/<tree_id>/move')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+
+    try:
+        node_id, shift = req_json()
+        gdn.move(tree.tree[subtree][node_id], shift)
+        return {'message': 'ok'}
+    except AssertionError as e:
+        abort(400, f'cannot move {node_id}: {e}')
+
+@put('/trees/<tree_id>/remove')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+
+    try:
+        node_id = req_json()
+        gdn.remove(tree.tree[subtree][node_id])
+        gdn.update_all_sizes(tree.tree)
+        return {'message': 'ok'}
+    except AssertionError as e:
+        abort(400, f'cannot remove {node_id}: {e}')
+
+@put('/trees/<tree_id>/update_props')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+
+    try:
+        node = tree.tree[subtree]
+        update_node_props(node, req_json())
+        return {'message': 'ok'}
+    except AssertionError as e:
+        abort(400, f'cannot update props of {node_id}: {e}')
+
+@put('/trees/<tree_id>/update_nodestyle')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+
+    try:
+        node = tree.tree[subtree]
+        update_node_style(node, req_json().copy())
+        tree.nodestyles[node] = req_json().copy()
+        return {'message': 'ok'}
+    except AssertionError as e:
+        abort(400, f'cannot update style of {node_id}: {e}')
+
+@put('/trees/<tree_id>/reinitialize')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+
+    gdn.standardize(tree.tree)
+    tree.initialized = False
+    return {'message': 'ok'}
+
+@put('/trees/<tree_id>/reload')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+
+    if subtree:
+        abort(400, 'operation not allowed with subtree')
+
+    app.trees.pop(tree_id, None)  # avoid possible key-error
+    return {'message': 'ok'}
 
 
 #### I AM HERE RIGHT NOW
@@ -732,7 +823,7 @@ class Trees(Resource):
         elif rule == '/trees/<string:tree_id>/move':
             try:
                 node_id, shift = request.json
-                gdn.move(gdn.get_node(t, node_id), shift)
+                gdn.move(tree.tree[subtree][node_id], shift)
                 return {'message': 'ok'}
             except AssertionError as e:
                 raise InvalidUsage(f'cannot move {node_id}: {e}')
@@ -779,34 +870,6 @@ class Trees(Resource):
         tid = int(tree_id)
         tree = del_tree(tid)
         return {'message': 'ok' if tree else f'tree with id {tid} not found.'}
-
-
-class Id(Resource):
-    def get(self, path):
-        if not path.startswith('trees/'):
-            raise InvalidUsage('invalid path %r' % path, 404)
-
-        name = path.split('/', 1)[-1]
-        # if path.startswith('trees/'):
-            # pids = dbget0('id', 'trees WHERE name=?', name)
-            # if len(pids) != 1:
-                # raise InvalidUsage('unknown tree name %r' % name)
-            # return {'id': pids[0]}
-
-
-class CustomEndpoints(Resource):
-    def __init__(self, resources={}):
-        super().__init__()
-        self.resources = resources
-
-    def get(self, *args, **kwargs):
-        rule = request.url_rule.rule  # shortcut
-
-        for endpoint, func in self.resources.items():
-            if  endpoint == rule:
-                return func(*args, **kwargs)
-
-        return ""
 
 
 # Auxiliary functions.
@@ -1773,13 +1836,13 @@ def copy_style(tree_style):
 
 def initialize(tree=None, layouts=None,
                include_props=None, exclude_props=None,
-               custom_api={}, custom_route={}, safe_mode=False):
+               safe_mode=False):
     "Initialize the database and the flask app"
     app = Flask(__name__, instance_relative_config=True)
     configure(app)
 
     api = Api(app)
-    add_resources(app, api, custom_api, custom_route)
+    add_resources(app, api)
 
     app.safe_mode = safe_mode
 
@@ -1853,18 +1916,7 @@ def configure(app):
         app.config.from_pyfile(f'{app.instance_path}/config.py')  # overrides
 
 
-def add_custom_resources(app, api, custom_api={}, custom_route={}):
-    api_endpoints = [ endpoint for endpoint in custom_api.keys() ]
-    api.add_resource(CustomEndpoints, *api_endpoints,
-            resource_class_kwargs={ "resources": custom_api })
-
-    for endpoint, route_fn in custom_route.items():
-        @app.route(endpoint)
-        def fn(*args, **kwargs):
-            return route_fn(*args, **kwargs)
-
-
-def add_resources(app, api, custom_api={}, custom_route={}):
+def add_resources(app, api):
     "Add all the REST endpoints"
     add = api.add_resource  # shortcut
 
@@ -1926,13 +1978,10 @@ def add_resources(app, api, custom_api={}, custom_route={}):
         '/reload']
     add(Trees, '/trees', *['/trees/<string:tree_id>'+e for e in tree_endpoints])
 
-    add_custom_resources(app, api, custom_api, custom_route)
-
 
 def run_smartview(tree=None, tree_name=None,
         layouts=[],
         include_props=None, exclude_props=None,
-        custom_api={}, custom_route={},
         safe_mode=False, host="127.0.0.1", port=5000,
         run=True, serve_static=True, verbose=True):
     # Set tree_name to None if no tree was provided
@@ -1946,7 +1995,7 @@ def run_smartview(tree=None, tree_name=None,
     app = initialize(
         tree_name, layouts,
         include_props=include_props, exclude_props=exclude_props,
-        custom_api=custom_api, custom_route=custom_route, safe_mode=safe_mode)
+        safe_mode=safe_mode)
 
     # purge inactive trees every 15 minutes
     purge(interval=15*60, max_time=30*60)
