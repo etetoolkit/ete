@@ -328,7 +328,7 @@ class PhyloNode(Tree):
 
     def __init__(self, newick=None, children=None, alignment=None,
                  alg_format="fasta", sp_naming_function=_parse_species,
-                 parser=0, **kargs):
+                 parser=None, **kargs):
 
         # _update names?
         self.props = {}
