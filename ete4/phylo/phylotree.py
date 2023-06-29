@@ -348,7 +348,14 @@ class PhyloNode(Tree):
             self.set_species_naming_function(sp_naming_function)
 
     def __repr__(self):
-        return "PhyloTree node '%s' (%s)" %(self.name, hex(self.__hash__()))
+        return "PhyloTree '%s' (%s)" % (self.name, hex(self.__hash__()))
+
+    def write(self, outfile=None, props=(), parser=None,
+              format_root_node=False, is_leaf_fn=None):
+        if props is None:
+            props = list(set(p for node in self.traverse()
+                             for p in node.props if not p.startswith('_')))
+        return super().write(outfile, props, parser, format_root_node, is_leaf_fn)
 
     def set_species_naming_function(self, fn):
         """
