@@ -260,7 +260,121 @@ class Layouts(Resource):
             raise InvalidUsage(f'invalid PUT endpoint: {rule}')
 
 
- #### I AM HERE RIGHT NOW
+@get('/trees')
+def callback():
+    if app.safe_mode:
+        abort(404, 'invalid path /trees in safe_mode mode')
+
+    response.content_type = 'application/json'
+    return [{'id': i, 'name': v.name} for i, v in app.trees.items()]
+
+def touch_and_get(tree_id):
+    """Load tree, update its timer, and return the tree object and subtree."""
+    tid, subtree = get_tid(tree_id)
+    load_tree(tree_id)  # load if it was not loaded in memory
+    tree = app.trees[tid]
+    tree.timer = time()  # update the tree's timer
+    return tree, subtree
+
+@get('/trees/<tree_id>')
+def callback(tree_id):
+    if app.safe_mode:
+        abort(404, f'invalid path /trees/{tree_id} in safe_mode mode')
+
+    tree, subtree = touch_and_get(tree_id)
+
+    props = set()
+    for node in tree.tree[subtree].traverse():
+        props |= {k for k in node.props if not k.startswith('_')}
+
+    return {'name': tree.name, 'props': props}
+
+@get('/trees/<tree_id>/nodeinfo')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+    return tree.tree[subtree].props
+
+@get('/trees/<tree_id>/nodestyle')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+    response.content_type = 'application/json'
+    return tree.tree[subtree].sm_style
+
+@get('/trees/<tree_id>/editable_props')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+
+    return {k: v for k, v in tree.tree[subtree].props.items()
+            if k not in ['tooltip', 'hyperlink'] and type(v) in [int, float, str]}
+    # TODO: Document what the hell is going on here.
+
+@get('/trees/<tree_id>/name')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+    response.content_type = 'application/json'
+    return tree.name
+
+@get('/trees/<tree_id>/newick')
+def callback(tree_id):
+    MAX_MB = 200
+    response.content_type = 'application/json'
+    return get_newick(tree_id, MAX_MB)
+
+@get('/trees/<tree_id>/seq')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+
+    def fasta(node):
+        name = node.name if node.name else ','.join(map(str, node.id))
+        return '>' + name + '\n' + node.props['seq']
+
+    response.content_type = 'application/json'
+    return '\n'.join(fasta(leaf) for leaf in tree.tree[subtree].leaves()
+                     if leaf.props.get('seq'))
+
+@get('/trees/<tree_id>/nseq')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+    response.content_type = 'application/json'
+    return sum(1 for leaf in tree.tree[subtree].leaves() if leaf.props.get('seq'))
+
+@get('/trees/<tree_id>/all_selections')
+def callback(tree_id):
+    tree, _ = touch_and_get(tree_id)
+    return {'selected': {name: {'nresults': len(results), 'nparents': len(parents)}
+                         for name, (results, parents) in (tree.selected or {}).items()}}
+
+@get('/trees/<tree_id>/selections')
+def callback(tree_id):
+    return {'selections': get_selections(tree_id)}
+
+@get('/trees/<tree_id>/select')
+def callback(tree_id):
+    nresults, nparents = store_selection(tree_id, request.query)
+    return {'message': 'ok', 'nresults': nresults, 'nparents': nparents}
+
+@get('/trees/<tree_id>/unselect')
+def callback(tree_id):
+    removed = unselect_node(tree_id, request.query)
+    return {'message': 'ok' if removed else 'selection not found'}
+
+@get('/trees/<tree_id>/remove_selection')
+def callback(tree_id):
+    removed = remove_selection(tree_id, request.query)
+    return {'message': 'ok' if removed else 'selection not found'}
+
+@get('/trees/<tree_id>/change_selection_name')
+def callback(tree_id):
+    change_selection_name(tree_id, request.query)
+    return {'message': 'ok'}
+
+@get('/trees/<tree_id>/selection/info')
+def callback(tree_id):
+    tree, _ = touch_and_get(tree_id)
+    return get_selection_info(tree, request.query)
+
+
+#### I AM HERE RIGHT NOW
 
 class Trees(Resource):
     def get(self, tree_id=None, pname=None):
@@ -277,64 +391,43 @@ class Trees(Resource):
         if rule == '/trees':
             if app.safe_mode:
                 raise InvalidUsage(f'invalid path {rule} in safe_mode mode', 404)
-            return [{ 'id': i, 'name': v.name } for i, v in app.trees.items()]
+            return [{'id': i, 'name': v.name} for i, v in app.trees.items()]
         elif rule == '/trees/<string:tree_id>':
             if app.safe_mode:
                 raise InvalidUsage(f'invalid path {rule} in safe_mode mode', 404)
-            properties = set()
-            for node in tree.tree.traverse():
-                properties |= node.props.keys()
-            properties = [ p for p in properties if not p.startswith("_") ]
-            return { 'name': tree.name, 'props': properties }
+
+            props = set()
+            for node in tree.tree[subtree].traverse():
+                props |= {k for k in node.props if not k.startswith('_')}
+
+            return {'name': tree.name, 'props': props}
         elif rule == '/trees/<string:tree_id>/nodeinfo':
-            node = gdn.get_node(tree.tree, subtree)
-            return node.props
+            return tree.tree[subtree].props
         elif rule == '/trees/<string:tree_id>/nodestyle':
-            node = gdn.get_node(tree.tree, subtree)
-            return node.sm_style
+            return tree.tree[subtree].sm_style
         elif rule == '/trees/<string:tree_id>/editable_props':
-            node = gdn.get_node(tree.tree, subtree)
-            props = node.props
-            props.pop("tooltip", None)
-            props.pop("hyperlink", None)
-            return { k: v for k,v in props.items() if type(v) in (int, float, str) }
-        elif rule == '/trees/<string:tree_id>/leaves_info':
-            node = gdn.get_node(tree.tree, subtree)
-            return get_nodes_info(tree.tree, node.iter_leaves(), request.args.copy())
-        elif rule == '/trees/<string:tree_id>/descendants_info':
-            node = gdn.get_node(tree.tree, subtree)
-            return get_nodes_info(tree.tree, node.iter_descendants(), request.args.copy())
+            return {k: v for k, v in tree.tree[subtree].props.items()
+                    if k not in ['tooltip', 'hyperlink'] and type(v) in [int, float, str]}
         elif rule == '/trees/<string:tree_id>/name':
             return tree.name
         elif rule == '/trees/<string:tree_id>/newick':
             MAX_MB = 200
             return get_newick(tree_id, MAX_MB)
         elif rule == '/trees/<string:tree_id>/seq':
-            node = gdn.get_node(tree.tree, subtree)
-            leaves = get_leaves(node)
-            seqs = []
-            for leaf in leaves:
-                if leaf.props.get("seq"):
-                    name = ">"
-                    if leaf.name:
-                        name += leaf.name
-                    else:
-                        name += ",".join(map(str, get_node_id(tree.tree, leaf, [])))
-                    seqs.append(name + "\n" + leaf.props.get("seq"))
-            return "\n".join(seqs)
+            def fasta(node):
+                name = node.name if node.name else ','.join(map(str, node.id))
+                return '>' + name + '\n' + node.props['seq']
 
+            return '\n'.join(fasta(leaf) for leaf in tree.tree[subtree].leaves()
+                             if leaf.props.get('seq'))
         elif rule == '/trees/<string:tree_id>/nseq':
-            node = gdn.get_node(tree.tree, subtree)
-            leaves = get_leaves(node)
-            return sum(1 for l in leaves if l.props.get("seq"))
+            return sum(1 for leaf in tree.tree[subtree].leaves() if leaf.props.get('seq'))
         # Selections
         elif rule == '/trees/<string:tree_id>/all_selections':
-            selected = {
-                name: { 'nresults': len(results), 'nparents': len(parents) }
-                for name, (results, parents) in (tree.selected or {}).items() }
-            return { 'selected': selected }
+            return {'selected': {name: {'nresults': len(results), 'nparents': len(parents)}
+                                 for name, (results, parents) in (tree.selected or {}).items()}}
         elif rule == '/trees/<string:tree_id>/selections':
-            return { 'selections': get_selections(tree_id) }
+            return {'selections': get_selections(tree_id)}
         elif rule == '/trees/<string:tree_id>/select':
             nresults, nparents = store_selection(tree_id, request.args.copy())
             return {'message': 'ok', 'nresults': nresults, 'nparents': nparents}
@@ -396,9 +489,9 @@ class Trees(Resource):
                 "clades": get_nodes_info(tree.tree, tree.active.clades.results, ["*"]),
             }
         elif rule == '/trees/<string:tree_id>/all_active_leaves':
-            active_leaves = set( n for n in tree.active.nodes.results if n.is_leaf )
+            active_leaves = set(n for n in tree.active.nodes.results if n.is_leaf)
             for n in tree.active.clades.results:
-                active_leaves.update(set(n.iter_leaves()))
+                active_leaves.update(set(n.leaves()))
             return get_nodes_info(tree.tree, active_leaves, ["*"])
         # Searches
         elif rule == '/trees/<string:tree_id>/searches':
@@ -416,7 +509,7 @@ class Trees(Resource):
         # Find
         elif rule == '/trees/<string:tree_id>/find':
             node = find_node(tree.tree, request.args.copy())
-            node_id = ",".join(map(str, get_node_id(tree.tree, node, [])))
+            node_id = ",".join(map(str, node.id))
             return {'id': node_id}
         elif rule == '/trees/<string:tree_id>/draw':
             drawer = get_drawer(tree_id, request.args.copy())
@@ -486,6 +579,7 @@ class Trees(Resource):
             try:
                 node_id = request.json
                 gdn.remove(gdn.get_node(t, node_id))
+                gdn.update_all_sizes(tree.tree)
                 return {'message': 'ok'}
             except AssertionError as e:
                 raise InvalidUsage(f'cannot remove {node_id}: {e}')
@@ -587,15 +681,14 @@ def load_tree(tree_id):
     "Add tree to app.trees and initialize it if not there, and return it"
     try:
         tid, subtree = get_tid(tree_id)
-        tree = app.trees[int(tid)]
+        tree = app.trees[tid]
 
         if tree.tree:
-            t = gdn.get_node(tree.tree, subtree)
             # Reinitialize if layouts have to be reapplied
             if not tree.initialized:
                 initialize_tree_style(tree)
 
-                for node in t.traverse():
+                for node in tree.tree[subtree].traverse():
                     node.is_initialized = False
                     node._smfaces = None
                     node._collapsed_faces = None
@@ -604,14 +697,17 @@ def load_tree(tree_id):
                 for node, args in tree.nodestyles.items():
                     update_node_style(node, args.copy())
 
-            return t
+            return tree.tree[subtree]
         else:
             tree.name, tree.tree, tree.layouts = retrieve_tree(tid)
+
             if tree.style.ultrametric:
                 tree.tree.convert_to_ultrametric()
                 gdn.standardize(tree.tree)
+
             initialize_tree_style(tree)
-            return gdn.get_node(tree.tree, subtree)
+
+            return tree.tree[subtree]
 
     except (AssertionError, IndexError):
         raise InvalidUsage(f'unknown tree id {tree_id}', 404)
@@ -749,18 +845,10 @@ def get_drawer(tree_id, args):
         pass
 
 
-def get_leaves(node):
-    if node.is_leaf:
-        leaves = [ node ]
-    else:
-        leaves = node.iter_leaves()
-    return leaves
-
-
 def get_newick(tree_id, max_mb):
     "Return the newick representation of the given tree"
 
-    newick = load_tree(tree_id).write(properties=[])
+    newick = load_tree(tree_id).write()
 
     size_mb = len(newick) / 1e6
     if size_mb > max_mb:
@@ -828,26 +916,14 @@ def get_selections(tree_id):
     return [ name for name, (results, _) in tree.selected.items() if node in results ]
 
 
-def get_node_id(tree, node, node_id):
-    parent = node.up
-    if not parent:
-        node_id.reverse()
-        return node_id
-    node_id.append(parent.children.index(node))
-    return get_node_id(tree, parent, node_id)
-
-
-
 def update_node_props(node, args):
     for prop, value in node.props.items():
         newvalue = args.pop(prop, "").strip()
-        if not newvalue:
-            continue
-        try:  # convert to proper type
-            newvalue = type(value)(newvalue)
-        except:
-            raise InvalidUsage('property {prop} should be of type {type(value)}')
-        else:
+        if newvalue:
+            try:  # convert to proper type
+                newvalue = type(value)(newvalue)
+            except:
+                raise InvalidUsage(f'property {prop} should be of type {type(value)}')
             node.add_prop(prop, newvalue)
 
 
@@ -855,14 +931,13 @@ def update_node_style(node, args):
     newstyle = {}
     for prop, value in dict(node.sm_style).items():
         newvalue = args.pop(prop, "").strip()
-        if not newvalue:
-            continue
-        try:  # convert to proper type
-            newvalue = type(value)(newvalue)
-        except:
-            raise InvalidUsage('property {prop} should be of type {type(value)}')
-        else:
-            newstyle[prop] = newvalue
+        if newvalue:
+            try:  # convert to proper type
+                newvalue = type(value)(newvalue)
+            except:
+                raise InvalidUsage(f'property {prop} should be of type {type(value)}')
+            else:
+                newstyle[prop] = newvalue
 
     extend_to_descendants = args.pop("extend_to_descendants", None)
     if extend_to_descendants:
@@ -879,7 +954,7 @@ def get_nodes_info(tree, nodes, props):
     no_props = len(props) == 1 and props[0] == ''
 
     if 'id' in props or no_props or '*' in props:
-        node_ids = [ ",".join(map(str, get_node_id(tree, node, [])))
+        node_ids = [ ",".join(map(str, node.id))
                 for node in nodes ]
     if no_props:
         return node_ids
@@ -906,9 +981,7 @@ def get_selection_info(tree, args):
     nodes = tree.selected.get(name, [[]])[0]
 
     props = args.pop('props', '').strip().split(',')
-    selection_info = get_nodes_info(tree.tree, nodes, props)
-
-    return selection_info
+    return get_nodes_info(tree.tree, nodes, props)
 
 
 def remove_selection(tid, args):
@@ -1100,7 +1173,7 @@ def activate_clade(tree_id):
     tree = app.trees[int(tid)]
     node = gdn.get_node(tree.tree, subtree)
     tree.active.clades.results.add(node)
-    for n in node.iter_descendants():
+    for n in node.descendants():
         tree.active.clades.results.discard(n)
     results = tree.active.clades.results
     parents = get_parents(results, count_leaves=True)
@@ -1647,8 +1720,6 @@ def add_resources(app, api, custom_api={}, custom_route={}):
         '/nodeinfo',
         '/nodestyle',
         '/editable_props',
-        '/leaves_info',
-        '/descendants_info',
         '/name',
         '/newick',
         '/seq',
@@ -1664,7 +1735,7 @@ def add_resources(app, api, custom_api={}, custom_route={}):
         '/unselect',  # unselect node
         '/selections', # selections perfomed on a node
         '/all_selections',  # name and nresults, nparents for each selection
-        '/info',  # get selection info: list of node_ids or dict with their desired properties
+        '/selection/info',  # get selection info: list of node_ids or dict with their desired properties
         '/remove_selection',
         '/change_selection_name',
         '/search_to_selection',  # convert search to selection
