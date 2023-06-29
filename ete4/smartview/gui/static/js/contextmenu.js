@@ -33,10 +33,10 @@ async function on_box_contextmenu(event, box, name, properties, node_id=[]) {
     div_contextmenu.innerHTML = "";
 
     if (box) {
-        const name_text = ": " + (name.length < 20 ? name :
+        const name_text = ": " + (name === null || name.length < 20 ? name :
                                   (name.slice(0, 8) + "..." + name.slice(-8)));
 
-        add_label("Node" + (name.length > 0 ? name_text : ""));
+        add_label("Node" + (name !== null && name.length > 0 ? name_text : ""));
 
         add_button("Zoom into branch <span>Dblclick</span>", () => zoom_into_box(box),  "", "zoom");
 
