@@ -51,14 +51,6 @@ def get_empty_active():
 
 # Drawing.
 
-def get_node_id(node, node_id):
-    parent = node.up
-    if not parent:
-        node_id.reverse()
-        return node_id
-    node_id.append(parent.children.index(node))
-    return get_node_id(parent, node_id)
-
 def safe_string(prop):
     if type(prop) in (int, float, str):
         return prop
@@ -378,8 +370,7 @@ class Drawer:
             name = collapsed_node.name
             properties = self.get_popup_props(collapsed_node)
 
-            node_id = tuple(get_node_id(collapsed_node, []))\
-                    if is_manually_collapsed else []
+            node_id = tuple(collapsed_node.id) if is_manually_collapsed else []
             box = draw_nodebox(self.flush_outline(ndx), name,
                     properties, node_id, searched_by + selected_by + active_clade,
                     { 'fill': collapsed_node.sm_style.get('bgcolor') })
