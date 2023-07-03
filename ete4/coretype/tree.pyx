@@ -1281,13 +1281,13 @@ cdef class Tree(object):
                                     layout=layout, tree_style=tree_style,
                                       units=units, dpi=dpi)
 
-    def explore(self, tree_name=None, layouts=[], show_leaf_name=True,
+    def explore(self, name=None, layouts=[], show_leaf_name=True,
                 show_branch_length=True, show_branch_support=True,
                 include_props=None, exclude_props=None,
-                host='127.0.0.1', port=5000):
+                port=5000, quiet=True, daemon=True):
         """Launch an interactive smartview session to visualize the tree.
 
-        :param str tree_name: Name used to store tree in local database.
+        :param str name: Name used to store and refer to the tree.
         :param list layouts: Layouts that will be available from the
             front end. It is important to name functions (__name__), as they
             will be adressed by that name in the explorer.
@@ -1314,10 +1314,10 @@ cdef class Tree(object):
             layout.active = False
             default_layouts.append(layout)
 
-        run_smartview(tree=self, tree_name=tree_name,
+        run_smartview(tree=self, name=name,
                       layouts=list(default_layouts + layouts),
                       include_props=include_props, exclude_props=exclude_props,
-                      host=host, port=port)
+                      port=port, quiet=quiet, daemon=daemon)
 
     def copy(self, method="cpickle"):
         """.. versionadded: 2.1
