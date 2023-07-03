@@ -1232,10 +1232,12 @@ class TreeNode(object):
             names_library = deque(names_library)
         else:
             avail_names = itertools.combinations_with_replacement(charset, 10)
+        # rearrange leaves in random order
+        next_deq = random.sample(next_deq, len(next_deq))
         for n in next_deq:
             if names_library:
                 if reuse_names:
-                    tname = random.sample(names_library, 1)[0]
+                    tname = random.choice(names_library)
                 else:
                     # choose random name
                     tname = random.choice(names_library)
