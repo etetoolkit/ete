@@ -1204,13 +1204,15 @@ class TreeNode(object):
 
         next_deq = deque([root])
         for i in range(size-1):
-            if random.randint(0, 1):
-                p = next_deq.pop()
-            else:
-                p = next_deq.popleft()
+            # choose a random leaf
+            p = random.choice(next_deq)
+            # remove chosen leaf
+            next_deq.remove(p)
 
+            # add two children to chosen leaf
             c1 = p.add_child()
             c2 = p.add_child()
+            # add new children to leaf deque
             next_deq.extend([c1, c2])
             if random_branches:
                 c1.dist = random.uniform(*branch_range)
@@ -1222,6 +1224,24 @@ class TreeNode(object):
                 c2.dist = 1.0
                 c1.support = 1.0
                 c2.support = 1.0
+
+        # next contains leaf nodes
+        charset =  "abcdefghijklmnopqrstuvwxyz"
+        if names_library:
+            names_library = deque(names_library)
+        else:
+            avail_names = itertools.combinations_with_replacement(charset, 10)
+        for n in next_deq:
+            if names_library:
+                if reuse_names:
+                    tname = random.sample(names_library, 1)[0]
+                else:
+                    # choose random name
+                    tname = random.choice(names_library)
+                    names_library.remove(tname)
+            else:
+                tname = ''.join(next(avail_names))
+            n.name = tname
 
         # next contains leaf nodes
         charset =  "abcdefghijklmnopqrstuvwxyz"
