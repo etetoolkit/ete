@@ -429,9 +429,19 @@ def callback(tree_id):
 
 @get('/trees/<tree_id>/draw')
 def callback(tree_id):
-    drawer = get_drawer(tree_id, request.query)
-    response.content_type = 'application/json'
-    return json.dumps(list(drawer.draw()))
+    try:
+        drawer = get_drawer(tree_id, request.query)
+
+        graphics = json.dumps(list(drawer.draw()))
+
+        response.content_type = 'application/json'
+        if app.compress:
+            response.add_header('Content-Encoding', 'br')
+            return brotli.compress(graphics)
+        else:
+            return graphics
+    except (AssertionError, SyntaxError) as e:
+        abort(400, f'when drawing: {e}')
 
 @get('/trees/<tree_id>/size')
 def callback(tree_id):
@@ -1492,11 +1502,13 @@ def copy_style(tree_style):
 
 def initialize(tree=None, layouts=None,
                include_props=None, exclude_props=None,
-               safe_mode=False):
+               safe_mode=False, compress=False):
     """Initialize the global object app."""
     app = GlobalStuff()
 
     app.safe_mode = safe_mode
+
+    app.compress = compress
 
     # App associated layouts
     # Layouts will be accessible for each tree independently
@@ -1525,7 +1537,8 @@ def initialize(tree=None, layouts=None,
 
 def run_smartview(tree=None, name=None, layouts=[],
                   include_props=None, exclude_props=None,
-                  safe_mode=False, port=5000, quiet=True, daemon=True):
+                  safe_mode=False, port=5000, quiet=True,
+                  compress=False, daemon=True):
     # Set tree_name to None if no tree was provided
     # Generate tree_name if none was provided
     name = name or (make_name() if tree else None)
@@ -1533,7 +1546,7 @@ def run_smartview(tree=None, name=None, layouts=[],
     global app
     app = initialize(name, layouts,
                      include_props=include_props, exclude_props=exclude_props,
-                     safe_mode=safe_mode)
+                     safe_mode=safe_mode, compress=compress)
 
     # TODO: Create app.recent_trees with paths to recently viewed trees
 

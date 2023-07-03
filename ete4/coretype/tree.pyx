@@ -1317,7 +1317,7 @@ cdef class Tree(object):
         run_smartview(tree=self, name=name,
                       layouts=list(default_layouts + layouts),
                       include_props=include_props, exclude_props=exclude_props,
-                      port=port, quiet=quiet, daemon=daemon)
+                      port=port, quiet=quiet, compress=False, daemon=daemon)
 
     def copy(self, method="cpickle"):
         """.. versionadded: 2.1
