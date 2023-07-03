@@ -1189,6 +1189,7 @@ class TreeNode(object):
           support values.
 
         """
+        print("using NEW VERSION")
         NewNode = self.__class__
 
         if len(self.children) > 1:
@@ -1242,23 +1243,6 @@ class TreeNode(object):
             else:
                 tname = ''.join(next(avail_names))
             n.name = tname
-
-        # next contains leaf nodes
-        charset =  "abcdefghijklmnopqrstuvwxyz"
-        if names_library:
-            names_library = deque(names_library)
-        else:
-            avail_names = itertools.combinations_with_replacement(charset, 10)
-        for n in next_deq:
-            if names_library:
-                if reuse_names:
-                    tname = random.sample(names_library, 1)[0]
-                else:
-                    tname = names_library.pop()
-            else:
-                tname = ''.join(next(avail_names))
-            n.name = tname
-
 
     def set_outgroup(self, outgroup):
         """
