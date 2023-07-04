@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
 
-import sys
 import os
-import hashlib
 import time, random
-import re
 from distutils.core import setup, Extension
 
 from Cython.Build import cythonize
@@ -41,23 +38,20 @@ def can_import(mname):
         try:
             __import__('PyQt4.QtCore')
             __import__('PyQt4.QtGui')
+            return True
         except ImportError:
             try:
                 __import__('PyQt5.QtCore')
                 __import__('PyQt5.QtGui')
+                return True
             except ImportError:
                 return False
-            else:
-                return True
-        else:
-            return True
     else:
         try:
             __import__(mname)
+            return True
         except ImportError:
             return False
-        else:
-            return True
 
 try:
     ETE_VERSION = open(os.path.join(HERE, 'VERSION')).readline().strip()
@@ -95,63 +89,47 @@ extensions = [
     Extension('ete4.smartview.renderer.face_positions', ['ete4/smartview/renderer/face_positions.pyx'])]
 
 
-try:
-    setup(
-        include_package_data = True,
+setup(
+    include_package_data = True,
 
-        name = MOD_NAME,
-        version = ETE_VERSION,
-        packages = ['ete4'],
+    name = MOD_NAME,
+    version = ETE_VERSION,
+    packages = ['ete4'],
 
-        entry_points = {'console_scripts':
-                        ['ete4 = %s.tools.ete:main' % MOD_NAME]},
-        requires = [],
+    entry_points = {'console_scripts':
+                    ['ete4 = %s.tools.ete:main' % MOD_NAME]},
+    requires = [],
 
-        # Project uses reStructuredText, so ensure that the docutils get
-        # installed or upgraded on the target machine
-        install_requires = [
-            ],
-        package_data = {
+    install_requires = [],
+    package_data = {},
+    data_files = [('%s/tools' % MOD_NAME,
+                   ['%s/tools/ete_build.cfg' % MOD_NAME])],
 
-        },
-        data_files = [('%s/tools' % MOD_NAME,
-                       ['%s/tools/ete_build.cfg' % MOD_NAME])],
+    # metadata for upload to PyPI
+    author = 'Jaime Huerta-Cepas, Jordi Burguet-Castell',
+    author_email = 'jhcepas@gmail.com',
+    maintainer = 'Jaime Huerta-Cepas, Jordi Burguet-Castell',
+    maintainer_email = 'jhcepas@gmail.com',
+    platforms = 'OS Independent',
+    license = 'GPLv3',
+    description = 'A Python Environment for (phylogenetic) Tree Exploration',
+    long_description = LONG_DESCRIPTION,
+    classifiers = CLASSIFIERS,
+    provides = [MOD_NAME],
+    keywords = "tree, tree reconstruction, tree visualization, tree comparison, phylogeny, phylogenetics, phylogenomics",
+    url = "http://etetoolkit.org",
+    project_urls = {
+        "Documentation": "http://etetoolkit.org/docs/latest/tutorial/index.html",
+        "Source": "https://github.com/etetoolkit/ete",
+    },
+    download_url = "http://etetoolkit.org/static/releases/ete3/",
 
-        # metadata for upload to PyPI
-        author = 'Jaime Huerta-Cepas, Jordi Burguet-Castell',
-        author_email = 'jhcepas@gmail.com',
-        maintainer = 'Jaime Huerta-Cepas, Jordi Burguet-Castell',
-        maintainer_email = 'jhcepas@gmail.com',
-        platforms = 'OS Independent',
-        license = 'GPLv3',
-        description = 'A Python Environment for (phylogenetic) Tree Exploration',
-        long_description = LONG_DESCRIPTION,
-        classifiers = CLASSIFIERS,
-        provides = [MOD_NAME],
-        keywords = "tree, tree reconstruction, tree visualization, tree comparison, phylogeny, phylogenetics, phylogenomics",
-        url = "http://etetoolkit.org",
-        project_urls = {
-            "Documentation": "http://etetoolkit.org/docs/latest/tutorial/index.html",
-            "Source": "https://github.com/etetoolkit/ete",
-        },
-        download_url = "http://etetoolkit.org/static/releases/ete3/",
+    ext_modules = cythonize(extensions),
+)
 
-        ext_modules = cythonize(extensions),
-        # scripts=glob('scripts/*.py'),
-        # data_files=[
-        #     ('server', glob('scripts/static/*.*')),
-        #     ('server/external', glob('scripts/static/external/*')),
-        #     ('sql', glob('scripts/*.sql')),
-        #     ('examples', glob('examples/*'))])
-    )
 
-except:
-    print('\033[91m - Errors found! - \033[0m')
-    raise
-
-else:
-    print('\033[92m - Done! - \033[0m')
-    for mname, msg, ex in PYTHON_DEPENDENCIES:
-        if not can_import(mname):
-            print('Warning:\033[93m Optional library [%s] could not be found \033[0m' % mname)
-            print('  ', msg)
+print('\033[92m - Done! - \033[0m')
+for mname, msg, ex in PYTHON_DEPENDENCIES:
+    if not can_import(mname):
+        print('Warning:\033[93m Optional library [%s] could not be found \033[0m' % mname)
+        print('  ', msg)
