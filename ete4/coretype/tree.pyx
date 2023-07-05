@@ -1904,35 +1904,6 @@ cdef class Tree(object):
         return md5(str(sorted(edge_keys)).encode('utf-8')).hexdigest()
 
 
-    # def get_partitions(self):
-    #     """
-    #     .. versionadded: 2.1
-
-    #     It returns the set of all possible partitions under a
-    #     node. Note that current implementation is quite inefficient
-    #     when used in very large trees.
-
-    #     t = Tree("((a, b), e);")
-    #     partitions = t.get_partitions()
-
-    #     # Will return:
-    #     # a,b,e
-    #     # a,e
-    #     # b,e
-    #     # a,b
-    #     # e
-    #     # b
-    #     # a
-    #     """
-    #     all_leaves = frozenset(self.get_leaf_names())
-    #     all_partitions = set([all_leaves])
-    #     for n in self.descendants():
-    #         p1 = frozenset(n.get_leaf_names())
-    #         p2 = frozenset(all_leaves - p1)
-    #         all_partitions.add(p1)
-    #         all_partitions.add(p2)
-    #     return all_partitions
-
     def convert_to_ultrametric(self, tree_length=None, strategy='balanced'):
         """
         .. versionadded: 2.1
