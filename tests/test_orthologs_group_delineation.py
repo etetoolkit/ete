@@ -49,7 +49,7 @@ def run_preanalysis(tree, taxonomy_db):
 
     annot_props = set()
     for i, node in enumerate(tree.traverse()):
-        if not node.is_leaf():
+        if not node.is_leaf:
             node.name = '%s-%d' % (make_name(i), get_depth(node))
 
         annot_props |= set(node.props)
@@ -67,14 +67,15 @@ class Test_OGD(unittest.TestCase):
                 update_ete_data(f'./tests/{fname}', url_base + fname)
 
         tax_db = NCBITaxa(ETE_DATA_HOME + '/tests/e6.taxa.sqlite')
-        tree = PhyloTree(ETE_DATA_HOME + '/tests/P53.faa.nw', format=1)
+        tree = PhyloTree(open(ETE_DATA_HOME + '/tests/P53.faa.nw'), parser=1)
 
         annot_props = run_preanalysis(tree, tax_db)  # the preanalysis that Ana does
 
         for p in ['name', 'dist', 'support']:
             annot_props.remove(p)
 
-        annot_tree_nw = tree.write(properties=annot_props, format_root_node=True)
+        annot_tree_nw = tree.write(props=annot_props, parser=5,
+                                   format_root_node=True)
 
         # Get reference result to compare with.
         if not os.path.exists(ETE_DATA_HOME + f'/tests/annot_tree.nw'):

@@ -32,7 +32,7 @@ class LayoutLeafName(TreeLayout):
             color=self.color, padding_x=self.padding.x, padding_y=self.padding.y)
 
     def set_node_style(self, node):
-        if node.is_leaf():
+        if node.is_leaf:
             node.add_face(self.face, position=self.pos, column=1)
         else:
             # Collapsed face
@@ -67,7 +67,7 @@ class LayoutNumberLeaves(TreeLayout):
         self.collapsed_only = collapsed_only
 
     def set_node_style(self, node):
-        if not node.is_leaf():
+        if not node.is_leaf:
             face = TextFace(
                 self.formatter % len(node),  # number of leaves
                 color=self.color,
@@ -95,7 +95,7 @@ def _get_layout_branch_attr(attr, pos, name=None,
             padding_y=padding_y)
 
     def layout_fn(node):
-        if not node.is_leaf() and node.dist > 0:
+        if not node.is_leaf and (node.dist is None or node.dist > 0):
             node.add_face(branch_attr_face, position=pos, column=0)
             node.add_face(branch_attr_face, position=pos, column=0,
                     collapsed_only=True)
@@ -166,7 +166,7 @@ class LayoutOutline(TreeLayout):
             color=color, opacity=opacity, collapsing_height=collapsing_height)
 
     def set_node_style(self, node):
-        if not node.is_leaf():
+        if not node.is_leaf:
             node.add_face(self.face,
                     position="branch_right", column=0,
                     collapsed_only=True)
@@ -179,7 +179,7 @@ def get_layout_align_link(stroke_color='gray', stroke_width=0.5,
                                     line_type=line_type,
                                     opacity=opacity)
     def layout_fn(node):
-        if node.is_leaf():
+        if node.is_leaf:
             node.add_face(align_link_face,
                           position='branch_right',
                           column=1e9)

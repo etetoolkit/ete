@@ -1,6 +1,5 @@
 from sys import stderr
 from . import clustvalidation
-from ..coretype.tree import _translate_nodes
 from .. import Tree, ArrayTable
 import numpy
 
@@ -57,13 +56,13 @@ class ClusterNode(Tree):
     profile = property(fget=_get_prof, fset=_set_profile)
     deviation = property(fget=_get_std, fset=_set_forbidden)
 
-    def __init__(self, newick=None, text_array=None,
-                 fdist=clustvalidation.default_dist, up=None):
+    def __init__(self, data=None, children=None, text_array=None,
+                 fdist=clustvalidation.default_dist):
         # Default dist is spearman_dist when scipy module is loaded
         # otherwise, it is set to euclidean_dist.
 
         # Initialize basic tree features and loads the newick (if any)
-        Tree.__init__(self, newick, up=up)
+        Tree.__init__(self, data, children)
         self._fdist = None
         self._silhouette = None
         self._intercluster_dist = None
@@ -82,7 +81,7 @@ class ClusterNode(Tree):
         if text_array:
             self.link_to_arraytable(text_array)
 
-        if newick:
+        if data:
             self.set_distance_function(fdist)
 
     def __repr__(self):
@@ -136,9 +135,9 @@ class ClusterNode(Tree):
 
         for n in self.traverse():
             n.arraytable = array
-            if n.is_leaf() and n.name in array.rowNames:
+            if n.is_leaf and n.name in array.rowNames:
                 n._profile = array.get_row_vector(n.name)
-            elif n.is_leaf():
+            elif n.is_leaf:
                 n._profile = [numpy.nan]*len(array.colNames)
                 missing_leaves.append(n)
 
@@ -197,7 +196,7 @@ class ClusterNode(Tree):
 
         if fdist is None:
             fdist = self._fdist
-        nodes = _translate_nodes(self, *clusters)
+        nodes = self._translate_nodes(clusters)
         return clustvalidation.get_dunn_index(fdist, *nodes)
 
     def _calculate_avg_profile(self):

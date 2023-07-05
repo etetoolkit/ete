@@ -14,7 +14,7 @@ class LayoutHumanOGs(TreeLayout):
         self.color = color
 
     def set_node_style(self, node):
-        if node.is_leaf():
+        if node.is_leaf:
             human_orth = node.props.get(self.human_orth_prop)
             if human_orth:
                 human_orth = " ".join(human_orth.split('|'))
@@ -33,7 +33,7 @@ class LayoutUCSC(TreeLayout):
         self.textcolor = textcolor
 
     def set_node_style(self, node):
-         if node.is_leaf():
+         if node.is_leaf:
             if node.props.get('UCSC'):
                 ucsc = node.props.get('UCSC')
                 ucsc_face = TextFace(ucsc, color=self.textcolor)
@@ -54,7 +54,7 @@ class LayoutUCSCtrans(TreeLayout):
         self.color = color
 
     def set_node_style(self, node):
-        if node.is_leaf():
+        if node.is_leaf:
             ucsc_trans = node.props.get(self.ucsc_trans_prop)
             if ucsc_trans:
                 ucsc_trans = " ".join(ucsc_trans.split('|'))

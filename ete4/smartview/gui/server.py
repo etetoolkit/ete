@@ -14,40 +14,70 @@ REST call examples:
 
 import os
 import re
+import platform
+from subprocess import Popen, DEVNULL
+from threading import Thread
 from importlib import reload as module_reload
 from math import pi, inf
-from functools import partial
-from time import time
-from threading import Timer
+from time import time, sleep
 from datetime import datetime
-from contextlib import contextmanager
 from collections import defaultdict, namedtuple
 from copy import copy, deepcopy
 from dataclasses import dataclass
 import gzip
 import json
 import _pickle as pickle
-from types import FunctionType
 import shutil
 import logging
 
-from flask import Flask, request, jsonify, redirect, url_for
-from flask_restful import Resource, Api
-from flask_cors import CORS
-from flask_compress import Compress
+import brotli
+
+from bottle import (
+    get, post, put, redirect, static_file,
+    request, response, error, abort, HTTPError, run)
 
 from ete4 import Tree
 from ete4.parser.newick import NewickError
 from ete4.smartview import TreeStyle, layout_modules
-from ete4.smartview.utils import InvalidUsage, get_random_string
-from ete4.parser import ete_format
-from ete4.smartview.renderer import nexus, gardening as gdn
+from ete4.parser import ete_format, nexus
+from ete4.smartview.renderer import gardening as gdn
 from ete4.smartview.renderer import drawer as drawer_module
 from ete4 import treematcher as tm
 
 
+class GlobalStuff:
+    pass  # class to store data
+
+
+# Make sure we send the errors as json too.
+@error(400)
+@error(404)
+def json_error(error):
+    response.content_type = 'application/json'
+    return json.dumps({'message': error.body})
+
+
+def req_json():
+    """Return what request.json would return, but gracefully aborting."""
+    try:
+        return json.loads(request.body.read())
+    except json.JSONDecodeError as e:
+        abort(400, f'bad json content: {e}')
+
+
+def nice_html(content, title='Tree Explorer'):
+    return f"""
+<!DOCTYPE html>
+<html><head><title>{title}</title>
+<link rel="icon" type="image/png" href="/static/icon.png">
+<link rel="stylesheet" href="/static/upload.css"></head>
+<body><div class="centered">{content}</div></body></html>"""
+
+
 # call initialize() to fill it up
 app = None
+g_threads = {}
+
 
 # Dataclass containing info specific to each tree
 @dataclass
@@ -66,367 +96,492 @@ class AppTree:
     searches: dict = None
 
 
-# REST api.
+# Routes.
 
-class Drawers(Resource):
-    def get(self, name=None, tree_id=None):
-        "Return data from the drawer. In aligned mode if aligned faces"
-        try:
-            tree_id, _ = get_tid(tree_id)
-            if name not in ['Rect', 'Circ'] and\
-                    any(getattr(ly, 'aligned_faces', False) and ly.active\
-                        for ly in sum(app.trees[int(tree_id)].layouts.values(),[])):
-                name = 'Align' + name
-            drawer_class = next(d for d in drawer_module.get_drawers()
-                if d.__name__[len('Drawer'):] == name)
-            return {'type': drawer_class.TYPE,
-                    'npanels': drawer_class.NPANELS}
-        except StopIteration:
-            print(name)
-            print(list(drawer_module.get_drawers()))
-            raise InvalidUsage(f'not a valid drawer: {name}')
-
-
-class Layouts(Resource):
-    def get(self, tree_id=None):
-        rule = request.url_rule.rule  # shortcut
-
-        if rule == '/layouts':
-            tree_style = app.trees['default'].style
-            app.trees.pop('default')
-            avail_layouts = { 'default': app.default_layouts }
-        elif rule == '/layouts/<string:tree_id>':
-            tid = get_tid(tree_id)[0]
-            tree = app.trees[int(tid)]
-            tree_style = tree.style
-            avail_layouts = tree.layouts
-        elif rule == '/layouts/list':
-            return { module: [ [ ly.name, ly.description ] for ly in layouts if ly.name ]
-                    for module, layouts in app.avail_layouts.items() }
+@get('/')
+def callback():
+    if app.trees:
+        if len(app.trees) == 1:
+            name = list(t.name for t in app.trees.values())[0]
+            redirect(f'/static/gui.html?tree={name}')
         else:
-            raise InvalidUsage(f'invalid GET endpoint: {rule}')
+            trees = '\n'.join('<li><a href="/static/gui.html?tree='
+                              f'{t.name}">{t.name}</li>' for t in app.trees.values())
+            return nice_html(f'<h1>Loaded Trees</h1><ul>\n{trees}\n</ul>')
+    else:
+        return nice_html("""<h1>ETE</h1>
+<p>No trees loaded.</p>
+<p>See the <a href="/help">help page</a> for more information.</p>""")
 
-        layouts = {}
-        for module, lys in avail_layouts.items():
-            layouts[module] = { l.name: l.active for l in lys if l.name}
+@get('/help')
+def callback():
+    return nice_html("""<h1>Help</h1>
+You can go to the <a href="/static/upload.html">upload page</a>, see
+a <a href="/">list of loaded trees</a>, or
+<a href="http://etetoolkit.org/">consult the documentation</a>.""")
 
-        return layouts
+@get('/static/<path:path>')
+def callback(path):
+    DIR = os.path.dirname(os.path.abspath(__file__))
+    return static_file(path, f'{DIR}/static')
 
-    def put(self):
-        rule = request.url_rule.rule  # shortcut
+@get('/drawers/<name>/<tree_id>')
+def callback(name, tree_id):
+    """Return type (rect/circ) and number of panels of the drawer."""
+    try:
+        tree_id, _ = get_tid(tree_id)
 
-        if rule == '/layouts/update':
-            update_app_available_layouts()
+        # NOTE: Apparently we need to know the tree_id we are
+        # referring to because it checks if there are aligned faces in
+        # it to see if we are using a DrawerAlignX drawer (instead of
+        # DrawerX).
+        tree_layouts = sum(app.trees[int(tree_id)].layouts.values(), [])
+        if (name not in ['Rect', 'Circ'] and
+            any(getattr(ly, 'aligned_faces', False) and ly.active
+                for ly in tree_layouts)):
+            name = 'Align' + name
+        # TODO: We probably want to get rid of all this.
+
+        drawer_class = next(d for d in drawer_module.get_drawers()
+                            if d.__name__[len('Drawer'):] == name)
+        return {'type': drawer_class.TYPE,
+                'npanels': drawer_class.NPANELS}
+    except StopIteration:
+        abort(400, f'not a valid drawer: {name}')
+
+@get('/layouts')
+def callback():
+    # Return dict that, for every layout module, has a dict with the
+    # names of its layouts and whether they are active or not.
+    app.trees.pop('default', None)  # FIXME: Why do we do this??
+
+    return {'default': {layout.name: layout.active
+                        for layout in app.default_layouts if layout.name}}
+    # The response will look like:
+    # {
+    #     "default": {
+    #         "Branch length": true,
+    #         "Branch support": true,
+    #         "Leaf name": true,
+    #         "Number of leaves": false
+    #     }
+    # }
+
+@get('/layouts/list')
+def callback():
+    return {module: [[ly.name, ly.description] for ly in layouts if ly.name]
+            for module, layouts in app.avail_layouts.items()}
+    # The response will look like:
+    # {"context_layouts": [["Genomic context", ""]],
+    #  "domain_layouts":  [["Pfam domains", ""], ["Smart domains",""]],
+    #  ...
+    #  "staple_layouts": [["Barplot_None_None", ""]]}
+
+@get('/layouts/<tree_id>')
+def callback(tree_id):
+    # Return dict that, for every layout module in the tree, has a dict
+    # with the names of its layouts and whether they are active or not.
+    tid = get_tid(tree_id)[0]
+    tree_layouts = app.trees[int(tid)].layouts
+
+    layouts = {}
+    for module, lys in tree_layouts.items():
+        layouts[module] = {l.name: l.active for l in lys if l.name}
+
+    return layouts
+    # The response will look like:
+    # {
+    #     "default": {
+    #         "Branch length": true,
+    #         "Branch support": true,
+    #         "Leaf name": true,
+    #         "Number of leaves": false
+    #     }
+    # }
+
+@put('/layouts/update')
+def callback():
+    update_app_available_layouts()
+
+
+@get('/trees')
+def callback():
+    if app.safe_mode:
+        abort(404, 'invalid path /trees in safe_mode mode')
+
+    response.content_type = 'application/json'
+    return json.dumps([{'id': i, 'name': v.name} for i, v in app.trees.items()])
+
+def touch_and_get(tree_id):
+    """Load tree, update its timer, and return the tree object and subtree."""
+    tid, subtree = get_tid(tree_id)
+    load_tree(tree_id)  # load if it was not loaded in memory
+    tree = app.trees[tid]
+    tree.timer = time()  # update the tree's timer
+    return tree, subtree
+
+@get('/trees/<tree_id>')
+def callback(tree_id):
+    if app.safe_mode:
+        abort(404, f'invalid path /trees/{tree_id} in safe_mode mode')
+
+    tree, subtree = touch_and_get(tree_id)
+
+    props = set()
+    for node in tree.tree[subtree].traverse():
+        props |= {k for k in node.props if not k.startswith('_')}
+
+    return {'name': tree.name, 'props': list(props)}
+
+@get('/trees/<tree_id>/nodeinfo')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+    return tree.tree[subtree].props
+
+@get('/trees/<tree_id>/nodestyle')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+    response.content_type = 'application/json'
+    return json.dumps(tree.tree[subtree].sm_style)
+
+@get('/trees/<tree_id>/editable_props')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+
+    return {k: v for k, v in tree.tree[subtree].props.items()
+            if k not in ['tooltip', 'hyperlink'] and type(v) in [int, float, str]}
+    # TODO: Document what the hell is going on here.
+
+@get('/trees/<tree_id>/name')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+    response.content_type = 'application/json'
+    return json.dumps(tree.name)
+
+@get('/trees/<tree_id>/newick')
+def callback(tree_id):
+    MAX_MB = 200
+    response.content_type = 'application/json'
+    return json.dumps(get_newick(tree_id, MAX_MB))
+
+@get('/trees/<tree_id>/seq')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+
+    def fasta(node):
+        name = node.name if node.name else ','.join(map(str, node.id))
+        return '>' + name + '\n' + node.props['seq']
+
+    response.content_type = 'application/json'
+    return json.dumps('\n'.join(fasta(leaf) for leaf in tree.tree[subtree].leaves()
+                      if leaf.props.get('seq')))
+
+@get('/trees/<tree_id>/nseq')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+    response.content_type = 'application/json'
+    return json.dumps(sum(1 for leaf in tree.tree[subtree].leaves() if leaf.props.get('seq')))
+
+@get('/trees/<tree_id>/all_selections')
+def callback(tree_id):
+    tree, _ = touch_and_get(tree_id)
+    return {'selected': {name: {'nresults': len(results), 'nparents': len(parents)}
+                         for name, (results, parents) in (tree.selected or {}).items()}}
+
+@get('/trees/<tree_id>/selections')
+def callback(tree_id):
+    return {'selections': get_selections(tree_id)}
+
+@get('/trees/<tree_id>/select')
+def callback(tree_id):
+    nresults, nparents = store_selection(tree_id, request.query)
+    return {'message': 'ok', 'nresults': nresults, 'nparents': nparents}
+
+@get('/trees/<tree_id>/unselect')
+def callback(tree_id):
+    removed = unselect_node(tree_id, request.query)
+    return {'message': 'ok' if removed else 'selection not found'}
+
+@get('/trees/<tree_id>/remove_selection')
+def callback(tree_id):
+    removed = remove_selection(tree_id, request.query)
+    return {'message': 'ok' if removed else 'selection not found'}
+
+@get('/trees/<tree_id>/change_selection_name')
+def callback(tree_id):
+    change_selection_name(tree_id, request.query)
+    return {'message': 'ok'}
+
+@get('/trees/<tree_id>/selection/info')
+def callback(tree_id):
+    tree, _ = touch_and_get(tree_id)
+    return get_selection_info(tree, request.query)
+
+@get('/trees/<tree_id>/search_to_selection')
+def callback(tree_id):
+    search_to_selection(tree_id, request.query)
+    return {'message': 'ok'}
+
+@get('/trees/<tree_id>/prune_by_selection')
+def callback(tree_id):
+    prune_by_selection(tree_id, request.query)
+    return {'message': 'ok'}
+
+@get('/trees/<tree_id>/active')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+    node = tree.tree[subtree]
+
+    response.content_type = 'application/json'
+    if get_active_clade(node, tree.active.clades.results):
+        return json.dumps('active_clade')
+    elif node in tree.active.nodes.results:
+        return json.dumps('active_node')
+    else:
+        return json.dumps('')
+
+@get('/trees/<tree_id>/activate_node')
+def callback(tree_id):
+    activate_node(tree_id)
+    return {'message': 'ok'}
+
+@get('/trees/<tree_id>/deactivate_node')
+def callback(tree_id):
+    deactivate_node(tree_id)
+    return {'message': 'ok'}
+
+@get('/trees/<tree_id>/activate_clade')
+def callback(tree_id):
+    activate_clade(tree_id)
+    return {'message': 'ok'}
+
+@get('/trees/<tree_id>/deactivate_clade')
+def callback(tree_id):
+    deactivate_clade(tree_id)
+    return {'message': 'ok'}
+
+@get('/trees/<tree_id>/store_active_nodes')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+    nresults, nparents = store_active(tree, 0, request.query)
+    return {'message': 'ok', 'nresults': nresults, 'nparents': nparents}
+
+@get('/trees/<tree_id>/store_active_clades')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+    nresults, nparents = store_active(tree, 1, request.query)
+    return {'message': 'ok', 'nresults': nresults, 'nparents': nparents}
+
+@get('/trees/<tree_id>/remove_active_nodes')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+    remove_active(tree, 0)
+    return {'message': 'ok'}
+
+@get('/trees/<tree_id>/remove_active_clades')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+    remove_active(tree, 1)
+    return {'message': 'ok'}
+
+@get('/trees/<tree_id>/all_active')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+    return {
+        'nodes': get_nodes_info(tree.tree, tree.active.nodes.results, ['*']),
+        'clades': get_nodes_info(tree.tree, tree.active.clades.results, ['*']),
+    }
+
+@get('/trees/<tree_id>/all_active_leaves')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+
+    active_leaves = set(n for n in tree.active.nodes.results if n.is_leaf)
+    for n in tree.active.clades.results:
+        active_leaves.update(set(n.leaves()))
+
+    return get_nodes_info(tree.tree, active_leaves, ['*'])
+
+# Searches
+@get('/trees/<tree_id>/searches')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+    return {'searches': {text: {'nresults': len(results), 'nparents': len(parents)}
+                         for text, (results, parents) in (tree.searches or {}).items()}}
+
+@get('/trees/<tree_id>/search')
+def callback(tree_id):
+    nresults, nparents = store_search(tree_id, request.query)
+    return {'message': 'ok', 'nresults': nresults, 'nparents': nparents}
+
+@get('/trees/<tree_id>/remove_search')
+def callback(tree_id):
+    removed = remove_search(tree_id, request.query)
+    return {'message': 'ok' if removed else 'search not found'}
+
+# Find
+@get('/trees/<tree_id>/find')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+    node = find_node(tree.tree, request.query)
+    node_id = ','.join(map(str, node.id))
+    return {'id': node_id}
+
+@get('/trees/<tree_id>/draw')
+def callback(tree_id):
+    try:
+        drawer = get_drawer(tree_id, request.query)
+
+        graphics = json.dumps(list(drawer.draw()))
+
+        response.content_type = 'application/json'
+        if app.compress:
+            response.add_header('Content-Encoding', 'br')
+            return brotli.compress(graphics)
         else:
-            raise InvalidUsage(f'invalid PUT endpoint: {rule}')
+            return graphics
+    except (AssertionError, SyntaxError) as e:
+        abort(400, f'when drawing: {e}')
 
+@get('/trees/<tree_id>/size')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+    width, height = tree.tree[subtree].size
+    return {'width': width, 'height': height}
 
-class Trees(Resource):
-    def get(self, tree_id=None, pname=None):
-        "Return data from the tree (or info about all trees if no id given)"
-        rule = request.url_rule.rule  # shortcut
+@get('/trees/<tree_id>/collapse_size')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+    response.content_type = 'application/json'
+    return json.dumps(tree.style.collapse_size)
 
-        # Update tree's timer
-        if rule.startswith('/trees/<string:tree_id>'):
-            tid, subtree = get_tid(tree_id)
-            t = load_tree(tree_id)  # load if it was not loaded in memory
-            tree = app.trees[int(tid)]
-            tree.timer = time()
+@get('/trees/<tree_id>/properties')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
 
-        if rule == '/trees':
-            if app.safe_mode:
-                raise InvalidUsage(f'invalid path {rule} in safe_mode mode', 404)
-            return [{ 'id': i, 'name': v.name } for i, v in app.trees.items()]
-        elif rule == '/trees/<string:tree_id>':
-            if app.safe_mode:
-                raise InvalidUsage(f'invalid path {rule} in safe_mode mode', 404)
-            properties = set()
-            for node in tree.tree.traverse():
-                properties |= node.props.keys()
-            properties = [ p for p in properties if not p.startswith("_") ]
-            return { 'name': tree.name, 'props': properties }
-        elif rule == '/trees/<string:tree_id>/nodeinfo':
-            node = gdn.get_node(tree.tree, subtree)
-            return node.props
-        elif rule == '/trees/<string:tree_id>/nodestyle':
-            node = gdn.get_node(tree.tree, subtree)
-            return node.sm_style
-        elif rule == '/trees/<string:tree_id>/editable_props':
-            node = gdn.get_node(tree.tree, subtree)
-            props = node.props
-            props.pop("tooltip", None)
-            props.pop("hyperlink", None)
-            return { k: v for k,v in props.items() if type(v) in (int, float, str) }
-        elif rule == '/trees/<string:tree_id>/leaves_info':
-            node = gdn.get_node(tree.tree, subtree)
-            return get_nodes_info(tree.tree, node.iter_leaves(), request.args.copy())
-        elif rule == '/trees/<string:tree_id>/descendants_info':
-            node = gdn.get_node(tree.tree, subtree)
-            return get_nodes_info(tree.tree, node.iter_descendants(), request.args.copy())
-        elif rule == '/trees/<string:tree_id>/name':
-            return tree.name
-        elif rule == '/trees/<string:tree_id>/newick':
-            MAX_MB = 200
-            return get_newick(tree_id, MAX_MB)
-        elif rule == '/trees/<string:tree_id>/seq':
-            node = gdn.get_node(tree.tree, subtree)
-            leaves = get_leaves(node)
-            seqs = []
-            for leaf in leaves:
-                if leaf.props.get("seq"):
-                    name = ">"
-                    if leaf.name:
-                        name += leaf.name
-                    else:
-                        name += ",".join(map(str, get_node_id(tree.tree, leaf, [])))
-                    seqs.append(name + "\n" + leaf.props.get("seq"))
-            return "\n".join(seqs)
+    props = set()
+    for node in tree.tree[subtree].traverse():
+        props |= node.props.keys()
 
-        elif rule == '/trees/<string:tree_id>/nseq':
-            node = gdn.get_node(tree.tree, subtree)
-            leaves = get_leaves(node)
-            return sum(1 for l in leaves if l.props.get("seq"))
-        # Selections
-        elif rule == '/trees/<string:tree_id>/all_selections':
-            selected = {
-                name: { 'nresults': len(results), 'nparents': len(parents) }
-                for name, (results, parents) in (tree.selected or {}).items() }
-            return { 'selected': selected }
-        elif rule == '/trees/<string:tree_id>/selections':
-            return { 'selections': get_selections(tree_id) }
-        elif rule == '/trees/<string:tree_id>/select':
-            nresults, nparents = store_selection(tree_id, request.args.copy())
-            return {'message': 'ok', 'nresults': nresults, 'nparents': nparents}
-        elif rule == '/trees/<string:tree_id>/unselect':
-            removed = unselect_node(tree_id, request.args.copy())
-            message = 'ok' if removed else 'selection not found'
-            return {'message': message}
-        elif rule == '/trees/<string:tree_id>/remove_selection':
-            removed = remove_selection(tid, request.args.copy())
-            message = 'ok' if removed else 'selection not found'
-            return {'message': message}
-        elif rule == '/trees/<string:tree_id>/change_selection_name':
-            change_selection_name(tid, request.args.copy())
-            return {'message': 'ok'}
-        elif rule == '/trees/<string:tree_id>/selection/info':
-            return get_selection_info(tree, request.args.copy())
-        elif rule == '/trees/<string:tree_id>/search_to_selection':
-            search_to_selection(tid, request.args.copy())
-            return { 'message': 'ok' }
-        elif rule == '/trees/<string:tree_id>/prune_by_selection':
-            prune_by_selection(tid, request.args.copy())
-            return { 'message': 'ok' }
-        # Active nodes
-        elif rule == '/trees/<string:tree_id>/active':
-            node = gdn.get_node(tree.tree, subtree)
-            if get_active_clade(node, tree.active.clades.results):
-                return "active_clade"
-            elif node in tree.active.nodes.results:
-                return "active_node"
-            else:
-                return ""
-        elif rule == '/trees/<string:tree_id>/activate_node':
-            activate_node(tree_id)
-            return {'message': 'ok'}
-        elif rule == '/trees/<string:tree_id>/deactivate_node':
-            deactivate_node(tree_id)
-            return {'message': 'ok'}
-        elif rule == '/trees/<string:tree_id>/activate_clade':
-            activate_clade(tree_id)
-            return {'message': 'ok'}
-        elif rule == '/trees/<string:tree_id>/deactivate_clade':
-            deactivate_clade(tree_id)
-            return {'message': 'ok'}
-        elif rule == '/trees/<string:tree_id>/store_active_nodes':
-            nresults, nparents = store_active(tree, 0, request.args.copy())
-            return {'message': 'ok', 'nresults': nresults, 'nparents': nparents}
-        elif rule == '/trees/<string:tree_id>/store_active_clades':
-            nresults, nparents = store_active(tree, 1, request.args.copy())
-            return {'message': 'ok', 'nresults': nresults, 'nparents': nparents}
-        elif rule == '/trees/<string:tree_id>/remove_active_nodes':
-            remove_active(tree, 0)
-            return {'message': 'ok'}
-        elif rule == '/trees/<string:tree_id>/remove_active_clades':
-            remove_active(tree, 1)
-            return {'message': 'ok'}
-        elif rule == '/trees/<string:tree_id>/all_active':
-            return {
-                "nodes": get_nodes_info(tree.tree, tree.active.nodes.results, ["*"]),
-                "clades": get_nodes_info(tree.tree, tree.active.clades.results, ["*"]),
-            }
-        elif rule == '/trees/<string:tree_id>/all_active_leaves':
-            active_leaves = set( n for n in tree.active.nodes.results if n.is_leaf() )
-            for n in tree.active.clades.results:
-                active_leaves.update(set(n.iter_leaves()))
-            return get_nodes_info(tree.tree, active_leaves, ["*"])
-        # Searches
-        elif rule == '/trees/<string:tree_id>/searches':
-            searches = {
-                text: { 'nresults' : len(results), 'nparents': len(parents) }
-                for text, (results, parents) in (tree.searches or {}).items() }
-            return { 'searches': searches }
-        elif rule == '/trees/<string:tree_id>/search':
-            nresults, nparents = store_search(tree_id, request.args.copy())
-            return {'message': 'ok', 'nresults': nresults, 'nparents': nparents}
-        elif rule == '/trees/<string:tree_id>/remove_search':
-            removed = remove_search(tid, request.args.copy())
-            message = 'ok' if removed else 'search not found'
-            return {'message': message}
-        # Find
-        elif rule == '/trees/<string:tree_id>/find':
-            node = find_node(tree.tree, request.args.copy())
-            node_id = ",".join(map(str, get_node_id(tree.tree, node, [])))
-            return {'id': node_id}
-        elif rule == '/trees/<string:tree_id>/draw':
-            drawer = get_drawer(tree_id, request.args.copy())
-            return list(drawer.draw())
-        elif rule == '/trees/<string:tree_id>/size':
-            width, height = t.size
-            return {'width': width, 'height': height}
-        elif rule == '/trees/<string:tree_id>/collapse_size':
-            return tree.style.collapse_size
-        elif rule == '/trees/<string:tree_id>/properties':
-            properties = set()
-            for node in t.traverse():
-                properties |= node.props.keys()
-            return list(properties)
-        elif rule == '/trees/<string:tree_id>/properties/<string:pname>':
-            return get_stats(tree_id, pname)
-        elif rule == '/trees/<string:tree_id>/nodecount':
-            tnodes = tleaves = 0
-            for node in t.traverse():
-                tnodes += 1
-                if node.is_leaf():
-                    tleaves += 1
-            return {'tnodes': tnodes, 'tleaves': tleaves}
-        elif rule == '/trees/<string:tree_id>/ultrametric':
-            return tree.style.ultrametric
-        else:
-            raise InvalidUsage(f'invalid GET endpoint: {rule}')
+    response.content_type = 'application/json'
+    return json.dumps(list(props))
 
-    def post(self):
-        "Add tree(s)"
-        ids = add_trees_from_request()
-        return {'message': 'ok', 'ids': ids}, 201
+@get('/trees/<tree_id>/properties/<pname>')
+def callback(tree_id, pname):
+    return get_stats(tree_id, pname)
 
-    def put(self, tree_id):
-        "Modify tree"
-        rule = request.url_rule.rule  # shortcut
+@get('/trees/<tree_id>/nodecount')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
 
-        # Update tree's timer
-        if rule.startswith('/trees/<string:tree_id>'):
-            tid, subtree = get_tid(tree_id)
-            t = load_tree(tid)
-            tree = app.trees[int(tid)]
-            tree.timer = time()
+    tnodes = tleaves = 0
+    for node in tree.tree[subtree].traverse():
+        tnodes += 1
+        if node.is_leaf:
+            tleaves += 1
 
-        if rule == '/trees/<string:tree_id>':
-            modify_tree_fields(tree_id)
-            return {'message': 'ok'}
-        elif rule == '/trees/<string:tree_id>/sort':
-            node_id, key_text, reverse = request.json
-            sort(tree_id, node_id, key_text, reverse)
-            return {'message': 'ok'}
-        elif rule == '/trees/<string:tree_id>/root_at':
-            if subtree:
-                raise InvalidUsage('operation not allowed with subtree')
-            node_id = request.json
-            tree.tree.set_outgroup(gdn.get_node(t, node_id))
-            # app.trees[int(tid)].tree = gdn.root_at(gdn.get_node(t, node_id))
-            return {'message': 'ok'}
-        elif rule == '/trees/<string:tree_id>/move':
-            try:
-                node_id, shift = request.json
-                gdn.move(gdn.get_node(t, node_id), shift)
-                return {'message': 'ok'}
-            except AssertionError as e:
-                raise InvalidUsage(f'cannot move {node_id}: {e}')
-        elif rule == '/trees/<string:tree_id>/remove':
-            try:
-                node_id = request.json
-                gdn.remove(gdn.get_node(t, node_id))
-                return {'message': 'ok'}
-            except AssertionError as e:
-                raise InvalidUsage(f'cannot remove {node_id}: {e}')
-        elif rule == '/trees/<string:tree_id>/update_props':
-            try:
-                node = gdn.get_node(tree.tree, subtree)
-                update_node_props(node, request.json)
-                return {'message': 'ok'}
-            except AssertionError as e:
-                raise InvalidUsage(f'cannot update props of {node_id}: {e}')
-        elif rule == '/trees/<string:tree_id>/update_nodestyle':
-            try:
-                node = gdn.get_node(tree.tree, subtree)
-                update_node_style(node, request.json.copy())
-                tree.nodestyles[node] = request.json.copy()
-                return {'message': 'ok'}
-            except AssertionError as e:
-                raise InvalidUsage(f'cannot update style of {node_id}: {e}')
-        elif rule == '/trees/<string:tree_id>/reinitialize':
-            gdn.standardize(tree.tree)
-            tree.initialized = False
-            return { 'message': 'ok' }
-        elif rule == '/trees/<string:tree_id>/reload':
-            if subtree:
-                raise InvalidUsage('operation not allowed with subtree')
+    return {'tnodes': tnodes, 'tleaves': tleaves}
 
-            app.trees.pop(tid, None) # avoid possible key-error
-            load_tree(tid)
+@get('/trees/<tree_id>/ultrametric')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+    response.content_type = 'application/json'
+    return json.dumps(tree.style.ultrametric)
 
-            return {'message': 'ok'}
-        else:
-            raise InvalidUsage(f'invalid PUT endpoint: {rule}')
+@post('/trees')
+def callback():
+    ids = add_trees_from_request()
+    response.status = 201
+    return {'message': 'ok', 'ids': ids}
 
-    def delete(self, tree_id):
-        "Delete tree and all references to it"
-        tid = int(tree_id)
-        tree = del_tree(tid)
-        return {'message': 'ok' if tree else f'tree with id {tid} not found.'}
+@put('/trees/<tree_id>')
+def callback(tree_id):
+    modify_tree_fields(tree_id)
+    return {'message': 'ok'}
 
+@put('/trees/<tree_id>/sort')
+def callback(tree_id):
+    node_id, key_text, reverse = req_json()
+    sort(tree_id, node_id, key_text, reverse)
+    return {'message': 'ok'}
 
-class Id(Resource):
-    def get(self, path):
-        if not path.startswith('trees/'):
-            raise InvalidUsage('invalid path %r' % path, 404)
+@put('/trees/<tree_id>/root_at')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
 
-        name = path.split('/', 1)[-1]
-        # if path.startswith('trees/'):
-            # pids = dbget0('id', 'trees WHERE name=?', name)
-            # if len(pids) != 1:
-                # raise InvalidUsage('unknown tree name %r' % name)
-            # return {'id': pids[0]}
+    if subtree:
+        abort(400, 'operation not allowed with subtree')
 
+    node_id = req_json()
+    tree.tree.set_outgroup(tree.tree[node_id])
+    return {'message': 'ok'}
 
-class CustomEndpoints(Resource):
-    def __init__(self, resources={}):
-        super().__init__()
-        self.resources = resources
+@put('/trees/<tree_id>/move')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
 
-    def get(self, *args, **kwargs):
-        rule = request.url_rule.rule  # shortcut
+    try:
+        node_id, shift = req_json()
+        gdn.move(tree.tree[subtree][node_id], shift)
+        return {'message': 'ok'}
+    except AssertionError as e:
+        abort(400, f'cannot move {node_id}: {e}')
 
-        for endpoint, func in self.resources.items():
-            if  endpoint == rule:
-                return func(*args, **kwargs)
+@put('/trees/<tree_id>/remove')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
 
-        return ""
+    try:
+        node_id = req_json()
+        gdn.remove(tree.tree[subtree][node_id])
+        gdn.update_all_sizes(tree.tree)
+        return {'message': 'ok'}
+    except AssertionError as e:
+        abort(400, f'cannot remove {node_id}: {e}')
+
+@put('/trees/<tree_id>/update_props')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+
+    try:
+        node = tree.tree[subtree]
+        update_node_props(node, req_json())
+        return {'message': 'ok'}
+    except AssertionError as e:
+        abort(400, f'cannot update props of {node_id}: {e}')
+
+@put('/trees/<tree_id>/update_nodestyle')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+
+    try:
+        node = tree.tree[subtree]
+        update_node_style(node, req_json().copy())
+        tree.nodestyles[node] = req_json().copy()
+        return {'message': 'ok'}
+    except AssertionError as e:
+        abort(400, f'cannot update style of {node_id}: {e}')
+
+@put('/trees/<tree_id>/reinitialize')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+
+    gdn.standardize(tree.tree)
+    tree.initialized = False
+    return {'message': 'ok'}
+
+@put('/trees/<tree_id>/reload')
+def callback(tree_id):
+    tree, subtree = touch_and_get(tree_id)
+
+    if subtree:
+        abort(400, 'operation not allowed with subtree')
+
+    app.trees.pop(tree_id, None)  # avoid possible key-error
+    return {'message': 'ok'}
 
 
 # Auxiliary functions.
-
-# TODO: Simplify and remove the need to use the init_timer decorator.
-def init_timer(fn):
-    """Decorator that guesses the tid being changed and resets its timer."""
-    def wrapper(*args, **kwargs):
-        if type(args[0]) == int:
-            tid = args[0]
-            return_val = fn(*args, **kwargs)
-        else:
-            tid = return_val = fn(*args, **kwargs)
-        app.trees[int(tid)].timer = time()
-        return return_val
-    return wrapper
 
 def initialize_tree_style(tree, ultrametric=False):
     aligned_grid_dxs = deepcopy(tree.style.aligned_grid_dxs)
@@ -446,15 +601,14 @@ def load_tree(tree_id):
     "Add tree to app.trees and initialize it if not there, and return it"
     try:
         tid, subtree = get_tid(tree_id)
-        tree = app.trees[int(tid)]
+        tree = app.trees[tid]
 
         if tree.tree:
-            t = gdn.get_node(tree.tree, subtree)
             # Reinitialize if layouts have to be reapplied
             if not tree.initialized:
                 initialize_tree_style(tree)
 
-                for node in t.traverse():
+                for node in tree.tree[subtree].traverse():
                     node.is_initialized = False
                     node._smfaces = None
                     node._collapsed_faces = None
@@ -463,17 +617,20 @@ def load_tree(tree_id):
                 for node, args in tree.nodestyles.items():
                     update_node_style(node, args.copy())
 
-            return t
+            return tree.tree[subtree]
         else:
             tree.name, tree.tree, tree.layouts = retrieve_tree(tid)
+
             if tree.style.ultrametric:
                 tree.tree.convert_to_ultrametric()
                 gdn.standardize(tree.tree)
+
             initialize_tree_style(tree)
-            return gdn.get_node(tree.tree, subtree)
+
+            return tree.tree[subtree]
 
     except (AssertionError, IndexError):
-        raise InvalidUsage(f'unknown tree id {tree_id}', 404)
+        abort(404, f'unknown tree id {tree_id}')
 
 def load_tree_from_newick(tid, newick):
     """Load tree into memory from newick"""
@@ -522,11 +679,10 @@ def retrieve_layouts(layouts):
 
     return dict(tree_layouts)
 
-@init_timer
+
 def retrieve_tree(tid):
-    """Retrieve tree from tmp pickle file.
-    Called when tree has been deleted from memory
-    """
+    """Retrieve tree from tmp pickle file."""
+    # Called when tree has been deleted from memory.
     start = time()
     with open(f'/tmp/{tid}.pickle', 'rb') as handle:
         data = pickle.load(handle)
@@ -536,6 +692,9 @@ def retrieve_tree(tid):
     name = data["name"]
     tree = data["tree"]
     layouts = retrieve_layouts(data["layouts"])
+
+    app.trees[tid].timer = time()
+
     return name, tree, layouts
 
 
@@ -600,30 +759,21 @@ def get_drawer(tree_id, args):
             layouts, tree.style, tree.include_props, tree.exclude_props)
     # bypass errors for now...
     except StopIteration as error:
-        print(error)
-        raise InvalidUsage(f'not a valid drawer: {drawer_name}')
+        abort(400, f'not a valid drawer: {drawer_name}')
     except (ValueError, AssertionError) as e:
-        raise InvalidUsage(str(e))
+        abort(400, str(e))
     except:
         pass
-
-
-def get_leaves(node):
-    if node.is_leaf():
-        leaves = [ node ]
-    else:
-        leaves = node.iter_leaves()
-    return leaves
 
 
 def get_newick(tree_id, max_mb):
     "Return the newick representation of the given tree"
 
-    newick = load_tree(tree_id).write(properties=[])
+    newick = load_tree(tree_id).write()
 
     size_mb = len(newick) / 1e6
     if size_mb > max_mb:
-        raise InvalidUsage('newick too big (%.3g MB)' % size_mb)
+        abort(400, 'newick too big (%.3g MB)' % size_mb)
 
     return newick
 
@@ -631,7 +781,7 @@ def get_newick(tree_id, max_mb):
 def remove_search(tid, args):
     "Remove search"
     if 'text' not in args:
-        raise InvalidUsage('missing search text')
+        abort(400, 'missing search text')
 
     searches = app.trees[int(tid)].searches
     text = args.pop('text').strip()
@@ -641,7 +791,7 @@ def remove_search(tid, args):
 def store_search(tree_id, args):
     "Store the results and parents of a search and return their numbers"
     if 'text' not in args:
-        raise InvalidUsage('missing search text')
+        abort(400, 'missing search text')
 
     text = args.pop('text').strip()
     func = get_search_function(text)
@@ -658,15 +808,13 @@ def store_search(tree_id, args):
         app.trees[int(tid)].searches[text] = (results, parents)
 
         return len(results), len(parents)
-    except InvalidUsage:
-        raise
     except Exception as e:
-        raise InvalidUsage(f'evaluating expression: {e}')
+        abort(400, f'evaluating expression: {e}')
 
 
 def find_node(tree, args):
     if 'text' not in args:
-        raise InvalidUsage('missing search text')
+        abort(400, 'missing search text')
 
     text = args.pop('text').strip()
     func = get_search_function(text)
@@ -674,10 +822,8 @@ def find_node(tree, args):
     try:
         return next((node for node in tree.traverse() if func(node)), None)
 
-    except InvalidUsage:
-        raise
     except Exception as e:
-        raise InvalidUsage(f'evaluating expression: {e}')
+        abort(400, f'evaluating expression: {e}')
 
 
 def get_selections(tree_id):
@@ -687,26 +833,14 @@ def get_selections(tree_id):
     return [ name for name, (results, _) in tree.selected.items() if node in results ]
 
 
-def get_node_id(tree, node, node_id):
-    parent = node.up
-    if not parent:
-        node_id.reverse()
-        return node_id
-    node_id.append(parent.children.index(node))
-    return get_node_id(tree, parent, node_id)
-
-
-
 def update_node_props(node, args):
     for prop, value in node.props.items():
         newvalue = args.pop(prop, "").strip()
-        if not newvalue:
-            continue
-        try:  # convert to proper type
-            newvalue = type(value)(newvalue)
-        except:
-            raise InvalidUsage('property {prop} should be of type {type(value)}')
-        else:
+        if newvalue:
+            try:  # convert to proper type
+                newvalue = type(value)(newvalue)
+            except:
+                abort(400, f'property {prop} should be of type {type(value)}')
             node.add_prop(prop, newvalue)
 
 
@@ -714,14 +848,13 @@ def update_node_style(node, args):
     newstyle = {}
     for prop, value in dict(node.sm_style).items():
         newvalue = args.pop(prop, "").strip()
-        if not newvalue:
-            continue
-        try:  # convert to proper type
-            newvalue = type(value)(newvalue)
-        except:
-            raise InvalidUsage('property {prop} should be of type {type(value)}')
-        else:
-            newstyle[prop] = newvalue
+        if newvalue:
+            try:  # convert to proper type
+                newvalue = type(value)(newvalue)
+            except:
+                abort(400, f'property {prop} should be of type {type(value)}')
+            else:
+                newstyle[prop] = newvalue
 
     extend_to_descendants = args.pop("extend_to_descendants", None)
     if extend_to_descendants:
@@ -738,7 +871,7 @@ def get_nodes_info(tree, nodes, props):
     no_props = len(props) == 1 and props[0] == ''
 
     if 'id' in props or no_props or '*' in props:
-        node_ids = [ ",".join(map(str, get_node_id(tree, node, [])))
+        node_ids = [ ",".join(map(str, node.id))
                 for node in nodes ]
     if no_props:
         return node_ids
@@ -760,33 +893,31 @@ def get_nodes_info(tree, nodes, props):
 def get_selection_info(tree, args):
     "Get selection info from their nodes"
     if 'text' not in args:
-        raise InvalidUsage('missing selection text')
+        abort(400, 'missing selection text')
     name = args.pop('text').strip()
     nodes = tree.selected.get(name, [[]])[0]
 
     props = args.pop('props', '').strip().split(',')
-    selection_info = get_nodes_info(tree.tree, nodes, props)
-
-    return selection_info
+    return get_nodes_info(tree.tree, nodes, props)
 
 
 def remove_selection(tid, args):
     "Remove selection"
     if 'text' not in args:
-        raise InvalidUsage('missing selection text')
+        abort(400, 'missing selection text')
     name = args.pop('text').strip()
     return app.trees[int(tid)].selected.pop(name, None)
 
 
 def change_selection_name(tid, args):
     if 'name' not in args or 'newname' not in args:
-        raise InvalidUsage('missing renaming parameters')
+        abort(400, 'missing renaming parameters')
 
     name = args.pop('name').strip()
     selected = app.trees[int(tid)].selected
 
     if name not in selected.keys():
-        raise InvalidUsage(f'selection {name} does not exist')
+        abort(400, f'selection {name} does not exist')
 
     new_name = args.pop('newname').strip()
     selected[new_name] = selected[name]
@@ -822,13 +953,13 @@ def unselect_node(tree_id, args):
 def search_to_selection(tid, args):
     "Store search as selection"
     if 'text' not in args:
-        raise InvalidUsage('missing selection text')
+        abort(400, 'missing selection text')
 
     text = args.copy().pop('text').strip()
     selected = app.trees[int(tid)].selected
 
     if text in selected.keys():
-        raise InvalidUsage('selection already exists')
+        abort(400, 'selection already exists')
 
     search = remove_search(tid, args)
     selected[text] = search
@@ -838,7 +969,7 @@ def prune_by_selection(tid, args):
     "Prune tree by keeping selections identified by their names"
 
     if 'names' not in args:
-        raise InvalidUsage('missing selection names')
+        abort(400, 'missing selection names')
 
     names = set(args.pop('names').strip().split(','))
     tree = app.trees[int(tid)]
@@ -849,7 +980,7 @@ def prune_by_selection(tid, args):
             selected.update(results)
 
     if len(selected) == 0:
-        raise InvalidUsage('selection does not exist')
+        abort(400, 'selection does not exist')
 
     tree.tree.prune(selected)
 
@@ -890,11 +1021,11 @@ def get_parents(results, count_leaves=False):
 def store_selection(tree_id, args):
     "Store the results and parents of a selection and return their numbers"
     if 'text' not in args:
-        raise InvalidUsage('missing selection text')
+        abort(400, 'missing selection text')
 
     tid, subtree = get_tid(tree_id)
-    app_tree = app.trees[int(tid)]
-    node = gdn.get_node(app_tree.tree, subtree)
+    tree = app.trees[tid]
+    node = tree.tree[subtree]
 
     parents = get_parents([node])
 
@@ -913,8 +1044,8 @@ def activate_node(tree_id):
 
 def deactivate_node(tree_id):
     tid, subtree = get_tid(tree_id)
-    tree = app.trees[int(tid)]
-    node = gdn.get_node(tree.tree, subtree)
+    tree = app.trees[tid]
+    node = tree.tree[subtree]
     tree.active.nodes.results.discard(node)
     tree.active.nodes.parents.clear()
     tree.active.nodes.parents.update(get_parents(tree.active.nodes.results))
@@ -959,7 +1090,7 @@ def activate_clade(tree_id):
     tree = app.trees[int(tid)]
     node = gdn.get_node(tree.tree, subtree)
     tree.active.clades.results.add(node)
-    for n in node.iter_descendants():
+    for n in node.descendants():
         tree.active.clades.results.discard(n)
     results = tree.active.clades.results
     parents = get_parents(results, count_leaves=True)
@@ -977,7 +1108,7 @@ def remove_active_clade(node, active):
     if node == active_parent:
         return
 
-    while node:
+    while node.up:
         parent = node.up
         active.update(parent.children)
         active.discard(node)
@@ -997,7 +1128,7 @@ def deactivate_clade(tree_id):
 
 def store_active(tree, idx, args):
     if 'text' not in args:
-        raise InvalidUsage('missing selection text')
+        abort(400, 'missing selection text')
 
     name = args.pop('text').strip()
     results = copy(tree.active[idx].results)
@@ -1030,9 +1161,9 @@ def get_command_search(text):
     "Return the appropriate node search function according to the command"
     parts = text.split(None, 1)
     if parts[0] not in ['/r', '/e', '/t']:
-        raise InvalidUsage('invalid command %r' % parts[0])
+        abort(400, 'invalid command %r' % parts[0])
     if len(parts) != 2:
-        raise InvalidUsage('missing argument to command %r' % parts[0])
+        abort(400, 'missing argument to command %r' % parts[0])
 
     command, arg = parts
     if command == '/r':  # regex search
@@ -1042,7 +1173,7 @@ def get_command_search(text):
     elif command == '/t':  # topological search
         return get_topological_search(arg)
     else:
-        raise InvalidUsage('invalid command %r' % command)
+        abort(400, 'invalid command %r' % command)
 
 
 def get_eval_search(expression):
@@ -1050,11 +1181,11 @@ def get_eval_search(expression):
     try:
         code = compile(expression, '<string>', 'eval')
     except SyntaxError as e:
-        raise InvalidUsage(f'compiling expression: {e}')
+        abort(400, f'compiling expression: {e}')
 
     return lambda node: safer_eval(code, {
         'node': node, 'parent': node.up, 'up': node.up,
-        'name': node.name, 'is_leaf': node.is_leaf(),
+        'name': node.name, 'is_leaf': node.is_leaf,
         'length': node.dist, 'dist': node.dist, 'd': node.dist,
         'props': node.props, 'p': node.props,
         'get': dict.get,
@@ -1071,7 +1202,7 @@ def safer_eval(code, context):
     "Return a safer version of eval(code, context)"
     for name in code.co_names:
         if name not in context:
-            raise InvalidUsage('invalid use of %r during evaluation' % name)
+            abort(400, 'invalid use of %r during evaluation' % name)
     return eval(code, {'__builtins__': {}}, context)
 
 
@@ -1080,7 +1211,7 @@ def get_topological_search(pattern):
     try:
         tree_pattern = tm.TreePattern(pattern)
     except NewickError as e:
-        raise InvalidUsage('invalid pattern %r: %s' % (pattern, e))
+        abort(400, 'invalid pattern %r: %s' % (pattern, e))
 
     return lambda node: tm.match(tree_pattern, node)
 
@@ -1101,7 +1232,7 @@ def get_stats(tree_id, pname):
         return {'n': n, 'min': pmin, 'max': pmax, 'mean': pmean,
                 'var': pmean2 - pmean*pmean}
     except (ValueError, AssertionError) as e:
-        raise InvalidUsage(f'when reading property {pname}: {e}')
+        abort(400, f'when reading property {pname}: {e}')
 
 
 def sort(tree_id, node_id, key_text, reverse):
@@ -1111,11 +1242,11 @@ def sort(tree_id, node_id, key_text, reverse):
     try:
         code = compile(key_text, '<string>', 'eval')
     except SyntaxError as e:
-        raise InvalidUsage(f'compiling expression: {e}')
+        abort(400, f'compiling expression: {e}')
 
     def key(node):
         return safer_eval(code, {
-            'node': node, 'name': node.name, 'is_leaf': node.is_leaf(),
+            'node': node, 'name': node.name, 'is_leaf': node.is_leaf,
             'length': node.dist, 'dist': node.dist, 'd': node.dist,
             'size': node.size, 'dx': node.size[0], 'dy': node.size[1],
             'children': node.children, 'ch': node.children,
@@ -1171,10 +1302,9 @@ def get_file_contents(fp):
             data = gzip.decompress(data)
         return data.decode('utf-8').strip()
     except (gzip.BadGzipFile, UnicodeDecodeError) as e:
-        raise InvalidUsage(f'when reading {fp.filename}: {e}')
+        abort(400, f'when reading {fp.filename}: {e}')
 
 
-@init_timer
 def add_tree(data):
     "Add tree with given data and return its id"
     tid = int(data['id'])
@@ -1201,21 +1331,24 @@ def add_tree(data):
     else:
         tree = data.get('tree')
         if not tree:
-            raise InvalidUsage('Either Newick or Tree object has to be provided.')
+            abort(400, 'Either Newick or Tree object has to be provided.')
 
-    app_tree = app.trees[int(tid)]
+    app_tree = app.trees[tid]
     app_tree.name = name
     app_tree.tree = tree
     app_tree.layouts = retrieve_layouts(layouts)
     app_tree.include_props = include_props
     app_tree.exclude_props = exclude_props
 
-    # Write tree data as a temporary pickle file
-    obj = { 'name': name, 'layouts': layouts, 'tree': tree }
-    with open(f'/tmp/{tid}.pickle', 'wb') as handle:
-        pickle.dump(obj, handle)
-    # TODO: Do not store trees immediately, only after some time
-    # (with Timer)
+    def write_tree():
+        """Write tree data as a temporary pickle file."""
+        obj = { 'name': name, 'layouts': layouts, 'tree': tree }
+        with open(f'/tmp/{tid}.pickle', 'wb') as handle:
+            pickle.dump(obj, handle)
+    thr_write = Thread(daemon=True, target=write_tree)  # so we are not delayed
+    thr_write.start()                                   # by big trees
+
+    app.trees[tid].timer = time()
 
     return tid
 
@@ -1234,55 +1367,45 @@ def modify_tree_fields(tree_id):
 def update_app_available_layouts():
     try:
         module_reload(layout_modules)
-        avail_layouts = get_layouts_from_getters(layout_modules)
+        app.avail_layouts = get_layouts_from_getters()
+        app.avail_layouts.pop('default_layouts', None)
     except Exception as e:
-        raise "Error while updating app layouts.\n{e}"
-    else:
-        avail_layouts.pop("default_layouts", None)
-        app.avail_layouts = avail_layouts
+        abort(400, f'Error while updating app layouts: {e}')
 
 
-def get_layouts_from_getters(layout_modules):
-    def get_modules(ly_modules):
-        return ( getattr(ly_modules, module) for module in dir(ly_modules)\
-                if not module.startswith("__")) # and module != "default_layouts")
-    def get_layouts(module):
-        return ( getattr(module, getter)() for getter in dir(module)\
-                if not getter.startswith("_")\
-                and getter.startswith("Layout") )
+def get_layouts_from_getters():
+    """Return a dict {name: [layout1, ...]} for all layout submodules."""
+    # The list contains, for every submodule of layout_modules, an
+    # instance of all the LayoutX classes that the submodule contains.
+    submodules = [getattr(layout_modules, module) for module in dir(layout_modules)
+                  if not module.startswith('__')]
 
     all_layouts = {}
-    all_modules = get_modules(layout_modules)
-    for module in all_modules:
-        layouts = get_layouts(module)
-        name = module.__name__.split(".")[-1]
-        all_layouts[name] = list(layouts)
-        # Set _module attr for future reference (update_layouts)
-        for ly in all_layouts[name]:
-            ly.module = name
+    for module in submodules:
+        name = module.__name__.split('.')[-1]
 
-        # if type(next(layouts, None)) == FunctionType:
-            # Simple file with layout function getters
-            # all_layouts[name] = list(layouts)
-        # else:
-            # # Module of layout function getters
-            # all_layouts[module.__name__] = []
-            # for inner_mod in get_modules(module):
-                # all_layouts[module.__name__].extend(get_layouts(inner_mod))
+        layouts = [getattr(module, getter)() for getter in dir(module)
+                   if getter.startswith('Layout')]
+
+        for layout in layouts:  # TODO: is this necessary? remove if not
+            layout.module = name  # set for future reference
+
+        all_layouts[name] = layouts
 
     return all_layouts
 
+
 # Layout related functions
-def get_layouts(layouts=[]):
+def get_layouts(layouts=None):
     # Get layouts from their getters in layouts module:
     # smartview/redender/layouts
-    layouts_from_module = get_layouts_from_getters(layout_modules)
+    layouts_from_module = get_layouts_from_getters()
 
     # Get default layouts
     default_layouts = layouts_from_module.pop("default_layouts")
 
     all_layouts = {}
-    for idx, layout in enumerate(default_layouts + layouts):
+    for idx, layout in enumerate(default_layouts + (layouts or [])):
         layout.module = "default"
         all_layouts[layout.name or idx] = layout
 
@@ -1336,7 +1459,7 @@ def get_tid(tree_id):
             tid, *subtree = tree_id.split(',')
             return int(tid), [int(n) for n in subtree]
     except ValueError:
-        raise InvalidUsage(f'invalid tree id {tree_id}', 404)
+        abort(404, f'invalid tree id {tree_id}')
 
 
 def del_tree(tid):
@@ -1345,45 +1468,16 @@ def del_tree(tid):
     return app.trees.pop(tid, None)
 
 
-def purge(interval=None, max_time=30*60):
-    """Delete trees that have been inactive for a certain period of time.
-
-    :param int interval: if set, will keep calling purge after that number of seconds.
-    :param int max_time: maximum inactivity time in seconds. Default is 30 min.
-    """
-    trees = list(app.trees.keys())
-    for tid in trees:
-        inactivity_time = time() - app.trees[tid].timer
-        if inactivity_time > max_time:
-            del_tree(tid)
-
-    if interval:  # if set, we will call ourselves in the future
-        print('Current trees in memory:', len(app.trees))
-        Timer(interval, purge, [interval, max_time]).start()
-
-
-def strip(d):
-    "Return dictionary without the keys that have empty values"
-    d_stripped = {}
-    for k, v in d.items():
-        if v:
-            d_stripped[k] = d[k]
-    return d_stripped
-
-
 def get_fields(required=None, valid_extra=None):
     "Return fields and raise exception if missing required or invalid present"
-    if not request.json:
-        raise InvalidUsage('missing json content')
-
-    data = request.json.copy()
+    data = req_json()
 
     if required and any(x not in data for x in required):
-        raise InvalidUsage(f'must have the fields {required}')
+        abort(400, f'must have the fields {required}')
 
     valid = (required or []) + (valid_extra or [])
     if not all(x in valid for x in data):
-        raise InvalidUsage(f'can only have the fields {valid}')
+        abort(400, f'can only have the fields {valid}')
 
     return data
 
@@ -1406,187 +1500,53 @@ def copy_style(tree_style):
 
 # App initialization.
 
-def initialize(tree=None, layouts=[],
+def initialize(tree=None, layouts=None,
                include_props=None, exclude_props=None,
-               custom_api={},  custom_route={}, safe_mode=False):
-    "Initialize the database and the flask app"
-    app = Flask(__name__, instance_relative_config=True)
-    configure(app)
-
-    api = Api(app)
-    add_resources(app, api, custom_api, custom_route)
+               safe_mode=False, compress=False):
+    """Initialize the global object app."""
+    app = GlobalStuff()
 
     app.safe_mode = safe_mode
+
+    app.compress = compress
 
     # App associated layouts
     # Layouts will be accessible for each tree independently
     app.default_layouts, app.avail_layouts = get_layouts(layouts)
+
     # Dict containing AppTree dataclasses with tree info
     app.trees = defaultdict(lambda: AppTree(
-        name=get_random_string(10),
+        name='tree',
         style=copy_style(TreeStyle()),
         nodestyles={},
         include_props=deepcopy(include_props),
         exclude_props=deepcopy(exclude_props),
-        layouts = deepcopy(app.default_layouts),
-        timer = time(),
-        searches = {},
-        selected = {},
-        active = drawer_module.get_empty_active(),
+        layouts=deepcopy(app.default_layouts),
+        timer=time(),
+        searches={},
+        selected={},
+        active=drawer_module.get_empty_active(),
     ))
 
-    if tree:
-        # If a tree was provided, the entry point is the visualizer
-        # :tree: is only a tree_name. The tree will be added to the db later
-        @app.route('/')
-        def index():
-            return redirect(url_for('static', filename='gui.html', tree=tree))
-    elif app.safe_mode:
-        @app.route('/')
-        def index():
-            return redirect(url_for('static', filename='gui.html'))
-    else:
-        # Else, provide a user interface for entering a newick to visualize
-        @app.route('/')
-        def index():
-            return redirect(url_for('static', filename='upload_tree.html'))
-
-
-    @app.route('/help')
-    def description():
-        return ('<html>\n<head>\n<title>Description</title>\n</head>\n<body>\n'
-            '<pre>' + __doc__ + '</pre>\n'
-            '<p>For analysis, <a href="/static/gui.html">use our gui</a>!</p>\n'
-            '</body>\n</html>')
-
-    @app.errorhandler(InvalidUsage)
-    def handle_invalid_usage(error):
-        response = jsonify({'message': error.message})
-        response.status_code = error.status_code
-        return response
-
-    api.handle_error = None
-    # so our handling is called even when being served from gunicorn
+    thread_maintenance = Thread(daemon=True, target=maintenance, args=(app,))
+    thread_maintenance.start()
+    g_threads['maintenance'] = thread_maintenance
 
     return app
 
 
-def configure(app):
-    "Set the configuration for the flask app"
-    app.root_path = os.path.abspath('.')  # in case we launched from another dir
-    app.instance_path = app.root_path + '/instance'
-
-    CORS(app)  # allow cross-origin resource sharing (requests from other domains)
-
-    Compress(app)  # send results using gzip
-
-    app.config.from_mapping(
-        SEND_FILE_MAX_AGE_DEFAULT=0,  # do not cache static files
-        SECRET_KEY=' '.join(os.uname()))  # for testing, or else use config.py
-
-    if os.path.exists(f'{app.instance_path}/config.py'):
-        app.config.from_pyfile(f'{app.instance_path}/config.py')  # overrides
-
-
-def add_custom_resources(app, api, custom_api={}, custom_route={}):
-    api_endpoints = [ endpoint for endpoint in custom_api.keys() ]
-    api.add_resource(CustomEndpoints, *api_endpoints,
-            resource_class_kwargs={ "resources": custom_api })
-
-    for endpoint, route_fn in custom_route.items():
-        @app.route(endpoint)
-        def fn(*args, **kwargs):
-            return route_fn(*args, **kwargs)
-
-
-def add_resources(app, api, custom_api={}, custom_route={}):
-    "Add all the REST endpoints"
-    add = api.add_resource  # shortcut
-
-    add(Drawers, '/drawers/<string:name>/<string:tree_id>')
-
-    add(Layouts,
-        '/layouts',
-        '/layouts/list',
-        '/layouts/update',
-        '/layouts/<string:tree_id>')
-
-    tree_endpoints = [
-        '',
-        '/nodeinfo',
-        '/nodestyle',
-        '/editable_props',
-        '/leaves_info',
-        '/descendants_info',
-        '/name',
-        '/newick',
-        '/seq',
-        '/nseq',
-        '/draw',
-        '/size',
-        '/collapse_size',
-        '/properties',
-        '/<string:pname>',
-        '/nodecount',
-        '/ultrametric',
-        '/select',  # select node
-        '/unselect',  # unselect node
-        '/selections', # selections perfomed on a node
-        '/all_selections',  # name and nresults, nparents for each selection
-        '/info',  # get selection info: list of node_ids or dict with their desired properties
-        '/remove_selection',
-        '/change_selection_name',
-        '/search_to_selection',  # convert search to selection
-        '/prune_by_selection',  # prune based on selection
-        '/active',
-        '/activate_node',
-        '/activate_clade',
-        '/deactivate_node',
-        '/deactivate_clade',
-        '/store_active_nodes',
-        '/store_active_clades',
-        '/remove_active_nodes',
-        '/remove_active_clades',
-        '/all_active',
-        '/all_active_leaves',
-        '/search',
-        '/searches',
-        '/remove_search',
-        '/find',
-        '/sort',
-        '/root_at',
-        '/move',
-        '/remove',
-        '/update_props',
-        '/update_nodestyle',
-        '/reinitialize',
-        '/reload']
-    add(Trees, '/trees', *['/trees/<string:tree_id>'+e for e in tree_endpoints])
-
-    add_custom_resources(app, api, custom_api, custom_route)
-
-
-def run_smartview(tree=None, tree_name=None,
-        layouts=[],
-        include_props=None, exclude_props=None,
-        custom_api={}, custom_route={},
-        safe_mode=False, host="127.0.0.1", port=5000,
-        run=True, serve_static=True, verbose=True):
+def run_smartview(tree=None, name=None, layouts=[],
+                  include_props=None, exclude_props=None,
+                  safe_mode=False, port=5000, quiet=True,
+                  compress=False, daemon=True):
     # Set tree_name to None if no tree was provided
     # Generate tree_name if none was provided
-    tree_name = tree_name or (get_random_string(10) if tree else None)
-
-    if serve_static:
-        os.chdir(os.path.abspath(os.path.dirname(__file__)))
+    name = name or (make_name() if tree else None)
 
     global app
-    app = initialize(
-        tree_name, layouts,
-        include_props=include_props, exclude_props=exclude_props,
-        custom_api=custom_api, custom_route=custom_route, safe_mode=safe_mode)
-
-    # purge inactive trees every 15 minutes
-    purge(interval=15*60, max_time=30*60)
+    app = initialize(name, layouts,
+                     include_props=include_props, exclude_props=exclude_props,
+                     safe_mode=safe_mode, compress=compress)
 
     # TODO: Create app.recent_trees with paths to recently viewed trees
 
@@ -1594,33 +1554,60 @@ def run_smartview(tree=None, tree_name=None,
         gdn.standardize(tree)
         tree_data = {
             'id': 0,  # id to be replaced by actual hash
-            'name': tree_name,
+            'name': name,
             'tree': tree,
             'layouts': [],
             'include_props': include_props,
             'exclude_props': exclude_props,
         }
-        with app.app_context():
-            tid = add_tree(tree_data)
-            print(f'Added tree {tree_name} with id {tid}.')
+        tid = add_tree(tree_data)
+        print(f'Added tree {name} with id {tid}.')
 
-    if not verbose:
-        app.logger.disabled = True
-        logging.getLogger('werkzeug').disabled = True
+    launch_browser(port)
 
-    if run:
-        app.run(debug=True, use_reloader=False, port=port, host=host)
+    if 'webserver' not in g_threads:
+        thread_webserver = Thread(daemon=daemon,
+                                  target=run,
+                                  kwargs={'quiet': quiet, 'port': port})
+        thread_webserver.start()
+        g_threads['webserver'] = thread_webserver
+
+
+def maintenance(app, check_interval=60, max_time=30*60):
+    """Perform maintenance tasks every check_interval seconds."""
+    while True:
+        # Remove trees that haven't been accessed in max_time.
+        tids = list(app.trees.keys())
+        for tid in tids:
+            inactivity_time = time() - app.trees[tid].timer
+            if inactivity_time > max_time:
+                del_tree(tid)
+
+        sleep(check_interval)
+
+
+def make_name():
+    """Return a unique tree name like 'tree-<number>'."""
+    if app:
+        tnames = [t.name for t in app.trees.values()
+                  if t.name.startswith('tree-')
+                  and t.name[len('tree-'):].isdecimal()]
     else:
-        return app
+        tnames = []
+    n = max((int(name[len('tree-'):]) for name in tnames), default=0) + 1
+    return f'tree-{n}'
+
+
+def launch_browser(port):
+    """Try to open a browser window in a different process."""
+    try:
+        command = {'Linux': 'xdg-open', 'Darwin': 'open'}[platform.system()]
+        Popen([command, f'http://localhost:{port}'],
+              stdout=DEVNULL, stderr=DEVNULL)
+    except (KeyError, FileNotFoundError) as e:
+        print(f'Explorer available at http://localhost:{port}')
+
 
 
 if __name__ == '__main__':
     run_smartview(safe_mode=True)
-
-
-
-# But for production it's better if we serve it with something like:
-#   gunicorn server:app
-
-# To do so, uncomment the following line
-# app = run_smartview(safe_mode=True, run=False)

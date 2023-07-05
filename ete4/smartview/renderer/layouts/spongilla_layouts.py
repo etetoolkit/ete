@@ -29,10 +29,10 @@ def summary(nodes):
 
 def first_name(tree):
     "Return the name of the first node that has a name"
-    
+
     sci_names = []
     for node in tree.traverse('preorder'):
-        if node.is_leaf():
+        if node.is_leaf:
             sci_name = node.props.get('sci_name')
             sci_names.append(sci_name)
 
@@ -45,8 +45,8 @@ class LayoutSciName(TreeLayout):
         super().__init__(name, aligned_faces=True)
 
     def set_node_style(self, node):
-        if node.is_leaf():
-           
+        if node.is_leaf:
+
             sci_name = node.props.get('sci_name')
             prot_id = node.name.split('.', 1)[1]
 
@@ -54,13 +54,13 @@ class LayoutSciName(TreeLayout):
                 color = sciName2color[node.props.get('sci_name')]
             else:
                 color = 'black'
-           
+
             node.add_face(TextFace(sci_name, color = color, padding_x=2),
                 column=0, position="branch_right")
 
             if len(prot_id) > 40:
                 prot_id = prot_id[0:37] + " ..."
-           
+
             node.add_face(TextFace(prot_id, color = 'Gray', padding_x=2), column = 2, position = "aligned")
 
 
@@ -83,11 +83,11 @@ class LayoutPreferredName(TreeLayout):
 
     def __init__(self, name="Preferred name", text_color="#fb3640"):
         super().__init__(name, aligned_faces=True)
-        
+
         self.text_color = text_color
 
     def set_node_style(self, node):
-        if node.is_leaf():
+        if node.is_leaf:
             if node.props.get('Pname'):
                 pname= node.props.get('Pname')
                 pname_face = TextFace(pname, color=self.text_color)
@@ -105,12 +105,12 @@ class LayoutAutoName(TreeLayout):
 
     def __init__(self, name="Auto name", text_color="grey"):
         super().__init__(name, aligned_faces=True)
-        
+
         self.text_color = text_color
 
     def set_node_style(self, node):
 
-        if node.is_leaf():
+        if node.is_leaf:
             if node.props.get('auto_name'):
                 spongAutoName = " ".join(node.props.get('auto_name').split("_"))
                 if len(spongAutoName) > 30:
@@ -132,11 +132,11 @@ class LayoutCuratedName(TreeLayout):
 
     def __init__(self, name="Preferred name", text_color="black"):
         super().__init__(name, aligned_faces=True)
-        
+
         self.text_color = text_color
 
     def set_node_style(self, node):
-        if node.is_leaf():
+        if node.is_leaf:
             if node.props.get('curated_name') and node.props.get('curated_name') != 'NA':
                 spongCuratedName = " ".join(node.props.get('curated_name').split("_"))
                 if len(spongCuratedName) > 30:
@@ -152,18 +152,18 @@ class LayoutCuratedName(TreeLayout):
                 spongCuratedName_face = TextFace(spongCuratedName, color=self.text_color)
                 node.add_face(spongCuratedName_face, column = 5, position = "aligned", collapsed_only=True)
 
-    
+
 
 class LayoutEukOgs(TreeLayout):
 
     def __init__(self, name="OGs euk", text_color="grey"):
         super().__init__(name, aligned_faces=True)
-        
+
         self.text_color = text_color
 
     def set_node_style(self, node):
 
-        if node.is_leaf():
+        if node.is_leaf:
             if node.props.get('OG_euk'):
                 OG = node.props.get('OG_euk')
                 og_face = TextFace(OG, color=self.text_color)
@@ -185,7 +185,7 @@ class LayoutSeeds(TreeLayout):
 
     def set_node_style(self, node):
 
-        if node.is_leaf():
+        if node.is_leaf:
             if node.props.get('taxid') == '6055' and "seed" in node.props.keys():
                 node.sm_style["bgcolor"] = "#A3423C"
 

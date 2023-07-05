@@ -292,7 +292,7 @@ def _get_labels_from_paml (tree, relations, pamout, model):
     tree.add_prop ('node_id', int (len (tree) + 1))
     # label other internal nodes
     for node in tree.traverse(strategy='postorder'):
-        if node.is_root(): continue
+        if node.is_root: continue
         paml_id = next(filter(lambda x: x[1]==node.props.get('node_id'), relations))[0]
         old2new[node.up.props.get('node_id')] = paml_id
         node.up.add_prop('node_id', paml_id)

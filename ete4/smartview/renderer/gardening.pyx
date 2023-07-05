@@ -10,10 +10,12 @@ from ete4 import Tree
 
 
 def sort(tree, key=None, reverse=False):
-    "Sort the tree in-place"
+    """Sort the tree in-place."""
     key = key or (lambda node: (node.size[1], node.size[0], node.name))
+
     for node in tree.children:
         sort(node, key, reverse)
+
     tree.children.sort(key=key, reverse=reverse)
 
 
@@ -21,64 +23,44 @@ def root_at(node, bprops=None):
     """Return the tree of which node is part of, rerooted at the given node.
 
     :param node: Node where to set root (future first child of the new root).
-    :param bprops: List of extra branch properties (other than "support").
+    :param bprops: List of branch properties (other than "dist" and "support").
     """
     old_root, node_id = get_root_id(node)
 
-    assert old_root.dist == 0, 'cannot reroot tree with non-zero root length'
-    assert not old_root.name, 'cannot reroot tree with a named root'
-    assert node != old_root, 'cannot reroot tree on (empty) root'
+    assert_consistency(old_root)
+    assert node != old_root, 'cannot root on root node'
 
-    if node.up == old_root:  # node is a direct child of the (empty) root
+    if node.up == old_root:  # node is a direct child of the root node
         old_root.children.remove(node)      # the "node in which we root" is
-        old_root.children.insert(0, node)   # the 1st child of the (empty) root
-        return old_root  # keep the same (empty) root as before
+        old_root.children.insert(0, node)   # the 1st child of the root node
+        return old_root  # keep the same root node as before
 
-    future_root = split_branch(node, bprops)
+    split_branch(node, bprops)
 
-    old_root, node_id = get_root_id(future_root)
-
-    current = old_root  # current root, which will change in each iteration
+    root = old_root  # current root, which will change in each iteration
     for child_pos in node_id:
-        current = rehang(current, child_pos, bprops)
+        root = rehang(root, child_pos, bprops)
 
     if len(old_root.children) == 1:
         join_branch(old_root)
 
-    return current # which is now future_root
+    return root
 
 
-def split_branch(node, bprops=None):
-    "Add an intermediate parent to the given node and return it"
-    parent = node.up
+def assert_consistency(root):
+    """Raise AssertionError if the root node of a tree looks inconsistent."""
+    assert not root.name, 'root has a name'
 
-    pos_in_parent = parent.children.index(node)  # save its position in parent
-    parent.children.pop(pos_in_parent)  # detach from parent
+    assert root.dist in [0, None], 'root has a distance'
 
-    intermediate = Tree()  # create intermediate node
-    intermediate.add_child(node)
-
-    if node.dist >= 0:  # split dist between the new and old nodes
-        node.dist = intermediate.dist = node.dist / 2
-
-    if 'support' in node.props:  # copy support if it has it
-        intermediate.support = node.support
-
-    for prop in (bprops or []):  # and copy other branch props if any
-        if prop in node.props:
-            intermediate.props[prop] = node.props[prop]
-
-    parent.children.insert(pos_in_parent, intermediate)  # put new where old was
-    intermediate.up = parent
-
-    update_size(node)
-    update_size(intermediate)
-
-    return intermediate
+    if len(root.children) == 2:
+        ch1, ch2 = root.children
+        assert ch1.props.get('support') == ch2.props.get('support'), \
+            'branches have inconsistent support at the root'
 
 
 def get_root_id(node):
-    "Return the root of the tree of which node is part of, and its node_id"
+    """Return the root of the tree of which node is part of, and its node_id."""
     # For the returned  (root, node_id)  we have  root[node_id] == node
     positions = []
     current, parent = node, node.up
@@ -88,84 +70,98 @@ def get_root_id(node):
     return current, positions[::-1]
 
 
-def rehang(node, child_pos, bprops):
-    "Rehang node on its child at position child_pos and return it"
-    child = node.pop_child(child_pos)
+def rehang(root, child_pos, bprops):
+    """Rehang node on its child at position child_pos and return it."""
+    # root === child  ->  child === root
+    child = root.pop_child(child_pos)
 
-    child.up = node.up # swap parenthood.
-    child.add_child(node)
+    child.up = root.up
+    child.add_child(root)
 
-    swap_branch_properties(child, node, bprops)  # to reflect the new parenthood
-
-    update_size(node)   # since their total dist till the furthest leaf and
-    update_size(child)  # their total number of leaves will have changed
+    swap_props(root, child, ['dist', 'support'] + (bprops or []))
 
     return child  # which is now the parent of its previous parent
 
 
-def swap_branch_properties(n1, n2, bprops=None):
-    "Swap between nodes n1 and n2 their branch-related properties"
-    # The branch properties of a node reflect its relation w.r.t. its parent.
-
-    # "dist" (a data attribute) is a branch property -> swap
-    n1.dist, n2.dist = n2.dist, n1.dist
-
-    # "support" (in the properties dictionary) is a branch property -> swap
-    swap_property(n1, n2, 'support')
-
-    for prop in (bprops or []):
-        swap_property(n1, n2, prop)
+def swap_props(n1, n2, props):
+    """Swap properties between nodes n1 and n2."""
+    for pname in props:
+        p1 = n1.props.pop(pname, None)
+        p2 = n2.props.pop(pname, None)
+        if p1 is not None:
+            n2.props[pname] = p1
+        if p2 is not None:
+            n1.props[pname] = p2
 
 
-def swap_property(n1, n2, pname):
-    "Swap property pname between nodes n1 and n2"
-    p1 = n1.props.pop(pname, None)
-    p2 = n2.props.pop(pname, None)
-    if p1:
-        n2.props[pname] = p1
-    if p2:
-        n1.props[pname] = p2
+def split_branch(node, bprops=None):
+    """Add an intermediate parent to the given node and return it."""
+    # == up ======= node  ->  == up === intermediate === node
+    up = node.up
+
+    pos_in_parent = up.children.index(node)  # save its position in parent
+    up.children.pop(pos_in_parent)  # detach from parent
+
+    intermediate = Tree()  # create intermediate node
+    intermediate.add_child(node)
+
+    if 'dist' in node.props:  # split dist between the new and old nodes
+        node.dist = intermediate.dist = node.dist / 2
+
+    if 'support' in node.props:  # copy support if it has it
+        intermediate.support = node.support
+
+    for prop in (bprops or []):  # and copy other branch props if any
+        if prop in node.props:
+            intermediate.props[prop] = node.props[prop]
+
+    up.children.insert(pos_in_parent, intermediate)  # put new where old was
+    intermediate.up = up
+
+    return intermediate
 
 
 def join_branch(node):
-    "Substitute node for its only child"
+    """Substitute node for its only child."""
+    # == node ==== child  ->  ====== child
     assert len(node.children) == 1, 'cannot join branch with multiple children'
 
     child = node.children[0]
 
     if 'support' in node.props and 'support' in child.props:
-        assert node.support == child.support, f'{node.support} != {child.support}'
-    child.support = child.support or node.support
+        assert node.support == child.support, \
+            'cannot join branches with different support'
 
-
-    if node.dist > 0:
+    if 'dist' in node.props:
         child.dist += node.dist  # restore total dist
 
-    parent = node.up
-    parent.remove_child(node)
-    parent.add_child(child)
+    up = node.up
+    pos_in_parent = up.children.index(node)  # save its position in parent
+    up.children.pop(pos_in_parent)  # detach from parent
+    up.children.insert(pos_in_parent, child)  # put child where the old node was
+    child.up = up
 
 
 def move(node, shift=1):
-    "Change the position of the current node with respect to its parent"
+    """Change the position of the current node with respect to its parent."""
+    # ╴up╶┬╴node     ->  ╴up╶┬╴sibling
+    #     ╰╴sibling          ╰╴node
     assert node.up, 'cannot move the root'
 
     siblings = node.up.children
+
     pos_old = siblings.index(node)
     pos_new = (pos_old + shift) % len(siblings)
+
     siblings[pos_old], siblings[pos_new] = siblings[pos_new], siblings[pos_old]
 
 
 def remove(node):
-    "Remove the given node from its tree"
+    """Remove the given node from its tree."""
     assert node.up, 'cannot remove the root'
 
     parent = node.up
     parent.remove_child(node)
-
-    while parent:
-        update_size(parent)
-        parent = parent.up
 
 
 def update_all_sizes(tree):
@@ -182,19 +178,24 @@ def update_sizes_from(node):
 
 
 def update_size(node):
+    """Update the size of the given node."""
     sumdists, nleaves = get_size(node.children)
-    node.size = (node.dist + sumdists, max(1, nleaves))
+    dx = float(node.props.get('dist', 0 if node.up is None else 1)) + sumdists
+    node.size = (dx, max(1, nleaves))
 
 
 cdef (double, double) get_size(nodes):
-    "Return the size of all the nodes stacked"
+    """Return the size of all the nodes stacked."""
     # The size of a node is (sumdists, nleaves) with sumdists the dist to
     # its furthest leaf (including itself) and nleaves its number of leaves.
     cdef double sumdists, nleaves
-    sumdists = nleaves = 0
+
+    sumdists = 0
+    nleaves = 0
     for node in nodes:
         sumdists = max(sumdists, node.size[0])
         nleaves += node.size[1]
+
     return sumdists, nleaves
 
 
@@ -221,7 +222,7 @@ def standardize(tree):
     update_all_sizes(tree)
 
     for node in tree.traverse():
-        if not node.is_leaf():
+        if not node.is_leaf and node.name is not None:
             name_split = node.name.rsplit(":", 1)
             if len(name_split) > 1:
                 # Whether node name contains the support value

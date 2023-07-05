@@ -60,8 +60,8 @@ class _NodeActions(object):
         elif e.button() == Qt.LeftButton:
             self.scene().view.set_focus(self.node)
 
-            if isinstance(self.node, EvolTree) and self.node.get_tree_root()._is_mark_mode():
-                root = self.node.get_tree_root()
+            if isinstance(self.node, EvolTree) and self.node.root._is_mark_mode():
+                root = self.node.root
                 all_marks = set([getattr(n, "mark", '').replace('#', '').strip()
                                  for n in root.traverse() if n is not self.node])
                 all_marks.discard('')
@@ -134,7 +134,7 @@ class _NodeActions(object):
             contextMenu.addAction( "Extract", self.set_start_node)
 
         if isinstance(self.node, EvolTree):
-            root = self.node.get_tree_root()
+            root = self.node.root
             all_marks = set([getattr(n, "mark", '').replace('#', '').strip()
                              for n in root.traverse() if n is not self.node])
             all_marks.discard('')

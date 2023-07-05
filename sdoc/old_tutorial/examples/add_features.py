@@ -27,7 +27,7 @@ for leaf in t.traverse():
         leaf.add_props(vowel=False, confidence=random.random())
 # Now we use these information to analyze the tree.
 print "This tree has", len(t.search_nodes(vowel=True)), "vowel nodes"
-print "Which are", [leaf.name for leaf in t.iter_leaves() if leaf.vowel==True]
+print "Which are", [leaf.name for leaf in t.leaves() if leaf.vowel==True]
 # But features may refer to any kind of data, not only simple
 # values. For example, we can calculate some values and store them
 # within nodes.

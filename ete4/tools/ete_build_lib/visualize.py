@@ -9,7 +9,7 @@ def draw_tree(tree, conf, outfile):
         return
 
     def ly_basic(node):
-        if node.is_leaf():
+        if node.is_leaf:
             node.img_style['size'] = 0
         else:
             node.img_style['size'] = 0
@@ -27,7 +27,7 @@ def draw_tree(tree, conf, outfile):
         node.img_style['vt_line_width'] = 1
 
     def ly_leaf_names(node):
-        if node.is_leaf():
+        if node.is_leaf:
             spF = TextFace(node.species, fsize=10, fgcolor='#444444', fstyle='italic', ftype='Helvetica')
             add_face_to_node(spF, node, column=0, position='branch-right')
             if hasattr(node, 'genename'):
@@ -35,12 +35,12 @@ def draw_tree(tree, conf, outfile):
                 add_face_to_node(geneF, node, column=1, position='branch-right')
 
     def ly_supports(node):
-        if not node.is_leaf() and node.up:
+        if not node.is_leaf and node.up:
             supFace = TextFace("%0.2g" %(node.support), fsize=7, fgcolor='indianred')
             add_face_to_node(supFace, node, column=0, position='branch-top')
 
     def ly_tax_labels(node):
-        if node.is_leaf():
+        if node.is_leaf:
             c = LABEL_START_COL
             largest = 0
             for tname in TRACKED_CLADES:
@@ -60,7 +60,7 @@ def draw_tree(tree, conf, outfile):
         pass
 
     def ly_block_alg(node):
-        if node.is_leaf():
+        if node.is_leaf:
             if 'sequence' in node.features:
                 seqFace = SeqMotifFace(node.sequence, [])
                 # [10, 100, "[]", None, 10, "black", "rgradient:blue", "arial|8|white|domain Name"],

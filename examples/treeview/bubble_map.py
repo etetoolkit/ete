@@ -2,7 +2,7 @@ import random
 from ete3 import Tree, TreeStyle, NodeStyle, faces, AttrFace, CircleFace
 
 def layout(node):
-    if node.is_leaf():
+    if node.is_leaf:
         # Add node name to laef nodes
         N = AttrFace("name", fsize=14, fgcolor="black")
         faces.add_face_to_node(N, node, 0)

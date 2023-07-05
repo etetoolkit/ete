@@ -9,10 +9,8 @@ import logging
 
 from . import text_viz
 from .. import utils
-from ..parser.newick import (
-    read_newick, write_newick,
-    DEFAULT_DIST, DEFAULT_DIST_ROOT, DEFAULT_SUPPORT)
-from ..parser import nexus, ete_format, file_extract
+from ete4.parser import newick
+from ..parser import ete_format, file_extract
 
 # the following imports are necessary to set fixed styles and faces
 # try:
@@ -29,23 +27,28 @@ from ..smartview.renderer.face_positions import Faces, make_faces
 from ..smartview.renderer.layouts.default_layouts import (
     LayoutLeafName, LayoutBranchLength, LayoutBranchSupport)
 
-__all__ = ["Tree"]
-
 
 class TreeError(Exception):
-    """
-    A problem occurred during a Tree operation
-    """
-    def __init__(self, value=''):
-        self.value = value
-    def __str__(self):
-        return repr(self.value)
+    pass
 
 
 cdef class Tree(object):
+    """
+    The Tree class is used to store a tree structure. A tree
+    consists of a collection of Tree instances connected in a
+    hierarchical way. Trees can be loaded from the New Hampshire Newick
+    format (newick).
+    """
+
+    # TODO: Clean up all the memebers of Tree and leave only:
+    #   up, props, children, size
+    cdef public Tree up
     cdef public dict props
     cdef public list _children
-    cdef public Tree up
+
+    cdef public (double, double) size
+
+    # All these members below should go away.
     cdef public object _img_style
     cdef public object _sm_style
     cdef public object _smfaces
@@ -53,51 +56,64 @@ cdef class Tree(object):
     cdef public int _initialized
     cdef public int _collapsed
 
-    cdef public (double, double) size
+    def __init__(self, data=None, children=None, parser=None):
+        """
+        Examples::
 
-    """
-    The Tree class is used to store a tree structure. A tree
-    consists of a collection of Tree instances connected in a
-    hierarchical way. Trees can be loaded from the New Hampshire Newick
-    format (newick).
+            t1 = Tree()  # empty tree
+            t2 = Tree({'name': 'A'})
+            t3 = Tree('(A:1,(B:1,(C:1,D:1):0.5):0.5);')
+            t4 = Tree(open('/home/user/my-tree.nw'))
+        """
+        self.children = children or []
 
-    :argument newick: Path to the file containing the tree or, alternatively,
-       the text string containing the same information.
+        self._img_style = None
+        # Do not initialize _faces and _collapsed_faces
+        # for performance reasons (pickling)
+        self._initialized = 0 # Layout fns have not been run on node
 
-    :argument 0 format: subnewick format
+        self.size = (0, 0)
 
-      .. table::
+        data = data.read().strip() if hasattr(data, 'read') else data
 
-          ======  ==============================================
-          FORMAT  DESCRIPTION
-          ======  ==============================================
-          0        flexible with support values
-          1        flexible with internal node names
-          2        all branches + leaf names + internal supports
-          3        all branches + all names
-          4        leaf branches + leaf names
-          5        internal and leaf branches + leaf names
-          6        internal branches + leaf names
-          7        leaf branches + all names
-          8        all names
-          9        leaf names
-          100      topology only
-          ======  ==============================================
+        if data is None:
+            self.props = {}
+        elif type(data) == dict:
+            self.props = data.copy()
+        else:  # from newick or ete format
+            assert not children, 'init from parsed content cannot have children'
 
-    :returns: a tree node object which represents the base of the tree.
+            assert (type(parser) in [dict, int] or
+                    parser in [None, 'newick', 'ete', 'auto']), 'bad parser'
 
-    **Examples:**
+            if parser is None or parser == 'auto':
+                guess_format = lambda x: 'newick'  # TODO
+                parser = guess_format(data)
 
-    ::
+            if parser == 'newick':
+                self.init_from_newick(data)
+            elif type(parser) == dict:
+                self.init_from_newick(data, parser)
+            elif parser in newick.INT_PARSERS:
+                self.init_from_newick(data, newick.INT_PARSERS[parser])
+            elif parser == 'ete':
+                self.init_from_ete(data)
 
-        t1 = Tree() # creates an empty tree
-        t2 = Tree('(A:1,(B:1,(C:1,D:1):0.5):0.5);')
-        t3 = Tree('/home/user/myNewickFile.txt')
-    """
+    def init_from_newick(self, data, parser=None):
+        tree = newick.loads(data, parser, self.__class__)
+        self.children = tree.children
+        self.props = tree.props
+
+    def init_from_ete(self, data):
+        t = ete_format.loads(data)
+        self.name = t.name
+        self.dist = t.dist
+        self.support = t.support
+        self.children = t.children
 
     @property
     def name(self):
-        return self.props.get('name', '')
+        return str(self.props.get('name')) if 'name' in self.props else None
 
     @name.setter
     def name(self, value):
@@ -105,25 +121,23 @@ cdef class Tree(object):
 
     @property
     def dist(self):
-        return self.props.get('dist', DEFAULT_DIST if self.up else DEFAULT_DIST_ROOT)
+        # # TODO: Remove defaults.
+        # return float(self.props.get('dist', 1 if self.up else 0))
+        return float(self.props['dist']) if 'dist' in self.props else None
 
     @dist.setter
     def dist(self, value):
-        try:
-            self.props['dist'] = float(value)
-        except ValueError:
-            raise TreeError('node dist must be a float number')
+        self.props['dist'] = float(value)
 
     @property
     def support(self):
-        return self.props.get('support', DEFAULT_SUPPORT)
+        # # TODO: Remove defaults.
+        # return float(self.props.get('support', 1))
+        return float(self.props['support']) if 'support' in self.props else None
 
     @support.setter
     def support(self, value):
-        try:
-            self.props['support'] = float(value)
-        except ValueError:
-            raise TreeError('node support must be a float number')
+        self.props['support'] = float(value)
 
     @property
     def children(self):
@@ -135,6 +149,24 @@ cdef class Tree(object):
         self.add_children(value)
 
     @property
+    def is_leaf(self):
+        """Return True if the current node is a leaf."""
+        return not self.children
+
+    @property
+    def is_root(self):
+        """Return True if the current node has no parent."""
+        return not self.up
+
+    @property
+    def root(self):
+        """Return the absolute root node of the current tree structure."""
+        node = self
+        while node.up:
+            node = node.up
+        return node
+
+    @property
     def id(self):
         """Return node_id (list of relative hops from root to node)."""
         reversed_id = []
@@ -144,6 +176,17 @@ cdef class Tree(object):
             node = node.up
         return reversed_id[::-1]  # will look like  [0, 0, 1, 0]
 
+    @property
+    def level(self):
+        """Return the number of nodes between this node and the root."""
+        n = 0
+        node = self.up
+        while node:
+            n += 1
+            node = node.up
+        return n
+
+    # TODO: Move all the next functions out of the Tree class.
     def _get_style(self):
         if self._img_style is None:
             self._img_style = NodeStyle()
@@ -176,7 +219,6 @@ cdef class Tree(object):
         else:
             self._collapsed = 0
 
-
     #: Node styling properties
     img_style = property(fget=_get_style, fset=_set_style)
     sm_style = property(fget=_get_sm_style, fset=_set_sm_style)
@@ -207,71 +249,8 @@ cdef class Tree(object):
         assert isinstance(value, Faces), 'Not a Faces instance: %r' % value
         self._collapsed_faces = value
 
-    def __init__(self, newick=None, format=0, dist=None, support=None,
-                 name=None, quoted_node_names=False, up=None, parser='auto'):
-        self._children = []
-        self.up = up
-        self.props = {}
-        self._img_style = None
-        # Do not initialize _faces and _collapsed_faces
-        # for performance reasons (pickling)
-        self._initialized = 0 # Layout fns have not been run on node
-
-        self.size = (0, 0)
-
-        # Initialize tree
-        if newick is not None:
-            assert parser in ['newick', 'nexus', 'ete', 'auto']
-            if parser == 'auto':
-                try:
-                    read_newick(newick, self, format=format, quoted_names=quoted_node_names)
-                except Exception as e1:
-                    try:
-                        text = file_extract.file_extract(newick)
-                        name_nexus, newick = list(nexus.get_trees(text).items())[0]
-                        read_newick(newick, self, format=format, quoted_names=quoted_node_names)
-                        if name_nexus:
-                            self.name = name_nexus
-                    except Exception as e2:
-                        try:
-                            t = ete_format.loads(newick)
-                            self.name = t.name
-                            self.dist = t.dist
-                            self.support = t.support
-                            self.children = t.children
-                        except Exception as e3:
-                            raise TreeError('Unrecognized format. Exceptions: '
-                                            f'(newick) {e1} -- '
-                                            f'(nexus) {e2} -- '
-                                            f'(ete) {e3}')
-            elif parser == 'newick':
-                read_newick(newick, self, format=format, quoted_names=quoted_node_names)
-            elif parser == 'nexus':
-                text = file_extract.file_extract(newick)
-                name_nexus, newick = list(nexus.get_trees(text).items())[0]
-                read_newick(newick, self, format=format, quoted_names=quoted_node_names)
-                if name_nexus:
-                    self.name = name_nexus
-            elif parser == 'ete':
-                t = ete_format.loads(newick)
-                self.name = t.name
-                self.dist = t.dist
-                self.support = t.support
-                self.children = t.children
-
-        self.name = name if name is not None else self.name
-        self.dist = dist if dist is not None else self.dist
-        self.support = support if support is not None else self.support
-
-    def __nonzero__(self):
-        return True
-
     def __bool__(self):
-        """
-        Python3's equivalent of __nonzero__
-        If this is not defined bool(class_instance) will call
-        __len__ in python3
-        """
+        # If this is not defined, bool(t) will call len(t).
         return True
 
     def __repr__(self):
@@ -294,10 +273,6 @@ cdef class Tree(object):
         except (IndexError, TypeError) as e:
             raise TreeError(f'Invalid node_id: {node_id}')
 
-    def __and__(self, node_id):
-        # tree&'A' returns the descendant node whose name is 'A'.
-        return self[node_id]
-
     def __add__(self, value):
         """Sum trees. t1 + t2 returns a new tree with children=[t1, t2]."""
         # Should a make the sum with two copies of the original trees?
@@ -318,18 +293,13 @@ cdef class Tree(object):
         return text_viz.to_str(self, show_internal, compact, props,
                                px, py, px0, waterfall)
 
-    def get_ascii(self, show_internal=True, compact=False, props=None,
-                  px=None, py=None, px0=0, waterfall=False):
-        # NOTE: This function exists only for compatiblity with older versions.
-        return self.to_str(show_internal, compact, props, px, py, px0, waterfall)
-
     def __contains__(self, item):
         """Return True if the tree contains the given item.
 
         :param item: A node instance or its associated name.
         """
         if isinstance(item, self.__class__):
-            return item in self.get_descendants()
+            return item in self.descendants()
         elif type(item) == str:
             return any(n.name == item for n in self.traverse())
         else:
@@ -337,11 +307,11 @@ cdef class Tree(object):
 
     def __len__(self):
         """Return the number of leaves."""
-        return len(self.get_leaves())
+        return sum(1 for _ in self.leaves())
 
     def __iter__(self):
         """Yield all the terminal nodes (leaves)."""
-        return self.iter_leaves()
+        yield from self.leaves()
 
     def add_prop(self, prop_name, value):
         """Add or update node's property to the given value."""
@@ -390,7 +360,7 @@ cdef class Tree(object):
         :param support: Support value of child partition.
         """
         if child is None:
-            child = self.__class__(up=self)
+            child = self.__class__()
 
         if name is not None:
             child.name = name
@@ -467,57 +437,52 @@ cdef class Tree(object):
         return self.up.remove_child(sister or sisters[0])
 
     def delete(self, prevent_nondicotomic=True, preserve_branch_length=False):
-        """
-        Deletes node from the tree structure. Notice that this method
-        makes 'disappear' the node from the tree structure. This means
-        that children from the deleted node are transferred to the
-        next available parent.
+        """Delete node from the tree structure, keeping its children.
 
-        :param True prevent_nondicotomic: When True (default), delete
-            function will be execute recursively to prevent
-            single-child nodes.
+        The children from the deleted node are transferred to the old parent.
 
-        :param False preserve_branch_length: If True, branch lengths
-            of the deleted nodes are transferred (summed up) to its
+        :param prevent_nondicotomic: If True (default), it will also
+            delete parent nodes until no single-child nodes occur.
+        :param preserve_branch_length: If True, branch lengths
+            of the deleted nodes are transferred (summed up) to the
             parent's branch, thus keeping original distances among
             nodes.
 
-        **Example:**
+        Example::
 
-        ::
+            t = Tree('(C,(B,A)H)root;')
+            print(t.to_str(props=['name']))
+                      ╭╴C
+                ╴root╶┤
+                      │   ╭╴B
+                      ╰╴H╶┤
+                          ╰╴A
 
-                / C
-          root-|
-               |        / B
-                \--- H |
-                        \ A
-
-          > H.delete() will produce this structure:
-
-                / C
-               |
-          root-|--B
-               |
-                \ A
-
+            t['H'].delete()  # delete the "H" node
+            print(t.to_str(props=['name']))
+                      ╭╴C
+                      │
+                ╴root╶┼╴B
+                      │
+                      ╰╴A
         """
         parent = self.up
-        if parent:
-            if preserve_branch_length:
-                if len(self.children) == 1:
-                    self.children[0].dist += self.dist
-                elif len(self.children) > 1:
-                    parent.dist += self.dist
+        if not parent:
+            return  # nothing to do, we cannot actually delete the root
 
-            for ch in self.children:
-                parent.add_child(ch)
+        if preserve_branch_length and 'dist' in self.props:
+            if len(self.children) == 1 and 'dist' in self.children[0].props:
+                self.children[0].dist += self.dist
+            elif len(parent.children) == 1 and 'dist' in parent.props:
+                parent.dist += self.dist
 
-            parent.remove_child(self)
+        for ch in self.children:
+            parent.add_child(ch)
 
-        # Avoids parents with only one child
-        if prevent_nondicotomic and parent and\
-              len(parent.children) < 2:
-            parent.delete(prevent_nondicotomic=False,
+        parent.remove_child(self)
+
+        if prevent_nondicotomic and len(parent.children) == 1:
+            parent.delete(prevent_nondicotomic=prevent_nondicotomic,
                           preserve_branch_length=preserve_branch_length)
 
 
@@ -629,8 +594,9 @@ cdef class Tree(object):
             else:
                 return 0
 
-        to_keep = set(_translate_nodes(self, *nodes))
-        start, node2path = self.get_common_ancestor(to_keep, get_path=True)
+        to_keep = set(self._translate_nodes(nodes))
+        start = self.common_ancestor(to_keep)
+        node2path = {n: n.lineage() for n in to_keep}
         to_keep.add(self)
 
         # Calculate which kept nodes are visiting the same nodes in
@@ -640,7 +606,8 @@ cdef class Tree(object):
         for seed, path in node2path.items():
             for visited_node in path:
                 if visited_node not in n2depth:
-                    depth = visited_node.get_distance(start, topology_only=True)
+                    depth = visited_node.get_distance(visited_node, start,
+                                                      topological=True)
                     n2depth[visited_node] = depth
                 if visited_node is not seed:
                     n2count.setdefault(visited_node, set()).add(seed)
@@ -659,7 +626,7 @@ cdef class Tree(object):
                 sorted_nodes = sorted(nodes, key=cmp_to_key(cmp_nodes))
                 to_keep.add(sorted_nodes[0])
 
-        for n in self.get_descendants('postorder'):
+        for n in self.descendants('postorder'):
             if n not in to_keep:
                 if preserve_branch_length:
                     if len(n.children) == 1:
@@ -688,38 +655,23 @@ cdef class Tree(object):
         else:
             return []
 
-    def iter_leaves(self, is_leaf_fn=None):
+    def leaves(self, is_leaf_fn=None):
         """Yield the terminal nodes (leaves) under this node."""
-        for n in self.traverse("preorder", is_leaf_fn):
-            if not is_leaf_fn:
-                if n.is_leaf():
-                    yield n
-            else:
-                if is_leaf_fn(n):
-                    yield n
+        is_leaf = is_leaf_fn or (lambda n: n.is_leaf)
+        for node in self.traverse("preorder", is_leaf):
+            if is_leaf(node):
+                yield node
 
-    def get_leaves(self, is_leaf_fn=None):
-        """Return a list of terminal nodes (leaves) under this node."""
-        return list(self.iter_leaves(is_leaf_fn))
-
-    def iter_leaf_names(self, is_leaf_fn=None):
+    def leaf_names(self, is_leaf_fn=None):
         """Yield the leaf names under this node."""
-        for n in self.iter_leaves(is_leaf_fn):
+        for n in self.leaves(is_leaf_fn):
             yield n.name
 
-    def get_leaf_names(self, is_leaf_fn=None):
-        """Return a list of terminal node names under the current node."""
-        return list(self.iter_leaf_names(is_leaf_fn))
-
-    def iter_descendants(self, strategy="levelorder", is_leaf_fn=None):
+    def descendants(self, strategy="levelorder", is_leaf_fn=None):
         """Yield all descendant nodes."""
         for n in self.traverse(strategy, is_leaf_fn):
             if n is not self:
                 yield n
-
-    def get_descendants(self, strategy="levelorder", is_leaf_fn=None):
-        """Return a list of all descendant nodes (leaves and internal)."""
-        return list(self.iter_descendants(strategy, is_leaf_fn))
 
     def traverse(self, strategy="levelorder", is_leaf_fn=None):
         """Traverse the tree structure under this node and yield the nodes.
@@ -750,7 +702,7 @@ cdef class Tree(object):
         Each iteration returns a postorder flag (True if node is being visited
         in postorder) and a node instance.
         """
-        is_leaf_fn = is_leaf_fn or self.__class__.is_leaf
+        is_leaf_fn = is_leaf_fn or (lambda n: n.is_leaf)
         to_visit = [self]
 
         while to_visit:
@@ -765,13 +717,13 @@ cdef class Tree(object):
 
     def _iter_descendants_postorder(self, is_leaf_fn=None):
         """Yield all nodes in a tree in postorder."""
-        is_leaf_fn = is_leaf_fn or self.__class__.is_leaf
+        is_leaf = is_leaf_fn or (lambda n: n.is_leaf)
         to_visit = [self]
 
         while to_visit:
             node = to_visit.pop(-1)
             if type(node) != list:  # preorder actions
-                if not is_leaf_fn(node):  # add children
+                if not is_leaf(node):  # add children
                     to_visit.extend(reversed(node.children + [[1, node]]))
                 else:
                     yield node
@@ -801,22 +753,51 @@ cdef class Tree(object):
             except:
                 node = None
 
-    def iter_ancestors(self):
-        """Yield all ancestor nodes from the current node to the tree root."""
+    def ancestors(self, root=None):
+        """Yield all ancestor nodes of this node (up to the root if given)."""
         node = self
-        while node.up is not None:
-            yield node.up
-            node = node.up
 
-    def get_ancestors(self):
-        """Return a list of all ancestor nodes from the current node to the root."""
-        return list(self.iter_ancestors())
+        if node == root:
+            return  # node is not an ancestor of itself
+
+        while node.up:
+            node = node.up
+            yield node
+            if node == root:
+                break  # by now, we already yielded root too
+
+        if root is not None and node != root:
+            raise TreeError('node is no descendant from given root: %r' % root)
+
+    def lineage(self, root=None):
+        """Yield all nodes in the lineage of this node (up to root if given)."""
+        # Same as ancestors() but also yielding itself first.
+        yield self
+        yield from self.ancestors(root)
+
+    def _translate_nodes(self, nodes):
+        """Return a list of nodes that correspond to the given names or nodes."""
+        # ['A', self['B'], 'C'] -> [self['A'], self['B'], self['C']]
+        assert type(nodes) in [list, tuple, set, frozenset]
+
+        names = {n for n in nodes if type(n) == str}
+
+        if not names:
+            return list(nodes)  # avoid traversing tree if no names to translate
+
+        name2node = {}
+        for node in self.traverse():
+            if node.name in names:
+                assert node.name not in name2node, f'Ambiguous node name: {node.name}'
+                name2node[node.name] = node
+
+        return [name2node[n] if type(n) == str else n for n in nodes]
 
     def describe(self):
         """Return a string with information on this node and its connections."""
-        if len(self.get_tree_root().children) == 2:
+        if len(self.root.children) == 2:
             rooting = 'Yes'
-        elif len(self.get_tree_root().children) > 2:
+        elif len(self.root.children) > 2:
             rooting = 'No'
         else:
             rooting = 'No children'
@@ -828,119 +809,55 @@ cdef class Tree(object):
             'Number of leaf nodes: %d' % len(cached_content[self]),
             'Total number of nodes: %d' % len(cached_content),
             'Rooted: %s' % rooting,
-            'Most distant node: %s' % max_node.name,
+            'Most distant node: %s' % (max_node.name or ''),
             'Max. distance: %g' % max_dist])
 
-    def write(self, properties=None, outfile=None, format=0, is_leaf_fn=None,
-              format_root_node=False, dist_formatter=None, support_formatter=None,
-              name_formatter=None, quoted_node_names=False):
-        """Return the newick representation of current node.
+    def write(self, outfile=None, props=(), parser=None,
+              format_root_node=False, is_leaf_fn=None):
+        """Return or write to file the newick representation.
 
-        :param list properties: Names of properties to be exported in all nodes
-            using the Extended Newick Format. If None, do not export any, and
-            if [] export all available properties.
         :param str outfile: Name of the output file. If present, it will write
             the newick to that file instad of returning it as a string.
-        :param int format: Identifier of the newick standard used to encode the
-            tree. See tutorial for details.
-        :param bool format_root_node: If True, it allows properties
-            and branch information from root node to be exported as a
-            part of the newick text string. For newick compatibility
-            reasons, this is False by default.
+        :param list props: Properties to write for all nodes using the Extended
+            Newick Format. If None, write all available properties.
+        :param parser: Parser used to encode the tree in newick format.
+        :param bool format_root_node: If True, write content of the root node
+            too. For compatibility reasons, this is False by default.
 
         Example::
 
-            t.write(features=['species', 'sci_name'], format=1)
+            t.write(props=['species', 'sci_name'])
         """
-        nw = write_newick(self, properties=properties, format=format,
-                          is_leaf_fn=is_leaf_fn,
-                          format_root_node=format_root_node,
-                          dist_formatter=dist_formatter,
-                          support_formatter=support_formatter,
-                          name_formatter=name_formatter,
-                          quoted_names=quoted_node_names)
+        parser = newick.INT_PARSERS[parser] if type(parser) == int else parser
 
-        if outfile is not None:
-            with open(outfile, "w") as OUT:
-                OUT.write(nw)
+        if not outfile:
+            return newick.dumps(self, props, parser, format_root_node, is_leaf_fn)
         else:
-            return nw
+            with open(outfile, 'w') as fp:
+                newick.dump(self, fp, props, parser, format_root_node, is_leaf_fn)
 
-    def get_tree_root(self):
-        """Return the absolute root node of the current tree structure."""
-        root = self
-        while root.up is not None:
-            root = root.up
-        return root
+    def common_ancestor(self, nodes):
+        """Return the last node common to the lineages of the given nodes.
 
-    def get_common_ancestor(self, *target_nodes, **kargs):
-        """Return the first common ancestor between this node and the target nodes.
-
-        :param target_nodes: Nodes to use when finding the common ancestor.
-
-        Example::
-
-            t = Tree("(((A:0.1, B:0.01):0.001, C:0.1):1.0[&&NHX:name=common], (D:0.01):0.001):2.0[&&NHX:name=root];")
-            A = t&"A"
-            C = t&"C"
-            common = A.get_common_ancestor(C)
-            print("The common ancestor of nodes A and C in this tree is:", common.name)
+        All the nodes should have self as an ancestor, or an error is raised.
         """
-        get_path = kargs.get("get_path", False)
+        if not nodes:
+            return None
 
-        if (len(target_nodes) == 1 and
-                type(target_nodes[0]) in [set, tuple, list, frozenset]):
-            target_nodes = target_nodes[0]
+        nodes = self._translate_nodes(nodes)
 
-        # Convert node names into node instances
-        target_nodes = _translate_nodes(self, *target_nodes)
+        curr = nodes[0]  # current node being the last common ancestor
 
-        if type(target_nodes) != list:
-            # If only one node is provided and is the same as the seed node,
-            # return itself
-            if target_nodes is self:
-                if get_path:
-                    return self, {}
-                else:
-                    return self
-            else:
-                #Otherwise find the common ancestor of current seed node and
-                #the target_node provided
-                target_nodes = [target_nodes, self]
+        for node in nodes:  # NOTE: not  nodes[1:]  in case self is no root of node[0]
+            lin_node = set(node.lineage(self))
+            curr = next((n for n in curr.lineage(self) if n in lin_node), None)
 
-        n2path = {}
-        reference = []
-        ref_node = None
-        for n in target_nodes:
-            current = n
-            while current:
-                n2path.setdefault(n, set()).add(current)
-                if not ref_node:
-                    reference.append(current)
-                current = current.up
-            if not ref_node:
-                ref_node = n
-
-        common = None
-        for n in reference:
-            broken = False
-            for node, path in n2path.items():
-                if node is not ref_node and n not in path:
-                    broken = True
-                    break
-
-            if not broken:
-                common = n
-                break
-        if not common:
-            raise TreeError("Nodes are not connected!")
-
-        if get_path:
-            return common, n2path
+        if curr is not None:
+            return curr  # which is now the last common ancestor of all nodes
         else:
-            return common
+            raise TreeError(f'No common ancestor for nodes: {nodes}')
 
-    def iter_search_nodes(self, **conditions):
+    def search_nodes(self, **conditions):
         """Yield nodes matching the given conditions.
 
         Example::
@@ -953,67 +870,31 @@ cdef class Tree(object):
                    for key, value in conditions.items()):
                 yield n
 
-    def search_nodes(self, **conditions):
-        """Return the list of nodes matching the given conditions."""
-        return list(self.iter_search_nodes(**conditions))
-
     def get_leaves_by_name(self, name):
         """Return a list of leaf nodes matching the given name."""
         return self.search_nodes(name=name, children=[])
-
-    def is_leaf(self):
-        """Return True if the current node is a leaf."""
-        return len(self.children) == 0
-
-    def is_root(self):
-        """Return True if the current node has no parent."""
-        return self.up is None
 
     # ###########################
     # Distance related functions
     # ###########################
 
-    def get_distance(self, target, target2=None, topology_only=False):
+    def get_distance(self, node1, node2, topological=False):
+        """Return the distance between the given nodes.
+
+        :param node1: A node within the same tree structure.
+        :param node2: Another node within the same tree structure.
+        :param topological: If True, distance will refer to the number of
+            nodes between target and target2.
         """
-        Returns the distance between two nodes. If only one target is
-        specified, it returns the distance between the target and the
-        current node.
+        d = (lambda node: 1) if topological else (lambda node: node.dist)
 
-        :argument target: a node within the same tree structure.
+        node1, node2 = self._translate_nodes([node1, node2])
 
-        :argument target2: a node within the same tree structure. If
-          not specified, current node is used as target2.
+        root = self.root.common_ancestor([node1, node2])  # common root
+        assert root is not None, 'nodes do not belong to the same tree'
 
-        :argument False topology_only: If set to True, distance will
-          refer to the number of nodes between target and target2.
-
-        :returns: branch length distance between target and
-          target2. If topology_only flag is True, returns the number
-          of nodes between target and target2.
-
-        """
-
-        if target2 is None:
-            target2 = self
-            root = self.get_tree_root()
-        else:
-            # is target node under current node?
-            root = self
-
-        target, target2 = _translate_nodes(root, target, target2)
-        ancestor = root.get_common_ancestor(target, target2)
-
-        dist = 0.0
-        for n in [target2, target]:
-            current = n
-            while current != ancestor:
-                if topology_only:
-                    if  current!=target:
-                        dist += 1
-                else:
-                    dist += current.dist
-                current = current.up
-        return dist
+        return (sum(d(n) for n in node1.lineage(root)) - d(root) +
+                sum(d(n) for n in node2.lineage(root)) - d(root))
 
     def get_farthest_node(self, topology_only=False):
         """
@@ -1032,13 +913,15 @@ cdef class Tree(object):
         # Init farthest node to current farthest leaf
         farthest_node, farthest_dist = self.get_farthest_leaf(topology_only=topology_only)
 
+        dist = lambda node: node.dist if 'dist' in node.props else (0 if node.is_root else 1)
+
         prev = self
-        cdist = 0.0 if topology_only else prev.dist
+        cdist = 0.0 if topology_only else dist(prev)
         current = prev.up
         while current is not None:
             for ch in current.children:
                 if ch != prev:
-                    if not ch.is_leaf():
+                    if not ch.is_leaf:
                         fnode, fdist = ch.get_farthest_leaf(topology_only=topology_only)
                     else:
                         fnode = ch
@@ -1046,7 +929,7 @@ cdef class Tree(object):
                     if topology_only:
                         fdist += 1.0
                     else:
-                        fdist += ch.dist
+                        fdist += dist(ch)
                     if cdist+fdist > farthest_dist:
                         farthest_dist = cdist + fdist
                         farthest_node = fnode
@@ -1054,14 +937,16 @@ cdef class Tree(object):
             if topology_only:
                 cdist += 1
             else:
-                cdist  += prev.dist
+                cdist  += dist(prev)
             current = prev.up
         return farthest_node, farthest_dist
 
     def _get_farthest_and_closest_leaves(self, topology_only=False, is_leaf_fn=None):
         # if called from a leaf node, no necessary to compute
-        if (is_leaf_fn and is_leaf_fn(self)) or self.is_leaf():
+        if (is_leaf_fn and is_leaf_fn(self)) or self.is_leaf:
             return self, 0.0, self, 0.0
+
+        dist = lambda node: node.dist if 'dist' in node.props else 1
 
         min_dist = None
         min_node = None
@@ -1072,10 +957,10 @@ cdef class Tree(object):
             if n is self:
                 continue
             if post:
-                d -= n.dist if not topology_only else 1.0
+                d -= dist(n) if not topology_only else 1.0
             else:
-                if (is_leaf_fn and is_leaf_fn(n)) or n.is_leaf():
-                    total_d = d + n.dist if not topology_only else d
+                if (is_leaf_fn and is_leaf_fn(n)) or n.is_leaf:
+                    total_d = d + dist(n) if not topology_only else d
                     if min_dist is None or total_d < min_dist:
                         min_dist = total_d
                         min_node = n
@@ -1083,7 +968,7 @@ cdef class Tree(object):
                         max_dist = total_d
                         max_node = n
                 else:
-                    d += n.dist if not topology_only else 1.0
+                    d += dist(n) if not topology_only else 1.0
         return min_node, min_dist, max_node, max_dist
 
 
@@ -1129,7 +1014,7 @@ cdef class Tree(object):
         partitions.
         """
         # Gets the farthest node to the current root
-        root = self.get_tree_root()
+        root = self.root
         nA, r2A_dist = root.get_farthest_leaf()
         nB, A2B_dist = nA.get_farthest_node()
 
@@ -1187,6 +1072,9 @@ cdef class Tree(object):
         else:
             root = self
 
+        root.dist = root.dist or 0
+        root.support = root.support or 1
+
         next_deq = deque([root])
         for i in range(size-1):
             if random.randint(0, 1):
@@ -1242,7 +1130,7 @@ cdef class Tree(object):
           structure that will be used as a basal node.
 
         """
-        outgroup = _translate_nodes(self, outgroup)
+        outgroup = self._translate_nodes([outgroup])[0]
 
         if self == outgroup:
             raise TreeError("Cannot set the tree root as outgroup")
@@ -1260,7 +1148,8 @@ cdef class Tree(object):
         if len(self.children) != 1:
             down_branch_connector = self.__class__()
             down_branch_connector.dist = 0.0
-            down_branch_connector.support = n.support
+            if n.support is not None:
+                down_branch_connector.support = n.support
             for ch in self.get_children():
                 down_branch_connector.children.append(ch)
                 ch.up = down_branch_connector
@@ -1283,10 +1172,13 @@ cdef class Tree(object):
 
                 buffered_dist2 = quien_va_ser_hijo.dist
                 buffered_support2 = quien_va_ser_hijo.support
-                quien_va_ser_hijo.dist = buffered_dist
-                quien_va_ser_hijo.support = buffered_support
+                if buffered_dist is not None:
+                    quien_va_ser_hijo.dist = buffered_dist
+                if buffered_support is not None:
+                    quien_va_ser_hijo.support = buffered_support
                 buffered_dist = buffered_dist2
-                buffered_support = buffered_support2
+                if buffered_support2 is not None:
+                    buffered_support = buffered_support2
 
                 quien_va_ser_padre.up = quien_fue_padre
                 quien_fue_padre = quien_va_ser_padre
@@ -1298,7 +1190,8 @@ cdef class Tree(object):
             down_branch_connector.up = quien_va_ser_padre
             quien_va_ser_padre.up = quien_fue_padre
 
-            down_branch_connector.dist += buffered_dist
+            if buffered_dist is not None:
+                down_branch_connector.dist += buffered_dist
             outgroup2 = parent_outgroup
             parent_outgroup.children.remove(outgroup)
             outgroup2.dist = 0
@@ -1311,10 +1204,13 @@ cdef class Tree(object):
         # outgroup is always the first children. Some function my
         # trust on this fact, so do no change this.
         self.children = [outgroup,outgroup2]
-        middist = (outgroup2.dist + outgroup.dist)/2
-        outgroup.dist = middist
-        outgroup2.dist = middist
-        outgroup2.support = outgroup.support
+        if outgroup2.dist is not None and outgroup.dist is not None:
+            middist = (outgroup2.dist + outgroup.dist)/2
+            outgroup.dist = middist
+            outgroup2.dist = middist
+
+        if outgroup.support is not None:
+            outgroup2.support = outgroup.support
 
     def unroot(self, mode='legacy'):
         """
@@ -1333,11 +1229,11 @@ cdef class Tree(object):
         if not (mode == 'legacy' or mode == 'keep'):
             raise ValueError("The value of the mode parameter must be 'legacy' or 'keep'")
         if len(self.children)==2:
-            if not self.children[0].is_leaf():
+            if not self.children[0].is_leaf:
                 if mode == "keep":
                     self.children[1].dist+=self.children[0].dist
                 self.children[0].delete()
-            elif not self.children[1].is_leaf():
+            elif not self.children[1].is_leaf:
                 if mode == "keep":
                     self.children[0].dist+=self.children[1].dist
                 self.children[1].delete()
@@ -1385,14 +1281,13 @@ cdef class Tree(object):
                                     layout=layout, tree_style=tree_style,
                                       units=units, dpi=dpi)
 
-    def explore(self, tree_name=None, layouts=[], show_leaf_name=True,
+    def explore(self, name=None, layouts=[], show_leaf_name=True,
                 show_branch_length=True, show_branch_support=True,
                 include_props=None, exclude_props=None,
-                host='127.0.0.1', port=5000,
-                custom_api={}, custom_route={}):
+                port=5000, quiet=True, daemon=True):
         """Launch an interactive smartview session to visualize the tree.
 
-        :param str tree_name: Name used to store tree in local database.
+        :param str name: Name used to store and refer to the tree.
         :param list layouts: Layouts that will be available from the
             front end. It is important to name functions (__name__), as they
             will be adressed by that name in the explorer.
@@ -1419,11 +1314,10 @@ cdef class Tree(object):
             layout.active = False
             default_layouts.append(layout)
 
-        run_smartview(tree=self, tree_name=tree_name,
+        run_smartview(tree=self, name=name,
                       layouts=list(default_layouts + layouts),
                       include_props=include_props, exclude_props=exclude_props,
-                      host=host, port=port,
-                      custom_api=custom_api, custom_route=custom_route)
+                      port=port, quiet=quiet, compress=False, daemon=daemon)
 
     def copy(self, method="cpickle"):
         """.. versionadded: 2.1
@@ -1457,9 +1351,9 @@ cdef class Tree(object):
         """
         method = method.lower()
         if method=="newick":
-            new_node = self.__class__(self.write(properties=None, format=1, format_root_node=True), format=1)
+            new_node = self.__class__(self.write(format_root_node=True))
         elif method=="newick-extended":
-            new_node = self.__class__(self.write(properties=[], format=1), format=1)
+            new_node = self.__class__(self.write(props=None))
         elif method == "deepcopy":
             parent = self.up
             self.up = None
@@ -1497,7 +1391,7 @@ cdef class Tree(object):
            #            ╰──┬╴a
            #               ╰╴b
         """
-        if not self.is_leaf():
+        if not self.is_leaf:
             n2s = {}
             for n in self.get_children():
                 s = n.ladderize(direction=direction)
@@ -1521,7 +1415,7 @@ cdef class Tree(object):
         node2content = self.get_cached_content(store_attr=attr, container_type=list)
 
         for n in self.traverse():
-            if not n.is_leaf():
+            if not n.is_leaf:
                 n.children.sort(key=lambda x: str(sorted(node2content[x])))
 
     def get_cached_content(self, store_attr=None, container_type=set, leaves_only=True, _store=None):
@@ -1633,15 +1527,15 @@ cdef class Tree(object):
             raise TreeError("expand_polytomies and unrooted_trees arguments cannot be enabled at the same time")
 
 
-        attrs_t1 = set([getattr(n, attr_t1) for n in ref_t.iter_leaves() if hasattr(n, attr_t1)])
-        attrs_t2 = set([getattr(n, attr_t2) for n in target_t.iter_leaves() if hasattr(n, attr_t2)])
+        attrs_t1 = set([getattr(n, attr_t1) for n in ref_t.leaves() if hasattr(n, attr_t1)])
+        attrs_t2 = set([getattr(n, attr_t2) for n in target_t.leaves() if hasattr(n, attr_t2)])
         common_attrs = attrs_t1 & attrs_t2
         # release mem
         attrs_t1, attrs_t2 = None, None
 
         # Check for duplicated items (is it necessary? can we optimize? what's the impact in performance?')
-        size1 = len([True for n in ref_t.iter_leaves() if getattr(n, attr_t1, None) in common_attrs])
-        size2 = len([True for n in target_t.iter_leaves() if getattr(n, attr_t2, None) in common_attrs])
+        size1 = len([True for n in ref_t.leaves() if getattr(n, attr_t1, None) in common_attrs])
+        size2 = len([True for n in target_t.leaves() if getattr(n, attr_t2, None) in common_attrs])
         if size1 > len(common_attrs):
             raise TreeError('Duplicated items found in source tree')
         if size2 > len(common_attrs):
@@ -1688,7 +1582,7 @@ cdef class Tree(object):
 
             if min_support_t1:
                 support_t1 = dict([
-                        (tuple(sorted([getattr(n, attr_t1) for n in content if hasattr(n, attr_t1) and getattr(n, attr_t1) in common_attrs])), branch.support)
+                        (tuple(sorted([getattr(n, attr_t1) for n in content if hasattr(n, attr_t1) and getattr(n, attr_t1) in common_attrs])), branch.support or 0)
                         for branch, content in t1_content.items()])
 
             for t2 in target_trees:
@@ -1709,7 +1603,7 @@ cdef class Tree(object):
 
                 if min_support_t2:
                     support_t2 = dict([
-                        (tuple(sorted(([getattr(n, attr_t2) for n in content if hasattr(n, attr_t2) and getattr(n, attr_t2) in common_attrs]))), branch.support)
+                        (tuple(sorted(([getattr(n, attr_t2) for n in content if hasattr(n, attr_t2) and getattr(n, attr_t2) in common_attrs]))), branch.support or 0)
                         for branch, content in t2_content.items()])
 
 
@@ -1718,12 +1612,12 @@ cdef class Tree(object):
                 if min_support_t1 and unrooted_trees:
                     discard_t1 = set([p for p in edges1 if support_t1.get(p[0], support_t1.get(p[1], 999999999)) < min_support_t1])
                 elif min_support_t1:
-                    discard_t1 = set([p for p in edges1 if support_t1[p] < min_support_t1])
+                    discard_t1 = set([p for p in edges1 if support_t1[p] is not None and support_t1[p] is not None and support_t1[p] < min_support_t1])
 
                 if min_support_t2 and unrooted_trees:
                     discard_t2 = set([p for p in edges2 if support_t2.get(p[0], support_t2.get(p[1], 999999999)) < min_support_t2])
                 elif min_support_t2:
-                    discard_t2 = set([p for p in edges2 if support_t2[p] < min_support_t2])
+                    discard_t2 = set([p for p in edges2 if support_t2[p] is not None and support_t2[p] < min_support_t2])
 
 
                 #rf = len(edges1 ^ edges2) - (len(discard_t1) + len(discard_t2)) - polytomy_correction # poly_corr is 0 if the flag is not enabled
@@ -1750,7 +1644,7 @@ cdef class Tree(object):
 
                     # print max_parts
 
-                if not min_comparison or min_comparison[0] > rf:
+                if not min_comparison or (min_comparison[0] is not None and min_comparison[0] > rf):
                     min_comparison = [rf, max_parts, common_attrs, edges1, edges2, discard_t1, discard_t2]
 
         return min_comparison
@@ -1814,7 +1708,8 @@ cdef class Tree(object):
             return rf, maxrf, len(common), valid_ref_edges, valid_src_edges, common_edges
 
 
-        total_valid_ref_edges = len([n for n in ref_tree.traverse() if n.children and n.support > min_support_ref])
+        total_valid_ref_edges = len([n for n in ref_tree.traverse()
+                                     if n.children and n.support is not None and n.support > min_support_ref])
         result = {}
         if has_duplications:
             orig_target_size = len(source_tree)
@@ -1847,7 +1742,9 @@ cdef class Tree(object):
                         subtree_content = subtree.get_cached_content(store_attr='name')
                         for n in subtree.traverse():
                             if n.children:
-                                n.support = source_tree.get_common_ancestor(subtree_content[n]).support
+                                n.support = source_tree.common_ancestor(subtree_content[n]).support
+                                # TODO: This function is almost surely broken. It relies on
+                                # an old behavior of get_common_ancestor().
 
                     total_rf, max_rf, ncommon, valid_ref_edges, valid_src_edges, common_edges = _compare(subtree, ref_tree)
 
@@ -1976,7 +1873,7 @@ cdef class Tree(object):
         """
         self.resolve_polytomy()
 
-        for n in self.get_descendants():
+        for n in self.descendants():
             if len(n.children) == 1:
                 n.delete(prevent_nondicotomic=True,
                          preserve_branch_length=preserve_branch_length)
@@ -2029,7 +1926,7 @@ cdef class Tree(object):
     #     """
     #     all_leaves = frozenset(self.get_leaf_names())
     #     all_partitions = set([all_leaves])
-    #     for n in self.iter_descendants():
+    #     for n in self.descendants():
     #         p1 = frozenset(n.get_leaf_names())
     #         p2 = frozenset(all_leaves - p1)
     #         all_partitions.add(p1)
@@ -2047,7 +1944,7 @@ cdef class Tree(object):
         # pre-calculate how many splits remain under each node
         node2max_depth = {}
         for node in self.traverse("postorder"):
-            if not node.is_leaf():
+            if not node.is_leaf:
                 max_depth = max([node2max_depth[c] for c in node.children]) + 1
                 node2max_depth[node] = max_depth
             else:
@@ -2060,12 +1957,12 @@ cdef class Tree(object):
 
 
         step = tree_length / node2max_depth[self]
-        for node in self.iter_descendants("levelorder"):
+        for node in self.descendants("levelorder"):
             if strategy == "balanced":
                 node.dist = (tree_length - node2dist[node.up]) / node2max_depth[node]
                 node2dist[node] =  node.dist + node2dist[node.up]
             elif strategy == "fixed":
-                if not node.is_leaf():
+                if not node.is_leaf:
                     node.dist = step
                 else:
                     node.dist = tree_length - ((node2dist[node.up]) * step)
@@ -2109,8 +2006,7 @@ cdef class Tree(object):
 
         """
 
-        if type(values) != set:
-            values = set(values)
+        values = set(values)
 
         # This is the only time I traverse the tree, then I use cached
         # leaf content
@@ -2118,15 +2014,15 @@ cdef class Tree(object):
 
         # Raise an error if requested attribute values are not even present
         if ignore_missing:
-            found_values = set([getattr(n, target_attr) for n in n2leaves[self]])
-            missing_values = values - found_values
-            values = values & found_values
+            found_values = set(n.props.get(target_attr) for n in n2leaves[self])
+            missing_values = values - found_values  # TODO: this is never used??
+            values &= found_values
 
         # Locate leaves matching requested attribute values
-        targets = set([leaf for leaf in n2leaves[self]
-                   if getattr(leaf, target_attr) in values])
+        targets = set(leaf for leaf in n2leaves[self]
+                          if leaf.props.get(target_attr) in values)
         if not ignore_missing:
-            if values - set([getattr(leaf, target_attr) for leaf in targets]):
+            if values - set(leaf.props.get(target_attr) for leaf in targets):
                 raise ValueError('The monophyly of the provided values could never be reached, as not all of them exist in the tree.'
                                  ' Please check your target attribute and values, or set the ignore_missing flag to True')
 
@@ -2141,12 +2037,12 @@ cdef class Tree(object):
                     break
             foreign_leaves = smallest - targets
         else:
-            # Check monophyly with get_common_ancestor. Note that this
+            # Check monophyly with common_ancestor. Note that this
             # step does not require traversing the tree again because
             # targets are node instances instead of node names, and
-            # get_common_ancestor function is smart enough to detect it
+            # common_ancestor function is smart enough to detect it
             # and avoid unnecessary traversing.
-            common = self.get_common_ancestor(targets)
+            common = self.common_ancestor(targets)
             observed = n2leaves[common]
             foreign_leaves = set([leaf for leaf in observed
                               if getattr(leaf, target_attr) not in values])
@@ -2156,11 +2052,11 @@ cdef class Tree(object):
         else:
             # if the requested attribute is not monophyletic in this
             # node, let's differentiate between poly and paraphyly.
-            poly_common = self.get_common_ancestor(foreign_leaves)
+            poly_common = self.common_ancestor(foreign_leaves)
             # if the common ancestor of all foreign leaves is self
             # contained, we have a paraphyly. Otherwise, polyphyly.
             polyphyletic = [leaf for leaf in poly_common if
-                            getattr(leaf, target_attr) in values]
+                                leaf.props.get(target_attr) in values]
             if polyphyletic:
                 return False, "polyphyletic", foreign_leaves
             else:
@@ -2190,7 +2086,7 @@ cdef class Tree(object):
         n2values = self.get_cached_content(store_attr=target_attr)
 
         is_monophyletic = lambda node: n2values[node] == values
-        for match in self.iter_leaves(is_leaf_fn=is_monophyletic):
+        for match in self.leaves(is_leaf_fn=is_monophyletic):
             if is_monophyletic(match):
                 yield match
 
@@ -2241,8 +2137,8 @@ cdef class Tree(object):
 
         n2subtrees = {}
         for n in self.traverse("postorder"):
-            if n.is_leaf():
-                subtrees = [getattr(n, map_attr)]
+            if n.is_leaf:
+                subtrees = [n.props.get(map_attr)]
             else:
                 subtrees = []
                 if len(n.children) > polytomy_size_limit:
@@ -2296,7 +2192,7 @@ cdef class Tree(object):
                         next_node = next_node.children[0]
         target = [self]
         if recursive:
-            target.extend([n for n in self.get_descendants()])
+            target.extend([n for n in self.descendants()])
         for n in target:
             _resolve(n)
 
@@ -2365,17 +2261,17 @@ cdef class Tree(object):
         :return: two-dimensional array and a one dimensional array
         """
 
-        leaves = self.get_leaves()
+        leaves = list(self.leaves())
         paths = {x: set() for x in leaves}
 
         # get the paths going up the tree
         # we get all the nodes up to the last one and store them in a set
 
         for n in leaves:
-            if n.is_root():
+            if n.is_root:
                 continue
             movingnode = n
-            while not movingnode.is_root():
+            while not movingnode.is_root:
                 paths[n].add(movingnode)
                 movingnode = movingnode.up
 
@@ -2495,7 +2391,10 @@ cdef class Tree(object):
         """
         def get_node(nodename, dist=None):
             if nodename not in nodes_by_name:
-                nodes_by_name[nodename] = Tree(name=nodename, dist=dist)
+                data = {'name': nodename}
+                if dist is not None:
+                    data['dist'] = dist
+                nodes_by_name[nodename] = Tree(data)
             node = nodes_by_name[nodename]
             if dist is not None:
                 node.dist = dist
@@ -2513,7 +2412,7 @@ cdef class Tree(object):
             parent = get_node(parent_name)
             parent.add_child(get_node(child_name, dist=dist))
 
-        root = parent.get_tree_root()
+        root = parent.root
         return root
 
     @staticmethod
@@ -2555,39 +2454,8 @@ cdef class Tree(object):
                     ete_ch = get_ete_node(ch)
                     ete_node.add_child(ete_ch)
                     all_nodes[ch] = ete_ch
-            return ete_ch.get_tree_root()
+            return ete_ch.root
 
     def phonehome(self):
         from .. import _ph
         _ph.call()
-
-
-def _translate_nodes(root, *nodes):
-    """Return a list of nodes that correspond to the given names or nodes."""
-    # (root, ['A', root&'B', 'C']) -> [root&'A', root&'B', root&'C']
-
-    # NOTE: It actually returns only a single node if called with a
-    #       single value, adding combinatorial complexity.
-
-    # Check first that the nodes are either strings or already Trees.
-    for node in nodes:
-        if type(node) not in [str, root.__class__]:
-            raise TreeError("Invalid target node: " + str(node))
-
-    # Create a translation dictionary.
-    name2node = {name: None for name in nodes if type(name) is str}
-    if name2node:  # fill translation dict only if there are names to translate
-        for node in root.traverse():
-            if node.name in name2node:
-                if name2node[node.name] is None:  # we haven't seen it before
-                    name2node[node.name] = node
-                else:
-                    raise TreeError("Ambiguous node name: " + str(node.name))
-
-    notfound = [name for name, node in name2node.items() if node is None]
-    if notfound:
-        raise ValueError("Node names not found: " + str(notfound))
-
-    valid_nodes = [(name2node[n] if type(n) is str else n) for n in nodes]
-
-    return valid_nodes if len(valid_nodes) > 1 else valid_nodes[0]

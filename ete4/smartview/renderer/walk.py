@@ -15,7 +15,7 @@ def walk(tree):
         if it.first_visit:
             yield it
 
-            if it.node.is_leaf() or not it.descend:
+            if it.node.is_leaf or not it.descend:
                 it.go_back()
                 continue
 

@@ -6,7 +6,7 @@ Read trees from a file in nexus format.
 
 import re
 
-from .newick import read_newick, write_newick
+from . import newick as newick_parser
 
 
 class NexusError(Exception):
@@ -14,16 +14,16 @@ class NexusError(Exception):
 
 
 
-def load(fp, format=1):
-    return loads(fp.read(), format=format)
+def load(fp, parser=None):
+    return loads(fp.read(), parser=parser)
 
 
-def loads(text, format=1):
-    return {name: read_newick(newick, format=format)
-            for name,newick in get_trees(text).items()}
+def loads(text, parser=None):
+    return {name: newick_parser.loads(newick, parser=parser)
+            for name, newick in get_trees(text, parser=parser).items()}
 
 
-def get_trees(text):
+def get_trees(text, parser=None):
     """Return trees as {name: newick} with all the name transformations done."""
     if not re.match(r'^#NEXUS\s*\n', text, flags=re.I):
         raise NexusError('text does not start with "#NEXUS"')
@@ -47,23 +47,23 @@ def get_trees(text):
         if newick.startswith('['):  # remove possible [&U] or comment
             newick = newick[newick.find(']')+1:].strip()
 
-        trees[name] = apply_translations(translate, newick)
+        trees[name] = apply_translations(translate, newick, parser)
 
     return trees
 
 
-def apply_translations(translate, newick):
+def apply_translations(translate, newick, parser=None):
     """Return newick with node names translated according to the given dict."""
     if not translate:
         return newick
 
-    t = read_newick(newick, format=1)
+    t = newick_parser.loads(newick, parser=parser)
 
     for node in t:
         if node.name in translate:
             node.name = translate[node.name]
 
-    return write_newick(t, properties=[], format=1)
+    return newick_parser.dumps(t, parser=parser)
 
 
 def get_section(text, section_name):

@@ -40,7 +40,7 @@ def get_silhouette_width(fdist, cluster):
     for st in sisters:
         if st.profile is None:
             continue
-        for i in cluster.iter_leaves():
+        for i in cluster.leaves():
             # Skip nodes without profile
             if i._profile is not None:
                 # item intraclsuterdist -> Centroid Diameter
@@ -66,8 +66,8 @@ def get_avg_profile(node):
     """ This internal function updates the mean profile
     associated to an internal node. """
 
-    if not node.is_leaf():
-        leaf_vectors = [n._profile for n in  node.get_leaves() \
+    if not node.is_leaf:
+        leaf_vectors = [n._profile for n in  node.leaves() \
                             if n._profile is not None]
         if len(leaf_vectors)>0:
             node._profile, node._std_profile = safe_mean_vector(leaf_vectors)
@@ -93,7 +93,7 @@ def get_dunn_index(fdist, *clusters):
 
     intra_dist = []
     for c in clusters:
-        for i in c.get_leaves():
+        for i in c.leaves():
             if i is not None:
                 # item intraclsuterdist -> Centroid Diameter
                 a = fdist(i.profile, c.profile)*2

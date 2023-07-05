@@ -20,6 +20,32 @@ def strip(text):
 
 class TestTreematcher(unittest.TestCase):
 
+    def test_str(self):
+
+        # See if the representation of a pattern as a text is the expected one.
+        pattern = tm.TreePattern("""
+        (
+          "len(ch) > 2",
+          "name in ['hello', 'bye']"
+        )
+        "(len(name) < 3 or name == 'accept') and d >= 0.5"
+        """)
+        self.assertEqual(str(pattern), strip("""
+                                                  ╭╴len(ch) > 2
+╴(len(name) < 3 or name == 'accept') and d >= 0.5╶┤
+                                                  ╰╴name in ['hello', 'bye']
+        """))
+
+        # See if we can use quotes in a different way, and format more widely.
+        pattern2 = tm.TreePattern("""
+        (
+        '  len(ch) > 2  '  ,
+        '  name in ["hello", "bye"]'
+        )
+        '(len(name) < 3 or name == "accept") and d >= 0.5  '
+        """)
+        self.assertEqual(str(pattern), str(pattern2).replace('"', "'"))
+
     def test_search(self):
         pattern = tm.TreePattern("""
         (
@@ -29,18 +55,12 @@ class TestTreematcher(unittest.TestCase):
         "(len(name) < 3 or name == 'accept') and d >= 0.5"
         """)
 
-        self.assertEqual(str(pattern), strip("""
-                                                  ╭╴len(ch) > 2
-╴(len(name) < 3 or name == 'accept') and d >= 0.5╶┤
-                                                  ╰╴name in ['hello', 'bye']
-        """))
-
         for (newick, expected_result) in [
-                ('((hello,(1,2,3)xx)accept:1, NODE);', True),
-                ('((hello,(1,2,3)xx)accept:0.4, NODE);', False),
-                ('(hello,(1,2,3)xx)accept:1;', True),
-                ('((bye,(1,2,3)xx)none:1, NODE);', False),
-                ('((bye,(1,2,3)xx)y:1, NODE);', True)]:
-            tree = Tree(newick, format=1)
+                ('((hello:1,(1:1,2:1,3:1)xx:1)accept:1, NODE):0;', True),
+                ('((hello:1,(1:1,2:1,3:1)xx:1)accept:0.4, NODE):0;', False),
+                ('(hello:1,(1:1,2:1,3:1)xx:1)accept:1;', True),
+                ('((bye:1,(1:1,2:1,3:1)xx:1)none:1, NODE):0;', False),
+                ('((bye:1,(1:1,2:1,3:1)xx:1)y:1, NODE):0;', True)]:
+            tree = Tree(newick)
 
             self.assertEqual(bool(tm.search(pattern, tree)), expected_result)

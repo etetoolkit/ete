@@ -452,7 +452,7 @@ class GTDBTaxa(object):
         #remove onechild-nodes
 
         if not intermediate_nodes:
-            for n in root.get_descendants():
+            for n in root.descendants():
                 if len(n.children) == 1 and int(name2tax.get(n.name, n.name)) not in taxids:
                     n.delete(prevent_nondicotomic=False)
 
@@ -546,7 +546,7 @@ class GTDBTaxa(object):
                                lineage = tax2track.get(tmp_taxid, []),
                                rank = tax2rank.get(tmp_taxid, 'Unknown'),
                                named_lineage = [tax2name.get(tax, str(tax)) for tax in tax2track.get(tmp_taxid, [])])
-            elif node.is_leaf():
+            elif node.is_leaf:
                 node.add_props(sci_name = node.props.get(taxid_attr, 'NA'),
                                common_name = '',
                                lineage = [],

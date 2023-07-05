@@ -18,7 +18,7 @@ def node_layout(annotation):
     global _circle_tested
     node.img_style["size"] = 0
 
-    if node.is_leaf():
+    if node.is_leaf:
         if node.name not in annotation:
             print('Got unknown leaf "%s"' % (node.name))
             return

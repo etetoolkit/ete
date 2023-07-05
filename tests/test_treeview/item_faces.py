@@ -70,7 +70,7 @@ def ugly_name_face(node, *args, **kargs):
 
     masterItem = InteractiveItem(0, 0, width, height)
     masterItem.setAcceptHoverEvents(True)
-    
+
     # Keep a link within the item to access node info
     masterItem.node = node
 
@@ -97,7 +97,7 @@ def ugly_name_face(node, *args, **kargs):
     return masterItem
 
 def master_ly(node):
-    if node.is_leaf():
+    if node.is_leaf:
         # Create an ItemFAce. First argument must be the pointer to
         # the constructor function that returns a QGraphicsItem. It
         # will be used to draw the Face. Next arguments are arbitrary,

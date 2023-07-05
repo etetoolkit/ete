@@ -20,7 +20,7 @@ with open(taxid2color_file) as handle:
     _taxid2color = json.load(handle)
 
 def get_level(node, level=0):
-    if node.is_root():
+    if node.is_root:
         return level
     else:
         return get_level(node.up, level + 1)

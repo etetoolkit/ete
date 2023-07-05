@@ -57,7 +57,7 @@ def get_rooting(tol, seed_species, agename = False):
     ROOTING = {}
     if agename:
         age2name = {}
-    while not node.is_root():
+    while not node.is_root:
         node = node.up
         for leaf in node.get_leaf_names():
             if agename:

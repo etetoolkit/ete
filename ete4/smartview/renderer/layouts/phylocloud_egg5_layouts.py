@@ -6,7 +6,7 @@ __all__ = [ "get_layout_sciname", "get_layout_gnames", "get_layout_ogs_egg5",
 
 
 def get_level(node, level=0):
-    if node.is_root():
+    if node.is_root:
         return level
     else:
         return get_level(node.up, level + 1)
@@ -21,15 +21,15 @@ def get_layout_sciname():
         "Return the name of the first node that has a name"
         sci_names = []
         for node in tree.traverse('preorder'):
-            if node.is_leaf():
+            if node.is_leaf:
                 sci_name = node.props.get('sci_name')
                 sci_names.append(sci_name)
         return next(iter(sci_names))
 
 
     def layout_fn(node):
-        if node.is_leaf():
-           
+        if node.is_leaf:
+
             sci_name = node.props.get('sci_name')
             name_seq = node.name.split('.',1)[1]
 
@@ -60,11 +60,11 @@ def get_layout_gnames():
             color = node.props.get('gname_color')
             gname_face = TextFace(gname, color=color)
 
-            if node.is_leaf():
+            if node.is_leaf:
                 node.add_face(gname_face, column = 1, position = "aligned")
 
             else:
-                node.add_face(gname_face, column = 1, position = "aligned", collapsed_only=True) 
+                node.add_face(gname_face, column = 1, position = "aligned", collapsed_only=True)
 
     layout_fn.__name__ = 'Gene names'
     layout_fn.contains_aligned_face = True
@@ -79,11 +79,11 @@ def get_layout_ogs_egg5():
             color = node.props.get('og_egg5_color')
             f = RectFace(10, 10, color=color)
 
-            if node.is_leaf():
+            if node.is_leaf:
                 node.add_face(f,  column=2, position="aligned")
             else:
                 node.add_face(f,  column=2, position="aligned",  collapsed_only=True)
-    
+
     layout_fn.__name__ = 'OGs egg5'
     layout_fn.contains_aligned_face = True
     return layout_fn
@@ -91,7 +91,7 @@ def get_layout_ogs_egg5():
 
 def get_layout_evoltype():
     def layout_fn(node):
-        if not node.is_leaf():
+        if not node.is_leaf:
             if node.props.get('evoltype_2') == 'S':
                 node.sm_style["fgcolor"] = 'blue'
                 node.sm_style["size"] = 2
@@ -119,13 +119,13 @@ def get_layout_evoltype():
 def get_layout_lca_rects():
 
     def layout_fn(node):
-       
+
         if node.props.get('lca_node_name'):
             lca = node.props.get('lca_node_name')
             color = node.props.get('Lca_color')
             level = get_level(node)
-            lca_face = RectFace(15, float('inf'), 
-                    color=color, 
+            lca_face = RectFace(15, float('inf'),
+                    color=color,
                     text=lca,
                     fgcolor="white",
                     padding_x=1, padding_y=1)

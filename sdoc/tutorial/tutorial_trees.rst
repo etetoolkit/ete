@@ -204,9 +204,9 @@ on tree node instances:
   =================================  =============================================================================================
   Method                              Description
   =================================  =============================================================================================
-    :func:`Tree.is_leaf`             returns True if *node* has no children
-    :func:`Tree.is_root`             returns True if *node* has no parent
-    :func:`Tree.get_tree_root`       returns the top-most node within the same tree structure as *node*
+    :func:`Tree.is_leaf`             True if *node* has no children
+    :func:`Tree.is_root`             True if *node* has no parent
+    :func:`Tree.root`                the top-most node within the same tree structure as *node*
     :attr:`len(Tree)`                returns the number of leaves under *node*
     :attr:`print(node)`              prints a text-based representation of the tree topology under *node*
     :attr:`if node in tree`          returns true if *node* is a leaf under *tree*
@@ -228,10 +228,10 @@ This is an example on how to access such attributes:
   print(t.up)
   print(t.name)
   print(t.dist)
-  print(t.is_leaf())
-  print(t.get_tree_root())
-  print(t.children[0].get_tree_root())
-  print(t.children[0].children[0].get_tree_root())
+  print(t.is_leaf)
+  print(t.root)
+  print(t.children[0].root)
+  print(t.children[0].children[0].root)
   # You can also iterate over tree leaves using a simple syntax
   for leaf in t:
       print(leaf.name)
@@ -596,7 +596,7 @@ strategy would look like this:
 
   # depending on the complexity of your conditions you can do the same
   # in just one line with the help of lambda functions:
-  matches = filter(lambda n: n.dist>0.3 and n.is_leaf(), t.traverse())
+  matches = filter(lambda n: n.dist>0.3 and n.is_leaf, t.traverse())
   print(len(matches), "nodes have distance >0.3 and are leaves")
 
 

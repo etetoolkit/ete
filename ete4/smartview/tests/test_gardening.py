@@ -128,7 +128,7 @@ def test_get_root_id():
             ('g', [1,1])]:
         node = t&node_name
         assert gardening.get_root_id(node) == (t, node_id)
-        assert gardening.get_root_id(node)[0] == node.get_tree_root()
+        assert gardening.get_root_id(node)[0] == node.root
         assert node == gardening.get_node(t, node_id)
 
 

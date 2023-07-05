@@ -59,7 +59,7 @@ def get_splits(tree, min_support=None, target_attr="name", discard_root=False, i
     for node in tree.traverse("preorder"):
         if discard_root and node is tree:
             continue
-        if not node.is_leaf():
+        if not node.is_leaf:
             if len(node.children) != 2:
                 if ignore_multifurcations:
                     continue

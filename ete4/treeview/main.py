@@ -545,7 +545,7 @@ class FaceContainer(dict):
 
 def _leaf(node):
     collapsed = hasattr(node, "_img_style") and not node.img_style["draw_descendants"]
-    return collapsed or node.is_leaf()
+    return collapsed or node.is_leaf
 
 def add_face_to_node(face, node, column, aligned=False, position="branch-right"):
     """

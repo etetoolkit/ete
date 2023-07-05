@@ -1,450 +1,329 @@
-import os
-import re
+"""
+Parser for trees represented in newick format.
+"""
 
-from file_extract import file_extract
+# See https://en.wikipedia.org/wiki/Newick_format
 
+from ete4.coretype.tree import Tree
 
-__all__ = ["read_newick", "write_newick", "print_supported_formats"]
-
-ITERABLE_TYPES = set([list, set, tuple, frozenset])
-
-# Regular expressions used for reading newick format
-_ILEGAL_NEWICK_CHARS = ":;(),\[\]\t\n\r="
-_NON_PRINTABLE_CHARS_RE = "[\x00-\x1f]+"
-
-_NHX_RE = "\[&&NHX:[^\]]*\]"
-_FLOAT_RE = "\s*[+-]?\d+\.?\d*(?:[eE][-+]?\d+)?\s*"
-#_FLOAT_RE = "[+-]?\d+\.?\d*"
-#_NAME_RE = "[^():,;\[\]]+"
-_NAME_RE = "[^():,;]+?"
-
-# thanks to: http://stackoverflow.com/a/29452781/1006828
-_QUOTED_TEXT_RE = r"""((?=["'])(?:"[^"\\]*(?:\\[\s\S][^"\\]*)*"|'[^'\\]*(?:\\[\s\S][^'\\]*)*'))"""
-#_QUOTED_TEXT_RE = r"""["'](?:(?<=")[^"\\]*(?s:\\.[^"\\]*)*"|(?<=')[^'\\]*(?s:\\.[^'\\]*)*')""]"]"""
-#_QUOTED_TEXT_RE = r"""(?=["'])(?:"[^"\\]*(?:\\[\s\S][^"\\]*)*"|'[^'\\]*(?:\\[\s\S][^'\\]*)*')]"]")"]"""
-
-_QUOTED_TEXT_PREFIX='ete3_quotref_'
-
-DEFAULT_DIST = 1.0
-DEFAULT_DIST_ROOT = 0.0
-DEFAULT_SUPPORT = 1.0
-DEFAULT_SUPPORT = 1.0
-FLOAT_FORMATTER = "%0.6g"
-NAME_FORMATTER = "%s"
-
-def set_float_format(formatter):
-    ''' Set the conversion format used to represent float distances and support
-    values in the newick representation of trees.
-
-    For example, use set_float_format('%0.32f') to specify 32 decimal numbers
-    when exporting node distances and bootstrap values.
-
-    Scientific notation (%e) or any other custom format is allowed. The
-    formatter string should not contain any character that may break newick
-    structure (i.e.: ":;,()")
-
-    '''
-    global FLOAT_FORMATTER
-    FLOAT_FORMATTER = formatter
-
-# Allowed formats. This table is used to read and write newick using
-# different convenctions. You can also add your own formats in an easy way.
-#
-#
-# FORMAT: [[LeafAttr1, LeafAttr1Type, Strict?], [LeafAttr2, LeafAttr2Type, Strict?],\
-#    [InternalAttr1, InternalAttr1Type, Strict?], [InternalAttr2, InternalAttr2Type, Strict?]]
-#
-# Attributes are placed in the newick as follows:
-#
-# .... ,LeafAttr1:LeafAttr2)InternalAttr1:InternalAttr2 ...
-#
-#
-#           /-A
-# -NoName--|
-#          |          /-B
-#           \C-------|
-#                    |          /-D
-#                     \E-------|
-#                               \-G
-#
-# Format 0   = (A:0.35,(B:0.72,(D:0.61,G:0.12)1.00:0.64)1.00:0.56);
-# Format 1   = (A:0.35,(B:0.72,(D:0.61,G:0.12)E:0.64)C:0.56);
-# Format 2   = (A:0.35,(B:0.72,(D:0.61,G:0.12)1.00:0.64)1.00:0.56);  (same as 0 for reading)
-# Format 3   = (A:0.35,(B:0.72,(D:0.61,G:0.12)E:0.64)C:0.56);        (same as 1 for reading)
-# Format 4   = (A:0.35,(B:0.72,(D:0.61,G:0.12)));
-# Format 5   = (A:0.35,(B:0.72,(D:0.61,G:0.12):0.64):0.56);
-# Format 6   = (A,(B,(D,G):0.64):0.56);
-# Format 7   = (A:0.35,(B:0.72,(D:0.61,G:0.12)E)C);
-# Format 8   = (A,(B,(D,G)E)C);
-# Format 9   = (A,(B,(D,G)));
-# Format 100 = (,(,(,)));
-
-# Each node content looks like:
-#   [container1]:[container2]
-# (the ":" is only present if there is something in container2)
-#
-#       ---------------- leaf nodes -----------------  ----------------- internal nodes ----------------
-#        --- container 1 ---   --- container 2 ---      --- container 1 ---        --- container 2 ---
-NW_FORMAT = {
-  0:   [['name', str, True],  ["dist", float, True],   ['support', float, True],  ["dist", float, True]], # Flexible with support
-  1:   [['name', str, True],  ["dist", float, True],   ['name', str, True],       ["dist", float, True]], # Flexible with internal node names
-  2:   [['name', str, False], ["dist", float, False],  ['support', float, False], ["dist", float, False]], # Strict with support values
-  3:   [['name', str, False], ["dist", float, False],  ['name', str, False],      ["dist", float, False]], # Strict with internal node names
-  4:   [['name', str, False], ["dist", float, False],  [None, None, False],       [None, None, False]],
-  5:   [['name', str, False], ["dist", float, False],  [None, None, False],       ["dist", float, False]],
-  6:   [['name', str, False], [None, None, False],     [None, None, False],       ["dist", float, False]],
-  7:   [['name', str, False], ["dist", float, False],  ["name", str, False],      [None, None, False]],
-  8:   [['name', str, False], [None, None, False],     ["name", str, False],      [None, None, False]],
-  9:   [['name', str, False], [None, None, False],     [None, None, False],       [None, None, False]], # Only topology with node names
-  100: [[None, None, False],  [None, None, False],     [None, None, False],       [None, None, False]] # Only Topology
-}
-
-
-def format_node(node, node_type, format, dist_formatter=None,
-                support_formatter=None, name_formatter=None,
-                quoted_names=False):
-    dist_formatter = dist_formatter or FLOAT_FORMATTER
-    support_formatter = support_formatter or FLOAT_FORMATTER
-    name_formatter = name_formatter or NAME_FORMATTER
-
-    if node_type == "leaf":
-        container1 = NW_FORMAT[format][0][0] # name
-        container2 = NW_FORMAT[format][1][0] # dists
-        converterFn1 = NW_FORMAT[format][0][1]
-        converterFn2 = NW_FORMAT[format][1][1]
-        flexible1 = NW_FORMAT[format][0][2]
-    else:
-        container1 = NW_FORMAT[format][2][0] #support/name
-        container2 = NW_FORMAT[format][3][0] #dist
-        converterFn1 = NW_FORMAT[format][2][1]
-        converterFn2 = NW_FORMAT[format][3][1]
-        flexible1 = NW_FORMAT[format][2][2]
-
-    if converterFn1 == str:
-        try:
-            if not quoted_names:
-                FIRST_PART = re.sub("["+_ILEGAL_NEWICK_CHARS+"]", "_", \
-                                    str(getattr(node, container1)))
-            else:
-                FIRST_PART = str(getattr(node, container1))
-            if not FIRST_PART and container1 == 'name' and not flexible1:
-                FIRST_PART = "NoName"
-
-        except (AttributeError, TypeError):
-            FIRST_PART = "?"
-
-        FIRST_PART = name_formatter %FIRST_PART
-        if quoted_names:
-            FIRST_PART = '"%s"' %FIRST_PART
-
-    elif converterFn1 is None:
-        FIRST_PART = ""
-    else:
-        try:
-            FIRST_PART = support_formatter %(converterFn2(getattr(node, container1)))
-        except (ValueError, TypeError):
-            FIRST_PART = "?"
-
-    if converterFn2 == str:
-        try:
-            SECOND_PART = ":"+re.sub("["+_ILEGAL_NEWICK_CHARS+"]", "_", \
-                                  str(getattr(node, container2)))
-        except (ValueError, TypeError):
-            SECOND_PART = ":?"
-    elif converterFn2 is None:
-        SECOND_PART = ""
-    else:
-        try:
-            SECOND_PART = ":%s" %(dist_formatter %(converterFn2(getattr(node, container2))))
-        except (ValueError, TypeError):
-            SECOND_PART = ":?"
-
-    return "%s%s" %(FIRST_PART, SECOND_PART)
-
-
-def print_supported_formats():
-    from ..coretype.tree import Tree
-    t = Tree()
-    t.populate(4, "ABCDEFGHI")
-    print(t)
-    for f in NW_FORMAT:
-        print("Format", f,"=", write_newick(t, properties=[], format=f))
 
 class NewickError(Exception):
-    """Exception class designed for NewickIO errors."""
-    def __init__(self, value):
-        if value is None:
-            value = ''
-        value += "\nYou may want to check other newick loading flags like 'format' or 'quoted_node_names'."
-        Exception.__init__(self, value)
+    pass
+
+def error(text):  # to be able to raise error as a function call
+    raise NewickError(text)
 
 
-def read_newick(newick, root_node=None, format=0, quoted_names=False):
-    """Read a newick tree from either a string or a file, and return
-    an ETE tree structure.
-
-    A previously existent node object can be passed as the root of the
-    tree, which means that all its new children will belong to the same
-    class as the root (this allows to work with custom Tree objects).
-
-    You can also take advantage from this behaviour to concatenate
-    several tree structures.
-    """
-    if root_node is None:
-        from ..coretype.tree import Tree
-        root_node = Tree()
-
-    nw = file_extract(newick).strip()
-
-    matcher = compile_matchers(format)
-
-    if not nw.endswith(';'):
-        raise NewickError('Unexisting tree file or malformed newick tree structure.')
-
-    return _read_newick_from_string(nw, root_node, matcher, format, quoted_names)
-
-
-def _read_newick_from_string(nw, root_node, matcher, formatcode, quoted_names):
-    """ Reads a newick string in the New Hampshire format. """
-
-    if quoted_names:
-        # Quoted text is mapped to references
-        quoted_map = {}
-        unquoted_nw = ''
-        counter = 0
-        for token in re.split(_QUOTED_TEXT_RE, nw):
-            counter += 1
-            if counter % 2 == 1 : # normal newick tree structure data
-                unquoted_nw += token
-            else: # quoted text, add to dictionary and replace with reference
-                quoted_ref_id= _QUOTED_TEXT_PREFIX + str(int(counter/2))
-                unquoted_nw += quoted_ref_id
-                quoted_map[quoted_ref_id]=token[1:-1]  # without the quotes
-        nw = unquoted_nw
-
-    if not nw.startswith('(') and nw.endswith(';'):
-        _read_node_data(nw[:-1], root_node, "single", matcher, format)
-        if quoted_names:
-            if root_node.name.startswith(_QUOTED_TEXT_PREFIX):
-                root_node.name = quoted_map[root_node.name]
-        return root_node
-
-    if nw.count('(') != nw.count(')'):
-        raise NewickError('Parentheses do not match. Broken tree structure?')
-
-    # white spaces and separators are removed
-    nw = re.sub("[\n\r\t]+", "", nw)
-
-    current_parent = None
-    # Each chunk represents the content of a parent node, and it could contain
-    # leaves and closing parentheses.
-    # We may find:
-    # leaf, ..., leaf,
-    # leaf, ..., leaf))),
-    # leaf)), leaf, leaf))
-    # leaf))
-    # ) only if formatcode == 100
-
-    for chunk in nw.split("(")[1:]:
-        # If no node has been created so far, this is the root, so use the node.
-        current_parent = root_node if current_parent is None else current_parent.add_child()
-
-        subchunks = [ch.strip() for ch in chunk.split(",")]
-        # We should expect that the chunk finished with a comma (if next chunk
-        # is an internal sister node) or a subchunk containing closing parenthesis until the end of the tree.
-        #[leaf, leaf, '']
-        #[leaf, leaf, ')))', leaf, leaf, '']
-        #[leaf, leaf, ')))', leaf, leaf, '']
-        #[leaf, leaf, ')))', leaf), leaf, 'leaf);']
-        if subchunks[-1] != '' and not subchunks[-1].endswith(';'):
-            raise NewickError('Broken newick structure at: %s' %chunk)
-
-        # lets process the subchunks. Every closing parenthesis will close a
-        # node and go up one level.
-        for i, leaf in enumerate(subchunks):
-            if leaf.strip() == '' and i == len(subchunks) - 1:
-                continue # "blah blah ,( blah blah"
-            closing_nodes = leaf.split(")")
-
-            # first part after splitting by ) always contain leaf info
-            _read_node_data(closing_nodes[0], current_parent, "leaf", matcher, formatcode)
-
-            # next contain closing nodes and data about the internal nodes.
-            if len(closing_nodes)>1:
-                for closing_internal in closing_nodes[1:]:
-                    closing_internal =  closing_internal.rstrip(";")
-                    # read internal node data and go up one level
-                    _read_node_data(closing_internal, current_parent, "internal", matcher, formatcode)
-                    current_parent = current_parent.up
-
-    # references in node names are replaced with quoted text before returning
-    if quoted_names:
-        for node in root_node.traverse():
-            if node.name.startswith(_QUOTED_TEXT_PREFIX):
-                node.name = quoted_map[node.name]
-
-    return root_node
-
-def _parse_extra_features(node, NHX_string):
-    """ Reads node's extra data form its NHX string. NHX uses this
-    format:  [&&NHX:prop1=value1:prop2=value2] """
-    NHX_string = NHX_string.replace("[&&NHX:", "")
-    NHX_string = NHX_string.replace("]", "")
-    for field in NHX_string.split(":"):
-        try:
-            pname, pvalue = field.split("=")
-        except ValueError as e:
-            raise NewickError('Invalid NHX format %s' %field)
-        node.add_prop(pname, pvalue)
-
-def compile_matchers(formatcode):
-    matchers = {}
-    for node_type in ["leaf", "single", "internal"]:
-        if node_type == "leaf" or node_type == "single":
-            container1 = NW_FORMAT[formatcode][0][0]
-            container2 = NW_FORMAT[formatcode][1][0]
-            converterFn1 = NW_FORMAT[formatcode][0][1]
-            converterFn2 = NW_FORMAT[formatcode][1][1]
-            flexible1 = NW_FORMAT[formatcode][0][2]
-            flexible2 = NW_FORMAT[formatcode][1][2]
-        else:
-            container1 = NW_FORMAT[formatcode][2][0]
-            container2 = NW_FORMAT[formatcode][3][0]
-            converterFn1 = NW_FORMAT[formatcode][2][1]
-            converterFn2 = NW_FORMAT[formatcode][3][1]
-            flexible1 = NW_FORMAT[formatcode][2][2]
-            flexible2 = NW_FORMAT[formatcode][3][2]
-
-        if converterFn1 == str:
-            FIRST_MATCH = "("+_NAME_RE+")"
-        elif converterFn1 == float:
-            FIRST_MATCH = "("+_FLOAT_RE+")"
-        elif converterFn1 is None:
-            FIRST_MATCH = '()'
-
-        if converterFn2 == str:
-            SECOND_MATCH = "(:"+_NAME_RE+")"
-        elif converterFn2 == float:
-            SECOND_MATCH = "(:"+_FLOAT_RE+")"
-        elif converterFn2 is None:
-            SECOND_MATCH = '()'
-
-        if flexible1 and node_type != 'leaf':
-            FIRST_MATCH += "?"
-        if flexible2:
-            SECOND_MATCH += "?"
-
-
-        matcher_str= '^\s*%s\s*%s\s*(%s)?\s*$' % (FIRST_MATCH, SECOND_MATCH, _NHX_RE)
-        compiled_matcher = re.compile(matcher_str)
-        matchers[node_type] = [container1, container2, converterFn1, converterFn2, compiled_matcher]
-
-    return matchers
-
-def _read_node_data(subnw, current_node, node_type, matcher, formatcode):
-    """ Reads a leaf node from a subpart of the original newick
-    tree """
-
-    if node_type == "leaf" or node_type == "single":
-        if node_type == "leaf":
-            node = current_node.add_child()
-        else:
-            node = current_node
+def quote(name, escaped_chars=" \t\r\n()[]':;,"):
+    """Return the name quoted if it has any characters that need escaping."""
+    if any(c in name for c in escaped_chars):
+        return "'%s'" % name.replace("'", "''")  # ' escapes to '' in newicks
     else:
-        node = current_node
+        return name
 
-    subnw = subnw.strip()
+def unquote(name):
+    """Return the name unquoted if it was quoted."""
+    name = str(name).strip()
 
-    if not subnw and node_type == 'leaf' and formatcode != 100:
-        raise NewickError('Empty leaf node found')
-    elif not subnw:
-        return
-
-    container1, container2, converterFn1, converterFn2, compiled_matcher = matcher[node_type]
-    data = re.match(compiled_matcher, subnw)
-    if data:
-        data = data.groups()
-        # This prevents ignoring errors even in flexible nodes:
-        if subnw and data[0] is None and data[1] is None and data[2] is None:
-            raise NewickError("Unexpected newick format '%s'" %subnw)
-
-        if data[0] is not None and data[0] != '':
-            node.add_prop(container1, converterFn1(data[0].strip()))
-
-        if data[1] is not None and data[1] != '':
-            node.add_prop(container2, converterFn2(data[1][1:].strip()))
-
-        if data[2] is not None \
-                and data[2].startswith("[&&NHX"):
-            _parse_extra_features(node, data[2])
+    if name.startswith("'") and name.endswith("'"):  # standard quoting with '
+        return name[1:-1].replace("''", "'")  # ' escapes to '' in newicks
+    elif name.startswith('"') and name.endswith('"'):  # non-standard quoting "
+        return name[1:-1].replace('""', '"')
     else:
-        raise NewickError("Unexpected newick format '%s' " %subnw[0:50])
-    return
+        return name
+
+# A "property dict" has all the information for a property ('pname') to know which
+# function to apply to read/write from/to a string.
+#
+# For example: {'pname': 'my-prop', 'read': str, 'write': str}
+
+# Common IO parts in property dicts.
+STRING_IO = {'read': unquote, 'write': quote}
+NUMBER_IO = {'read': float,   'write': lambda x: '%g' % float(x)}
+
+# Common property dicts.
+NAME    = dict(STRING_IO, pname='name')
+DIST    = dict(NUMBER_IO, pname='dist')
+SUPPORT = dict(NUMBER_IO, pname='support')
+
+# A "parser dict" says, for leaf and internal nodes, what 'p0:p1' means
+# (which properties they are, including how to read and write them).
+
+PARSER_DEFAULT = {
+    'leaf':     [NAME, DIST],  # ((name:dist)x:y);
+    'internal': [NAME, DIST],  # ((x:y)name:dist);
+}
+
+# This part is only used to read the old-fashioned int formats.
+NAME_REQ = dict(NAME, req=True)  # value required
+DIST_REQ = dict(DIST, req=True)
+SUPPORT_REQ = dict(SUPPORT, req=True)
+EMPTY = {'pname': '',
+         'read': lambda x: error(f'parser expected empty field but got: {x}'),
+         'write': lambda x: ''}
+INT_PARSERS = {  # parsers corresponding to old-style integers
+    0:   {'leaf': [NAME,     DIST],     'internal': [SUPPORT,     DIST]},
+    1:   {'leaf': [NAME,     DIST],     'internal': [NAME,        DIST]},
+    2:   {'leaf': [NAME_REQ, DIST_REQ], 'internal': [SUPPORT_REQ, DIST_REQ]},
+    3:   {'leaf': [NAME_REQ, DIST_REQ], 'internal': [NAME_REQ,    DIST_REQ]},
+    4:   {'leaf': [NAME_REQ, DIST_REQ], 'internal': [EMPTY,       EMPTY]},
+    5:   {'leaf': [NAME_REQ, DIST_REQ], 'internal': [EMPTY,       DIST_REQ]},
+    6:   {'leaf': [NAME_REQ, EMPTY],    'internal': [EMPTY,       DIST_REQ]},
+    7:   {'leaf': [NAME_REQ, DIST_REQ], 'internal': [NAME_REQ,    EMPTY]},
+    8:   {'leaf': [NAME_REQ, EMPTY],    'internal': [NAME_REQ,    EMPTY]},
+    9:   {'leaf': [NAME_REQ, EMPTY],    'internal': [EMPTY,       EMPTY]},
+    100: {'leaf': [EMPTY,    EMPTY],    'internal': [EMPTY,       EMPTY]},
+}
+
+def make_parser(number=1, name='%s', dist='%g', support='%g'):
+    """Return "int" parser changing the format of name, dist or support."""
+    def copy(props):
+        p0, p1 = props[0].copy(), props[1].copy()  # so the changes are local
+        for p in [p0, p1]:  # change the writer functions
+            if p['pname'] == 'name':
+                p['write'] = lambda x: quote(name % x)  # "name" looks like '%s'
+            elif p['pname'] == 'dist':
+                p['write'] = lambda x: dist % float(x)  # "dist" looks like '%g'
+            elif p['pname'] == 'support':
+                p['write'] = lambda x: support % float(x)  # etc
+        return [p0, p1]
+
+    parser = INT_PARSERS[number]
+    return {'leaf': copy(parser['leaf']), 'internal': copy(parser['internal'])}
 
 
-def write_newick(rootnode, properties=None, format=1, format_root_node=True,
-                 is_leaf_fn=None, dist_formatter=None, support_formatter=None,
-                 name_formatter=None, quoted_names=False):
-    """ Iteratively export a tree structure and returns its NHX
-    representation. """
-    newick = []
+# Interpret and represent the content of a node in newick format.
 
-    leaf = is_leaf_fn or (lambda n: not n.children)
-
-    for postorder, node in rootnode.iter_prepostorder(is_leaf_fn=leaf):
-        if postorder:
-            newick.append(")")
-            if node.up is not None or format_root_node:
-                newick.append(format_node(node, "internal", format,
-                                          dist_formatter=dist_formatter,
-                                          support_formatter=support_formatter,
-                                          name_formatter=name_formatter,
-                                          quoted_names=quoted_names))
-                newick.append(_get_features_string(node, properties))
-        else:
-            if node is not rootnode and node != node.up.children[0]:
-                newick.append(",")
-
-            if leaf(node):
-                newick.append(format_node(node, "leaf", format,
-                                          dist_formatter=dist_formatter,
-                                          support_formatter=support_formatter,
-                                          name_formatter=name_formatter,
-                                          quoted_names=quoted_names))
-                newick.append(_get_features_string(node, properties))
-            else:
-                newick.append("(")
-
-    newick.append(";")
-    return ''.join(newick)
-
-# TODO: Change the semantics when reading properties/features. It should be:
-#   properties=None (default) -> write all extended properties
-#   properties=[]             -> do not write any extended properties
-# Or wait until we change this parser for the new version in tree-explorer...
-def _get_features_string(node, features=None):
-    """Return NHX extended newick string for the requested node features."""
-    if features is None:
-        return ''  # special case: if not set, we write no extended string
-
-    if features == []:
-        features = sorted(k for k in node.props  # special case: all node props
-                              if not k.startswith('_')  # except _private
-                              and k not in ['name', 'dist', 'support'])
-
-    pairs_str = ':'.join('%s=%s' % (k, _prop2text(node.props[k]))
-                            for k in features if k in node.props)
-
-    return f'[&&NHX:{pairs_str}]' if pairs_str else ''
-
-def _prop2text(prop):
+def prop_repr(prop):
+    """Return a newick-acceptable representation of the given property."""
     ptype = type(prop)
 
-    if ptype in ITERABLE_TYPES:
+    if ptype in [list, tuple, set, frozenset]:
         text = '|'.join(str(x) for x in prop)
-    elif ptype == dict:
+    elif issubclass(ptype, dict):
         text = '|'.join(f'{x}-{y}' for x, y in prop.items())
     else:
         text = str(prop)
 
-    return re.sub(f'[{_ILEGAL_NEWICK_CHARS}]', '_', text)
+    for c in ':;(),[]=':
+        text = text.replace(c, '_')
+
+    return text
+
+
+def content_repr(node, props=None, parser=None):
+    """Return content of a node as represented in newick format."""
+    parser = parser or PARSER_DEFAULT
+    prop0, prop1 = parser['leaf' if node.is_leaf else 'internal']
+
+    # Shortcuts.
+    p0_name, p0_write, p0_req = prop0['pname'], prop0['write'], prop0.get('req')
+    p1_name, p1_write, p1_req = prop1['pname'], prop1['write'], prop1.get('req')
+
+    p0_str = p0_write(node.props[p0_name]) if p0_name in node.props else ''
+    p1_str = p1_write(node.props[p1_name]) if p1_name in node.props else ''
+
+    assert p0_str or not p0_req, f'missing {p0_name} in node with: {node.props}'
+    assert p1_str or not p1_req, f'missing {p1_name} in node with: {node.props}'
+
+    props = props if props is not None else sorted(node.props)  # overwrite
+    pairs_str = ':'.join('%s=%s' % (k, prop_repr(node.props[k])) for k in props
+                         if k in node.props and k not in [p0_name, p1_name])
+
+    return (p0_str + (f':{p1_str}' if p1_str else '') +     # p0:p1
+            (f'[&&NHX:{pairs_str}]' if pairs_str else ''))  # [&&NHX:p2=x:p3=y]
+
+
+def get_props(content, is_leaf, parser=None):
+    """Return the properties from the content (as a newick) of a node.
+
+    Example (for the default format of a leaf node):
+      'abc:123[&&NHX:x=foo]'  ->  {'name': 'abc', 'dist': 123, 'x': 'foo'}
+    """
+    parser = parser or PARSER_DEFAULT
+    prop0, prop1 = parser['leaf' if is_leaf else 'internal']
+
+    # Shortcuts.
+    p0_name, p0_read, p0_req = prop0['pname'], prop0['read'], prop0.get('req')
+    p1_name, p1_read, p1_req = prop1['pname'], prop1['read'], prop1.get('req')
+
+    props = {}  # will contain the properties extracted from the content string
+
+    p0_str, pos = read_content(content, 0, endings=':[')
+
+    try:
+        assert p0_str or not p0_req, 'missing required value'
+        if p0_str:
+            props[p0_name] = p0_read(p0_str)
+    except (AssertionError, ValueError) as e:
+        raise NewickError('parsing 1st position of %r: %s' % (content, e))
+
+    try:
+        if pos < len(content) and content[pos] == ':':
+            pos = skip_spaces_and_comments(content, pos+1)
+            p1_str, pos = read_content(content, pos, endings='[ ')
+            props[p1_name] = p1_read(p1_str)
+        elif p1_req:
+            raise AssertionError('missing required value')
+    except (AssertionError, ValueError) as e:
+        raise NewickError('parsing 2nd position of %r: %s' % (content, e))
+
+    pos = skip_spaces_and_comments(content, pos)
+
+    if pos < len(content) and content[pos] == '[':
+        pos_end = content.find(']', pos+1)
+        props.update(get_extended_props(content[pos+1:pos_end]))
+    elif pos < len(content):
+        raise NewickError('malformed content: %s' % repr_short(content))
+
+    return props
+
+
+def get_extended_props(text):
+    """Return a dict with the properties extracted from the text in NHX format.
+
+    Example: '&&NHX:x=foo:y=bar'  ->  {'x': 'foo', 'y': 'bar'}
+    """
+    try:
+        assert text.startswith('&&NHX:'), 'unknown annotation -- not "&&NHX"'
+        return dict(pair.split('=') for pair in text[len('&&NHX:'):].split(':'))
+    except (AssertionError, ValueError) as e:
+        raise NewickError('invalid NHX format (%s) in text %s' %
+                          (e, repr_short(text)))
+
+
+def repr_short(obj, max_len=50):
+    """Return a representation of the given object, limited in length."""
+    # To use for messages in exceptions.
+    txt = repr(obj)
+    return txt if len(txt) < max_len else txt[:max_len-10] + ' ... ' + txt[-5:]
+
+
+# Parsing.
+
+def load(fp, parser=None):
+    return loads(fp.read().strip(), parser)
+
+
+def loads(tree_text, parser=None, tree_class=Tree):
+    """Return tree from its newick representation."""
+    assert type(tree_text) == str, 'newick is not a string'
+
+    if not tree_text.endswith(';'):
+        raise NewickError('text ends with no ";"')
+
+    if tree_text[0] == '(':
+        nodes, pos = read_nodes(tree_text, parser, 0, tree_class)
+    else:
+        nodes, pos = [], 0
+
+    content, pos = read_content(tree_text, pos)
+    if pos != len(tree_text) - 1:
+        raise NewickError(f'root node ends at position {pos}, before tree ends')
+
+    props = get_props(content, not nodes, parser) if content else {}
+
+    return tree_class(props, nodes)
+
+
+def read_nodes(nodes_text, parser, pos=0, tree_class=Tree):
+    """Return a list of nodes and the position in the text where they end."""
+    # nodes_text looks like '(a,b,c)', where any element can be a list of nodes
+    if nodes_text[pos] != '(':
+        raise NewickError('nodes text starts with no "("')
+
+    nodes = []
+    while nodes_text[pos] != ')':
+        pos += 1
+        if pos >= len(nodes_text):
+            raise NewickError('nodes text ends missing a matching ")"')
+
+        pos = skip_spaces_and_comments(nodes_text, pos)
+
+        if nodes_text[pos] == '(':  # this element is a list of nodes
+            children, pos = read_nodes(nodes_text, parser, pos, tree_class)
+        else:  # this element is a leaf
+            children = []
+
+        content, pos = read_content(nodes_text, pos)
+
+        nodes.append(tree_class(get_props(content, not children, parser),
+                                children))
+
+    return nodes, pos+1
+
+
+def skip_spaces_and_comments(text, pos):
+    """Return position in text after pos and all whitespaces and comments."""
+    # text = '...  [this is a comment] node1...'
+    #            ^-- pos               ^-- pos (returned)
+    while pos < len(text) and text[pos] in ' \t\r\n[':
+        if text[pos] == '[':
+            start = pos
+            if text[pos+1] == '&':  # special annotation
+                return pos
+            else:
+                pos = text.find(']', pos+1)  # skip comment
+                if pos < 0:
+                    raise NewickError(f'unfinished comment at position {start}')
+        pos += 1  # skip whitespace and comment endings
+
+    return pos
+
+
+def read_content(text, pos, endings=',);'):
+    """Return content starting at position pos in text, and where it ends."""
+    # text = '...(node_1:0.5[&&NHX:p=a],...'  ->  'node_1:0.5[&&NHX:p=a]'
+    #             ^-- pos              ^-- pos (returned)
+    start = pos
+
+    pos = skip_spaces_and_comments(text, pos)
+
+    if pos < len(text) and text[pos] in ["'", '"']:
+        pos = skip_quoted_name(text, pos)
+
+    while pos < len(text) and text[pos] not in endings:
+        pos += 1
+
+    return text[start:pos], pos
+
+
+def skip_quoted_name(text, pos):
+    """Return the position where a quoted name ends."""
+    # text = "... 'node ''2'' in tree' ..."
+    #             ^-- pos             ^-- pos (returned)
+    if pos >= len(text) or text[pos] not in ["'", '"']:
+        raise NewickError(f'text at position {pos} does not start with quote')
+
+    start = pos
+    q = text[start]  # quoting character (can be ' or ")
+
+    while pos+1 < len(text):
+        pos += 1
+
+        if text[pos] == q:
+            # Newick format escapes ' as '' (and we generalize to q -> qq)
+            if pos+1 >= len(text) or text[pos+1] != q:
+                return pos+1  # that was the closing quote
+            else:
+                pos += 1  # that was an escaped quote - skip
+
+    raise NewickError('unfinished quoted name: %s' % repr_short(text[start:]))
+
+
+def dumps(tree, props=None, parser=None, format_root_node=True, is_leaf_fn=None):
+    """Return newick representation of the given tree."""
+    node_str = ('' if tree.is_root and not format_root_node else
+                content_repr(tree, props, parser))
+
+    if tree.children and (not is_leaf_fn or not is_leaf_fn(tree)):
+        children_str = ','.join(dumps(node, props, parser,
+                                      format_root_node, is_leaf_fn).rstrip(';')
+                                for node in tree.children)
+        return f'({children_str}){node_str};'
+    else:
+        return f'{node_str};'
+
+
+def dump(tree, fp, props=None, parser=None, format_root_node=True, is_leaf_fn=None):
+    fp.write(dumps(tree, props, parser, format_root_node, is_leaf_fn))

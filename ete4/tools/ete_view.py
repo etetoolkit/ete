@@ -308,8 +308,8 @@ def run(args):
 
             for findex, f in enumerate(FACES):
                 if (f['nodetype'] == 'any' or
-                    (f['nodetype'] == 'leaf' and node.is_leaf()) or
-                    (f['nodetype'] == 'internal' and not node.is_leaf())):
+                    (f['nodetype'] == 'leaf' and node.is_leaf) or
+                    (f['nodetype'] == 'internal' and not node.is_leaf)):
 
 
                     # if node passes face filters

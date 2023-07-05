@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=61.0", "cython"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ete4"
+description = "A Python Environment for (phylogenetic) Tree Exploration"
+version = "4.0.0-beta"
+authors = [
+  { name="Jaime Huerta-Cepas", email="jhcepas@gmail.com" },
+  { name="Jordi Burguet-Castell", email="jordi.burguet.castell@gmail.com" },
+]
+readme = "README.md"
+license = { file="LICENSE" }
+requires-python = ">=3.7"
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+  "Development Status :: 6 - Mature",
+  "Environment :: Console",
+  "Environment :: X11 Applications :: Qt",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Other Audience",
+  "Intended Audience :: Science/Research",
+  "Natural Language :: English",
+  "Operating System :: MacOS",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: POSIX :: Linux",
+  "Topic :: Scientific/Engineering :: Bio-Informatics",
+  "Topic :: Scientific/Engineering :: Visualization",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = ["bottle", "brotli", "numpy", "pyqt5"]
+
+[project.urls]
+"Homepage" = "https://etetoolkit.org"
+
+[project.optional-dependencies]
+test = ["pytest>=6.0"]

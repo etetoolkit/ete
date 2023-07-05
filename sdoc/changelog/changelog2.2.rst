@@ -164,11 +164,11 @@ NEW FEATURES
        from ete3 import TreeStyle
 
        def color_leaves(node):
-           if node.is_leaf():
+           if node.is_leaf:
               node.img_style["fgcolor"] = "red"
 
        def size_internal(node):
-           if not node.is_leaf():
+           if not node.is_leaf:
               node.img_style["size"] = 15
 
        ts = TreeStyle()

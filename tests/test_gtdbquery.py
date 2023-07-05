@@ -29,14 +29,14 @@ class Test_gtdbquery(unittest.TestCase):
 
         self.assertEqual(tree.props.get('sci_name'), 'd__Bacteria')
 
-        firmicutes = (tree&'c__Bacilli').up
+        firmicutes = tree['c__Bacilli'].up
         self.assertEqual(firmicutes.props.get('taxid'), 'p__Firmicutes')
         self.assertEqual(firmicutes.props.get('sci_name'), 'p__Firmicutes')
         self.assertEqual(firmicutes.props.get('rank'), 'phylum')
         self.assertEqual(firmicutes.props.get('named_lineage'),
                          ['root', 'd__Bacteria', 'p__Firmicutes'])
 
-        caballeronia = tree&'s__Caballeronia udeis'
+        caballeronia = tree['s__Caballeronia udeis']
         self.assertEqual(caballeronia.props.get('taxid'), 's__Caballeronia udeis')
         self.assertEqual(caballeronia.props.get('sci_name'), 's__Caballeronia udeis')
         self.assertEqual(caballeronia.props.get('rank'), 'species')
@@ -63,7 +63,7 @@ class Test_gtdbquery(unittest.TestCase):
         gtdb = GTDBTaxa(dbfile=DATABASE_PATH)
         tree = gtdb.get_topology(['p__Huberarchaeota', 'o__Peptococcales', 'f__Korarchaeaceae', 's__Korarchaeum'],
                                  intermediate_nodes=True, collapse_subspecies=True, annotate=True)
-        self.assertEqual(sorted(tree.get_leaf_names()),
+        self.assertEqual(sorted(tree.leaf_names()),
                          ['f__Korarchaeaceae', 'o__Peptococcales', 'p__Huberarchaeota'])
 
     def test_name_lineages(self):

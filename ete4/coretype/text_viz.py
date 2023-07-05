@@ -55,7 +55,7 @@ def ascii_art(tree, show_internal=True, props=None, px=0, py=0, px0=0):
         (f'{k}={v}' for k, v in tree.props.items()) if props is None else
         (str(tree.props.get(p, '')) or '(empty)' for p in props))
 
-    if tree.is_leaf():
+    if tree.is_leaf:
         return (['─' * px0 + '╴' + descr], 0)
 
     lines = []
@@ -142,7 +142,7 @@ def to_waterfall(tree, props=None, px=1, are_last=None):
         (f'{k}={v}' for k, v in tree.props.items()) if props is None else
         (str(tree.props.get(p, '')) or '(empty)' for p in props))
 
-    branches = get_branches_repr(are_last, tree.is_leaf(), px)
+    branches = get_branches_repr(are_last, tree.is_leaf, px)
 
     wf = lambda n, lasts: to_waterfall(n, props, px, lasts)  # shortcut
 

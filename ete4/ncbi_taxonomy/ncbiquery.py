@@ -379,14 +379,14 @@ class NCBITaxa(object):
                 # If root taxid is not found in postorder, must be a tip node
                 subtree = [root_taxid]
             leaves = set([v for v, count in Counter(subtree).items() if count == 1])
-            nodes[root_taxid] = PhyloTree(name=str(root_taxid))
+            nodes[root_taxid] = PhyloTree({'name': str(root_taxid)})
             current_parent = nodes[root_taxid]
             for tid in subtree:
                 if tid in visited:
                     current_parent = nodes[tid].up
                 else:
                     visited.add(tid)
-                    nodes[tid] = PhyloTree(name=str(tid))
+                    nodes[tid] = PhyloTree({'name': str(tid)})
                     current_parent.add_child(nodes[tid])
                     if tid not in leaves:
                         current_parent = nodes[tid]
@@ -427,7 +427,7 @@ class NCBITaxa(object):
 
         #remove onechild-nodes
         if not intermediate_nodes:
-            for n in root.get_descendants():
+            for n in root.descendants():
                 if len(n.children) == 1 and int(n.name) not in taxids:
                     n.delete(prevent_nondicotomic=False)
 
@@ -469,7 +469,7 @@ class NCBITaxa(object):
         for n in t.traverse():
             try:
                 tid = int(getattr(n, taxid_attr))
-            except (ValueError,AttributeError):
+            except (ValueError, AttributeError, TypeError):
                 pass
             else:
                 taxids.add(tid)
@@ -495,7 +495,7 @@ class NCBITaxa(object):
         for n in t.traverse('postorder'):
             try:
                 node_taxid = int(getattr(n, taxid_attr))
-            except (ValueError, AttributeError):
+            except (ValueError, AttributeError, TypeError):
                 node_taxid = None
 
             n.add_prop('taxid', node_taxid)
@@ -507,7 +507,7 @@ class NCBITaxa(object):
                                lineage = tax2track.get(node_taxid, []),
                                rank = tax2rank.get(node_taxid, 'Unknown'),
                                named_lineage = [tax2name.get(tax, str(tax)) for tax in tax2track.get(node_taxid, [])])
-            elif n.is_leaf():
+            elif n.is_leaf:
                 n.add_props(sci_name = getattr(n, taxid_attr, 'NA'),
                                common_name = '',
                                lineage = [],

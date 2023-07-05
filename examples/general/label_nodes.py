@@ -8,7 +8,7 @@ for leaf in tree.get_leaves():
 # number of leaves that it contains.
 print "Labeled tree:"
 for node in tree.get_descendants():
-    if node.is_leaf():
+    if node.is_leaf:
         node.add_props(ntype="terminal")
     else:
         node.add_props(ntype="internal", size=len(node))

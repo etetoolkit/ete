@@ -219,7 +219,7 @@ def test_layout_evol(node):
     if hasattr(node, "collapsed"):
         if node.collapsed == 1:
             node.img_style["draw_descendants"]= False
-    if node.is_leaf():
+    if node.is_leaf:
         if hasattr (node, "sequence"):
             seqface =  MySequenceFace(node.sequence, "aa",
                                       codon=node.nt_sequence, fsize=10,
@@ -233,7 +233,7 @@ def test_layout_phylo_aa(node):
     if hasattr(node, "collapsed"):
         if node.collapsed == 1:
             node.img_style["draw_descendants"]= False
-    if node.is_leaf():
+    if node.is_leaf:
         if hasattr (node, "sequence"):
             seqface =  MySequenceFace(node.sequence, "aa",
                                       fsize=10,
@@ -249,7 +249,7 @@ def test_layout_phylo_aa_motif(node):
         if node.collapsed == 1:
             node.img_style["draw_descendants"]= False
     special_col = [[10,100],[150,1000],[1000,2000],[3000,4990]]
-    if node.is_leaf():
+    if node.is_leaf:
         if hasattr (node, "sequence"):
             seqface =  MySequenceFace(node.sequence, "aa",
                                       fsize=10,special_col=special_col,
@@ -265,7 +265,7 @@ def test_layout_phylo_nt(node):
     if hasattr(node, "collapsed"):
         if node.collapsed == 1:
             node.img_style["draw_descendants"]= False
-    if node.is_leaf():
+    if node.is_leaf:
         if hasattr (node, "sequence"):
             seqface =  MySequenceFace(node.sequence, "nt",
                                       fsize=10,

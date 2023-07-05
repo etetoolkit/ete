@@ -349,8 +349,6 @@ def select_closest_outgroup(target, n2content, splitterconf):
                       best_outgroup.children]))
 
     log.log(24, "best outgroup topology:\n%s", best_outgroup)
-    #print target
-    #print target.get_tree_root()
 
     seqs = [n.name for n in n2content[target]]
     outs = [n.name for n in n2content[best_outgroup]]
@@ -416,8 +414,6 @@ def select_sister_outgroup(target, n2content, splitterconf):
                       best_outgroup.children]))
 
     log.log(24, "best outgroup topology:\n%s", best_outgroup)
-    #print target
-    #print target.get_tree_root()
 
     seqs = [n.name for n in n2content[target]]
     outs = [n.name for n in n2content[best_outgroup]]
@@ -487,7 +483,6 @@ def select_outgroups(target, n2content, splitterconf):
             v = cmp(x.cladeid, y.cladeid)
         return v
 
-    #del n2targetdist[target.get_tree_root()]
     max_dist = max(n2targetdist.values())
     valid_nodes = [n for n in n2targetdist if \
                        not n2content[n] & n2content[target] and
@@ -509,7 +504,7 @@ def select_outgroups(target, n2content, splitterconf):
                       best_outgroup.children]))
 
     if DEBUG():
-        root = target.get_tree_root()
+        root = target.root
         for _seq in outs:
             tar =  root & _seq
             tar.img_style["fgcolor"]="green"
@@ -527,7 +522,7 @@ def select_outgroups(target, n2content, splitterconf):
     return set(seqs), set(outs)
 
 def distance_matrix_new(target, leaf_only=False, topology_only=False):
-    t = target.get_tree_root()
+    t = target.root
     real_outgroup = t.children[0]
     t.set_outgroup(target)
 

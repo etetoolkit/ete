@@ -20,14 +20,14 @@ def random_background(node):
     node.img_style["bgcolor"] = random_color()
 
 def leaf_name(node):
-    if node.is_leaf():
+    if node.is_leaf:
         nameF = faces.AttrFace("name")
         nameF.border.width = 1
         faces.add_face_to_node(nameF, node, 0, position="branch-right")
 
 
 def aligned_faces(node):
-    if node.is_leaf():
+    if node.is_leaf:
         for i in xrange(3):
             F = faces.TextFace("ABCDEFGHIJK"[0:random.randint(1,11)])
             F.border.width = 1
@@ -80,7 +80,7 @@ I.title.add_face(faces.TextFace("HOLA MUNDO", fsize=30), 0)
 I.draw_aligned_faces_as_table = True
 
 def test(node):
-    if node.is_leaf():
+    if node.is_leaf:
         faces.add_face_to_node(faces.AttrFace("name"), node, 0, position="aligned")
 
 I.aligned_header.add_face( faces.TextFace("H1"), 0 )
@@ -120,4 +120,3 @@ t.show(tree_style=I)
 #os.system("inkscape /home/jhuerta/test.svg")
 #I.mode = "c"
 #t.show(img_properties=I)
-

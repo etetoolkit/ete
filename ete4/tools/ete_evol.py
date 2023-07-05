@@ -257,7 +257,7 @@ def marking_layout(node):
 
     add_face_to_node(label_face, node, column=0, position="branch-right")
 
-    if node.is_leaf():
+    if node.is_leaf:
         add_face_to_node(TextFace(" %s" %node.name, ftype="courier",
                                   fgcolor="#666666"), node, column=10,
                          position="branch-right")
@@ -326,16 +326,16 @@ def update_marks_from_args(nodes, marks, tree, args):
     if args.mark_leaves:
         if args.mark:
             exit('ERROR: incompatible marking options')
-        marks.extend([['#1'] for n in tree.iter_leaves()])
-        nodes.extend([[n.node_id] for n in tree.iter_leaves()])
+        marks.extend([['#1'] for n in tree.leaves()])
+        nodes.extend([[n.node_id] for n in tree.leaves()])
     # mark all internal branches successively
     if args.mark_internals:
         if args.mark:
             exit('ERROR: incompatible marking options')
         marks.extend([['#1' for _ in n.iter_descendants()]
-                      for n in tree.iter_descendants() if not n.is_leaf()])
-        nodes.extend([[n2.node_id for n2 in n.iter_descendants()]
-                      for n in tree.iter_descendants() if not n.is_leaf()])
+                      for n in tree.descendants() if not n.is_leaf])
+        nodes.extend([[n2.node_id for n2 in n.descendants()]
+                      for n in tree.descendants() if not n.is_leaf])
     # remove duplicated marks
     remove_duplicated_marks(nodes, marks, tree)
     # use the GUI
@@ -827,7 +827,7 @@ def run(args):
             print('\n%-7s : %s' % ("Node ID", "Descendant leaves names"))
             print('-'*50)
             for n in tree.iter_descendants():
-                if n.is_leaf():
+                if n.is_leaf:
                     continue
                 print('   %-4s : %s' % (n.node_id, ', '.join(
                     [l.name for l in n.iter_leaves()])))

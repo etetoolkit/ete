@@ -2,7 +2,7 @@ import sys
 from ._nexml import MixedContainer, FloatTree, TreeFloatEdge, TreeNode, LiteralMeta
 from .. import PhyloTree
 from ..phylo.phylotree import _parse_species
-from ..parser.newick import read_newick
+from ..parser.newick import loads
 
 class Children(list):
     def append(self, item):
@@ -58,7 +58,7 @@ class NexmlTree(PhyloTree):
     name = property(fget=_get_name, fset=_set_name)
 
     def __init__(self, newick=None, alignment=None, alg_format="fasta", \
-                 sp_naming_function=_parse_species, format=0):
+                 sp_naming_function=_parse_species, parser=0):
 
         self.nexml_tree = FloatTree()
         self.nexml_tree.set_anyAttributes_({'xsi:type': 'FloatTree'})
@@ -79,7 +79,9 @@ class NexmlTree(PhyloTree):
         if alignment:
             self.link_to_alignment(alignment, alg_format)
         if newick:
-            read_newick(newick, root_node=self, format=format)
+            tree = loads(newick, parser, self.__class__)
+            self.children = tree.children
+            self.props = tree.props
             self.set_species_naming_function(sp_naming_function)
 
     def set_nexml_project(self, nexml_obj):

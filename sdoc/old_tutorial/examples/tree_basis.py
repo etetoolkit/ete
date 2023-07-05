@@ -12,10 +12,10 @@ print t
 #---------|          \-D
 #         |
 #          \-B
-print 'is "t" the root?', t.is_root() # True
-print 'is "A" a terminal node?', A.is_leaf() # False
-print 'is "B" a terminal node?', B.is_leaf() # True
-print 'B.get_tree_root() is "t"?', B.get_tree_root() is t # True
+print 'is "t" the root?', t.is_root # True
+print 'is "A" a terminal node?', A.is_leaf # False
+print 'is "B" a terminal node?', B.is_leaf # True
+print 'B.root is "t"?', B.root is t # True
 print 'Number of leaves in tree:', len(t) # returns number of leaves under node (3)
 print 'is C in tree?', C in t # Returns true
 print "All leaf names in tree:", [node.name for node in t]

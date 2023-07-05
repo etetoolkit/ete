@@ -1000,7 +1000,7 @@ def init_node_dimensions(node, item, faceblock, img):
         aligned_height = 0
         aligned_width = 0
 
-    ndist =  1.0 if img.force_topology else node.dist
+    ndist = 1.0 if img.force_topology else node.dist or 1
     item.branch_length = (ndist * img._scale) if img._scale else 0
     ## Calculate dimensions of the different node regions
     ##
@@ -1068,7 +1068,7 @@ def init_node_dimensions(node, item, faceblock, img):
 def update_branch_lengths(tree, n2i, n2f, img):
     for node in tree.traverse("postorder", is_leaf_fn=_leaf):
         item = n2i[node]
-        ndist = 1.0 if img.force_topology else node.dist
+        ndist = 1.0 if img.force_topology else node.dist or 1
         item.branch_length = ndist * img._scale
         w0 = 0
 

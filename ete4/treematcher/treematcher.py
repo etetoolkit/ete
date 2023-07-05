@@ -17,16 +17,18 @@ class TreePattern(Tree):
     It stores in the node names the constraints for that node.
     """
 
-    def __init__(self, pattern='', up=None):
-        # We expect a newick with quoted names, which will be the
-        # conditions to check for in each node. No need to end with ";".
-        newick = pattern.strip().rstrip(';') + ';'
-        Tree.__init__(self, newick, quoted_node_names=True, format=1)
+    def __init__(self, pattern='', children=None, parser=None):
+        if type(pattern) == str:
+            # We expect a newick tree whose names will be the conditions
+            # to check for in each node. No need to end with ";".
+            newick = pattern.strip().rstrip(';') + ';'
+            Tree.__init__(self, newick)
+        else:  # we are being recursively called, and were passed a dict
+            data = {'name': pattern.get('name', '').strip()}
+            Tree.__init__(self, data, children)
 
-        # Add the "code" property to each node, with its compiled condition.
-        for node in self.traverse():
-            node.props['code'] = compile(node.name or 'True',
-                                         '<string>', 'eval')
+        # Add the "code" property with its compiled condition.
+        self.props['code'] = compile(self.name or 'True', '<string>', 'eval')
 
     def __str__(self):
         return self.to_str(show_internal=True, props=['name'])
@@ -45,7 +47,8 @@ def match(pattern, tree):
 
     context = {
         'tree': tree, 'node': tree,
-        'name': tree.name, 'up': tree.up, 'is_leaf': tree.is_leaf,
+        'name': tree.props.get('name', ''),
+        'up': tree.up, 'is_leaf': tree.is_leaf, 'is_root': tree.is_root,
         'dist': tree.dist, 'd': tree.dist,
         'props': tree.props, 'p': tree.props,
         'get': dict.get,
