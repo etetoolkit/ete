@@ -30,6 +30,12 @@ Its main features include:
   - tree comparison
   - tree diff
 
+The official website of ETE is http://etetoolkit.org. You can find
+downloading instructions and further documentation there.
+
+News and announcements are usually posted on twitter:
+http://twitter.com/etetoolkit
+
 If you use ETE, please cite:
 
     Jaime Huerta-Cepas, François Serra and Peer Bork. "ETE 3: Reconstruction,
@@ -37,34 +43,28 @@ If you use ETE, please cite:
     10.1093/molbev/msw046
 
 
-# Installation and documentation
+# Installation
 
-The official website of ETE is http://etetoolkit.org. You can find
-downloading instructions and further documentation there, or in the
-next subsection specifically for ETE v4.
+## Quick way
 
-News and announcements are usually posted on twitter:
-http://twitter.com/etetoolkit
+```sh
+pip install https://github.com/etetoolkit/ete/archive/ete4.zip
+```
 
 
-## Installation of ETE v4
+## For local development
 
-To install ETE you can follow these steps:
+To install ETE in a local directory to help with the development, you can:
 
 - Clone this repository (`git clone https://github.com/etetoolkit/ete.git`)
 - Install dependecies
-  - If you are using [conda](https://conda.io/): `conda install -c
-    conda-forge cython flask flask-cors flask-httpauth flask-restful
-    flask-compress numpy matplotlib pyqt`
+  - If you are using [conda](https://conda.io/):
+  `conda install -c conda-forge cython bottle brotli numpy pyqt`
   - Otherwise, you can install them with `pip install <dependencies>`
 - Build and install ete4 from the repository's root directory: `pip install -e .`
 
-(In Linux there may be some cases where the gcc library must be
-installed, which can be done with `conda install -c conda-forge
-gcc_linux-64`)
 
-
-## Exploring a tree
+# Exploring a tree
 
 To simply load a tree and start exploring it interactively, you can
 start a python session and write:
@@ -72,12 +72,12 @@ start a python session and write:
 ```py
 from ete4 import Tree
 
-t = Tree(file_with_newick)
+t = Tree(open(file_with_newick))
 
 t.explore()
 ```
 
-It will print a url that you can open with the browser to explore the tree.
+It will open a browser window with an interface to explore the tree.
 
 
 # Gallery of examples
