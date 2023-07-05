@@ -1237,11 +1237,11 @@ class TreeNode(object):
         for n in next_deq:
             if names_library:
                 if reuse_names:
-                    tname = random.choice(names_library)
+                    tname = names_library.pop()
+                    names_library.appendleft(tname)
                 else:
-                    # choose random name
-                    tname = random.choice(names_library)
-                    names_library.remove(tname)
+                    # choose next name
+                    tname = names_library.pop()
             else:
                 tname = ''.join(next(avail_names))
             n.name = tname
