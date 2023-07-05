@@ -1,6 +1,3 @@
-import matplotlib as mpl
-import numpy as np
-
 from ..treelayout import TreeLayout
 from ..faces import TextFace, RectFace, ScaleFace
 from ....treeview.svg_colors import random_color
@@ -11,12 +8,14 @@ from ...utils import InvalidUsage
 __all__ = [ "LayoutBarplot" ]
 
 
-def color_gradient(c1, c2, mix=0):
-    """ Fade (linear interpolate) from color c1 (at mix=0) to c2 (mix=1) """
+def interpolate_colors(c1, c2, mix=0):
+    """Return a color between c1 (for mix=0) and c2 (for mix=1)."""
+    # '#ff5500', '#001122', 0.5  ->  '#7f3311'
+    assert c1.startswith('#') and c2.startswith('#') and len(c1) == len(c2) == 7
+    return '#' + ''.join('%02x' % int((1-mix) * int(c1[1+2*i:3+2*i], 16) +
+                                      mix     * int(c2[1+2*i:3+2*i], 16)) for i in range(3))
+    # NOTE: The original solution (depending on numpy and matplotlib -- not great), was:
     # https://stackoverflow.com/questions/25668828/how-to-create-colour-gradient-in-python
-    c1 = np.array(mpl.colors.to_rgb(c1))
-    c2 = np.array(mpl.colors.to_rgb(c2))
-    return mpl.colors.to_hex((1-mix)*c1 + mix*c2)
 
 
 class LayoutPlot(TreeLayout):
@@ -110,12 +109,15 @@ class LayoutPlot(TreeLayout):
     def get_color(self, node):
         if not self.color_prop:
             return self.color
+
         prop = node.props.get(self.color_prop)
         if prop is None:
             return None
+
         if self.color_range:
             minval, maxval = self.color_range
-            return color_gradient(*self.color_gradient, (prop - minval) / maxval)
+            mix = (prop - minval) / (maxval - minval)
+            return interpolate_colors(*self.color_gradient, mix)
         else:
             return self.colors.get(prop)
 
