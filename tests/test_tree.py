@@ -695,14 +695,14 @@ class Test_Coretype_Tree(unittest.TestCase):
 
         self.assertEqual(t.get_closest_leaf(), (t['A'], 2.5))
         self.assertEqual(t.get_farthest_leaf(), (t['D'], 12.0))
-        self.assertEqual(t.get_farthest_leaf(topology_only=True), (t['A'], 2.0))
-        self.assertEqual(t.get_closest_leaf(topology_only=True), (t['C'], 1.0))
+        self.assertEqual(t.get_farthest_leaf(topological=True), (t['A'], 2.0))
+        self.assertEqual(t.get_closest_leaf(topological=True), (t['C'], 1.0))
         self.assertEqual(t.get_distance(t, t), 0.0)
         self.assertEqual(t.get_distance(t, t, topological=True), 0.0)
         self.assertEqual(t.get_distance(t, t['A'], topological=True), 3.0)
 
-        self.assertEqual((t['F']).get_farthest_node(topology_only=True), (t['A'], 3.0))
-        self.assertEqual((t['F']).get_farthest_node(topology_only=False), (t['D'], 11.0))
+        self.assertEqual((t['F']).get_farthest_node(topological=True), (t['A'], 3.0))
+        self.assertEqual((t['F']).get_farthest_node(topological=False), (t['D'], 11.0))
 
     def test_rooting_jordi(self):
         """Test the alternative rooting ("set outgroup") algorithm."""
@@ -929,24 +929,26 @@ class Test_Coretype_Tree(unittest.TestCase):
         self.assertEqual(t['d'].id, [1,1])
 
     def test_ultrametric(self):
+        EPSILON = 1e-5  # small number for the purposes of comparing distances
 
-        # Convert tree to a ultrametric topology in which distance from
-        # leaf to root is always 100. Two strategies are available:
-        # balanced or fixed
-        t =  Tree()
-        t.populate(100, random_branches=True)
-        t.convert_to_ultrametric(100, "balanced")
-        self.assertEqual(set([round(t.get_distance(t, n), 6) for n in t]), set([100.0]))
+        # Convert tree to a ultrametric, in which the distance from
+        # leafs to root is always the same.
+        t = Tree()
+        t.populate(80, random_branches=True)
+        max_dist = max(t.get_distance(t, n) for n in t)
 
-        t =  Tree()
-        t.populate(100, random_branches=True)
-        t.convert_to_ultrametric(100, "fixed")
-        self.assertEqual(set([round(t.get_distance(t, n), 6) for n in t]), set([100.0]))
+        t.to_ultrametric()
+        self.assertTrue(all(abs(t.get_distance(t, n) - max_dist) < EPSILON for n in t))
 
-        t =  Tree()
-        t.populate(100, random_branches=True)
-        t.convert_to_ultrametric(100, "balanced")
-        self.assertEqual(set([round(t.get_distance(t, n), 6) for n in t]), set([100.0]))
+        t2 = Tree()
+        t2.populate(80, random_branches=True)
+        max_dist = max(t2.get_distance(t2, n) for n in t2)
+
+        t2.to_ultrametric(topological=True)
+        self.assertTrue(all(abs(t2.get_distance(t2, n) - max_dist) < EPSILON for n in t2))
+        leaf, _ = t2.get_farthest_leaf(topological=True)
+        self.assertTrue(all(abs(node.dist - leaf.dist) < EPSILON
+                            for node in leaf.ancestors() if not node.is_root))
 
     def test_expand_polytomies_rf(self):
         gtree = Tree('((a:1, (b:1, (c:1, d:1):1):1), (e:1, (f:1, g:1):1):1);')

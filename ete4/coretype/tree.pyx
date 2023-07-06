@@ -481,7 +481,6 @@ cdef class Tree(object):
             parent.delete(prevent_nondicotomic=prevent_nondicotomic,
                           preserve_branch_length=preserve_branch_length)
 
-
     def detach(self):
         """
         Detachs this node (and all its descendants) from its parent
@@ -496,7 +495,6 @@ cdef class Tree(object):
             self.up.children.remove(self)
             self.up = None
         return self
-
 
     def prune(self, nodes, preserve_branch_length=False):
         """Prune the topology conserving only the given nodes.
@@ -892,37 +890,29 @@ cdef class Tree(object):
         return (sum(d(n) for n in node1.lineage(root)) - d(root) +
                 sum(d(n) for n in node2.lineage(root)) - d(root))
 
-    def get_farthest_node(self, topology_only=False):
-        """
-        Returns the node's farthest descendant or ancestor node, and the
-        distance to it.
+    def get_farthest_node(self, topological=False):
+        """Returns the farthest descendant or ancestor node, and its distance.
 
-        :argument False topology_only: If set to True, distance
-          between nodes will be referred to the number of nodes
-          between them. In other words, topological distance will be
-          used instead of branch length distances.
-
-        :return: A tuple containing the farthest node referred to the
-          current node and the distance to it.
-
+        :param topological: If True, the distance between nodes will be the
+            number of nodes between them (instead of the sum of branch lenghts).
         """
         # Init farthest node to current farthest leaf
-        farthest_node, farthest_dist = self.get_farthest_leaf(topology_only=topology_only)
+        farthest_node, farthest_dist = self.get_farthest_leaf(topological=topological)
 
         dist = lambda node: node.dist if 'dist' in node.props else (0 if node.is_root else 1)
 
         prev = self
-        cdist = 0.0 if topology_only else dist(prev)
+        cdist = 0.0 if topological else dist(prev)
         current = prev.up
         while current is not None:
             for ch in current.children:
                 if ch != prev:
                     if not ch.is_leaf:
-                        fnode, fdist = ch.get_farthest_leaf(topology_only=topology_only)
+                        fnode, fdist = ch.get_farthest_leaf(topological=topological)
                     else:
                         fnode = ch
                         fdist = 0
-                    if topology_only:
+                    if topological:
                         fdist += 1.0
                     else:
                         fdist += dist(ch)
@@ -930,14 +920,14 @@ cdef class Tree(object):
                         farthest_dist = cdist + fdist
                         farthest_node = fnode
             prev = current
-            if topology_only:
+            if topological:
                 cdist += 1
             else:
                 cdist  += dist(prev)
             current = prev.up
         return farthest_node, farthest_dist
 
-    def _get_farthest_and_closest_leaves(self, topology_only=False, is_leaf_fn=None):
+    def _get_farthest_and_closest_leaves(self, topological=False, is_leaf_fn=None):
         # if called from a leaf node, no necessary to compute
         if (is_leaf_fn and is_leaf_fn(self)) or self.is_leaf:
             return self, 0.0, self, 0.0
@@ -953,10 +943,10 @@ cdef class Tree(object):
             if n is self:
                 continue
             if post:
-                d -= dist(n) if not topology_only else 1.0
+                d -= dist(n) if not topological else 1.0
             else:
                 if (is_leaf_fn and is_leaf_fn(n)) or n.is_leaf:
-                    total_d = d + dist(n) if not topology_only else d
+                    total_d = d + dist(n) if not topological else d
                     if min_dist is None or total_d < min_dist:
                         min_dist = total_d
                         min_node = n
@@ -964,72 +954,52 @@ cdef class Tree(object):
                         max_dist = total_d
                         max_node = n
                 else:
-                    d += dist(n) if not topology_only else 1.0
+                    d += dist(n) if not topological else 1.0
         return min_node, min_dist, max_node, max_dist
 
 
-    def get_farthest_leaf(self, topology_only=False, is_leaf_fn=None):
-        """
-        Returns node's farthest descendant node (which is always a leaf), and the
-        distance to it.
+    def get_farthest_leaf(self, topological=False, is_leaf_fn=None):
+        """Return the node's farthest descendant (a leaf), and its distance.
 
-        :argument False topology_only: If set to True, distance
-          between nodes will be referred to the number of nodes
-          between them. In other words, topological distance will be
-          used instead of branch length distances.
-
-        :return: A tuple containing the farthest leaf referred to the
-          current node and the distance to it.
+        :param topological: If True, the distance between nodes will be the
+            number of nodes between them (instead of the sum of branch lenghts).
         """
-        min_node, min_dist, max_node, max_dist = self._get_farthest_and_closest_leaves(
-        topology_only=topology_only, is_leaf_fn=is_leaf_fn)
+        min_node, min_dist, max_node, max_dist = \
+            self._get_farthest_and_closest_leaves(topological=topological,
+                                                  is_leaf_fn=is_leaf_fn)
         return max_node, max_dist
 
-    def get_closest_leaf(self, topology_only=False, is_leaf_fn=None):
-        """Returns node's closest descendant leaf and the distance to
-        it.
+    def get_closest_leaf(self, topological=False, is_leaf_fn=None):
+        """Return the node's closest descendant leaf, and its distance.
 
-        :argument False topology_only: If set to True, distance
-          between nodes will be referred to the number of nodes
-          between them. In other words, topological distance will be
-          used instead of branch length distances.
-
-        :return: A tuple containing the closest leaf referred to the
-          current node and the distance to it.
-
+        :param topological: If True, the distance between nodes will be the
+            number of nodes between them (instead of the sum of branch lenghts).
         """
-        min_node, min_dist, max_node, max_dist = self._get_farthest_and_closest_leaves(
-            topology_only=topology_only, is_leaf_fn=is_leaf_fn)
-
+        min_node, min_dist, max_node, max_dist = \
+            self._get_farthest_and_closest_leaves(topological=topological,
+                                                  is_leaf_fn=is_leaf_fn)
         return min_node, min_dist
 
+    def get_midpoint_outgroup(self, topological=False):
+        """Return the node dividing into two distance-balanced partitions.
 
-    def get_midpoint_outgroup(self):
+        :param topological: If True, the distance between nodes will be the
+            number of nodes between them (instead of the sum of branch lenghts).
         """
-        Returns the node that divides the current tree into two distance-balanced
-        partitions.
-        """
-        # Gets the farthest node to the current root
-        root = self.root
-        nA, r2A_dist = root.get_farthest_leaf()
-        nB, A2B_dist = nA.get_farthest_node()
+        # Start at the farthest leaf from the root.
+        current, _ = self.root.get_farthest_leaf(topological=topological)
+        _, diameter = current.get_farthest_node(topological=topological)
 
-        outgroup = nA
-        middist  = A2B_dist / 2.0
-        cdist = 0
-        current = nA
-        while current is not None:
-            cdist += current.dist
-            if cdist > (middist): # Deja de subir cuando se pasa del maximo
-                break
-            else:
-                current = current.up
+        dist = 0
+        while current.up:
+            dist += 1 if topological else current.dist
 
-        # if we reached the root, the tree is already at midpoint. Return any child as valid outgroup
-        if current is None:
-            current = self.children[0]
+            if dist > diameter / 2:
+                return current
 
-        return current
+            current = current.up
+
+        return current  # the midpoint was the root (we went back to it)
 
     def populate(self, size, names_library=None, reuse_names=False,
                  random_branches=False, branch_range=(0,1),
@@ -1900,41 +1870,28 @@ cdef class Tree(object):
         return md5(str(sorted(edge_keys)).encode('utf-8')).hexdigest()
 
 
-    def convert_to_ultrametric(self, tree_length=None, strategy='balanced'):
-        """
-        .. versionadded: 2.1
+    def to_ultrametric(self, topological=False):
+        """Convert tree to ultrametric (all leaves equally distant from root)."""
+        from ..smartview.renderer.gardening import update_all_sizes
 
-        Converts a tree into ultrametric topology (all leaves must have
-        the same distance to root).
-        """
+        self.dist = self.dist or 0  # covers common case of not having dist set
 
-        # pre-calculate how many splits remain under each node
-        node2max_depth = {}
-        for node in self.traverse("postorder"):
-            if not node.is_leaf:
-                max_depth = max([node2max_depth[c] for c in node.children]) + 1
-                node2max_depth[node] = max_depth
-            else:
-                node2max_depth[node] = 1
-        node2dist = {self: 0.0}
-        if not tree_length:
-            most_distant_leaf, tree_length = self.get_farthest_leaf()
-        else:
-            tree_length = float(tree_length)
+        update_all_sizes(self)  # so node.size[0] are distances to leaves
 
+        dist_full = self.size[0]  # original distance from root to furthest leaf
 
-        step = tree_length / node2max_depth[self]
-        for node in self.descendants("levelorder"):
-            if strategy == "balanced":
-                node.dist = (tree_length - node2dist[node.up]) / node2max_depth[node]
-                node2dist[node] =  node.dist + node2dist[node.up]
-            elif strategy == "fixed":
-                if not node.is_leaf:
-                    node.dist = step
-                else:
-                    node.dist = tree_length - ((node2dist[node.up]) * step)
-                node2dist[node] = node2dist[node.up] + 1
-            node.dist = node.dist
+        if (topological or dist_full <= 0 or
+            any(node.dist is None for node in self.traverse())):
+            # Ignore original distances and just use the tree topology.
+            for node in self.traverse():
+                node.dist = 1 if node.up else 0
+            update_all_sizes(self)
+            dist_full = dist_full if dist_full > 0 else self.size[0]
+
+        for node in self.traverse():
+            if node.dist > 0:
+                d = sum(n.dist for n in node.ancestors())
+                node.dist *= (dist_full - d) / node.size[0]
 
     def check_monophyly(self, values, target_attr, ignore_missing=False,
                         unrooted=False):

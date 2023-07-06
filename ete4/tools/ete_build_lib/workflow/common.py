@@ -325,7 +325,7 @@ def select_closest_outgroup(target, n2content, splitterconf):
 
     # Gets a list of outside nodes an their distance to current target node
     n2targetdist = distance_matrix_new(target, leaf_only=False,
-                                               topology_only=out_topodist)
+                                               topological=out_topodist)
 
     valid_nodes = sorted([(node, ndist) for node, ndist in n2targetdist.items()
                           if not(n2content[node] & n2content[target])
@@ -387,7 +387,7 @@ def select_sister_outgroup(target, n2content, splitterconf):
 
     # Gets a list of outside nodes an their distance to current target node
     n2targetdist = distance_matrix_new(target, leaf_only=False,
-                                               topology_only=out_topodist)
+                                               topological=out_topodist)
 
     sister_content = n2content[target.get_sisters()[0]]
 
@@ -448,10 +448,10 @@ def select_outgroups(target, n2content, splitterconf):
 
     # Gets a list of outside nodes an their distance to current target node
     n2targetdist = distance_matrix_new(target, leaf_only=False,
-                                               topology_only=out_topodist)
+                                               topological=out_topodist)
 
     #kk, test = distance_matrix(target, leaf_only=False,
-    #                       topology_only=False)
+    #                       topological=False)
 
     #for x in test:
     #    if test[x] != n2targetdist[x]:
@@ -521,19 +521,19 @@ def select_outgroups(target, n2content, splitterconf):
 
     return set(seqs), set(outs)
 
-def distance_matrix_new(target, leaf_only=False, topology_only=False):
+def distance_matrix_new(target, leaf_only=False, topological=False):
     t = target.root
     real_outgroup = t.children[0]
     t.set_outgroup(target)
 
     n2dist = {target:0}
     for n in target.get_descendants("preorder"):
-        n2dist[n] = n2dist[n.up] + (topology_only or n.dist)
+        n2dist[n] = n2dist[n.up] + (topological or n.dist)
 
     sister = target.get_sisters()[0]
-    n2dist[sister] = (topology_only or sister.dist)+ (topology_only or target.dist)
+    n2dist[sister] = (topological or sister.dist)+ (topological or target.dist)
     for n in sister.get_descendants("preorder"):
-        n2dist[n] = n2dist[n.up] + (topology_only or n.dist)
+        n2dist[n] = n2dist[n.up] + (topological or n.dist)
 
     t.set_outgroup(real_outgroup)
 

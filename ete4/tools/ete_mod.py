@@ -88,7 +88,7 @@ def mod_tree(t, args):
         t.sort_descendants()
 
     if args.ultrametric:
-        t.convert_to_ultrametric()
+        t.to_ultrametric()
 
     # remove, prune branches
     # ncbi_root

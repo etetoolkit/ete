@@ -239,7 +239,7 @@ def render(root_node, img, hide_root=False):
                 scales = [(i.widths[1]/n.dist) for n,i in n2i.items() if n.dist]
                 img._scale = max(scales) if scales else 0.0
             else:
-                farthest, dist = root_node.get_farthest_leaf(topology_only=img.force_topology)
+                farthest, dist = root_node.get_farthest_leaf(topological=img.force_topology)
                 img._scale = img.tree_width / dist if dist else 0.0
             update_branch_lengths(root_node, n2i, n2f, img)
         else:

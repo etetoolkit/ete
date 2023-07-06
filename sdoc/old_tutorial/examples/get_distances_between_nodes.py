@@ -35,14 +35,14 @@ print "The distance between A and C is",  A.get_distance("C")
 print "The distance between A and C is",  t.get_distance("A","C")
 # Calculate the toplogical distance (number of nodes in between)
 print "The number of nodes between A and D is ",  \
-    t.get_distance("A","D", topology_only=True)
+    t.get_distance("A","D", topological=True)
 # Calculate the farthest node from E within the whole structure
 farthest, dist = (t&"E").get_farthest_node()
 print "The farthest node from E is", farthest.name, "with dist=", dist
 # Calculate the farthest node from E within the whole structure,
 # regarding the number of nodes in between as distance value
 # Note that the result is differnt.
-farthest, dist = (t&"E").get_farthest_node(topology_only=True)
+farthest, dist = (t&"E").get_farthest_node(topological=True)
 print "The farthest (topologically) node from E is", \
     farthest.name, "with", dist, "nodes in between"
 # Calculate farthest node from an internal node

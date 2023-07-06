@@ -622,7 +622,7 @@ def load_tree(tree_id):
             tree.name, tree.tree, tree.layouts = retrieve_tree(tid)
 
             if tree.style.ultrametric:
-                tree.tree.convert_to_ultrametric()
+                tree.tree.to_ultrametric()
                 gdn.standardize(tree.tree)
 
             initialize_tree_style(tree)
@@ -637,7 +637,7 @@ def load_tree_from_newick(tid, newick):
     t = Tree(newick, format=1)
 
     if app.trees[int(tid)].style.ultrametric:
-        t.convert_to_ultrametric()
+        t.to_ultrametric()
 
     gdn.standardize(t)
     return t
@@ -1442,7 +1442,7 @@ def update_ultrametric(ultrametric, tid):
     if tree.style.ultrametric != ultrametric:
         tree.style.ultrametric = ultrametric
         if ultrametric == True:
-            tree.tree.convert_to_ultrametric()
+            tree.tree.to_ultrametric()
             gdn.standardize(tree.tree)
             initialize_tree_style(tree, ultrametric=True)
         else:
