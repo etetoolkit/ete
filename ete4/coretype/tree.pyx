@@ -121,8 +121,6 @@ cdef class Tree(object):
 
     @property
     def dist(self):
-        # # TODO: Remove defaults.
-        # return float(self.props.get('dist', 1 if self.up else 0))
         return float(self.props['dist']) if 'dist' in self.props else None
 
     @dist.setter
@@ -131,8 +129,6 @@ cdef class Tree(object):
 
     @property
     def support(self):
-        # # TODO: Remove defaults.
-        # return float(self.props.get('support', 1))
         return float(self.props['support']) if 'support' in self.props else None
 
     @support.setter
