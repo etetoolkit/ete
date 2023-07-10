@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 
 from setuptools import setup
+
 from glob import glob
+from os.path import isfile
+
 from Cython.Build import cythonize
+
 
 setup(
     name='ete4',
@@ -31,5 +35,7 @@ setup(
         'ete4/smartview/renderer/gardening.pyx',
         'ete4/smartview/renderer/face_positions.pyx'], language_level='3'),
     data_files=[
-        ('examples', glob('examples/*.tree'))]
+        ('share/ete/static',
+         [x for x in glob('ete4/smartview/gui/static/**',
+                          recursive=True, include_hidden=True) if isfile(x)])],
 )
