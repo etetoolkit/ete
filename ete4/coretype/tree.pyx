@@ -1250,7 +1250,7 @@ cdef class Tree(object):
     def explore(self, name=None, layouts=[], show_leaf_name=True,
                 show_branch_length=True, show_branch_support=True,
                 include_props=None, exclude_props=None,
-                port=5000, quiet=True, daemon=True):
+                port=5000, quiet=True, compress=False, daemon=True):
         """Launch an interactive smartview session to visualize the tree.
 
         :param str name: Name used to store and refer to the tree.
@@ -1283,7 +1283,7 @@ cdef class Tree(object):
         run_smartview(tree=self, name=name,
                       layouts=list(default_layouts + layouts),
                       include_props=include_props, exclude_props=exclude_props,
-                      port=port, quiet=quiet, compress=False, daemon=daemon)
+                      port=port, quiet=quiet, compress=compress, daemon=daemon)
 
     def copy(self, method="cpickle"):
         """.. versionadded: 2.1
