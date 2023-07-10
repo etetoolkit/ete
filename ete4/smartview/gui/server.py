@@ -432,7 +432,7 @@ def callback(tree_id):
     try:
         drawer = get_drawer(tree_id, request.query)
 
-        graphics = json.dumps(list(drawer.draw()))
+        graphics = json.dumps(list(drawer.draw())).encode('utf8')
 
         response.content_type = 'application/json'
         if app.compress:
