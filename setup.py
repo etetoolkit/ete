@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 from setuptools import setup
 
 from glob import glob
@@ -35,7 +33,7 @@ setup(
         'ete4/smartview/renderer/gardening.pyx',
         'ete4/smartview/renderer/face_positions.pyx'], language_level='3'),
     data_files=[
-        ('share/ete/static',
+        ('share/ete4/static',
          [x for x in glob('ete4/smartview/gui/static/**',
-                          recursive=True, include_hidden=True) if isfile(x)])],
+                          recursive=True) if isfile(x)])],
 )
