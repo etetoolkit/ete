@@ -61,7 +61,7 @@ def test_draw_elements():
 
 def test_draw_node():
     t = Tree('A:10')
-    gdn.update_all_sizes(t)
+    gdn.update_sizes_all(t)
 
     drawer1 = draw.DrawerRectLeafNames(t, zoom=(20, 20))
     assert_equal(list(drawer1.draw_node(t, (0, 0), 0.5)), [
@@ -79,7 +79,7 @@ def test_draw_node():
 def test_draw_collapsed():
     tree_text = '((B:200,(C:250,D:300)E:350)A:100)F;'
     t = Tree(tree_text)
-    gdn.update_all_sizes(t)
+    gdn.update_sizes_all(t)
 
     drawer_z10 = draw.DrawerRectLeafNames(t, zoom=(10, 10))
     assert not any(e[0] == 'outline' for e in drawer_z10.draw())
@@ -110,7 +110,7 @@ def test_draw_collapsed():
 def test_draw_tree_rect():
     tree_text = '((A:200,(B:250,C:300)D:350)E:100)F;'
     t = Tree(tree_text)
-    gdn.update_all_sizes(t)
+    gdn.update_sizes_all(t)
 
     drawer = draw.DrawerRectLeafNames(t, zoom=(10, 10))
     elements = list(drawer.draw())
@@ -143,7 +143,7 @@ def test_draw_tree_rect():
 def test_draw_tree_circ():
     tree_text = '((A:200,(B:250,C:300)D:350)E:100)F;'
     t = Tree(tree_text)
-    gdn.update_all_sizes(t)
+    gdn.update_sizes_all(t)
 
     drawer_circ = draw.DrawerCircLeafNames(t, zoom=(10, 10))
     elements_circ = list(drawer_circ.draw())
@@ -203,7 +203,7 @@ def test_intersects():
 
 def test_size():
     t = Tree('(a:2,b:3,c:4)d;')
-    gdn.update_all_sizes(t)
+    gdn.update_sizes_all(t)
 
     drawer = draw.DrawerRectLeafNames(t, zoom=(10, 10))
     assert drawer.node_size(t) == Size(5, 3)

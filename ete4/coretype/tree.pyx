@@ -1872,11 +1872,11 @@ cdef class Tree(object):
 
     def to_ultrametric(self, topological=False):
         """Convert tree to ultrametric (all leaves equally distant from root)."""
-        from ..smartview.renderer.gardening import update_all_sizes
+        from ..smartview.renderer.gardening import update_sizes_all
 
         self.dist = self.dist or 0  # covers common case of not having dist set
 
-        update_all_sizes(self)  # so node.size[0] are distances to leaves
+        update_sizes_all(self)  # so node.size[0] are distances to leaves
 
         dist_full = self.size[0]  # original distance from root to furthest leaf
 
@@ -1885,7 +1885,7 @@ cdef class Tree(object):
             # Ignore original distances and just use the tree topology.
             for node in self.traverse():
                 node.dist = 1 if node.up else 0
-            update_all_sizes(self)
+            update_sizes_all(self)
             dist_full = dist_full if dist_full > 0 else self.size[0]
 
         for node in self.traverse():

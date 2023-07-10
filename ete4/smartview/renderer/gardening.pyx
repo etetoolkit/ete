@@ -164,9 +164,9 @@ def remove(node):
     parent.remove_child(node)
 
 
-def update_all_sizes(tree):
+def update_sizes_all(tree):
     for node in tree.children:
-        update_all_sizes(node)
+        update_sizes_all(node)
     update_size(tree)
 
 
@@ -219,7 +219,7 @@ def standardize(tree):
     if tree.dist == -1:
         tree.dist = 0
 
-    update_all_sizes(tree)
+    update_sizes_all(tree)
 
     for node in tree.traverse():
         if not node.is_leaf and node.name is not None:

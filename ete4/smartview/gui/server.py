@@ -534,7 +534,7 @@ def callback(tree_id):
     try:
         node_id = req_json()
         gdn.remove(tree.tree[subtree][node_id])
-        gdn.update_all_sizes(tree.tree)
+        gdn.update_sizes_all(tree.tree)
         return {'message': 'ok'}
     except AssertionError as e:
         abort(400, f'cannot remove {node_id}: {e}')
