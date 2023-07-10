@@ -133,7 +133,7 @@ def join_branch(node):
             'cannot join branches with different support'
 
     if 'dist' in node.props:
-        child.dist += node.dist  # restore total dist
+        child.dist = (child.dist or 0) + node.dist  # restore total dist
 
     up = node.up
     pos_in_parent = up.children.index(node)  # save its position in parent
