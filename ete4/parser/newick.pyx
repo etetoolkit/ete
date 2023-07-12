@@ -32,8 +32,8 @@ def unquote(name):
     else:
         return name
 
-# A "property dict" has all the information for a property ('pname') to know which
-# function to apply to read/write from/to a string.
+# A "property dict" has all the information for a property ('pname') to know
+# which function to apply to read/write from/to a string.
 #
 # For example: {'pname': 'my-prop', 'read': str, 'write': str}
 
