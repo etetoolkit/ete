@@ -10,7 +10,7 @@ import logging
 from . import text_viz
 from .. import utils
 from ete4.parser import newick
-from ..parser import ete_format, file_extract
+from ..parser import ete_format
 
 # the following imports are necessary to set fixed styles and faces
 # try:
