@@ -353,8 +353,8 @@ class PhyloNode(Tree):
     def write(self, outfile=None, props=(), parser=None,
               format_root_node=False, is_leaf_fn=None):
         if props is None:
-            props = list(set(p for node in self.traverse()
-                             for p in node.props if not p.startswith('_')))
+            props = sorted(set(p for node in self.traverse()
+                               for p in node.props if not p.startswith('_')))
         return super().write(outfile, props, parser, format_root_node, is_leaf_fn)
 
     def set_species_naming_function(self, fn):
