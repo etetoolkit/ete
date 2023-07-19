@@ -313,10 +313,6 @@ function add_folder_style(menu) {
         () => style("outline").fill = view.outline.color);
     folder_outline.add(view.outline, "width", 0.1, 10).onChange(
         () => style("outline").strokeWidth = view.outline.width);
-    folder_outline.add(view.outline, "slanted").onChange(() => {
-        update();
-        draw_minimap();
-    });
 
     const folder_lines = folder_style.addFolder("lines");
 

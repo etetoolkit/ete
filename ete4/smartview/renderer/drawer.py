@@ -11,7 +11,8 @@ from time import time
 from .walk import walk
 from .. import TreeStyle
 from .face_positions import FACE_POSITIONS, make_faces
-from .draw_helpers import *
+from . import draw_helpers as dh
+Box = dh.Box  # shortcut, because we use it a lot
 
 Size = namedtuple('Size', 'dx dy')  # size of a 2D shape (sizes are always >= 0)
 TreeActive = namedtuple('TreeActive', 'nodes clades')
@@ -94,7 +95,7 @@ class Drawer:
 
     def draw(self):
         "Yield graphic elements to draw the tree"
-        self.outline = None  # sbox surrounding the current collapsed nodes
+        self.outline = None  # box surrounding the current collapsed nodes
         self.collapsed = []  # nodes that are curretly collapsed together
         self.nodeboxes = []  # boxes surrounding all nodes and collapsed boxes
         self.node_dxs = [[]]  # lists of nodes dx (to find the max)
@@ -108,7 +109,6 @@ class Drawer:
 
         if self.panel == -1:
             yield from self.tree_style.get_legend()
-
         else:
             point = self.xmin, self.ymin
             for it in walk(self.tree):
@@ -120,7 +120,7 @@ class Drawer:
                 yield from graphics
 
             if self.outline:
-                yield from self.get_outline()
+                yield from self.get_outline()  # send last surrounding outline
 
             if self.panel == 0:
                 max_dx = max([box[1].dx for box in self.nodeboxes] + [0])
@@ -332,20 +332,21 @@ class Drawer:
         return graphics
 
     def get_outline(self):
-        "Yield the outline representation"
-        graphics = []
+        """Yield the outline representation."""
+        graphics = []  # will contain the graphic elements to draw
 
         node0 = self.collapsed[0]
         uncollapse = len(self.collapsed) == 1 and node0.is_leaf
 
-        x, y, _, _, _ = self.outline
+        x, y, _, _ = self.outline
         collapsed_node = self.get_collapsed_node()
 
-        searched_by = [ text for text,(results,parents) in self.searches.items()
-            if collapsed_node in results\
-            or any(node in results or node in parents.keys() for node in self.collapsed) ]
-        selected_by = [ text for text,(results,parents) in self.selected.items()
-            if collapsed_node in results ]
+        searched_by = [text for text,(results,parents) in self.searches.items()
+                       if collapsed_node in results
+                       or any(node in results or node in parents
+                              for node in self.collapsed)]
+        selected_by = [text for text,(results,parents) in self.selected.items()
+                       if collapsed_node in results]
         active_clade = [ "active_clades" ] if collapsed_node in self.active.clades.results else []
         active_children = self.get_active_children()
         selected_children = self.get_selected_children()
@@ -359,10 +360,11 @@ class Drawer:
 
         is_manually_collapsed = collapsed_node in self.collapsed
         is_small = self.is_small(make_box((x, y),
-            self.node_size(collapsed_node)))
+                                          self.node_size(collapsed_node)))
 
-        ndx = drawn_size(graphics, self.get_box).dx
         self.collapsed = []
+
+        ndx = max(self.outline.dx, drawn_size(graphics, self.get_box).dx)
         self.node_dxs[-1].append(ndx)
 
         # Draw collapsed node nodebox when necessary
@@ -371,7 +373,7 @@ class Drawer:
             properties = self.get_popup_props(collapsed_node)
 
             node_id = tuple(collapsed_node.id) if is_manually_collapsed else []
-            box = draw_nodebox(self.flush_outline(ndx), name,
+            box = dh.draw_nodebox(self.flush_outline(ndx), name,
                     properties, node_id, searched_by + selected_by + active_clade,
                     { 'fill': collapsed_node.sm_style.get('bgcolor') })
             self.nodeboxes.append(box)
@@ -382,9 +384,9 @@ class Drawer:
 
     def flush_outline(self, minimum_dx=0):
         "Return box outlining the collapsed nodes and reset the current outline"
-        x, y, dx_min, dx_max, dy = self.outline
+        x, y, dx, dy = self.outline
         self.outline = None
-        return Box(x, y, max(dx_max, minimum_dx), dy)
+        return Box(x, y, max(dx, minimum_dx), dy)
 
     def get_collapsed_node(self):
         """Get node that will be rendered as a collapsed node.
@@ -485,9 +487,9 @@ class DrawerRect(Drawer):
             return True
 
         if self.panel == 0 and pos != 'aligned':
-            return intersects_box(self.viewport, box)
+            return dh.intersects_box(self.viewport, box)
         else:
-            return intersects_segment(get_ys(self.viewport), get_ys(box))
+            return dh.intersects_segment(dh.get_ys(self.viewport), dh.get_ys(box))
 
     def node_size(self, node):
         "Return the size of a node (its content and its children)"
@@ -511,14 +513,14 @@ class DrawerRect(Drawer):
 
     def draw_lengthline(self, p1, p2, parent_of, style):
         "Yield a line representing a length"
-        line = draw_line(p1, p2, 'lengthline', parent_of, style)
-        if not self.viewport or intersects_box(self.viewport, get_rect(line)):
+        line = dh.draw_line(p1, p2, 'lengthline', parent_of, style)
+        if not self.viewport or dh.intersects_box(self.viewport, get_rect(line)):
             yield line
 
     def draw_childrenline(self, p1, p2, style):
         "Yield a line spanning children that starts at p1 and ends at p2"
-        line = draw_line(p1, p2, 'childrenline', style=style)
-        if not self.viewport or intersects_box(self.viewport, get_rect(line)):
+        line = dh.draw_line(p1, p2, 'childrenline', style=style)
+        if not self.viewport or dh.intersects_box(self.viewport, get_rect(line)):
             yield line
 
     def draw_nodedot(self, center, max_size, active_node, style):
@@ -542,7 +544,7 @@ class DrawerRect(Drawer):
                 yield draw_rect(box, rect_type='nodedot ' + active_node, style=nodedot_style)
 
     def draw_nodebox(self, node, node_id, box, searched_by, style=None):
-        yield draw_nodebox(box, node.name, self.get_popup_props(node),
+        yield dh.draw_nodebox(box, node.name, self.get_popup_props(node),
                 node_id, searched_by, style)
 
     def draw_collapsed(self, collapsed_node, active_children=TreeActive(0, 0), selected_children=[]):
@@ -552,7 +554,7 @@ class DrawerRect(Drawer):
         p1 = (x, y + dy / 2)
         p2 = (x + dx_max, y + dy / 2)
 
-        yield draw_line(p1, p2, 'lengthline')
+        yield dh.draw_line(p1, p2, 'lengthline')
 
 
 class DrawerCirc(Drawer):
@@ -580,18 +582,18 @@ class DrawerCirc(Drawer):
 
     def in_viewport(self, box, pos=None):
         if not self.viewport:
-            return intersects_segment((-pi, +pi), get_ys(box))
+            return dh.intersects_segment((-pi, +pi), dh.get_ys(box))
 
         if self.panel == 0 and pos != 'aligned':
-            return (intersects_box(self.viewport, circumrect(box)) and
-                    intersects_segment((-pi, +pi), get_ys(box)))
+            return (dh.intersects_box(self.viewport, dh.circumrect(box)) and
+                    dh.intersects_segment((-pi, +pi), dh.get_ys(box)))
         else:
-            return intersects_angles(self.viewport, box)
+            return dh.intersects_angles(self.viewport, box)
 
     def flush_outline(self, minimum_dr=0):
         "Return box outlining the collapsed nodes"
         r, a, dr, da = super().flush_outline(minimum_dr)
-        a1, a2 = clip_angles(a, a + da)
+        a1, a2 = dh.clip_angles(a, a + da)
         return Box(r, a1, dr, a2 - a1)
 
     def node_size(self, node):
@@ -613,16 +615,16 @@ class DrawerCirc(Drawer):
     def draw_lengthline(self, p1, p2, parent_of, style):
         "Yield a line representing a length"
         if -pi <= p1[1] < pi:  # NOTE: the angles p1[1] and p2[1] are equal
-            yield draw_line(cartesian(p1), cartesian(p2),
+            yield dh.draw_line(dh.cartesian(p1), dh.cartesian(p2),
                             'lengthline', parent_of, style)
 
     def draw_childrenline(self, p1, p2, style):
         "Yield an arc spanning children that starts at p1 and ends at p2"
         (r1, a1), (r2, a2) = p1, p2
-        a1, a2 = clip_angles(a1, a2)
+        a1, a2 = dh.clip_angles(a1, a2)
         if a1 < a2:
             is_large = a2 - a1 > pi
-            yield draw_arc(cartesian((r1, a1)), cartesian((r2, a2)),
+            yield draw_arc(dh.cartesian((r1, a1)), dh.cartesian((r2, a2)),
                            is_large, 'childrenline', style=style)
 
     def draw_nodedot(self, center, max_size, active_node, style):
@@ -646,9 +648,9 @@ class DrawerCirc(Drawer):
 
     def draw_nodebox(self, node, node_id, box, searched_by, style=None):
         r, a, dr, da = box
-        a1, a2 = clip_angles(a, a + da)
+        a1, a2 = dh.clip_angles(a, a + da)
         if a1 < a2:
-            yield draw_nodebox(Box(r, a1, dr, a2 - a1),
+            yield dh.draw_nodebox(Box(r, a1, dr, a2 - a1),
                        node.name, self.get_popup_props(node), node_id, searched_by, style)
 
     def draw_collapsed(self, collapsed_node, active_children=TreeActive(0, 0), selected_children=[]):
@@ -658,7 +660,7 @@ class DrawerCirc(Drawer):
         p1 = (r, a + da / 2)
         p2 = (r + dr_max, a + da / 2)
 
-        yield draw_line(cartesian(p1), cartesian(p2), 'lengthline')
+        yield dh.draw_line(dh.cartesian(p1), dh.cartesian(p2), 'lengthline')
 
 
 
@@ -1034,23 +1036,23 @@ def get_asec(element, zoom=(0, 0)):
     elif eid in ['line', 'arc']:
         (x1, y1), (x2, y2) = element[1], element[2]
         rect = Box(min(x1, x2), min(y1, y2), abs(x2 - x1), abs(y2 - y1))
-        return circumasec(rect)
+        return dh.circumasec(rect)
     elif eid == 'circle':
         z = zoom[0]
-        (x, y), r = cartesian(element[1]), element[2] / z
+        (x, y), r = dh.cartesian(element[1]), element[2] / z
         rect = Box(x - r, y - r, 2 * r, 2 * r)
-        return circumasec(rect)
+        return dh.circumasec(rect)
     elif eid == 'ellipse':
-        x, y = cartesian(element[1])
+        x, y = dh.cartesian(element[1])
         z = zoom[0]
         rx, ry = element[2] / z, element[3] / z
         rect = Box(x - rx, y - ry, 2 * rx, 2 * ry)
-        return circumasec(rect)
+        return dh.circumasec(rect)
     elif eid == 'slice':
         z = zoom[0]
-        (x, y), r = cartesian(element[1][0]), element[1][1] / z
+        (x, y), r = dh.cartesian(element[1][0]), element[1][1] / z
         rect = Box(x - r, y - r, 2 * r, 2 * r)
-        return circumasec(rect)
+        return dh.circumasec(rect)
     else:
         raise ValueError(f'unrecognized element: {element!r}')
 
@@ -1086,12 +1088,11 @@ def dist(node):
     return float(node.props.get('dist', 0 if node.up is None else 1))
 
 
-def stack(sbox, box):
-    "Return the sbox resulting from stacking the given sbox and box"
-    if not sbox:
-        x, y, dx, dy = box
-        return SBox(x, y, dx, dx, dy)
+def stack(box1, box2):
+    """Return the box resulting from stacking the given boxes."""
+    if not box1:
+        return box2
     else:
-        x, y, dx_min, dx_max, dy = sbox
-        _, _, dx_box, dy_box = box
-        return SBox(x, y, min(dx_min, dx_box), max(dx_max, dx_box), dy + dy_box)
+        x, y, dx1, dy1 = box1
+        _, _, dx2, dy2 = box2
+        return Box(x, y, max(dx1, dx2), dy1 + dy2)

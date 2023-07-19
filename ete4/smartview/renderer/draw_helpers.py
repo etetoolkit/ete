@@ -2,7 +2,6 @@ from collections import OrderedDict, namedtuple
 from math import sin, cos, pi, sqrt, atan2
 
 Box = namedtuple('Box', 'x y dx dy')  # corner and size of a 2D shape
-SBox = namedtuple('SBox', 'x y dx_min dx_max dy')  # slanted box
 
 Padding = namedtuple('Padding', 'x y')
 
@@ -16,11 +15,6 @@ def clip_angles(a1, a2):
 def cartesian(point):
     r, a = point
     return r * cos(a), r * sin(a)
-
-
-def is_good_angle_interval(a1, a2):
-    EPSILON = 1e-8  # without it, rounding can fake a2 > pi
-    return -pi <= a1 < a2 < pi + EPSILON
 
 
 def summary(nodes, prop="name"):
@@ -123,8 +117,8 @@ def draw_nodebox(box, name='', properties=None,
             properties, node_id or [],
             searched_by or [], style or {}]
 
-def draw_outline(sbox, style=None):
-    return ['outline', sbox, style or {}]
+def draw_outline(box, style=None):
+    return ['outline', box, style or {}]
 
 def get_line_type(style):
     types = ['solid', 'dotted', 'dashed']
