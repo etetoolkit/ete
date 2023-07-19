@@ -763,21 +763,21 @@ class OutlineFace(Face):
             dx_before, dy_before):
 
         self.outline = drawer.outline if drawer.outline \
-            and len(drawer.outline) == 5 else SBox(0, 0, 0, 0, 0)
+            and len(drawer.outline) == 4 else Box(0, 0, 0, 0)
 
         self.zoom = drawer.zoom[0], drawer.zoom[1]
 
         if drawer.TYPE == 'circ':
-            r, a, dr_min, dr_max, da = self.outline
+            r, a, dr, da = self.outline
             a1, a2 = clip_angles(a, a + da)
-            self.outline = SBox(r, a1, dr_min, dr_max, a2 - a1)
+            self.outline = Box(r, a1, dr, a2 - a1)
 
         return self.get_box()
 
     def get_box(self):
-        if self.outline and len(self.outline) == 5:
-            x, y, dx_min, dx_max, dy = self.outline
-            return Box(x, y, dx_max, dy)
+        if self.outline and len(self.outline) == 4:
+            x, y, dx, dy = self.outline
+            return Box(x, y, dx, dy)
         return Box(0, 0, 0, 0)
 
     def fits(self):
@@ -791,14 +791,14 @@ class OutlineFace(Face):
                 'fill': nodestyle["outline_color"],
                 'fill-opacity': nodestyle["outline_opacity"],
                 }
-        x, y, dx_min, dx_max, dy = self.outline
+        x, y, dx, dy = self.outline
         zx, zy = self.zoom
         circ_drawer = drawer.TYPE == 'circ'
         r = (x or 1e-10) if circ_drawer else 1
         if dy * zy * r < self.collapsing_height:
             # Convert to line if height less than one pixel
             p1 = (x, y + dy / 2)
-            p2 = (x + dx_max, y + dy / 2)
+            p2 = (x + dx, y + dy / 2)
             if circ_drawer:
                 p1 = cartesian(p1)
                 p2 = cartesian(p2)

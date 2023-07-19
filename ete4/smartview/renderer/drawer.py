@@ -414,7 +414,7 @@ class Drawer:
         node.is_collapsed = True
         node.is_initialized = False
         node._children = self.collapsed  # add avoiding parent override
-        _, _, dx_min, _, dy = self.outline
+        _, _, _, dy = self.outline
         node.dist = 0
         node.size = Size(0, dy)
 
@@ -423,7 +423,7 @@ class Drawer:
     def is_fully_collapsed(self, collapsed_node):
         """Returns true if collapsed_node is utterly collapsed,
         i.e. has no branch width"""
-        x, y, *_ = self.outline
+        x, y, _, _ = self.outline
         is_manually_collapsed = collapsed_node in self.collapsed
         box_node = make_box((x, y), self.node_size(collapsed_node))
 
@@ -534,14 +534,14 @@ class DrawerRect(Drawer):
             fill = style['fill']
             nodedot_style={'fill':fill, 'opacity': style['opacity']}
             if style['shape'] == 'circle':
-                yield draw_circle(center, radius=size,
+                yield dh.draw_circle(center, radius=size,
                         circle_type='nodedot ' + active_node, style=nodedot_style)
             elif style['shape'] == 'square':
                 x, y = center
                 zx, zy, _ = self.zoom
                 dx, dy = 2 * size / zx, 2 * size / zy
                 box = (x - dx/2, y - dy/2, dx, dy)
-                yield draw_rect(box, rect_type='nodedot ' + active_node, style=nodedot_style)
+                yield dh.draw_rect(box, rect_type='nodedot ' + active_node, style=nodedot_style)
 
     def draw_nodebox(self, node, node_id, box, searched_by, style=None):
         yield dh.draw_nodebox(box, node.name, self.get_popup_props(node),
@@ -549,10 +549,10 @@ class DrawerRect(Drawer):
 
     def draw_collapsed(self, collapsed_node, active_children=TreeActive(0, 0), selected_children=[]):
         # Draw line to farthest leaf under collapsed node
-        x, y, dx_min, dx_max, dy = self.outline
+        x, y, dx, dy = self.outline
 
         p1 = (x, y + dy / 2)
-        p2 = (x + dx_max, y + dy / 2)
+        p2 = (x + dx, y + dy / 2)
 
         yield dh.draw_line(p1, p2, 'lengthline')
 
@@ -624,8 +624,8 @@ class DrawerCirc(Drawer):
         a1, a2 = dh.clip_angles(a1, a2)
         if a1 < a2:
             is_large = a2 - a1 > pi
-            yield draw_arc(dh.cartesian((r1, a1)), dh.cartesian((r2, a2)),
-                           is_large, 'childrenline', style=style)
+            yield dh.draw_arc(dh.cartesian((r1, a1)), dh.cartesian((r2, a2)),
+                             is_large, 'childrenline', style=style)
 
     def draw_nodedot(self, center, max_size, active_node, style):
         r, a = center
@@ -638,13 +638,13 @@ class DrawerCirc(Drawer):
             fill = style['fill']
             nodedot_style={'fill':fill, 'opacity': style['opacity']}
             if style['shape'] == 'circle':
-                yield draw_circle(center, radius=size,
+                yield dh.draw_circle(center, radius=size,
                           circle_type='nodedot ' + active_node, style=nodedot_style)
             elif style['shape'] == 'square':
                 z = self.zoom[0] # same zoom in x and y
                 dr, da = 2 * size / z, 2 * size / (z * r)
                 box = Box(r - dr / 2, a - da / 2, dr, da)
-                yield draw_rect(box, rect_type='nodedot ' + active_node, style=nodedot_style)
+                yield dh.draw_rect(box, rect_type='nodedot ' + active_node, style=nodedot_style)
 
     def draw_nodebox(self, node, node_id, box, searched_by, style=None):
         r, a, dr, da = box
@@ -655,10 +655,10 @@ class DrawerCirc(Drawer):
 
     def draw_collapsed(self, collapsed_node, active_children=TreeActive(0, 0), selected_children=[]):
         # Draw line to farthest leaf under collapsed node
-        r, a, _, dr_max, da = self.outline
+        r, a, dr, da = self.outline
 
         p1 = (r, a + da / 2)
-        p2 = (r + dr_max, a + da / 2)
+        p2 = (r + dr, a + da / 2)
 
         yield dh.draw_line(dh.cartesian(p1), dh.cartesian(p2), 'lengthline')
 
@@ -795,7 +795,7 @@ class DrawerRectFaces(DrawerRect):
                 yield from draw_faces_at_pos(node, pos)
 
     def draw_collapsed(self, collapsed_node, active_children=TreeActive(0, 0), selected_children=[]):
-        x, y, dx_min, dx_max, dy = self.outline
+        x, y, dx, dy = self.outline
 
         if self.is_fully_collapsed(collapsed_node):
             bdx = 0
@@ -924,7 +924,7 @@ class DrawerCircFaces(DrawerCirc):
                 yield from draw_faces_at_pos(node, pos)
 
     def draw_collapsed(self, collapsed_node, active_children=TreeActive(0, 0), selected_children=[]):
-        r, a, dr_min, dr_max, da = self.outline
+        r, a, dr, da = self.outline
 
         if self.is_fully_collapsed(collapsed_node):
             bdr = 0
@@ -967,8 +967,8 @@ def get_rect(element, zoom=(0, 0)):
     if eid in ['nodebox', 'rect', 'array', 'text', 'triangle', 'html', 'img']:
         return element[1]
     elif eid == 'outline':
-        x, y, dx_min, dx_max, dy = element[1]
-        return Box(x, y, dx_max, dy)
+        x, y, dx, dy = element[1]
+        return Box(x, y, dx, dy)
     elif eid.startswith('pixi-'):
         x, y, dx, dy = element[1]
         return Box(x, y, dx, dy)
@@ -1015,8 +1015,8 @@ def get_asec(element, zoom=(0, 0)):
     if eid in ['nodebox', 'rect', 'array', 'text', 'triangle', 'html', 'img']:
         return element[1]
     elif eid == 'outline':
-        r, a, dr_min, dr_max, da = element[1]
-        return Box(r, a, dr_max, da)
+        r, a, dr, da = element[1]
+        return Box(r, a, dr, da)
     elif eid.startswith('pixi-'):
         x, y, dx, dy = element[1]
         return Box(x, y, dx, dy)
