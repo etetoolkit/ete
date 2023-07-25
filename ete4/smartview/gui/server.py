@@ -1606,7 +1606,7 @@ def launch_browser(host, port):
         Popen([command, f'http://{host}:{port}'],
               stdout=DEVNULL, stderr=DEVNULL)
     except (KeyError, FileNotFoundError) as e:
-        print(f'Explorer available at http://localhost:{port}')
+        print(f'Explorer available at http://{host}:{port}')
 
 
 
