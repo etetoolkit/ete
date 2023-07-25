@@ -1537,7 +1537,7 @@ def initialize(tree=None, layouts=None,
 
 def run_smartview(tree=None, name=None, layouts=[],
                   include_props=None, exclude_props=None,
-                  safe_mode=False, port=5000, quiet=True,
+                  safe_mode=False, host='localhost', port=5000, quiet=True,
                   compress=False, daemon=True):
     # Set tree_name to None if no tree was provided
     # Generate tree_name if none was provided
@@ -1566,9 +1566,10 @@ def run_smartview(tree=None, name=None, layouts=[],
     launch_browser(port)
 
     if 'webserver' not in g_threads:
-        thread_webserver = Thread(daemon=daemon,
-                                  target=run,
-                                  kwargs={'quiet': quiet, 'port': port})
+        thread_webserver = Thread(
+            daemon=daemon,
+            target=run,
+            kwargs={'quiet': quiet, 'host': host, 'port': port})
         thread_webserver.start()
         g_threads['webserver'] = thread_webserver
 
