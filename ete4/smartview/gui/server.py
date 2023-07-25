@@ -1563,7 +1563,7 @@ def run_smartview(tree=None, name=None, layouts=[],
         tid = add_tree(tree_data)
         print(f'Added tree {name} with id {tid}.')
 
-    launch_browser(port)
+    launch_browser(host, port)
 
     if 'webserver' not in g_threads:
         thread_webserver = Thread(
@@ -1599,11 +1599,11 @@ def make_name():
     return f'tree-{n}'
 
 
-def launch_browser(port):
+def launch_browser(host, port):
     """Try to open a browser window in a different process."""
     try:
         command = {'Linux': 'xdg-open', 'Darwin': 'open'}[platform.system()]
-        Popen([command, f'http://localhost:{port}'],
+        Popen([command, f'http://{host}:{port}'],
               stdout=DEVNULL, stderr=DEVNULL)
     except (KeyError, FileNotFoundError) as e:
         print(f'Explorer available at http://localhost:{port}')
