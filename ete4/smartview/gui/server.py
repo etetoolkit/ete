@@ -1263,7 +1263,7 @@ def add_trees_from_request():
             parser = newick.PARSER_DEFAULT
         else:
             trees = get_trees_from_form()
-            parser = get_parser(request.forms['internal'])
+            parser = get_parser(request.forms.get('internal', 'name'))
 
         for tree in trees:
             add_tree(tree)
@@ -1290,15 +1290,17 @@ def get_trees_from_form():
         except (gzip.BadGzipFile, UnicodeDecodeError) as e:
             abort(400, f'when reading {fupload.filename}: {e}')
     else:
-        return [{'name': request.forms['name'],
-                 'newick': request.forms['newick']}]
-# TODO: Check this. It may need all this crap in addition to those now:
-# 'id': form.get('id'),
-# 'b64pickle': form.get('b64pickle'),
-# 'description': form.get('description', ''),
-# 'layouts': form.get('layouts', []),
-# 'include_props': form.get('include_props', None),
-# 'exclude_props': form.get('exclude_props', None),
+        return [{
+            'name': request.forms['name'],
+            'newick': request.forms['newick'],
+            'id': request.forms.get('id'),
+            'b64pickle': request.forms.get('b64pickle'),
+            'description': request.forms.get('description', ''),
+            'layouts': request.forms.get('layouts', []),
+            'include_props': request.forms.get('include_props', None),
+            'exclude_props': request.forms.get('exclude_props', None),
+        }]
+
 
 def get_trees_from_file(filename, fileobject=None):
     """Return list of {'name': ..., 'newick': ...} extracted from file."""
