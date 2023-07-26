@@ -24,7 +24,7 @@ from datetime import datetime
 from collections import defaultdict, namedtuple
 from copy import copy, deepcopy
 from dataclasses import dataclass
-import gzip
+import gzip, bz2, zipfile, tarfile
 import json
 import _pickle as pickle
 import shutil
@@ -37,7 +37,7 @@ from bottle import (
     request, response, error, abort, HTTPError, run)
 
 from ete4 import Tree
-from ete4.parser.newick import NewickError
+from ete4.parser import newick
 from ete4.smartview import TreeStyle, layout_modules
 from ete4.parser import ete_format, nexus
 from ete4.smartview.renderer import gardening as gdn
@@ -632,9 +632,9 @@ def load_tree(tree_id):
     except (AssertionError, IndexError):
         abort(404, f'unknown tree id {tree_id}')
 
-def load_tree_from_newick(tid, newick):
+def load_tree_from_newick(tid, nw):
     """Load tree into memory from newick"""
-    t = Tree(newick, format=1)
+    t = Tree(nw)
 
     if app.trees[int(tid)].style.ultrametric:
         t.to_ultrametric()
@@ -769,13 +769,13 @@ def get_drawer(tree_id, args):
 def get_newick(tree_id, max_mb):
     "Return the newick representation of the given tree"
 
-    newick = load_tree(tree_id).write()
+    nw = load_tree(tree_id).write()
 
-    size_mb = len(newick) / 1e6
+    size_mb = len(nw) / 1e6
     if size_mb > max_mb:
         abort(400, 'newick too big (%.3g MB)' % size_mb)
 
-    return newick
+    return nw
 
 
 def remove_search(tid, args):
@@ -1210,7 +1210,7 @@ def get_topological_search(pattern):
     "Return a function of a node that sees if it matches the given pattern"
     try:
         tree_pattern = tm.TreePattern(pattern)
-    except NewickError as e:
+    except newick.NewickError as e:
         abort(400, 'invalid pattern %r: %s' % (pattern, e))
 
     return lambda node: tm.match(tree_pattern, node)
@@ -1256,60 +1256,98 @@ def sort(tree_id, node_id, key_text, reverse):
 
 
 def add_trees_from_request():
-    "Add trees to the app dict and return a dict of {name: id}"
-    if request.form:
-        trees = get_trees_from_form()
-    else:
-        extra = ['layouts', 'description', 'b64pickle',
-                 'include_props', 'exclude_props']
-        data = get_fields(required=['name', 'newick', 'id'],
-                          valid_extra=extra)
-        trees = [data]
+    """Add trees to app.trees and return a dict of {name: id}."""
+    try:
+        if request.content_type.startswith('application/json'):
+            trees = [req_json()]  # we have only one tree
+            parser = newick.PARSER_DEFAULT
+        else:
+            trees = get_trees_from_form()
+            parser = get_parser(request.forms['internal'])
 
-    return {data['name']: add_tree(data) for data in trees}
+        for tree in trees:
+            add_tree(tree)
+
+        return {tree['name']: tree['id'] for tree in trees}
+        # TODO: tree ids are already equal to their names, so in the future
+        # we could remove the need to send back their "ids".
+    except (newick.NewickError, ValueError) as e:
+        abort(400, f'malformed tree - {e}')
+
+
+def get_parser(internal):
+    """Return parser given the internal nodes main property interpretation."""
+    p = {'name': newick.NAME, 'support': newick.SUPPORT}[internal]  # (()p:d);
+    return dict(newick.PARSER_DEFAULT, internal=[p, newick.DIST])
 
 
 def get_trees_from_form():
-    "Return list of dicts with tree info read from a form in the request"
-    form = request.form
+    """Return list of dicts with tree info read from a form in the request."""
     if 'trees' in request.files:
-        text = get_file_contents(request.files['trees'])
         try:
-            trees = nexus.get_trees(text)
-            return [{'name': name, 'newick': newick}
-                        for name,newick in trees.items()]
-        except nexus.NexusError:
-            return [{'name': form['name'], 'newick': text,
-                     'description': form.get('description', '')}]
+            fu = request.files['trees']  # bottle FileUpload object
+            return get_trees_from_file(fu.filename, fu.file)
+        except (gzip.BadGzipFile, UnicodeDecodeError) as e:
+            abort(400, f'when reading {fupload.filename}: {e}')
     else:
-        return [{
-            'id': form.get('id'),
-            'name': form['name'],
-            'newick': form.get('newick'),
-            'b64pickle': form.get('b64pickle'),
-            'description': form.get('description', ''),
-            'layouts': form.get('layouts', []),
-            'include_props': form.get('include_props', None),
-            'exclude_props': form.get('exclude_props', None),
-        }]
+        return [{'name': request.forms['name'],
+                 'newick': request.forms['newick']}]
+# TODO: Check this. It may need all this crap in addition to those now:
+# 'id': form.get('id'),
+# 'b64pickle': form.get('b64pickle'),
+# 'description': form.get('description', ''),
+# 'layouts': form.get('layouts', []),
+# 'include_props': form.get('include_props', None),
+# 'exclude_props': form.get('exclude_props', None),
+
+def get_trees_from_file(filename, fileobject=None):
+    """Return list of {'name': ..., 'newick': ...} extracted from file."""
+    fileobject = fileobject or open(filename, 'rb')
+
+    trees = []
+    def extend(btext, fname):
+        name = os.path.splitext(os.path.basename(fname))[0]  # /d/n.e -> n
+        trees.extend(get_trees_from_nexus_or_newick(btext, name))
+
+    if filename.endswith('.zip'):
+        zf = zipfile.ZipFile(fileobject)
+        for fname in zf.namelist():
+            extend(zf.read(fname), fname)
+    elif filename.endswith('.tar'):
+        tf = tarfile.TarFile(fileobj=fileobject)
+        for fname in tf.getnames():
+            extend(tf.extractfile(fname).read(), fname)
+    elif filename.endswith('.tar.gz') or filename.endswith('.tgz'):
+        tf = tarfile.TarFile(fileobj=gzip.GzipFile(fileobj=fileobject))
+        for fname in tf.getnames():
+            extend(tf.extractfile(fname).read(), fname)
+    elif filename.endswith('.gz'):
+        extend(gzip.GzipFile(fileobj=fileobject).read(), filename)
+    elif filename.endswith('.bz2'):
+        extend(bz2.BZ2File(fileobject).read(), filename)
+    else:
+        extend(fileobject.read(), filename)
+
+    return trees
 
 
-def get_file_contents(fp):
-    "Return the contents of a file received as formdata"
-    try:
-        data = fp.stream.read()
-        if fp.filename.endswith('.gz'):
-            data = gzip.decompress(data)
-        return data.decode('utf-8').strip()
-    except (gzip.BadGzipFile, UnicodeDecodeError) as e:
-        abort(400, f'when reading {fp.filename}: {e}')
+def get_trees_from_nexus_or_newick(btext, name_newick):
+    """Return list of {'name': ..., 'newick': ...} extracted from btext."""
+    text = btext.decode('utf8').strip()
+
+    try:  # we first try to read it as a nexus file
+        trees = nexus.get_trees(text)
+        return [{'name': name, 'newick': nw} for name, nw in trees.items()]
+    except nexus.NexusError:  # if it isn't, we assume the text is a newick
+        return [{'name': name_newick, 'newick': text}]  # only one tree!
+
 
 
 def add_tree(data):
     "Add tree with given data and return its id"
     tid = int(data['id'])
     name = data['name']
-    newick = data.get('newick')
+    nw = data.get('newick')
     bpickle = data.get('b64pickle')
     layouts = data.get('layouts', [])
     if type(layouts) == str:
@@ -1323,8 +1361,8 @@ def add_tree(data):
 
     del_tree(tid)  # delete if there is a tree with same id
 
-    if newick is not None:
-        tree = load_tree_from_newick(tid, newick)
+    if nw is not None:
+        tree = load_tree_from_newick(tid, nw)
     elif bpickle is not None:
         tree = ete_format.loads(bpickle, unpack=True)
         gdn.standardize(tree)
@@ -1332,6 +1370,9 @@ def add_tree(data):
         tree = data.get('tree')
         if not tree:
             abort(400, 'Either Newick or Tree object has to be provided.')
+
+    # TODO: Do we need to do this? (Maybe for the trees uploaded with a POST)
+    # gdn.update_sizes_all(t)
 
     app_tree = app.trees[tid]
     app_tree.name = name
