@@ -1251,7 +1251,7 @@ cdef class Tree(object):
                 show_branch_length=True, show_branch_support=True,
                 include_props=None, exclude_props=None,
                 host='localhost', port=5000, quiet=True,
-                compress=False, daemon=True, open_browser=True):
+                compress=False, keep_server=False, open_browser=True):
         """Launch an interactive smartview session to visualize the tree.
 
         :param str name: Name used to store and refer to the tree.
@@ -1285,7 +1285,8 @@ cdef class Tree(object):
                       layouts=list(default_layouts + layouts),
                       include_props=include_props, exclude_props=exclude_props,
                       host=host, port=port, quiet=quiet,
-                      compress=compress, daemon=daemon, open_browser=open_browser)
+                      compress=compress, keep_server=keep_server,
+                      open_browser=open_browser)
 
     def copy(self, method="cpickle"):
         """.. versionadded: 2.1
