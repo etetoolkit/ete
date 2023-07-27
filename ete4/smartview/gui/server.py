@@ -34,7 +34,9 @@ import brotli
 
 from bottle import (
     get, post, put, redirect, static_file,
-    request, response, error, abort, HTTPError, run)
+    BaseRequest, request, response, error, abort, HTTPError, run)
+
+BaseRequest.MEMFILE_MAX = 50 * 1024 * 1024  # maximum upload size (in bytes)
 
 from ete4 import Tree
 from ete4.parser import newick
