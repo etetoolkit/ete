@@ -1583,7 +1583,7 @@ def initialize(tree=None, layouts=None,
 def run_smartview(tree=None, name=None, layouts=[],
                   include_props=None, exclude_props=None,
                   safe_mode=False, host='localhost', port=5000, quiet=True,
-                  compress=False, daemon=True):
+                  compress=False, daemon=True, open_browser=True):
     # Set tree_name to None if no tree was provided
     # Generate tree_name if none was provided
     name = name or (make_name() if tree else None)
@@ -1608,7 +1608,8 @@ def run_smartview(tree=None, name=None, layouts=[],
         tid = add_tree(tree_data)
         print(f'Added tree {name} with id {tid}.')
 
-    launch_browser(host, port)
+    if open_browser:
+        open_browser_window(host, port)
 
     if 'webserver' not in g_threads:
         thread_webserver = Thread(
@@ -1644,7 +1645,7 @@ def make_name():
     return f'tree-{n}'
 
 
-def launch_browser(host, port):
+def open_browser_window(host, port):
     """Try to open a browser window in a different process."""
     try:
         command = {'Linux': 'xdg-open', 'Darwin': 'open'}[platform.system()]
