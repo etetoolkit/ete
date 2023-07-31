@@ -24,8 +24,12 @@ div {
     margin: 0.5rem 0.2rem;
 }
 
-#div_info {
-    text-align: right;
+fieldset {
+    display: inline-block;
+}
+
+div#div_metadata {
+    display: none;
 }
 
 input, label, textarea {
@@ -54,9 +58,4 @@ kbd {  /* from https://developer.mozilla.org/en-US/docs/Web/HTML/Element/kbd */
     line-height: 1;
     padding: 2px 4px;
     white-space: nowrap;
-}
-
-
-#div_login, #div_upload {
-    display: none;  /* do not show the divs until we know which one to show */
 }

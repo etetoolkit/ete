@@ -37,7 +37,7 @@ const view = {
         key: "(dy, dx, name)",
         reverse: false,
     },
-    upload: () => window.location.href = "upload_tree.html",
+    upload: () => window.location.href = "upload.html",
     download: {
         newick: () => download_newick(),
         svg:    () => download_svg(),

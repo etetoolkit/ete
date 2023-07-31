@@ -1,17 +1,14 @@
 // Functions related to the interaction with the server, including html cleanup
 // and error handling.
 
-import { view } from "./gui.js";
-
-export { escape_html, hash, assert, api, api_post, api_put,
-         storage_get, storage_set, storage_remove };
+export { escape_html, hash, api, api_post, api_put };
 
 
 // API calls.
 
 // Make a GET api call and return the retrieved data.
-async function api(endpoint) {
-    const response = await fetch(view.path + endpoint);
+async function api(endpoint, path="") {
+    const response = await fetch(path + endpoint);
 
     await assert(response.status === 200, "Request failed :(", response);
 
@@ -19,8 +16,8 @@ async function api(endpoint) {
 }
 
 // Make a POST api call using the stored authentication.
-async function api_post(endpoint, data) {
-    const response = await fetch(view.path + endpoint, {
+async function api_post(endpoint, data, path="") {
+    const response = await fetch(path + endpoint, {
         method: "POST",
         body: data,
     });
@@ -32,8 +29,8 @@ async function api_post(endpoint, data) {
 
 
 // Make a PUT api call
-async function api_put(endpoint, params=undefined) {
-    const response = await fetch(view.path + endpoint, {
+async function api_put(endpoint, params=undefined, path="") {
+    const response = await fetch(path + endpoint, {
         method: "PUT",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify(params),
@@ -42,21 +39,6 @@ async function api_put(endpoint, params=undefined) {
     await assert(response.status === 200, "Modification failed :(", response);
 
     return await response.json();
-}
-
-
-// Convenience functions to get/set/remove an object from localStorage.
-
-function storage_get(name) {
-    return JSON.parse(localStorage.getItem(name));
-}
-
-function storage_set(name, data) {
-    return localStorage.setItem(name, JSON.stringify(data));
-}
-
-function storage_remove(name) {
-    localStorage.removeItem(name);
 }
 
 

@@ -1,17 +1,6 @@
-// Functions for upload_tree.html.
+// Functions for upload.html.
 
-import { escape_html, hash, assert, api_post } from "./api.js";
-
-
-document.addEventListener("DOMContentLoaded", on_load_page);
-
-
-// Setup.
-async function on_load_page() {
-
-    div_upload.style.display = "block";
-    radio_string.click();
-}
+import { escape_html, hash, api_post } from "./api.js";
 
 
 // Upload-related functions.
@@ -19,10 +8,18 @@ async function on_load_page() {
 // When the upload button is pressed.
 button_upload.addEventListener("click", async () => {
     try {
+        assert(input_name.value || !check_metadata.checked, "Missing name");
+
+        const name = check_metadata.checked ?
+              input_name.value : hash(Date.now().toString());
+
+        assert(!input_trees_file.disabled || !input_newick_string.disabled,
+            "You need to supply a newick string or select a file");
+
         const data = new FormData();
-        data.append("id", 0);
         data.append("name", name);
-        
+        data.append("id", "13");  // FIXME: this needs to make some sense...
+        data.append("internal", radio_name.checked ? "name" : "support");
         if (!input_newick_string.disabled)
             data.append("newick", input_newick_string.value.trim());
         else
@@ -41,10 +38,10 @@ button_upload.addEventListener("click", async () => {
 
 // Return the file containing the tree(s) as a newick or nexus.
 async function get_trees_file() {
-    await assert(input_trees_file.files.length > 0, "Missing file");
+    assert(input_trees_file.files.length > 0, "Missing file");
 
     const size_MB = input_trees_file.files[0].size / 1e6;
-    await assert (size_MB < 30,
+    assert (size_MB < 30,
         `Sorry, the file is too big<br>` +
         `(${size_MB.toFixed(1)} MB, the maximum is 30 MB)`);
 
@@ -60,19 +57,17 @@ function show_uploaded_trees(resp) {
         `tree=${encodeURIComponent(name)}">${escape_html(name)}</a>`;
 
     if (names.length >= 1)
-        window.location.href = "gui.html?tree=" + encodeURIComponent(names[0])
-
-        // Swal.fire({
-        //     title: "Uploading Successful",
-        //     html: "Added trees: " + names.map(link).join(", "),
-        //     icon: "success",
-        //     confirmButtonText: "Explore" + (names.length > 1 ? " the first" : ""),
-        //     showCancelButton: true,
-        // }).then(result => {
-        //     if (result.isConfirmed)
-        //         window.location.href =
-        //             "gui.html?tree=" + encodeURIComponent(names[0]);
-        // });
+        Swal.fire({
+            title: "Uploading Successful",
+            html: "Added trees: " + names.map(link).join(", "),
+            icon: "success",
+            confirmButtonText: "Explore" + (names.length > 1 ? " the first" : ""),
+            showCancelButton: true,
+        }).then(result => {
+            if (result.isConfirmed)
+                window.location.href =
+                    "gui.html?tree=" + encodeURIComponent(names[0]);
+        });
     else
         Swal.fire({html: "Could not find any tree in file.", icon: "warning"});
 }
@@ -101,3 +96,14 @@ radio_string.addEventListener("click", () => {
     input_trees_file.disabled = true;
 });
 
+check_metadata.addEventListener("change", () => {
+    div_metadata.style.display = check_metadata.checked ? "block" : "none";
+});
+
+
+// Error handling.
+
+function assert(condition, message) {
+    if (!condition)
+        throw new Error(message);
+}
