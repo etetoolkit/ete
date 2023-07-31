@@ -132,5 +132,5 @@ class Phyml(TreeTask):
                       open(stats_file).read())
         lk = float(m.groups()[0])
         stats = {"lk": lk}
-        tree = PhyloTree(tree_file)
+        tree = PhyloTree(open(tree_file))
         TreeTask.store_data(self, tree.write(), stats)

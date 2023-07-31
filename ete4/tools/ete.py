@@ -5,9 +5,6 @@ import os
 import errno
 
 TOOLSPATH = os.path.realpath(os.path.split(os.path.realpath(__file__))[0])
-#sys.path.insert(0, TOOLSPATH)
-#sys.path.insert(1, TOOLSPATH.replace("ete3/tools", ''))
-#print sys.path
 
 import argparse
 from . import (ete_split, ete_expand, ete_annotate, ete_ncbiquery, ete_view,
@@ -101,7 +98,7 @@ def _main(arguments):
             ete_path = which("ete4")
 
             if ete_path:
-                builtin_apps_path = os.path.join(os.path.split(ete_path)[0], "ete3_apps/bin")
+                builtin_apps_path = os.path.join(os.path.split(ete_path)[0], "ete4_apps/bin")
             ete_build._main(arguments, builtin_apps_path)
 
             return

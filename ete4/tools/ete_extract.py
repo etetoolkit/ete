@@ -17,8 +17,8 @@ def populate_args(extract_args_p):
 
 def run(args):
     from .. import Tree, PhyloTree
-    for nw in src_tree_iterator(args):
+    for ftree in src_tree_iterator(args):
         if args.orthologs is not None:
-            t = PhyloTree(nw)
+            t = PhyloTree(open(ftree))
             for e in t.get_descendant_evol_events():
                 print(e.in_seqs, e.out_seqs)

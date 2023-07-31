@@ -53,8 +53,8 @@ def populate_args(mod_args_p):
 def run(args):
     from .. import Tree
 
-    for nw in src_tree_iterator(args):
-        t = Tree(nw)
+    for ftree in src_tree_iterator(args):
+        t = Tree(open(ftree))
         mod_tree(t, args)
         dump(t)
 

@@ -13,14 +13,14 @@ def run(args):
     from .. import Tree, PhyloTree
 
     features = set()
-    for nw in src_tree_iterator(args):
+    for ftree in src_tree_iterator(args):
         if args.ncbi:
-            tree = PhyloTree(nw)
+            tree = PhyloTree(open(ftree))
             features.update(["taxid", "name", "rank", "bgcolor", "sci_name",
                              "collapse_subspecies", "named_lineage", "lineage"])
             tree.annotate_ncbi_taxa(args.taxid_attr)
         else:
-            tree = Tree(nw)
+            tree = Tree(open(ftree))
 
         type2cast = {"str":str, "int":int, "float":float, "set":set, "list":list}
 

@@ -96,7 +96,7 @@ class Prottest(ModelTesterTask):
                                          self.alg_basename+"_phyml_tree.txt")
                 stats_file = os.path.join(j.jobdir,
                                           self.alg_basename+"_phyml_stats.txt")
-                tree = PhyloTree(tree_file)
+                tree = PhyloTree(open(tree_file))
                 m = re.search('Log-likelihood:\s+(-?\d+\.\d+)',
                               open(stats_file).read())
                 lk = float(m.groups()[0])

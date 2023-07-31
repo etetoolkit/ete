@@ -30,5 +30,6 @@ def run(args):
     except StopIteration:
         run_smartview()
     else:
-        t = PhyloTree(tfile, format=args.src_newick_format)
-        t.explore(tree_name=tfile)
+        t = PhyloTree(open(tfile), parser=args.src_newick_format)
+        t.explore(name=tfile)
+        input('Running ete explorer. Press enter to finish the session.\n')

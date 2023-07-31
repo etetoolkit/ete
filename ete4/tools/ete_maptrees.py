@@ -137,7 +137,7 @@ def run(args):
         tree_class = Tree
 
     for rtree_nw in ref_tree_iterator(args):
-        rtree = tree_class(rtree_nw, format=args.src_newick_format)
+        rtree = tree_class(open(rtree_nw), parser=args.src_newick_format)
 
         # Parses attrs if necessary
         ref_tree_attr = args.ref_tree_attr
@@ -161,7 +161,7 @@ def run(args):
             sys.stderr.flush()
             refnode2matches = defaultdict(list)
 
-            stree = tree_class(stree_name, format=args.ref_newick_format)
+            stree = tree_class(open(stree_name), parser=args.ref_newick_format)
             # Parses attrs if necessary
             src_tree_attr = args.src_tree_attr
             if args.src_attr_parser:
@@ -230,9 +230,9 @@ def run(args):
             if refnode2matches:
                 print('# %s\t%s' %("refbranch", "match"))
                 for refbranch in rtree.traverse():
-                    ref_nw = rbranch.write(format=9)
+                    ref_nw = rbranch.write(parser=9)
                     for m in refnode2matches.get(refbranch, []):
-                        print('\t'.join([ref_nw, m.write(format=9)]))
+                        print('\t'.join([ref_nw, m.write(parser=9)]))
 
         data = []
         header=["ref branch", "data trees", "matches", "support (%)", "treeko matches", "treeko support (%)", "visited_trees", "duplications", "dup/tree", "dup/tree dev."]
@@ -269,7 +269,7 @@ def run(args):
                 maptrees_visited = trees_visited,
                 maptrees_dup_rate = dup_rate)
 
-            data.append([node.write(format=9),
+            data.append([node.write(parser=9),
                          #str(node),
                          total,
                          observed,

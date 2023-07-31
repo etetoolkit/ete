@@ -165,12 +165,12 @@ def run(args):
             #print tfile
             if args.raxml:
                 nw = re.sub(":(\d+\.\d+)\[(\d+)\]", ":\\1[&&NHX:support=\\2]", open(tfile).read())
-                t = Tree(nw, format=args.src_newick_format)
+                t = Tree(nw, parser=args.src_newick_format)
             else:
-                t = Tree(tfile, format=args.src_newick_format)
+                t = Tree(open(tfile), parser=args.src_newick_format)
 
-            print(t.get_ascii(show_internal=args.show_internal_names,
-                              properties=args.show_attributes))
+            print(t.to_str(show_internal=args.show_internal_names,
+                           props=args.show_attributes))
         return
 
     global FACES
@@ -231,9 +231,9 @@ def run(args):
         #print tfile
         if args.raxml:
             nw = re.sub(":(\d+\.\d+)\[(\d+)\]", ":\\1[&&NHX:support=\\2]", open(tfile).read())
-            t = PhyloTree(nw, format=args.src_newick_format)
+            t = PhyloTree(nw, parser=args.src_newick_format)
         else:
-            t = PhyloTree(tfile, format=args.src_newick_format)
+            t = PhyloTree(open(tfile), parser=args.src_newick_format)
 
 
         if args.alg:

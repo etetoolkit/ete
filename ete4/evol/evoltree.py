@@ -77,7 +77,7 @@ class EvolNode(PhyloNode):
     """
 
     def __init__(self, newick=None, alignment=None, alg_format="fasta",
-                 sp_naming_function=_parse_species, format=0,
+                 sp_naming_function=_parse_species, parser=0,
                  binpath='', **kwargs):
         '''
         freebranch: path to find codeml output of freebranch model.
@@ -92,7 +92,7 @@ class EvolNode(PhyloNode):
         self._models = {}
         self.__gui_mark_mode = False
 
-        PhyloNode.__init__(self, newick=newick, format=format,
+        PhyloNode.__init__(self, newick=newick, parser=parser,
                            sp_naming_function=sp_naming_function, **kwargs)
 
         if newick:
@@ -126,9 +126,9 @@ class EvolNode(PhyloNode):
         '''
         nid = 1
         # check we do not have dupplicated names in tree
-        if (len(self)) != len(set(self.get_leaf_names())):
-            duplis = [n for n in self.get_leaf_names(
-            ) if self.get_leaf_names().count(n) > 1]
+        if (len(self)) != len(set(self.leaf_names())):
+            duplis = [n for n in self.leaf_names(
+            ) if self.leaf_names().count(n) > 1]
             raise Exception('EvolTree require unique names for leaves', duplis)
         # put ids
         for leaf in sorted(self, key=lambda x: x.name):

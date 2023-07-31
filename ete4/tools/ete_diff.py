@@ -772,8 +772,8 @@ def show_difftable_topo(difftable, attr1, attr2, usecolor=False, extended=None):
     total_dist = 0
     for dist, b_dist, side1, side2, diff, n1, n2 in sorted(difftable, reverse=True):
         total_dist += dist
-        n1 = Tree(n1.write(properties=[attr1]))
-        n2 = Tree(n2.write(properties=[attr2]))
+        n1 = Tree(n1.write(props=[attr1]))
+        n2 = Tree(n2.write(props=[attr2]))
         n1.ladderize()
         n2.ladderize()
         for leaf in n1.leaves():
@@ -1128,8 +1128,8 @@ def run(args):
         if args.ref_trees and args.src_trees:
             rtree = args.ref_trees[0]
             ttree = args.src_trees[0]
-            t1 = Tree(rtree,format=args.ref_newick_format)
-            t2 = Tree(ttree,format=args.src_newick_format)
+            t1 = Tree(open(rtree), parser=args.ref_newick_format)
+            t2 = Tree(open(ttree), parser=args.src_newick_format)
 
         elif args.rmatrix and args.tmatrix:
             sepdict = {'tsv' : "\t", "csv" : ","}

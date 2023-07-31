@@ -399,7 +399,7 @@ def remove_duplicated_marks(nodes, marks, tree):
     for bad in bads[::-1]:
         warn('WARNING: removing duplicated mark %s' % (
             ' '.join(['%s%s' % (
-                tree.get_descendant_by_node_id(nodes[bad][n]).write(format=9),
+                tree.get_descendant_by_node_id(nodes[bad][n]).write(parser=9),
                 marks[bad][n])
                       for n in range(len(nodes[bad]))])))
         del(marks[bad])
@@ -808,7 +808,7 @@ def run(args):
         except TypeError:
             args.models = ['XX.' + os.path.split(args.config_file)[1]]
     for nw in args.src_tree_iterator:
-        tree = EvolTree(reformat_nw(nw), format=1)
+        tree = EvolTree(reformat_nw(nw), parser=1)
         if args.clear_tree:
             nodes, marks = [], []
         else:

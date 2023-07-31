@@ -69,5 +69,5 @@ class FastTree(TreeTask):
 
     def finish(self):
         job = self.jobs[-1]
-        t = Tree(job.stdout_file)
+        t = Tree(open(job.stdout_file))
         TreeTask.store_data(self, t.write(), {})
