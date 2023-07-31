@@ -27,12 +27,13 @@ setup(
               'ete4/tools',
               'ete4/treematcher',
               'ete4/treeview'],
-    entry_points = {'console_scripts': ['ete4 = ete4.tools.ete:main']},
+    entry_points = {'console_scripts':
+                    ['ete4 = ete4.tools.ete:main']},
     ext_modules=cythonize([
         'ete4/coretype/tree.pyx',
         'ete4/parser/newick.pyx',
         'ete4/smartview/renderer/gardening.pyx',
-        'ete4/smartview/renderer/face_positions.pyx'], language_level='3'),
+        'ete4/smartview/renderer/face_positions.pyx']),
     data_files=[
         ('share/ete4/static',
          [x for x in glob('ete4/smartview/gui/static/**',
