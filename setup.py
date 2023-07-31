@@ -27,6 +27,7 @@ setup(
               'ete4/tools',
               'ete4/treematcher',
               'ete4/treeview'],
+    entry_points = {'console_scripts': ['ete4 = ete4.tools.ete:main']},
     ext_modules=cythonize([
         'ete4/coretype/tree.pyx',
         'ete4/parser/newick.pyx',
