@@ -5,8 +5,8 @@ CPUS = min(20, max(1, multiprocessing.cpu_count()-1))
 
 import unittest
 
-from ...tools import ete
-from ... import Tree, SeqGroup
+from ete4.tools import ete
+from ete4 import Tree, SeqGroup
 
 DIR = os.path.split(os.path.abspath(__file__))[0]
 
@@ -31,5 +31,6 @@ class Test_ete_build_genetree(unittest.TestCase):
                 for _tester in testers:
                     for _builder in builders:
                         pass
+
 if __name__ == "__main__":
     unittest.main()
