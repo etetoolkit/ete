@@ -2,7 +2,7 @@ from .faces import TextFace
 from .draw_helpers import summary, Padding
 
 
-class TreeLayout():
+class TreeLayout:
     def __init__(self, name, ts=None, ns=None, aligned_faces=False,
                  active=True, legend=True):
         self.name = name
