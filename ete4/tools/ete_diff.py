@@ -95,8 +95,8 @@ def EUCL_DIST_B(a,b,support,attr1,attr2):
     '''
 
 
-    dist_a = sum([descendant.dist for descendant in a[0].leaves() if getattr(descendant,attr1) in(a[1] - b[1])]) / len([i for i in a[0].leaves()])
-    dist_b = sum([descendant.dist for descendant in b[0].leaves() if getattr(descendant,attr2) in(b[1] - a[1])]) / len([i for i in b[0].leaves()])
+    dist_a = sum([descendant.dist for descendant in a[0].leaves() if descendant.props[attr1] in(a[1] - b[1])]) / len([i for i in a[0].leaves()])
+    dist_b = sum([descendant.dist for descendant in b[0].leaves() if descendant.props[attr2] in(b[1] - a[1])]) / len([i for i in b[0].leaves()])
 
     return 1 - ((float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)) / 2
 
@@ -159,7 +159,7 @@ def EUCL_DIST_B_FULL(a,b,support,attr1,attr2):
                 else:
                     length += movingnode.dist
                 movingnode = movingnode.up
-            leave_branches.add((getattr(n,attr),length/nodes))
+            leave_branches.add((n.props[attr],length/nodes))
 
         return leave_branches
 
@@ -388,7 +388,7 @@ def be_distance(t1,t2,support, attr1,attr2):
                 else:
                     length += movingnode.dist
                 movingnode = movingnode.up
-            leave_branches.add((getattr(n,attr),length))
+            leave_branches.add((n.props[attr],length))
 
         return leave_branches
 
@@ -421,7 +421,7 @@ def cc_distance(t1,t2,support,attr1,attr2):
     def cophenetic_compared_matrix(t_source,t_compare,attr1,attr2,support):
 
         leaves = list(t_source.leaves())
-        paths = {getattr(x,attr1): set() for x in leaves}
+        paths = {x.props[attr1]: set() for x in leaves}
 
         # get the paths going up the tree
         # we get all the nodes up to the last one and store them in a set
@@ -431,12 +431,12 @@ def cc_distance(t1,t2,support,attr1,attr2):
                 continue
             movingnode = n
             while not movingnode.is_root:
-                paths[getattr(n,attr1)].add(movingnode)
+                paths[n.props[attr1]].add(movingnode)
                 movingnode = movingnode.up
 
         # We set the paths for leaves not in the source tree as empty to indicate they are non-existent
 
-        for i in (set(getattr(x,attr2) for x in t_compare.leaves()) - set(getattr(x,attr1) for x in t_source.leaves())):
+        for i in (set(x.props[attr2] for x in t_compare.leaves()) - set(x.props[attr1] for x in t_source.leaves())):
             paths[i] = set()
 
         # now we want to get all pairs of nodes using itertools combinations. We need AB AC etc but don't need BA CA
@@ -777,13 +777,13 @@ def show_difftable_topo(difftable, attr1, attr2, usecolor=False, extended=None):
         n1.ladderize()
         n2.ladderize()
         for leaf in n1.leaves():
-            leaf.name = getattr(leaf, attr1)
+            leaf.name = leaf.props[attr1]
             if leaf.name in diff:
                 leaf.name += " ***"
                 if usecolor:
                     leaf.name = color(leaf.name, "red")
         for leaf in n2.leaves():
-            leaf.name = getattr(leaf, attr2)
+            leaf.name = leaf.props[attr2]
             if leaf.name in diff:
                 leaf.name += " ***"
                 if usecolor:
@@ -1144,8 +1144,8 @@ def run(args):
 
         if args.ncbi:
 
-            taxids = set([getattr(leaf, rattr) for leaf in t1.leaves()])
-            taxids.update([getattr(leaf, tattr) for leaf in t2.leaves()])
+            taxids = set([leaf.props[rattr] for leaf in t1.leaves()])
+            taxids.update([leaf.props[tattr] for leaf in t2.leaves()])
             taxid2name = ncbi.get_taxid_translator(taxids)
             for leaf in list(t1.leaves()) + list(t2.leaves()):
                 try:

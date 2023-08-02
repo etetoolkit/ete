@@ -1971,8 +1971,8 @@ cdef class Tree(object):
             # and avoid unnecessary traversing.
             common = self.common_ancestor(targets)
             observed = n2leaves[common]
-            foreign_leaves = set([leaf for leaf in observed
-                              if getattr(leaf, target_attr) not in values])
+            foreign_leaves = set(leaf for leaf in observed
+                                 if leaf.props[target_attr] not in values)
 
         if not foreign_leaves:
             return True, "monophyletic", foreign_leaves
