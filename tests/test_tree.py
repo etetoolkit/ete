@@ -1066,7 +1066,8 @@ class Test_Coretype_Tree(unittest.TestCase):
     #     self.assertEqual(_astuple(s3.compare(ref1)),
     #                      (1.0, 8, 8, 0.0, 0.0, 6, 1, "NA"))
 
-    def test_tree_diff(self):
+    # TODO: Merge this function with the previous one? (test_tree_compare())
+    def test_robinson_foulds_and_more(self):
         # this is the result of 100 Ktreedist runs on random trees, using rooted
         # and unrooted topologies. ETE should provide the same RF result
         samples = [
