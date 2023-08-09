@@ -30,7 +30,7 @@ classifiers = [
   "Topic :: Scientific/Engineering :: Visualization",
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-dependencies = ["bottle", "brotli", "numpy", "pyqt5"]
+dependencies = ["bottle", "brotli", "numpy"]
 
 [project.urls]
 "Homepage" = "https://etetoolkit.org"
