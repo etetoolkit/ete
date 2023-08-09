@@ -1,6 +1,6 @@
 from ..treelayout import TreeLayout
 from ..faces import TextFace, RectFace, ScaleFace
-from ....treeview.svg_colors import random_color
+from ..svg_colors import random_color
 
 from ...utils import InvalidUsage
 
