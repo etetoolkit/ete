@@ -1628,7 +1628,8 @@ def maintenance(app, check_interval=60, max_time=30*60):
         for tid in tids:
             inactivity_time = time() - app.trees[tid].timer
             if inactivity_time > max_time:
-                del_tree(tid)
+                #del_tree(tid)  # TODO: do del the tree, but also recover!
+                pass
 
         sleep(check_interval)
 
