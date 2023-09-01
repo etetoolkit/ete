@@ -1153,10 +1153,10 @@ def get_search_function(text):
     "Return a function of a node that returns True for the searched nodes"
     if text.startswith('/'):
         return get_command_search(text)  # command-based search
-    elif text == text.lower():
-        return lambda node: text in node.name.lower()  # case-insensitive search
-    else:
-        return lambda node: text in node.name  # case-sensitive search
+    elif text == text.lower():  # case-insensitive search
+        return lambda node: node.name and text in node.name.lower()
+    else:  # case-sensitive search
+        return lambda node: node.name and text in node.name
 
 
 def get_command_search(text):
@@ -1169,7 +1169,7 @@ def get_command_search(text):
 
     command, arg = parts
     if command == '/r':  # regex search
-        return lambda node: re.search(arg, node.name)
+        return lambda node: node.name and re.search(arg, node.name)
     elif command == '/e':  # eval expression
         return get_eval_search(arg)
     elif command == '/t':  # topological search
