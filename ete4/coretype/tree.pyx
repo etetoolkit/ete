@@ -864,6 +864,19 @@ cdef class Tree(object):
                    for key, value in conditions.items()):
                 yield n
 
+    def search_descendants(self, **conditions):
+        """Yield descendant nodes matching the given conditions."""
+        for n in self.search_nodes(**conditions):
+            if n is not self:
+                yield n
+
+    def search_ancestors(self, **conditions):
+        """Yield ancestor nodes matching the given conditions."""
+        for n in self.ancestors():
+            if all(n.props.get(key) == value or getattr(n, key, None) == value
+                   for key, value in conditions.items()):
+                yield n
+
     def get_leaves_by_name(self, name):
         """Return a list of leaf nodes matching the given name."""
         return self.search_nodes(name=name, children=[])
