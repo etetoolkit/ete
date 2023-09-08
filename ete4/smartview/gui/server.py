@@ -516,6 +516,7 @@ def callback(tree_id):
 
     node_id = req_json()
     tree.tree.set_outgroup(tree.tree[node_id])
+    gdn.update_sizes_all(tree.tree)
     return {'message': 'ok'}
 
 @put('/trees/<tree_id>/move')
