@@ -169,11 +169,11 @@ create_env_qt4() {
     #     echo >&2 "### Using existing conda environment test_${VERSION}."
     #     return 0
     # fi
-    
+
     clr_green ">>> Creating test environment for version ${VERSION}... "
 
     run "${CONDA}/bin/conda env remove -y -n test_${VERSION} || true"
-    run "${CONDA}/bin/conda create -q -y -n test_${VERSION} python=${VERSION} pip=10 pyqt=4 qt=4 numpy=1.16.4 six lxml coverage scikit-bio biopython=1.74 scipy=1.2.1"
+    run "${CONDA}/bin/conda create -q -y -n test_${VERSION} python=${VERSION} pip=10 pyqt=4 qt=4 numpy=1.16.4 lxml coverage scikit-bio biopython=1.74 scipy=1.2.1"
     clr_green "DONE"
 }
 
@@ -184,25 +184,16 @@ create_env() {
     #     echo >&2 "### Using existing conda environment test_${VERSION}."
     #     return 0
     # fi
-    
+
     clr_green ">>> Creating test environment for version ${VERSION}... "
     run "${CONDA}/bin/conda env remove -y -n test_${VERSION} || true"
-    run "${CONDA}/bin/conda create -q -y -n test_${VERSION} python=${VERSION} pyqt numpy six lxml coverage scikit-bio biopython scipy"
+    run "${CONDA}/bin/conda create -q -y -n test_${VERSION} python=${VERSION} pyqt numpy lxml coverage scikit-bio biopython scipy"
     clr_green "DONE"
 
     # clr_green ">>> Updating conda packages in environment test_${VERSION}... "
     # run "source ${CONDA}/bin/activate test_${VERSION} 2>&1 && ${CONDA}/bin/conda update -y --all 2>&1 | tee -a ${LOG}"
     # handle_error "$?" "ERROR: Failed to update packages in the conda environment" "$update_conda_output"
     # clr_green "DONE"
-}
-
-create_env_27() {
-    
-    clr_green ">>> Creating test environment for version ${VERSION}... "
-    run "${CONDA}/bin/conda env remove -y -n test_${VERSION} || true"
-
-    run "${CONDA}/bin/conda create -q -y -n test_${VERSION} python=${VERSION} pyqt qt numpy six lxml coverage scikit-bio biopython scipy -c conda-forge"
-    clr_green "DONE"
 }
 
 install_external_apps() {
@@ -302,7 +293,7 @@ while true; do
             shift
             EXTERNAL_APPS=1
             ;;
-        --setup-only) # setup/install only 
+        --setup-only) # setup/install only
             shift
             TEST=0
             ;;
@@ -310,7 +301,7 @@ while true; do
             shift
             SETUP=0
             ;;
-        --qt4) # qt4 
+        --qt4) # qt4
             shift
             QT4=1
             ;;
@@ -352,11 +343,11 @@ else
 fi
 
 if [ "${SETUP}" == "1" ]; then
-    
+
     if [ "$QT4" == "1" ]; then
         setup_miniconda3
         create_env_qt4
-    elif [ "$VERSION" == "2.7" ]; then        
+    elif [ "$VERSION" == "2.7" ]; then
         setup_miniconda2
         create_env_27
     else
@@ -371,5 +362,3 @@ if [ "${TEST}" == "1" ]; then
     run_tests
 fi
 showlog
-
-

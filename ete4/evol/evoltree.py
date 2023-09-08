@@ -14,7 +14,6 @@ from .. import PhyloNode, SeqGroup
 from warnings import warn
 import sys
 import os
-from six.moves import map
 
 __author__ = "Francois-Jose Serra"
 __email__ = "francois@barrabin.org"
