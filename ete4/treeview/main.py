@@ -123,61 +123,44 @@ class _ActionDelegator(object):
         self._delegate = None
 
 class NodeStyle(dict):
-    """
-    .. versionadded:: 2.1
-
-    .. currentmodule:: ete3
-
-    A dictionary with all valid node graphical attributes.
-
-    :argument #0030c1 fgcolor: RGB code or name in :data:`SVG_COLORS`
-    :argument #FFFFFF bgcolor: RGB code or name in :data:`SVG_COLORS`
-    :argument #FFFFFF node_bgcolor: RGB code or name in :data:`SVG_COLORS`
-    :argument #FFFFFF partition_bgcolor: RGB code or name in :data:`SVG_COLORS`
-    :argument #FFFFFF faces_bgcolor: RGB code or name in :data:`SVG_COLORS`
-    :argument #000000 vt_line_color: RGB code or name in :data:`SVG_COLORS`
-    :argument #000000 hz_line_color: RGB code or name in :data:`SVG_COLORS`
-    :argument 0 hz_line_type: integer number
-    :argument 0 vt_line_type: integer number
-    :argument 3 size: integer number
-    :argument "circle" shape: "circle", "square" or "sphere"
-    :argument True draw_descendants: Mark an internal node as a leaf.
-
-    :argument 0 hz_line_width: integer number representing the width
-                               of the line in pixels.  A line width of
-                               zero indicates a cosmetic pen. This
-                               means that the pen width is always
-                               drawn one pixel wide, independent of
-                               the transformation set on the painter.
-
-    :argument 0 vt_line_width: integer number representing the width
-                               of the line in pixels.  A line width of
-                               zero indicates a cosmetic pen. This
-                               means that the pen width is always
-                               drawn one pixel wide, independent of
-                               the transformation set on the painter.
-
-    """
+    """A dictionary with all valid node graphical attributes."""
 
     def __init__(self, *args, **kargs):
-        super(NodeStyle, self).__init__(*args, **kargs)
+        """NodeStyle constructor.
+
+        :param #0030c1 fgcolor: RGB code or name in :data:`SVG_COLORS`
+        :param #FFFFFF bgcolor: RGB code or name in :data:`SVG_COLORS`
+        :param #FFFFFF node_bgcolor: RGB code or name in :data:`SVG_COLORS`
+        :param #FFFFFF partition_bgcolor: RGB code or name in :data:`SVG_COLORS`
+        :param #FFFFFF faces_bgcolor: RGB code or name in :data:`SVG_COLORS`
+        :param #000000 vt_line_color: RGB code or name in :data:`SVG_COLORS`
+        :param #000000 hz_line_color: RGB code or name in :data:`SVG_COLORS`
+        :param 0 hz_line_type: integer number
+        :param 0 vt_line_type: integer number
+        :param 3 size: integer number
+        :param "circle" shape: "circle", "square" or "sphere"
+        :param True draw_descendants: Mark an internal node as a leaf.
+        :param 0 hz_line_width: Integer number representing the
+            width of the line in pixels. A line width of zero
+            indicates a cosmetic pen. This means that the pen width is
+            always drawn one pixel wide, independent of the
+            transformation set on the painter.
+        :param 0 vt_line_width: Integer number representing the
+            width of the line in pixels. A line width of zero
+            indicates a cosmetic pen. This means that the pen width is
+            always drawn one pixel wide, independent of the
+            transformation set on the painter.
+        """
+        super().__init__(*args, **kargs)
         self.init()
-        #self._block_adding_faces = False
 
     def init(self):
         for key, dvalue, checker in NODE_STYLE_DEFAULT:
             if key not in self:
                 self[key] = dvalue
             elif not checker(self[key]):
-                raise ValueError("'%s' attribute in node style has not a valid value: %s" %\
-                                     (key, self[key]))
-    #
-    #    #super(NodeStyle, self).__setitem__("_faces", {})
-    #    # copy fixed faces to the faces dict that will be drawn
-    #    #for pos, values in self["faces"].iteritems():
-    #    #    for col, faces in values.iteritems():
-    #    #        self["_faces"].setdefault(pos, {})
-    #    #        self["_faces"][pos][col] = list(faces)
+                raise ValueError("'%s' attribute in node style has not a valid value: %s" %
+                                 (key, self[key]))
 
     def __setitem__(self, i, v):
         # keeps compatible with ETE 2.0 version
@@ -202,10 +185,8 @@ class NodeStyle(dict):
         if i not in VALID_NODE_STYLE_KEYS:
             raise ValueError("'%s' is not a valid keyword for a NodeStyle instance" %i)
 
-        super(NodeStyle, self).__setitem__(i, v)
+        super().__setitem__(i, v)
 
-    #def clear(self):
-    #    super(NodeStyle, self).__setitem__("_faces", {})
 
 class TreeStyle(object):
     """.. versionadded:: 2.1
