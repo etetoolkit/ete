@@ -510,71 +510,49 @@ cdef class Tree(object):
 
         Examples::
 
-            t1 = Tree('(((((A,B)C)D,E)F,G)H,(I,J)K)root;', format=1)
-            t1.prune(['A', 'B'])
+          t = Tree('(((((A,B)C)D,E)F,G)H,(I,J)K)root;')
+          print(t.to_str(props=['name']))
+          #                       ╭╴A
+          #               ╭╴D╶╌╴C╶┤
+          #           ╭╴F╶┤       ╰╴B
+          #           │   │
+          #       ╭╴H╶┤   ╰╴E
+          #       │   │
+          # ╴root╶┤   ╰╴G
+          #       │
+          #       │   ╭╴I
+          #       ╰╴K╶┤
+          #           ╰╴J
 
+          t1 = t.copy()
+          t1.prune(['A', 'B'])
+          print(t1.to_str(props=['name']))
+          #       ╭╴A
+          # ╴root╶┤
+          #       ╰╴B
 
-            #                /-A
-            #          /D /C|
-            #       /F|      \-B
-            #      |  |
-            #    /H|   \-E
-            #   |  |                        /-A
-            #-root  \-G                 -root
-            #   |                           \-B
-            #   |   /-I
-            #    \K|
-            #       \-J
+          t2 = t.copy()
+          t2.prune(['A', 'B', 'C'])
+          print(t2.to_str(props=['name']))
+          #           ╭╴A
+          # ╴root╶╌╴C╶┤
+          #           ╰╴B
 
+          t3 = t.copy()
+          t3.prune(['A', 'B', 'I'])
+          print(t3.to_str(props=['name']))
+          #           ╭╴A
+          #       ╭╴C╶┤
+          # ╴root╶┤   ╰╴B
+          #       │
+          #       ╰╴I
 
-
-            t1 = Tree('(((((A,B)C)D,E)F,G)H,(I,J)K)root;', format=1)
-            t1.prune(['A', 'B', 'C'])
-
-            #                /-A
-            #          /D /C|
-            #       /F|      \-B
-            #      |  |
-            #    /H|   \-E
-            #   |  |                              /-A
-            #-root  \-G                  -root- C|
-            #   |                                 \-B
-            #   |   /-I
-            #    \K|
-            #       \-J
-
-
-
-            t1 = Tree('(((((A,B)C)D,E)F,G)H,(I,J)K)root;', format=1)
-            t1.prune(['A', 'B', 'I'])
-
-
-            #                /-A
-            #          /D /C|
-            #       /F|      \-B
-            #      |  |
-            #    /H|   \-E                    /-I
-            #   |  |                      -root
-            #-root  \-G                      |   /-A
-            #   |                             \C|
-            #   |   /-I                          \-B
-            #    \K|
-            #       \-J
-
-            t1 = Tree('(((((A,B)C)D,E)F,G)H,(I,J)K)root;', format=1)
-            t1.prune(['A', 'B', 'F', 'H'])
-
-            #                /-A
-            #          /D /C|
-            #       /F|      \-B
-            #      |  |
-            #    /H|   \-E
-            #   |  |                              /-A
-            #-root  \-G                -root-H /F|
-            #   |                                 \-B
-            #   |   /-I
-            #    \K|
-            #       \-J
+          t4 = t.copy()
+          t4.prune(['A', 'B', 'F', 'H'])
+          print(t4.to_str(props=['name']))
+          #               ╭╴A
+          # ╴root╶╌╴H╶╌╴F╶┤
+          #               ╰╴B
         """
         def cmp_nodes(x, y):
             # if several nodes are in the same path of two kept nodes,
@@ -1192,18 +1170,16 @@ cdef class Tree(object):
             outgroup2.support = outgroup.support
 
     def unroot(self, mode='legacy'):
-        """
-        Unroots current node. This function is expected to be used on
-        the absolute tree root node, but it can be also be applied to
-        any other internal node. It will convert a split into a
-        multifurcation.
+        """Unroot current node.
 
-        :argument "legacy" mode: The value can be "legacy" or "keep".
-        If value is "keep", then function keeps the distance between
-        the leaves by adding the distance associated to the deleted
-        edge to the remaining edge. In the other case the distance
-        value of the deleted edge is dropped
+        This function is expected to be used on the absolute tree root
+        node, but it can be also be applied to any other internal
+        node. It will convert a split into a multifurcation.
 
+        :param mode: The value can be "legacy" or "keep". If value is
+            "keep", it keeps the distance between the leaves by adding
+            the distance associated to the deleted edge to the
+            remaining edge. Otherwise that distance is just dropped.
         """
         if not (mode == 'legacy' or mode == 'keep'):
             raise ValueError("The value of the mode parameter must be 'legacy' or 'keep'")
@@ -1219,13 +1195,8 @@ cdef class Tree(object):
             else:
                 raise TreeError("Cannot unroot a tree with only two leaves")
 
-
     def show(self, layout=None, tree_style=None, name="ETE"):
-        """
-        Starts an interactive session to visualize current node
-        structure using provided layout and TreeStyle.
-
-        """
+        """Start an interactive session to visualize the current node."""
         from ..treeview import drawer
         drawer.show_tree(self, layout=layout,
                          tree_style=tree_style, win_name=name)
@@ -1302,34 +1273,28 @@ cdef class Tree(object):
                       open_browser=open_browser)
 
     def copy(self, method="cpickle"):
-        """.. versionadded: 2.1
+        """Return a copy of the current node.
 
-        Returns a copy of the current node.
+        :param method: Protocol used to copy the node structure.
 
-        :var cpickle method: Protocol used to copy the node
-        structure. The following values are accepted:
+        The following values are accepted for the method:
 
-           - "newick": Tree topology, node names, branch lengths and
-             branch support values will be copied by as represented in
-             the newick string (copy by newick string serialisation).
-
-           - "newick-extended": Tree topology and all node properties
-             will be copied based on the extended newick format
-             representation. Only node properties will be copied, thus
-             excluding other node attributes. As this method is also
-             based on newick serialisation, properties will be converted
-             into text strings when making the copy.
-
-           - "cpickle": The whole node structure and its content is
-             cloned based on cPickle object serialisation (slower, but
-             recommended for full tree copying)
-
-           - "deepcopy": The whole node structure and its content is
-             copied based on the standard "copy" Python functionality
-             (this is the slowest method but it allows to copy complex
-             objects even if attributes point to lambda functions,
-             etc.)
-
+        - "newick": Tree topology, node names, branch lengths and
+           branch support values will be copied by as represented in
+           the newick string (copy by newick string serialisation).
+        - "newick-extended": Tree topology and all node properties
+           will be copied based on the extended newick format
+           representation. Only node properties will be copied, thus
+           excluding other node attributes. As this method is also
+           based on newick serialisation, properties will be converted
+           into text strings when making the copy.
+        - "cpickle": The whole node structure and its content is
+           cloned based on cPickle object serialisation (slower, but
+           recommended for full tree copying)
+        - "deepcopy": The whole node structure and its content is
+           copied based on the standard "copy" Python functionality
+           (this is the slowest method but it allows to copy complex
+           objects even if attributes point to lambda functions, etc.)
         """
         method = method.lower()
         if method=="newick":
@@ -1354,24 +1319,25 @@ cdef class Tree(object):
     def ladderize(self, direction=0):
         """Sort branches according to the size of each partition.
 
-        Example:
-           t = Tree('(f,((d,((a,b),c)),e));')
-           print(t)
-           #   ╭╴f
-           # ──┤     ╭╴d
-           #   │  ╭──┤  ╭──┬╴a
-           #   ╰──┤  ╰──┤  ╰╴b
-           #      │     ╰╴c
-           #      ╰╴e
+        Example::
 
-           t.ladderize()
-           print(t)
-           # ──┬╴f
-           #   ╰──┬╴e
-           #      ╰──┬╴d
-           #         ╰──┬╴c
-           #            ╰──┬╴a
-           #               ╰╴b
+          t = Tree('(f,((d,((a,b),c)),e));')
+          print(t)
+          #   ╭╴f
+          # ──┤     ╭╴d
+          #   │  ╭──┤  ╭──┬╴a
+          #   ╰──┤  ╰──┤  ╰╴b
+          #      │     ╰╴c
+          #      ╰╴e
+
+          t.ladderize()
+          print(t)
+          # ──┬╴f
+          #   ╰──┬╴e
+          #      ╰──┬╴d
+          #         ╰──┬╴c
+          #            ╰──┬╴a
+          #               ╰╴b
         """
         if not self.is_leaf:
             n2s = {}
@@ -2137,70 +2103,67 @@ cdef class Tree(object):
             _resolve(n)
 
     def cophenetic_matrix(self):
+        """Return a cophenetic distance matrix of the tree.
+
+        The `cophenetic matrix
+        <https://en.wikipedia.org/wiki/Cophenetic>`_ is a matrix
+        representation of the distance between each node.
+
+        If we have a tree like::
+
+                 ╭╴A
+             ╭╴y╶┤
+             │   ╰╴B
+          ╴z╶┤
+             │   ╭╴C
+             ╰╴x╶┤
+                 │   ╭╴D
+                 ╰╴w╶┤
+                     ╰╴E
+
+        where w, x, y, z are internal nodes, then::
+
+          d(A,B) = d(y,A) + d(y,B)
+
+        and::
+
+          d(A,E) = d(z,A) + d(z, E)
+                 = (d(z,y) + d(y,A)) + (d(z,x) + d(x,w) + d(w,E))
+
+        To compute it, we use an idea from:
+        https://gist.github.com/jhcepas/279f9009f46bf675e3a890c19191158b
+
+        First, for each node we find its path to the root. For example::
+
+          A -> A, y, z
+          E -> E, w, x, z
+
+        and make these orderless sets. Then we XOR the two sets to
+        only find the elements that are in one or other sets but not
+        both. In this case A, E, y, x, w.
+
+        The distance between the two nodes is the sum of the distances
+        from each of those nodes to the parent
+
+        One more optimization: since the distances are symmetric, and
+        distance to itself is zero we user itertools.combinations
+        rather than itertools.permutations. This cuts our computes
+        from theta(n^2) 1/2n^2 - n (= O(n^2), which is still not
+        great, but in reality speeds things up for large trees).
+
+        For this tree, we will return the two dimensional array::
+
+                           A                  B                   C                   D                     E
+          A                0           d(A-y) + d(B-y)     d(A-z) + d(C-z)     d(A-z) + d(D-z)       d(A-z) + d(E-z)
+          B         d(B-y) + d(A-y)           0            d(B-z) + d(C-z)     d(B-z) + d(D-z)       d(B-z) + d(E-z)
+          C         d(C-z) + d(A-z)    d(C-z) + d(B-z)            0            d(C-x) + d(D-x)       d(C-x) + d(E-x)
+          D         d(D-z) + d(A-z)    d(D-z) + d(B-z)     d(D-x) + d(C-x)            0              d(D-w) + d(E-w)
+          E         d(E-z) + d(A-z)    d(E-z) + d(B-z)     d(E-x) + d(C-x)     d(E-w) + d(D-w)              0
+
+        We will also return the one dimensional array with the leaves
+        in the order in which they appear in the matrix (i.e. the
+        column and/or row headers).
         """
-        .. versionadded: 3.1.1
-
-        Generate a cophenetic distance matrix of the treee to standard output
-
-        The `cophenetic matrix <https://en.wikipedia.org/wiki/Cophenetic>` is a matrix representation of the
-        distance between each node.
-
-        if we have a tree like
-
-                                   ----A
-                      _____________|y
-                      |            |
-                      |            ----B
-              ________|z
-                      |            ----C
-                      |            |
-                      |____________|x     -----D
-                                   |      |
-                                   |______|w
-                                          |
-                                          |
-                                          -----E
-
-        Where w,x,y,z are internal nodes.
-        d(A,B) = d(y,A) + d(y,B)
-        and
-        d(A, E) = d(z,A) + d(z, E) = {d(z,y) + d(y,A)} + {d(z,x) + d(x,w) + d(w,E)}
-
-        We use an idea inspired by the ete3 team: https://gist.github.com/jhcepas/279f9009f46bf675e3a890c19191158b :
-
-        For each node find its path to the root.
-
-        e.g.
-
-        A -> A, y, z
-        E -> E, w, x,z
-
-        and make these orderless sets. Then we XOR the two sets to only find the elements
-        that are in one or other sets but not both. In this case A, E, y, x, w.
-
-        The distance between the two nodes is the sum of the distances from each of those nodes
-        to the parent
-
-        One more optimization: since the distances are symmetric, and distance to itself is zero
-        we user itertools.combinations rather than itertools.permutations. This cuts our computes from theta(n^2)
-        1/2n^2 - n (= O(n^2), which is still not great, but in reality speeds things up for large trees).
-
-
-        For this tree, we will return the two dimensional array:
-                         A                  B                   C                   D                     E
-        A                0           d(A-y) + d(B-y)     d(A-z) + d(C-z)     d(A-z) + d(D-z)       d(A-z) + d(E-z)
-        B         d(B-y) + d(A-y)           0            d(B-z) + d(C-z)     d(B-z) + d(D-z)       d(B-z) + d(E-z)
-        C         d(C-z) + d(A-z)    d(C-z) + d(B-z)            0            d(C-x) + d(D-x)       d(C-x) + d(E-x)
-        D         d(D-z) + d(A-z)    d(D-z) + d(B-z)     d(D-x) + d(C-x)            0              d(D-w) + d(E-w)
-        E         d(E-z) + d(A-z)    d(E-z) + d(B-z)     d(E-x) + d(C-x)     d(E-w) + d(D-w)              0
-
-        We will also return the one dimensional array with the leaves in the order in which they appear in the matrix
-        (i.e. the column and/or row headers).
-
-        :param filename: the optional file to write to. If not provided, output will be to standard output
-        :return: two-dimensional array and a one dimensional array
-        """
-
         leaves = list(self.leaves())
         paths = {x: set() for x in leaves}
 
@@ -2314,20 +2277,25 @@ cdef class Tree(object):
 
     @staticmethod
     def from_parent_child_table(parent_child_table):
-        """Converts a parent-child table into an ETE Tree instance.
+        """Convert a parent-child table into an ETE Tree instance.
 
-        :argument parent_child_table: a list of tuples containing parent-child
-           relationships. For example: [("A", "B", 0.1), ("A", "C", 0.2), ("C",
-           "D", 1), ("C", "E", 1.5)]. Where each tuple represents: [parent, child,
-           child-parent-dist]
+        :param parent_child_table: List of tuples containing
+            parent-child relationships. For example: [('A', 'B', 0.1),
+            ('A', 'C', 0.2), ('C', 'D', 1), ('C', 'E', 1.5)], where
+            each tuple represents: [parent, child, child-parent-dist]
 
-        :returns: A new Tree instance
+        Example::
 
-        :example:
-
-        >>> tree = Tree.from_parent_child_table([("A", "B", 0.1), ("A", "C", 0.2), ("C", "D", 1), ("C", "E", 1.5)])
-        >>> print tree
-
+          t = Tree.from_parent_child_table([('A', 'B', 0.1),
+                                            ('A', 'C', 0.2),
+                                            ('C', 'D', 1),
+                                            ('C', 'E', 1.5)])
+          print(t.to_str(props=['name', 'dist']))
+          #            ╭╴B,0.1
+          # ╴A,(empty)╶┤
+          #            │       ╭╴D,1.0
+          #            ╰╴C,0.2╶┤
+          #                    ╰╴E,1.5
         """
         def get_node(nodename, dist=None):
             if nodename not in nodes_by_name:
@@ -2357,20 +2325,16 @@ cdef class Tree(object):
 
     @staticmethod
     def from_skbio(skbio_tree, map_attributes=None):
-        """Converts a scikit-bio TreeNode object into ETE Tree object.
+        """Convert a scikit-bio TreeNode object into ETE Tree object.
 
-        :argument skbio_tree: a scikit bio TreeNode instance
+        :param skbio_tree: A scikit bio TreeNode instance
+        :param map_attributes: List of attribute names in the
+            scikit-bio tree that should be mapped into the ETE tree
+            instance. (name, id and branch length are always mapped)
 
-        :argument None map_attributes: A list of attribute nanes in the
-           scikit-bio tree that should be mapped into the ETE tree
-           instance. (name, id and branch length are always mapped)
+        Example::
 
-        :returns: A new Tree instance
-
-        :example:
-
-        >>> tree = Tree.from_skibio(skbioTree, map_attributes=["value"])
-
+          t = Tree.from_skibio(skbioTree, map_attributes=['value'])
         """
         from skbio import TreeNode as skbioTreeNode
 
