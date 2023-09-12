@@ -1782,31 +1782,23 @@ cdef class Tree(object):
         else:
             raise TreeError(f'Unknown output for diff: {output}')
 
-    def iter_edges(self, cached_content = None):
-        '''
-        .. versionadded:: 2.3
+    def edges(self, cached_content=None):
+        """Yield a pair of sets of leafs for every partition of the tree.
 
-        Iterate over the list of edges of a tree. Each edge is represented as a
-        tuple of two elements, each containing the list of nodes separated by
-        the edge.
-        '''
+        For every node, there are leaves that lay on one side of that
+        node, and leaves that lay on the other. This generator yields
+        all those pairs of sets.
 
+        :param cached_content: Dictionary that to each node associates
+        the leaves that descend from it. If passed, it won't be recomputed.
+        """
         if not cached_content:
-            cached_content = self.get_cached_content()
+            cached_content = self.get_cached_content()  # d[node] = {leaf, ...}
+
         all_leaves = cached_content[self]
-        for n, side1 in cached_content.items():
-            yield (side1, all_leaves-side1)
 
-    def get_edges(self, cached_content = None):
-        '''
-        .. versionadded:: 2.3
-
-        Returns the list of edges of a tree. Each edge is represented as a
-        tuple of two elements, each containing the list of nodes separated by
-        the edge.
-        '''
-
-        return [edge for edge in self.iter_edges(cached_content)]
+        for leaves_descendant in cached_content.values():
+            yield (leaves_descendant, all_leaves - leaves_descendant)
 
     def standardize(self, delete_orphan=True, preserve_branch_length=True):
         """
