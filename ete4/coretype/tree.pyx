@@ -1378,9 +1378,7 @@ cdef class Tree(object):
         :param None store_attr: Specifies the node attribute that
             should be cached (i.e. name, distance, etc.). When none,
             the whole node instance is cached.
-
         :param _store: (internal use)
-
         """
 
         if _store is None:
