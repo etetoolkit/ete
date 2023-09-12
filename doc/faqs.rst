@@ -114,8 +114,6 @@ other properties, you need to specify them when calling
 If you want all node features to be exported in the newick string, use
 `props=None`::
 
-::
-
   tree.write(props=None)
 
 
