@@ -11,6 +11,7 @@ Welcome to ETE's documentation!
    :caption: Contents:
 
    about
+   faqs
    reference/index
 
 
