@@ -1864,126 +1864,65 @@ cdef class Tree(object):
                 d = sum(n.dist for n in node.ancestors())
                 node.dist *= (dist_full - d) / node.size[0]
 
-    def check_monophyly(self, values, target_attr, ignore_missing=False,
-                        unrooted=False):
+    def is_monophyletic(self, nodes):
+        """Return True if the nodes form a monophyletic group."""
+        nodes = set(nodes)  # in case it is not a set already
+        return all(n in nodes for n in self.common_ancestor(nodes).leaves())
+
+    def check_monophyly(self, values, prop='name', unrooted=False):
+        """Return tuple (is_monophyletic, clade_type, leaves_extra).
+
+        :param values: List of values of the selected nodes.
+        :param prop: Node property being used to check monophyly (i.e.
+            'species' for species trees, 'name' for gene family trees,
+            or any custom feature present in the tree).
         """
-        .. versionadded: 2.2
+        values = set(values)  # in case it is not a set (so we check faster)
 
-        Returns True if a given target attribute is monophyletic under
-        this node for the provided set of values.
+        nodes = set(n for n in self.leaves()
+                        if n.props.get(prop, getattr(n, prop)) in values)
 
-        If not all values are represented in the current tree
-        structure, a ValueError exception will be raised to warn that
-        strict monophyly could never be reached (this behaviour can be
-        avoided by enabling the `ignore_missing` flag.
+        if not unrooted:
+            leaves_from_ancestor = set(n for n in self.common_ancestor(nodes).leaves())
 
-        :param values: a set of values for which monophyly is
-            expected.
-
-        :param target_attr: node attribute being used to check
-            monophyly (i.e. species for species trees, names for gene
-            family trees, or any custom feature present in the tree).
-
-        :param False ignore_missing: Avoid raising an Exception when
-            missing attributes are found.
-
-
-        .. versionchanged: 2.3
-
-        :param False unrooted: If True, tree will be treated as unrooted, thus
-          allowing to find monophyly even when current outgroup is splitting a
-          monophyletic group.
-
-        :returns: the following tuple
-                  IsMonophyletic (boolean),
-                  clade type ('monophyletic', 'paraphyletic' or 'polyphyletic'),
-                  leaves breaking the monophyly (set)
-
-        """
-
-        values = set(values)
-
-        # This is the only time I traverse the tree, then I use cached
-        # leaf content
-        n2leaves = self.get_cached_content()
-
-        # Raise an error if requested attribute values are not even present
-        if ignore_missing:
-            found_values = set(n.props.get(target_attr) for n in n2leaves[self])
-            missing_values = values - found_values  # TODO: this is never used??
-            values &= found_values
-
-        # Locate leaves matching requested attribute values
-        targets = set(leaf for leaf in n2leaves[self]
-                          if leaf.props.get(target_attr) in values)
-        if not ignore_missing:
-            if values - set(leaf.props.get(target_attr) for leaf in targets):
-                raise ValueError('The monophyly of the provided values could never be reached, as not all of them exist in the tree.'
-                                 ' Please check your target attribute and values, or set the ignore_missing flag to True')
-
-        if unrooted:
+            leaves_extra = leaves_from_ancestor - nodes
+        else:
             smallest = None
-            for side1, side2 in self.iter_edges(cached_content=n2leaves):
-                if targets.issubset(side1) and (not smallest or len(side1) < len(smallest)):
+            for side1, side2 in self.edges():
+                if nodes.issubset(side1) and (not smallest or len(side1) < len(smallest)):
                     smallest = side1
-                elif targets.issubset(side2) and (not smallest or len(side2) < len(smallest)):
-                        smallest = side2
-                if smallest is not None and len(smallest) == len(targets):
+                elif nodes.issubset(side2) and (not smallest or len(side2) < len(smallest)):
+                    smallest = side2
+
+                if smallest and len(smallest) == len(nodes):
                     break
-            foreign_leaves = smallest - targets
-        else:
-            # Check monophyly with common_ancestor. Note that this
-            # step does not require traversing the tree again because
-            # targets are node instances instead of node names, and
-            # common_ancestor function is smart enough to detect it
-            # and avoid unnecessary traversing.
-            common = self.common_ancestor(targets)
-            observed = n2leaves[common]
-            foreign_leaves = set(leaf for leaf in observed
-                                 if leaf.props[target_attr] not in values)
 
-        if not foreign_leaves:
-            return True, "monophyletic", foreign_leaves
-        else:
-            # if the requested attribute is not monophyletic in this
-            # node, let's differentiate between poly and paraphyly.
-            poly_common = self.common_ancestor(foreign_leaves)
-            # if the common ancestor of all foreign leaves is self
-            # contained, we have a paraphyly. Otherwise, polyphyly.
-            polyphyletic = [leaf for leaf in poly_common if
-                                leaf.props.get(target_attr) in values]
-            if polyphyletic:
-                return False, "polyphyletic", foreign_leaves
-            else:
-                return False, "paraphyletic", foreign_leaves
+            leaves_extra = smallest - nodes
 
-    def get_monophyletic(self, values, target_attr):
-        """
-        .. versionadded:: 2.2
+        if not leaves_extra:  # nodes account for all leaves from common ancestor
+            return True, 'monophyletic', leaves_extra
+        elif self.is_monophyletic(leaves_extra):  # we leave out a monophyly
+            return False, 'paraphyletic', leaves_extra
+        else:  # a funny mixture
+            return False, 'polyphyletic', leaves_extra
 
-        Returns a list of nodes matching the provided monophyly
+    def get_monophyletic(self, values, prop='name'):
+        """Return a list of nodes matching the provided monophyly
         criteria. For a node to be considered a match, all
-        `target_attr` values within and node, and exclusively them,
+        `prop` values within and node, and exclusively them,
         should be grouped.
 
-        :param values: a set of values for which monophyly is
-            expected.
-
-        :param target_attr: node attribute being used to check
-            monophyly (i.e. species for species trees, names for gene
-            family trees).
-
+        :param values: List of values of the selected nodes.
+        :param prop: None property being used to check monophyly (i.e.
+            'species' for species trees, 'name' for gene family trees).
         """
+        values = set(values)  # in case it is not a set
 
-        if type(values) != set:
-            values = set(values)
-
-        n2values = self.get_cached_content(store_attr=target_attr)
+        n2values = self.get_cached_content(store_attr=prop)
 
         is_monophyletic = lambda node: n2values[node] == values
-        for match in self.leaves(is_leaf_fn=is_monophyletic):
-            if is_monophyletic(match):
-                yield match
+
+        yield from self.leaves(is_leaf_fn=is_monophyletic)
 
     def expand_polytomies(self, map_attr="name", polytomy_size_limit=5,
                           skip_large_polytomies=False):
