@@ -1817,28 +1817,27 @@ cdef class Tree(object):
                          preserve_branch_length=preserve_branch_length)
 
 
-    def get_topology_id(self, attr="name"):
-        '''
-        .. versionadded:: 2.3
+    def get_topology_id(self, prop='name'):
+        """Return a unique ID representing the topology of the tree.
 
-        Returns the unique ID representing the topology of the current tree. Two
-        trees with the same topology will produce the same id. If trees are
-        unrooted, make sure that the root node is not binary or use the
-        tree.unroot() function before generating the topology id.
+        Two trees with the same topology will produce the same id.
+        This is useful to detect the number of unique topologies over
+        a bunch of trees, without requiring full distance methods.
 
-        This is useful to detect the number of unique topologies over a bunch of
-        trees, without requiring full distance methods.
+        The id is, by default, calculated based on the terminal node's
+        names. Any other node property could be used instead.
 
-        The id is, by default, calculated based on the terminal node's names. Any
-        other node attribute could be used instead.
-
-
-        '''
+        If trees are unrooted, make sure that the root node is not
+        binary or use the tree.unroot() function before generating the
+        topology id.
+        """
         edge_keys = []
-        for s1, s2 in self.get_edges():
-            k1 = sorted([getattr(e, attr) for e in s1])
-            k2 = sorted([getattr(e, attr) for e in s2])
+        for s1, s2 in self.edges():
+            k1 = sorted(e.props.get(prop, getattr(e, prop)) for e in s1)
+            k2 = sorted(e.props.get(prop, getattr(e, prop)) for e in s2)
+
             edge_keys.append(sorted([k1, k2]))
+
         return md5(str(sorted(edge_keys)).encode('utf-8')).hexdigest()
 
 
