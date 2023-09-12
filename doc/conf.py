@@ -1,3 +1,5 @@
+# This file was created by running: sphinx-quickstart.
+
 # Configuration file for the Sphinx documentation builder.
 #
 # For the full list of built-in configuration values, see the documentation:
@@ -11,7 +13,7 @@ import os
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'ETE Toolkit'
-copyright = '2023, The ETE Toolkit Team'
+copyright = '2008 - 2023, The ETE Toolkit Team'
 author = 'Jaime Huerta-Cepas et al.'
 
 
