@@ -1332,87 +1332,114 @@ class Test_Coretype_Tree(unittest.TestCase):
         #     self.assertEqual(rf, RF)
 
     # TODO: Fix the check_monophyly() function and this test.
-    # def test_monophyly(self):
-    #     # Testing monophyly checks
-    #     t =  Tree("((((((a, e), i), o),h), u), ((f, g), j));")
-    #     is_mono, monotype, extra  = t.check_monophyly(values=["a", "e", "i", "o", "u"], target_attr="name")
-    #     self.assertEqual(is_mono, False)
-    #     self.assertEqual(monotype, "polyphyletic")
-    #     is_mono, monotype, extra= t.check_monophyly(values=["a", "e", "i", "o"], target_attr="name")
-    #     self.assertEqual(is_mono, True)
-    #     self.assertEqual(monotype, "monophyletic")
-    #     is_mono, monotype, extra =  t.check_monophyly(values=["i", "o"], target_attr="name")
-    #     self.assertEqual(is_mono, False)
-    #     self.assertEqual(monotype, "paraphyletic")
+    def test_monophyly(self):
+        """Checks for monophyletic, paraphyletic, and polyphyletic groups."""
+        t = Tree("((((((a, e), i), o),h), u), ((f, g), j));")
+        #          ╭─┬╴a
+        #        ╭─┤ ╰╴e
+        #      ╭─┤ ╰╴i
+        #    ╭─┤ ╰╴o
+        #  ╭─┤ ╰╴h
+        # ─┤ ╰╴u
+        #  │ ╭─┬╴f
+        #  ╰─┤ ╰╴g
+        #    ╰╴j
 
-    #     # Test examples
-    #     # Testing monophyly check with unrooted trees
-    #     t = PhyloTree('(aaa1, (aaa3, (aaa4, (bbb1, bbb2))));')
-    #     is_mono, montype, extra = t.check_monophyly(values=set(['aaa']), target_attr='species', unrooted=True)
-    #     self.assertEqual(is_mono, True)
-    #     self.assertEqual(extra, set())
+        is_mono, monotype, extra  = t.check_monophyly(values=['a', 'e', 'i', 'o', 'u'])
+        self.assertEqual(is_mono, False)
+        self.assertEqual(monotype, 'paraphyletic')
 
-    #     t = PhyloTree('(aaa1, (bbb3, (aaa4, (bbb1, bbb2))));')
-    #     is_mono, montype, extra = t.check_monophyly(values=set(['aaa']), target_attr='species', unrooted=True)
-    #     self.assertEqual(is_mono, False)
-    #     self.assertEqual(extra, set([t&'bbb3']))
+        is_mono, monotype, extra= t.check_monophyly(values=['a', 'e', 'i', 'o'])
+        self.assertEqual(is_mono, True)
+        self.assertEqual(monotype, 'monophyletic')
 
-    #     t = PhyloTree('(aaa1, (aaa3, (aaa4, (bbb1, bbb2))));')
-    #     is_mono, montype, extra = t.check_monophyly(values=set(['bbb']), target_attr='species', unrooted=True)
-    #     self.assertEqual(is_mono, True)
-    #     self.assertEqual(extra, set())
+        is_mono, monotype, extra =  t.check_monophyly(values=['i', 'o'])
+        self.assertEqual(is_mono, False)
+        self.assertEqual(monotype, 'paraphyletic')
 
-    #     t = PhyloTree('(aaa1, (aaa3, (aaa4, (bbb1, ccc2))));')
-    #     is_mono, montype, extra = t.check_monophyly(values=set(['bbb', 'ccc']), target_attr='species', unrooted=True)
-    #     self.assertEqual(is_mono, True)
-    #     self.assertEqual(extra, set())
+        # Now with unrooted trees, and using species instead of names.
+        t = PhyloTree('(aaa1, (aaa3, (aaa4, (bbb1, bbb2))));')
+        # ─┬╴aaa1        # the species will be 'aaa' for this node, etc.
+        #  ╰─┬╴aaa3
+        #    ╰─┬╴aaa4
+        #      ╰─┬╴bbb1
+        #        ╰╴bbb2
 
-    #     t = PhyloTree('(aaa1, (aaa3, (bbb4, (bbb1, bbb2))));')
-    #     is_mono, montype, extra = t.check_monophyly(values=set(['bbb4', 'bbb2']), target_attr='name', unrooted=True)
-    #     self.assertEqual(is_mono, False)
-    #     self.assertEqual(extra, set([t&'bbb1']))
+        self.assertEqual(t.check_monophyly(values={'aaa'},
+                                           prop='species', unrooted=True),
+                         (True, 'monophyletic', set()))
 
-    #     t = PhyloTree('(aaa1, (aaa3, (bbb4, (bbb1, bbb2))));')
-    #     is_mono, montype, extra = t.check_monophyly(values=set(['bbb1', 'bbb2']), target_attr='name', unrooted=True)
-    #     self.assertEqual(is_mono, True)
-    #     self.assertEqual(extra, set())
+        # Variations on that tree.
+        t = PhyloTree('(aaa1, (bbb3, (aaa4, (bbb1, bbb2))));')
+        is_mono, _, extra = t.check_monophyly(values={'aaa'},
+                                              prop='species', unrooted=True)
+        self.assertFalse(is_mono)
+        self.assertEqual(extra, {t['bbb3']})
 
-    #     t = PhyloTree('(aaa1, aaa3, (aaa4, (bbb1, bbb2)));')
-    #     is_mono, montype, extra = t.check_monophyly(values=set(['aaa']), target_attr='species', unrooted=True)
-    #     self.assertEqual(is_mono, True)
-    #     self.assertEqual(extra, set())
+        t = PhyloTree('(aaa1, (aaa3, (aaa4, (bbb1, bbb2))));')
+        is_mono, _, extra = t.check_monophyly(values={'bbb'},
+                                              prop='species', unrooted=True)
+        self.assertTrue(is_mono)
+        self.assertEqual(extra, set())
 
-    #     t = PhyloTree('(aaa1, bbb3, (aaa4, (bbb1, bbb2)));')
-    #     is_mono, montype, extra = t.check_monophyly(values=set(['aaa']), target_attr='species', unrooted=True)
-    #     self.assertEqual(is_mono, False)
-    #     self.assertEqual(extra, set([t&'bbb3']))
+        t = PhyloTree('(aaa1, (aaa3, (aaa4, (bbb1, ccc2))));')
+        is_mono, _, extra = t.check_monophyly(values={'bbb', 'ccc'},
+                                              prop='species', unrooted=True)
+        self.assertTrue(is_mono)
+        self.assertEqual(extra, set())
 
-    #     # Check monophyly randomization test
-    #     t = PhyloTree()
-    #     t.populate(100)
-    #     ancestor = t.get_common_ancestor(['aaaaaaaaaa', 'aaaaaaaaab', 'aaaaaaaaac'])
-    #     all_nodes = list(t.descendants())
-    #     # I test every possible node as root for the tree. The content of ancestor
-    #     # should allways be detected as monophyletic
-    #     results = set()
-    #     for x in all_nodes:
-    #         mono, part, extra = t.check_monophyly(values=set(ancestor.get_leaf_names()), target_attr='name', unrooted=True)
-    #         results.add(mono)
-    #         t.set_outgroup(x)
-    #     self.assertEqual(list(results), [True])
+        t = PhyloTree('(aaa1, (aaa3, (bbb4, (bbb1, bbb2))));')
+        is_mono, _, extra = t.check_monophyly(values={'bbb4', 'bbb2'},
+                                              prop='name', unrooted=True)
+        self.assertFalse(is_mono)
+        self.assertEqual(extra, {t['bbb1']})
 
-    #     # Testing get_monophyly
-    #     t =  Tree("((((((4, e), i)M1, o),h), u), ((3, 4), (i, june))M2);", parser=1)
-    #     # we annotate the tree using external data
-    #     colors = {"a":"red", "e":"green", "i":"yellow",
-    #               "o":"black", "u":"purple", "4":"green",
-    #               "3":"yellow", "1":"white", "5":"red",
-    #               "june":"yellow"}
-    #     for leaf in t:
-    #         leaf.add_props(color=colors.get(leaf.name, "none"))
-    #     green_yellow_nodes = set([t&"M1", t&"M2"])
-    #     mono_nodes = t.get_monophyletic(values=["green", "yellow"], target_attr="color")
-    #     self.assertEqual(set(mono_nodes), green_yellow_nodes)
+        t = PhyloTree('(aaa1, (aaa3, (bbb4, (bbb1, bbb2))));')
+        is_mono, _, extra = t.check_monophyly(values={'bbb1', 'bbb2'},
+                                              prop='name', unrooted=True)
+        self.assertTrue(is_mono)
+        self.assertEqual(extra, set())
+
+        t = PhyloTree('(aaa1, aaa3, (aaa4, (bbb1, bbb2)));')
+        is_mono, _, extra = t.check_monophyly(values={'aaa'},
+                                              prop='species', unrooted=True)
+        self.assertTrue(is_mono)
+        self.assertEqual(extra, set())
+
+        t = PhyloTree('(aaa1, bbb3, (aaa4, (bbb1, bbb2)));')
+        is_mono, _, extra = t.check_monophyly(values={'aaa'},
+                                              prop='species', unrooted=True)
+        self.assertFalse(is_mono)
+        self.assertEqual(extra, {t['bbb3']})
+
+        # # Check monophyly randomization test
+        # t = PhyloTree()
+        # t.populate(100)
+        # ancestor = t.common_ancestor(['aaaaaaaaaa', 'aaaaaaaaab', 'aaaaaaaaac'])
+        # all_nodes = list(t.descendants())
+        # # I test every possible node as root for the tree. The content of ancestor
+        # # should allways be detected as monophyletic
+        # results = set()
+        # for x in all_nodes:
+        #     mono, part, extra = t.check_monophyly(values=set(ancestor.leaf_names()), prop='name', unrooted=True)
+        #     results.add(mono)
+        #     t.set_outgroup(x)
+        # self.assertEqual(list(results), [True])
+
+        # TODO: The previous test looks like it is wrong. Review with Jaime.
+
+        # Testing get_monophyly
+        t = Tree('((((((4, e), i)M1, o),h), u), ((3, 4), (i, june))M2);')
+        # we annotate the tree using external data
+        colors = {'a': 'red', 'e': 'green', 'i': 'yellow',
+                  'o': 'black', 'u': 'purple', '4':'green',
+                  '3': 'yellow', '1': 'white', '5': 'red',
+                  'june': 'yellow'}
+        for leaf in t:
+            leaf.add_props(color=colors.get(leaf.name, 'none'))
+        green_yellow_nodes = {t['M1'], t['M2']}
+        mono_nodes = t.get_monophyletic(values=['green', 'yellow'], prop='color')
+        self.assertEqual(set(mono_nodes), green_yellow_nodes)
 
     def test_copy(self):
         t = Tree("((A, B)Internal_1:0.7, (C, D)Internal_2:0.5)root:1.3;", parser=1)
