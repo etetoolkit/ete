@@ -834,8 +834,8 @@ cdef class Tree(object):
 
         Example::
 
-            for node in tree.iter_search_nodes(dist=0.0, name="human"):
-                print(node.prop["support"])
+            for node in tree.search_nodes(dist=0.0, name='human'):
+                print(node.prop['support'])
         """
         for n in self.traverse():
             if all(n.props.get(key) == value or getattr(n, key, None) == value
