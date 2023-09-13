@@ -3,11 +3,12 @@ import unittest
 from ete4 import ClusterTree
 from . import datasets as ds
 
-class Test_ClusterTree(unittest.TestCase):
-    """ Tests specific methods for trees linked to ArrayTables"""
-    def test_clustertree(self):
-        """ Tests tree-ArrayTable association """
 
+class Test_ClusterTree(unittest.TestCase):
+    """Tests specific methods for trees linked to ArrayTables."""
+
+    def test_clustertree(self):
+        """Test tree-ArrayTable association."""
         t = ClusterTree("(((A,B),(C,(D,E))),(F,(G,H)));",
                         text_array=ds.expression)
 
@@ -21,11 +22,11 @@ class Test_ClusterTree(unittest.TestCase):
         print(node.intracluster_dist)
         print(node.intercluster_dist)
 
-
         c1 = t.common_ancestor(["A", "B"])
         c2 = t.common_ancestor(["C", "D", "E"])
         c3 = t.common_ancestor(["F", "G", "H"])
         print(t.get_dunn([c1, c2, c3]))
 
+
 if __name__ == '__main__':
-  unittest.main()
+    unittest.main()
