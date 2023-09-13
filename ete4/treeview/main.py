@@ -189,11 +189,7 @@ class NodeStyle(dict):
 
 
 class TreeStyle(object):
-    """.. versionadded:: 2.1
-
-    .. currentmodule:: ete3
-
-    Contains all the general image properties used to render a tree
+    """Image properties used to render a tree.
 
     **-- About tree design --**
 
@@ -204,29 +200,22 @@ class TreeStyle(object):
     **-- About tree shape --**
 
     :param "r" mode: Valid modes are 'c'(ircular)  or 'r'(ectangular).
-
     :param 0 orientation: If 0, tree is drawn from left-to-right. If
        1, tree is drawn from right-to-left. This property only makes
        sense when "r" mode is used.
-
     :param 0 rotation: Tree figure will be rotate X degrees (clock-wise
        rotation).
-
     :param 1 min_leaf_separation: Min separation, in pixels, between
       two adjacent branches
-
     :param 0 branch_vertical_margin: Leaf branch separation margin, in
       pixels. This will add a separation of X pixels between adjacent
       leaf branches. In practice, increasing this value work as
       increasing Y axis scale.
-
     :param 0 arc_start: When circular trees are drawn, this defines the
       starting angle (in degrees) from which leaves are distributed
       (clock-wise) around the total arc span (0 = 3 o'clock).
-
     :param 359 arc_span: Total arc used to draw circular trees (in
       degrees).
-
     :param 0 margin_left: Left tree image margin, in pixels.
     :param 0 margin_right: Right tree image margin, in pixels.
     :param 0 margin_top: Top tree image margin, in pixels.
@@ -236,7 +225,6 @@ class TreeStyle(object):
 
     :param None scale: Scale used to draw branch lengths. If None, it will
       be automatically calculated.
-
     :param "mid" optimal_scale_level: Two levels of automatic branch
       scale detection are available: :attr:`"mid"` and
       :attr:`"full"`. In :attr:`full` mode, branch scale will me
@@ -252,30 +240,24 @@ class TreeStyle(object):
       branch-top/bottom faces are larger than branch length. Note that
       both options apply only when :attr:`scale` is set to None
       (automatic).
-
     :param 0.25 root_opening_factor: (from 0 to 1). It defines how much the center of
       a circular tree could be opened when adjusting optimal scale, referred
       to the total tree length. By default (0.25), a blank space up to 4
       times smaller than the tree width could be used to calculate the
       optimal tree scale. A 0 value would mean that root node should
       always be tightly adjusted to the center of the tree.
-
     :param True complete_branch_lines_when_necessary: True or False.
-      Draws an extra line (dotted by default) to complete branch lengths when the space to cover is larger than the branch itself.
-
+      Draws an extra line (dotted by default) to complete branch
+      lengths when the space to cover is larger than the branch
+      itself.
     :param 2 extra_branch_line_type:  0=solid, 1=dashed, 2=dotted
-
     :param "gray" extra_branch_line_color: RGB code or name in
       :data:`SVG_COLORS`
-
-    :param False force_topology: Convert tree branches to a fixed length, thus allowing to
-      observe the topology of tight nodes
-
+    :param False force_topology: Convert tree branches to a fixed
+      length, thus allowing to observe the topology of tight nodes
     :param False draw_guiding_lines: Draw guidelines from leaf nodes
       to aligned faces
-
     :param 2 guiding_lines_type: 0=solid, 1=dashed, 2=dotted.
-
     :param "gray" guiding_lines_color: RGB code or name in :data:`SVG_COLORS`
 
     **-- About node faces --**
@@ -286,10 +268,8 @@ class TreeStyle(object):
       as node labels) will be therefore ignored, and tree size
       will be a lot smaller. Note that in most cases, manual setting
       of tree scale will be also necessary.
-
     :param True draw_aligned_faces_as_table: Aligned faces will be
       drawn as a table, considering all columns in all node faces.
-
     :param True children_faces_on_top: When floating faces from
       different nodes overlap, children faces are drawn on top of
       parent faces. This can be reversed by setting this attribute
@@ -298,19 +278,14 @@ class TreeStyle(object):
     **-- Addons --**
 
     :param False show_border: Draw a border around the whole tree
-
     :param True show_scale: Include the scale legend in the tree
       image
-
-    :param None scale_length: Scale length to be used as reference scale bar
-    when visualizing tree. None = automatically adjusted.
-
+    :param None scale_length: Scale length to be used as reference
+      scale bar when visualizing tree. None = automatically adjusted.
     :param False show_leaf_name: Automatically adds a text Face to
       leaf nodes showing their names
-
     :param False show_branch_length: Automatically adds branch
       length information on top of branches
-
     :param False show_branch_support: Automatically adds branch
       support text in the bottom of tree branches
 
@@ -318,24 +293,19 @@ class TreeStyle(object):
 
     The following options are actually Face containers, so graphical
     elements can be added just as it is done with nodes. In example,
-    to add tree legend:
+    to add tree legend::
 
-       ::
-
-          TreeStyle.legend.add_face(CircleFace(10, "red"), column=0)
-          TreeStyle.legend.add_face(TextFace("0.5 support"), column=1)
+      TreeStyle.legend.add_face(CircleFace(10, "red"), column=0)
+      TreeStyle.legend.add_face(TextFace("0.5 support"), column=1)
 
     :param aligned_header: a :class:`FaceContainer` aligned to the end
       of the tree and placed at the top part.
-
     :param aligned_foot: a :class:`FaceContainer` aligned to the end
       of the tree and placed at the bottom part.
-
     :param legend: a :class:`FaceContainer` with an arbitrary number of faces
       representing the legend of the figure.
     :param 4 legend_position=4: TopLeft corner if 1, TopRight
       if 2, BottomLeft if 3, BottomRight if 4
-
     :param title: A Face container that can be used as tree title
 
     """

@@ -1,22 +1,14 @@
 from sys import stderr
 from . import clustvalidation
-from .. import Tree, ArrayTable
+from ete4 import Tree, ArrayTable
 import numpy
 
-__all__ = ["ClusterNode", "ClusterTree"]
+__all__ = ["ClusterTree"]
 
-class ClusterNode(Tree):
-    """ Creates a new Cluster Tree object, which is a collection
-    of ClusterNode instances connected in a hierarchical way, and
-    representing a clustering result.
 
-    a newick file or string can be passed as the first argument. An
-    ArrayTable file or instance can be passed as a second argument.
-
-    Examples:
-      t1 = Tree() # creates an empty tree
-      t2 = Tree( '(A:1,(B:1,(C:1,D:1):0.5):0.5);' )
-      t3 = Tree( '/home/user/myNewickFile.txt' )
+class ClusterTree(Tree):
+    """
+    A ClusterTree is a Tree that represents a clustering result.
     """
 
     def _set_forbidden(self, value):
@@ -88,21 +80,17 @@ class ClusterNode(Tree):
         return "ClusterTree node (%s)" %hex(self.__hash__())
 
     def set_distance_function(self, fn):
-        """ Sets the distance function used to calculate cluster
+        """Set the distance function used to calculate cluster
         distances and silouette index.
 
-        ARGUMENTS:
+        :param fn: Function acepting two numpy arrays as arguments.
 
-          fn: a pointer to python function acepting two arrays (numpy) as
-          arguments.
+        Example:::
 
-        EXAMPLE:
-
-          # A simple euclidean distance
+          # Set a simple euclidean distance.
           my_dist_fn = lambda x,y: abs(x-y)
           tree.set_distance_function(my_dist_fn)
-
-          """
+        """
         for n in self.traverse():
             n._fdist = fn
             n._silhouette = None
@@ -110,15 +98,12 @@ class ClusterNode(Tree):
             n._intracluster_dist = None
 
     def link_to_arraytable(self, arraytbl):
-        """ Allows to link a given arraytable object to the tree
-        structure under this node. Row names in the arraytable object
-        are expected to match leaf names.
+        """Link the given arraytable to the tree and return a list of
+        nodes for with profiles could not been found in arraytable.
 
-        Returns a list of nodes for with profiles could not been found
-        in arraytable.
-
+        Row names in the arraytable object are expected to match leaf
+        names.
         """
-
         # Initialize tree with array data
 
         if type(arraytbl) == ArrayTable:
@@ -148,19 +133,13 @@ class ClusterNode(Tree):
 
         self.arraytable = array
 
-    def iter_leaf_profiles(self):
-        """ Returns an iterator over all the profiles associated to
-        the leaves under this node."""
-        for l in self.iter_leaves():
+    def leaf_profiles(self):
+        """Yield profiles associated to the leaves under this node."""
+        for l in self.leaves():
             yield l.get_profile()[0]
 
-    def get_leaf_profiles(self):
-        """ Returns the list of all the profiles associated to the
-        leaves under this node."""
-        return [l.get_profile()[0] for l in self.iter_leaves()]
-
     def get_silhouette(self, fdist=None):
-        """ Calculates the node's silhouette value by using a given
+        """Calculates the node's silhouette value by using a given
         distance function. By default, euclidean distance is used. It
         also calculates the deviation profile, mean profile, and
         inter/intra-cluster distances.
@@ -170,15 +149,17 @@ class ClusterNode(Tree):
            - node.intercluster
            - node.silhouete
 
-        intracluster distances a(i) are calculated as the Centroid
-        Diameter
+        Intracluster distances a(i) are calculated as the Centroid Diameter.
 
-        intercluster distances b(i) are calculated as the Centroid linkage distance
+        Intercluster distances b(i) are calculated as the Centroid
+        linkage distance.
 
-        ** Rousseeuw, P.J. (1987) Silhouettes: A graphical aid to the
-        interpretation and validation of cluster analysis.
-        J. Comput. Appl. Math., 20, 53-65.
+        :Citation:
 
+          *Rousseeuw, P.J. (1987) Silhouettes: A graphical aid to the
+          interpretation and validation of cluster analysis.*
+
+          J. Comput. Appl. Math., 20, 53-65.
         """
         if fdist is None:
             fdist = self._fdist
@@ -205,9 +186,3 @@ class ClusterNode(Tree):
 
         # Updates internal values
         self._profile, self._std_profile = clustvalidation.get_avg_profile(self)
-
-
-# cosmetic alias
-#: .. currentmodule:: ete3
-#
-ClusterTree = ClusterNode

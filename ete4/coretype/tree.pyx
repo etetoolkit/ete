@@ -1789,8 +1789,8 @@ cdef class Tree(object):
         node, and leaves that lay on the other. This generator yields
         all those pairs of sets.
 
-        :param cached_content: Dictionary that to each node associates
-        the leaves that descend from it. If passed, it won't be recomputed.
+        :param cached_content: Dictionary that to each node associates the
+            leaves that descend from it. If passed, it won't be recomputed.
         """
         if not cached_content:
             cached_content = self.get_cached_content()  # d[node] = {leaf, ...}

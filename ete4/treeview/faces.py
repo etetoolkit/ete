@@ -389,7 +389,7 @@ class ImgFace(Face):
 
 class ProfileFace(Face):
     """
-    A profile Face for ClusterNodes
+    A profile Face for nodes of a ClusterTree.
 
     :param max_v: maximum value used to build the build the plot scale.
     :param max_v: minimum value used to build the build the plot scale.

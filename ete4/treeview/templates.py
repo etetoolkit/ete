@@ -1,5 +1,5 @@
 from .. import (PhyloTree, PhyloNode,
-                  ClusterTree, ClusterNode, EvolTree, EvolNode)
+                  ClusterTree, EvolTree, EvolNode)
 from . import layouts
 
 def apply_template(tree_style, template):
@@ -29,5 +29,4 @@ _DEFAULT_STYLE={
     EvolTree: evol,
     EvolNode: evol,
     ClusterTree: clustering,
-    ClusterNode: clustering,
     }
