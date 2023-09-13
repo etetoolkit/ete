@@ -16,3 +16,4 @@ Current modules:
 
    reference_tree
    reference_treeview
+   reference_clustering
