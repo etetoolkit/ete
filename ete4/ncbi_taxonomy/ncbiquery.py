@@ -2,13 +2,7 @@
 
 import sys
 import os
-
-try:
-    import cPickle as pickle
-except ImportError:
-    # python 3 support
-    import pickle
-
+import pickle
 from collections import defaultdict, Counter
 
 from hashlib import md5
@@ -28,45 +22,37 @@ DEFAULT_TAXADB = ETE_DATA_HOME + '/taxa.sqlite'
 
 
 def is_taxadb_up_to_date(dbfile=DEFAULT_TAXADB):
-    """Check if a valid and up-to-date taxa.sqlite database exists
+    """Return True if a valid and up-to-date taxa.sqlite database exists.
 
-    If dbfile= is not specified, DEFAULT_TAXADB is assumed
+    If `dbfile` is not specified, DEFAULT_TAXADB is assumed.
     """
     db = sqlite3.connect(dbfile)
 
     try:
-        r = db.execute('SELECT version FROM stats;')
-        version = r.fetchone()[0]
+        version = db.execute('SELECT version FROM stats;').fetchone()[0]
     except (sqlite3.OperationalError, ValueError, IndexError, TypeError):
         version = None
 
     db.close()
 
-    if version != DB_VERSION:
-        return False
-
-    return True
+    return version == DB_VERSION
 
 
 class NCBITaxa(object):
     """
-    versionadded: 2.3
-
-    Provides a local transparent connector to the NCBI taxonomy database.
+    A local transparent connector to the NCBI taxonomy database.
     """
 
-
-    def __init__(self, dbfile=None, taxdump_file=None, memory=False, update=True):
-        if not dbfile:
-            self.dbfile = DEFAULT_TAXADB
-        else:
-            self.dbfile = dbfile
+    def __init__(self, dbfile=None, taxdump_file=None,
+                 memory=False, update=True):
+        self.dbfile = dbfile or DEFAULT_TAXADB
 
         if taxdump_file:
             self.update_taxonomy_database(taxdump_file)
 
         if dbfile != DEFAULT_TAXADB and not os.path.exists(self.dbfile):
-            print('NCBI database not present yet (first time used?)', file=sys.stderr)
+            print('NCBI database not present yet (first time used?)',
+                  file=sys.stderr)
             self.update_taxonomy_database(taxdump_file)
 
         if not os.path.exists(self.dbfile):
@@ -76,7 +62,8 @@ class NCBITaxa(object):
         self._connect()
 
         if not is_taxadb_up_to_date(self.dbfile) and update:
-            print('NCBI database format is outdated. Upgrading', file=sys.stderr)
+            print('NCBI database format is outdated. Upgrading',
+                  file=sys.stderr)
             self.update_taxonomy_database(taxdump_file)
 
         if memory:
@@ -85,58 +72,66 @@ class NCBITaxa(object):
             filedb.backup(self.db)
 
     def update_taxonomy_database(self, taxdump_file=None):
-        """Updates the ncbi taxonomy database by downloading and parsing the latest
+        """Update the ncbi taxonomy database.
+
+        It does it by downloading and parsing the latest
         taxdump.tar.gz file from the NCBI FTP site (via HTTP).
 
-        :param None taxdump_file: an alternative location of the taxdump.tax.gz file.
+        :param None taxdump_file: Alternative location of the
+            taxdump.tax.gz file.
         """
-        if not taxdump_file:
-            update_db(self.dbfile)
-        else:
-            update_db(self.dbfile, taxdump_file)
+        update_db(self.dbfile, taxdump_file)
 
     def _connect(self):
         self.db = sqlite3.connect(self.dbfile)
 
     def _translate_merged(self, all_taxids):
         conv_all_taxids = set((list(map(int, all_taxids))))
-        cmd = 'select taxid_old, taxid_new FROM merged WHERE taxid_old IN (%s)' %','.join(map(str, all_taxids))
+
+        cmd = ('SELECT taxid_old, taxid_new '
+               'FROM merged WHERE taxid_old IN (%s)' %
+               ','.join(map(str, all_taxids)))
 
         result = self.db.execute(cmd)
+
         conversion = {}
         for old, new in result.fetchall():
             conv_all_taxids.discard(int(old))
             conv_all_taxids.add(int(new))
             conversion[int(old)] = int(new)
+
         return conv_all_taxids, conversion
 
-
     def get_fuzzy_name_translation(self, name, sim=0.9):
-        '''
-        Given an inexact species name, returns the best match in the NCBI database of taxa names.
+        """Return taxid, species name and match score from the NCBI database.
 
-        :argument 0.9 sim: Min word similarity to report a match (from 0 to 1).
+        The results are for the best match for name in the NCBI
+        database of taxa names, with a word similarity >= `sim`.
 
-        :return: taxid, species-name-match, match-score
-        '''
-
-
+        :param name: Species name (does not need to be exact).
+        :param 0.9 sim: Min word similarity to report a match (from 0 to 1).
+        """
         import sqlite3.dbapi2 as dbapi2
+
         _db = dbapi2.connect(self.dbfile)
         _db.enable_load_extension(True)
         module_path = os.path.split(os.path.realpath(__file__))[0]
-        _db.execute("select load_extension('%s')" % os.path.join(module_path,
-                                                                 "SQLite-Levenshtein/levenshtein.sqlext"))
+        _db.execute("SELECT load_extension('%s/%s')" %
+                    (module_path, "SQLite-Levenshtein/levenshtein.sqlext"))
 
         print("Trying fuzzy search for %s" % name)
         maxdiffs = math.ceil(len(name) * (1-sim))
-        cmd = 'SELECT taxid, spname, LEVENSHTEIN(spname, "%s") AS sim  FROM species WHERE sim<=%s ORDER BY sim LIMIT 1;' % (name, maxdiffs)
+        cmd = (f'SELECT taxid, spname, LEVENSHTEIN(spname, "{name}") AS sim '
+               f'FROM species WHERE sim <= {maxdiffs} ORDER BY sim LIMIT 1;')
+
         taxid, spname, score = None, None, len(name)
         result = _db.execute(cmd)
         try:
             taxid, spname, score = result.fetchone()
         except TypeError:
-            cmd = 'SELECT taxid, spname, LEVENSHTEIN(spname, "%s") AS sim  FROM synonym WHERE sim<=%s ORDER BY sim LIMIT 1;' % (name, maxdiffs)
+            cmd = (
+                f'SELECT taxid, spname, LEVENSHTEIN(spname, "{name}") AS sim '
+                f'FROM synonym WHERE sim <= {maxdiffs} ORDER BY sim LIMIT 1;')
             result = _db.execute(cmd)
             try:
                 taxid, spname, score = result.fetchone()
@@ -147,101 +142,111 @@ class NCBITaxa(object):
         else:
             taxid = int(taxid)
 
-        norm_score = 1 - (float(score)/len(name))
+        norm_score = 1 - (float(score) / len(name))
         if taxid:
-            print("FOUND!    %s taxid:%s score:%s (%s)" %(spname, taxid, score, norm_score))
+            print(f'FOUND! {spname} taxid:{taxid} score:{score} ({norm_score})')
 
         return taxid, spname, norm_score
 
     def get_rank(self, taxids):
-        'return a dictionary converting a list of taxids into their corresponding NCBI taxonomy rank'
-
+        """Return dict with NCBI taxonomy ranks for each list of taxids."""
         all_ids = set(taxids)
         all_ids.discard(None)
         all_ids.discard("")
-        query = ','.join(['"%s"' %v for v in all_ids])
-        cmd = "select taxid, rank FROM species WHERE taxid IN (%s);" %query
+
+        query = ','.join('"%s"' % v for v in all_ids)
+        cmd = 'SELECT taxid, rank FROM species WHERE taxid IN (%s);' % query
         result = self.db.execute(cmd)
+
         id2rank = {}
         for tax, spname in result.fetchall():
             id2rank[tax] = spname
+
         return id2rank
 
     def get_lineage_translator(self, taxids):
-        """Given a valid taxid number, return its corresponding lineage track as a
-        hierarchically sorted list of parent taxids.
+        """Return dict with lineage tracks corresponding to the given taxids.
+
+        The lineage tracks are a hierarchically sorted list of parent taxids.
         """
         all_ids = set(taxids)
         all_ids.discard(None)
         all_ids.discard("")
-        query = ','.join(['"%s"' %v for v in all_ids])
-        result = self.db.execute('SELECT taxid, track FROM species WHERE taxid IN (%s);' %query)
+
+        query = ','.join('"%s"' % v for v in all_ids)
+        cmd = 'SELECT taxid, track FROM species WHERE taxid IN (%s);' % query
+        result = self.db.execute(cmd)
+
         id2lineages = {}
         for tax, track in result.fetchall():
-            id2lineages[tax] = list(map(int, reversed(track.split(","))))
+            id2lineages[tax] = list(map(int, reversed(track.split(','))))
 
         return id2lineages
 
-
     def get_lineage(self, taxid):
-        """Given a valid taxid number, return its corresponding lineage track as a
-        hierarchically sorted list of parent taxids.
+        """Return lineage track corresponding to the given taxid.
+
+        The lineage track is a hierarchically sorted list of parent taxids.
         """
         if not taxid:
             return None
+
         taxid = int(taxid)
-        result = self.db.execute('SELECT track FROM species WHERE taxid=%s' %taxid)
+        result = self.db.execute(f'SELECT track FROM species WHERE taxid={taxid}')
         raw_track = result.fetchone()
         if not raw_track:
             #perhaps is an obsolete taxid
             _, merged_conversion = self._translate_merged([taxid])
             if taxid in merged_conversion:
-                result = self.db.execute('SELECT track FROM species WHERE taxid=%s' %merged_conversion[taxid])
+                result = self.db.execute(
+                    'SELECT track FROM species WHERE taxid=%s' %
+                    merged_conversion[taxid])
                 raw_track = result.fetchone()
-            # if not raise error
-            if not raw_track:
-                #raw_track = ["1"]
-                raise ValueError("%s taxid not found" %taxid)
-            else:
-                warnings.warn("taxid %s was translated into %s" %(taxid, merged_conversion[taxid]))
 
-        track = list(map(int, raw_track[0].split(",")))
+            if not raw_track:
+                raise ValueError(f'Could not find taxid: {taxid}')
+            else:
+                warnings.warn('taxid %s was translated into %s' %
+                              (taxid, merged_conversion[taxid]))
+
+        track = list(map(int, raw_track[0].split(',')))
         return list(reversed(track))
 
     def get_common_names(self, taxids):
-        query = ','.join(['"%s"' %v for v in taxids])
-        cmd = "select taxid, common FROM species WHERE taxid IN (%s);" %query
+        query = ','.join('"%s"' % v for v in taxids)
+        cmd = 'SELECT taxid, common FROM species WHERE taxid IN (%s);' % query
         result = self.db.execute(cmd)
+
         id2name = {}
         for tax, common_name in result.fetchall():
             if common_name:
                 id2name[tax] = common_name
+
         return id2name
 
     def get_taxid_translator(self, taxids, try_synonyms=True):
-        """Given a list of taxids, returns a dictionary with their corresponding
-        scientific names.
-        """
-
+        """Return dict with the scientific names corresponding to the taxids."""
         all_ids = set(map(int, taxids))
         all_ids.discard(None)
         all_ids.discard("")
-        query = ','.join(['"%s"' %v for v in all_ids])
-        cmd = "select taxid, spname FROM species WHERE taxid IN (%s);" %query
+
+        query = ','.join('"%s"' % v for v in all_ids)
+        cmd = 'SELECT taxid, spname FROM species WHERE taxid IN (%s);' % query
         result = self.db.execute(cmd)
+
         id2name = {}
         for tax, spname in result.fetchall():
             id2name[tax] = spname
 
-        # any taxid without translation? lets tray in the merged table
+        # Any taxid without translation? Let's try in the merged table.
         if len(all_ids) != len(id2name) and try_synonyms:
             not_found_taxids = all_ids - set(id2name.keys())
             taxids, old2new = self._translate_merged(not_found_taxids)
             new2old = {v: k for k,v in old2new.items()}
 
             if old2new:
-                query = ','.join(['"%s"' %v for v in new2old])
-                cmd = "select taxid, spname FROM species WHERE taxid IN (%s);" %query
+                query = ','.join('"%s"' % v for v in new2old)
+                cmd = 'SELECT taxid, spname FROM species WHERE taxid IN (%s);' % query
                 result = self.db.execute(cmd)
                 for tax, spname in result.fetchall():
                     id2name[new2old[tax]] = spname
@@ -249,12 +254,10 @@ class NCBITaxa(object):
         return id2name
 
     def get_name_translator(self, names):
-        """
-        Given a list of taxid scientific names, returns a dictionary translating them into their corresponding taxids.
+        """Return dict with taxids corresponding to the given scientific names.
 
         Exact name match is required for translation.
         """
-
         name2id = {}
         #name2realname = {}
         name2origname = {}
@@ -263,17 +266,18 @@ class NCBITaxa(object):
 
         names = set(name2origname.keys())
 
-        query = ','.join(['"%s"' %n for n in name2origname.keys()])
-        cmd = 'select spname, taxid from species where spname IN (%s)' %query
-        result = self.db.execute('select spname, taxid from species where spname IN (%s)' %query)
+        query = ','.join('"%s"' % n for n in name2origname.keys())
+        cmd = 'SELECT spname, taxid FROM species WHERE spname IN (%s)' % query
+        result = self.db.execute('SELECT spname, taxid FROM species WHERE spname IN (%s)' % query)
         for sp, taxid in result.fetchall():
             oname = name2origname[sp.lower()]
             name2id.setdefault(oname, []).append(taxid)
             #name2realname[oname] = sp
         missing =  names - set([n.lower() for n in name2id.keys()])
         if missing:
-            query = ','.join(['"%s"' %n for n in missing])
-            result = self.db.execute('select spname, taxid from synonym where spname IN (%s)' %query)
+            query = ','.join('"%s"' % n for n in missing)
+            result = self.db.execute('SELECT spname, taxid FROM synonym '
+                                     'WHERE spname IN (%s)' % query)
             for sp, taxid in result.fetchall():
                 oname = name2origname[sp.lower()]
                 name2id.setdefault(oname, []).append(taxid)
@@ -281,21 +285,21 @@ class NCBITaxa(object):
         return name2id
 
     def translate_to_names(self, taxids):
-        """
-        Given a list of taxid numbers, returns another list with their corresponding scientific names.
-        """
+        """Return list of scientific names corresponding to taxids."""
         id2name = self.get_taxid_translator(taxids)
         names = []
         for sp in taxids:
             names.append(id2name.get(sp, sp))
         return names
 
+    def get_descendant_taxa(self, parent, intermediate_nodes=False,
+                            rank_limit=None, collapse_subspecies=False,
+                            return_tree=False):
+        """Return list of descendant taxids of the given parent.
 
-    def get_descendant_taxa(self, parent, intermediate_nodes=False, rank_limit=None, collapse_subspecies=False, return_tree=False):
-        """
-        given a parent taxid or scientific species name, returns a list of all its descendants taxids.
-        If intermediate_nodes is set to True, internal nodes will also be dumped.
+        Parent can be given as taxid or scientific species name.
 
+        If intermediate_nodes=True, the list will also have the internal nodes.
         """
         try:
             taxid = int(parent)
@@ -341,24 +345,21 @@ class NCBITaxa(object):
         else:
             return [tid for tid, count in descendants.items() if count == 1]
 
-    def get_topology(self, taxids, intermediate_nodes=False, rank_limit=None, collapse_subspecies=False, annotate=True):
-        """Given a list of taxid numbers, return the minimal pruned NCBI taxonomy tree
-        containing all of them.
+    def get_topology(self, taxids, intermediate_nodes=False, rank_limit=None,
+                     collapse_subspecies=False, annotate=True):
+        """Return the minimal pruned NCBI taxonomy tree containing taxids.
 
         :param False intermediate_nodes: If True, single child nodes
             representing the complete lineage of leaf nodes are kept.
             Otherwise, the tree is pruned to contain the first common
             ancestor of each group.
-
         :param None rank_limit: If valid NCBI rank name is provided,
             the tree is pruned at that given level. For instance, use
             rank="species" to get rid of sub-species or strain leaf
             nodes.
-
         :param False collapse_subspecies: If True, any item under the
             species rank will be collapsed into the species upper
             node.
-
         """
         from .. import PhyloTree
         taxids, merged_conversion = self._translate_merged(taxids)
@@ -378,7 +379,7 @@ class NCBITaxa(object):
             except ValueError:
                 # If root taxid is not found in postorder, must be a tip node
                 subtree = [root_taxid]
-            leaves = set([v for v, count in Counter(subtree).items() if count == 1])
+            leaves = set(v for v, count in Counter(subtree).items() if count == 1)
             nodes[root_taxid] = PhyloTree({'name': str(root_taxid)})
             current_parent = nodes[root_taxid]
             for tid in subtree:
@@ -449,22 +450,21 @@ class NCBITaxa(object):
 
         return tree
 
+    def annotate_tree(self, t, taxid_attr="name", tax2name=None,
+                      tax2track=None, tax2rank=None):
+        """Annotate a tree containing taxids as leaf names.
 
-    def annotate_tree(self, t, taxid_attr="name", tax2name=None, tax2track=None, tax2rank=None):
-        """Annotate a tree containing taxids as leaf names by adding the  'taxid',
-        'sci_name', 'lineage', 'named_lineage' and 'rank' additional attributes.
+        The annotation adds the properties: 'taxid', 'sci_name',
+        'lineage', 'named_lineage' and 'rank'.
 
         :param t: a Tree (or Tree derived) instance.
-
         :param name taxid_attr: Allows to set a custom node attribute
             containing the taxid number associated to each node (i.e.
             species in PhyloTree instances).
-
         :param tax2name,tax2track,tax2rank: Use these arguments to
             provide pre-calculated dictionaries providing translation
             from taxid number and names,track lineages and ranks.
         """
-
         taxids = set()
         for n in t.traverse():
             try:
@@ -540,43 +540,11 @@ class NCBITaxa(object):
             sorted_lineage = sorted(common, key=lambda x: min(pos[x]))
             return sorted_lineage
 
-        # OLD APPROACH:
-
-        # visited = defaultdict(int)
-        # for index, name in [(ei, e) for v in vectors for ei, e in enumerate(v)]:
-        #     visited[(name, index)] += 1
-
-        # def _sort(a, b):
-        #     if a[1] > b[1]:
-        #         return 1
-        #     elif a[1] < b[1]:
-        #         return -1
-        #     else:
-        #         if a[0][1] > b[0][1]:
-        #             return 1
-        #         elif a[0][1] < b[0][1]:
-        #             return -1
-        #     return 0
-
-        # matches = sorted(visited.items(), _sort)
-
-        # if matches:
-        #     best_match = matches[-1]
-        # else:
-        #     return "", set()
-
-        # if best_match[1] != len(vectors):
-        #     return "", set()
-        # else:
-        #     return best_match[0][0], [m[0][0] for m in matches if m[1] == len(vectors)]
-
-
     def get_broken_branches(self, t, taxa_lineages, n2content=None):
         """Returns a list of NCBI lineage names that are not monophyletic in the
         provided tree, as well as the list of affected branches and their size.
 
         CURRENTLY EXPERIMENTAL
-
         """
         if not n2content:
             n2content = t.get_cached_content()
@@ -604,26 +572,8 @@ class NCBITaxa(object):
                 broken_clades.add(tax)
 
         broken_clade_sizes = [len(tax2node[tax]) for tax in broken_clades]
+
         return broken_branches, broken_clades, broken_clade_sizes
-
-
-    # def annotate_tree_with_taxa(self, t, name2taxa_file, tax2name=None, tax2track=None, attr_name="name"):
-    #     if name2taxa_file:
-    #         names2taxid = dict([map(strip, line.split("\t"))
-    #                             for line in open(name2taxa_file)])
-    #     else:
-    #         names2taxid = dict([(n.name, getattr(n, attr_name)) for n in t.iter_leaves()])
-
-    #     not_found = 0
-    #     for n in t.iter_leaves():
-    #         n.add_features(taxid=names2taxid.get(n.name, 0))
-    #         n.add_features(species=n.taxid)
-    #         if n.taxid == 0:
-    #             not_found += 1
-    #     if not_found:
-    #         print >>sys.stderr, "WARNING: %s nodes where not found within NCBI taxonomy!!" %not_found
-
-    #     return self.annotate_tree(t, tax2name, tax2track, attr_name="taxid")
 
 
 def load_ncbi_tree_from_dump(tar):
@@ -694,7 +644,7 @@ def load_ncbi_tree_from_dump(tar):
 def generate_table(t):
     OUT = open("taxa.tab", "w")
     for j, n in enumerate(t.traverse()):
-        if j%1000 == 0:
+        if j % 1000 == 0:
             print("\r",j,"generating entries...", end=' ')
         temp_node = n
         track = []
@@ -702,9 +652,13 @@ def generate_table(t):
             track.append(temp_node.name)
             temp_node = temp_node.up
         if n.up:
-            print('\t'.join([n.name, n.up.name, n.props.get('taxname'), n.props.get("common_name", ''), n.props.get("rank"), ','.join(track)]), file=OUT)
+            print('\t'.join(n.name, n.up.name, n.props.get('taxname'),
+                            n.props.get("common_name", ''), n.props.get("rank"),
+                            ','.join(track)), file=OUT)
         else:
-            print('\t'.join([n.name, "", n.props.get('taxname'), n.props.get("common_name", ''), n.props.get("rank"), ','.join(track)]), file=OUT)
+            print('\t'.join(n.name, "", n.props.get('taxname'),
+                            n.props.get("common_name", ''), n.props.get("rank"),
+                            ','.join(track)), file=OUT)
     OUT.close()
 
 def update_db(dbfile, targz_file=None):
@@ -794,29 +748,34 @@ def upload_data(dbfile):
     db.commit()
 
     for i, line in enumerate(open("syn.tab")):
-        if i%5000 == 0 :
-            print('\rInserting synonyms:     % 6d' %i, end=' ', file=sys.stderr)
+        if i % 5000 == 0 :
+            print('\rInserting synonyms:     %6d' % i, end=' ', file=sys.stderr)
             sys.stderr.flush()
         taxid, spname = line.strip('\n').split('\t')
-        db.execute("INSERT INTO synonym (taxid, spname) VALUES (?, ?);", (taxid, spname))
+        db.execute("INSERT INTO synonym (taxid, spname) VALUES (?, ?);",
+                   (taxid, spname))
     print()
     db.commit()
     for i, line in enumerate(open("merged.tab")):
-        if i%5000 == 0 :
-            print('\rInserting taxid merges: % 6d' %i, end=' ', file=sys.stderr)
+        if i % 5000 == 0 :
+            print('\rInserting taxid merges: %6d' % i, end=' ', file=sys.stderr)
             sys.stderr.flush()
         taxid_old, taxid_new = line.strip('\n').split('\t')
-        db.execute("INSERT INTO merged (taxid_old, taxid_new) VALUES (?, ?);", (taxid_old, taxid_new))
+        db.execute("INSERT INTO merged (taxid_old, taxid_new) VALUES (?, ?);",
+                   (taxid_old, taxid_new))
     print()
     db.commit()
     for i, line in enumerate(open("taxa.tab")):
-        if i%5000 == 0 :
-            print('\rInserting taxids:      % 6d' %i, end=' ', file=sys.stderr)
+        if i % 5000 == 0 :
+            print('\rInserting taxids:      %6d' % i, end=' ', file=sys.stderr)
             sys.stderr.flush()
         taxid, parentid, spname, common, rank, lineage = line.strip('\n').split('\t')
-        db.execute("INSERT INTO species (taxid, parent, spname, common, rank, track) VALUES (?, ?, ?, ?, ?, ?);", (taxid, parentid, spname, common, rank, lineage))
+        db.execute('INSERT INTO species (taxid, parent, spname, common, rank, track) '
+                   'VALUES (?, ?, ?, ?, ?, ?);',
+                   (taxid, parentid, spname, common, rank, lineage))
     print()
     db.commit()
+
 
 if __name__ == "__main__":
     ncbi = NCBITaxa()
