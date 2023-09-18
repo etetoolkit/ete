@@ -993,28 +993,22 @@ cdef class Tree(object):
         return current  # the midpoint was the root (we went back to it)
 
     def populate(self, size, names_library=None, reuse_names=False,
-                 random_branches=False, branch_range=(0,1),
-                 support_range=(0,1)):
-        """
-        Generates a random topology by populating current node.
+                 random_branches=False, branch_range=(0, 1),
+                 support_range=(0, 1)):
+        """Populate current node with branches generating a random topology.
 
-        :argument None names_library: If provided, names library
-          (list, set, dict, etc.) will be used to name nodes.
-
-        :argument False reuse_names: If True, node names will not be
-          necessarily unique, which makes the process a bit more
-          efficient.
-
-        :argument False random_branches: If True, branch distances and support
-          values will be randomized.
-
-        :argument (0,1) branch_range: If random_branches is True, this
-          range of values will be used to generate random distances.
-
-        :argument (0,1) support_range: If random_branches is True,
-          this range of values will be used to generate random branch
-          support values.
-
+        :param None names_library: If provided, names library (list,
+            set, dict, etc.) will be used to name nodes.
+        :param False reuse_names: If True, node names will not be
+            necessarily unique, which makes the process a bit more
+            efficient.
+        :param False random_branches: If True, branch distances and
+            support values will be randomized.
+        :param (0,1) branch_range: If random_branches is True, this
+            range of values will be used to generate random distances.
+        :param (0,1) support_range: If random_branches is True, this
+            range of values will be used to generate random branch
+            support values.
         """
         NewNode = self.__class__
 
