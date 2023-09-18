@@ -1,6 +1,6 @@
 """
-This module defines the PhyloNode dataytype to manage phylogenetic
-trees. It inheritates the coretype Tree and add some special
+This module defines the PhyloTree class to manage phylogenetic
+trees. It inherits the coretype Tree and adds some special
 features to the the node instances.
 """
 
@@ -13,7 +13,7 @@ from ete4 import Tree, SeqGroup, NCBITaxa, GTDBTaxa
 from .reconciliation import get_reconciled_tree
 from . import spoverlap
 
-__all__ = ["PhyloNode", "PhyloTree"]
+__all__ = ["PhyloTree"]
 
 def _parse_species(name):
     return name[:3]
@@ -103,11 +103,10 @@ def _get_subtrees(tree, full_copy=False, properties=None, newick_only=False):
             yield t
 
 def calc_subtrees(tree):
-    '''
-    Computes the total number of species trees that TreeKO algorithm would produce for a given gene tree
+    """Return the number of species and duplications for the given tree.
 
-    returns: ntrees, ndups
-    '''
+    The ones that the TreeKO algorithm would produce.
+    """
     n2subtrees = {}
     dups = 0
     for n in tree.traverse("postorder"):
@@ -264,7 +263,7 @@ def get_subparts(n):
     return subtrees
 
 
-class PhyloNode(Tree):
+class PhyloTree(Tree):
     """Representation of a phylogenetic tree.
 
     Extends the standard :class:`Tree` instance by adding
@@ -274,30 +273,33 @@ class PhyloNode(Tree):
         the text string containing the same information.
     :param alignment: File containing a multiple sequence alignment.
     :param alg_format: "fasta", "phylip" or "iphylip" (interleaved).
-    :param format: sub-newick format.
-
-      .. table::
-
-          ======  ==============================================
-          FORMAT  DESCRIPTION
-          ======  ==============================================
-          0       flexible with support values
-          1       flexible with internal node names
-          2       all branches + leaf names + internal supports
-          3       all branches + all names
-          4       leaf branches + leaf names
-          5       internal and leaf branches + leaf names
-          6       internal branches + leaf names
-          7       leaf branches + all names
-          8       all names
-          9       leaf names
-          100     topology only
-          ======  ==============================================
-
-    :param sp_naming_function: function that gets a nodename and
+    :param parser: Parser to read the newick.
+    :param sp_naming_function: Function that gets a nodename and
         returns the species name (see
-        :func:`PhyloNode.set_species_naming_function`). By default,
-        the 3 first letter of nodes will be used as species identifiers.
+        :func:`PhyloTree.set_species_naming_function`). By default,
+        the 3 first letter of nodes will be used as species
+        identifiers.
+
+
+    The possible formats used for the parser are:
+
+    .. table::
+
+      ======  ==============================================
+      FORMAT  DESCRIPTION
+      ======  ==============================================
+      0       flexible with support values
+      1       flexible with internal node names
+      2       all branches + leaf names + internal supports
+      3       all branches + all names
+      4       leaf branches + leaf names
+      5       internal and leaf branches + leaf names
+      6       internal branches + leaf names
+      7       leaf branches + all names
+      8       all names
+      9       leaf names
+      100     topology only
+      ======  ==============================================
     """
 
     def _get_species(self):
@@ -323,7 +325,7 @@ class PhyloNode(Tree):
     #:
     #Species code associated to the node. This property can be
     #automatically extracted from the Tree.name attribute or
-    #manually set (see :func:`PhyloNode.set_species_naming_function`).
+    #manually set (see :func:`PhyloTree.set_species_naming_function`).
     species = property(fget = _get_species, fset = _set_species)
 
     def __init__(self, newick=None, children=None, alignment=None,
@@ -341,7 +343,7 @@ class PhyloNode(Tree):
 
         # This will be only executed after reading the whole tree,
         # because the argument 'alignment' is not passed to the
-        # PhyloNode constructor during parsing
+        # PhyloTree constructor during parsing
         if alignment:
             self.link_to_alignment(alignment, alg_format)
         if newick:
@@ -460,17 +462,16 @@ class PhyloNode(Tree):
         return spoverlap.get_evol_events_from_root(self, sos_thr=sos_thr)
 
     def get_farthest_oldest_leaf(self, species2age, is_leaf_fn=None):
-        """ Returns the farthest oldest leaf to the current
-        one. It requires an species2age dictionary with the age
-        estimation for all species.
+        """Return the farthest oldest leaf to the current one.
 
-        :argument None is_leaf_fn: A pointer to a function that
-          receives a node instance as unique argument and returns True
-          or False. It can be used to dynamically collapse nodes, so
-          they are seen as leaves.
+        It requires an species2age dictionary with the age estimation
+        for all species.
 
+        :param None is_leaf_fn: A pointer to a function that receives
+            a node instance as unique argument and returns True or
+            False. It can be used to dynamically collapse nodes, so
+            they are seen as leaves.
         """
-
         root = self.root
         outgroup_dist  = 0
         outgroup_node  = self
@@ -490,15 +491,12 @@ class PhyloNode(Tree):
         return outgroup_node
 
     def get_farthest_oldest_node(self, species2age):
-        """
-        .. versionadded:: 2.1
+        """Return the farthest oldest node (leaf or internal).
 
-        Returns the farthest oldest node (leaf or internal). The
-        difference with get_farthest_oldest_leaf() is that in this
+        The difference with get_farthest_oldest_leaf() is that in this
         function internal nodes grouping seqs from the same species
         are collapsed.
         """
-
         # I use a custom is_leaf() function to collapse nodes groups
         # seqs from the same species
         is_leaf = lambda node: len(node.get_species())==1
@@ -565,27 +563,22 @@ class PhyloNode(Tree):
 
     def get_speciation_trees(self, map_properties=None, autodetect_duplications=True,
                              newick_only=False, target_attr='species'):
-        """
-        .. versionadded: 2.2
+        """Return number of species trees, of duplications, and an iterator.
 
         Calculates all possible species trees contained within a
         duplicated gene family tree as described in `Treeko
         <http://treeko.cgenomics.org>`_ (see `Marcet and Gabaldon,
         2011 <http://www.ncbi.nlm.nih.gov/pubmed/21335609>`_ ).
 
-
-        :argument True autodetect_duplications: If True, duplication
-        nodes will be automatically detected using the Species Overlap
-        algorithm (:func:`PhyloNode.get_descendants_evol_events`. If
-        False, duplication nodes within the original tree are expected
-        to contain the feature "evoltype=D".
-
-        :argument None properties: A list of properties that should be
-        mapped from the original gene family tree to each species
-        tree subtree.
-
-        :returns: (number_of_sptrees, number_of_dups, species_tree_iterator)
-
+        :param None map_properties: A list of properties that should be
+            mapped from the original gene family tree to each species
+            tree subtree.
+        :param True autodetect_duplications: If True, duplication
+            nodes will be automatically detected using the Species
+            Overlap algorithm
+            (:func:`PhyloTree.get_descendants_evol_events`. If False,
+            duplication nodes within the original tree are expected to
+            contain the feature "evoltype=D".
         """
         t = self
         if autodetect_duplications:
@@ -602,7 +595,7 @@ class PhyloNode(Tree):
         return sp_trees
 
     def __get_speciation_trees_recursive(self):
-        """ experimental and testing """
+        # NOTE: This function is experimental and for testing.
         t = self.copy()
         if autodetect_duplications:
             dups = 0
@@ -626,19 +619,14 @@ class PhyloNode(Tree):
         return len(subtrees), 0, subtrees
 
     def split_by_dups(self, autodetect_duplications=True):
-        """
-        .. versionadded: 2.2
+        """Return the list of subtrees when splitting by its duplication nodes.
 
-        Returns the list of all subtrees resulting from splitting
-        current tree by its duplication nodes.
-
-        :argument True autodetect_duplications: If True, duplication
-        nodes will be automatically detected using the Species Overlap
-        algorithm (:func:`PhyloNode.get_descendants_evol_events`. If
-        False, duplication nodes within the original tree are expected
-        to contain the feature "evoltype=D".
-
-        :returns: species_trees
+        :param True autodetect_duplications: If True, duplication
+            nodes will be automatically detected using the Species
+            Overlap algorithm
+            (:func:`PhyloTree.get_descendants_evol_events`. If False,
+            duplication nodes within the original tree are expected to
+            contain the feature "evoltype=D".
         """
         try:
             t = self.copy()
@@ -771,9 +759,3 @@ class PhyloNode(Tree):
         ncbi = NCBITaxa()
         for t in target_trees:
             ncbi.get_broken_branches(t, cached_content)
-
-
-
-#: .. currentmodule:: ete3
-#
-PhyloTree = PhyloNode

@@ -3,14 +3,14 @@
 """
 This module defines the EvolNode dataytype to manage evolutionary
 variables and integrate them within phylogenetic trees. It inheritates
-the coretype PhyloNode and add some speciall features to the the node
+the coretype PhyloTree and add some speciall features to the the node
 instances.
 """
 from __future__ import absolute_import
 from ..tools.utils import which
 from .utils import translate
 from .model import Model, PARAMS, AVAIL
-from .. import PhyloNode, SeqGroup
+from .. import PhyloTree, SeqGroup
 from warnings import warn
 import sys
 import os
@@ -63,7 +63,7 @@ def _parse_species(name):
     return name[:3]  # just to return specie name from fasta description
 
 
-class EvolNode(PhyloNode):
+class EvolNode(PhyloTree):
     """Re-implementation of the standart Tree instance. It adds
     attributes and methods to work with phylogentic trees.
 
@@ -91,7 +91,7 @@ class EvolNode(PhyloNode):
         self._models = {}
         self.__gui_mark_mode = False
 
-        PhyloNode.__init__(self, newick=newick, parser=parser,
+        PhyloTree.__init__(self, newick=newick, parser=parser,
                            sp_naming_function=sp_naming_function, **kwargs)
 
         if newick:
@@ -433,7 +433,7 @@ class EvolNode(PhyloNode):
             return nwk
         else:
             return nwk
-    #write.__doc__ += super(PhyloNode, PhyloNode()).write.__doc__.replace(
+    #write.__doc__ += super(PhyloTree, PhyloTree()).write.__doc__.replace(
     #    'argument format', 'argument 10 format')
 
     def get_most_likely(self, altn, null):
