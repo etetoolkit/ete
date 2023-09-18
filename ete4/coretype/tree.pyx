@@ -2131,7 +2131,7 @@ cdef class Tree(object):
 
     def add_face(self, face, column=0, position='branch-right',
                  collapsed_only=False):
-        if isinstance(face, Face):
+        if TREEVIEW and isinstance(face, Face):
             self.add_face_treeview(face, column, position)
         elif isinstance(face, smartFace):
             self.add_face_smartview(face, column, position, collapsed_only)
