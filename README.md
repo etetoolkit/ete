@@ -63,6 +63,16 @@ To install ETE in a local directory to help with the development, you can:
   - Otherwise, you can install them with `pip install <dependencies>`
 - Build and install ete4 from the repository's root directory: `pip install -e .`
 
+## Optional dependencies
+
+If you want to use the `treeview` module (which depends on
+[PyQt](https://www.riverbankcomputing.com/software/pyqt/)), you can
+add `[treeview]` to the pip installation. For example:
+
+```sh
+pip install -e .[treeview]
+```
+
 
 # Exploring a tree
 
