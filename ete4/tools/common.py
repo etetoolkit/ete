@@ -2,13 +2,8 @@ import sys
 import operator
 import re
 
-__CITATION__ = '''#       ** If you use this software for a published work, please cite: **
-#
-# Jaime Huerta-Cepas, Joaquin Dopazo and Toni Gabaldon. ETE: a python Environment
-# for Tree Exploration. BMC Bioinformatics 2010, 11:24. doi: 10.1186/1471-2105-11-24.'''
-
-
 LOG_LEVEL = 2
+
 
 class ArgError(ValueError):
     def __init__(self, value):
