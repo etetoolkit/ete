@@ -14,9 +14,9 @@ from .nexml import Nexml, NexmlTree
 from .evol import EvolTree
 from .coretype.arraytable import *
 from .clustering.clustertree import *
+from .utils import SVG_COLORS, COLOR_SCHEMES, random_color
 
 try:
-    from .treeview.svg_colors import *
     from .treeview.main import *
     from .treeview.faces import *
     from .treeview import faces

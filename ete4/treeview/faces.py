@@ -15,12 +15,13 @@ except ImportError:
     # Fall back to Python 2's urllib2
     from urllib2 import urlopen
 
-from .qt import (QGraphicsRectItem, QGraphicsLineItem,
-                 QGraphicsPolygonItem, QGraphicsEllipseItem,
-                 QPen, QColor, QBrush, QPolygonF, QFont,
-                 QPixmap, QFontMetrics, QPainter, QPainterPath,
-                 QRadialGradient, QGraphicsSimpleTextItem, QGraphicsTextItem,
-                 QGraphicsItem, Qt, QLineF, QPointF, QRect, QRectF, QGraphicsSvgItem)
+from .qt import (
+    QGraphicsRectItem, QGraphicsLineItem,
+    QGraphicsPolygonItem, QGraphicsEllipseItem,
+    QPen, QColor, QBrush, QPolygonF, QFont,
+    QPixmap, QFontMetrics, QPainter, QPainterPath,
+    QRadialGradient, QGraphicsSimpleTextItem, QGraphicsTextItem,
+    QGraphicsItem, Qt, QLineF, QPointF, QRect, QRectF, QGraphicsSvgItem)
 
 from .main import add_face_to_node, _Background, _Border, COLOR_SCHEMES
 
@@ -237,7 +238,7 @@ class TextFace(Face):
         if txt is None:
             txt= self.get_text()
         fm = QFontMetrics(self._get_font())
-        tx_w = fm.width(txt)
+        tx_w = fm.horizontalAdvance(txt)
         if self.tight_text:
             textr = fm.tightBoundingRect(self.get_text())
             down = textr.height() + textr.y()
@@ -521,7 +522,7 @@ class ProfileFace(Face):
         p.drawText(QPointF(profile_width,y+profile_height), "%0.3f" %self.min_value)
 
         dashedPen = QPen(QBrush(QColor("#ddd")), 0)
-        dashedPen.setStyle(Qt.DashLine)
+        dashedPen.setStyle(Qt.PenStyle.DashLine)
 
         # Draw hz grid
         p.setPen(dashedPen)
@@ -611,7 +612,7 @@ class ProfileFace(Face):
         p.drawText(QPointF(profile_width,mean_line_y), "%0.3f" %self.center_v)
 
         dashedPen = QPen(QBrush(QColor("#ddd")), 0)
-        dashedPen.setStyle(Qt.DashLine)
+        dashedPen.setStyle(Qt.PenStyle.DashLine)
 
         # Draw hz grid
         p.setPen(dashedPen)
@@ -716,7 +717,7 @@ class ProfileFace(Face):
         p.drawText(QPointF(profile_width,mean_line_y+5), "%0.3f" %self.center_v)
 
         dashedPen = QPen(QBrush(QColor("#ddd")), 0)
-        dashedPen.setStyle(Qt.DashLine)
+        dashedPen.setStyle(Qt.PenStyle.DashLine)
 
         # Draw hz grid
         p.setPen(dashedPen)
@@ -877,7 +878,7 @@ class OLD_SequenceFace(Face):
         font = QFont("Courier", self.fsize)
         fm = QFontMetrics(font)
         height = fm.leading() + fm.overlinePos() + fm.underlinePos()
-        #width  = fm.size(Qt.AlignTop, self.seq).width()
+        #width  = fm.size(Qt.AlignmentFlag.AlignTop, self.seq).width()
         width = self.fsize * len(self.seq)
 
         self.pixmap = QPixmap(width,height)
@@ -922,7 +923,7 @@ class TreeFace(Face):
         self.item = None
 
     def update_items(self):
-        from .qt4_render import render, init_tree_style
+        from .qt_render import render, init_tree_style
         ts = init_tree_style(self.root_node, self.img)
         hide_root = False
         if self.root_node is self.node:
@@ -957,7 +958,7 @@ def _label_painter(obj, p, option, widget):
         p.setFont(QFont(lfont, lsize))
         p.setPen(QPen(QColor(lcolor)))
         fm = QFontMetrics(p.font())
-        metrics = fm.boundingRect(QRect(), Qt.AlignCenter, llabel)
+        metrics = fm.boundingRect(QRect(), Qt.AlignmentFlag.AlignCenter, llabel)
         rect = obj.boundingRect()
         p.drawText(int(rect.width()/2-(metrics.width()/2)),
                    int(rect.height()/2+(metrics.height()/2)),
@@ -976,7 +977,7 @@ class _SphereItem(QGraphicsEllipseItem):
             self.setBrush(QBrush(QColor(color)))
         else:
             self.gradient = QRadialGradient(r, r, r,(d)/3,(d)/3)
-            self.gradient.setColorAt(0.05, Qt.white)
+            self.gradient.setColorAt(0.05, Qt.GlobalColor.white)
             self.gradient.setColorAt(1, QColor(color))
             self.setBrush(QBrush(self.gradient))
         self.setPen(QPen(QColor(color)))
@@ -994,11 +995,11 @@ class _RectItem(QGraphicsRectItem):
         if bgcolor:
             self.setBrush(QBrush(QColor(bgcolor)))
         else:
-            self.setBrush(QBrush(Qt.NoBrush))
+            self.setBrush(QBrush(Qt.BrushStyle.NoBrush))
         if fgcolor:
             self.setPen(QPen(QColor(fgcolor)))
         else:
-            self.setPen(QPen(Qt.NoPen))
+            self.setPen(QPen(Qt.PenStyle.NoPen))
 
     def paint(self, p, option, widget):
         super(_RectItem, self).paint(p, option, widget)
@@ -1172,7 +1173,7 @@ class _PieChartItem(QGraphicsRectItem):
         angle_start = 0
 
         if not self.line_color:
-            painter.setPen(Qt.NoPen)
+            painter.setPen(Qt.PenStyle.NoPen)
         else:
             painter.setPen(QColor(self.line_color))
 
@@ -1232,10 +1233,10 @@ class _StackedBarItem(QGraphicsRectItem):
     def paint(self, painter, option, widget):
         total_w = self.rect().width()
         total_h = self.rect().height()
-        painter.setBrush(Qt.NoBrush)
+        painter.setBrush(Qt.BrushStyle.NoBrush)
 
         if not self.line_color:
-            painter.setPen(Qt.NoPen)
+            painter.setPen(Qt.PenStyle.NoPen)
         else:
             painter.setPen(QColor(self.line_color))
 
@@ -1377,10 +1378,10 @@ class _BarChartItem(QGraphicsRectItem):
             min_string = "% 7.2f" %min_value
             fm = QFontMetrics(QFont("Verdana", self.scale_fsize))
             max_string_metrics = fm.boundingRect(QRect(), \
-                                                 Qt.AlignLeft, \
+                                                 Qt.AlignmentFlag.AlignLeft, \
                                                  max_string)
             min_string_metrics = fm.boundingRect(QRect(), \
-                                                 Qt.AlignLeft, \
+                                                 Qt.AlignmentFlag.AlignLeft, \
                                                  min_string)
             scale_width = margin + max(max_string_metrics.width(),
                                              min_string_metrics.width())
@@ -1388,7 +1389,7 @@ class _BarChartItem(QGraphicsRectItem):
         if self.labels:
             fm = QFontMetrics(QFont("Verdana", self.label_fsize))
             longest_label = sorted(self.labels, key=lambda x: len(x))[-1]
-            label_height = fm.boundingRect(QRect(), Qt.AlignLeft, longest_label).width() + margin
+            label_height = fm.boundingRect(QRect(), Qt.AlignmentFlag.AlignLeft, longest_label).width() + margin
             label_width = fm.height() * len(self.labels)
             self.width = max(label_width, self.width)
 
@@ -1399,7 +1400,7 @@ class _BarChartItem(QGraphicsRectItem):
         colors = self.colors
         values = self.values
         deviations = self.deviations
-        p.setBrush(Qt.NoBrush)
+        p.setBrush(Qt.BrushStyle.NoBrush)
         margin = 2
         spacer = 3
         spacing_length = (spacer*(len(values)-1))
@@ -1448,7 +1449,7 @@ class _BarChartItem(QGraphicsRectItem):
 
         if self.draw_grid:
             dashedPen = QPen(QBrush(QColor("#ddd")), 0)
-            dashedPen.setStyle(Qt.DashLine)
+            dashedPen.setStyle(Qt.PenStyle.DashLine)
             p.setPen(dashedPen)
             p.drawLineQLineF((x+1, mean_line_y, plot_width - 2, mean_line_y))
             p.drawLine(QLineF(x+1, line2_y, plot_width - 2, line2_y ))
@@ -1470,7 +1471,7 @@ class _BarChartItem(QGraphicsRectItem):
                 p.save()
                 p.translate(x1, plot_height+2)
                 p.rotate(90)
-                p.drawText(QRectF(0, -x_alpha, label_height, x_alpha), Qt.AlignVCenter, str(self.labels[pos]))
+                p.drawText(QRectF(0, -x_alpha, label_height, x_alpha), Qt.AlignmentFlag.AlignVCenter, str(self.labels[pos]))
                 #p.drawRect(QRectF(0, -x_alpha, label_height, x_alpha))
                 p.restore()
 
@@ -1577,7 +1578,7 @@ class SequenceItem(QGraphicsRectItem):
                     p.setFont(qfont)
                     p.setBrush(QBrush(QColor("black")))
                     p.drawText(QRectF(x, 0, self.poswidth, self.posheight),
-                               Qt.AlignCenter |  Qt.AlignVCenter,
+                               Qt.AlignmentFlag.AlignCenter |  Qt.AlignmentFlag.AlignVCenter,
                                letter)
                 elif letter == "-" or letter == ".":
                     p.setPen(blackPen)
@@ -1612,9 +1613,9 @@ class TextLabelItem(QGraphicsRectItem):
         qfont.setPointSize(self.fsize)
         p.setFont(qfont)
         p.save()
-        p.setBrush(Qt.NoBrush)
+        p.setBrush(Qt.BrushStyle.NoBrush)
         p.setClipRect(self.rect())
-        p.drawText(self.rect(), Qt.AlignCenter |  Qt.AlignVCenter, self.text)
+        p.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter |  Qt.AlignmentFlag.AlignVCenter, self.text)
         p.restore()
 
 
@@ -1912,7 +1913,7 @@ class SeqMotifFace(StaticItemFace):
 
         self.item.setRect(0, 0, max_x_pos, max_h)
 
-        self.item.setPen(QPen(Qt.NoPen))
+        self.item.setPen(QPen(Qt.PenStyle.NoPen))
 
 
 
@@ -2077,7 +2078,7 @@ class SequencePlotFace(StaticItemFace):
         lineItem = QGraphicsLineItem(0, self.coordY(line),
                                            self.width, self.coordY(line),
                                            parent=self.item)
-        lineItem.setPen(QPen(QColor(col), 1, Qt.DashLine))
+        lineItem.setPen(QPen(QColor(col), 1, Qt.PenStyle.DashLine))
         lineItem.setZValue(10)
 
     def draw_bar(self, x, y, i):
@@ -2264,7 +2265,7 @@ class SequenceFace(StaticItemFace, Face):
     def update_items(self):
         self.item = QGraphicsRectItem(0, 0, self.width, self.row_h)
         seq_width = 0
-        nopen = QPen(Qt.NoPen)
+        nopen = QPen(Qt.PenStyle.NoPen)
         font = QFont("Courier", self.fsize)
         rect_cls = self.InteractiveLetterItem if self.interact \
                    else QGraphicsRectItem
@@ -2414,7 +2415,7 @@ class ArrowFace(Face):
 
         # Create pen
         solidPen = QPen(QBrush(QColor("black")), 0)
-        solidPen.setStyle(Qt.SolidLine)
+        solidPen.setStyle(Qt.PenStyle.SolidLine)
         p.setPen(solidPen)
 
         # Define bands width and arrow height taking padding into account

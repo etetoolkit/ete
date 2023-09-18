@@ -14,7 +14,7 @@ class InteractiveItem(QGraphicsRectItem):
         QGraphicsRectItem.__init__(self, *arg, **karg)
         self.node = None
         self.label = None
-        self.setCursor(QtCore.Qt.PointingHandCursor)
+        self.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
 
     def hoverEnterEvent (self, e):
         # There are many ways of adding interactive elements. With the
@@ -75,7 +75,7 @@ def ugly_name_face(node, *args, **kargs):
     masterItem.node = node
 
     # I dont want a border around the masterItem
-    masterItem.setPen(QPen(QtCore.Qt.NoPen))
+    masterItem.setPen(QPen(QtCore.Qt.PenStyle.NoPen))
 
     # Add ellipse around text
     ellipse = QGraphicsEllipseItem(masterItem.rect())

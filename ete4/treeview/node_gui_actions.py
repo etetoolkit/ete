@@ -1,7 +1,7 @@
 from functools import partial
 
 from .qt import Qt, QDialog, QMenu, QCursor, QInputDialog
-from .svg_colors import random_color
+from ..utils import random_color
 from . import  _show_newick
 from ..evol import EvolTree
 
@@ -27,7 +27,7 @@ class NewickDialog(QDialog):
 
     def add_prop(self):
         aName = str(self._conf.attrName.text()).strip()
-        if aName != '' and not self._conf.features_list.findItems(aName, Qt.MatchCaseSensitive):
+        if aName != '' and not self._conf.features_list.findItems(aName, Qt.MatchFlag.MatchCaseSensitive):
             self._conf.features_list.addItem(aName)
             self.update_newick()
 
@@ -48,16 +48,16 @@ class NewickDialog(QDialog):
 class _NodeActions(object):
     """ Used to extend QGraphicsItem features """
     def __init__(self):
-        self.setCursor(Qt.PointingHandCursor)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
         self.setAcceptHoverEvents(True)
 
     def mouseReleaseEvent(self, e):
         if not self.node:
             return
 
-        if e.button() == Qt.RightButton:
+        if e.button() == Qt.MouseButton.RightButton:
             self.showActionPopup()
-        elif e.button() == Qt.LeftButton:
+        elif e.button() == Qt.MouseButton.LeftButton:
             self.scene().view.set_focus(self.node)
 
             if isinstance(self.node, EvolTree) and self.node.root._is_mark_mode():
@@ -158,7 +158,7 @@ class _NodeActions(object):
 
 
         contextMenu.addAction( "Show newick", self.show_newick)
-        contextMenu.exec_(QCursor.pos())
+        contextMenu.exec(QCursor.pos())
 
     def _gui_mark_node(self, mark=None):
         if not mark:
@@ -191,7 +191,7 @@ class _NodeActions(object):
         d._conf = _show_newick.Ui_Newick()
         d._conf.setupUi(d)
         d.update_newick()
-        d.exec_()
+        d.exec()
         return False
 
     def delete_node(self):

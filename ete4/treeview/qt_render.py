@@ -1,9 +1,9 @@
 from .qt import *
-from . import qt4_circular_render as crender
-from . import qt4_rect_render as rrender
+from . import qt_circular_render as crender
+from . import qt_rect_render as rrender
 from .main import _leaf, NodeStyle, _FaceAreas, tracktime, TreeStyle
 from .node_gui_actions import _NodeActions as _ActionDelegator
-from .qt4_face_render import update_node_faces, _FaceGroupItem, _TextFaceItem
+from .qt_face_render import update_node_faces, _FaceGroupItem, _TextFaceItem
 from .templates import _DEFAULT_STYLE, apply_template
 from . import faces
 
@@ -60,10 +60,10 @@ class _SphereItem(QGraphicsEllipseItem, _ActionDelegator):
         #self.setBrush(QBrush(QColor(self.node.img_style["fgcolor"])))
         self.setPen(QPen(QColor(self.node.img_style["fgcolor"])))
         gradient = QRadialGradient(r, r, r,(d)/3,(d)/3)
-        gradient.setColorAt(0.05, Qt.white);
+        gradient.setColorAt(0.05, Qt.GlobalColor.white);
         gradient.setColorAt(1, QColor(self.node.img_style["fgcolor"]));
         self.setBrush(QBrush(gradient))
-        # self.setPen(Qt.NoPen)
+        # self.setPen(Qt.PenStyle.NoPen)
 
 class _EmptyItem(QGraphicsItem):
     def __init__(self, parent=None):
@@ -72,7 +72,7 @@ class _EmptyItem(QGraphicsItem):
 
         # qt4.6+ Only
         try:
-            self.setFlags(QGraphicsItem.ItemHasNoContents)
+            self.setFlags(QGraphicsItem.GraphicsItemFlag.ItemHasNoContents)
         except:
             pass
 
@@ -115,7 +115,7 @@ class _PointerItem(QGraphicsRectItem):
         QGraphicsRectItem.__init__(self,0,0,0,0, parent)
         self.color = QColor("blue")
         self._active = False
-        self.setBrush(QBrush(Qt.NoBrush))
+        self.setBrush(QBrush(Qt.BrushStyle.NoBrush))
 
     def paint(self, p, option, widget):
         p.setPen(self.color)
@@ -284,7 +284,7 @@ def render(root_node, img, hide_root=False):
 
     # Rotate main image if necessary
     parent.setRect(mainRect)
-    parent.setPen(QPen(Qt.NoPen))
+    parent.setPen(QPen(Qt.PenStyle.NoPen))
 
     if img.rotation:
         rect = parent.boundingRect()
@@ -316,7 +316,7 @@ def render(root_node, img, hide_root=False):
 
     # Draws a border around the tree
     if not img.show_border:
-        frame.setPen(QPen(Qt.NoPen))
+        frame.setPen(QPen(Qt.PenStyle.NoPen))
     else:
         frame.setPen(QPen(QColor("black")))
 
@@ -596,10 +596,10 @@ def render_node_content(node, n2i, n2f, img):
 
         node_ball.setPos(ball_start_x, center-(ball_size/2.0))
 
-        #from qt4_gui import _BasicNodeActions
+        #from qt_gui import _BasicNodeActions
         #node_ball.delegate = _BasicNodeActions()
         #node_ball.setAcceptHoverEvents(True)
-        #node_ball.setCursor(Qt.PointingHandCursor)
+        #node_ball.setCursor(Qt.CursorShape.PointingHandCursor)
 
     else:
         node_ball = None
@@ -609,10 +609,10 @@ def render_node_content(node, n2i, n2f, img):
     set_pen_style(pen, style["hz_line_type"])
     pen.setColor(QColor(style["hz_line_color"]))
     pen.setWidth(style["hz_line_width"])
-    pen.setCapStyle(Qt.FlatCap)
-    #pen.setCapStyle(Qt.RoundCap)
-    #pen.setCapStyle(Qt.SquareCap)
-    #pen.setJoinStyle(Qt.RoundJoin)
+    pen.setCapStyle(Qt.PenCapStyle.FlatCap)
+    #pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+    #pen.setCapStyle(Qt.PenCapStyle.SquareCap)
+    #pen.setJoinStyle(Qt.PenCapStyle.RoundJoin)
     hz_line = _LineItem()
     hz_line = _NodeLineItem(node)
     hz_line.setPen(pen)
@@ -626,7 +626,7 @@ def render_node_content(node, n2i, n2f, img):
         # pen = QPen()
         # pen.setColor(QColor(parent_style["vt_line_color"]))
         # pen.setWidth(parent_style["hz_line_width"])
-        # pen.setCapStyle(Qt.FlatCap)
+        # pen.setCapStyle(Qt.PenCapStyle.FlatCap)
         # fix_join_line.setPen(pen)
         # fix_join_line.setLine(-join_fix, center, join_fix, center)
         # fix_join_line.setParentItem(item.content)
@@ -639,7 +639,7 @@ def render_node_content(node, n2i, n2f, img):
         item.extra_branch_line = extra_line
         set_pen_style(pen, img.extra_branch_line_type)
         pen.setColor(QColor(img.extra_branch_line_color))
-        pen.setCapStyle(Qt.FlatCap)
+        pen.setCapStyle(Qt.PenCapStyle.FlatCap)
         pen.setWidth(style["hz_line_width"])
         extra_line.setPen(pen)
     else:
@@ -684,9 +684,9 @@ def render_node_content(node, n2i, n2f, img):
         set_pen_style(pen, style["vt_line_type"])
         pen.setColor(QColor(style["vt_line_color"]))
         pen.setWidth(style["vt_line_width"])
-        pen.setCapStyle(Qt.FlatCap)
-        #pen.setCapStyle(Qt.RoundCap)
-        #pen.setCapStyle(Qt.SquareCap)
+        pen.setCapStyle(Qt.PenCapStyle.FlatCap)
+        #pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+        #pen.setCapStyle(Qt.PenCapStyle.SquareCap)
         vt_line.setPen(pen)
         item.vt_line = vt_line
     else:
@@ -717,11 +717,11 @@ def render_node_content(node, n2i, n2f, img):
 
 def set_pen_style(pen, line_style):
     if line_style == 0:
-        pen.setStyle(Qt.SolidLine)
+        pen.setStyle(Qt.PenStyle.SolidLine)
     elif line_style == 1:
-        pen.setStyle(Qt.DashLine)
+        pen.setStyle(Qt.PenStyle.DashLine)
     elif line_style == 2:
-        pen.setStyle(Qt.DotLine)
+        pen.setStyle(Qt.PenStyle.DotLine)
 
 def set_style(n, layout_func):
     #if not isinstance(getattr(n, "img_style", None), NodeStyle):
@@ -860,7 +860,7 @@ def render_aligned_faces(img, mainRect, parent, n2i, n2f):
             pen = QPen()
             set_pen_style(pen, img.guiding_lines_type)
             pen.setColor(QColor(img.guiding_lines_color))
-            pen.setCapStyle(Qt.FlatCap)
+            pen.setCapStyle(Qt.PenCapStyle.FlatCap)
             pen.setWidth(node.img_style["hz_line_width"])
             guide_line.setPen(pen)
             guide_line.setParentItem(item.content)

@@ -14,8 +14,7 @@ class _LineItem(QGraphicsLineItem):
 class ArcPartition(QGraphicsPathItem):
     def __init__(self, parent=None):
         QGraphicsPathItem.__init__(self, parent)
-        self.setCacheMode(QGraphicsItem.DeviceCoordinateCache)
-        #self.setCacheMode(QGraphicsItem.ItemCoordinateCache)
+        self.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
 
     def set_arc(self, cxdist, cydist, r1, r2, angle_start, angle_end):
         """ Draws a 2D arc with two arc lines of length r1 (inner) and

@@ -1,24 +1,19 @@
 import re
+import time
 
-# try:
-#     from .qt import QtOpenGL
-#     USE_GL = True
-# except ImportError:
-#     USE_GL = False
-USE_GL = False # Temporarily disabled
+from ete4 import Tree, TreeStyle
 
 from .qt import *
 from . import _mainwindow, _search_dialog, _show_newick, _open_newick, _about
 from .main import save, _leaf
-from .svg_colors import random_color
-from .qt4_render import render
+from ..utils import random_color
+from .qt_render import render
 from .node_gui_actions import NewickDialog
 try:
     from .._ph import new_version
 except Exception:
     pass
-from .. import Tree, TreeStyle
-import time
+
 
 class _SelectorItem(QGraphicsRectItem):
     def __init__(self, parent=None):
@@ -30,11 +25,11 @@ class _SelectorItem(QGraphicsRectItem):
 
     def paint(self, p, option, widget):
         p.setPen(self.Color)
-        p.setBrush(QBrush(Qt.NoBrush))
+        p.setBrush(QBrush(Qt.BrushStyle.NoBrush))
         p.drawRect(QRectF(self.rect().x(),self.rect().y(),self.rect().width(),self.rect().height()))
         return
         # Draw info text
-        font = QFont("Arial",13)
+        font = QFont("Arial", 13)
         text = "%d selected."  % len(self.get_selected_nodes())
         textR = QFontMetrics(font).boundingRect(text)
         if  self.rect().width() > textR.width() and \
@@ -123,14 +118,14 @@ class _GUI(QMainWindow):
         self.searchDialog._conf = _search_dialog.Ui_Dialog()
         self.searchDialog._conf.setupUi(self.searchDialog)
 
-        self.scene.setItemIndexMethod(QGraphicsScene.NoIndex)
+        self.scene.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex)
 
         # Shows the whole tree by default
-        #self.view.fitInView(self.scene.sceneRect(), Qt.KeepAspectRatio)
+        #self.view.fitInView(self.scene.sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
         splitter.setCollapsible(1, True)
         splitter.setSizes([int(self.scene.sceneRect().width()), 10])
 
-        self.view.fitInView(0, 0, self.scene.sceneRect().width(), 200, Qt.KeepAspectRatio)
+        self.view.fitInView(0, 0, self.scene.sceneRect().width(), 200, Qt.AspectRatioMode.KeepAspectRatio)
 
         # Check for updates
         self.check = CheckUpdates()
@@ -148,8 +143,8 @@ class _GUI(QMainWindow):
         d._conf = _about.Ui_About()
         d._conf.setupUi(d)
         d._conf.version.setText("Version: %s" %__version__)
-        d._conf.version.setAlignment(Qt.AlignHCenter)
-        d.exec_()
+        d._conf.version.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+        d.exec()
 
     @QtCore.pyqtSlot()
     def on_actionZoomOut_triggered(self):
@@ -188,20 +183,20 @@ class _GUI(QMainWindow):
 
     @QtCore.pyqtSlot()
     def on_actionFit2tree_triggered(self):
-        self.view.fitInView(self.scene.sceneRect(), Qt.KeepAspectRatio)
+        self.view.fitInView(self.scene.sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
 
     @QtCore.pyqtSlot()
     def on_actionFit2region_triggered(self):
         R = self.view.selector.rect()
         if R.width()>0 and R.height()>0:
             self.view.fitInView(R.x(), R.y(), R.width(),\
-                                    R.height(), Qt.KeepAspectRatio)
+                                    R.height(), Qt.AspectRatioMode.KeepAspectRatio)
 
     @QtCore.pyqtSlot()
     def on_actionSearchNode_triggered(self):
         setup = self.searchDialog._conf
         setup.attrValue.setFocus()
-        ok = self.searchDialog.exec_()
+        ok = self.searchDialog.exec()
         if ok:
             mType = setup.attrType.currentIndex()
             aName = str(setup.attrName.text())
@@ -247,7 +242,7 @@ class _GUI(QMainWindow):
                 R = item.mapToScene(item.fullRegion).boundingRect()
                 R.adjust(-60, -60, 60, 60)
                 self.view.fitInView(R.x(), R.y(), R.width(),\
-                                    R.height(), Qt.KeepAspectRatio)
+                                    R.height(), Qt.AspectRatioMode.KeepAspectRatio)
 
 
     @QtCore.pyqtSlot()
@@ -290,7 +285,7 @@ class _GUI(QMainWindow):
         d._conf = _show_newick.Ui_Newick()
         d._conf.setupUi(d)
         d.update_newick()
-        d.exec_()
+        d.exec()
 
     @QtCore.pyqtSlot()
     def on_actionChange_orientation_triggered(self):
@@ -312,7 +307,7 @@ class _GUI(QMainWindow):
         d = QFileDialog()
         d._conf = _open_newick.Ui_OpenNewick()
         d._conf.setupUi(d)
-        d.exec_()
+        d.exec()
         return
         fname = QFileDialog.getOpenFileName(self ,"Open File",
                                                  "/home",
@@ -343,7 +338,7 @@ class _GUI(QMainWindow):
     @QtCore.pyqtSlot()
     def on_actionRenderPDF_triggered(self):
         F = QFileDialog(self)
-        if F.exec_():
+        if F.exec():
             imgName = str(F.selectedFiles()[0])
             if not imgName.endswith(".pdf"):
                 imgName += ".pdf"
@@ -357,7 +352,7 @@ class _GUI(QMainWindow):
                                               "You must select a region first")
 
         F = QFileDialog(self)
-        if F.exec_():
+        if F.exec():
             imgName = str(F.selectedFiles()[0])
             if not imgName.endswith(".pdf"):
                 imgName += ".pdf"
@@ -381,7 +376,7 @@ class _GUI(QMainWindow):
 
     def keyPressEvent(self,e):
         key = e.key()
-        control = e.modifiers() & Qt.ControlModifier
+        control = e.modifiers() & Qt.KeyboardModifier.ControlModifier
         if key == 77:
             if self.isMaximized():
                 self.showNormal()
@@ -417,11 +412,7 @@ class _TableItem(QItemDelegate):
 
         originalValue = index.model().data(index)
 
-        # Needed for qt4/qt5 compatibility
-        if isinstance(originalValue, QVariant):
-            value = str(originalValue.toString())
-        else:
-            value = str(originalValue)
+        value = str(originalValue)
 
         if re.search("^#[0-9ABCDEFabcdef]{6}$", value):
             origc = QColor(value)
@@ -435,7 +426,7 @@ class _TableItem(QItemDelegate):
         else:
             editField = QLineEdit(parent)
             editField.setFrame(False)
-            validator = QRegExpValidator(QRegExp(".+"), editField)
+            validator = QRegularExpression(".+")
             editField.setValidator(validator)
             editField.returnPressed.connect(self.commitAndCloseEditor)
             editField.returnPressed.connect(self.propdialog.apply_changes)
@@ -452,12 +443,7 @@ class _TableItem(QItemDelegate):
 
     isSupportedType = staticmethod(isSupportedType)
     def displayText(self,value):
-        # Needed for qt4/qt5 compatibility
-        if isinstance(value, QVariant):
-            value = str(value.toString())
-        else:
-            value = str(value)
-        return value
+        return str(value)
 
     def commitAndCloseEditor(self):
         editor = self.sender()
@@ -601,8 +587,8 @@ class _PropertiesDialog(QWidget):
 
         total_props = len(self.prop2nodes) + len(list(self.style2nodes.keys()))
         self.model = QStandardItemModel(total_props, 2)
-        self.model.setHeaderData(0, Qt.Horizontal, "Feature")
-        self.model.setHeaderData(1, Qt.Horizontal, "Value")
+        self.model.setHeaderData(0, Qt.Orientation.Horizontal, "Feature")
+        self.model.setHeaderData(1, Qt.Orientation.Horizontal, "Value")
         self.tableView.setModel(self.model)
         self.delegate = _TableItem(self)
         self.tableView.setItemDelegate(self.delegate)
@@ -692,25 +678,19 @@ class _TreeView(QGraphicsView):
         self.buffer_node = None
         self.init_values()
 
-        if USE_GL:
-            print("USING GL")
-            F = QtOpenGL.QGLFormat()
-            F.setSampleBuffers(True)
-            print(F.sampleBuffers())
-            self.setViewport(QtOpenGL.QGLWidget(F))
-            self.setRenderHints(QPainter.Antialiasing)
-        else:
-            self.setRenderHints(QPainter.Antialiasing or QPainter.SmoothPixmapTransform )
+        # NOTE: If in the future we want to use OpenGL or similar, see:
+        # https://doc.qt.io/qt-6/qtgui-overview.html#opengl-and-opengl-es-integration
+        self.setRenderHints(QPainter.RenderHint.Antialiasing or QPainter.SmoothPixmapTransform)
 
-        self.setViewportUpdateMode(QGraphicsView.BoundingRectViewportUpdate)
-        self.setRenderHints(QPainter.Antialiasing or QPainter.SmoothPixmapTransform )
+        self.setViewportUpdateMode(QGraphicsView.ViewportUpdateMode.BoundingRectViewportUpdate)
+        self.setRenderHints(QPainter.RenderHint.Antialiasing or QPainter.RenderHint.SmoothPixmapTransform )
         #self.setViewportUpdateMode(QGraphicsView.NoViewportUpdate)
-        self.setCacheMode(QGraphicsView.CacheBackground)
-        self.setResizeAnchor(QGraphicsView.AnchorUnderMouse)
-        #self.setOptimizationFlag (QGraphicsView.DontAdjustForAntialiasing)
-        self.setOptimizationFlag (QGraphicsView.DontSavePainterState)
-        #self.setOptimizationFlag (QGraphicsView.DontClipPainter)
-        #self.scene().setItemIndexMethod(QGraphicsScene.NoIndex)
+        self.setCacheMode(QGraphicsView.CacheModeFlag.CacheBackground)
+        self.setResizeAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
+        #self.setOptimizationFlag (QGraphicsView.OptimizationFlag.DontAdjustForAntialiasing)
+        self.setOptimizationFlag (QGraphicsView.OptimizationFlag.DontSavePainterState)
+        #self.setOptimizationFlag (QGraphicsView.OptimizationFlag.DontClipPainter)
+        #self.scene().setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex)
         #self.scene().setBspTreeDepth(24)
 
     def init_values(self):
@@ -730,17 +710,17 @@ class _TreeView(QGraphicsView):
         yscale = self.transform().m22()
         srect = self.sceneRect()
 
-        if (xfactor>1 and xscale>200000) or \
-                (yfactor>1 and yscale>200000):
-            QMessageBox.information(self, "!",\
-                                              "I will take the microscope!")
+        if ((xfactor > 1 and xscale > 200000) or
+            (yfactor > 1 and yscale > 200000)):
+            QMessageBox.information(self, "!",
+                                    "I will take the microscope!")
             return
 
         # Do not allow to reduce scale to a value producing height or with smaller than 20 pixels
         # No restrictions to zoom in
-        if (yfactor<1 and  srect.width() * yscale < 20):
+        if yfactor < 1 and srect.width() * yscale < 20:
             pass
-        elif (xfactor<1 and  srect.width() * xscale < 20):
+        elif xfactor < 1 and srect.width() * xscale < 20:
             pass
         else:
             self.scale(xfactor, yfactor)
@@ -775,11 +755,7 @@ class _TreeView(QGraphicsView):
                 pass
 
     def wheelEvent(self,e):
-        # qt4/5
-        try:
-            delta = e.delta()
-        except AttributeError:
-            delta = float(e.angleDelta().y())
+        delta = float(e.angleDelta().y())
 
         factor =  (-delta / 360.0)
 
@@ -787,19 +763,19 @@ class _TreeView(QGraphicsView):
             factor = 0.0
 
         # Ctrl+Shift -> Zoom in X
-        if  (e.modifiers() & Qt.ControlModifier) and (e.modifiers() & Qt.ShiftModifier):
+        if  (e.modifiers() & Qt.KeyboardModifier.ControlModifier) and (e.modifiers() & Qt.KeyboardModifier.ShiftModifier):
             self.safe_scale(1+factor, 1)
 
         # Ctrl+Alt -> Zomm in Y
-        elif  (e.modifiers() & Qt.ControlModifier) and (e.modifiers() & Qt.AltModifier):
+        elif  (e.modifiers() & Qt.KeyboardModifier.ControlModifier) and (e.modifiers() & Qt.KeyboardModifier.AltModifier):
             self.safe_scale(1,1+factor)
 
         # Ctrl -> Zoom X,Y
-        elif e.modifiers() & Qt.ControlModifier:
+        elif e.modifiers() & Qt.KeyboardModifier.ControlModifier:
             self.safe_scale(1-factor, 1-factor)
 
         # Shift -> Horizontal scroll
-        elif e.modifiers() &  Qt.ShiftModifier:
+        elif e.modifiers() &  Qt.KeyboardModifier.ShiftModifier:
             if delta > 0:
                 self.horizontalScrollBar().setValue(self.horizontalScrollBar().value()-20 )
             else:
@@ -830,33 +806,33 @@ class _TreeView(QGraphicsView):
 
     def keyPressEvent(self,e):
         key = e.key()
-        control = e.modifiers() & Qt.ControlModifier
+        control = e.modifiers() & Qt.KeyboardModifier.ControlModifier
         if control:
-            if key  == Qt.Key_Left:
+            if key  == Qt.Key.Key_Left:
                 self.horizontalScrollBar().setValue(self.horizontalScrollBar().value()-20 )
                 self.update()
-            elif key  == Qt.Key_Right:
+            elif key  == Qt.Key.Key_Right:
                 self.horizontalScrollBar().setValue(self.horizontalScrollBar().value()+20 )
                 self.update()
-            elif key  == Qt.Key_Up:
+            elif key  == Qt.Key.Key_Up:
                 self.verticalScrollBar().setValue(self.verticalScrollBar().value()-20 )
                 self.update()
-            elif key  == Qt.Key_Down:
+            elif key  == Qt.Key.Key_Down:
                 self.verticalScrollBar().setValue(self.verticalScrollBar().value()+20 )
                 self.update()
         else:
             if not self.focus_node:
                 self.focus_node = self.scene().tree
 
-            if key == Qt.Key_Left:
+            if key == Qt.Key.Key_Left:
                 if self.focus_node.up:
                     new_focus_node = self.focus_node.up
                     self.set_focus(new_focus_node)
-            elif key == Qt.Key_Right:
+            elif key == Qt.Key.Key_Right:
                 if self.focus_node.children:
                     new_focus_node = self.focus_node.children[0]
                     self.set_focus(new_focus_node)
-            elif key == Qt.Key_Up:
+            elif key == Qt.Key.Key_Up:
                 if self.focus_node.up:
                     i = self.focus_node.up.children.index(self.focus_node)
                     if i>0:
@@ -865,7 +841,7 @@ class _TreeView(QGraphicsView):
                     elif self.focus_node.up:
                         self.set_focus(self.focus_node.up)
 
-            elif key == Qt.Key_Down:
+            elif key == Qt.Key.Key_Down:
                 if self.focus_node.up:
                     i = self.focus_node.up.children.index(self.focus_node)
                     if i < len(self.focus_node.up.children)-1:
@@ -874,12 +850,12 @@ class _TreeView(QGraphicsView):
                     elif self.focus_node.up:
                         self.set_focus(self.focus_node.up)
 
-            elif key == Qt.Key_Escape:
+            elif key == Qt.Key.Key_Escape:
                 self.hide_focus()
-            elif key == Qt.Key_Enter or\
-                    key == Qt.Key_Return:
+            elif key == Qt.Key.Key_Enter or\
+                    key == Qt.Key.Key_Return:
                 self.prop_table.tableView.setFocus()
-            elif key == Qt.Key_Space:
+            elif key == Qt.Key.Key_Space:
                 self.highlight_node(self.focus_node, fullRegion=True,
                                     bg=random_color(l=0.5, s=0.5),
                                     permanent=True)
@@ -923,7 +899,7 @@ class _BasicNodeActions(object):
 
     @staticmethod
     def init(obj):
-        obj.setCursor(Qt.PointingHandCursor)
+        obj.setCursor(Qt.CursorShape.PointingHandCursor)
         obj.setAcceptHoverEvents(True)
 
     @staticmethod
@@ -940,9 +916,9 @@ class _BasicNodeActions(object):
 
     @staticmethod
     def mouseReleaseEvent(obj, e):
-        if e.button() == Qt.RightButton:
+        if e.button() == Qt.MouseButton.RightButton:
             obj.showActionPopup()
-        elif e.button() == Qt.LeftButton:
+        elif e.button() == Qt.MouseButton.LeftButton:
             obj.scene().view.set_focus(obj.node)
             #obj.scene().view.prop_table.update_properties(obj.node)
 

@@ -1,12 +1,9 @@
-import colorsys
-import random
 import re
 import types
-from sys import stderr
 
 from .qt import *
 
-from .svg_colors import SVG_COLORS, COLOR_SCHEMES
+from ..utils import SVG_COLORS, COLOR_SCHEMES
 
 import time
 def tracktime(f):
@@ -18,40 +15,40 @@ def tracktime(f):
     return a_wrapper_accepting_arguments
 
 
-_LINE_TYPE_CHECKER = lambda x: x in (0,1,2)
+_LINE_TYPE_CHECKER = lambda x: x in (0, 1, 2)
 _SIZE_CHECKER = lambda x: isinstance(x, int)
 _COLOR_MATCH = re.compile(r"^#[A-Fa-f\d]{6}$")
 _COLOR_CHECKER = lambda x: x.lower() in SVG_COLORS or re.match(_COLOR_MATCH, x)
 _NODE_TYPE_CHECKER = lambda x: x in ["sphere", "circle", "square"]
-_BOOL_CHECKER =  lambda x: isinstance(x, bool) or x in (0,1)
+_BOOL_CHECKER = lambda x: isinstance(x, bool) or x in (0, 1)
 
-FACE_POSITIONS = set(["branch-right", "branch-top", "branch-bottom", "float", "float-behind", "aligned"])
+FACE_POSITIONS = {"branch-right", "branch-top", "branch-bottom", "float", "float-behind", "aligned"}
 
 __all__  = ["NodeStyle", "TreeStyle", "FaceContainer", "_leaf", "add_face_to_node", "COLOR_SCHEMES"]
 
 NODE_STYLE_DEFAULT = [
-    ["fgcolor",          "#0030c1",    _COLOR_CHECKER                           ],
-    ["bgcolor",          "#FFFFFF",    _COLOR_CHECKER                           ],
-    #["node_bgcolor",     "#FFFFFF",    _COLOR_CHECKER                           ],
-    #["partition_bgcolor","#FFFFFF",    _COLOR_CHECKER                           ],
-    #["faces_bgcolor",    "#FFFFFF",    _COLOR_CHECKER                           ],
-    ["vt_line_color",    "#000000",    _COLOR_CHECKER                           ],
-    ["hz_line_color",    "#000000",    _COLOR_CHECKER                           ],
-    ["hz_line_type",     0,            _LINE_TYPE_CHECKER                       ], # 0 solid, 1 dashed, 2 dotted
-    ["vt_line_type",     0,            _LINE_TYPE_CHECKER                       ], # 0 solid, 1 dashed, 2 dotted
-    ["size",             3,            _SIZE_CHECKER                            ], # node circle size
-    ["shape",            "circle",     _NODE_TYPE_CHECKER                       ],
-    ["draw_descendants", True,         _BOOL_CHECKER                            ],
-    ["hz_line_width",          0,      _SIZE_CHECKER                            ],
-    ["vt_line_width",          0,      _SIZE_CHECKER                            ]
-    ]
+    ["fgcolor",          "#0030c1",  _COLOR_CHECKER],
+    ["bgcolor",          "#FFFFFF",  _COLOR_CHECKER],
+    #["node_bgcolor",     "#FFFFFF",  _COLOR_CHECKER],
+    #["partition_bgcolor","#FFFFFF",  _COLOR_CHECKER],
+    #["faces_bgcolor",    "#FFFFFF",  _COLOR_CHECKER],
+    ["vt_line_color",    "#000000",  _COLOR_CHECKER],
+    ["hz_line_color",    "#000000",  _COLOR_CHECKER],
+    ["hz_line_type",     0,          _LINE_TYPE_CHECKER], # 0 solid, 1 dashed, 2 dotted
+    ["vt_line_type",     0,          _LINE_TYPE_CHECKER], # 0 solid, 1 dashed, 2 dotted
+    ["size",             3,          _SIZE_CHECKER], # node circle size
+    ["shape",            "circle",   _NODE_TYPE_CHECKER],
+    ["draw_descendants", True,       _BOOL_CHECKER],
+    ["hz_line_width",    0,          _SIZE_CHECKER],
+    ["vt_line_width",    0,          _SIZE_CHECKER]
+]
 
 TREE_STYLE_CHECKER = {
-    "mode": lambda x: x.lower() in set(["c", "r"]),
-    }
+    "mode": lambda x: x.lower() in ["c", "r"],
+}
 
 # _faces and faces are registered to allow deepcopy to work on nodes
-VALID_NODE_STYLE_KEYS = set([i[0] for i in NODE_STYLE_DEFAULT]) | set(["_faces"])
+VALID_NODE_STYLE_KEYS = {i[0] for i in NODE_STYLE_DEFAULT} | {"_faces"}
 
 class _Border(object):
     def __init__(self):
@@ -67,10 +64,10 @@ class _Border(object):
             if self.color:
                 pen = QPen(QColor(self.color))
             else:
-                pen = QPen(Qt.NoPen)
+                pen = QPen(Qt.PenStyle.NoPen)
             set_pen_style(pen, self.type)
             pen.setWidth(self.width)
-            pen.setCapStyle(Qt.FlatCap)
+            pen.setCapStyle(Qt.PenCapStyle.FlatCap)
             border.setPen(pen)
             return border
         else:
@@ -95,7 +92,7 @@ class _Background(object):
             brush = QBrush(QColor(self.color))
             bg.setPen(pen)
             bg.setBrush(brush)
-            bg.setFlag(QGraphicsItem.ItemStacksBehindParent)
+            bg.setFlag(QGraphicsItem.GraphicsItemFlag.ItemStacksBehindParent)
             return bg
         else:
             return None
@@ -123,7 +120,7 @@ class _ActionDelegator(object):
         self._delegate = None
 
 class NodeStyle(dict):
-    """A dictionary with all valid node graphical attributes."""
+    """Dictionary with all valid node graphical attributes."""
 
     def __init__(self, *args, **kargs):
         """NodeStyle constructor.
@@ -163,27 +160,8 @@ class NodeStyle(dict):
                                  (key, self[key]))
 
     def __setitem__(self, i, v):
-        # keeps compatible with ETE 2.0 version
-        if i == "line_type":
-            print("WARNING: [%s] keyword is deprecated and it has been replaced by %s." %\
-                (i, "[hz_line_type, vt_line_type]"), file=stderr)
-            print("WARNING: Support for this keyword will be removed in next ETE versions.", file=stderr)
-            super(NodeStyle, self).__setitem__("hz_line_type", v)
-            i = "vt_line_type"
-
-        if i == "vlwidth":
-            i = "vt_line_width"
-            print("WARNING: [%s] keyword is deprecated and it has been replaced by %s." %\
-                (i, "[vt_line_width]"), file=stderr)
-            print("WARNING: Support for this keyword will be removed in next ETE versions.", file=stderr)
-        if i == "hlwidth":
-            i = "hz_line_width"
-            print("WARNING: [%s] keyword is deprecated and it has been replaced by %s." %\
-                (i, "[hz_line_width]"), file=stderr)
-            print("WARNING: Support for this keyword will be removed in next ETE versions.", file=stderr)
-
         if i not in VALID_NODE_STYLE_KEYS:
-            raise ValueError("'%s' is not a valid keyword for a NodeStyle instance" %i)
+            raise ValueError("'%s' is not a valid keyword for a NodeStyle instance" % i)
 
         super().__setitem__(i, v)
 
@@ -463,9 +441,9 @@ class TreeStyle(object):
             if TREE_STYLE_CHECKER.get(attr, lambda x: True)(val):
                 object.__setattr__(self, attr, val)
             else:
-                raise ValueError("[%s] wrong type" %attr)
+                raise ValueError("[%s] wrong type" % attr)
         else:
-            raise ValueError("[%s] option is not supported" %attr)
+            raise ValueError("[%s] option is not supported" % attr)
 
 class _FaceAreas(object):
     def __init__(self):
@@ -528,11 +506,11 @@ def add_face_to_node(face, node, column, aligned=False, position="branch-right")
 
 def set_pen_style(pen, line_style):
     if line_style == 0:
-        pen.setStyle(Qt.SolidLine)
+        pen.setStyle(Qt.PenStyle.SolidLine)
     elif line_style == 1:
-        pen.setStyle(Qt.DashLine)
+        pen.setStyle(Qt.PenStyle.DashLine)
     elif line_style == 2:
-        pen.setStyle(Qt.DotLine)
+        pen.setStyle(Qt.PenStyle.DotLine)
 
 
 def save(scene, imgName, w=None, h=None, dpi=90,\
@@ -561,15 +539,15 @@ def save(scene, imgName, w=None, h=None, dpi=90,\
         units = "px"
         w = main_rect.width()
         h = main_rect.height()
-        ratio_mode = Qt.KeepAspectRatio
+        ratio_mode = Qt.AspectRatioMode.KeepAspectRatio
     elif w and h:
-        ratio_mode = Qt.IgnoreAspectRatio
+        ratio_mode = Qt.AspectRatioMode.IgnoreAspectRatio
     elif h is None :
         h = w * aspect_ratio
-        ratio_mode = Qt.KeepAspectRatio
+        ratio_mode = Qt.AspectRatioMode.KeepAspectRatio
     elif w is None:
         w = h / aspect_ratio
-        ratio_mode = Qt.KeepAspectRatio
+        ratio_mode = Qt.AspectRatioMode.KeepAspectRatio
 
     # Adjust to resolution
     if units == "mm":
@@ -633,26 +611,13 @@ def save(scene, imgName, w=None, h=None, dpi=90,\
             with open(imgName, "w") as f:
                 f.write(compatible_code)
 
-    elif ext == "PDF" or ext == "PS":
-        if ext == "PS":
-            format = QPrinter.PostScriptFormat
-        else:
-            format = QPrinter.PdfFormat
+    elif ext == "PDF":
+        format = QPrinter.OutputFormat.PdfFormat
 
-        printer = QPrinter(QPrinter.HighResolution)
+        printer = QPrinter(QPrinter.PrinterMode.HighResolution)
         printer.setResolution(dpi)
         printer.setOutputFormat(format)
-        printer.setPageSize(QPrinter.A4)
-        printer.setPaperSize(QSizeF(w, h), QPrinter.DevicePixel)
-        printer.setPageMargins(0, 0, 0, 0, QPrinter.DevicePixel)
-
-        #pageTopLeft = printer.pageRect().topLeft()
-        #paperTopLeft = printer.paperRect().topLeft()
-        # For PS -> problems with margins
-        #print paperTopLeft.x(), paperTopLeft.y()
-        #print pageTopLeft.x(), pageTopLeft.y()
-        # print  printer.paperRect().height(),  printer.pageRect().height()
-        #topleft =  pageTopLeft - paperTopLeft
+        printer.setPageSize(QPageSize(QPageSize.PageSizeId.A4))
 
         printer.setFullPage(True);
         printer.setOutputFileName(imgName);
@@ -661,14 +626,14 @@ def save(scene, imgName, w=None, h=None, dpi=90,\
         scene.render(pp, targetRect, scene.sceneRect(), ratio_mode)
     else:
         targetRect = QRectF(0, 0, w, h)
-        ii= QImage(int(w), int(h), QImage.Format_ARGB32)
-        ii.fill(QColor(Qt.white).rgb())
+        ii= QImage(int(w), int(h), QImage.Format.Format_ARGB32)
+        ii.fill(QColor(Qt.GlobalColor.white).rgb())
         ii.setDotsPerMeterX(int(dpi / 0.0254)) # Convert inches to meters
         ii.setDotsPerMeterY(int(dpi / 0.0254))
         pp = QPainter(ii)
-        pp.setRenderHint(QPainter.Antialiasing)
-        pp.setRenderHint(QPainter.TextAntialiasing)
-        pp.setRenderHint(QPainter.SmoothPixmapTransform)
+        pp.setRenderHint(QPainter.RenderHint.Antialiasing)
+        pp.setRenderHint(QPainter.RenderHint.TextAntialiasing)
+        pp.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
 
         scene.render(pp, targetRect, scene.sceneRect(), ratio_mode)
         pp.end()
