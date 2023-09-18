@@ -1,0 +1,4 @@
+numpy
+PyQt5
+six
+lxml
