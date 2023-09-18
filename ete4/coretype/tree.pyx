@@ -1045,8 +1045,8 @@ cdef class Tree(object):
             if random_branches:
                 c1.dist = random.uniform(*branch_range)
                 c2.dist = random.uniform(*branch_range)
-                c1.support = random.uniform(*branch_range)
-                c2.support = random.uniform(*branch_range)
+                c1.support = random.uniform(*support_range)
+                c2.support = random.uniform(*support_range)
             else:
                 c1.dist = 1.0
                 c2.dist = 1.0
