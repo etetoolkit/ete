@@ -33,7 +33,7 @@ classifiers = [
 dependencies = ["bottle", "brotli", "numpy"]
 
 [project.urls]
-"Homepage" = "https://etetoolkit.org"
+"Homepage" = "http://etetoolkit.org"
 
 [project.optional-dependencies]
 test = ["pytest>=6.0"]
