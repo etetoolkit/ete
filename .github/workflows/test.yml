@@ -1,0 +1,45 @@
+name: Test Pipeline
+
+on:
+  push:
+    branches:
+      - '*'
+      - '!gh-pages'   # excludes master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the latest code
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      # Setup Python environment
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      # Install dependencies for your project
+      - name: Install Dependencies
+        run: |
+          pip install .[test]
+          pip install sphinx
+
+      # Run tests
+      - name: Run Tests
+        run: |
+            cd tests
+            pytest \
+                test_arraytable.py test_clustertree.py test_gtdbquery.py \
+                test_interop.py test_phylotree.py test_seqgroup.py test_tree.py \
+                test_treediff.py test_orthologs_group_delineation.py test_ncbiquery.py \
+                test_nexus.py test_treematcher.py \
+                test_treeview/test_all_treeview.py
+
+      # Build Sphinx documentation
+      - name: Generate Sphinx Documentation
+        run: |
+          cd doc
+          make html
