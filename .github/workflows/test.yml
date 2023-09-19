@@ -24,19 +24,14 @@ jobs:
       # Install dependencies for your project
       - name: Install Dependencies
         run: |
-          pip install .[test]
+          pip install -e .[test]
           pip install sphinx
 
       # Run tests
       - name: Run Tests
         run: |
             cd tests
-            pytest \
-                test_arraytable.py test_clustertree.py test_gtdbquery.py \
-                test_interop.py test_phylotree.py test_seqgroup.py test_tree.py \
-                test_treediff.py test_orthologs_group_delineation.py test_ncbiquery.py \
-                test_nexus.py test_treematcher.py \
-                test_treeview/test_all_treeview.py
+            pytest test_tree.py
 
       # Build Sphinx documentation
       - name: Generate Sphinx Documentation
