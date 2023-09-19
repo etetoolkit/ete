@@ -58,6 +58,15 @@ cdef class Tree(object):
 
     def __init__(self, data=None, children=None, parser=None):
         """
+        :param data: A string or file object with the description of
+            the tree as a newick, or a dict with the contents of a
+            single node.
+        :param children: List of nodes to add as children of this one.
+        :param parser: A description of how to parse a newick to
+            create a tree. It can be a single number specifying the
+            format or a structure with a fine-grained description of
+            how to interpret nodes (see ``newick.pyx``).
+
         Examples::
 
             t1 = Tree()  # empty tree
