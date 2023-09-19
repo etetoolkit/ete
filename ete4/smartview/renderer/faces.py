@@ -1705,7 +1705,7 @@ class StackedBarFace(RectFace):
                  padding_x=0, padding_y=0, tooltip=None):
         """Initialize the face.
 
-        :param data: List of triples, like [(whatever, value, color), ...].
+        :param data: List of tuples, like [(whatever, value, color), ...].
         """
         super().__init__(width=width, height=height, name=name, color=None,
                          min_fsize=min_fsize, max_fsize=max_fsize,
@@ -1722,7 +1722,7 @@ class StackedBarFace(RectFace):
         scale_factor = dx0 / (total or 1)  # the "or 1" prevents dividing by 0
 
         x = x0
-        for _, value, color in self.data:
+        for _, value, color, *_ in self.data:
             dx = scale_factor * value
             box = Box(x, y0, dx, dy0)
             yield draw_rect(box, self.name, style={'fill': color},
