@@ -4,8 +4,6 @@ Reference Guide
 .. inheritance-diagram::
    ete4.coretype.tree
    ete4.phylo.phylotree
-   ete4.evol.evoltree
-   ete4.evol.model
    ete4.clustering.clustertree
    :parts: 1
 
