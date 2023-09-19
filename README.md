@@ -92,7 +92,7 @@ It will open a browser window with an interface to explore the tree.
 
 # Gallery of examples
 
-![](https://raw.githubusercontent.com/jhcepas/ete/master/sdoc/gallery.png)
+![](https://raw.githubusercontent.com/etetoolkit/ete/ete4/doc/gallery.png)
 
 
 # Getting support
