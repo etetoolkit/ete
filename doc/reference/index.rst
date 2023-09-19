@@ -18,4 +18,5 @@ Current modules:
    reference_treeview
    reference_phylo
    reference_clustering
+   reference_seqgroup
    reference_ncbi
