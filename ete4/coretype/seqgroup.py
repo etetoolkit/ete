@@ -14,30 +14,27 @@ from ..parser.phylip import read_phylip, write_phylip
 __all__ = ['SeqGroup']
 
 
-class SeqGroup(object):
+class SeqGroup:
     """Class to store a set of sequences (aligned or not)."""
 
-    def __init__(self, sequences=None, format='fasta', fix_duplicates=True, **kwargs):
-        """Return a SeqGroup object.
-
+    def __init__(self, sequences=None, format='fasta',
+                 fix_duplicates=True, **kwargs):
+        """
         :param sequences: Path to the file containing the sequences or,
-            alternatively, the text string containing the same
-            information.
+            alternatively, the text string containing them.
+        :param format: Encoding format of sequences. Supported formats
+            are: ``fasta``, ``phylip`` (phylip sequencial) and
+            ``iphylip`` (phylip interleaved). Phylip format forces
+            sequence names to a maximum of 10 chars. To avoid this
+            effect, you can use the relaxed phylip format:
+            ``phylip_relaxed`` and ``iphylip_relaxed``.
 
-        :param fasta format: the format in which sequences are
-            encoded. Current supported formats are: ``fasta``, ``phylip``
-            (phylip sequencial) and ``iphylip`` (phylip
-            interleaved). Phylip format forces sequence names to a maximum
-            of 10 chars. To avoid this effect, you can use the relaxed
-            phylip format: ``phylip_relaxed`` and ``iphylip_relaxed``.
-
-        ::
+        Example::
 
           msf = '>seq1\\nAAAAAAAAAAA\\n>seq2\\nTTTTTTTTTTTTT\\n'
           seqs = SeqGroup(msf, format='fasta')
           print seqs.get_seq('seq1')
         """
-
         self.parsers = {
             'fasta': [read_fasta, write_fasta, {}],
             'phylip': [read_phylip, write_phylip, {'interleaved': False, 'relaxed': False}],
@@ -79,7 +76,7 @@ class SeqGroup(object):
     def write(self, format='fasta', outfile=None):
         """Return the text representation of the sequences.
 
-        :param format: The format for the output representation (default=FASTA).
+        :param format: Format for the output representation.
         :param outfile: If given, the result is written to that file.
         """
         format = format.lower()
