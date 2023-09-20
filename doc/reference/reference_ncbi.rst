@@ -1,17 +1,7 @@
-NCBITaxa module
-===============
+NCBITaxa
+========
 
-.. contents::
-
-NCBITaxa class
---------------
-
-.. autoclass:: ete4.NCBITaxa
+.. automodule:: ete4.ncbi_taxonomy.ncbiquery
    :members:
    :undoc-members:
-
-
-Functions
----------
-
-.. autofunction:: ete4.is_taxadb_up_to_date
+   :special-members: __init__

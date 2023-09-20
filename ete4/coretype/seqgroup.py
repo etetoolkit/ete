@@ -1,5 +1,5 @@
 """
-The 'seqgroup' module provides methods and classes to operate with
+This module provides the SeqGroup class with methods to operate with
 Multiple Sequence Files, including Multiple Sequence Alignments.
 
 Currently, Fasta, Phylip sequencial and Phylip interleaved formats are
