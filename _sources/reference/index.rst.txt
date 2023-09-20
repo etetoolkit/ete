@@ -4,8 +4,6 @@ Reference Guide
 .. inheritance-diagram::
    ete4.coretype.tree
    ete4.phylo.phylotree
-   ete4.evol.evoltree
-   ete4.evol.model
    ete4.clustering.clustertree
    :parts: 1
 
@@ -18,4 +16,5 @@ Current modules:
    reference_treeview
    reference_phylo
    reference_clustering
+   reference_seqgroup
    reference_ncbi

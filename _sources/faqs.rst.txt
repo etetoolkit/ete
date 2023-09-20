@@ -11,8 +11,8 @@ How do I use ETE?
 ~~~~~~~~~~~~~~~~~
 
 ETE includes a basic standalone program that can be used to quickly
-visualize your trees. Type ``ete4 explore -t`` in a terminal to access
-the program. For instance::
+visualize your trees. Type ``ete4 explore -t <file>`` in a terminal to
+run the program. For instance::
 
   ete4 explore -t mytreefile.nw
 
@@ -25,8 +25,10 @@ visualize phylogenetic trees.
 For example, in a python shell or script, you could::
 
   from ete4 import Tree
+
   t1 = Tree('((A,B),C);')  # create tree from newick string
   t1.explore()
+
   t2 = Tree(open('mytreefile.nw'))  # create tree from file
   t2.explore()
 
@@ -107,12 +109,12 @@ How do I export tree node annotations using the Newick format?
 When writing a tree, by default ETE only writes the node's names,
 distances and support (depending on the format). If you want to save
 other properties, you need to specify them when calling
-`tree.write()`. For instance::
+``tree.write()``. For instance::
 
   tree.write(props=['name', 'species', 'size'])
 
 If you want all node features to be exported in the newick string, use
-`props=None`::
+``props=None``::
 
   tree.write(props=None)
 
@@ -197,6 +199,8 @@ are not modified)
 
   t = Tree()
   t.populate(50, random_branches=True)
+
   ts = TreeStyle()
   ts.force_topology = True
+
   t.show(tree_style=ts)

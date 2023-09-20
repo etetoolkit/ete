@@ -7,15 +7,15 @@ comparative genomics group of CRG_ (Barcelona, Spain) and the
 Structural and Computational Biology unit of EMBL_ (Heidelberg,
 Germany).
 
-.. _CIPF: http://bioinfo.cipf.es/
-.. _CRG: http://gabaldonlab.crg.es/
+.. _CIPF: https://bioinfo.cipf.es/
+.. _CRG: https://crg.es/
 .. _EMBL: http://www.bork.embl.de/
 
 At present, ETE is maintained by the `Comparative Genomics and
 Metagenomics group`__ at CBGP_ (Madrid, Spain).
 
 __ http://compgenomics.org/
-.. _CBGP: http://www.cbgp.upm.es/
+.. _CBGP: https://www.cbgp.upm.es/
 
 
 :Citation:

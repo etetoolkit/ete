@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Working With Tree Data Structures &#8212; ETE Toolkit  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=039e1c02" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Reference Guide" href="../reference/index.html" />
+    <link rel="prev" title="ETE Tutorial" href="index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="working-with-tree-data-structures">
+<h1><a class="toc-backref" href="#id1" role="doc-backlink">Working With Tree Data Structures</a><a class="headerlink" href="#working-with-tree-data-structures" title="Link to this heading">¶</a></h1>
+<nav class="contents" id="contents">
+<p class="topic-title">Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#working-with-tree-data-structures" id="id1">Working With Tree Data Structures</a></p>
+<ul>
+<li><p><a class="reference internal" href="#trees" id="id2">Trees</a></p></li>
+<li><p><a class="reference internal" href="#reading-and-writing-newick-trees" id="id3">Reading and writing newick trees</a></p>
+<ul>
+<li><p><a class="reference internal" href="#reading-newick-trees" id="id4">Reading newick trees</a></p></li>
+<li><p><a class="reference internal" href="#writing-newick-trees" id="id5">Writing newick trees</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#understanding-ete-trees" id="id6">Understanding ETE trees</a></p></li>
+<li><p><a class="reference internal" href="#basic-tree-attributes" id="id7">Basic tree attributes</a></p>
+<ul>
+<li><p><a class="reference internal" href="#root-node-on-unrooted-trees" id="id8">Root node on unrooted trees?</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#browsing-trees-traversing" id="id9">Browsing trees (traversing)</a></p></li>
+</ul>
+</li>
+</ul>
+</nav>
+<section id="trees">
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">Trees</a><a class="headerlink" href="#trees" title="Link to this heading">¶</a></h2>
+<p>Trees are a widely-used type of data structure that emulates a tree
+design with a set of linked nodes. Formally, a tree is considered an
+acyclic and connected graph. Each node in a tree has zero or more
+child nodes, which are below it in the tree (by convention, trees grow
+down, not up as they do in nature). A node that has a child is called
+the child’s parent node (or ancestor node, or superior). A node has at
+most one parent.</p>
+<p>The height of a node is the length of the longest downward path to a
+leaf from that node. The height of the root is the height of the tree.
+The depth of a node is the length of the path to its root (i.e., its
+root path).</p>
+<ul class="simple">
+<li><p>The topmost node in a tree is called the root node. Being the
+topmost node, the root node will not have parents. It is the node at
+which operations on the tree commonly begin (although some
+algorithms begin with the leaf nodes and work up ending at the
+root). All other nodes can be reached from it by following edges or
+links. Every node in a tree can be seen as the root node of the
+subtree rooted at that node.</p></li>
+<li><p>Nodes at the bottommost level of the tree are called leaf nodes.
+Since they are at the bottommost level, they do not have any
+children.</p></li>
+<li><p>An internal node or inner node is any node of a tree that has child
+nodes and is thus not a leaf node.</p></li>
+<li><p>A subtree is a portion of a tree data structure that can be viewed
+as a complete tree in itself. Any node in a tree T, together with
+all the nodes below it, comprise a subtree of T. The subtree
+corresponding to the root node is the entire tree; the subtree
+corresponding to any other node is called a proper subtree (in
+analogy to the term proper subset).</p></li>
+</ul>
+<p>In bioinformatics, trees are the result of many analyses, such as
+phylogenetics or clustering. Although each case entails specific
+considerations, many properties remains constant among them. In this
+respect, ETE is a python toolkit that assists in the automated
+manipulation, analysis and visualization of any type of hierarchical
+trees. It provides general methods to handle and visualize tree
+topologies, as well as specific modules to deal with phylogenetic and
+clustering trees.</p>
+</section>
+<section id="reading-and-writing-newick-trees">
+<span id="sec-newick-formats"></span><h2><a class="toc-backref" href="#id3" role="doc-backlink">Reading and writing newick trees</a><a class="headerlink" href="#reading-and-writing-newick-trees" title="Link to this heading">¶</a></h2>
+<p>The Newick format is one of the most widely used standard
+representation of trees in bioinformatics. It uses nested parentheses
+to represent hierarchical data structures as text strings. The
+original newick standard is able to encode information about the tree
+topology, branch distances and node names. Nevertheless, it is not
+uncommon to find slightly different formats using the newick standard.</p>
+<p>ETE can read and write many of them:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>FORMAT</p></th>
+<th class="head"><p>DESCRIPTION</p></th>
+<th class="head"><p>SAMPLE</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>flexible with support values</p></td>
+<td><p>((D:0.723274,F:0.567784)1.000000:0.067192,(B:0.279326,H:0.756049)1.000000:0.807788);</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>flexible with internal node names</p></td>
+<td><p>((D:0.723274,F:0.567784)E:0.067192,(B:0.279326,H:0.756049)B:0.807788);</p></td>
+</tr>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>all branches + leaf names + internal supports</p></td>
+<td><p>((D:0.723274,F:0.567784)1.000000:0.067192,(B:0.279326,H:0.756049)1.000000:0.807788);</p></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>all branches + all names</p></td>
+<td><p>((D:0.723274,F:0.567784)E:0.067192,(B:0.279326,H:0.756049)B:0.807788);</p></td>
+</tr>
+<tr class="row-even"><td><p>4</p></td>
+<td><p>leaf branches + leaf names</p></td>
+<td><p>((D:0.723274,F:0.567784),(B:0.279326,H:0.756049));</p></td>
+</tr>
+<tr class="row-odd"><td><p>5</p></td>
+<td><p>internal and leaf branches + leaf names</p></td>
+<td><p>((D:0.723274,F:0.567784):0.067192,(B:0.279326,H:0.756049):0.807788);</p></td>
+</tr>
+<tr class="row-even"><td><p>6</p></td>
+<td><p>internal branches + leaf names</p></td>
+<td><p>((D,F):0.067192,(B,H):0.807788);</p></td>
+</tr>
+<tr class="row-odd"><td><p>7</p></td>
+<td><p>leaf branches + all names</p></td>
+<td><p>((D:0.723274,F:0.567784)E,(B:0.279326,H:0.756049)B);</p></td>
+</tr>
+<tr class="row-even"><td><p>8</p></td>
+<td><p>all names</p></td>
+<td><p>((D,F)E,(B,H)B);</p></td>
+</tr>
+<tr class="row-odd"><td><p>9</p></td>
+<td><p>leaf names</p></td>
+<td><p>((D,F),(B,H));</p></td>
+</tr>
+<tr class="row-even"><td><p>100</p></td>
+<td><p>topology only</p></td>
+<td><p>((,),(,));</p></td>
+</tr>
+</tbody>
+</table>
+<p>Formats labeled as <em>flexible</em> allow for missing information. For
+instance, format 0 will be able to load a newick tree even if it does
+not contain branch support information. However, format 2 would raise
+an exception. In other words, if you want to control that your newick
+files strictly follow a given pattern you can use <strong>strict</strong> format
+definitions.</p>
+<section id="reading-newick-trees">
+<h3><a class="toc-backref" href="#id4" role="doc-backlink">Reading newick trees</a><a class="headerlink" href="#reading-newick-trees" title="Link to this heading">¶</a></h3>
+<p>In order to load a tree from a newick text string you can use the
+constructor <code class="xref py py-class docutils literal notranslate"><span class="pre">Tree</span></code>, provided by the main module <code class="xref py py-mod docutils literal notranslate"><span class="pre">ete4</span></code>.
+You will only need to pass a text string containing the newick
+structure and the format that should be used to parse it (1 by
+default). Alternatively, you can pass a file object that contains the
+newick string.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
+
+<span class="c1"># Load a tree structure from a newick string. It returns the root node for the tree.</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(A:1,(B:1,(E:1,D:1):0.5):0.5);&#39;</span><span class="p">)</span>
+
+<span class="c1"># Load a tree structure from a newick file.</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s1">&#39;genes_tree.nh&#39;</span><span class="p">))</span>
+
+<span class="c1"># You can also specify how to parse the newick. For instance, for internal nodes with support we will use parser=0.</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(A:1,(B:1,(E:1,D:1)0.4:0.5)0.9:0.5);&#39;</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="writing-newick-trees">
+<h3><a class="toc-backref" href="#id5" role="doc-backlink">Writing newick trees</a><a class="headerlink" href="#writing-newick-trees" title="Link to this heading">¶</a></h3>
+<p>Any ETE tree instance can be exported using newick notation using the
+<code class="xref py py-func docutils literal notranslate"><span class="pre">Tree.write()</span></code> method. It also allows for format selection
+(<a class="reference internal" href="#sec-newick-formats"><span class="std std-ref">Reading and writing newick trees</span></a>), so you can use the same function to
+convert between newick formats.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
+
+<span class="c1"># Load a tree with internal support values.</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(A:1,(B:1,(E:1,D:1)0.4:0.5)0.9:0.5);&#39;</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># Print its newick using the default parser.</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">write</span><span class="p">())</span>
+<span class="c1"># (A:1,(B:1,(E:1,D:1):0.5):0.5);</span>
+
+<span class="c1"># To print the internal support values you need to change the parser:</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">parser</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+<span class="c1"># (A:1,(B:1,(E:1,D:1)0.4:0.5)0.9:0.5);</span>
+
+<span class="c1"># We can also write into a file</span>
+<span class="n">t</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">parser</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="s1">&#39;new_tree.nw&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="understanding-ete-trees">
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">Understanding ETE trees</a><a class="headerlink" href="#understanding-ete-trees" title="Link to this heading">¶</a></h2>
+<p>Any tree topology can be represented as a succession of <strong>nodes</strong>
+connected in a hierarchical way. Thus, for practical reasons, ETE
+makes no distinction between the concepts of tree and node, as any
+tree can be represented by its root node. This allows to use any
+internal node within a tree as another sub-tree instance.</p>
+<p>Once trees are loaded, they can be manipulated as normal python
+objects. Given that a tree is actually a collection of nodes connected
+in a hierarchical way, what you usually see as a tree will be the root
+node instance from which the tree structure is hanging. However, every
+node within a ETE’s tree structure can be also considered a subtree.
+This means, for example, that all the operational methods that we will
+review in the following sections are available at any possible level
+within a tree. Moreover, this feature will allow you to separate large
+trees into smaller partitions, or concatenate several trees into a
+single structure.</p>
+</section>
+<section id="basic-tree-attributes">
+<h2><a class="toc-backref" href="#id7" role="doc-backlink">Basic tree attributes</a><a class="headerlink" href="#basic-tree-attributes" title="Link to this heading">¶</a></h2>
+<p>Each tree node has two basic attributes used to establish its position
+in the tree: <code class="xref py py-attr docutils literal notranslate"><span class="pre">Tree.up</span></code> and <code class="xref py py-attr docutils literal notranslate"><span class="pre">Tree.children</span></code>. The first is a
+pointer to its parent’s node, while the latter is a list of children
+nodes. Although it is possible to modify the structure of a tree by
+changing these attributes, it is strongly recommend not to do it.
+Several methods are provided to manipulate each node’s connections in
+a safe way (see <span class="xref std std-ref">sec:modifying-tree-topology</span>).</p>
+<p>In addition, three other basic attributes are always present in any
+tree node instance (let’s call it <code class="docutils literal notranslate"><span class="pre">node</span></code>):</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Method</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">node.dist</span></code></p></td>
+<td><p>distance from the node to its parent (branch length). Default value = 1.0</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">node.support</span></code></p></td>
+<td><p>informs about the reliability of the partition defined by the node (i.e. bootstrap support)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">node.name</span></code></p></td>
+<td><p>node’s name</p></td>
+</tr>
+</tbody>
+</table>
+<p>In addition, several methods are provided to perform basic operations
+on tree node instances:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Method</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">node.is_leaf</span></code></p></td>
+<td><p>True if <code class="docutils literal notranslate"><span class="pre">node</span></code> has no children</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">node.is_root</span></code></p></td>
+<td><p>True if <code class="docutils literal notranslate"><span class="pre">node</span></code> has no parent</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">node.root</span></code></p></td>
+<td><p>the top-most node within the same tree structure as <code class="docutils literal notranslate"><span class="pre">node</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">len(node)</span></code></p></td>
+<td><p>returns the number of leaves under <code class="docutils literal notranslate"><span class="pre">node</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">print(node)</span></code></p></td>
+<td><p>prints a text-based representation of the tree topology under <code class="docutils literal notranslate"><span class="pre">node</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">n</span> <span class="pre">in</span> <span class="pre">node</span></code></p></td>
+<td><p>True if <em>n</em> is a leaf under <code class="docutils literal notranslate"><span class="pre">node</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">for</span> <span class="pre">leaf</span> <span class="pre">in</span> <span class="pre">node</span></code></p></td>
+<td><p>iterates over all leaves under <code class="docutils literal notranslate"><span class="pre">node</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-func docutils literal notranslate"><span class="pre">node.explore()</span></code></p></td>
+<td><p>explore node graphically using a GUI</p></td>
+</tr>
+</tbody>
+</table>
+<p>This is an example on how to access such attributes:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">()</span>
+
+<span class="c1"># Create a random tree topology.</span>
+<span class="n">t</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>  <span class="c1"># text visualization of the tree</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">children</span><span class="p">)</span>  <span class="c1"># list of children nodes directly hanging from the root</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">up</span><span class="p">)</span>  <span class="c1"># should be None, since t is the root</span>
+
+<span class="c1"># You can also iterate over tree leaves using a simple syntax.</span>
+<span class="k">for</span> <span class="n">leaf</span> <span class="ow">in</span> <span class="n">t</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">leaf</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+<span class="n">n</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>  <span class="c1"># take the first leaf</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;First leaf name:&#39;</span><span class="p">,</span> <span class="n">n</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;First leaf distance:&#39;</span><span class="p">,</span> <span class="n">n</span><span class="o">.</span><span class="n">dist</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;t.is_leaf = </span><span class="si">%s</span><span class="s1">   n.is_leaf = </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">,</span> <span class="n">n</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">root</span> <span class="o">==</span> <span class="n">t</span><span class="p">)</span>  <span class="c1"># True</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">children</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">root</span> <span class="o">==</span> <span class="n">t</span><span class="p">)</span>  <span class="c1"># True too</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">children</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">children</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">root</span> <span class="o">==</span> <span class="n">t</span><span class="p">)</span>  <span class="c1"># and True again</span>
+</pre></div>
+</div>
+<section id="root-node-on-unrooted-trees">
+<h3><a class="toc-backref" href="#id8" role="doc-backlink">Root node on unrooted trees?</a><a class="headerlink" href="#root-node-on-unrooted-trees" title="Link to this heading">¶</a></h3>
+<p>When a tree is loaded from external sources, a pointer to the top-most
+node is returned. This is called the tree root, and <strong>it will exist
+even if the tree is conceptually considered as unrooted</strong>. That is,
+the root node can be considered as the master node, since it
+represents the whole tree structure. Unrooted trees can be identified
+as trees where the master root node has more than two children.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
+
+<span class="n">unrooted_tree</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(A,B,(C,D));&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">unrooted_tree</span><span class="p">)</span>
+<span class="c1">#  ╭╴A</span>
+<span class="c1"># ─┼╴B</span>
+<span class="c1">#  ╰─┬╴C</span>
+<span class="c1">#    ╰╴D</span>
+
+<span class="n">rooted_tree</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((A,B),(C,D));&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">rooted_tree</span><span class="p">)</span>
+<span class="c1"># ╭─┬╴A</span>
+<span class="c1">#─┤ ╰╴B</span>
+<span class="c1"># ╰─┬╴C</span>
+<span class="c1">#   ╰╴D</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="browsing-trees-traversing">
+<h2><a class="toc-backref" href="#id9" role="doc-backlink">Browsing trees (traversing)</a><a class="headerlink" href="#browsing-trees-traversing" title="Link to this heading">¶</a></h2>
+<p>One of the most basic operations for tree analysis is <em>tree browsing</em>.
+This is, essentially, visiting nodes within a tree. ETE provides a
+number of methods to search for specific nodes or to navigate over the
+hierarchical structure of a tree.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">ETE Toolkit</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs.html">Frequently Asked Questions (FAQs)</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">ETE Tutorial</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Working With Tree Data Structures</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference Guide</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">ETE Tutorial</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">ETE Tutorial</a></li>
+      <li>Next: <a href="../reference/index.html" title="next chapter">Reference Guide</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2008 - 2023, The ETE Toolkit Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+      |
+      <a href="../_sources/tutorial/tutorial_trees.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
