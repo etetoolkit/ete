@@ -23,7 +23,7 @@ jobs:
       # Install dependencies for your project
       - name: Install Dependencies
         run: |
-          pip install .
+          pip install .[treeview]
           pip install sphinx
 
       # Build Sphinx documentation
