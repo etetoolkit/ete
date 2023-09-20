@@ -15,6 +15,11 @@ import os
 project = 'ETE Toolkit'
 copyright = '2008 - 2023, The ETE Toolkit Team'
 author = 'Jaime Huerta-Cepas et al.'
+release = open('../VERSION').readline().strip()
+
+# If true, the current module name will be prepended to all description
+# unit titles (such as .. function::).
+add_module_names = False
 
 
 # -- General configuration ---------------------------------------------------
@@ -35,3 +40,4 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 html_theme = 'alabaster'
 html_static_path = ['_static']
+html_favicon = '_static/favicon.ico'
