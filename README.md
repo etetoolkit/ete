@@ -59,7 +59,7 @@ To install ETE in a local directory to help with the development, you can:
 - Clone this repository (`git clone https://github.com/etetoolkit/ete.git`)
 - Install dependecies
   - If you are using [conda](https://conda.io/):
-  `conda install -c conda-forge cython bottle brotli numpy pyqt`
+  `conda install -c conda-forge cython bottle brotli numpy scipy pyqt6`
   - Otherwise, you can install them with `pip install <dependencies>`
 - Build and install ete4 from the repository's root directory: `pip install -e .`
 
