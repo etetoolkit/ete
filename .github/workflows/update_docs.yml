@@ -3,7 +3,7 @@ name: Update github pages docs
 on:
   push:
     branches:
-      - online_docs
+      - ete4
 
 jobs:
   build:
@@ -16,15 +16,14 @@ jobs:
 
       # Setup Python environment
       - name: Setup Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.x'
 
       # Install dependencies for your project
       - name: Install Dependencies
         run: |
-          pip install .[treeview]
-          pip install sphinx
+          pip install .[treeview,test,doc]
 
       # Build Sphinx documentation
       - name: Generate Sphinx Documentation
@@ -37,3 +36,9 @@ jobs:
         with:
             github_token: ${{ secrets.GITHUB_TOKEN }}
             publish_dir: ./doc/_build/html/
+
+      # Run tests
+      - name: Run Tests
+        run: |
+            cd tests
+            pytest test_tree.py

@@ -36,5 +36,6 @@ dependencies = ["bottle", "brotli", "numpy", "scipy"]
 "Homepage" = "http://etetoolkit.org"
 
 [project.optional-dependencies]
-test = ["pytest>=6.0"]
 treeview = ["pyqt6"]
+test = ["pytest>=6.0"]
+doc = ["sphinx"]
