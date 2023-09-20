@@ -254,10 +254,10 @@ as trees where the master root node has more than two children.
 
   rooted_tree = Tree('((A,B),(C,D));')
   print(rooted_tree)
-  # ╭─┬╴A
-  #─┤ ╰╴B
-  # ╰─┬╴C
-  #   ╰╴D
+  #  ╭─┬╴A
+  # ─┤ ╰╴B
+  #  ╰─┬╴C
+  #    ╰╴D
 
 
 Browsing trees (traversing)
