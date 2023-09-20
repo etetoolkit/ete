@@ -35,6 +35,351 @@
             
   <section id="phylotree-class">
 <h1>PhyloTree class<a class="headerlink" href="#phylotree-class" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="ete4.PhyloTree">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ete4.</span></span><span class="sig-name descname"><span class="pre">PhyloTree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">newick=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">children=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alignment=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alg_format='fasta'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sp_naming_function=&lt;function</span> <span class="pre">_parse_species&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parser=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/phylo/phylotree.html#PhyloTree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.PhyloTree" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="reference_tree.html#ete4.Tree" title="ete4.coretype.tree.Tree"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tree</span></code></a></p>
+<p>Representation of a phylogenetic tree.</p>
+<p>Extends the standard <a class="reference internal" href="reference_tree.html#ete4.Tree" title="ete4.Tree"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tree</span></code></a> instance by adding
+specific attributes and methods to work with phylogentic trees.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>newick</strong> – Path to the file containing the tree or, alternatively,
+the text string containing the same information.</p></li>
+<li><p><strong>alignment</strong> – File containing a multiple sequence alignment.</p></li>
+<li><p><strong>alg_format</strong> – “fasta”, “phylip” or “iphylip” (interleaved).</p></li>
+<li><p><strong>parser</strong> – Parser to read the newick.</p></li>
+<li><p><strong>sp_naming_function</strong> – Function that gets a nodename and
+returns the species name (see
+<a class="reference internal" href="#ete4.PhyloTree.set_species_naming_function" title="ete4.PhyloTree.set_species_naming_function"><code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.set_species_naming_function()</span></code></a>). By default,
+the 3 first letter of nodes will be used as species
+identifiers.</p></li>
+</ul>
+</dd>
+</dl>
+<p>The possible formats used for the parser are:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>FORMAT</p></th>
+<th class="head"><p>DESCRIPTION</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>flexible with support values</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>flexible with internal node names</p></td>
+</tr>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>all branches + leaf names + internal supports</p></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>all branches + all names</p></td>
+</tr>
+<tr class="row-even"><td><p>4</p></td>
+<td><p>leaf branches + leaf names</p></td>
+</tr>
+<tr class="row-odd"><td><p>5</p></td>
+<td><p>internal and leaf branches + leaf names</p></td>
+</tr>
+<tr class="row-even"><td><p>6</p></td>
+<td><p>internal branches + leaf names</p></td>
+</tr>
+<tr class="row-odd"><td><p>7</p></td>
+<td><p>leaf branches + all names</p></td>
+</tr>
+<tr class="row-even"><td><p>8</p></td>
+<td><p>all names</p></td>
+</tr>
+<tr class="row-odd"><td><p>9</p></td>
+<td><p>leaf names</p></td>
+</tr>
+<tr class="row-even"><td><p>100</p></td>
+<td><p>topology only</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.PhyloTree.annotate_gtdb_taxa">
+<span class="sig-name descname"><span class="pre">annotate_gtdb_taxa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">taxid_attr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'species'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tax2name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tax2track</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tax2rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dbfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/phylo/phylotree.html#PhyloTree.annotate_gtdb_taxa"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.PhyloTree.annotate_gtdb_taxa" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.PhyloTree.annotate_ncbi_taxa">
+<span class="sig-name descname"><span class="pre">annotate_ncbi_taxa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">taxid_attr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'species'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tax2name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tax2track</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tax2rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dbfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/phylo/phylotree.html#PhyloTree.annotate_ncbi_taxa"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.PhyloTree.annotate_ncbi_taxa" title="Link to this definition">¶</a></dt>
+<dd><p>Add NCBI taxonomy annotation to all descendant nodes. Leaf nodes are
+expected to contain a feature (name, by default) encoding a valid taxid
+number.</p>
+<p>All descendant nodes (including internal nodes) are annotated with the
+following new features:</p>
+<p><cite>Node.spname</cite>: scientific spcies name as encoded in the NCBI taxonomy database</p>
+<p><cite>Node.named_lineage</cite>: the NCBI lineage track using scientific names</p>
+<p><cite>Node.taxid</cite>: NCBI taxid number</p>
+<p><cite>Node.lineage</cite>: same as named_lineage but using taxid codes.</p>
+<p>Note that for internal nodes, NCBI information will refer to the first
+common lineage of the grouped species.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>taxid_attr</strong> (<em>name</em>) – the name of the feature that should be used to access the taxid number associated to each node.</p></li>
+<li><p><strong>tax2name</strong> (<em>None</em>) – A dictionary where keys are taxid
+numbers and values are their translation into NCBI
+scientific name. Its use is optional and allows to avoid
+database queries when annotating many trees containing the
+same set of taxids.</p></li>
+<li><p><strong>tax2track</strong> (<em>None</em>) – A dictionary where keys are taxid
+numbers and values are their translation into NCBI lineage
+tracks (taxids). Its use is optional and allows to avoid
+database queries when annotating many trees containing the
+same set of taxids.</p></li>
+<li><p><strong>tax2rank</strong> (<em>None</em>) – A dictionary where keys are taxid
+numbers and values are their translation into NCBI rank
+name. Its use is optional and allows to avoid database
+queries when annotating many trees containing the same set
+of taxids.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>:param None dbfile<span class="classifier">If provided, the provided file will be</span></dt><dd><p>used as a local copy of the NCBI taxonomy database.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tax2name (a dictionary translating taxid numbers
+into scientific name), tax2lineage (a dictionary
+translating taxid numbers into their corresponding NCBI
+lineage track) and tax2rank (a dictionary translating
+taxid numbers into rank names).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.PhyloTree.collapse_lineage_specific_expansions">
+<span class="sig-name descname"><span class="pre">collapse_lineage_specific_expansions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/phylo/phylotree.html#PhyloTree.collapse_lineage_specific_expansions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.PhyloTree.collapse_lineage_specific_expansions" title="Link to this definition">¶</a></dt>
+<dd><p>Converts lineage specific expansion nodes into a single
+tip node (randomly chosen from tips within the expansion).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>species</strong> (<em>None</em>) – If supplied, only expansions matching the
+species criteria will be pruned. When None, all expansions
+within the tree will be processed.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.PhyloTree.get_age">
+<span class="sig-name descname"><span class="pre">get_age</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species2age</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/phylo/phylotree.html#PhyloTree.get_age"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.PhyloTree.get_age" title="Link to this definition">¶</a></dt>
+<dd><p>Implements the phylostratigrafic method described in:</p>
+<p>Huerta-Cepas, J., &amp; Gabaldon, T. (2011). Assigning duplication events to
+relative temporal scales in genome-wide studies. Bioinformatics, 27(1),
+38-45.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.PhyloTree.get_age_balanced_outgroup">
+<span class="sig-name descname"><span class="pre">get_age_balanced_outgroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species2age</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/phylo/phylotree.html#PhyloTree.get_age_balanced_outgroup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.PhyloTree.get_age_balanced_outgroup" title="Link to this definition">¶</a></dt>
+<dd><div class="versionadded">
+<p><span class="versionmodified added">New in version 2.2.</span></p>
+</div>
+<p>Returns the node better balance current tree structure
+according to the topological age of the different leaves and
+internal node sizes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>species2age</strong> – A dictionary translating from leaf names
+into a topological age.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.PhyloTree.get_descendant_evol_events">
+<span class="sig-name descname"><span class="pre">get_descendant_evol_events</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sos_thr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/phylo/phylotree.html#PhyloTree.get_descendant_evol_events"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.PhyloTree.get_descendant_evol_events" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a list of all duplication and speciation
+events detected after this node. Nodes are assumed to be
+duplications when a species overlap is found between its child
+linages. Method is described more detail in:</p>
+<p>“The Human Phylome.” Huerta-Cepas J, Dopazo H, Dopazo J, Gabaldon
+T. Genome Biol. 2007;8(6):R109.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.PhyloTree.get_farthest_oldest_leaf">
+<span class="sig-name descname"><span class="pre">get_farthest_oldest_leaf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species2age</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/phylo/phylotree.html#PhyloTree.get_farthest_oldest_leaf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.PhyloTree.get_farthest_oldest_leaf" title="Link to this definition">¶</a></dt>
+<dd><p>Return the farthest oldest leaf to the current one.</p>
+<p>It requires an species2age dictionary with the age estimation
+for all species.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>is_leaf_fn</strong> (<em>None</em>) – A pointer to a function that receives
+a node instance as unique argument and returns True or
+False. It can be used to dynamically collapse nodes, so
+they are seen as leaves.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.PhyloTree.get_farthest_oldest_node">
+<span class="sig-name descname"><span class="pre">get_farthest_oldest_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species2age</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/phylo/phylotree.html#PhyloTree.get_farthest_oldest_node"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.PhyloTree.get_farthest_oldest_node" title="Link to this definition">¶</a></dt>
+<dd><p>Return the farthest oldest node (leaf or internal).</p>
+<p>The difference with get_farthest_oldest_leaf() is that in this
+function internal nodes grouping seqs from the same species
+are collapsed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.PhyloTree.get_my_evol_events">
+<span class="sig-name descname"><span class="pre">get_my_evol_events</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sos_thr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/phylo/phylotree.html#PhyloTree.get_my_evol_events"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.PhyloTree.get_my_evol_events" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a list of duplication and speciation events in
+which the current node has been involved. Scanned nodes are
+also labeled internally as dup=True|False. You can access this
+labels using the ‘node.dup’ sintaxis.</p>
+<p>Method: the algorithm scans all nodes from the given leafName to
+the root. Nodes are assumed to be duplications when a species
+overlap is found between its child linages. Method is described
+more detail in:</p>
+<p>“The Human Phylome.” Huerta-Cepas J, Dopazo H, Dopazo J, Gabaldon
+T. Genome Biol. 2007;8(6):R109.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.PhyloTree.get_speciation_trees">
+<span class="sig-name descname"><span class="pre">get_speciation_trees</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">map_properties</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">autodetect_duplications</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">newick_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_attr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'species'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/phylo/phylotree.html#PhyloTree.get_speciation_trees"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.PhyloTree.get_speciation_trees" title="Link to this definition">¶</a></dt>
+<dd><p>Return number of species trees, of duplications, and an iterator.</p>
+<p>Calculates all possible species trees contained within a
+duplicated gene family tree as described in <a class="reference external" href="http://treeko.cgenomics.org">Treeko</a> (see <a class="reference external" href="http://www.ncbi.nlm.nih.gov/pubmed/21335609">Marcet and Gabaldon,
+2011</a> ).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>map_properties</strong> (<em>None</em>) – A list of properties that should be
+mapped from the original gene family tree to each species
+tree subtree.</p></li>
+<li><p><strong>autodetect_duplications</strong> (<em>True</em>) – If True, duplication
+nodes will be automatically detected using the Species
+Overlap algorithm
+(<code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.get_descendants_evol_events()</span></code>. If False,
+duplication nodes within the original tree are expected to
+contain the feature “evoltype=D”.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.PhyloTree.get_species">
+<span class="sig-name descname"><span class="pre">get_species</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/phylo/phylotree.html#PhyloTree.get_species"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.PhyloTree.get_species" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the set of species covered by its partition.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.PhyloTree.iter_species">
+<span class="sig-name descname"><span class="pre">iter_species</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/phylo/phylotree.html#PhyloTree.iter_species"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.PhyloTree.iter_species" title="Link to this definition">¶</a></dt>
+<dd><p>Returns an iterator over the species grouped by this node.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.PhyloTree.link_to_alignment">
+<span class="sig-name descname"><span class="pre">link_to_alignment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alignment</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alg_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fasta'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/phylo/phylotree.html#PhyloTree.link_to_alignment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.PhyloTree.link_to_alignment" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.PhyloTree.ncbi_compare">
+<span class="sig-name descname"><span class="pre">ncbi_compare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">autodetect_duplications</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cached_content</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/phylo/phylotree.html#PhyloTree.ncbi_compare"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.PhyloTree.ncbi_compare" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.PhyloTree.reconcile">
+<span class="sig-name descname"><span class="pre">reconcile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species_tree</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/phylo/phylotree.html#PhyloTree.reconcile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.PhyloTree.reconcile" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the reconcilied topology with the provided species
+tree, and a list of evolutionary events inferred from such
+reconciliation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.PhyloTree.set_species_naming_function">
+<span class="sig-name descname"><span class="pre">set_species_naming_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fn</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/phylo/phylotree.html#PhyloTree.set_species_naming_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.PhyloTree.set_species_naming_function" title="Link to this definition">¶</a></dt>
+<dd><p>Sets the parsing function used to extract species name from a
+node’s name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>fn</strong> – Pointer to a parsing python function that
+receives nodename as first argument and returns the species
+name.</p>
+</dd>
+</dl>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Example of a parsing function to extract species names for</span>
+<span class="c1"># all nodes in a given tree.</span>
+<span class="k">def</span> <span class="nf">parse_sp_name</span><span class="p">(</span><span class="n">node_name</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">node_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">tree</span><span class="o">.</span><span class="n">set_species_naming_function</span><span class="p">(</span><span class="n">parse_sp_name</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ete4.PhyloTree.species">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">species</span></span><a class="headerlink" href="#ete4.PhyloTree.species" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.PhyloTree.split_by_dups">
+<span class="sig-name descname"><span class="pre">split_by_dups</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">autodetect_duplications</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/phylo/phylotree.html#PhyloTree.split_by_dups"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.PhyloTree.split_by_dups" title="Link to this definition">¶</a></dt>
+<dd><p>Return the list of subtrees when splitting by its duplication nodes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>autodetect_duplications</strong> (<em>True</em>) – If True, duplication
+nodes will be automatically detected using the Species
+Overlap algorithm
+(<code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.get_descendants_evol_events()</span></code>. If False,
+duplication nodes within the original tree are expected to
+contain the feature “evoltype=D”.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.PhyloTree.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">props</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parser</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format_root_node</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/phylo/phylotree.html#PhyloTree.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.PhyloTree.write" title="Link to this definition">¶</a></dt>
+<dd><p>Return or write to file the newick representation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>outfile</strong> (<em>str</em>) – Name of the output file. If present, it will write
+the newick to that file instad of returning it as a string.</p></li>
+<li><p><strong>props</strong> (<em>list</em>) – Properties to write for all nodes using the Extended
+Newick Format. If None, write all available properties.</p></li>
+<li><p><strong>parser</strong> – Parser used to encode the tree in newick format.</p></li>
+<li><p><strong>format_root_node</strong> (<em>bool</em>) – If True, write content of the root node
+too. For compatibility reasons, this is False by default.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;species&#39;</span><span class="p">,</span> <span class="s1">&#39;sci_name&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ete4.phylo.EvolEvent">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ete4.phylo.</span></span><span class="sig-name descname"><span class="pre">EvolEvent</span></span><a class="reference internal" href="../_modules/ete4/phylo/evolevents.html#EvolEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.phylo.EvolEvent" title="Link to this definition">¶</a></dt>
+<dd><p>Basic evolutionary event. It stores all the information about an
+event(node) ocurred in a phylogenetic tree.</p>
+<p><code class="xref py py-attr docutils literal notranslate"><span class="pre">etype</span></code> : <code class="docutils literal notranslate"><span class="pre">D</span></code> (Duplication), <code class="docutils literal notranslate"><span class="pre">S</span></code> (Speciation), <code class="docutils literal notranslate"><span class="pre">L</span></code> (gene loss),</p>
+<p><code class="xref py py-attr docutils literal notranslate"><span class="pre">in_seqs</span></code> : the list of sequences in one side of the event.</p>
+<p><code class="xref py py-attr docutils literal notranslate"><span class="pre">out_seqs</span></code> : the list of sequences in the other side of the event</p>
+<p><code class="xref py py-attr docutils literal notranslate"><span class="pre">node</span></code> : link to the event node in the tree</p>
+</dd></dl>
+
 </section>
 
 

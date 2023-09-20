@@ -47,9 +47,156 @@
 </nav>
 <section id="ncbitaxa-class">
 <h2><a class="toc-backref" href="#id2" role="doc-backlink">NCBITaxa class</a><a class="headerlink" href="#ncbitaxa-class" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="ete4.NCBITaxa">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ete4.</span></span><span class="sig-name descname"><span class="pre">NCBITaxa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dbfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">taxdump_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/ncbi_taxonomy/ncbiquery.html#NCBITaxa"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.NCBITaxa" title="Link to this definition">¶</a></dt>
+<dd><p>A local transparent connector to the NCBI taxonomy database.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.NCBITaxa.annotate_tree">
+<span class="sig-name descname"><span class="pre">annotate_tree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">taxid_attr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'name'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tax2name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tax2track</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tax2rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/ncbi_taxonomy/ncbiquery.html#NCBITaxa.annotate_tree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.NCBITaxa.annotate_tree" title="Link to this definition">¶</a></dt>
+<dd><p>Annotate a tree containing taxids as leaf names.</p>
+<p>The annotation adds the properties: ‘taxid’, ‘sci_name’,
+‘lineage’, ‘named_lineage’ and ‘rank’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> – a Tree (or Tree derived) instance.</p></li>
+<li><p><strong>taxid_attr</strong> (<em>name</em>) – Allows to set a custom node attribute
+containing the taxid number associated to each node (i.e.
+species in PhyloTree instances).</p></li>
+<li><p><strong>tax2name</strong><strong>,</strong><strong>tax2track</strong><strong>,</strong><strong>tax2rank</strong> – Use these arguments to
+provide pre-calculated dictionaries providing translation
+from taxid number and names,track lineages and ranks.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.NCBITaxa.get_broken_branches">
+<span class="sig-name descname"><span class="pre">get_broken_branches</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">taxa_lineages</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n2content</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/ncbi_taxonomy/ncbiquery.html#NCBITaxa.get_broken_branches"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.NCBITaxa.get_broken_branches" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a list of NCBI lineage names that are not monophyletic in the
+provided tree, as well as the list of affected branches and their size.</p>
+<p>CURRENTLY EXPERIMENTAL</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.NCBITaxa.get_common_names">
+<span class="sig-name descname"><span class="pre">get_common_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">taxids</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/ncbi_taxonomy/ncbiquery.html#NCBITaxa.get_common_names"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.NCBITaxa.get_common_names" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.NCBITaxa.get_descendant_taxa">
+<span class="sig-name descname"><span class="pre">get_descendant_taxa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate_nodes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rank_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collapse_subspecies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_tree</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/ncbi_taxonomy/ncbiquery.html#NCBITaxa.get_descendant_taxa"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.NCBITaxa.get_descendant_taxa" title="Link to this definition">¶</a></dt>
+<dd><p>Return list of descendant taxids of the given parent.</p>
+<p>Parent can be given as taxid or scientific species name.</p>
+<p>If intermediate_nodes=True, the list will also have the internal nodes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.NCBITaxa.get_fuzzy_name_translation">
+<span class="sig-name descname"><span class="pre">get_fuzzy_name_translation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/ncbi_taxonomy/ncbiquery.html#NCBITaxa.get_fuzzy_name_translation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.NCBITaxa.get_fuzzy_name_translation" title="Link to this definition">¶</a></dt>
+<dd><p>Return taxid, species name and match score from the NCBI database.</p>
+<p>The results are for the best match for name in the NCBI
+database of taxa names, with a word similarity &gt;= <cite>sim</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – Species name (does not need to be exact).</p></li>
+<li><p><strong>sim</strong> (<em>0.9</em>) – Min word similarity to report a match (from 0 to 1).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.NCBITaxa.get_lineage">
+<span class="sig-name descname"><span class="pre">get_lineage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">taxid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/ncbi_taxonomy/ncbiquery.html#NCBITaxa.get_lineage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.NCBITaxa.get_lineage" title="Link to this definition">¶</a></dt>
+<dd><p>Return lineage track corresponding to the given taxid.</p>
+<p>The lineage track is a hierarchically sorted list of parent taxids.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.NCBITaxa.get_lineage_translator">
+<span class="sig-name descname"><span class="pre">get_lineage_translator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">taxids</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/ncbi_taxonomy/ncbiquery.html#NCBITaxa.get_lineage_translator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.NCBITaxa.get_lineage_translator" title="Link to this definition">¶</a></dt>
+<dd><p>Return dict with lineage tracks corresponding to the given taxids.</p>
+<p>The lineage tracks are a hierarchically sorted list of parent taxids.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.NCBITaxa.get_name_translator">
+<span class="sig-name descname"><span class="pre">get_name_translator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">names</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/ncbi_taxonomy/ncbiquery.html#NCBITaxa.get_name_translator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.NCBITaxa.get_name_translator" title="Link to this definition">¶</a></dt>
+<dd><p>Return dict with taxids corresponding to the given scientific names.</p>
+<p>Exact name match is required for translation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.NCBITaxa.get_rank">
+<span class="sig-name descname"><span class="pre">get_rank</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">taxids</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/ncbi_taxonomy/ncbiquery.html#NCBITaxa.get_rank"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.NCBITaxa.get_rank" title="Link to this definition">¶</a></dt>
+<dd><p>Return dict with NCBI taxonomy ranks for each list of taxids.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.NCBITaxa.get_taxid_translator">
+<span class="sig-name descname"><span class="pre">get_taxid_translator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">taxids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">try_synonyms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/ncbi_taxonomy/ncbiquery.html#NCBITaxa.get_taxid_translator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.NCBITaxa.get_taxid_translator" title="Link to this definition">¶</a></dt>
+<dd><p>Return dict with the scientific names corresponding to the taxids.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.NCBITaxa.get_topology">
+<span class="sig-name descname"><span class="pre">get_topology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">taxids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate_nodes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rank_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collapse_subspecies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/ncbi_taxonomy/ncbiquery.html#NCBITaxa.get_topology"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.NCBITaxa.get_topology" title="Link to this definition">¶</a></dt>
+<dd><p>Return the minimal pruned NCBI taxonomy tree containing taxids.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>intermediate_nodes</strong> (<em>False</em>) – If True, single child nodes
+representing the complete lineage of leaf nodes are kept.
+Otherwise, the tree is pruned to contain the first common
+ancestor of each group.</p></li>
+<li><p><strong>rank_limit</strong> (<em>None</em>) – If valid NCBI rank name is provided,
+the tree is pruned at that given level. For instance, use
+rank=”species” to get rid of sub-species or strain leaf
+nodes.</p></li>
+<li><p><strong>collapse_subspecies</strong> (<em>False</em>) – If True, any item under the
+species rank will be collapsed into the species upper
+node.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.NCBITaxa.translate_to_names">
+<span class="sig-name descname"><span class="pre">translate_to_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">taxids</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/ncbi_taxonomy/ncbiquery.html#NCBITaxa.translate_to_names"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.NCBITaxa.translate_to_names" title="Link to this definition">¶</a></dt>
+<dd><p>Return list of scientific names corresponding to taxids.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.NCBITaxa.update_taxonomy_database">
+<span class="sig-name descname"><span class="pre">update_taxonomy_database</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">taxdump_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/ncbi_taxonomy/ncbiquery.html#NCBITaxa.update_taxonomy_database"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.NCBITaxa.update_taxonomy_database" title="Link to this definition">¶</a></dt>
+<dd><p>Update the ncbi taxonomy database.</p>
+<p>It does it by downloading and parsing the latest
+taxdump.tar.gz file from the NCBI FTP site (via HTTP).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>taxdump_file</strong> (<em>None</em>) – Alternative location of the
+taxdump.tax.gz file.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="functions">
 <h2><a class="toc-backref" href="#id3" role="doc-backlink">Functions</a><a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.is_taxadb_up_to_date">
+<span class="sig-prename descclassname"><span class="pre">ete4.</span></span><span class="sig-name descname"><span class="pre">is_taxadb_up_to_date</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dbfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/home/runner/.local/share/ete/gtdbtaxa.sqlite'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/gtdb_taxonomy/gtdbquery.html#is_taxadb_up_to_date"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.is_taxadb_up_to_date" title="Link to this definition">¶</a></dt>
+<dd><p>Check if a valid and up-to-date gtdbtaxa.sqlite database exists
+If dbfile= is not specified, DEFAULT_TAXADB is assumed</p>
+</dd></dl>
+
 </section>
 </section>
 

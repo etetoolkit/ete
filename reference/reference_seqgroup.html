@@ -35,6 +35,76 @@
             
   <section id="seqgroup-class">
 <h1>Seqgroup class<a class="headerlink" href="#seqgroup-class" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="ete4.SeqGroup">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ete4.</span></span><span class="sig-name descname"><span class="pre">SeqGroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequences</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fasta'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fix_duplicates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/coretype/seqgroup.html#SeqGroup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.SeqGroup" title="Link to this definition">¶</a></dt>
+<dd><p>Class to store a set of sequences (aligned or not).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.SeqGroup.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequences</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fasta'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fix_duplicates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/coretype/seqgroup.html#SeqGroup.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.SeqGroup.__init__" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sequences</strong> – Path to the file containing the sequences or,
+alternatively, the text string containing them.</p></li>
+<li><p><strong>format</strong> – Encoding format of sequences. Supported formats
+are: <code class="docutils literal notranslate"><span class="pre">fasta</span></code>, <code class="docutils literal notranslate"><span class="pre">phylip</span></code> (phylip sequencial) and
+<code class="docutils literal notranslate"><span class="pre">iphylip</span></code> (phylip interleaved). Phylip format forces
+sequence names to a maximum of 10 chars. To avoid this
+effect, you can use the relaxed phylip format:
+<code class="docutils literal notranslate"><span class="pre">phylip_relaxed</span></code> and <code class="docutils literal notranslate"><span class="pre">iphylip_relaxed</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">msf</span> <span class="o">=</span> <span class="s1">&#39;&gt;seq1</span><span class="se">\n</span><span class="s1">AAAAAAAAAAA</span><span class="se">\n</span><span class="s1">&gt;seq2</span><span class="se">\n</span><span class="s1">TTTTTTTTTTTTT</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="n">seqs</span> <span class="o">=</span> <span class="n">SeqGroup</span><span class="p">(</span><span class="n">msf</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;fasta&#39;</span><span class="p">)</span>
+<span class="nb">print</span> <span class="n">seqs</span><span class="o">.</span><span class="n">get_seq</span><span class="p">(</span><span class="s1">&#39;seq1&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.SeqGroup.get_entries">
+<span class="sig-name descname"><span class="pre">get_entries</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/coretype/seqgroup.html#SeqGroup.get_entries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.SeqGroup.get_entries" title="Link to this definition">¶</a></dt>
+<dd><p>Return the list of entries currently stored.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.SeqGroup.get_seq">
+<span class="sig-name descname"><span class="pre">get_seq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/coretype/seqgroup.html#SeqGroup.get_seq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.SeqGroup.get_seq" title="Link to this definition">¶</a></dt>
+<dd><p>Return the sequence associated to a given entry name.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.SeqGroup.iter_entries">
+<span class="sig-name descname"><span class="pre">iter_entries</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/coretype/seqgroup.html#SeqGroup.iter_entries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.SeqGroup.iter_entries" title="Link to this definition">¶</a></dt>
+<dd><p>Return an iterator over all sequences in the collection.</p>
+<p>Each item is a tuple with the sequence name, sequence, and sequence comments.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.SeqGroup.set_seq">
+<span class="sig-name descname"><span class="pre">set_seq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comments</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/coretype/seqgroup.html#SeqGroup.set_seq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.SeqGroup.set_seq" title="Link to this definition">¶</a></dt>
+<dd><p>Add or update a sequence.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.SeqGroup.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fasta'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/coretype/seqgroup.html#SeqGroup.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.SeqGroup.write" title="Link to this definition">¶</a></dt>
+<dd><p>Return the text representation of the sequences.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>format</strong> – Format for the output representation.</p></li>
+<li><p><strong>outfile</strong> – If given, the result is written to that file.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
 

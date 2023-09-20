@@ -35,22 +35,43 @@
             
   <section id="reference-guide">
 <h1>Reference Guide<a class="headerlink" href="#reference-guide" title="Link to this heading">¶</a></h1>
+digraph inheritance9e90e02d16 {
+bgcolor=transparent;
+rankdir=LR;
+size=&quot;8.0, 12.0&quot;;
+  &quot;ClusterTree&quot; [URL=&quot;reference_clustering.html#ete4.ClusterTree&quot;,fillcolor=white,fontname=&quot;Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans&quot;,fontsize=10,height=0.25,shape=box,style=&quot;setlinewidth(0.5),filled&quot;,target=&quot;_top&quot;,tooltip=&quot;A ClusterTree is a Tree that represents a clustering result.&quot;];
+  &quot;Tree&quot; -&gt; &quot;ClusterTree&quot; [arrowsize=0.5,style=&quot;setlinewidth(0.5)&quot;];
+  &quot;PhyloTree&quot; [URL=&quot;reference_phylo.html#ete4.PhyloTree&quot;,fillcolor=white,fontname=&quot;Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans&quot;,fontsize=10,height=0.25,shape=box,style=&quot;setlinewidth(0.5),filled&quot;,target=&quot;_top&quot;,tooltip=&quot;Representation of a phylogenetic tree.&quot;];
+  &quot;Tree&quot; -&gt; &quot;PhyloTree&quot; [arrowsize=0.5,style=&quot;setlinewidth(0.5)&quot;];
+  &quot;Tree&quot; [URL=&quot;reference_tree.html#ete4.Tree&quot;,fillcolor=white,fontname=&quot;Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans&quot;,fontsize=10,height=0.25,shape=box,style=&quot;setlinewidth(0.5),filled&quot;,target=&quot;_top&quot;,tooltip=&quot;The Tree class is used to store a tree structure. A tree&quot;];
+  &quot;TreeError&quot; [fillcolor=white,fontname=&quot;Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans&quot;,fontsize=10,height=0.25,shape=box,style=&quot;setlinewidth(0.5),filled&quot;];
+}
 <p>Current modules:</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="reference_tree.html">Tree class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference_tree.html">Tree class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference_tree.html#ete4.Tree"><code class="docutils literal notranslate"><span class="pre">Tree</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="reference_treeview.html">Treeview module</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="reference_treeview.html#treestyle">TreeStyle</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_treeview.html#nodestyle">NodeStyle</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_treeview.html#faces">Faces</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="reference_phylo.html">PhyloTree class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference_phylo.html">PhyloTree class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference_phylo.html#ete4.PhyloTree"><code class="docutils literal notranslate"><span class="pre">PhyloTree</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_phylo.html#ete4.phylo.EvolEvent"><code class="docutils literal notranslate"><span class="pre">EvolEvent</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="reference_clustering.html">Clustering module</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="reference_clustering.html#clustertree">ClusterTree</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="reference_seqgroup.html">Seqgroup class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference_seqgroup.html">Seqgroup class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference_seqgroup.html#ete4.SeqGroup"><code class="docutils literal notranslate"><span class="pre">SeqGroup</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="reference_ncbi.html">NCBITaxa module</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="reference_ncbi.html#ncbitaxa-class">NCBITaxa class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_ncbi.html#functions">Functions</a></li>

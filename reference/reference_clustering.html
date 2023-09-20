@@ -47,6 +47,82 @@
 </nav>
 <section id="clustertree">
 <h2><a class="toc-backref" href="#id2" role="doc-backlink">ClusterTree</a><a class="headerlink" href="#clustertree" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="ete4.ClusterTree">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ete4.</span></span><span class="sig-name descname"><span class="pre">ClusterTree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">children=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text_array=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fdist=&lt;function</span> <span class="pre">spearman_dist&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/clustering/clustertree.html#ClusterTree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.ClusterTree" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="reference_tree.html#ete4.Tree" title="ete4.coretype.tree.Tree"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tree</span></code></a></p>
+<p>A ClusterTree is a Tree that represents a clustering result.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.ClusterTree.get_dunn">
+<span class="sig-name descname"><span class="pre">get_dunn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">clusters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fdist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/clustering/clustertree.html#ClusterTree.get_dunn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.ClusterTree.get_dunn" title="Link to this definition">¶</a></dt>
+<dd><p>Calculates the Dunn index for the given set of descendant
+nodes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.ClusterTree.get_silhouette">
+<span class="sig-name descname"><span class="pre">get_silhouette</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fdist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/clustering/clustertree.html#ClusterTree.get_silhouette"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.ClusterTree.get_silhouette" title="Link to this definition">¶</a></dt>
+<dd><p>Calculates the node’s silhouette value by using a given
+distance function. By default, euclidean distance is used. It
+also calculates the deviation profile, mean profile, and
+inter/intra-cluster distances.</p>
+<dl class="simple">
+<dt>It sets the following features into the analyzed node:</dt><dd><ul class="simple">
+<li><p>node.intracluster</p></li>
+<li><p>node.intercluster</p></li>
+<li><p>node.silhouete</p></li>
+</ul>
+</dd>
+</dl>
+<p>Intracluster distances a(i) are calculated as the Centroid Diameter.</p>
+<p>Intercluster distances b(i) are calculated as the Centroid
+linkage distance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Citation<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>Rousseeuw, P.J. (1987) Silhouettes: A graphical aid to the
+interpretation and validation of cluster analysis.</em></p>
+<ol class="upperalpha simple" start="10">
+<li><p>Comput. Appl. Math., 20, 53-65.</p></li>
+</ol>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.ClusterTree.leaf_profiles">
+<span class="sig-name descname"><span class="pre">leaf_profiles</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/clustering/clustertree.html#ClusterTree.leaf_profiles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.ClusterTree.leaf_profiles" title="Link to this definition">¶</a></dt>
+<dd><p>Yield profiles associated to the leaves under this node.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.ClusterTree.link_to_arraytable">
+<span class="sig-name descname"><span class="pre">link_to_arraytable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arraytbl</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/clustering/clustertree.html#ClusterTree.link_to_arraytable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.ClusterTree.link_to_arraytable" title="Link to this definition">¶</a></dt>
+<dd><p>Link the given arraytable to the tree and return a list of
+nodes for with profiles could not been found in arraytable.</p>
+<p>Row names in the arraytable object are expected to match leaf
+names.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.ClusterTree.set_distance_function">
+<span class="sig-name descname"><span class="pre">set_distance_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fn</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/clustering/clustertree.html#ClusterTree.set_distance_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.ClusterTree.set_distance_function" title="Link to this definition">¶</a></dt>
+<dd><p>Set the distance function used to calculate cluster
+distances and silouette index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>fn</strong> – Function acepting two numpy arrays as arguments.</p>
+</dd>
+</dl>
+<p>Example::</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set a simple euclidean distance.</span>
+<span class="n">my_dist_fn</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">:</span> <span class="nb">abs</span><span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="n">y</span><span class="p">)</span>
+<span class="n">tree</span><span class="o">.</span><span class="n">set_distance_function</span><span class="p">(</span><span class="n">my_dist_fn</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 </section>
 
