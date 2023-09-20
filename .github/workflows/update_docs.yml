@@ -1,0 +1,39 @@
+name: Update github pages docs
+
+on:
+  push:
+    branches:
+      - online_docs
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the latest code
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      # Setup Python environment
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      # Install dependencies for your project
+      - name: Install Dependencies
+        run: |
+          pip install .
+          pip install sphinx
+
+      # Build Sphinx documentation
+      - name: Generate Sphinx Documentation
+        run: |
+          cd doc
+          make html
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+            publish_dir: ./doc/_build/html/
