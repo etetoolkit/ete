@@ -5,18 +5,19 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>PhyloTree class &#8212; ETE Toolkit  documentation</title>
+    <title>PhyloTree class &#8212; ETE Toolkit 4.0.0-beta documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=4f649999" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=039e1c02" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
-    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/documentation_options.js?v=f03ed5e5"></script>
     <script src="../_static/doctools.js?v=888ff710"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
     <link rel="author" title="About these documents" href="../about.html" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Clustering module" href="reference_clustering.html" />
-    <link rel="prev" title="Treeview module" href="reference_treeview.html" />
+    <link rel="next" title="Clustering" href="reference_clustering.html" />
+    <link rel="prev" title="Treeview" href="reference_treeview.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -37,7 +38,7 @@
 <h1>PhyloTree class<a class="headerlink" href="#phylotree-class" title="Link to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="ete4.PhyloTree">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ete4.</span></span><span class="sig-name descname"><span class="pre">PhyloTree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">newick=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">children=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alignment=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alg_format='fasta'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sp_naming_function=&lt;function</span> <span class="pre">_parse_species&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parser=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/phylo/phylotree.html#PhyloTree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.PhyloTree" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PhyloTree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">newick=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">children=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alignment=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alg_format='fasta'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sp_naming_function=&lt;function</span> <span class="pre">_parse_species&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parser=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/phylo/phylotree.html#PhyloTree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.PhyloTree" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="reference_tree.html#ete4.Tree" title="ete4.coretype.tree.Tree"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tree</span></code></a></p>
 <p>Representation of a phylogenetic tree.</p>
 <p>Extends the standard <a class="reference internal" href="reference_tree.html#ete4.Tree" title="ete4.Tree"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tree</span></code></a> instance by adding
@@ -371,7 +372,7 @@ too. For compatibility reasons, this is False by default.</p></li>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ete4.phylo.EvolEvent">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ete4.phylo.</span></span><span class="sig-name descname"><span class="pre">EvolEvent</span></span><a class="reference internal" href="../_modules/ete4/phylo/evolevents.html#EvolEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.phylo.EvolEvent" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">EvolEvent</span></span><a class="reference internal" href="../_modules/ete4/phylo/evolevents.html#EvolEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.phylo.EvolEvent" title="Link to this definition">¶</a></dt>
 <dd><p>Basic evolutionary event. It stores all the information about an
 event(node) ocurred in a phylogenetic tree.</p>
 <p><code class="xref py py-attr docutils literal notranslate"><span class="pre">etype</span></code> : <code class="docutils literal notranslate"><span class="pre">D</span></code> (Duplication), <code class="docutils literal notranslate"><span class="pre">S</span></code> (Speciation), <code class="docutils literal notranslate"><span class="pre">L</span></code> (gene loss),</p>
@@ -405,12 +406,12 @@ event(node) ocurred in a phylogenetic tree.</p>
 <li class="toctree-l1"><a class="reference internal" href="../faqs.html">Frequently Asked Questions (FAQs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorial/index.html">ETE Tutorial</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Reference Guide</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="reference_tree.html">Tree class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference_treeview.html">Treeview module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_tree.html">Tree</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_treeview.html">Treeview</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">PhyloTree class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference_clustering.html">Clustering module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference_seqgroup.html">Seqgroup class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference_ncbi.html">NCBITaxa module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_clustering.html">Clustering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_seqgroup.html">SeqGroup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_ncbi.html">NCBITaxa</a></li>
 </ul>
 </li>
 </ul>
@@ -420,8 +421,8 @@ event(node) ocurred in a phylogenetic tree.</p>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
   <li><a href="index.html">Reference Guide</a><ul>
-      <li>Previous: <a href="reference_treeview.html" title="previous chapter">Treeview module</a></li>
-      <li>Next: <a href="reference_clustering.html" title="next chapter">Clustering module</a></li>
+      <li>Previous: <a href="reference_treeview.html" title="previous chapter">Treeview</a></li>
+      <li>Next: <a href="reference_clustering.html" title="next chapter">Clustering</a></li>
   </ul></li>
   </ul></li>
 </ul>

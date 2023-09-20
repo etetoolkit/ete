@@ -1,5 +1,5 @@
-Treeview module
-===============
+Treeview
+========
 
 .. contents::
 

@@ -1,5 +1,5 @@
-Tree class
-==========
+Tree
+====
 
 .. autoclass:: ete4.Tree
    :members:
