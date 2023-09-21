@@ -1369,21 +1369,25 @@ cdef class Tree(object):
             if not n.is_leaf:
                 n.children.sort(key=lambda x: str(sorted(node2content[x])))
 
-    def get_cached_content(self, store_attr=None, container_type=set, leaves_only=True, _store=None):
-        """
-        .. versionadded: 2.2
+    def get_cached_content(self, store_attr=None, container_type=set,
+                           leaves_only=True, _store=None):
+        """Return dict that assigns to each node a set of its leaves.
 
-        Returns a dictionary pointing to the preloaded content of each
-        internal node under this tree. Such a dictionary is intended
-        to work as a cache for operations that require many traversal
-        operations.
+        The dictionary serves as a cache for operations that require
+        many traversals of the nodes under this tree.
 
-        :param None store_attr: Specifies the node attribute that
-            should be cached (i.e. name, distance, etc.). When none,
-            the whole node instance is cached.
+        Instead of assigning a set, it can assign other types (with
+        ``container_type``). And instead of the leaves themselves, it
+        can be any other property of them (like their names, with
+        ``store_attr``).
+
+        :param store_attr: Node attribute that should be cached (i.e.
+            name, distance, etc.). If None, it caches the node itself.
+        :param container_type: Type of container for the leaves (set, list).
+        :param leaves_only: If False, to each node it stores all its
+            descendant nodes, not only its leaves.
         :param _store: (internal use)
         """
-
         if _store is None:
             _store = {}
 
