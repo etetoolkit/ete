@@ -278,6 +278,7 @@ Available methods are self explanatory:
 .. autosummary::
 
    ete4.Tree.descendants
+   ete4.Tree.ancestors
    ete4.Tree.leaves
    ete4.Tree.leaf_names
    ete4.Tree.get_children
@@ -429,3 +430,97 @@ length is defined and larger than one::
   # Will print just these two "leafs" (according to processable_node):
   #   abcd
   #   efg
+
+
+Iterators or lists?
+~~~~~~~~~~~~~~~~~~~
+
+The methods used to iterate over nodes are `python iterators
+<https://docs.python.org/3/library/stdtypes.html#typesseq>`_. The
+iterators produce only one element at a time, and thus are normally
+faster and take less memory than lists.
+
+Sometimes you will need a list instead, for example if you want to
+refer to nodes that have appeared before in the iteration. In that
+case, you can create it by adding ``list(...)`` to your call.
+
+For example::
+
+  leaves = list(t.leaves())  # constructs a list with all the leaves
+
+The same is valid for :func:`traverse`, :func:`descendants`,
+:func:`ancestors` and so on.
+
+
+Finding nodes by their attributes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Both terminal and internal nodes can be located by searching along the
+tree structure. Several methods are available:
+
+.. table::
+
+  ============================================= ========================================================================
+  Method                                        Description
+  ============================================= ========================================================================
+  t.search_nodes(prop=value)                    Iterator over nodes that have property prop equal to value, as name='A'
+  t.search_descendants(prop=value)              Same, but only on descendants (excludes the node t itself)
+  t.search_ancestors(prop=value)                Iterator over ancestor nodes
+  t.search_leaves_by_name(name)                 Iterator over leaf nodes matching a given name
+  t.common_ancestor([node1, node2, node3])      Return the first internal node grouping node1, node2 and node3
+  t[name]                                       Return the first node named name, same as next(t.search_nodes(name='A'))
+  ============================================= ========================================================================
+
+
+Search_all nodes matching a given criteria
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A custom list of nodes matching a given name can be easily obtained
+through the :func:`Tree.search_nodes` function.
+
+::
+
+  from ete4 import Tree
+
+  t = Tree('((H:1,I:1):0.5,A:1,(B:1,(C:1,D:1):0.5):0.5);')
+
+  print(t)
+  #  ╭─┬╴H
+  # ─┤ ╰╴I
+  #  ├╴A
+  #  ╰─┬╴B
+  #    ╰─┬╴C
+  #      ╰╴D
+
+  D = t['D']  # get node named 'D'
+
+  # Get all nodes with distance=0.5
+  nodes = list(t.search_nodes(dist=0.5))
+  print(len(nodes), 'nodes have distance=0.5')
+
+  # We can limit the search to leaves and node names
+  D = next(t.search_leaves_by_name('D'))  # takes the first match
+  print(D)
+
+
+Search nodes matching a given criteria (iteration)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A limitation of the :func:`Tree.search_nodes` method is that you
+cannot use complex conditional statements to find specific nodes. When
+the search criteria is too complex, you may want to create your own search
+function. For example::
+
+  from ete4 import Tree
+
+  def search_by_size(node, size):
+      """Yield nodes with a given number of leaves."""
+      for n in node.traverse():
+          if len(n) == size:
+              yield n
+
+  t = Tree()
+  t.populate(40)
+
+  # Get a list of all nodes containing 6 leaves.
+  list(search_by_size(t, size=6))
