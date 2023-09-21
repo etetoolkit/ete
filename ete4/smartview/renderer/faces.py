@@ -52,6 +52,13 @@ _ntcolors = {
     ' ':"#FFFFFF"
     }
 
+__all__ = [
+    'Face', 'TextFace', 'AttrFace', 'CircleFace', 'RectFace',
+    'ArrowFace', 'SelectedFace', 'SelectedCircleFace',
+    'SelectedRectFace', 'OutlineFace', 'AlignLinkFace', 'SeqFace',
+    'SeqMotifFace', 'AlignmentFace', 'ScaleFace', 'PieChartFace',
+    'HTMLFace', 'ImgFace', 'LegendFace', 'StackedBarFace']
+
 
 def clean_text(text):
     return re.sub(r'[^A-Za-z0-9_-]', '',  text)

@@ -11,7 +11,7 @@ from warnings import warn
 
 from .utils import which, colorify
 from ..evol.control import PARAMS, AVAIL, PARAMS_DESCRIPTION
-from .. import EvolTree, random_color, add_face_to_node, TextFace, TreeStyle
+from .. import EvolTree, random_color, TextFace, TreeStyle
 from ..treeview.layouts import evol_clean_layout
 from ..evol import Model
 
@@ -255,16 +255,14 @@ def marking_layout(node):
     label_face.margin_top = 2
     label_face.margin_bottom = 2
 
-    add_face_to_node(label_face, node, column=0, position="branch-right")
+    node.add_face(label_face, column=0, position="branch-right")
 
     if node.is_leaf:
-        add_face_to_node(TextFace(" %s" %node.name, ftype="courier",
-                                  fgcolor="#666666"), node, column=10,
-                         position="branch-right")
+        node.add_face(TextFace(" %s" % node.name, ftype="courier", fgcolor="#666666"),
+                      column=10, position="branch-right")
     else:
-        add_face_to_node(TextFace(" %s" %node.name, fsize=8, ftype="courier",
-                                  fgcolor="#666666"), node, column=0,
-                         position="branch-top")
+        node.add_face(TextFace(" %s" % node.name, fsize=8, ftype="courier", fgcolor="#666666"),
+                      column=0, position="branch-top")
 
 
 def clean_tree(tree):
