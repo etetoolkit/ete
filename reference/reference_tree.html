@@ -489,16 +489,21 @@ instance. (name, id and branch length are always mapped)</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.Tree.get_cached_content">
 <span class="sig-name descname"><span class="pre">get_cached_content</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store_attr=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">container_type=&lt;class</span> <span class="pre">'set'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leaves_only=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_store=None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.get_cached_content" title="Link to this definition">¶</a></dt>
-<dd><p>Returns a dictionary pointing to the preloaded content of each
-internal node under this tree. Such a dictionary is intended
-to work as a cache for operations that require many traversal
-operations.</p>
+<dd><p>Return dict that assigns to each node a set of its leaves.</p>
+<p>The dictionary serves as a cache for operations that require
+many traversals of the nodes under this tree.</p>
+<p>Instead of assigning a set, it can assign other types (with
+<code class="docutils literal notranslate"><span class="pre">container_type</span></code>). And instead of the leaves themselves, it
+can be any other property of them (like their names, with
+<code class="docutils literal notranslate"><span class="pre">store_attr</span></code>).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>store_attr</strong> (<em>None</em>) – Specifies the node attribute that
-should be cached (i.e. name, distance, etc.). When none,
-the whole node instance is cached.</p></li>
+<li><p><strong>store_attr</strong> – Node attribute that should be cached (i.e.
+name, distance, etc.). If None, it caches the node itself.</p></li>
+<li><p><strong>container_type</strong> – Type of container for the leaves (set, list).</p></li>
+<li><p><strong>leaves_only</strong> – If False, to each node it stores all its
+descendant nodes, not only its leaves.</p></li>
 <li><p><strong>_store</strong> – (internal use)</p></li>
 </ul>
 </dd>
