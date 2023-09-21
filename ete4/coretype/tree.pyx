@@ -864,8 +864,8 @@ cdef class Tree(object):
                    for key, value in conditions.items()):
                 yield n
 
-    def get_leaves_by_name(self, name):
-        """Return a list of leaf nodes matching the given name."""
+    def search_leaves_by_name(self, name):
+        """Yield leaf nodes matching the given name."""
         return self.search_nodes(name=name, children=[])
 
     # ###########################
