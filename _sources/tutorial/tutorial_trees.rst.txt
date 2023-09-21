@@ -267,3 +267,165 @@ One of the most basic operations for tree analysis is *tree browsing*.
 This is, essentially, visiting nodes within a tree. ETE provides a
 number of methods to search for specific nodes or to navigate over the
 hierarchical structure of a tree.
+
+
+Getting leaves, descendants and node's relatives
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Tree instances contain several functions to access their descendants.
+Available methods are self explanatory:
+
+.. autosummary::
+
+   ete4.Tree.descendants
+   ete4.Tree.leaves
+   ete4.Tree.leaf_names
+   ete4.Tree.get_children
+   ete4.Tree.get_sisters
+
+
+Traversing (browsing) trees
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Often, when processing trees, all nodes need to be visited. This is
+called tree traversing. There are different ways to traverse a tree
+structure depending on the order in which children nodes are visited.
+ETE implements the three most common strategies: **preorder**,
+**levelorder** and **postorder**. The following scheme shows the
+differences in the strategy for visiting nodes (note that in all cases
+the whole tree is browsed):
+
+* preorder: 1) visit the root, 2) traverse the left subtree, 3)
+  traverse the right subtree.
+* postorder: 1) traverse the left subtree, 2) traverse the right
+  subtree, 3) visit the root.
+* levelorder (default): every node on a level is visited before going
+  to a lower level.
+
+Every node in a tree includes a :func:`traverse` method, which can be
+used to visit, one by one, every node node under the current
+partition. In addition, the :func:`descendants` method can be set to
+use either a post- or a preorder strategy. The only difference between
+:func:`traverse` and :func:`descendants` is that the first will
+include the root node in the iteration.
+
+.. autosummary::
+
+   ete4.Tree.traverse
+   ete4.Tree.descendants
+   ete4.Tree.leaves
+
+**strategy** can take one of the following values: ``"postorder"``,
+``"preorder"`` or ``"levelorder"``::
+
+  # Make a tree.
+  from ete4 import Tree
+  t = Tree('((((H,K)D,(F,I)G)B,E)A,((L,(N,Q)O)J,(P,S)M)C);')
+
+  # Traverse the nodes in postorder.
+  for node in t.traverse("postorder"):
+      print(node.name)  # or do some analysis with the node
+
+  # If we want to iterate over a tree excluding the root node, we can
+  # use the descendants method instead.
+  for node in t.descendants("postorder"):
+      print(node.name)  # or do some analysis with the node
+
+Additionally, you can implement your own traversing function using the
+structural attributes of nodes. In the following example, only nodes
+between a given leaf and the tree root are visited::
+
+  from ete4 import Tree
+  t = Tree('(A:1,(B:1,(C:1,D:1):0.5):0.5);')
+
+  # Browse the tree from a specific leaf to the root.
+  node = next(t.search_nodes(name='C'))  # same as t['C']
+  while node:
+      print(node.dist)  # or do some analysis with the node
+      node = node.up
+
+
+Advanced traversing (stopping criteria)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. _is_leaf_fn:
+
+Collapsing nodes while traversing (custom is_leaf definition)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ETE supports the use of the :attr:`is_leaf_fn` argument in most of its
+traversing functions. The value of :attr:`is_leaf_fn` is expected to
+be a pointer to any python function that accepts a node instance as
+its first argument and returns a boolean value (True if node should be
+considered a leaf node).
+
+By doing so, all traversing methods will use such a custom function to
+decide if a node is a leaf. This becomes specially useful when dynamic
+collapsing of nodes is needed, thus avoiding to prune the same tree in
+many different ways.
+
+For instance, given a large tree structure, the following code will
+export the newick of the pruned version of the topology, where nodes
+grouping the same tip labels are collapsed::
+
+  from ete4 import Tree
+
+  t = Tree('((((a,a,a)a,a)aa,(b,b)b)ab,(c,(d,d)d)cd);')
+
+  print(t.to_str(props=['name'], compact=True))  # show internal names too
+  #                        ╭╴a
+  #                    ╭╴a╶┼╴a
+  #               ╭╴aa╶┤   ╰╴a
+  #          ╭╴ab╶┤    ╰╴a
+  # ╴(empty)╶┤    ╰╴b╶┬╴b
+  #          │        ╰╴b
+  #          ╰╴cd╶┬╴c
+  #               ╰╴d╶┬╴d
+  #                   ╰╴d
+
+  # Cache for every node (for each node, a set of all its leaves' names).
+  node2labels = t.get_cached_content('name')
+
+  def collapsed_leaf(node):
+      return len(node2labels[node]) == 1
+
+  print(t.write(is_leaf_fn=collapsed_leaf))
+  # ((aa,b)ab,(c,d)cd);
+
+  # We can even load the collapsed version as a new tree.
+  t2 = Tree( t.write(is_leaf_fn=collapsed_leaf) )
+
+  print(t2.to_str(props=['name'], compact=True))
+  #          ╭╴ab╶┬╴aa
+  # ╴(empty)╶┤    ╰╴b
+  #          ╰╴cd╶┬╴c
+  #               ╰╴d
+
+Another interesting use of this approach is to find the first matching
+nodes in a given tree that match a custom set of criteria, without
+browsing the whole tree structure.
+
+Let's say we want to get all deepest nodes in a tree whose branch
+length is defined and larger than one::
+
+  from ete4 import Tree
+
+  t = Tree('(((a,b)ab:2,(c,d)cd:2)abcd:2,((e,f):2,g)efg:2);')
+
+  print(t.to_str(props=['name', 'dist'], compact=True))  # name and distance
+  #                             ╭╴ab,2.0╶┬╴a,(empty)
+  #                  ╭╴abcd,2.0╶┤        ╰╴b,(empty)
+  #                  │          ╰╴cd,2.0╶┬╴c,(empty)
+  # ╴(empty),(empty)╶┤                   ╰╴d,(empty)
+  #                  │         ╭╴(empty),2.0╶┬╴e,(empty)
+  #                  ╰╴efg,2.0╶┤             ╰╴f,(empty)
+  #                            ╰╴g,(empty)
+
+  def processable_node(node):
+      return node.dist and node.dist > 1
+
+  for leaf in t.leaves(is_leaf_fn=processable_node):
+      print(leaf.name)
+  # Will print just these two "leafs" (according to processable_node):
+  #   abcd
+  #   efg

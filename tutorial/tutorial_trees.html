@@ -54,7 +54,17 @@
 <li><p><a class="reference internal" href="#root-node-on-unrooted-trees" id="id8">Root node on unrooted trees?</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#browsing-trees-traversing" id="id9">Browsing trees (traversing)</a></p></li>
+<li><p><a class="reference internal" href="#browsing-trees-traversing" id="id9">Browsing trees (traversing)</a></p>
+<ul>
+<li><p><a class="reference internal" href="#getting-leaves-descendants-and-node-s-relatives" id="id10">Getting leaves, descendants and node’s relatives</a></p></li>
+<li><p><a class="reference internal" href="#traversing-browsing-trees" id="id11">Traversing (browsing) trees</a></p></li>
+<li><p><a class="reference internal" href="#advanced-traversing-stopping-criteria" id="id12">Advanced traversing (stopping criteria)</a></p>
+<ul>
+<li><p><a class="reference internal" href="#collapsing-nodes-while-traversing-custom-is-leaf-definition" id="id13">Collapsing nodes while traversing (custom is_leaf definition)</a></p></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -356,6 +366,176 @@ as trees where the master root node has more than two children.</p>
 This is, essentially, visiting nodes within a tree. ETE provides a
 number of methods to search for specific nodes or to navigate over the
 hierarchical structure of a tree.</p>
+<section id="getting-leaves-descendants-and-node-s-relatives">
+<h3><a class="toc-backref" href="#id10" role="doc-backlink">Getting leaves, descendants and node’s relatives</a><a class="headerlink" href="#getting-leaves-descendants-and-node-s-relatives" title="Link to this heading">¶</a></h3>
+<p>Tree instances contain several functions to access their descendants.
+Available methods are self explanatory:</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.descendants" title="ete4.Tree.descendants"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ete4.Tree.descendants</span></code></a>([strategy, is_leaf_fn])</p></td>
+<td><p>Yield all descendant nodes.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.leaves" title="ete4.Tree.leaves"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ete4.Tree.leaves</span></code></a>([is_leaf_fn])</p></td>
+<td><p>Yield the terminal nodes (leaves) under this node.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.leaf_names" title="ete4.Tree.leaf_names"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ete4.Tree.leaf_names</span></code></a>([is_leaf_fn])</p></td>
+<td><p>Yield the leaf names under this node.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.get_children" title="ete4.Tree.get_children"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ete4.Tree.get_children</span></code></a>()</p></td>
+<td><p>Return an independent list of the node's children.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.get_sisters" title="ete4.Tree.get_sisters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ete4.Tree.get_sisters</span></code></a>()</p></td>
+<td><p>Return an independent list of sister nodes.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="traversing-browsing-trees">
+<h3><a class="toc-backref" href="#id11" role="doc-backlink">Traversing (browsing) trees</a><a class="headerlink" href="#traversing-browsing-trees" title="Link to this heading">¶</a></h3>
+<p>Often, when processing trees, all nodes need to be visited. This is
+called tree traversing. There are different ways to traverse a tree
+structure depending on the order in which children nodes are visited.
+ETE implements the three most common strategies: <strong>preorder</strong>,
+<strong>levelorder</strong> and <strong>postorder</strong>. The following scheme shows the
+differences in the strategy for visiting nodes (note that in all cases
+the whole tree is browsed):</p>
+<ul class="simple">
+<li><p>preorder: 1) visit the root, 2) traverse the left subtree, 3)
+traverse the right subtree.</p></li>
+<li><p>postorder: 1) traverse the left subtree, 2) traverse the right
+subtree, 3) visit the root.</p></li>
+<li><p>levelorder (default): every node on a level is visited before going
+to a lower level.</p></li>
+</ul>
+<p>Every node in a tree includes a <code class="xref py py-func docutils literal notranslate"><span class="pre">traverse()</span></code> method, which can be
+used to visit, one by one, every node node under the current
+partition. In addition, the <code class="xref py py-func docutils literal notranslate"><span class="pre">descendants()</span></code> method can be set to
+use either a post- or a preorder strategy. The only difference between
+<code class="xref py py-func docutils literal notranslate"><span class="pre">traverse()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">descendants()</span></code> is that the first will
+include the root node in the iteration.</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.traverse" title="ete4.Tree.traverse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ete4.Tree.traverse</span></code></a>([strategy, is_leaf_fn])</p></td>
+<td><p>Traverse the tree structure under this node and yield the nodes.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.descendants" title="ete4.Tree.descendants"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ete4.Tree.descendants</span></code></a>([strategy, is_leaf_fn])</p></td>
+<td><p>Yield all descendant nodes.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.leaves" title="ete4.Tree.leaves"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ete4.Tree.leaves</span></code></a>([is_leaf_fn])</p></td>
+<td><p>Yield the terminal nodes (leaves) under this node.</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>strategy</strong> can take one of the following values: <code class="docutils literal notranslate"><span class="pre">&quot;postorder&quot;</span></code>,
+<code class="docutils literal notranslate"><span class="pre">&quot;preorder&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;levelorder&quot;</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Make a tree.</span>
+<span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((((H,K)D,(F,I)G)B,E)A,((L,(N,Q)O)J,(P,S)M)C);&#39;</span><span class="p">)</span>
+
+<span class="c1"># Traverse the nodes in postorder.</span>
+<span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">traverse</span><span class="p">(</span><span class="s2">&quot;postorder&quot;</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>  <span class="c1"># or do some analysis with the node</span>
+
+<span class="c1"># If we want to iterate over a tree excluding the root node, we can</span>
+<span class="c1"># use the descendants method instead.</span>
+<span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">descendants</span><span class="p">(</span><span class="s2">&quot;postorder&quot;</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>  <span class="c1"># or do some analysis with the node</span>
+</pre></div>
+</div>
+<p>Additionally, you can implement your own traversing function using the
+structural attributes of nodes. In the following example, only nodes
+between a given leaf and the tree root are visited:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(A:1,(B:1,(C:1,D:1):0.5):0.5);&#39;</span><span class="p">)</span>
+
+<span class="c1"># Browse the tree from a specific leaf to the root.</span>
+<span class="n">node</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">search_nodes</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">))</span>  <span class="c1"># same as t[&#39;C&#39;]</span>
+<span class="k">while</span> <span class="n">node</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">dist</span><span class="p">)</span>  <span class="c1"># or do some analysis with the node</span>
+    <span class="n">node</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">up</span>
+</pre></div>
+</div>
+</section>
+<section id="advanced-traversing-stopping-criteria">
+<h3><a class="toc-backref" href="#id12" role="doc-backlink">Advanced traversing (stopping criteria)</a><a class="headerlink" href="#advanced-traversing-stopping-criteria" title="Link to this heading">¶</a></h3>
+<section id="collapsing-nodes-while-traversing-custom-is-leaf-definition">
+<span id="is-leaf-fn"></span><h4><a class="toc-backref" href="#id13" role="doc-backlink">Collapsing nodes while traversing (custom is_leaf definition)</a><a class="headerlink" href="#collapsing-nodes-while-traversing-custom-is-leaf-definition" title="Link to this heading">¶</a></h4>
+<p>ETE supports the use of the <code class="xref py py-attr docutils literal notranslate"><span class="pre">is_leaf_fn</span></code> argument in most of its
+traversing functions. The value of <code class="xref py py-attr docutils literal notranslate"><span class="pre">is_leaf_fn</span></code> is expected to
+be a pointer to any python function that accepts a node instance as
+its first argument and returns a boolean value (True if node should be
+considered a leaf node).</p>
+<p>By doing so, all traversing methods will use such a custom function to
+decide if a node is a leaf. This becomes specially useful when dynamic
+collapsing of nodes is needed, thus avoiding to prune the same tree in
+many different ways.</p>
+<p>For instance, given a large tree structure, the following code will
+export the newick of the pruned version of the topology, where nodes
+grouping the same tip labels are collapsed:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((((a,a,a)a,a)aa,(b,b)b)ab,(c,(d,d)d)cd);&#39;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">compact</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>  <span class="c1"># show internal names too</span>
+<span class="c1">#                        ╭╴a</span>
+<span class="c1">#                    ╭╴a╶┼╴a</span>
+<span class="c1">#               ╭╴aa╶┤   ╰╴a</span>
+<span class="c1">#          ╭╴ab╶┤    ╰╴a</span>
+<span class="c1"># ╴(empty)╶┤    ╰╴b╶┬╴b</span>
+<span class="c1">#          │        ╰╴b</span>
+<span class="c1">#          ╰╴cd╶┬╴c</span>
+<span class="c1">#               ╰╴d╶┬╴d</span>
+<span class="c1">#                   ╰╴d</span>
+
+<span class="c1"># Cache for every node (for each node, a set of all its leaves&#39; names).</span>
+<span class="n">node2labels</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">get_cached_content</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">collapsed_leaf</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">node2labels</span><span class="p">[</span><span class="n">node</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">is_leaf_fn</span><span class="o">=</span><span class="n">collapsed_leaf</span><span class="p">))</span>
+<span class="c1"># ((aa,b)ab,(c,d)cd);</span>
+
+<span class="c1"># We can even load the collapsed version as a new tree.</span>
+<span class="n">t2</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span> <span class="n">t</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">is_leaf_fn</span><span class="o">=</span><span class="n">collapsed_leaf</span><span class="p">)</span> <span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t2</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">compact</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<span class="c1">#          ╭╴ab╶┬╴aa</span>
+<span class="c1"># ╴(empty)╶┤    ╰╴b</span>
+<span class="c1">#          ╰╴cd╶┬╴c</span>
+<span class="c1">#               ╰╴d</span>
+</pre></div>
+</div>
+<p>Another interesting use of this approach is to find the first matching
+nodes in a given tree that match a custom set of criteria, without
+browsing the whole tree structure.</p>
+<p>Let’s say we want to get all deepest nodes in a tree whose branch
+length is defined and larger than one:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(((a,b)ab:2,(c,d)cd:2)abcd:2,((e,f):2,g)efg:2);&#39;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;dist&#39;</span><span class="p">],</span> <span class="n">compact</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>  <span class="c1"># name and distance</span>
+<span class="c1">#                             ╭╴ab,2.0╶┬╴a,(empty)</span>
+<span class="c1">#                  ╭╴abcd,2.0╶┤        ╰╴b,(empty)</span>
+<span class="c1">#                  │          ╰╴cd,2.0╶┬╴c,(empty)</span>
+<span class="c1"># ╴(empty),(empty)╶┤                   ╰╴d,(empty)</span>
+<span class="c1">#                  │         ╭╴(empty),2.0╶┬╴e,(empty)</span>
+<span class="c1">#                  ╰╴efg,2.0╶┤             ╰╴f,(empty)</span>
+<span class="c1">#                            ╰╴g,(empty)</span>
+
+<span class="k">def</span> <span class="nf">processable_node</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">node</span><span class="o">.</span><span class="n">dist</span> <span class="ow">and</span> <span class="n">node</span><span class="o">.</span><span class="n">dist</span> <span class="o">&gt;</span> <span class="mi">1</span>
+
+<span class="k">for</span> <span class="n">leaf</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">leaves</span><span class="p">(</span><span class="n">is_leaf_fn</span><span class="o">=</span><span class="n">processable_node</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">leaf</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="c1"># Will print just these two &quot;leafs&quot; (according to processable_node):</span>
+<span class="c1">#   abcd</span>
+<span class="c1">#   efg</span>
+</pre></div>
+</div>
+</section>
+</section>
 </section>
 </section>
 
