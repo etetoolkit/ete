@@ -12,7 +12,15 @@ from warnings import warn
 from .utils import which, colorify
 from ..evol.control import PARAMS, AVAIL, PARAMS_DESCRIPTION
 from .. import EvolTree, random_color, TextFace, TreeStyle
-from ..treeview.layouts import evol_clean_layout
+
+try:
+    from ..treeview.layouts import evol_clean_layout
+except:
+    pass
+    # Will fail later on when trying to use that layout, but that's
+    # what you get for importing things from treeview! Better update
+    # to smartview.
+
 from ..evol import Model
 
 DESC = ("Run/Load evolutionary tests, store results in a given oputput folder\n"

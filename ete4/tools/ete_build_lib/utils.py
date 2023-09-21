@@ -543,7 +543,7 @@ def npr_layout(node):
 
 try:
     from ... import TreeStyle, NodeStyle, faces
-    from ...treeview import random_color
+    from ...utils import random_color
     NPR_TREE_STYLE = TreeStyle()
     NPR_TREE_STYLE.layout_fn = npr_layout
     NPR_TREE_STYLE.show_leaf_name = False
