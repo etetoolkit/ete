@@ -67,11 +67,11 @@ To install ETE in a local directory to help with the development, you can:
 
 If you want to use the `treeview` module (which depends on
 [PyQt](https://www.riverbankcomputing.com/software/pyqt/)), you can
-add `[treeview]` to the pip installation. For example:
+add `[treeview]` to the pip installation.
 
-```sh
-pip install -e .[treeview]
-```
+For example with `pip install -e .[treeview]` for a local editable
+installation. Or `pip install -e .[treeview,test,doc]` to also include
+the modules for testing and generating the documentation.
 
 
 # Exploring a tree
