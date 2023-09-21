@@ -143,11 +143,11 @@ T.show(histfaces = ['M1', 'M2'])
 # mark tree functionality
 print T.write(format=10)
 name = None
-while name not in T.get_leaf_names():
+while name not in T.leaf_names():
     name = raw_input('         ====> As you need to mark some branches to run branch\n\
     models, type the name of one leaf: ')
 
-idname = T.get_leaves_by_name(name)[0].node_id
+idname = next(T.search_leaves_by_name(name)).node_id
 
 print '         ----> you want to mark:',name,'that has this idname: ', idname
 T.mark_tree([idname]) # by default will mark with '#1'
@@ -179,6 +179,3 @@ else:
 
 
 sys.stderr.write('\n\nThe End.\n\n')
-
-
-
