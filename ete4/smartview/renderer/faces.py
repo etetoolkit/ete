@@ -74,7 +74,13 @@ def stringify(content):
     return str(content)
 
 
-class Face(object):
+class Face:
+    """
+    Base class for faces.
+
+    Ete uses "faces" to show some piece of information from
+    a node in a tree (as text or graphics of many kinds).
+    """
 
     def __init__(self, name="", padding_x=0, padding_y=0):
         self.node = None
