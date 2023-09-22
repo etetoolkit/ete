@@ -593,3 +593,75 @@ traversing methods and apply your custom filters::
 
   matches2 = [node for node in t.traverse() if condition(node)]
   print(len(matches2), 'nodes have distance > 0.3 and are leaves')
+
+
+Shortcuts
+^^^^^^^^^
+
+Finally, ETE implements a built-in method to find the first node
+matching a given name, which is one of the most common tasks needed
+for tree analysis. This can be done through the operator ``[]``. Thus,
+``t['A']`` will return the first node whose name is "A" and that is
+under the tree ``t``.
+
+::
+
+  t = Tree('((H,I),A,(B,(C,(J,(F,D)))));')
+
+  # Get the node D in a simple way.
+  D = t['D']
+
+  # Get the path from D to the root (similar to list(t.ancestors())).
+  path = []
+  node = D
+  while node.up:
+      node = node.up
+      path.append(node)
+
+  print('There are', len(path)-1, 'nodes between D and the root.')
+
+
+.. _check_monophyly:
+
+Checking the monophyly of properties within a tree
+--------------------------------------------------
+
+Although monophyly is actually a phylogenetic concept used to refer to
+a set of species that group exclusively together within a tree
+partition, the idea can be easily used for any type of trees.
+
+Therefore, we could consider that a set of values for a given node
+property present in our tree is monophyletic, if such values group
+exclusively together as a single tree partition. If not, the
+corresponding relationship connecting such values (para- or
+poly-phyletic) could be also be inferred.
+
+The :func:`Tree.check_monophyly` method will do so when a given tree
+is queried for any custom attribute.
+
+::
+
+  t = Tree('((((((a,e),i),o),h),u),((f,g),j));')
+  print(t)
+  #         ╭─┬╴a
+  #       ╭─┤ ╰╴e
+  #     ╭─┤ ╰╴i
+  #   ╭─┤ ╰╴o
+  # ╭─┤ ╰╴h
+  #─┤ ╰╴u
+  # │ ╭─┬╴f
+  # ╰─┤ ╰╴g
+  #   ╰╴j
+
+  # We can check how, indeed, all vowels are not monophyletic in the previous
+  # tree, but paraphyletic (monophyletic except for a group that is monophyletic):
+  print(t.check_monophyly(values=['a', 'e', 'i', 'o', 'u'], prop='name'))
+  # False (not monophyletic), 'paraphyletic' (type of group), {h} (the leaves not included)
+
+  # However, the following set of vowels are monophyletic:
+  print(t.check_monophyly(values=['a', 'e', 'i', 'o'], prop='name'))
+  # True (it is monophyletic), 'monophyletic' (type of group), {} (no leaves left)
+
+  # When a group is not monophyletic nor paraphyletic, it is called polyphyletic.
+  print(t.check_monophyly(values=['i', 'h'], prop='name'))
+  # False, 'polyphyletic', {e, a, o}
