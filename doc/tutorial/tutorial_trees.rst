@@ -552,3 +552,44 @@ function. For example::
 
   # Get a list of all nodes containing 6 leaves.
   list(search_by_size(t, size=6))
+
+
+Find the first common ancestor
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Searching for the first common ancestor of a given set of nodes is a
+handy way of finding internal nodes::
+
+  t = Tree('(((a,b)ab,(c,d)cd:2)abcd,((e,f)ef,g)efg)root;')
+
+  print(t.to_str(props=['name'], compact=True))
+  #              ╭╴ab╶┬╴a
+  #       ╭╴abcd╶┤    ╰╴b
+  #       │      ╰╴cd╶┬╴c
+  # ╴root╶┤           ╰╴d
+  #       │     ╭╴ef╶┬╴e
+  #       ╰╴efg╶┤    ╰╴f
+  #             ╰╴g
+
+  ancestor = t.common_ancestor(['a', 'c', 'ab'])  # will be node abcd
+
+
+Custom searching functions
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A limitation of the previous methods is that you cannot use complex
+conditional statements to find specific nodes. However you can use
+traversing methods and apply your custom filters::
+
+  t = Tree('((H:0.3,I:0.1):0.5,A:1,(B:0.4,(C:1,D:1):0.5):0.5):0;')
+
+  # Use a list comprehension, iterating with the traverse() method.
+  matches = [node for node in t.traverse() if node.dist > 0.3]
+  print(len(matches), 'nodes have distance > 0.3')
+
+  # Or create a small function to filter your nodes.
+  def condition(node):
+      return node.dist > 0.3 and node.is_leaf
+
+  matches2 = [node for node in t.traverse() if condition(node)]
+  print(len(matches2), 'nodes have distance > 0.3 and are leaves')
