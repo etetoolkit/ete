@@ -116,9 +116,9 @@ a tree with a random topology::
   # Populate t with a random topology of size 10.
   t.populate(10)
 
-(Since every time we start from scratch we will want to write ``from
-ete4 import Tree`` to use the :class:`Tree` class, from now on we
-assume you have it already loaded for the remaining examples.)
+(Since every time we start from scratch we will want to write
+``from ete4 import Tree`` to use the :class:`Tree` class, from now on
+we assume you have it already loaded for the remaining examples.)
 
 The properties of a node are stored in its :attr:`props` dictionary.
 With the previous example, writing ``print(t.props)`` will show us a
@@ -329,16 +329,16 @@ Traversing (browsing) trees
 Often, when processing trees, all nodes need to be visited. This is
 called tree traversing. There are different ways to traverse a tree
 structure depending on the order in which children nodes are visited.
-ETE implements the three most common strategies: **preorder**,
-**levelorder** and **postorder**. The following scheme shows the
+ETE implements the three most common strategies: *preorder*,
+*postorder* and *levelorder*. The following scheme shows the
 differences in the strategy for visiting nodes (note that in all cases
 the whole tree is browsed):
 
-* preorder: 1) visit the root, 2) traverse the left subtree, 3)
+* *preorder*: 1) visit the root, 2) traverse the left subtree, 3)
   traverse the right subtree.
-* postorder: 1) traverse the left subtree, 2) traverse the right
+* *postorder*: 1) traverse the left subtree, 2) traverse the right
   subtree, 3) visit the root.
-* levelorder (default): every node on a level is visited before going
+* *levelorder* (default): every node on a level is visited before going
   to a lower level.
 
 Every node in a tree includes a :func:`traverse` method, which can be
@@ -354,19 +354,19 @@ include the root node in the iteration.
    ete4.Tree.descendants
    ete4.Tree.leaves
 
-**strategy** can take one of the following values: ``"postorder"``,
-``"preorder"`` or ``"levelorder"``::
+where :attr:`strategy` can take the values "preorder", "postorder", or
+"levelorder"::
 
   # Make a tree.
   t = Tree('((((H,K)D,(F,I)G)B,E)A,((L,(N,Q)O)J,(P,S)M)C);')
 
   # Traverse the nodes in postorder.
-  for node in t.traverse("postorder"):
+  for node in t.traverse('postorder'):
       print(node.name)  # or do some analysis with the node
 
   # If we want to iterate over a tree excluding the root node, we can
   # use the descendants method instead.
-  for node in t.descendants("postorder"):
+  for node in t.descendants('postorder'):
       print(node.name)  # or do some analysis with the node
 
 Additionally, you can implement your own traversing function using the
@@ -376,19 +376,19 @@ between a given leaf and the tree root are visited::
   t = Tree('(A:1,(B:1,(C:1,D:1):0.5):0.5);')
 
   # Browse the tree from a specific leaf to the root.
-  node = next(t.search_nodes(name='C'))  # same as t['C']
+  node = t['C']  # selects the node named 'C'
   while node:
-      print(node.dist)  # or do some analysis with the node
+      print(node.dist)  # for example, or do some operations with it
       node = node.up
 
 
-Advanced traversing (stopping criteria)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Advanced traversing
+~~~~~~~~~~~~~~~~~~~
 
 .. _is_leaf_fn:
 
-Collapsing nodes while traversing (custom is_leaf definition)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Collapsing nodes while traversing
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ETE supports the use of the :attr:`is_leaf_fn` argument in most of its
 traversing functions. The value of :attr:`is_leaf_fn` is expected to
@@ -484,7 +484,7 @@ The same is valid for :func:`traverse`, :func:`descendants`,
 :func:`ancestors` and so on.
 
 
-Finding nodes by their attributes
+Finding nodes by their properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Both terminal and internal nodes can be located by searching along the
@@ -492,16 +492,16 @@ tree structure. Several methods are available:
 
 .. table::
 
-  ============================================= ========================================================================
-  Method                                        Description
-  ============================================= ========================================================================
-  t.search_nodes(prop=value)                    Iterator over nodes that have property prop equal to value, as name='A'
-  t.search_descendants(prop=value)              Same, but only on descendants (excludes the node t itself)
-  t.search_ancestors(prop=value)                Iterator over ancestor nodes
-  t.search_leaves_by_name(name)                 Iterator over leaf nodes matching a given name
-  t.common_ancestor([node1, node2, node3])      Return the first internal node grouping node1, node2 and node3
-  t[name]                                       Return the first node named name, same as next(t.search_nodes(name='A'))
-  ============================================= ========================================================================
+  ========================================= ========================================================================
+  Method                                    Description
+  ========================================= ========================================================================
+  t.search_nodes(prop=value)                Iterator over nodes that have property prop equal to value, as name='A'
+  t.search_descendants(prop=value)          Same, but only on descendants (excludes the node t itself)
+  t.search_ancestors(prop=value)            Iterator over ancestor nodes
+  t.search_leaves_by_name(name)             Iterator over leaf nodes matching a given name
+  t.common_ancestor([node1, node2, node3])  Return the first internal node grouping node1, node2 and node3
+  t[name]                                   Return the first node named name, same as next(t.search_nodes(name='A'))
+  ========================================= ========================================================================
 
 
 Search_all nodes matching a given criteria
