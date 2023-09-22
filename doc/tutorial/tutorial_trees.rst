@@ -56,32 +56,33 @@ clustering trees.
 Reading and writing newick trees
 --------------------------------
 
-The Newick format is one of the most widely used standard
-representation of trees in bioinformatics. It uses nested parentheses
-to represent hierarchical data structures as text strings. The
-original newick standard is able to encode information about the tree
-topology, branch distances and node names. Nevertheless, it is not
-uncommon to find slightly different formats using the newick standard.
+The `Newick format <https://en.wikipedia.org/wiki/Newick_format>`_ is
+one of the most widely used standard representations of trees in
+bioinformatics. It uses nested parentheses to represent hierarchical
+data structures as text strings. The original newick standard is able
+to encode information about the tree topology, branch distances and
+node names. Nevertheless, it is not uncommon to find slightly
+different variations of the format.
 
 ETE can read and write many of them:
 
 .. table::
 
-  ====== ============================================== ====================================================================================
-  FORMAT DESCRIPTION                                    SAMPLE
-  ====== ============================================== ====================================================================================
-  0      flexible with support values                   ((D:0.723274,F:0.567784)1.000000:0.067192,(B:0.279326,H:0.756049)1.000000:0.807788);
-  1      flexible with internal node names              ((D:0.723274,F:0.567784)E:0.067192,(B:0.279326,H:0.756049)B:0.807788);
-  2      all branches + leaf names + internal supports  ((D:0.723274,F:0.567784)1.000000:0.067192,(B:0.279326,H:0.756049)1.000000:0.807788);
-  3      all branches + all names                       ((D:0.723274,F:0.567784)E:0.067192,(B:0.279326,H:0.756049)B:0.807788);
-  4      leaf branches + leaf names                     ((D:0.723274,F:0.567784),(B:0.279326,H:0.756049));
-  5      internal and leaf branches + leaf names        ((D:0.723274,F:0.567784):0.067192,(B:0.279326,H:0.756049):0.807788);
-  6      internal branches + leaf names                 ((D,F):0.067192,(B,H):0.807788);
-  7      leaf branches + all names                      ((D:0.723274,F:0.567784)E,(B:0.279326,H:0.756049)B);
-  8      all names                                      ((D,F)E,(B,H)B);
-  9      leaf names                                     ((D,F),(B,H));
-  100    topology only                                  ((,),(,));
-  ====== ============================================== ====================================================================================
+  ====== ========================================= =============================================
+  Format Description                               Example
+  ====== ========================================= =============================================
+  0      internal nodes with support (flexible)    ((D:0.7,F:0.5)1.0:0.6,(B:0.2,H:0.7)1.0:0.8);
+  1      internal nodes with names (flexible)      ((D:0.7,F:0.5)E:0.6,(B:0.2,H:0.7)B:0.8);
+  2      internal w/ support, all lengths present  ((D:0.7,F:0.5)1.0:0.6,(B:0.2,H:0.7)1.0:0.8);
+  3      internal w/ names, all lengths present    ((D:0.7,F:0.5)E:0.6,(B:0.2,H:0.7)B:0.8);
+  4      names and lengths for leaves only         ((D:0.7,F:0.5),(B:0.2,H:0.7));
+  5      leaf names and all lengths                ((D:0.7,F:0.5):0.6,(B:0.2,H:0.7):0.8);
+  6      leaf names and internal lengths           ((D,F):0.6,(B,H):0.8);
+  7      all names and leaf lengths                ((D:0.7,F:0.5)E,(B:0.2,H:0.7)B);
+  8      all names (leaves and internal nodes)     ((D,F)E,(B,H)B);
+  9      leaf names only                           ((D,F),(B,H));
+  100    topology only                             ((,),(,));
+  ====== ========================================= =============================================
 
 Formats labeled as *flexible* allow for missing information. For
 instance, format 0 will be able to load a newick tree even if it does
