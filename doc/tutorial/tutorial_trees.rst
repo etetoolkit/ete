@@ -92,55 +92,98 @@ files strictly follow a given pattern you can use **strict** format
 definitions.
 
 
-Reading newick trees
-~~~~~~~~~~~~~~~~~~~~
+Creating a tree
+~~~~~~~~~~~~~~~
 
-In order to load a tree from a newick text string you can use the
-constructor :class:`Tree`, provided by the main module :mod:`ete4`.
-You will only need to pass a text string containing the newick
-structure and the format that should be used to parse it (1 by
-default). Alternatively, you can pass a file object that contains the
-newick string.
-
-::
+ETE's class :class:`Tree`, provided by the main module :mod:`ete4`,
+can be used to construct trees. You can create a single node by
+calling :func:`Tree` without any arguments::
 
   from ete4 import Tree
 
-  # Load a tree structure from a newick string. It returns the root node for the tree.
-  t = Tree('(A:1,(B:1,(E:1,D:1):0.5):0.5);')
+  # Empty tree (single node).
+  t = Tree()
+
+Or you can call it with a dictionary specifying the properties of that
+single node. You can also use the :func:`populate` method to populate
+a tree with a random topology::
+
+  from ete4 import Tree
+
+  # Also a single node, but with some properties.
+  t = Tree({'name': 'root', 'dist': 1.0, 'support': 0.5, 'coolness': 'high'})
+
+  # Populate t with a random topology of size 10.
+  t.populate(10)
+
+(Since every time we start from scratch we will want to write ``from
+ete4 import Tree`` to use the :class:`Tree` class, from now on we
+assume you have it already loaded for the remaining examples.)
+
+The properties of a node are stored in its :attr:`props` dictionary.
+With the previous example, writing ``print(t.props)`` will show us a
+dictionary that should look familiar. And if you :func:`print` a tree,
+you will see a simple visualization. For our example of the previously
+populated tree::
+
+  print(t.props)  # where the properties of a node are stored
+  # {'name': 'root', 'dist': 1.0, 'support': 0.5, 'coolness': 'high'}
+
+  print(t)  # will look more or less like:
+  #  ╭─┬╴aaaaaaaaaa
+  #  │ ╰╴aaaaaaaaab
+  # ─┤ ╭─┬╴aaaaaaaaac
+  #  │ │ ╰─┬╴aaaaaaaaad
+  #  ╰─┤   ╰─┬╴aaaaaaaaae
+  #    │     ╰╴aaaaaaaaaf
+  #    ╰─┬╴aaaaaaaaag
+  #      ╰─┬╴aaaaaaaaah
+  #        ╰─┬╴aaaaaaaaai
+  #          ╰╴aaaaaaaaaj
+
+
+Reading newick trees
+~~~~~~~~~~~~~~~~~~~~
+
+To load a tree from a newick text string you can pass to :func:`Tree`
+the text string containing the newick structure. Alternatively, you
+can pass a file object that contains the newick string. And
+optionally, you can also specify the format that should be used to
+parse it (1 by default, see :ref:`sec:newick-formats`).
+
+::
+
+  # Load a tree structure from a newick string. It returns the root node.
+  t1 = Tree('(A:1,(B:1,(E:1,D:1):0.5):0.5);')
 
   # Load a tree structure from a newick file.
-  t = Tree(open('genes_tree.nh'))
+  t2 = Tree(open('genes_tree.nw'))
 
-  # You can also specify how to parse the newick. For instance, for internal nodes with support we will use parser=0.
-  t = Tree('(A:1,(B:1,(E:1,D:1)0.4:0.5)0.9:0.5);', parser=0)
+  # You can also specify how to parse the newick. For instance,
+  # for internal nodes with support we will use parser=0.
+  t3 = Tree('(A:1,(B:1,(E:1,D:1)0.4:0.5)0.9:0.5);', parser=0)
 
 
 Writing newick trees
 ~~~~~~~~~~~~~~~~~~~~
 
 Any ETE tree instance can be exported using newick notation using the
-:func:`Tree.write` method. It also allows for format selection
-(:ref:`sec:newick-formats`), so you can use the same function to
-convert between newick formats.
+:func:`Tree.write` method. It also allows for parser selection, so you
+can use the same function to convert between newick formats.
 
 ::
-
-  from ete4 import Tree
 
   # Load a tree with internal support values.
   t = Tree('(A:1,(B:1,(E:1,D:1)0.4:0.5)0.9:0.5);', parser=0)
 
   # Print its newick using the default parser.
-  print(t.write())
-  # (A:1,(B:1,(E:1,D:1):0.5):0.5);
+  print(t.write())  # (A:1,(B:1,(E:1,D:1):0.5):0.5);
 
-  # To print the internal support values you need to change the parser:
-  print(t.write(parser=0))
-  # (A:1,(B:1,(E:1,D:1)0.4:0.5)0.9:0.5);
+  # To print the internal support values you can change the parser.
+  print(t.write(parser=0))  # (A:1,(B:1,(E:1,D:1)0.4:0.5)0.9:0.5);
 
-  # We can also write into a file
-  t.write(parser=1, outfile='new_tree.nw')
+  # We can also write into a file.
+  t.write(parser=0, outfile='new_tree.nw')
 
 
 Understanding ETE trees
