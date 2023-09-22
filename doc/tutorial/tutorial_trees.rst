@@ -223,37 +223,33 @@ tree node instance (let's call it ``node``):
 
 .. table::
 
-  ==================== ============================================================================================
+  ==================== ==========================================================================
   Method               Description
-  ==================== ============================================================================================
-  :attr:`node.dist`    distance from the node to its parent (branch length). Default value = 1.0
-  :attr:`node.support` informs about the reliability of the partition defined by the node (i.e. bootstrap support)
-  :attr:`node.name`    node's name
-  ==================== ============================================================================================
+  ==================== ==========================================================================
+  :attr:`node.dist`    Distance from the node to its parent (branch length)
+  :attr:`node.support` Reliability of the partition defined by the node (like bootstrap support)
+  :attr:`node.name`    Node's name
+  ==================== ==========================================================================
 
 In addition, several methods are provided to perform basic operations
 on tree node instances:
 
 .. table::
 
-  ======================== ======================================================================
+  ======================== ====================================================================
   Method                   Description
-  ======================== ======================================================================
-  :attr:`node.is_leaf`     True if ``node`` has no children
-  :attr:`node.is_root`     True if ``node`` has no parent
-  :attr:`node.root`        the top-most node within the same tree structure as ``node``
-  :attr:`len(node)`        returns the number of leaves under ``node``
-  :attr:`print(node)`      prints a text-based representation of the tree topology under ``node``
-  :attr:`n in node`        True if *n* is a leaf under ``node``
-  :attr:`for leaf in node` iterates over all leaves under ``node``
-  :func:`node.explore`     explore node graphically using a GUI
-  ======================== ======================================================================
+  ======================== ====================================================================
+  :attr:`node.is_leaf`     True if node has no children
+  :attr:`node.is_root`     True if node has no parent
+  :attr:`node.root`        The top-most node within the same tree structure as node
+  :attr:`len(node)`        Returns the number of leaves under node
+  :attr:`print(node)`      Prints a text-based representation of the tree topology under node
+  :attr:`n in node`        True if *n* is a leaf under node
+  :attr:`for leaf in node` Iterates over all leaves under node
+  :func:`node.explore`     Explore node graphically using a GUI
+  ======================== ====================================================================
 
 This is an example on how to access such attributes::
-
-  from ete4 import Tree
-
-  t = Tree()
 
   # Create a random tree topology.
   t.populate(15)
@@ -286,8 +282,6 @@ represents the whole tree structure. Unrooted trees can be identified
 as trees where the master root node has more than two children.
 
 ::
-
-  from ete4 import Tree
 
   unrooted_tree = Tree('(A,B,(C,D));')
   print(unrooted_tree)
@@ -364,7 +358,6 @@ include the root node in the iteration.
 ``"preorder"`` or ``"levelorder"``::
 
   # Make a tree.
-  from ete4 import Tree
   t = Tree('((((H,K)D,(F,I)G)B,E)A,((L,(N,Q)O)J,(P,S)M)C);')
 
   # Traverse the nodes in postorder.
@@ -380,7 +373,6 @@ Additionally, you can implement your own traversing function using the
 structural attributes of nodes. In the following example, only nodes
 between a given leaf and the tree root are visited::
 
-  from ete4 import Tree
   t = Tree('(A:1,(B:1,(C:1,D:1):0.5):0.5);')
 
   # Browse the tree from a specific leaf to the root.
@@ -412,8 +404,6 @@ many different ways.
 For instance, given a large tree structure, the following code will
 export the newick of the pruned version of the topology, where nodes
 grouping the same tip labels are collapsed::
-
-  from ete4 import Tree
 
   t = Tree('((((a,a,a)a,a)aa,(b,b)b)ab,(c,(d,d)d)cd);')
 
@@ -452,8 +442,6 @@ browsing the whole tree structure.
 
 Let's say we want to get all deepest nodes in a tree whose branch
 length is defined and larger than one::
-
-  from ete4 import Tree
 
   t = Tree('(((a,b)ab:2,(c,d)cd:2)abcd:2,((e,f):2,g)efg:2);')
 
@@ -524,8 +512,6 @@ through the :func:`Tree.search_nodes` function.
 
 ::
 
-  from ete4 import Tree
-
   t = Tree('((H:1,I:1):0.5,A:1,(B:1,(C:1,D:1):0.5):0.5);')
 
   print(t)
@@ -536,15 +522,15 @@ through the :func:`Tree.search_nodes` function.
   #    ╰─┬╴C
   #      ╰╴D
 
-  D = t['D']  # get node named 'D'
+  n1 = t['D']  # get node named 'D'
 
   # Get all nodes with distance=0.5
   nodes = list(t.search_nodes(dist=0.5))
-  print(len(nodes), 'nodes have distance=0.5')
+  print(len(nodes), 'nodes have distance 0.5')
 
   # We can limit the search to leaves and node names
-  D = next(t.search_leaves_by_name('D'))  # takes the first match
-  print(D)
+  n2 = next(t.search_leaves_by_name('D'))  # takes the first match
+  print(n1 == n2)  # True
 
 
 Search nodes matching a given criteria (iteration)
@@ -554,8 +540,6 @@ A limitation of the :func:`Tree.search_nodes` method is that you
 cannot use complex conditional statements to find specific nodes. When
 the search criteria is too complex, you may want to create your own search
 function. For example::
-
-  from ete4 import Tree
 
   def search_by_size(node, size):
       """Yield nodes with a given number of leaves."""
