@@ -56,32 +56,33 @@ clustering trees.
 Reading and writing newick trees
 --------------------------------
 
-The Newick format is one of the most widely used standard
-representation of trees in bioinformatics. It uses nested parentheses
-to represent hierarchical data structures as text strings. The
-original newick standard is able to encode information about the tree
-topology, branch distances and node names. Nevertheless, it is not
-uncommon to find slightly different formats using the newick standard.
+The `Newick format <https://en.wikipedia.org/wiki/Newick_format>`_ is
+one of the most widely used standard representations of trees in
+bioinformatics. It uses nested parentheses to represent hierarchical
+data structures as text strings. The original newick standard is able
+to encode information about the tree topology, branch distances and
+node names. Nevertheless, it is not uncommon to find slightly
+different variations of the format.
 
 ETE can read and write many of them:
 
 .. table::
 
-  ====== ============================================== ====================================================================================
-  FORMAT DESCRIPTION                                    SAMPLE
-  ====== ============================================== ====================================================================================
-  0      flexible with support values                   ((D:0.723274,F:0.567784)1.000000:0.067192,(B:0.279326,H:0.756049)1.000000:0.807788);
-  1      flexible with internal node names              ((D:0.723274,F:0.567784)E:0.067192,(B:0.279326,H:0.756049)B:0.807788);
-  2      all branches + leaf names + internal supports  ((D:0.723274,F:0.567784)1.000000:0.067192,(B:0.279326,H:0.756049)1.000000:0.807788);
-  3      all branches + all names                       ((D:0.723274,F:0.567784)E:0.067192,(B:0.279326,H:0.756049)B:0.807788);
-  4      leaf branches + leaf names                     ((D:0.723274,F:0.567784),(B:0.279326,H:0.756049));
-  5      internal and leaf branches + leaf names        ((D:0.723274,F:0.567784):0.067192,(B:0.279326,H:0.756049):0.807788);
-  6      internal branches + leaf names                 ((D,F):0.067192,(B,H):0.807788);
-  7      leaf branches + all names                      ((D:0.723274,F:0.567784)E,(B:0.279326,H:0.756049)B);
-  8      all names                                      ((D,F)E,(B,H)B);
-  9      leaf names                                     ((D,F),(B,H));
-  100    topology only                                  ((,),(,));
-  ====== ============================================== ====================================================================================
+  ====== ========================================= =============================================
+  Format Description                               Example
+  ====== ========================================= =============================================
+  0      internal nodes with support (flexible)    ((D:0.7,F:0.5)1.0:0.6,(B:0.2,H:0.7)1.0:0.8);
+  1      internal nodes with names (flexible)      ((D:0.7,F:0.5)E:0.6,(B:0.2,H:0.7)B:0.8);
+  2      internal w/ support, all lengths present  ((D:0.7,F:0.5)1.0:0.6,(B:0.2,H:0.7)1.0:0.8);
+  3      internal w/ names, all lengths present    ((D:0.7,F:0.5)E:0.6,(B:0.2,H:0.7)B:0.8);
+  4      names and lengths for leaves only         ((D:0.7,F:0.5),(B:0.2,H:0.7));
+  5      leaf names and all lengths                ((D:0.7,F:0.5):0.6,(B:0.2,H:0.7):0.8);
+  6      leaf names and internal lengths           ((D,F):0.6,(B,H):0.8);
+  7      all names and leaf lengths                ((D:0.7,F:0.5)E,(B:0.2,H:0.7)B);
+  8      all names (leaves and internal nodes)     ((D,F)E,(B,H)B);
+  9      leaf names only                           ((D,F),(B,H));
+  100    topology only                             ((,),(,));
+  ====== ========================================= =============================================
 
 Formats labeled as *flexible* allow for missing information. For
 instance, format 0 will be able to load a newick tree even if it does
@@ -91,55 +92,98 @@ files strictly follow a given pattern you can use **strict** format
 definitions.
 
 
-Reading newick trees
-~~~~~~~~~~~~~~~~~~~~
+Creating a tree
+~~~~~~~~~~~~~~~
 
-In order to load a tree from a newick text string you can use the
-constructor :class:`Tree`, provided by the main module :mod:`ete4`.
-You will only need to pass a text string containing the newick
-structure and the format that should be used to parse it (1 by
-default). Alternatively, you can pass a file object that contains the
-newick string.
-
-::
+ETE's class :class:`Tree`, provided by the main module :mod:`ete4`,
+can be used to construct trees. You can create a single node by
+calling :func:`Tree` without any arguments::
 
   from ete4 import Tree
 
-  # Load a tree structure from a newick string. It returns the root node for the tree.
-  t = Tree('(A:1,(B:1,(E:1,D:1):0.5):0.5);')
+  # Empty tree (single node).
+  t = Tree()
+
+Or you can call it with a dictionary specifying the properties of that
+single node. You can also use the :func:`populate` method to populate
+a tree with a random topology::
+
+  from ete4 import Tree
+
+  # Also a single node, but with some properties.
+  t = Tree({'name': 'root', 'dist': 1.0, 'support': 0.5, 'coolness': 'high'})
+
+  # Populate t with a random topology of size 10.
+  t.populate(10)
+
+(Since every time we start from scratch we will want to write ``from
+ete4 import Tree`` to use the :class:`Tree` class, from now on we
+assume you have it already loaded for the remaining examples.)
+
+The properties of a node are stored in its :attr:`props` dictionary.
+With the previous example, writing ``print(t.props)`` will show us a
+dictionary that should look familiar. And if you :func:`print` a tree,
+you will see a simple visualization. For our example of the previously
+populated tree::
+
+  print(t.props)  # where the properties of a node are stored
+  # {'name': 'root', 'dist': 1.0, 'support': 0.5, 'coolness': 'high'}
+
+  print(t)  # will look more or less like:
+  #  ╭─┬╴aaaaaaaaaa
+  #  │ ╰╴aaaaaaaaab
+  # ─┤ ╭─┬╴aaaaaaaaac
+  #  │ │ ╰─┬╴aaaaaaaaad
+  #  ╰─┤   ╰─┬╴aaaaaaaaae
+  #    │     ╰╴aaaaaaaaaf
+  #    ╰─┬╴aaaaaaaaag
+  #      ╰─┬╴aaaaaaaaah
+  #        ╰─┬╴aaaaaaaaai
+  #          ╰╴aaaaaaaaaj
+
+
+Reading newick trees
+~~~~~~~~~~~~~~~~~~~~
+
+To load a tree from a newick text string you can pass to :func:`Tree`
+the text string containing the newick structure. Alternatively, you
+can pass a file object that contains the newick string. And
+optionally, you can also specify the format that should be used to
+parse it (1 by default, see :ref:`sec:newick-formats`).
+
+::
+
+  # Load a tree structure from a newick string. It returns the root node.
+  t1 = Tree('(A:1,(B:1,(E:1,D:1):0.5):0.5);')
 
   # Load a tree structure from a newick file.
-  t = Tree(open('genes_tree.nh'))
+  t2 = Tree(open('genes_tree.nw'))
 
-  # You can also specify how to parse the newick. For instance, for internal nodes with support we will use parser=0.
-  t = Tree('(A:1,(B:1,(E:1,D:1)0.4:0.5)0.9:0.5);', parser=0)
+  # You can also specify how to parse the newick. For instance,
+  # for internal nodes with support we will use parser=0.
+  t3 = Tree('(A:1,(B:1,(E:1,D:1)0.4:0.5)0.9:0.5);', parser=0)
 
 
 Writing newick trees
 ~~~~~~~~~~~~~~~~~~~~
 
 Any ETE tree instance can be exported using newick notation using the
-:func:`Tree.write` method. It also allows for format selection
-(:ref:`sec:newick-formats`), so you can use the same function to
-convert between newick formats.
+:func:`Tree.write` method. It also allows for parser selection, so you
+can use the same function to convert between newick formats.
 
 ::
-
-  from ete4 import Tree
 
   # Load a tree with internal support values.
   t = Tree('(A:1,(B:1,(E:1,D:1)0.4:0.5)0.9:0.5);', parser=0)
 
   # Print its newick using the default parser.
-  print(t.write())
-  # (A:1,(B:1,(E:1,D:1):0.5):0.5);
+  print(t.write())  # (A:1,(B:1,(E:1,D:1):0.5):0.5);
 
-  # To print the internal support values you need to change the parser:
-  print(t.write(parser=0))
-  # (A:1,(B:1,(E:1,D:1)0.4:0.5)0.9:0.5);
+  # To print the internal support values you can change the parser.
+  print(t.write(parser=0))  # (A:1,(B:1,(E:1,D:1)0.4:0.5)0.9:0.5);
 
-  # We can also write into a file
-  t.write(parser=1, outfile='new_tree.nw')
+  # We can also write into a file.
+  t.write(parser=0, outfile='new_tree.nw')
 
 
 Understanding ETE trees
@@ -179,37 +223,33 @@ tree node instance (let's call it ``node``):
 
 .. table::
 
-  ==================== ============================================================================================
+  ==================== ==========================================================================
   Method               Description
-  ==================== ============================================================================================
-  :attr:`node.dist`    distance from the node to its parent (branch length). Default value = 1.0
-  :attr:`node.support` informs about the reliability of the partition defined by the node (i.e. bootstrap support)
-  :attr:`node.name`    node's name
-  ==================== ============================================================================================
+  ==================== ==========================================================================
+  :attr:`node.dist`    Distance from the node to its parent (branch length)
+  :attr:`node.support` Reliability of the partition defined by the node (like bootstrap support)
+  :attr:`node.name`    Node's name
+  ==================== ==========================================================================
 
 In addition, several methods are provided to perform basic operations
 on tree node instances:
 
 .. table::
 
-  ======================== ======================================================================
+  ======================== ====================================================================
   Method                   Description
-  ======================== ======================================================================
-  :attr:`node.is_leaf`     True if ``node`` has no children
-  :attr:`node.is_root`     True if ``node`` has no parent
-  :attr:`node.root`        the top-most node within the same tree structure as ``node``
-  :attr:`len(node)`        returns the number of leaves under ``node``
-  :attr:`print(node)`      prints a text-based representation of the tree topology under ``node``
-  :attr:`n in node`        True if *n* is a leaf under ``node``
-  :attr:`for leaf in node` iterates over all leaves under ``node``
-  :func:`node.explore`     explore node graphically using a GUI
-  ======================== ======================================================================
+  ======================== ====================================================================
+  :attr:`node.is_leaf`     True if node has no children
+  :attr:`node.is_root`     True if node has no parent
+  :attr:`node.root`        The top-most node within the same tree structure as node
+  :attr:`len(node)`        Returns the number of leaves under node
+  :attr:`print(node)`      Prints a text-based representation of the tree topology under node
+  :attr:`n in node`        True if *n* is a leaf under node
+  :attr:`for leaf in node` Iterates over all leaves under node
+  :func:`node.explore`     Explore node graphically using a GUI
+  ======================== ====================================================================
 
 This is an example on how to access such attributes::
-
-  from ete4 import Tree
-
-  t = Tree()
 
   # Create a random tree topology.
   t.populate(15)
@@ -242,8 +282,6 @@ represents the whole tree structure. Unrooted trees can be identified
 as trees where the master root node has more than two children.
 
 ::
-
-  from ete4 import Tree
 
   unrooted_tree = Tree('(A,B,(C,D));')
   print(unrooted_tree)
@@ -320,7 +358,6 @@ include the root node in the iteration.
 ``"preorder"`` or ``"levelorder"``::
 
   # Make a tree.
-  from ete4 import Tree
   t = Tree('((((H,K)D,(F,I)G)B,E)A,((L,(N,Q)O)J,(P,S)M)C);')
 
   # Traverse the nodes in postorder.
@@ -336,7 +373,6 @@ Additionally, you can implement your own traversing function using the
 structural attributes of nodes. In the following example, only nodes
 between a given leaf and the tree root are visited::
 
-  from ete4 import Tree
   t = Tree('(A:1,(B:1,(C:1,D:1):0.5):0.5);')
 
   # Browse the tree from a specific leaf to the root.
@@ -368,8 +404,6 @@ many different ways.
 For instance, given a large tree structure, the following code will
 export the newick of the pruned version of the topology, where nodes
 grouping the same tip labels are collapsed::
-
-  from ete4 import Tree
 
   t = Tree('((((a,a,a)a,a)aa,(b,b)b)ab,(c,(d,d)d)cd);')
 
@@ -408,8 +442,6 @@ browsing the whole tree structure.
 
 Let's say we want to get all deepest nodes in a tree whose branch
 length is defined and larger than one::
-
-  from ete4 import Tree
 
   t = Tree('(((a,b)ab:2,(c,d)cd:2)abcd:2,((e,f):2,g)efg:2);')
 
@@ -480,8 +512,6 @@ through the :func:`Tree.search_nodes` function.
 
 ::
 
-  from ete4 import Tree
-
   t = Tree('((H:1,I:1):0.5,A:1,(B:1,(C:1,D:1):0.5):0.5);')
 
   print(t)
@@ -492,15 +522,15 @@ through the :func:`Tree.search_nodes` function.
   #    ╰─┬╴C
   #      ╰╴D
 
-  D = t['D']  # get node named 'D'
+  n1 = t['D']  # get node named 'D'
 
   # Get all nodes with distance=0.5
   nodes = list(t.search_nodes(dist=0.5))
-  print(len(nodes), 'nodes have distance=0.5')
+  print(len(nodes), 'nodes have distance 0.5')
 
   # We can limit the search to leaves and node names
-  D = next(t.search_leaves_by_name('D'))  # takes the first match
-  print(D)
+  n2 = next(t.search_leaves_by_name('D'))  # takes the first match
+  print(n1 == n2)  # True
 
 
 Search nodes matching a given criteria (iteration)
@@ -510,8 +540,6 @@ A limitation of the :func:`Tree.search_nodes` method is that you
 cannot use complex conditional statements to find specific nodes. When
 the search criteria is too complex, you may want to create your own search
 function. For example::
-
-  from ete4 import Tree
 
   def search_by_size(node, size):
       """Yield nodes with a given number of leaves."""
@@ -524,3 +552,44 @@ function. For example::
 
   # Get a list of all nodes containing 6 leaves.
   list(search_by_size(t, size=6))
+
+
+Find the first common ancestor
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Searching for the first common ancestor of a given set of nodes is a
+handy way of finding internal nodes::
+
+  t = Tree('(((a,b)ab,(c,d)cd:2)abcd,((e,f)ef,g)efg)root;')
+
+  print(t.to_str(props=['name'], compact=True))
+  #              ╭╴ab╶┬╴a
+  #       ╭╴abcd╶┤    ╰╴b
+  #       │      ╰╴cd╶┬╴c
+  # ╴root╶┤           ╰╴d
+  #       │     ╭╴ef╶┬╴e
+  #       ╰╴efg╶┤    ╰╴f
+  #             ╰╴g
+
+  ancestor = t.common_ancestor(['a', 'c', 'ab'])  # will be node abcd
+
+
+Custom searching functions
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A limitation of the previous methods is that you cannot use complex
+conditional statements to find specific nodes. However you can use
+traversing methods and apply your custom filters::
+
+  t = Tree('((H:0.3,I:0.1):0.5,A:1,(B:0.4,(C:1,D:1):0.5):0.5):0;')
+
+  # Use a list comprehension, iterating with the traverse() method.
+  matches = [node for node in t.traverse() if node.dist > 0.3]
+  print(len(matches), 'nodes have distance > 0.3')
+
+  # Or create a small function to filter your nodes.
+  def condition(node):
+      return node.dist > 0.3 and node.is_leaf
+
+  matches2 = [node for node in t.traverse() if condition(node)]
+  print(len(matches2), 'nodes have distance > 0.3 and are leaves')

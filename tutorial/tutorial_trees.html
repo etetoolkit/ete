@@ -44,30 +44,33 @@
 <li><p><a class="reference internal" href="#trees" id="id2">Trees</a></p></li>
 <li><p><a class="reference internal" href="#reading-and-writing-newick-trees" id="id3">Reading and writing newick trees</a></p>
 <ul>
-<li><p><a class="reference internal" href="#reading-newick-trees" id="id4">Reading newick trees</a></p></li>
-<li><p><a class="reference internal" href="#writing-newick-trees" id="id5">Writing newick trees</a></p></li>
+<li><p><a class="reference internal" href="#creating-a-tree" id="id4">Creating a tree</a></p></li>
+<li><p><a class="reference internal" href="#reading-newick-trees" id="id5">Reading newick trees</a></p></li>
+<li><p><a class="reference internal" href="#writing-newick-trees" id="id6">Writing newick trees</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#understanding-ete-trees" id="id6">Understanding ETE trees</a></p></li>
-<li><p><a class="reference internal" href="#basic-tree-attributes" id="id7">Basic tree attributes</a></p>
+<li><p><a class="reference internal" href="#understanding-ete-trees" id="id7">Understanding ETE trees</a></p></li>
+<li><p><a class="reference internal" href="#basic-tree-attributes" id="id8">Basic tree attributes</a></p>
 <ul>
-<li><p><a class="reference internal" href="#root-node-on-unrooted-trees" id="id8">Root node on unrooted trees?</a></p></li>
+<li><p><a class="reference internal" href="#root-node-on-unrooted-trees" id="id9">Root node on unrooted trees?</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#browsing-trees-traversing" id="id9">Browsing trees (traversing)</a></p>
+<li><p><a class="reference internal" href="#browsing-trees-traversing" id="id10">Browsing trees (traversing)</a></p>
 <ul>
-<li><p><a class="reference internal" href="#getting-leaves-descendants-and-node-s-relatives" id="id10">Getting leaves, descendants and node’s relatives</a></p></li>
-<li><p><a class="reference internal" href="#traversing-browsing-trees" id="id11">Traversing (browsing) trees</a></p></li>
-<li><p><a class="reference internal" href="#advanced-traversing-stopping-criteria" id="id12">Advanced traversing (stopping criteria)</a></p>
+<li><p><a class="reference internal" href="#getting-leaves-descendants-and-node-s-relatives" id="id11">Getting leaves, descendants and node’s relatives</a></p></li>
+<li><p><a class="reference internal" href="#traversing-browsing-trees" id="id12">Traversing (browsing) trees</a></p></li>
+<li><p><a class="reference internal" href="#advanced-traversing-stopping-criteria" id="id13">Advanced traversing (stopping criteria)</a></p>
 <ul>
-<li><p><a class="reference internal" href="#collapsing-nodes-while-traversing-custom-is-leaf-definition" id="id13">Collapsing nodes while traversing (custom is_leaf definition)</a></p></li>
+<li><p><a class="reference internal" href="#collapsing-nodes-while-traversing-custom-is-leaf-definition" id="id14">Collapsing nodes while traversing (custom is_leaf definition)</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#iterators-or-lists" id="id14">Iterators or lists?</a></p></li>
-<li><p><a class="reference internal" href="#finding-nodes-by-their-attributes" id="id15">Finding nodes by their attributes</a></p>
+<li><p><a class="reference internal" href="#iterators-or-lists" id="id15">Iterators or lists?</a></p></li>
+<li><p><a class="reference internal" href="#finding-nodes-by-their-attributes" id="id16">Finding nodes by their attributes</a></p>
 <ul>
-<li><p><a class="reference internal" href="#search-all-nodes-matching-a-given-criteria" id="id16">Search_all nodes matching a given criteria</a></p></li>
-<li><p><a class="reference internal" href="#search-nodes-matching-a-given-criteria-iteration" id="id17">Search nodes matching a given criteria (iteration)</a></p></li>
+<li><p><a class="reference internal" href="#search-all-nodes-matching-a-given-criteria" id="id17">Search_all nodes matching a given criteria</a></p></li>
+<li><p><a class="reference internal" href="#search-nodes-matching-a-given-criteria-iteration" id="id18">Search nodes matching a given criteria (iteration)</a></p></li>
+<li><p><a class="reference internal" href="#find-the-first-common-ancestor" id="id19">Find the first common ancestor</a></p></li>
+<li><p><a class="reference internal" href="#custom-searching-functions" id="id20">Custom searching functions</a></p></li>
 </ul>
 </li>
 </ul>
@@ -120,59 +123,60 @@ clustering trees.</p>
 </section>
 <section id="reading-and-writing-newick-trees">
 <span id="sec-newick-formats"></span><h2><a class="toc-backref" href="#id3" role="doc-backlink">Reading and writing newick trees</a><a class="headerlink" href="#reading-and-writing-newick-trees" title="Link to this heading">¶</a></h2>
-<p>The Newick format is one of the most widely used standard
-representation of trees in bioinformatics. It uses nested parentheses
-to represent hierarchical data structures as text strings. The
-original newick standard is able to encode information about the tree
-topology, branch distances and node names. Nevertheless, it is not
-uncommon to find slightly different formats using the newick standard.</p>
+<p>The <a class="reference external" href="https://en.wikipedia.org/wiki/Newick_format">Newick format</a> is
+one of the most widely used standard representations of trees in
+bioinformatics. It uses nested parentheses to represent hierarchical
+data structures as text strings. The original newick standard is able
+to encode information about the tree topology, branch distances and
+node names. Nevertheless, it is not uncommon to find slightly
+different variations of the format.</p>
 <p>ETE can read and write many of them:</p>
 <table class="docutils align-default">
 <thead>
-<tr class="row-odd"><th class="head"><p>FORMAT</p></th>
-<th class="head"><p>DESCRIPTION</p></th>
-<th class="head"><p>SAMPLE</p></th>
+<tr class="row-odd"><th class="head"><p>Format</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Example</p></th>
 </tr>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>0</p></td>
-<td><p>flexible with support values</p></td>
-<td><p>((D:0.723274,F:0.567784)1.000000:0.067192,(B:0.279326,H:0.756049)1.000000:0.807788);</p></td>
+<td><p>internal nodes with support (flexible)</p></td>
+<td><p>((D:0.7,F:0.5)1.0:0.6,(B:0.2,H:0.7)1.0:0.8);</p></td>
 </tr>
 <tr class="row-odd"><td><p>1</p></td>
-<td><p>flexible with internal node names</p></td>
-<td><p>((D:0.723274,F:0.567784)E:0.067192,(B:0.279326,H:0.756049)B:0.807788);</p></td>
+<td><p>internal nodes with names (flexible)</p></td>
+<td><p>((D:0.7,F:0.5)E:0.6,(B:0.2,H:0.7)B:0.8);</p></td>
 </tr>
 <tr class="row-even"><td><p>2</p></td>
-<td><p>all branches + leaf names + internal supports</p></td>
-<td><p>((D:0.723274,F:0.567784)1.000000:0.067192,(B:0.279326,H:0.756049)1.000000:0.807788);</p></td>
+<td><p>internal w/ support, all lengths present</p></td>
+<td><p>((D:0.7,F:0.5)1.0:0.6,(B:0.2,H:0.7)1.0:0.8);</p></td>
 </tr>
 <tr class="row-odd"><td><p>3</p></td>
-<td><p>all branches + all names</p></td>
-<td><p>((D:0.723274,F:0.567784)E:0.067192,(B:0.279326,H:0.756049)B:0.807788);</p></td>
+<td><p>internal w/ names, all lengths present</p></td>
+<td><p>((D:0.7,F:0.5)E:0.6,(B:0.2,H:0.7)B:0.8);</p></td>
 </tr>
 <tr class="row-even"><td><p>4</p></td>
-<td><p>leaf branches + leaf names</p></td>
-<td><p>((D:0.723274,F:0.567784),(B:0.279326,H:0.756049));</p></td>
+<td><p>names and lengths for leaves only</p></td>
+<td><p>((D:0.7,F:0.5),(B:0.2,H:0.7));</p></td>
 </tr>
 <tr class="row-odd"><td><p>5</p></td>
-<td><p>internal and leaf branches + leaf names</p></td>
-<td><p>((D:0.723274,F:0.567784):0.067192,(B:0.279326,H:0.756049):0.807788);</p></td>
+<td><p>leaf names and all lengths</p></td>
+<td><p>((D:0.7,F:0.5):0.6,(B:0.2,H:0.7):0.8);</p></td>
 </tr>
 <tr class="row-even"><td><p>6</p></td>
-<td><p>internal branches + leaf names</p></td>
-<td><p>((D,F):0.067192,(B,H):0.807788);</p></td>
+<td><p>leaf names and internal lengths</p></td>
+<td><p>((D,F):0.6,(B,H):0.8);</p></td>
 </tr>
 <tr class="row-odd"><td><p>7</p></td>
-<td><p>leaf branches + all names</p></td>
-<td><p>((D:0.723274,F:0.567784)E,(B:0.279326,H:0.756049)B);</p></td>
+<td><p>all names and leaf lengths</p></td>
+<td><p>((D:0.7,F:0.5)E,(B:0.2,H:0.7)B);</p></td>
 </tr>
 <tr class="row-even"><td><p>8</p></td>
-<td><p>all names</p></td>
+<td><p>all names (leaves and internal nodes)</p></td>
 <td><p>((D,F)E,(B,H)B);</p></td>
 </tr>
 <tr class="row-odd"><td><p>9</p></td>
-<td><p>leaf names</p></td>
+<td><p>leaf names only</p></td>
 <td><p>((D,F),(B,H));</p></td>
 </tr>
 <tr class="row-even"><td><p>100</p></td>
@@ -187,54 +191,95 @@ not contain branch support information. However, format 2 would raise
 an exception. In other words, if you want to control that your newick
 files strictly follow a given pattern you can use <strong>strict</strong> format
 definitions.</p>
-<section id="reading-newick-trees">
-<h3><a class="toc-backref" href="#id4" role="doc-backlink">Reading newick trees</a><a class="headerlink" href="#reading-newick-trees" title="Link to this heading">¶</a></h3>
-<p>In order to load a tree from a newick text string you can use the
-constructor <code class="xref py py-class docutils literal notranslate"><span class="pre">Tree</span></code>, provided by the main module <code class="xref py py-mod docutils literal notranslate"><span class="pre">ete4</span></code>.
-You will only need to pass a text string containing the newick
-structure and the format that should be used to parse it (1 by
-default). Alternatively, you can pass a file object that contains the
-newick string.</p>
+<section id="creating-a-tree">
+<h3><a class="toc-backref" href="#id4" role="doc-backlink">Creating a tree</a><a class="headerlink" href="#creating-a-tree" title="Link to this heading">¶</a></h3>
+<p>ETE’s class <code class="xref py py-class docutils literal notranslate"><span class="pre">Tree</span></code>, provided by the main module <code class="xref py py-mod docutils literal notranslate"><span class="pre">ete4</span></code>,
+can be used to construct trees. You can create a single node by
+calling <code class="xref py py-func docutils literal notranslate"><span class="pre">Tree()</span></code> without any arguments:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
 
-<span class="c1"># Load a tree structure from a newick string. It returns the root node for the tree.</span>
-<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(A:1,(B:1,(E:1,D:1):0.5):0.5);&#39;</span><span class="p">)</span>
+<span class="c1"># Empty tree (single node).</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Or you can call it with a dictionary specifying the properties of that
+single node. You can also use the <code class="xref py py-func docutils literal notranslate"><span class="pre">populate()</span></code> method to populate
+a tree with a random topology:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
+
+<span class="c1"># Also a single node, but with some properties.</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;root&#39;</span><span class="p">,</span> <span class="s1">&#39;dist&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s1">&#39;support&#39;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span> <span class="s1">&#39;coolness&#39;</span><span class="p">:</span> <span class="s1">&#39;high&#39;</span><span class="p">})</span>
+
+<span class="c1"># Populate t with a random topology of size 10.</span>
+<span class="n">t</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>(Since every time we start from scratch we will want to write <code class="docutils literal notranslate"><span class="pre">from</span>
+<span class="pre">ete4</span> <span class="pre">import</span> <span class="pre">Tree</span></code> to use the <code class="xref py py-class docutils literal notranslate"><span class="pre">Tree</span></code> class, from now on we
+assume you have it already loaded for the remaining examples.)</p>
+<p>The properties of a node are stored in its <code class="xref py py-attr docutils literal notranslate"><span class="pre">props</span></code> dictionary.
+With the previous example, writing <code class="docutils literal notranslate"><span class="pre">print(t.props)</span></code> will show us a
+dictionary that should look familiar. And if you <code class="xref py py-func docutils literal notranslate"><span class="pre">print()</span></code> a tree,
+you will see a simple visualization. For our example of the previously
+populated tree:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">props</span><span class="p">)</span>  <span class="c1"># where the properties of a node are stored</span>
+<span class="c1"># {&#39;name&#39;: &#39;root&#39;, &#39;dist&#39;: 1.0, &#39;support&#39;: 0.5, &#39;coolness&#39;: &#39;high&#39;}</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>  <span class="c1"># will look more or less like:</span>
+<span class="c1">#  ╭─┬╴aaaaaaaaaa</span>
+<span class="c1">#  │ ╰╴aaaaaaaaab</span>
+<span class="c1"># ─┤ ╭─┬╴aaaaaaaaac</span>
+<span class="c1">#  │ │ ╰─┬╴aaaaaaaaad</span>
+<span class="c1">#  ╰─┤   ╰─┬╴aaaaaaaaae</span>
+<span class="c1">#    │     ╰╴aaaaaaaaaf</span>
+<span class="c1">#    ╰─┬╴aaaaaaaaag</span>
+<span class="c1">#      ╰─┬╴aaaaaaaaah</span>
+<span class="c1">#        ╰─┬╴aaaaaaaaai</span>
+<span class="c1">#          ╰╴aaaaaaaaaj</span>
+</pre></div>
+</div>
+</section>
+<section id="reading-newick-trees">
+<h3><a class="toc-backref" href="#id5" role="doc-backlink">Reading newick trees</a><a class="headerlink" href="#reading-newick-trees" title="Link to this heading">¶</a></h3>
+<p>To load a tree from a newick text string you can pass to <code class="xref py py-func docutils literal notranslate"><span class="pre">Tree()</span></code>
+the text string containing the newick structure. Alternatively, you
+can pass a file object that contains the newick string. And
+optionally, you can also specify the format that should be used to
+parse it (1 by default, see <a class="reference internal" href="#sec-newick-formats"><span class="std std-ref">Reading and writing newick trees</span></a>).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load a tree structure from a newick string. It returns the root node.</span>
+<span class="n">t1</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(A:1,(B:1,(E:1,D:1):0.5):0.5);&#39;</span><span class="p">)</span>
 
 <span class="c1"># Load a tree structure from a newick file.</span>
-<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s1">&#39;genes_tree.nh&#39;</span><span class="p">))</span>
+<span class="n">t2</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s1">&#39;genes_tree.nw&#39;</span><span class="p">))</span>
 
-<span class="c1"># You can also specify how to parse the newick. For instance, for internal nodes with support we will use parser=0.</span>
-<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(A:1,(B:1,(E:1,D:1)0.4:0.5)0.9:0.5);&#39;</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="c1"># You can also specify how to parse the newick. For instance,</span>
+<span class="c1"># for internal nodes with support we will use parser=0.</span>
+<span class="n">t3</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(A:1,(B:1,(E:1,D:1)0.4:0.5)0.9:0.5);&#39;</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
 <section id="writing-newick-trees">
-<h3><a class="toc-backref" href="#id5" role="doc-backlink">Writing newick trees</a><a class="headerlink" href="#writing-newick-trees" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id6" role="doc-backlink">Writing newick trees</a><a class="headerlink" href="#writing-newick-trees" title="Link to this heading">¶</a></h3>
 <p>Any ETE tree instance can be exported using newick notation using the
-<code class="xref py py-func docutils literal notranslate"><span class="pre">Tree.write()</span></code> method. It also allows for format selection
-(<a class="reference internal" href="#sec-newick-formats"><span class="std std-ref">Reading and writing newick trees</span></a>), so you can use the same function to
-convert between newick formats.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
-
-<span class="c1"># Load a tree with internal support values.</span>
+<code class="xref py py-func docutils literal notranslate"><span class="pre">Tree.write()</span></code> method. It also allows for parser selection, so you
+can use the same function to convert between newick formats.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load a tree with internal support values.</span>
 <span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(A:1,(B:1,(E:1,D:1)0.4:0.5)0.9:0.5);&#39;</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
 <span class="c1"># Print its newick using the default parser.</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">write</span><span class="p">())</span>
-<span class="c1"># (A:1,(B:1,(E:1,D:1):0.5):0.5);</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">write</span><span class="p">())</span>  <span class="c1"># (A:1,(B:1,(E:1,D:1):0.5):0.5);</span>
 
-<span class="c1"># To print the internal support values you need to change the parser:</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">parser</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
-<span class="c1"># (A:1,(B:1,(E:1,D:1)0.4:0.5)0.9:0.5);</span>
+<span class="c1"># To print the internal support values you can change the parser.</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">parser</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>  <span class="c1"># (A:1,(B:1,(E:1,D:1)0.4:0.5)0.9:0.5);</span>
 
-<span class="c1"># We can also write into a file</span>
-<span class="n">t</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">parser</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="s1">&#39;new_tree.nw&#39;</span><span class="p">)</span>
+<span class="c1"># We can also write into a file.</span>
+<span class="n">t</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">parser</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="s1">&#39;new_tree.nw&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
 </section>
 <section id="understanding-ete-trees">
-<h2><a class="toc-backref" href="#id6" role="doc-backlink">Understanding ETE trees</a><a class="headerlink" href="#understanding-ete-trees" title="Link to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id7" role="doc-backlink">Understanding ETE trees</a><a class="headerlink" href="#understanding-ete-trees" title="Link to this heading">¶</a></h2>
 <p>Any tree topology can be represented as a succession of <strong>nodes</strong>
 connected in a hierarchical way. Thus, for practical reasons, ETE
 makes no distinction between the concepts of tree and node, as any
@@ -252,7 +297,7 @@ trees into smaller partitions, or concatenate several trees into a
 single structure.</p>
 </section>
 <section id="basic-tree-attributes">
-<h2><a class="toc-backref" href="#id7" role="doc-backlink">Basic tree attributes</a><a class="headerlink" href="#basic-tree-attributes" title="Link to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id8" role="doc-backlink">Basic tree attributes</a><a class="headerlink" href="#basic-tree-attributes" title="Link to this heading">¶</a></h2>
 <p>Each tree node has two basic attributes used to establish its position
 in the tree: <code class="xref py py-attr docutils literal notranslate"><span class="pre">Tree.up</span></code> and <code class="xref py py-attr docutils literal notranslate"><span class="pre">Tree.children</span></code>. The first is a
 pointer to its parent’s node, while the latter is a list of children
@@ -270,13 +315,13 @@ tree node instance (let’s call it <code class="docutils literal notranslate"><
 </thead>
 <tbody>
 <tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">node.dist</span></code></p></td>
-<td><p>distance from the node to its parent (branch length). Default value = 1.0</p></td>
+<td><p>Distance from the node to its parent (branch length)</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">node.support</span></code></p></td>
-<td><p>informs about the reliability of the partition defined by the node (i.e. bootstrap support)</p></td>
+<td><p>Reliability of the partition defined by the node (like bootstrap support)</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">node.name</span></code></p></td>
-<td><p>node’s name</p></td>
+<td><p>Node’s name</p></td>
 </tr>
 </tbody>
 </table>
@@ -290,37 +335,33 @@ on tree node instances:</p>
 </thead>
 <tbody>
 <tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">node.is_leaf</span></code></p></td>
-<td><p>True if <code class="docutils literal notranslate"><span class="pre">node</span></code> has no children</p></td>
+<td><p>True if node has no children</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">node.is_root</span></code></p></td>
-<td><p>True if <code class="docutils literal notranslate"><span class="pre">node</span></code> has no parent</p></td>
+<td><p>True if node has no parent</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">node.root</span></code></p></td>
-<td><p>the top-most node within the same tree structure as <code class="docutils literal notranslate"><span class="pre">node</span></code></p></td>
+<td><p>The top-most node within the same tree structure as node</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">len(node)</span></code></p></td>
-<td><p>returns the number of leaves under <code class="docutils literal notranslate"><span class="pre">node</span></code></p></td>
+<td><p>Returns the number of leaves under node</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">print(node)</span></code></p></td>
-<td><p>prints a text-based representation of the tree topology under <code class="docutils literal notranslate"><span class="pre">node</span></code></p></td>
+<td><p>Prints a text-based representation of the tree topology under node</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">n</span> <span class="pre">in</span> <span class="pre">node</span></code></p></td>
-<td><p>True if <em>n</em> is a leaf under <code class="docutils literal notranslate"><span class="pre">node</span></code></p></td>
+<td><p>True if <em>n</em> is a leaf under node</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">for</span> <span class="pre">leaf</span> <span class="pre">in</span> <span class="pre">node</span></code></p></td>
-<td><p>iterates over all leaves under <code class="docutils literal notranslate"><span class="pre">node</span></code></p></td>
+<td><p>Iterates over all leaves under node</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-func docutils literal notranslate"><span class="pre">node.explore()</span></code></p></td>
-<td><p>explore node graphically using a GUI</p></td>
+<td><p>Explore node graphically using a GUI</p></td>
 </tr>
 </tbody>
 </table>
 <p>This is an example on how to access such attributes:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
-
-<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">()</span>
-
-<span class="c1"># Create a random tree topology.</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create a random tree topology.</span>
 <span class="n">t</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>  <span class="c1"># text visualization of the tree</span>
@@ -341,16 +382,14 @@ on tree node instances:</p>
 </pre></div>
 </div>
 <section id="root-node-on-unrooted-trees">
-<h3><a class="toc-backref" href="#id8" role="doc-backlink">Root node on unrooted trees?</a><a class="headerlink" href="#root-node-on-unrooted-trees" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id9" role="doc-backlink">Root node on unrooted trees?</a><a class="headerlink" href="#root-node-on-unrooted-trees" title="Link to this heading">¶</a></h3>
 <p>When a tree is loaded from external sources, a pointer to the top-most
 node is returned. This is called the tree root, and <strong>it will exist
 even if the tree is conceptually considered as unrooted</strong>. That is,
 the root node can be considered as the master node, since it
 represents the whole tree structure. Unrooted trees can be identified
 as trees where the master root node has more than two children.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
-
-<span class="n">unrooted_tree</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(A,B,(C,D));&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">unrooted_tree</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(A,B,(C,D));&#39;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">unrooted_tree</span><span class="p">)</span>
 <span class="c1">#  ╭╴A</span>
 <span class="c1"># ─┼╴B</span>
@@ -368,13 +407,13 @@ as trees where the master root node has more than two children.</p>
 </section>
 </section>
 <section id="browsing-trees-traversing">
-<h2><a class="toc-backref" href="#id9" role="doc-backlink">Browsing trees (traversing)</a><a class="headerlink" href="#browsing-trees-traversing" title="Link to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id10" role="doc-backlink">Browsing trees (traversing)</a><a class="headerlink" href="#browsing-trees-traversing" title="Link to this heading">¶</a></h2>
 <p>One of the most basic operations for tree analysis is <em>tree browsing</em>.
 This is, essentially, visiting nodes within a tree. ETE provides a
 number of methods to search for specific nodes or to navigate over the
 hierarchical structure of a tree.</p>
 <section id="getting-leaves-descendants-and-node-s-relatives">
-<h3><a class="toc-backref" href="#id10" role="doc-backlink">Getting leaves, descendants and node’s relatives</a><a class="headerlink" href="#getting-leaves-descendants-and-node-s-relatives" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id11" role="doc-backlink">Getting leaves, descendants and node’s relatives</a><a class="headerlink" href="#getting-leaves-descendants-and-node-s-relatives" title="Link to this heading">¶</a></h3>
 <p>Tree instances contain several functions to access their descendants.
 Available methods are self explanatory:</p>
 <table class="autosummary longtable docutils align-default">
@@ -401,7 +440,7 @@ Available methods are self explanatory:</p>
 </table>
 </section>
 <section id="traversing-browsing-trees">
-<h3><a class="toc-backref" href="#id11" role="doc-backlink">Traversing (browsing) trees</a><a class="headerlink" href="#traversing-browsing-trees" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id12" role="doc-backlink">Traversing (browsing) trees</a><a class="headerlink" href="#traversing-browsing-trees" title="Link to this heading">¶</a></h3>
 <p>Often, when processing trees, all nodes need to be visited. This is
 called tree traversing. There are different ways to traverse a tree
 structure depending on the order in which children nodes are visited.
@@ -439,7 +478,6 @@ include the root node in the iteration.</p>
 <p><strong>strategy</strong> can take one of the following values: <code class="docutils literal notranslate"><span class="pre">&quot;postorder&quot;</span></code>,
 <code class="docutils literal notranslate"><span class="pre">&quot;preorder&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;levelorder&quot;</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Make a tree.</span>
-<span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
 <span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((((H,K)D,(F,I)G)B,E)A,((L,(N,Q)O)J,(P,S)M)C);&#39;</span><span class="p">)</span>
 
 <span class="c1"># Traverse the nodes in postorder.</span>
@@ -455,8 +493,7 @@ include the root node in the iteration.</p>
 <p>Additionally, you can implement your own traversing function using the
 structural attributes of nodes. In the following example, only nodes
 between a given leaf and the tree root are visited:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
-<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(A:1,(B:1,(C:1,D:1):0.5):0.5);&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(A:1,(B:1,(C:1,D:1):0.5):0.5);&#39;</span><span class="p">)</span>
 
 <span class="c1"># Browse the tree from a specific leaf to the root.</span>
 <span class="n">node</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">search_nodes</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">))</span>  <span class="c1"># same as t[&#39;C&#39;]</span>
@@ -467,9 +504,9 @@ between a given leaf and the tree root are visited:</p>
 </div>
 </section>
 <section id="advanced-traversing-stopping-criteria">
-<h3><a class="toc-backref" href="#id12" role="doc-backlink">Advanced traversing (stopping criteria)</a><a class="headerlink" href="#advanced-traversing-stopping-criteria" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id13" role="doc-backlink">Advanced traversing (stopping criteria)</a><a class="headerlink" href="#advanced-traversing-stopping-criteria" title="Link to this heading">¶</a></h3>
 <section id="collapsing-nodes-while-traversing-custom-is-leaf-definition">
-<span id="is-leaf-fn"></span><h4><a class="toc-backref" href="#id13" role="doc-backlink">Collapsing nodes while traversing (custom is_leaf definition)</a><a class="headerlink" href="#collapsing-nodes-while-traversing-custom-is-leaf-definition" title="Link to this heading">¶</a></h4>
+<span id="is-leaf-fn"></span><h4><a class="toc-backref" href="#id14" role="doc-backlink">Collapsing nodes while traversing (custom is_leaf definition)</a><a class="headerlink" href="#collapsing-nodes-while-traversing-custom-is-leaf-definition" title="Link to this heading">¶</a></h4>
 <p>ETE supports the use of the <code class="xref py py-attr docutils literal notranslate"><span class="pre">is_leaf_fn</span></code> argument in most of its
 traversing functions. The value of <code class="xref py py-attr docutils literal notranslate"><span class="pre">is_leaf_fn</span></code> is expected to
 be a pointer to any python function that accepts a node instance as
@@ -482,9 +519,7 @@ many different ways.</p>
 <p>For instance, given a large tree structure, the following code will
 export the newick of the pruned version of the topology, where nodes
 grouping the same tip labels are collapsed:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
-
-<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((((a,a,a)a,a)aa,(b,b)b)ab,(c,(d,d)d)cd);&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((((a,a,a)a,a)aa,(b,b)b)ab,(c,(d,d)d)cd);&#39;</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">compact</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>  <span class="c1"># show internal names too</span>
 <span class="c1">#                        ╭╴a</span>
@@ -521,9 +556,7 @@ nodes in a given tree that match a custom set of criteria, without
 browsing the whole tree structure.</p>
 <p>Let’s say we want to get all deepest nodes in a tree whose branch
 length is defined and larger than one:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
-
-<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(((a,b)ab:2,(c,d)cd:2)abcd:2,((e,f):2,g)efg:2);&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(((a,b)ab:2,(c,d)cd:2)abcd:2,((e,f):2,g)efg:2);&#39;</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;dist&#39;</span><span class="p">],</span> <span class="n">compact</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>  <span class="c1"># name and distance</span>
 <span class="c1">#                             ╭╴ab,2.0╶┬╴a,(empty)</span>
@@ -547,7 +580,7 @@ length is defined and larger than one:</p>
 </section>
 </section>
 <section id="iterators-or-lists">
-<h3><a class="toc-backref" href="#id14" role="doc-backlink">Iterators or lists?</a><a class="headerlink" href="#iterators-or-lists" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id15" role="doc-backlink">Iterators or lists?</a><a class="headerlink" href="#iterators-or-lists" title="Link to this heading">¶</a></h3>
 <p>The methods used to iterate over nodes are <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#typesseq">python iterators</a>. The
 iterators produce only one element at a time, and thus are normally
 faster and take less memory than lists.</p>
@@ -562,7 +595,7 @@ case, you can create it by adding <code class="docutils literal notranslate"><sp
 <code class="xref py py-func docutils literal notranslate"><span class="pre">ancestors()</span></code> and so on.</p>
 </section>
 <section id="finding-nodes-by-their-attributes">
-<h3><a class="toc-backref" href="#id15" role="doc-backlink">Finding nodes by their attributes</a><a class="headerlink" href="#finding-nodes-by-their-attributes" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id16" role="doc-backlink">Finding nodes by their attributes</a><a class="headerlink" href="#finding-nodes-by-their-attributes" title="Link to this heading">¶</a></h3>
 <p>Both terminal and internal nodes can be located by searching along the
 tree structure. Several methods are available:</p>
 <table class="docutils align-default">
@@ -593,12 +626,10 @@ tree structure. Several methods are available:</p>
 </tbody>
 </table>
 <section id="search-all-nodes-matching-a-given-criteria">
-<h4><a class="toc-backref" href="#id16" role="doc-backlink">Search_all nodes matching a given criteria</a><a class="headerlink" href="#search-all-nodes-matching-a-given-criteria" title="Link to this heading">¶</a></h4>
+<h4><a class="toc-backref" href="#id17" role="doc-backlink">Search_all nodes matching a given criteria</a><a class="headerlink" href="#search-all-nodes-matching-a-given-criteria" title="Link to this heading">¶</a></h4>
 <p>A custom list of nodes matching a given name can be easily obtained
 through the <code class="xref py py-func docutils literal notranslate"><span class="pre">Tree.search_nodes()</span></code> function.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
-
-<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((H:1,I:1):0.5,A:1,(B:1,(C:1,D:1):0.5):0.5);&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((H:1,I:1):0.5,A:1,(B:1,(C:1,D:1):0.5):0.5);&#39;</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
 <span class="c1">#  ╭─┬╴H</span>
@@ -608,27 +639,25 @@ through the <code class="xref py py-func docutils literal notranslate"><span cla
 <span class="c1">#    ╰─┬╴C</span>
 <span class="c1">#      ╰╴D</span>
 
-<span class="n">D</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="s1">&#39;D&#39;</span><span class="p">]</span>  <span class="c1"># get node named &#39;D&#39;</span>
+<span class="n">n1</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="s1">&#39;D&#39;</span><span class="p">]</span>  <span class="c1"># get node named &#39;D&#39;</span>
 
 <span class="c1"># Get all nodes with distance=0.5</span>
 <span class="n">nodes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">search_nodes</span><span class="p">(</span><span class="n">dist</span><span class="o">=</span><span class="mf">0.5</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">),</span> <span class="s1">&#39;nodes have distance=0.5&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">),</span> <span class="s1">&#39;nodes have distance 0.5&#39;</span><span class="p">)</span>
 
 <span class="c1"># We can limit the search to leaves and node names</span>
-<span class="n">D</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">search_leaves_by_name</span><span class="p">(</span><span class="s1">&#39;D&#39;</span><span class="p">))</span>  <span class="c1"># takes the first match</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">D</span><span class="p">)</span>
+<span class="n">n2</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">search_leaves_by_name</span><span class="p">(</span><span class="s1">&#39;D&#39;</span><span class="p">))</span>  <span class="c1"># takes the first match</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">n1</span> <span class="o">==</span> <span class="n">n2</span><span class="p">)</span>  <span class="c1"># True</span>
 </pre></div>
 </div>
 </section>
 <section id="search-nodes-matching-a-given-criteria-iteration">
-<h4><a class="toc-backref" href="#id17" role="doc-backlink">Search nodes matching a given criteria (iteration)</a><a class="headerlink" href="#search-nodes-matching-a-given-criteria-iteration" title="Link to this heading">¶</a></h4>
+<h4><a class="toc-backref" href="#id18" role="doc-backlink">Search nodes matching a given criteria (iteration)</a><a class="headerlink" href="#search-nodes-matching-a-given-criteria-iteration" title="Link to this heading">¶</a></h4>
 <p>A limitation of the <code class="xref py py-func docutils literal notranslate"><span class="pre">Tree.search_nodes()</span></code> method is that you
 cannot use complex conditional statements to find specific nodes. When
 the search criteria is too complex, you may want to create your own search
 function. For example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
-
-<span class="k">def</span> <span class="nf">search_by_size</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">search_by_size</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Yield nodes with a given number of leaves.&quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">traverse</span><span class="p">():</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">==</span> <span class="n">size</span><span class="p">:</span>
@@ -639,6 +668,45 @@ function. For example:</p>
 
 <span class="c1"># Get a list of all nodes containing 6 leaves.</span>
 <span class="nb">list</span><span class="p">(</span><span class="n">search_by_size</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">6</span><span class="p">))</span>
+</pre></div>
+</div>
+</section>
+<section id="find-the-first-common-ancestor">
+<h4><a class="toc-backref" href="#id19" role="doc-backlink">Find the first common ancestor</a><a class="headerlink" href="#find-the-first-common-ancestor" title="Link to this heading">¶</a></h4>
+<p>Searching for the first common ancestor of a given set of nodes is a
+handy way of finding internal nodes:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(((a,b)ab,(c,d)cd:2)abcd,((e,f)ef,g)efg)root;&#39;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">compact</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<span class="c1">#              ╭╴ab╶┬╴a</span>
+<span class="c1">#       ╭╴abcd╶┤    ╰╴b</span>
+<span class="c1">#       │      ╰╴cd╶┬╴c</span>
+<span class="c1"># ╴root╶┤           ╰╴d</span>
+<span class="c1">#       │     ╭╴ef╶┬╴e</span>
+<span class="c1">#       ╰╴efg╶┤    ╰╴f</span>
+<span class="c1">#             ╰╴g</span>
+
+<span class="n">ancestor</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">common_ancestor</span><span class="p">([</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;ab&#39;</span><span class="p">])</span>  <span class="c1"># will be node abcd</span>
+</pre></div>
+</div>
+</section>
+<section id="custom-searching-functions">
+<h4><a class="toc-backref" href="#id20" role="doc-backlink">Custom searching functions</a><a class="headerlink" href="#custom-searching-functions" title="Link to this heading">¶</a></h4>
+<p>A limitation of the previous methods is that you cannot use complex
+conditional statements to find specific nodes. However you can use
+traversing methods and apply your custom filters:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((H:0.3,I:0.1):0.5,A:1,(B:0.4,(C:1,D:1):0.5):0.5):0;&#39;</span><span class="p">)</span>
+
+<span class="c1"># Use a list comprehension, iterating with the traverse() method.</span>
+<span class="n">matches</span> <span class="o">=</span> <span class="p">[</span><span class="n">node</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">traverse</span><span class="p">()</span> <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">dist</span> <span class="o">&gt;</span> <span class="mf">0.3</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">),</span> <span class="s1">&#39;nodes have distance &gt; 0.3&#39;</span><span class="p">)</span>
+
+<span class="c1"># Or create a small function to filter your nodes.</span>
+<span class="k">def</span> <span class="nf">condition</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">node</span><span class="o">.</span><span class="n">dist</span> <span class="o">&gt;</span> <span class="mf">0.3</span> <span class="ow">and</span> <span class="n">node</span><span class="o">.</span><span class="n">is_leaf</span>
+
+<span class="n">matches2</span> <span class="o">=</span> <span class="p">[</span><span class="n">node</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">traverse</span><span class="p">()</span> <span class="k">if</span> <span class="n">condition</span><span class="p">(</span><span class="n">node</span><span class="p">)]</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">matches2</span><span class="p">),</span> <span class="s1">&#39;nodes have distance &gt; 0.3 and are leaves&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
