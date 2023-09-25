@@ -837,3 +837,98 @@ Similarly, :func:`Tree.del_prop` can be used to delete a property.
   ancestor_JFC.add_props(label=value)
   print(f'Ancestor has now the "label" property with value "{value}":')
   print(ancestor_JFC.props)
+
+The original newick format did not support adding extra features to a
+tree. ETE includes support for the `New Hampshire eXtended format
+<http://phylosoft.org/NHX>`_ (NHX), which uses the original newick
+standard and adds the possibility of saving additional data related to
+each tree node.
+
+Here is an example of a extended newick representation in which extra
+information is added to an internal node::
+
+ (A:0.3,(B:0.7,(D:0.6,G:0.1):0.6[&&NHX:conf=0.1:name=internal]):0.5);
+
+As you can see, extra node features in the NHX format are enclosed
+between brackets. ETE is able to read and write features using this
+format, however, the encoded information is expected to be exportable
+as plain text.
+
+The NHX format is automatically detected when reading a newick file,
+and the detected node properties are added. You can access the
+information by using ``node.props[prop_name]``.
+
+Similarly, properties added to a tree can be included within the
+normal newick representation using the NHX notation. For this, you can
+call the :func:`Tree.write` method using the :attr:`props` argument,
+which is expected to be a list with the feature names that you want to
+include in the newick string. Use :attr:`props=None`) to include all
+the node's data into the newick string.
+
+::
+
+  t = Tree('((H:0.3,I:0.1),A:1,(B:0.4,(C:0.5,(J:1.3,(F:1.2,D:0.1)))));')
+
+  print(t)
+  #  ╭─┬╴H
+  # ─┤ ╰╴I
+  #  ├╴A
+  #  ╰─┬╴B
+  #    ╰─┬╴C
+  #      ╰─┬╴J
+  #        ╰─┬╴F
+  #          ╰╴D
+
+  # Add some more properties to leaves:
+  for leaf in t:
+      is_vowel = leaf.name in 'AEIOU'
+      leaf.add_props(vowel=is_vowel, confidence=1)
+
+  print('NHX notation including vowel and confidence properties:')
+  print(t.write(props=['vowel']))
+
+  print('NHX notation including all data in the nodes:')
+  print(t.write(props=None))
+
+To read NHX notation you can just read it as a normal newick::
+
+  # Load the NHX example from https://www.phylosoft.org/NHX/
+  nw = """
+  (((ADH2:0.1[&&NHX:S=human:E=1.1.1.1], ADH1:0.11[&&NHX:S=human:E=1.1.1.1])
+  :0.05[&&NHX:S=Primates:E=1.1.1.1:D=Y:B=100], ADHY:0.1[&&NHX:S=nematode:
+  E=1.1.1.1],ADHX:0.12[&&NHX:S=insect:E=1.1.1.1]):0.1[&&NHX:S=Metazoa:
+  E=1.1.1.1:D=N], (ADH4:0.09[&&NHX:S=yeast:E=1.1.1.1],ADH3:0.13[&&NHX:S=yeast:
+  E=1.1.1.1], ADH2:0.12[&&NHX:S=yeast:E=1.1.1.1],ADH1:0.11[&&NHX:S=yeast:E=1.1.1.1]):0.1
+  [&&NHX:S=Fungi])[&&NHX:E=1.1.1.1:D=N];
+  """.replace('\n', '')
+
+  t = Tree(nw)
+
+  print(t.to_str(props=['name', 'S'], compact=True))
+  #                                    ╭╴(empty),Primates╶┬╴ADH2,human
+  #                  ╭╴(empty),Metazoa╶┤                  ╰╴ADH1,human
+  #                  │                 ├╴ADHY,nematode
+  # ╴(empty),(empty)╶┤                 ╰╴ADHX,insect
+  #                  │               ╭╴ADH4,yeast
+  #                  ╰╴(empty),Fungi╶┼╴ADH3,yeast
+  #                                  ├╴ADH2,yeast
+  #                                  ╰╴ADH1,yeast
+
+  # And access the node's properties.
+  print('S property for the nodes that have it:')
+  for n in t.traverse():
+      if 'S' in n.props:
+         print('  %s: %s' % (n.name if n.name else n.id, n.props['S']))
+
+  # S property for the nodes that have it:
+  #   [0]: Metazoa
+  #   [1]: Fungi
+  #   [0, 0]: Primates
+  #   ADHY: nematode
+  #   ADHX: insect
+  #   ADH4: yeast
+  #   ADH3: yeast
+  #   ADH2: yeast
+  #   ADH1: yeast
+  #   ADH2: human
+  #   ADH1: human
