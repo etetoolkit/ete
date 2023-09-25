@@ -59,22 +59,24 @@
 <ul>
 <li><p><a class="reference internal" href="#getting-leaves-descendants-and-node-s-relatives" id="id11">Getting leaves, descendants and node’s relatives</a></p></li>
 <li><p><a class="reference internal" href="#traversing-browsing-trees" id="id12">Traversing (browsing) trees</a></p></li>
-<li><p><a class="reference internal" href="#advanced-traversing-stopping-criteria" id="id13">Advanced traversing (stopping criteria)</a></p>
+<li><p><a class="reference internal" href="#advanced-traversing" id="id13">Advanced traversing</a></p>
 <ul>
-<li><p><a class="reference internal" href="#collapsing-nodes-while-traversing-custom-is-leaf-definition" id="id14">Collapsing nodes while traversing (custom is_leaf definition)</a></p></li>
+<li><p><a class="reference internal" href="#collapsing-nodes-while-traversing" id="id14">Collapsing nodes while traversing</a></p></li>
 </ul>
 </li>
 <li><p><a class="reference internal" href="#iterators-or-lists" id="id15">Iterators or lists?</a></p></li>
-<li><p><a class="reference internal" href="#finding-nodes-by-their-attributes" id="id16">Finding nodes by their attributes</a></p>
+<li><p><a class="reference internal" href="#finding-nodes-by-their-properties" id="id16">Finding nodes by their properties</a></p>
 <ul>
 <li><p><a class="reference internal" href="#search-all-nodes-matching-a-given-criteria" id="id17">Search_all nodes matching a given criteria</a></p></li>
 <li><p><a class="reference internal" href="#search-nodes-matching-a-given-criteria-iteration" id="id18">Search nodes matching a given criteria (iteration)</a></p></li>
 <li><p><a class="reference internal" href="#find-the-first-common-ancestor" id="id19">Find the first common ancestor</a></p></li>
 <li><p><a class="reference internal" href="#custom-searching-functions" id="id20">Custom searching functions</a></p></li>
+<li><p><a class="reference internal" href="#shortcuts" id="id21">Shortcuts</a></p></li>
 </ul>
 </li>
 </ul>
 </li>
+<li><p><a class="reference internal" href="#checking-the-monophyly-of-properties-within-a-tree" id="id22">Checking the monophyly of properties within a tree</a></p></li>
 </ul>
 </li>
 </ul>
@@ -214,9 +216,9 @@ a tree with a random topology:</p>
 <span class="n">t</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>(Since every time we start from scratch we will want to write <code class="docutils literal notranslate"><span class="pre">from</span>
-<span class="pre">ete4</span> <span class="pre">import</span> <span class="pre">Tree</span></code> to use the <code class="xref py py-class docutils literal notranslate"><span class="pre">Tree</span></code> class, from now on we
-assume you have it already loaded for the remaining examples.)</p>
+<p>(Since every time we start from scratch we will want to write
+<code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">ete4</span> <span class="pre">import</span> <span class="pre">Tree</span></code> to use the <code class="xref py py-class docutils literal notranslate"><span class="pre">Tree</span></code> class, from now on
+we assume you have it already loaded for the remaining examples.)</p>
 <p>The properties of a node are stored in its <code class="xref py py-attr docutils literal notranslate"><span class="pre">props</span></code> dictionary.
 With the previous example, writing <code class="docutils literal notranslate"><span class="pre">print(t.props)</span></code> will show us a
 dictionary that should look familiar. And if you <code class="xref py py-func docutils literal notranslate"><span class="pre">print()</span></code> a tree,
@@ -444,16 +446,16 @@ Available methods are self explanatory:</p>
 <p>Often, when processing trees, all nodes need to be visited. This is
 called tree traversing. There are different ways to traverse a tree
 structure depending on the order in which children nodes are visited.
-ETE implements the three most common strategies: <strong>preorder</strong>,
-<strong>levelorder</strong> and <strong>postorder</strong>. The following scheme shows the
+ETE implements the three most common strategies: <em>preorder</em>,
+<em>postorder</em> and <em>levelorder</em>. The following scheme shows the
 differences in the strategy for visiting nodes (note that in all cases
 the whole tree is browsed):</p>
 <ul class="simple">
-<li><p>preorder: 1) visit the root, 2) traverse the left subtree, 3)
+<li><p><em>preorder</em>: 1) visit the root, 2) traverse the left subtree, 3)
 traverse the right subtree.</p></li>
-<li><p>postorder: 1) traverse the left subtree, 2) traverse the right
+<li><p><em>postorder</em>: 1) traverse the left subtree, 2) traverse the right
 subtree, 3) visit the root.</p></li>
-<li><p>levelorder (default): every node on a level is visited before going
+<li><p><em>levelorder</em> (default): every node on a level is visited before going
 to a lower level.</p></li>
 </ul>
 <p>Every node in a tree includes a <code class="xref py py-func docutils literal notranslate"><span class="pre">traverse()</span></code> method, which can be
@@ -475,18 +477,18 @@ include the root node in the iteration.</p>
 </tr>
 </tbody>
 </table>
-<p><strong>strategy</strong> can take one of the following values: <code class="docutils literal notranslate"><span class="pre">&quot;postorder&quot;</span></code>,
-<code class="docutils literal notranslate"><span class="pre">&quot;preorder&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;levelorder&quot;</span></code>:</p>
+<p>where <code class="xref py py-attr docutils literal notranslate"><span class="pre">strategy</span></code> can take the values “preorder”, “postorder”, or
+“levelorder”:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Make a tree.</span>
 <span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((((H,K)D,(F,I)G)B,E)A,((L,(N,Q)O)J,(P,S)M)C);&#39;</span><span class="p">)</span>
 
 <span class="c1"># Traverse the nodes in postorder.</span>
-<span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">traverse</span><span class="p">(</span><span class="s2">&quot;postorder&quot;</span><span class="p">):</span>
+<span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">traverse</span><span class="p">(</span><span class="s1">&#39;postorder&#39;</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>  <span class="c1"># or do some analysis with the node</span>
 
 <span class="c1"># If we want to iterate over a tree excluding the root node, we can</span>
 <span class="c1"># use the descendants method instead.</span>
-<span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">descendants</span><span class="p">(</span><span class="s2">&quot;postorder&quot;</span><span class="p">):</span>
+<span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">descendants</span><span class="p">(</span><span class="s1">&#39;postorder&#39;</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>  <span class="c1"># or do some analysis with the node</span>
 </pre></div>
 </div>
@@ -496,17 +498,17 @@ between a given leaf and the tree root are visited:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(A:1,(B:1,(C:1,D:1):0.5):0.5);&#39;</span><span class="p">)</span>
 
 <span class="c1"># Browse the tree from a specific leaf to the root.</span>
-<span class="n">node</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">search_nodes</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">))</span>  <span class="c1"># same as t[&#39;C&#39;]</span>
+<span class="n">node</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="s1">&#39;C&#39;</span><span class="p">]</span>  <span class="c1"># selects the node named &#39;C&#39;</span>
 <span class="k">while</span> <span class="n">node</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">dist</span><span class="p">)</span>  <span class="c1"># or do some analysis with the node</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">dist</span><span class="p">)</span>  <span class="c1"># for example, or do some operations with it</span>
     <span class="n">node</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">up</span>
 </pre></div>
 </div>
 </section>
-<section id="advanced-traversing-stopping-criteria">
-<h3><a class="toc-backref" href="#id13" role="doc-backlink">Advanced traversing (stopping criteria)</a><a class="headerlink" href="#advanced-traversing-stopping-criteria" title="Link to this heading">¶</a></h3>
-<section id="collapsing-nodes-while-traversing-custom-is-leaf-definition">
-<span id="is-leaf-fn"></span><h4><a class="toc-backref" href="#id14" role="doc-backlink">Collapsing nodes while traversing (custom is_leaf definition)</a><a class="headerlink" href="#collapsing-nodes-while-traversing-custom-is-leaf-definition" title="Link to this heading">¶</a></h4>
+<section id="advanced-traversing">
+<h3><a class="toc-backref" href="#id13" role="doc-backlink">Advanced traversing</a><a class="headerlink" href="#advanced-traversing" title="Link to this heading">¶</a></h3>
+<section id="collapsing-nodes-while-traversing">
+<span id="is-leaf-fn"></span><h4><a class="toc-backref" href="#id14" role="doc-backlink">Collapsing nodes while traversing</a><a class="headerlink" href="#collapsing-nodes-while-traversing" title="Link to this heading">¶</a></h4>
 <p>ETE supports the use of the <code class="xref py py-attr docutils literal notranslate"><span class="pre">is_leaf_fn</span></code> argument in most of its
 traversing functions. The value of <code class="xref py py-attr docutils literal notranslate"><span class="pre">is_leaf_fn</span></code> is expected to
 be a pointer to any python function that accepts a node instance as
@@ -594,8 +596,8 @@ case, you can create it by adding <code class="docutils literal notranslate"><sp
 <p>The same is valid for <code class="xref py py-func docutils literal notranslate"><span class="pre">traverse()</span></code>, <code class="xref py py-func docutils literal notranslate"><span class="pre">descendants()</span></code>,
 <code class="xref py py-func docutils literal notranslate"><span class="pre">ancestors()</span></code> and so on.</p>
 </section>
-<section id="finding-nodes-by-their-attributes">
-<h3><a class="toc-backref" href="#id16" role="doc-backlink">Finding nodes by their attributes</a><a class="headerlink" href="#finding-nodes-by-their-attributes" title="Link to this heading">¶</a></h3>
+<section id="finding-nodes-by-their-properties">
+<h3><a class="toc-backref" href="#id16" role="doc-backlink">Finding nodes by their properties</a><a class="headerlink" href="#finding-nodes-by-their-properties" title="Link to this heading">¶</a></h3>
 <p>Both terminal and internal nodes can be located by searching along the
 tree structure. Several methods are available:</p>
 <table class="docutils align-default">
@@ -710,7 +712,69 @@ traversing methods and apply your custom filters:</p>
 </pre></div>
 </div>
 </section>
+<section id="shortcuts">
+<h4><a class="toc-backref" href="#id21" role="doc-backlink">Shortcuts</a><a class="headerlink" href="#shortcuts" title="Link to this heading">¶</a></h4>
+<p>Finally, ETE implements a built-in method to find the first node
+matching a given name, which is one of the most common tasks needed
+for tree analysis. This can be done through the operator <code class="docutils literal notranslate"><span class="pre">[]</span></code>. Thus,
+<code class="docutils literal notranslate"><span class="pre">t['A']</span></code> will return the first node whose name is “A” and that is
+under the tree <code class="docutils literal notranslate"><span class="pre">t</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((H,I),A,(B,(C,(J,(F,D)))));&#39;</span><span class="p">)</span>
+
+<span class="c1"># Get the node D in a simple way.</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="s1">&#39;D&#39;</span><span class="p">]</span>
+
+<span class="c1"># Get the path from D to the root (similar to list(t.ancestors())).</span>
+<span class="n">path</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">node</span> <span class="o">=</span> <span class="n">D</span>
+<span class="k">while</span> <span class="n">node</span><span class="o">.</span><span class="n">up</span><span class="p">:</span>
+    <span class="n">node</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">up</span>
+    <span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;There are&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;nodes between D and the root.&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 </section>
+</section>
+</section>
+<section id="checking-the-monophyly-of-properties-within-a-tree">
+<span id="check-monophyly"></span><h2><a class="toc-backref" href="#id22" role="doc-backlink">Checking the monophyly of properties within a tree</a><a class="headerlink" href="#checking-the-monophyly-of-properties-within-a-tree" title="Link to this heading">¶</a></h2>
+<p>Although monophyly is actually a phylogenetic concept used to refer to
+a set of species that group exclusively together within a tree
+partition, the idea can be easily used for any type of trees.</p>
+<p>Therefore, we could consider that a set of values for a given node
+property present in our tree is monophyletic, if such values group
+exclusively together as a single tree partition. If not, the
+corresponding relationship connecting such values (para- or
+poly-phyletic) could be also be inferred.</p>
+<p>The <code class="xref py py-func docutils literal notranslate"><span class="pre">Tree.check_monophyly()</span></code> method will do so when a given tree
+is queried for any custom attribute.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((((((a,e),i),o),h),u),((f,g),j));&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+<span class="c1">#         ╭─┬╴a</span>
+<span class="c1">#       ╭─┤ ╰╴e</span>
+<span class="c1">#     ╭─┤ ╰╴i</span>
+<span class="c1">#   ╭─┤ ╰╴o</span>
+<span class="c1"># ╭─┤ ╰╴h</span>
+<span class="c1">#─┤ ╰╴u</span>
+<span class="c1"># │ ╭─┬╴f</span>
+<span class="c1"># ╰─┤ ╰╴g</span>
+<span class="c1">#   ╰╴j</span>
+
+<span class="c1"># We can check how, indeed, all vowels are not monophyletic in the previous</span>
+<span class="c1"># tree, but paraphyletic (monophyletic except for a group that is monophyletic):</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">check_monophyly</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;e&#39;</span><span class="p">,</span> <span class="s1">&#39;i&#39;</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="s1">&#39;u&#39;</span><span class="p">],</span> <span class="n">prop</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">))</span>
+<span class="c1"># False (not monophyletic), &#39;paraphyletic&#39; (type of group), {h} (the leaves not included)</span>
+
+<span class="c1"># However, the following set of vowels are monophyletic:</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">check_monophyly</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;e&#39;</span><span class="p">,</span> <span class="s1">&#39;i&#39;</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">],</span> <span class="n">prop</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">))</span>
+<span class="c1"># True (it is monophyletic), &#39;monophyletic&#39; (type of group), {} (no leaves left)</span>
+
+<span class="c1"># When a group is not monophyletic nor paraphyletic, it is called polyphyletic.</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">check_monophyly</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;i&#39;</span><span class="p">,</span> <span class="s1">&#39;h&#39;</span><span class="p">],</span> <span class="n">prop</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">))</span>
+<span class="c1"># False, &#39;polyphyletic&#39;, {e, a, o}</span>
+</pre></div>
+</div>
 </section>
 </section>
 

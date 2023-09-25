@@ -39,10 +39,10 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="ete4.Tree">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Tree</span></span><a class="headerlink" href="#ete4.Tree" title="Link to this definition">¶</a></dt>
-<dd><p>The Tree class is used to store a tree structure. A tree
-consists of a collection of Tree instances connected in a
-hierarchical way. Trees can be loaded from the New Hampshire Newick
-format (newick).</p>
+<dd><p>The Tree class is used to store a tree structure.</p>
+<p>A tree consists of a collection of Tree instances connected in a
+hierarchical way. Trees can be loaded from the New Hampshire
+Newick format (newick).</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.Tree.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.__init__" title="Link to this definition">¶</a></dt>
@@ -488,23 +488,21 @@ instance. (name, id and branch length are always mapped)</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.Tree.get_cached_content">
-<span class="sig-name descname"><span class="pre">get_cached_content</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store_attr=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">container_type=&lt;class</span> <span class="pre">'set'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leaves_only=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_store=None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.get_cached_content" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_cached_content</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prop=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">container_type=&lt;class</span> <span class="pre">'set'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leaves_only=True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.get_cached_content" title="Link to this definition">¶</a></dt>
 <dd><p>Return dict that assigns to each node a set of its leaves.</p>
 <p>The dictionary serves as a cache for operations that require
 many traversals of the nodes under this tree.</p>
-<p>Instead of assigning a set, it can assign other types (with
+<p>Instead of assigning a set, it can assign a list (with
 <code class="docutils literal notranslate"><span class="pre">container_type</span></code>). And instead of the leaves themselves, it
-can be any other property of them (like their names, with
-<code class="docutils literal notranslate"><span class="pre">store_attr</span></code>).</p>
+can be any of their properties (like their names, with <code class="docutils literal notranslate"><span class="pre">prop</span></code>).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>store_attr</strong> – Node attribute that should be cached (i.e.
+<li><p><strong>prop</strong> – Node property that should be cached (i.e.
 name, distance, etc.). If None, it caches the node itself.</p></li>
 <li><p><strong>container_type</strong> – Type of container for the leaves (set, list).</p></li>
-<li><p><strong>leaves_only</strong> – If False, to each node it stores all its
+<li><p><strong>leaves_only</strong> – If False, for each node it stores all its
 descendant nodes, not only its leaves.</p></li>
-<li><p><strong>_store</strong> – (internal use)</p></li>
 </ul>
 </dd>
 </dl>
@@ -583,15 +581,14 @@ number of nodes between them (instead of the sum of branch lenghts).</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.Tree.get_monophyletic">
 <span class="sig-name descname"><span class="pre">get_monophyletic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'name'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.get_monophyletic" title="Link to this definition">¶</a></dt>
-<dd><p>Return a list of nodes matching the provided monophyly
-criteria. For a node to be considered a match, all
-<cite>prop</cite> values within and node, and exclusively them,
-should be grouped.</p>
+<dd><p>Yield nodes matching the provided monophyly criteria.</p>
+<p>For a node to be considered a match, all <code class="docutils literal notranslate"><span class="pre">prop</span></code> values within
+the node, and exclusively them, should be grouped.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>values</strong> – List of values of the selected nodes.</p></li>
-<li><p><strong>prop</strong> – None property being used to check monophyly (i.e.
+<li><p><strong>prop</strong> – Property being used to check monophyly (for example
 ‘species’ for species trees, ‘name’ for gene family trees).</p></li>
 </ul>
 </dd>
@@ -1019,7 +1016,7 @@ structure that will be used as a basal node.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.Tree.sort_descendants">
-<span class="sig-name descname"><span class="pre">sort_descendants</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'name'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.sort_descendants" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">sort_descendants</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'name'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.sort_descendants" title="Link to this definition">¶</a></dt>
 <dd><p>Sort branches by node names.</p>
 <p>After the tree is sorted, if duplicated names are present,
 extra criteria should be added to sort nodes.</p>

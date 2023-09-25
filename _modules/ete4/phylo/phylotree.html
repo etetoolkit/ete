@@ -300,42 +300,11 @@
 <div class="viewcode-block" id="PhyloTree">
 <a class="viewcode-back" href="../../../reference/reference_phylo.html#ete4.PhyloTree">[docs]</a>
 <span class="k">class</span> <span class="nc">PhyloTree</span><span class="p">(</span><span class="n">Tree</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Representation of a phylogenetic tree.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to store a phylogenetic tree.</span>
 
 <span class="sd">    Extends the standard :class:`Tree` instance by adding</span>
-<span class="sd">    specific attributes and methods to work with phylogentic trees.</span>
-
-<span class="sd">    :param newick: Path to the file containing the tree or, alternatively,</span>
-<span class="sd">        the text string containing the same information.</span>
-<span class="sd">    :param alignment: File containing a multiple sequence alignment.</span>
-<span class="sd">    :param alg_format: &quot;fasta&quot;, &quot;phylip&quot; or &quot;iphylip&quot; (interleaved).</span>
-<span class="sd">    :param parser: Parser to read the newick.</span>
-<span class="sd">    :param sp_naming_function: Function that gets a nodename and</span>
-<span class="sd">        returns the species name (see</span>
-<span class="sd">        :func:`PhyloTree.set_species_naming_function`). By default,</span>
-<span class="sd">        the 3 first letter of nodes will be used as species</span>
-<span class="sd">        identifiers.</span>
-
-
-<span class="sd">    The possible formats used for the parser are:</span>
-
-<span class="sd">    .. table::</span>
-
-<span class="sd">      ======  ==============================================</span>
-<span class="sd">      FORMAT  DESCRIPTION</span>
-<span class="sd">      ======  ==============================================</span>
-<span class="sd">      0       flexible with support values</span>
-<span class="sd">      1       flexible with internal node names</span>
-<span class="sd">      2       all branches + leaf names + internal supports</span>
-<span class="sd">      3       all branches + all names</span>
-<span class="sd">      4       leaf branches + leaf names</span>
-<span class="sd">      5       internal and leaf branches + leaf names</span>
-<span class="sd">      6       internal branches + leaf names</span>
-<span class="sd">      7       leaf branches + all names</span>
-<span class="sd">      8       all names</span>
-<span class="sd">      9       leaf names</span>
-<span class="sd">      100     topology only</span>
-<span class="sd">      ======  ==============================================</span>
+<span class="sd">    specific properties and methods to work with phylogentic trees.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">_get_species</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -367,7 +336,18 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">newick</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">children</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">alignment</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">alg_format</span><span class="o">=</span><span class="s2">&quot;fasta&quot;</span><span class="p">,</span> <span class="n">sp_naming_function</span><span class="o">=</span><span class="n">_parse_species</span><span class="p">,</span>
                  <span class="n">parser</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kargs</span><span class="p">):</span>
-
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param newick: Path to the file containing the tree or, alternatively,</span>
+<span class="sd">            the text string containing the same information.</span>
+<span class="sd">        :param alignment: File containing a multiple sequence alignment.</span>
+<span class="sd">        :param alg_format: &quot;fasta&quot;, &quot;phylip&quot; or &quot;iphylip&quot; (interleaved).</span>
+<span class="sd">        :param parser: Parser to read the newick.</span>
+<span class="sd">        :param sp_naming_function: Function that gets a node name and</span>
+<span class="sd">            returns the species name (see</span>
+<span class="sd">            :func:`PhyloTree.set_species_naming_function`). By default,</span>
+<span class="sd">            the 3 first letters of node names will be used as species</span>
+<span class="sd">            identifier.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># _update names?</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">props</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add_props</span><span class="p">(</span><span class="n">_name</span><span class="o">=</span><span class="s2">&quot;NoName&quot;</span><span class="p">,</span> <span class="n">_species</span><span class="o">=</span><span class="s2">&quot;Unknown&quot;</span><span class="p">,</span>
@@ -636,7 +616,7 @@
 <div class="viewcode-block" id="PhyloTree.get_speciation_trees">
 <a class="viewcode-back" href="../../../reference/reference_phylo.html#ete4.PhyloTree.get_speciation_trees">[docs]</a>
     <span class="k">def</span> <span class="nf">get_speciation_trees</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">map_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">autodetect_duplications</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                             <span class="n">newick_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">target_attr</span><span class="o">=</span><span class="s1">&#39;species&#39;</span><span class="p">):</span>
+                             <span class="n">newick_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">prop</span><span class="o">=</span><span class="s1">&#39;species&#39;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return number of species trees, of duplications, and an iterator.</span>
 
 <span class="sd">        Calculates all possible species trees contained within a</span>
@@ -644,21 +624,19 @@
 <span class="sd">        &lt;http://treeko.cgenomics.org&gt;`_ (see `Marcet and Gabaldon,</span>
 <span class="sd">        2011 &lt;http://www.ncbi.nlm.nih.gov/pubmed/21335609&gt;`_ ).</span>
 
-<span class="sd">        :param None map_properties: A list of properties that should be</span>
+<span class="sd">        :param map_properties: List of properties that should be</span>
 <span class="sd">            mapped from the original gene family tree to each species</span>
 <span class="sd">            tree subtree.</span>
-<span class="sd">        :param True autodetect_duplications: If True, duplication</span>
-<span class="sd">            nodes will be automatically detected using the Species</span>
-<span class="sd">            Overlap algorithm</span>
-<span class="sd">            (:func:`PhyloTree.get_descendants_evol_events`. If False,</span>
-<span class="sd">            duplication nodes within the original tree are expected to</span>
-<span class="sd">            contain the feature &quot;evoltype=D&quot;.</span>
+<span class="sd">        :param autodetect_duplications: If True, duplication nodes</span>
+<span class="sd">            will be automatically detected using the Species Overlap</span>
+<span class="sd">            algorithm (:func:`PhyloTree.get_descendants_evol_events`).</span>
+<span class="sd">            If False, duplication nodes within the original tree are</span>
+<span class="sd">            expected to contain the property &quot;evoltype=&#39;D&#39;&quot;.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">t</span> <span class="o">=</span> <span class="bp">self</span>
         <span class="k">if</span> <span class="n">autodetect_duplications</span><span class="p">:</span>
-            <span class="c1">#n2content, n2species = t.get_node2species()</span>
             <span class="n">n2content</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">get_cached_content</span><span class="p">()</span>
-            <span class="n">n2species</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">get_cached_content</span><span class="p">(</span><span class="n">store_attr</span><span class="o">=</span><span class="n">target_attr</span><span class="p">)</span>
+            <span class="n">n2species</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">get_cached_content</span><span class="p">(</span><span class="n">prop</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">n2content</span><span class="p">:</span>
                 <span class="n">sp_subtotal</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">n2species</span><span class="p">[</span><span class="n">_ch</span><span class="p">])</span> <span class="k">for</span> <span class="n">_ch</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">])</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">n2species</span><span class="p">[</span><span class="n">node</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">n2species</span><span class="p">[</span><span class="n">node</span><span class="p">])</span> <span class="o">!=</span> <span class="n">sp_subtotal</span><span class="p">:</span>
@@ -674,9 +652,8 @@
         <span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">autodetect_duplications</span><span class="p">:</span>
             <span class="n">dups</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="c1">#n2content, n2species = t.get_node2species()</span>
             <span class="n">n2content</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">get_cached_content</span><span class="p">()</span>
-            <span class="n">n2species</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">get_cached_content</span><span class="p">(</span><span class="n">store_attr</span><span class="o">=</span><span class="s2">&quot;species&quot;</span><span class="p">)</span>
+            <span class="n">n2species</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">get_cached_content</span><span class="p">(</span><span class="s1">&#39;species&#39;</span><span class="p">)</span>
 
             <span class="c1">#print &quot;Detecting dups&quot;</span>
             <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">n2content</span><span class="p">:</span>
@@ -712,9 +689,8 @@
 
         <span class="k">if</span> <span class="n">autodetect_duplications</span><span class="p">:</span>
             <span class="n">dups</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="c1">#n2content, n2species = t.get_node2species()</span>
             <span class="n">n2content</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">get_cached_content</span><span class="p">()</span>
-            <span class="n">n2species</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">get_cached_content</span><span class="p">(</span><span class="n">store_attr</span><span class="o">=</span><span class="s2">&quot;species&quot;</span><span class="p">)</span>
+            <span class="n">n2species</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">get_cached_content</span><span class="p">(</span><span class="s1">&#39;species&#39;</span><span class="p">)</span>
 
             <span class="c1">#print &quot;Detecting dups&quot;</span>
             <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">n2content</span><span class="p">:</span>
@@ -724,7 +700,6 @@
                     <span class="n">dups</span> <span class="o">+=</span> <span class="mi">1</span>
                 <span class="k">elif</span> <span class="n">node</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">:</span>
                     <span class="n">node</span><span class="o">.</span><span class="n">_leaf</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="c1">#print dups</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">leaves</span><span class="p">():</span>
                 <span class="n">node</span><span class="o">.</span><span class="n">_leaf</span> <span class="o">=</span> <span class="kc">True</span>
@@ -749,7 +724,7 @@
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;species argument should be a set (preferred), list or tuple&quot;</span><span class="p">)</span>
 
         <span class="n">prunned</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="s2">&quot;deepcopy&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">return_copy</span> <span class="k">else</span> <span class="bp">self</span>
-        <span class="n">n2sp</span> <span class="o">=</span> <span class="n">prunned</span><span class="o">.</span><span class="n">get_cached_content</span><span class="p">(</span><span class="n">store_attr</span><span class="o">=</span><span class="s2">&quot;species&quot;</span><span class="p">)</span>
+        <span class="n">n2sp</span> <span class="o">=</span> <span class="n">prunned</span><span class="o">.</span><span class="n">get_cached_content</span><span class="p">(</span><span class="s1">&#39;species&#39;</span><span class="p">)</span>
         <span class="n">n2leaves</span> <span class="o">=</span> <span class="n">prunned</span><span class="o">.</span><span class="n">get_cached_content</span><span class="p">()</span>
         <span class="n">is_expansion</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">n2sp</span><span class="p">[</span><span class="n">n</span><span class="p">])</span><span class="o">==</span><span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">n2leaves</span><span class="p">[</span><span class="n">n</span><span class="p">])</span><span class="o">&gt;</span><span class="mi">1</span>
                                   <span class="ow">and</span> <span class="p">(</span><span class="n">species</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">species</span> <span class="o">&amp;</span> <span class="n">n2sp</span><span class="p">[</span><span class="n">n</span><span class="p">]))</span>

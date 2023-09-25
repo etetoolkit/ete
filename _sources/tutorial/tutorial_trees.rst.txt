@@ -116,9 +116,9 @@ a tree with a random topology::
   # Populate t with a random topology of size 10.
   t.populate(10)
 
-(Since every time we start from scratch we will want to write ``from
-ete4 import Tree`` to use the :class:`Tree` class, from now on we
-assume you have it already loaded for the remaining examples.)
+(Since every time we start from scratch we will want to write
+``from ete4 import Tree`` to use the :class:`Tree` class, from now on
+we assume you have it already loaded for the remaining examples.)
 
 The properties of a node are stored in its :attr:`props` dictionary.
 With the previous example, writing ``print(t.props)`` will show us a
@@ -329,16 +329,16 @@ Traversing (browsing) trees
 Often, when processing trees, all nodes need to be visited. This is
 called tree traversing. There are different ways to traverse a tree
 structure depending on the order in which children nodes are visited.
-ETE implements the three most common strategies: **preorder**,
-**levelorder** and **postorder**. The following scheme shows the
+ETE implements the three most common strategies: *preorder*,
+*postorder* and *levelorder*. The following scheme shows the
 differences in the strategy for visiting nodes (note that in all cases
 the whole tree is browsed):
 
-* preorder: 1) visit the root, 2) traverse the left subtree, 3)
+* *preorder*: 1) visit the root, 2) traverse the left subtree, 3)
   traverse the right subtree.
-* postorder: 1) traverse the left subtree, 2) traverse the right
+* *postorder*: 1) traverse the left subtree, 2) traverse the right
   subtree, 3) visit the root.
-* levelorder (default): every node on a level is visited before going
+* *levelorder* (default): every node on a level is visited before going
   to a lower level.
 
 Every node in a tree includes a :func:`traverse` method, which can be
@@ -354,19 +354,19 @@ include the root node in the iteration.
    ete4.Tree.descendants
    ete4.Tree.leaves
 
-**strategy** can take one of the following values: ``"postorder"``,
-``"preorder"`` or ``"levelorder"``::
+where :attr:`strategy` can take the values "preorder", "postorder", or
+"levelorder"::
 
   # Make a tree.
   t = Tree('((((H,K)D,(F,I)G)B,E)A,((L,(N,Q)O)J,(P,S)M)C);')
 
   # Traverse the nodes in postorder.
-  for node in t.traverse("postorder"):
+  for node in t.traverse('postorder'):
       print(node.name)  # or do some analysis with the node
 
   # If we want to iterate over a tree excluding the root node, we can
   # use the descendants method instead.
-  for node in t.descendants("postorder"):
+  for node in t.descendants('postorder'):
       print(node.name)  # or do some analysis with the node
 
 Additionally, you can implement your own traversing function using the
@@ -376,19 +376,19 @@ between a given leaf and the tree root are visited::
   t = Tree('(A:1,(B:1,(C:1,D:1):0.5):0.5);')
 
   # Browse the tree from a specific leaf to the root.
-  node = next(t.search_nodes(name='C'))  # same as t['C']
+  node = t['C']  # selects the node named 'C'
   while node:
-      print(node.dist)  # or do some analysis with the node
+      print(node.dist)  # for example, or do some operations with it
       node = node.up
 
 
-Advanced traversing (stopping criteria)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Advanced traversing
+~~~~~~~~~~~~~~~~~~~
 
 .. _is_leaf_fn:
 
-Collapsing nodes while traversing (custom is_leaf definition)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Collapsing nodes while traversing
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ETE supports the use of the :attr:`is_leaf_fn` argument in most of its
 traversing functions. The value of :attr:`is_leaf_fn` is expected to
@@ -484,7 +484,7 @@ The same is valid for :func:`traverse`, :func:`descendants`,
 :func:`ancestors` and so on.
 
 
-Finding nodes by their attributes
+Finding nodes by their properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Both terminal and internal nodes can be located by searching along the
@@ -492,16 +492,16 @@ tree structure. Several methods are available:
 
 .. table::
 
-  ============================================= ========================================================================
-  Method                                        Description
-  ============================================= ========================================================================
-  t.search_nodes(prop=value)                    Iterator over nodes that have property prop equal to value, as name='A'
-  t.search_descendants(prop=value)              Same, but only on descendants (excludes the node t itself)
-  t.search_ancestors(prop=value)                Iterator over ancestor nodes
-  t.search_leaves_by_name(name)                 Iterator over leaf nodes matching a given name
-  t.common_ancestor([node1, node2, node3])      Return the first internal node grouping node1, node2 and node3
-  t[name]                                       Return the first node named name, same as next(t.search_nodes(name='A'))
-  ============================================= ========================================================================
+  ========================================= ========================================================================
+  Method                                    Description
+  ========================================= ========================================================================
+  t.search_nodes(prop=value)                Iterator over nodes that have property prop equal to value, as name='A'
+  t.search_descendants(prop=value)          Same, but only on descendants (excludes the node t itself)
+  t.search_ancestors(prop=value)            Iterator over ancestor nodes
+  t.search_leaves_by_name(name)             Iterator over leaf nodes matching a given name
+  t.common_ancestor([node1, node2, node3])  Return the first internal node grouping node1, node2 and node3
+  t[name]                                   Return the first node named name, same as next(t.search_nodes(name='A'))
+  ========================================= ========================================================================
 
 
 Search_all nodes matching a given criteria
@@ -593,3 +593,75 @@ traversing methods and apply your custom filters::
 
   matches2 = [node for node in t.traverse() if condition(node)]
   print(len(matches2), 'nodes have distance > 0.3 and are leaves')
+
+
+Shortcuts
+^^^^^^^^^
+
+Finally, ETE implements a built-in method to find the first node
+matching a given name, which is one of the most common tasks needed
+for tree analysis. This can be done through the operator ``[]``. Thus,
+``t['A']`` will return the first node whose name is "A" and that is
+under the tree ``t``.
+
+::
+
+  t = Tree('((H,I),A,(B,(C,(J,(F,D)))));')
+
+  # Get the node D in a simple way.
+  D = t['D']
+
+  # Get the path from D to the root (similar to list(t.ancestors())).
+  path = []
+  node = D
+  while node.up:
+      node = node.up
+      path.append(node)
+
+  print('There are', len(path)-1, 'nodes between D and the root.')
+
+
+.. _check_monophyly:
+
+Checking the monophyly of properties within a tree
+--------------------------------------------------
+
+Although monophyly is actually a phylogenetic concept used to refer to
+a set of species that group exclusively together within a tree
+partition, the idea can be easily used for any type of trees.
+
+Therefore, we could consider that a set of values for a given node
+property present in our tree is monophyletic, if such values group
+exclusively together as a single tree partition. If not, the
+corresponding relationship connecting such values (para- or
+poly-phyletic) could be also be inferred.
+
+The :func:`Tree.check_monophyly` method will do so when a given tree
+is queried for any custom attribute.
+
+::
+
+  t = Tree('((((((a,e),i),o),h),u),((f,g),j));')
+  print(t)
+  #         ╭─┬╴a
+  #       ╭─┤ ╰╴e
+  #     ╭─┤ ╰╴i
+  #   ╭─┤ ╰╴o
+  # ╭─┤ ╰╴h
+  #─┤ ╰╴u
+  # │ ╭─┬╴f
+  # ╰─┤ ╰╴g
+  #   ╰╴j
+
+  # We can check how, indeed, all vowels are not monophyletic in the previous
+  # tree, but paraphyletic (monophyletic except for a group that is monophyletic):
+  print(t.check_monophyly(values=['a', 'e', 'i', 'o', 'u'], prop='name'))
+  # False (not monophyletic), 'paraphyletic' (type of group), {h} (the leaves not included)
+
+  # However, the following set of vowels are monophyletic:
+  print(t.check_monophyly(values=['a', 'e', 'i', 'o'], prop='name'))
+  # True (it is monophyletic), 'monophyletic' (type of group), {} (no leaves left)
+
+  # When a group is not monophyletic nor paraphyletic, it is called polyphyletic.
+  print(t.check_monophyly(values=['i', 'h'], prop='name'))
+  # False, 'polyphyletic', {e, a, o}
