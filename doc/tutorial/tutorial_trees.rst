@@ -667,3 +667,55 @@ is queried for any custom attribute.
   # When a group is not monophyletic nor paraphyletic, it is called polyphyletic.
   print(t.check_monophyly(values=['i', 'h'], prop='name'))
   # False, 'polyphyletic', {e, a, o}
+
+.. note::
+
+   When the property is set to "species" in a :class:`PhyloTree` node,
+   this method will correspond to the standard phylogenetic definition
+   of monophyletic, paraphyletic, and polyphyletic.
+
+Finally, the :func:`Tree.get_monophyletic` method is also provided,
+which returns a list of nodes within a tree where a given set of
+properties are monophyletic. Note that, although a set of values are
+not monophyletic regarding the whole tree, several independent
+monophyletic partitions could be found within the same topology.
+
+In the following example we get all clusters within the same tree
+exclusively grouping a custom set of annotations::
+
+  t = Tree("((((((a,e),i),o),h),u),((f,g),(j,k)));")
+
+  # Annotate the tree using external data.
+  colors = {'a': 'green', 'e': 'green',
+            'i': 'yellow', 'o': 'black', 'u':'purple',
+            'f': 'yellow', 'g': 'green',
+            'j': 'yellow', 'k': 'yellow'}
+
+  for leaf in t:
+      leaf.add_props(color=colors.get(leaf.name, 'none'))
+
+  print(t.to_str(props=['name', 'color'], show_internal=False, compact=True))
+  #          ╭─┬╴a,green
+  #        ╭─┤ ╰╴e,green
+  #      ╭─┤ ╰╴i,yellow
+  #    ╭─┤ ╰╴o,black
+  #  ╭─┤ ╰╴h,none
+  # ─┤ ╰╴u,purple
+  #  │ ╭─┬╴f,yellow
+  #  ╰─┤ ╰╴g,green
+  #    ╰─┬╴j,yellow
+  #      ╰╴k,yellow
+
+  # Obtain clusters exclusively green and yellow.
+  print('Green-yellow clusters:')
+  for node in t.get_monophyletic(prop='color', values=['green', 'yellow']):
+      print(node.to_str(props=[ 'name', 'color'], show_internal=False, compact=True))
+
+  # Green-yellow clusters:
+  #  ╭─┬╴a,green
+  # ─┤ ╰╴e,green
+  #  ╰╴i,yellow
+  #  ╭─┬╴f,yellow
+  # ─┤ ╰╴g,green
+  #  ╰─┬╴j,yellow
+  #    ╰╴k,yellow
