@@ -719,3 +719,118 @@ exclusively grouping a custom set of annotations::
   # ─┤ ╰╴g,green
   #  ╰─┬╴j,yellow
   #    ╰╴k,yellow
+
+
+.. _cache_node_content:
+
+Caching tree content for faster lookup operations
+-------------------------------------------------
+
+If your program needs to access to the content of different nodes very
+frequently, traversing the tree to get the leaves of each node over
+and over will produce significant slowdowns in your algorithm.
+
+ETE provides a convenient methods to cache frequently used data. The
+method :func:`Tree.get_cached_content` returns a dictionary in which
+keys are node instances and values represent the content of such
+nodes. By default, "content" is understood as a set of leaf nodes.
+After you retrieve this cached data, looking up the size or tip names
+under a given node will be instantaneous.
+
+Instead of caching the nodes themselves, specific properties can be
+cached by setting a custom :attr:`prop` value.
+
+::
+
+  t = Tree()
+  t.populate(50)
+
+  node2leaves = t.get_cached_content()
+
+  # Print the size of each node, without the need of traversing the subtrees every time.
+  for n in t.traverse():
+      print('Node %s contains %d tips.' % (n.name, len(node2leaves[n])))
+
+
+Node annotation
+---------------
+
+Adding properties to the nodes of a tree is called tree annotation.
+ETE stores the properties (annotations) of a node in a dictionary
+called ``props``.
+
+In a phylogenetic tree, the nodes (with their branches) often have
+names, branch lengths, and branch supports. ETE provides a shortcut
+for their corresponding properties :attr:`name`, :attr:`dist`, and
+:attr:`support`, so instead of writing ``n.props.get('name')``, you
+can write ``n.name``, and similarly for ``n.dist`` and ``n.support``.
+
+The :func:`Tree.add_prop` and :func:`Tree.add_props` methods allow to
+add extra properties (features, annotations) to any node. The first
+one allows to add one one feature at a time, while the second one can
+be used to add many features with the same call.
+
+Similarly, :func:`Tree.del_prop` can be used to delete a property.
+
+::
+
+  t = Tree('((H:0.3,I:0.1),A:1,(B:0.4,(C:0.5,(J:1.3,(F:1.2,D:0.1)))));')
+
+  print(t.to_str(props=['name', 'dist'], compact=True, show_internal=False))
+  #  ╭─┬╴H,0.3
+  # ─┤ ╰╴I,0.1
+  #  ├╴A,1.0
+  #  ╰─┬╴B,0.4
+  #    ╰─┬╴C,0.5
+  #      ╰─┬╴J,1.3
+  #        ╰─┬╴F,1.2
+  #          ╰╴D,0.1
+
+  # Reference some nodes (to use later).
+  A = t['A']  # by name
+  C = t['C']
+  H = t['H']
+  ancestor_JFC = t.common_ancestor(['J', 'F', 'C'])  # by common ancestor
+
+  # Let's now add some custom features to our nodes. add_props can be
+  # used to add many features at the same time.
+  C.add_props(vowel=False, confidence=1.0)
+  A.add_props(vowel=True, confidence=0.8)
+  ancestor_JFC.add_props(nodetype='internal')
+
+  # Or, using the one-liner notation.
+  H.add_props(vowel=False, confidence=0.3)
+
+  for node in [A, C, H, ancestor_JFC]:
+      print(f'Properties of {node.name}: {node.props}')
+
+  # But we can automatize this. (Note that this overwrites the previous values).
+  for leaf in t:
+      if leaf.name in 'AEIOU':
+          leaf.add_props(vowel=True, confidence=1)
+      else:
+          leaf.add_props(vowel=False, confidence=1)
+
+  # Now we use this information to analyze the tree.
+  print('This tree has', sum(1 for n in t.search_nodes(vowel=True)), 'vowel nodes')
+  print('They are:', [leaf.name for leaf in t.leaves() if leaf.props['vowel']])
+
+  # But features may refer to any kind of data, not only simple values.
+  # For example, we can calculate some values and store them within nodes.
+  #
+  # Let's detect leaves under 'ancestor_JFC' with distance higher than 1.
+  # Note that it traverses a subtree which starts from 'ancestor_JFC'.
+  matches = [leaf for leaf in ancestor_JFC.leaves() if leaf.dist > 1.0]
+
+  # And save this pre-computed information into the ancestor node.
+  ancestor_JFC.add_props(long_branch_nodes=matches)
+
+  # Prints the precomputed nodes
+  print('These are the leaves under ancestor_JFC with long branches:',
+        [n.name for n in ancestor_JFC.props['long_branch_nodes']])
+
+  # We can also use the add_props() method to dynamically add new features.
+  value = input('Custom label value: ')
+  ancestor_JFC.add_props(label=value)
+  print(f'Ancestor has now the "label" property with value "{value}":')
+  print(ancestor_JFC.props)
