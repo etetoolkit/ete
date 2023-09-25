@@ -116,9 +116,9 @@ a tree with a random topology::
   # Populate t with a random topology of size 10.
   t.populate(10)
 
-(Since every time we start from scratch we will want to write
-``from ete4 import Tree`` to use the :class:`Tree` class, from now on
-we assume you have it already loaded for the remaining examples.)
+(In all the examples we will want to write ``from ete4 import Tree``
+first to use the :class:`Tree` class, as we did above. In the
+remaining examples we will assume that you have already imported it.)
 
 The properties of a node are stored in its :attr:`props` dictionary.
 With the previous example, writing ``print(t.props)`` will show us a
@@ -271,15 +271,17 @@ This is an example on how to access such attributes::
   print(t.children[0].children[0].root == t)  # and True again
 
 
-Root node on unrooted trees?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The meaning of the "root node" in unrooted trees
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When a tree is loaded from external sources, a pointer to the top-most
 node is returned. This is called the tree root, and **it will exist
 even if the tree is conceptually considered as unrooted**. That is,
 the root node can be considered as the master node, since it
-represents the whole tree structure. Unrooted trees can be identified
-as trees where the master root node has more than two children.
+represents the whole tree structure.
+
+ETE will consider that a tree is "unrooted" if the master root node
+has more than two children.
 
 ::
 
@@ -459,7 +461,7 @@ length is defined and larger than one::
 
   for leaf in t.leaves(is_leaf_fn=processable_node):
       print(leaf.name)
-  # Will print just these two "leafs" (according to processable_node):
+  # Will print just these two "leaves" (according to processable_node):
   #   abcd
   #   efg
 
@@ -492,16 +494,16 @@ tree structure. Several methods are available:
 
 .. table::
 
-  ========================================= ========================================================================
+  ========================================= =========================================================================
   Method                                    Description
-  ========================================= ========================================================================
+  ========================================= =========================================================================
   t.search_nodes(prop=value)                Iterator over nodes that have property prop equal to value, as name='A'
   t.search_descendants(prop=value)          Same, but only on descendants (excludes the node t itself)
   t.search_ancestors(prop=value)            Iterator over ancestor nodes
   t.search_leaves_by_name(name)             Iterator over leaf nodes matching a given name
   t.common_ancestor([node1, node2, node3])  Return the first internal node grouping node1, node2 and node3
-  t[name]                                   Return the first node named name, same as next(t.search_nodes(name='A'))
-  ========================================= ========================================================================
+  t[name]                                   Return the first node named name, same as next(t.search_nodes(name=name))
+  ========================================= =========================================================================
 
 
 Search_all nodes matching a given criteria
