@@ -787,7 +787,7 @@ class Test_Coretype_Tree(unittest.TestCase):
         self.assertEqual("((c:0.2,d:0.2):0.8,a:0.5,b:0.5);", t2.write())
 
     def test_tree_navigation(self):
-        t = Tree("(((A, B)H, C)I, (D, F)J)root;", parser=1)
+        t = Tree('(((A,B)H,C)I,(D,F)J)root;')
         postorder = [n.name for n in t.traverse("postorder")]
         preorder = [n.name for n in t.traverse("preorder")]
         levelorder = [n.name for n in t.traverse("levelorder")]
@@ -796,13 +796,13 @@ class Test_Coretype_Tree(unittest.TestCase):
         self.assertEqual(preorder, ['root', 'I', 'H', 'A', 'B', 'C', 'J', 'D', 'F'])
         self.assertEqual(levelorder, ['root', 'I', 'J', 'H', 'C', 'D', 'F', 'A', 'B'])
         ancestors = [n.name for n in (t['B']).ancestors()]
-        self.assertEqual(ancestors, ["H", "I", "root"])
+        self.assertEqual(ancestors, ['H', 'I', 'root'])
         self.assertEqual(list(t.ancestors()), [])
 
         # add something of is_leaf_fn etc...
-        custom_test = lambda x: x.name in set("JCH")
+        custom_test = lambda x: x.name in 'JCH'
         custom_leaves = t.leaves(is_leaf_fn=custom_test)
-        self.assertEqual(set([n.name for n in custom_leaves]), set("JHC"))
+        self.assertEqual({n.name for n in custom_leaves}, {'J', 'H', 'C'})
 
         # Test cached content
         t = Tree()
@@ -813,15 +813,17 @@ class Test_Coretype_Tree(unittest.TestCase):
         self.assertEqual(cache_node[t], set(t.leaves()))
         self.assertEqual(cache_node_leaves_only_false[t], set(t.traverse()))
 
-        cache_name = t.get_cached_content(store_attr="name")
-        cache_name_leaves_only_false = t.get_cached_content(store_attr="name", leaves_only=False)
+        cache_name = t.get_cached_content('name')
+        cache_name_leaves_only_false = t.get_cached_content('name', leaves_only=False)
         self.assertEqual(cache_name[t], set(t.leaf_names()))
-        self.assertEqual(cache_name_leaves_only_false[t], set([n.name for n in t.traverse()]))
+        self.assertEqual(cache_name_leaves_only_false[t], set(n.name for n in t.traverse()))
 
-        cache_many = t.get_cached_content(store_attr=["name", "dist", "support"])
-        cache_many_lof = t.get_cached_content(store_attr=["name", "dist", "support"], leaves_only=False)
+        cache_many = {n: {(ni.name, ni.dist, ni.support) for ni in nodes}
+                      for n, nodes in t.get_cached_content().items()}
+        cache_many_lof = {n: {(ni.name, ni.dist, ni.support) for ni in nodes}
+                          for n, nodes in t.get_cached_content(leaves_only=False).items()}
         self.assertEqual(cache_many[t], set([(leaf.name, leaf.dist, leaf.support) for leaf in t.leaves()]))
-        self.assertEqual(cache_many_lof[t], set([(n.name, n.dist, n.support) for n in t.traverse()]))
+        self.assertEqual(cache_many_lof[t], set((n.name, n.dist, n.support) for n in t.traverse()))
 
 
         #self.assertEqual(cache_name_lof[t], [t.name])

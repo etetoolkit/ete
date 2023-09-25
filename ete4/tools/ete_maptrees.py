@@ -200,7 +200,7 @@ def run(args):
                 # Count matches (treeko)
                 ntrees, ndups, sp_trees = stree.get_speciation_trees(
                     autodetect_duplications=True, newick_only=True,
-                    target_attr=src_tree_attr, map_features=["support"])
+                    prop=src_tree_attr, map_features=["support"])
 
                 refnodes = defaultdict(list)
                 for i, subnw in enumerate(sp_trees):

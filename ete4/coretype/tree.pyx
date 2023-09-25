@@ -1358,86 +1358,62 @@ cdef class Tree(object):
 
         return size
 
-    def sort_descendants(self, attr='name'):
+    def sort_descendants(self, prop='name'):
         """Sort branches by node names.
 
         After the tree is sorted, if duplicated names are present,
         extra criteria should be added to sort nodes.
         """
-        node2content = self.get_cached_content(store_attr=attr, container_type=list)
+        node2content = self.get_cached_content(prop, container_type=list)
 
         for n in self.traverse():
             if not n.is_leaf:
                 n.children.sort(key=lambda x: str(sorted(node2content[x])))
 
-    def get_cached_content(self, store_attr=None, container_type=set,
-                           leaves_only=True, _store=None):
+    def get_cached_content(self, prop=None, container_type=set,
+                           leaves_only=True):
         """Return dict that assigns to each node a set of its leaves.
 
         The dictionary serves as a cache for operations that require
         many traversals of the nodes under this tree.
 
-        Instead of assigning a set, it can assign other types (with
+        Instead of assigning a set, it can assign a list (with
         ``container_type``). And instead of the leaves themselves, it
-        can be any other property of them (like their names, with
-        ``store_attr``).
+        can be any of their properties (like their names, with ``prop``).
 
-        :param store_attr: Node attribute that should be cached (i.e.
+        :param prop: Node property that should be cached (i.e.
             name, distance, etc.). If None, it caches the node itself.
         :param container_type: Type of container for the leaves (set, list).
-        :param leaves_only: If False, to each node it stores all its
+        :param leaves_only: If False, for each node it stores all its
             descendant nodes, not only its leaves.
-        :param _store: (internal use)
         """
-        if _store is None:
-            _store = {}
-
-        def get_prop(_n, propname):
+        def get_prop():  # return the property prop associated to self
             try:
-                v = getattr(_n, propname)
+                return getattr(self, prop)
             except AttributeError:
-                v = _n.props.get(store_attr)
-            return v
+                return self.props.get(prop)
 
-        def get_value(_n):
-            if store_attr is None:
-                _val = [_n]
-            else:
-                if not isinstance(store_attr, str):
-                    _val = [tuple(get_prop(_n, attr) for attr in store_attr)]
-                else:
-                    _val = [get_prop(_n, store_attr)]
+        def get_content():  # return the node itself, or its requested prop
+            return self if prop is None else get_prop()
 
-            return _val
+        # Leaves, or nodes, or just their requested property, for each node.
+        leaves = {self: container_type(
+            [get_content()] if self.is_leaf or not leaves_only else [])}
 
-        for ch in self.children:
-            ch.get_cached_content(store_attr=store_attr,
-                                  container_type=container_type,
-                                  leaves_only=leaves_only,
-                                  _store=_store)
+        for node in self.children:
+            node_leaves = node.get_cached_content(prop=prop,
+                                                  container_type=container_type,
+                                                  leaves_only=leaves_only)
+            # Update the leaves dictionary.
+            leaves.update(node_leaves)
 
-        if self.children:
-            if not leaves_only:
-                val = container_type(get_value(self))
-            else:
-                val = container_type()
-            for ch in self.children:
-                if type(val) == list:
-                    val.extend(_store[ch])
-                if type(val) == set:
-                    val.update(_store[ch])
+            # Update the leaves (or nodes, or their prop) assigned to self.
+            if container_type == set:
+                leaves[self].update(node_leaves[node])
+            elif container_type == list:
+                leaves[self].extend(node_leaves[node])
 
-                if not leaves_only:
-                    if type(val) == list:
-                        val.extend(get_value(ch))
-                    if type(val) == set:
-                        val.update(get_value(ch))
-
-            _store[self] = val
-        else:
-            _store[self] = container_type(get_value(self))
-
-        return _store
+        return leaves
 
     def robinson_foulds(self, t2, attr_t1="name", attr_t2="name",
                         unrooted_trees=False, expand_polytomies=False,
@@ -1669,7 +1645,7 @@ cdef class Tree(object):
             orig_target_size = len(source_tree)
             ntrees, ndups, sp_trees = source_tree.get_speciation_trees(
                 autodetect_duplications=True, newick_only=True,
-                target_attr=source_tree_attr, map_properties=[source_tree_attr, "support"])
+                prop=source_tree_attr, map_properties=[source_tree_attr, "support"])
 
             if ntrees < max_treeko_splits_to_be_artifact:
                 all_rf = []
@@ -1693,7 +1669,7 @@ cdef class Tree(object):
                     # find the support for each node in the treeko tree from the
                     # original one.
                     if min_support_source > 0:
-                        subtree_content = subtree.get_cached_content(store_attr='name')
+                        subtree_content = subtree.get_cached_content('name')
                         for n in subtree.traverse():
                             if n.children:
                                 n.support = source_tree.common_ancestor(subtree_content[n]).support
@@ -1773,7 +1749,7 @@ cdef class Tree(object):
         """
         from ..tools import ete_diff
 
-        difftable = ete_diff.treediff(self, t2, attr1=attr_t1, attr2=attr_t2)
+        difftable = ete_diff.treediff(self, t2, prop1=attr_t1, prop2=attr_t2)
 
         # TODO: Fix the show_difftable*() functions and return get_difftable*() here.
         if output == 'topology':
@@ -1915,18 +1891,18 @@ cdef class Tree(object):
             return False, 'polyphyletic', leaves_extra
 
     def get_monophyletic(self, values, prop='name'):
-        """Return a list of nodes matching the provided monophyly
-        criteria. For a node to be considered a match, all
-        `prop` values within and node, and exclusively them,
-        should be grouped.
+        """Yield nodes matching the provided monophyly criteria.
+
+        For a node to be considered a match, all ``prop`` values within
+        the node, and exclusively them, should be grouped.
 
         :param values: List of values of the selected nodes.
-        :param prop: None property being used to check monophyly (i.e.
+        :param prop: Property being used to check monophyly (for example
             'species' for species trees, 'name' for gene family trees).
         """
         values = set(values)  # in case it is not a set
 
-        n2values = self.get_cached_content(store_attr=prop)
+        n2values = self.get_cached_content(prop)
 
         is_monophyletic = lambda node: n2values[node] == values
 

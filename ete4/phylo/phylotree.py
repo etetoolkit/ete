@@ -542,7 +542,7 @@ class PhyloTree(Tree):
         return outgroup_node
 
     def get_speciation_trees(self, map_properties=None, autodetect_duplications=True,
-                             newick_only=False, target_attr='species'):
+                             newick_only=False, prop='species'):
         """Return number of species trees, of duplications, and an iterator.
 
         Calculates all possible species trees contained within a
@@ -550,21 +550,19 @@ class PhyloTree(Tree):
         <http://treeko.cgenomics.org>`_ (see `Marcet and Gabaldon,
         2011 <http://www.ncbi.nlm.nih.gov/pubmed/21335609>`_ ).
 
-        :param None map_properties: A list of properties that should be
+        :param map_properties: List of properties that should be
             mapped from the original gene family tree to each species
             tree subtree.
-        :param True autodetect_duplications: If True, duplication
-            nodes will be automatically detected using the Species
-            Overlap algorithm
-            (:func:`PhyloTree.get_descendants_evol_events`. If False,
-            duplication nodes within the original tree are expected to
-            contain the feature "evoltype=D".
+        :param autodetect_duplications: If True, duplication nodes
+            will be automatically detected using the Species Overlap
+            algorithm (:func:`PhyloTree.get_descendants_evol_events`).
+            If False, duplication nodes within the original tree are
+            expected to contain the property "evoltype='D'".
         """
         t = self
         if autodetect_duplications:
-            #n2content, n2species = t.get_node2species()
             n2content = t.get_cached_content()
-            n2species = t.get_cached_content(store_attr=target_attr)
+            n2species = t.get_cached_content(prop)
             for node in n2content:
                 sp_subtotal = sum([len(n2species[_ch]) for _ch in node.children])
                 if len(n2species[node]) > 1 and len(n2species[node]) != sp_subtotal:
@@ -579,9 +577,8 @@ class PhyloTree(Tree):
         t = self.copy()
         if autodetect_duplications:
             dups = 0
-            #n2content, n2species = t.get_node2species()
             n2content = t.get_cached_content()
-            n2species = t.get_cached_content(store_attr="species")
+            n2species = t.get_cached_content('species')
 
             #print "Detecting dups"
             for node in n2content:
@@ -615,9 +612,8 @@ class PhyloTree(Tree):
 
         if autodetect_duplications:
             dups = 0
-            #n2content, n2species = t.get_node2species()
             n2content = t.get_cached_content()
-            n2species = t.get_cached_content(store_attr="species")
+            n2species = t.get_cached_content('species')
 
             #print "Detecting dups"
             for node in n2content:
@@ -627,7 +623,6 @@ class PhyloTree(Tree):
                     dups += 1
                 elif node.is_leaf:
                     node._leaf = True
-            #print dups
         else:
             for node in t.leaves():
                 node._leaf = True
@@ -649,7 +644,7 @@ class PhyloTree(Tree):
             raise TypeError("species argument should be a set (preferred), list or tuple")
 
         prunned = self.copy("deepcopy") if return_copy else self
-        n2sp = prunned.get_cached_content(store_attr="species")
+        n2sp = prunned.get_cached_content('species')
         n2leaves = prunned.get_cached_content()
         is_expansion = lambda n: (len(n2sp[n])==1 and len(n2leaves[n])>1
                                   and (species is None or species & n2sp[n]))

@@ -21,7 +21,7 @@ class Test_Treediff(unittest.TestCase):
         t1 = Tree(example1_nw)
         t2 = t1
 
-        difftable = ediff.treediff(t1, t2, attr1='name', attr2='name',
+        difftable = ediff.treediff(t1, t2, prop1='name', prop2='name',
                                    dist_fn=ediff.EUCL_DIST, support=False,
                                    reduce_matrix=False, extended=None,
                                    jobs=1, parallel=None)
@@ -36,7 +36,7 @@ class Test_Treediff(unittest.TestCase):
         t1 = Tree(example1_nw)
         t2 = Tree(example2_nw)
 
-        difftable = ediff.treediff(t1, t2, attr1='name', attr2='name',
+        difftable = ediff.treediff(t1, t2, prop1='name', prop2='name',
                                    dist_fn=ediff.EUCL_DIST, support=False,
                                    reduce_matrix=False, extended=None,
                                    jobs=1, parallel=None)
@@ -48,7 +48,7 @@ class Test_Treediff(unittest.TestCase):
         t1 = Tree(example1_nw)
         t2 = Tree(example3_nw)
 
-        difftable = ediff.treediff(t1, t2, attr1='name', attr2='name',
+        difftable = ediff.treediff(t1, t2, prop1='name', prop2='name',
                                    dist_fn=ediff.EUCL_DIST, support=False,
                                    reduce_matrix=False, extended=None,
                                    jobs=1, parallel=None)
@@ -60,7 +60,7 @@ class Test_Treediff(unittest.TestCase):
         t1 = Tree(example1_nw)
         t2 = Tree(example3_nw)
 
-        difftable = ediff.treediff(t1, t2, attr1='name', attr2='name',
+        difftable = ediff.treediff(t1, t2, prop1='name', prop2='name',
                                    dist_fn=ediff.EUCL_DIST, support=False,
                                    reduce_matrix=False, extended=None,
                                    jobs=1, parallel=None)
@@ -72,7 +72,7 @@ class Test_Treediff(unittest.TestCase):
         t1 = Tree(example1_nw)
         t2 = Tree(example2_nw)
 
-        difftable = ediff.treediff(t1, t2, attr1='name', attr2='name',
+        difftable = ediff.treediff(t1, t2, prop1='name', prop2='name',
                                    dist_fn=ediff.RF_DIST, support=False,
                                    reduce_matrix=False, extended=None,
                                    jobs=1, parallel=None)
@@ -84,7 +84,7 @@ class Test_Treediff(unittest.TestCase):
         t1 = Tree(example1_nw)
         t2 = Tree(example3_nw)
 
-        difftable = ediff.treediff(t1, t2, attr1='name', attr2='name',
+        difftable = ediff.treediff(t1, t2, prop1='name', prop2='name',
                                    dist_fn=ediff.RF_DIST, support=False,
                                    reduce_matrix=False, extended=None,
                                    jobs=1, parallel=None)
@@ -96,7 +96,7 @@ class Test_Treediff(unittest.TestCase):
         t1 = Tree(example1_nw)
         t2 = Tree(example3_nw)
 
-        difftable = ediff.treediff(t1, t2, attr1='name', attr2='name',
+        difftable = ediff.treediff(t1, t2, prop1='name', prop2='name',
                                    dist_fn=ediff.RF_DIST, support=False,
                                    reduce_matrix=False,
                                    extended=ediff.cc_distance,
@@ -109,7 +109,7 @@ class Test_Treediff(unittest.TestCase):
         t1 = Tree(example1_nw)
         t2 = Tree(example3_nw)
 
-        difftable = ediff.treediff(t1, t2, attr1='name', attr2='name',
+        difftable = ediff.treediff(t1, t2, prop1='name', prop2='name',
                                    dist_fn=ediff.RF_DIST, support=False,
                                    reduce_matrix=False,
                                    extended=ediff.be_distance,
@@ -122,7 +122,7 @@ class Test_Treediff(unittest.TestCase):
         t1 = Tree(example1_nw)
         t2 = Tree(example4_nw)
 
-        difftable = ediff.treediff(t1, t2, attr1='name', attr2='name',
+        difftable = ediff.treediff(t1, t2, prop1='name', prop2='name',
                                    dist_fn=ediff.EUCL_DIST, support=False,
                                    reduce_matrix=False,
                                    extended=ediff.cc_distance,
