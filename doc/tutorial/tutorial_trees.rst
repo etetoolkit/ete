@@ -776,15 +776,22 @@ Similarly, :func:`Tree.del_prop` can be used to delete a property.
 
   t = Tree('((H:0.3,I:0.1),A:1,(B:0.4,(C:0.5,(J:1.3,(F:1.2,D:0.1)))));')
 
-  print(t.to_str(props=['name', 'dist'], compact=True, show_internal=False))
-  #  ╭─┬╴H,0.3
-  # ─┤ ╰╴I,0.1
-  #  ├╴A,1.0
-  #  ╰─┬╴B,0.4
-  #    ╰─┬╴C,0.5
-  #      ╰─┬╴J,1.3
-  #        ╰─┬╴F,1.2
-  #          ╰╴D,0.1
+  print(t.to_str())
+  #      ╭╴name=H,dist=0.3
+  #   ╭──┤
+  #   │  ╰╴name=I,dist=0.1
+  #   │
+  # ──┼╴name=A,dist=1.0
+  #   │
+  #   │  ╭╴name=B,dist=0.4
+  #   ╰──┤
+  #      │  ╭╴name=C,dist=0.5
+  #      ╰──┤
+  #         │  ╭╴name=J,dist=1.3
+  #         ╰──┤
+  #            │  ╭╴name=F,dist=1.2
+  #            ╰──┤
+  #               ╰╴name=D,dist=0.1
 
   # Reference some nodes (to use later).
   A = t['A']  # by name
@@ -792,24 +799,20 @@ Similarly, :func:`Tree.del_prop` can be used to delete a property.
   H = t['H']
   ancestor_JFC = t.common_ancestor(['J', 'F', 'C'])  # by common ancestor
 
-  # Let's now add some custom features to our nodes. add_props can be
-  # used to add many features at the same time.
+  # Let's now add some custom features to our nodes.
   C.add_props(vowel=False, confidence=1.0)
   A.add_props(vowel=True, confidence=0.8)
   ancestor_JFC.add_props(nodetype='internal')
-
-  # Or, using the one-liner notation.
   H.add_props(vowel=False, confidence=0.3)
 
   for node in [A, C, H, ancestor_JFC]:
       print(f'Properties of {node.name}: {node.props}')
 
-  # But we can automatize this. (Note that this overwrites the previous values).
+  # Let's annotate by looping over all nodes.
+  # (Note that this overwrites the previous values.)
   for leaf in t:
-      if leaf.name in 'AEIOU':
-          leaf.add_props(vowel=True, confidence=1)
-      else:
-          leaf.add_props(vowel=False, confidence=1)
+      is_vowel = leaf.name in 'AEIOU'
+      leaf.add_props(vowel=is_vowel, confidence=1)
 
   # Now we use this information to analyze the tree.
   print('This tree has', sum(1 for n in t.search_nodes(vowel=True)), 'vowel nodes')
