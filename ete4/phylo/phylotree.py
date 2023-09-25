@@ -264,42 +264,11 @@ def get_subparts(n):
 
 
 class PhyloTree(Tree):
-    """Representation of a phylogenetic tree.
+    """
+    Class to store a phylogenetic tree.
 
     Extends the standard :class:`Tree` instance by adding
-    specific attributes and methods to work with phylogentic trees.
-
-    :param newick: Path to the file containing the tree or, alternatively,
-        the text string containing the same information.
-    :param alignment: File containing a multiple sequence alignment.
-    :param alg_format: "fasta", "phylip" or "iphylip" (interleaved).
-    :param parser: Parser to read the newick.
-    :param sp_naming_function: Function that gets a nodename and
-        returns the species name (see
-        :func:`PhyloTree.set_species_naming_function`). By default,
-        the 3 first letter of nodes will be used as species
-        identifiers.
-
-
-    The possible formats used for the parser are:
-
-    .. table::
-
-      ======  ==============================================
-      FORMAT  DESCRIPTION
-      ======  ==============================================
-      0       flexible with support values
-      1       flexible with internal node names
-      2       all branches + leaf names + internal supports
-      3       all branches + all names
-      4       leaf branches + leaf names
-      5       internal and leaf branches + leaf names
-      6       internal branches + leaf names
-      7       leaf branches + all names
-      8       all names
-      9       leaf names
-      100     topology only
-      ======  ==============================================
+    specific properties and methods to work with phylogentic trees.
     """
 
     def _get_species(self):
@@ -331,7 +300,18 @@ class PhyloTree(Tree):
     def __init__(self, newick=None, children=None, alignment=None,
                  alg_format="fasta", sp_naming_function=_parse_species,
                  parser=None, **kargs):
-
+        """
+        :param newick: Path to the file containing the tree or, alternatively,
+            the text string containing the same information.
+        :param alignment: File containing a multiple sequence alignment.
+        :param alg_format: "fasta", "phylip" or "iphylip" (interleaved).
+        :param parser: Parser to read the newick.
+        :param sp_naming_function: Function that gets a node name and
+            returns the species name (see
+            :func:`PhyloTree.set_species_naming_function`). By default,
+            the 3 first letters of node names will be used as species
+            identifier.
+        """
         # _update names?
         self.props = {}
         self.add_props(_name="NoName", _species="Unknown",
