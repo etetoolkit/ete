@@ -34,10 +34,11 @@ class TreeError(Exception):
 
 cdef class Tree(object):
     """
-    The Tree class is used to store a tree structure. A tree
-    consists of a collection of Tree instances connected in a
-    hierarchical way. Trees can be loaded from the New Hampshire Newick
-    format (newick).
+    The Tree class is used to store a tree structure.
+
+    A tree consists of a collection of Tree instances connected in a
+    hierarchical way. Trees can be loaded from the New Hampshire
+    Newick format (newick).
     """
 
     # TODO: Clean up all the memebers of Tree and leave only:
