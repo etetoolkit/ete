@@ -52,7 +52,7 @@
 <li><p><a class="reference internal" href="#understanding-ete-trees" id="id7">Understanding ETE trees</a></p></li>
 <li><p><a class="reference internal" href="#basic-tree-attributes" id="id8">Basic tree attributes</a></p>
 <ul>
-<li><p><a class="reference internal" href="#root-node-on-unrooted-trees" id="id9">Root node on unrooted trees?</a></p></li>
+<li><p><a class="reference internal" href="#the-meaning-of-the-root-node-in-unrooted-trees" id="id9">The meaning of the “root node” in unrooted trees</a></p></li>
 </ul>
 </li>
 <li><p><a class="reference internal" href="#browsing-trees-traversing" id="id10">Browsing trees (traversing)</a></p>
@@ -77,6 +77,8 @@
 </ul>
 </li>
 <li><p><a class="reference internal" href="#checking-the-monophyly-of-properties-within-a-tree" id="id22">Checking the monophyly of properties within a tree</a></p></li>
+<li><p><a class="reference internal" href="#caching-tree-content-for-faster-lookup-operations" id="id23">Caching tree content for faster lookup operations</a></p></li>
+<li><p><a class="reference internal" href="#node-annotation" id="id24">Node annotation</a></p></li>
 </ul>
 </li>
 </ul>
@@ -216,9 +218,9 @@ a tree with a random topology:</p>
 <span class="n">t</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>(Since every time we start from scratch we will want to write
-<code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">ete4</span> <span class="pre">import</span> <span class="pre">Tree</span></code> to use the <code class="xref py py-class docutils literal notranslate"><span class="pre">Tree</span></code> class, from now on
-we assume you have it already loaded for the remaining examples.)</p>
+<p>(In all the examples we will want to write <code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">ete4</span> <span class="pre">import</span> <span class="pre">Tree</span></code>
+first to use the <code class="xref py py-class docutils literal notranslate"><span class="pre">Tree</span></code> class, as we did above. In the
+remaining examples we will assume that you have already imported it.)</p>
 <p>The properties of a node are stored in its <code class="xref py py-attr docutils literal notranslate"><span class="pre">props</span></code> dictionary.
 With the previous example, writing <code class="docutils literal notranslate"><span class="pre">print(t.props)</span></code> will show us a
 dictionary that should look familiar. And if you <code class="xref py py-func docutils literal notranslate"><span class="pre">print()</span></code> a tree,
@@ -383,14 +385,15 @@ on tree node instances:</p>
 <span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">children</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">children</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">root</span> <span class="o">==</span> <span class="n">t</span><span class="p">)</span>  <span class="c1"># and True again</span>
 </pre></div>
 </div>
-<section id="root-node-on-unrooted-trees">
-<h3><a class="toc-backref" href="#id9" role="doc-backlink">Root node on unrooted trees?</a><a class="headerlink" href="#root-node-on-unrooted-trees" title="Link to this heading">¶</a></h3>
+<section id="the-meaning-of-the-root-node-in-unrooted-trees">
+<h3><a class="toc-backref" href="#id9" role="doc-backlink">The meaning of the “root node” in unrooted trees</a><a class="headerlink" href="#the-meaning-of-the-root-node-in-unrooted-trees" title="Link to this heading">¶</a></h3>
 <p>When a tree is loaded from external sources, a pointer to the top-most
 node is returned. This is called the tree root, and <strong>it will exist
 even if the tree is conceptually considered as unrooted</strong>. That is,
 the root node can be considered as the master node, since it
-represents the whole tree structure. Unrooted trees can be identified
-as trees where the master root node has more than two children.</p>
+represents the whole tree structure.</p>
+<p>ETE will consider that a tree is “unrooted” if the master root node
+has more than two children.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">unrooted_tree</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(A,B,(C,D));&#39;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">unrooted_tree</span><span class="p">)</span>
 <span class="c1">#  ╭╴A</span>
@@ -574,7 +577,7 @@ length is defined and larger than one:</p>
 
 <span class="k">for</span> <span class="n">leaf</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">leaves</span><span class="p">(</span><span class="n">is_leaf_fn</span><span class="o">=</span><span class="n">processable_node</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">leaf</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-<span class="c1"># Will print just these two &quot;leafs&quot; (according to processable_node):</span>
+<span class="c1"># Will print just these two &quot;leaves&quot; (according to processable_node):</span>
 <span class="c1">#   abcd</span>
 <span class="c1">#   efg</span>
 </pre></div>
@@ -623,7 +626,7 @@ tree structure. Several methods are available:</p>
 <td><p>Return the first internal node grouping node1, node2 and node3</p></td>
 </tr>
 <tr class="row-odd"><td><p>t[name]</p></td>
-<td><p>Return the first node named name, same as next(t.search_nodes(name=’A’))</p></td>
+<td><p>Return the first node named name, same as next(t.search_nodes(name=name))</p></td>
 </tr>
 </tbody>
 </table>
@@ -773,6 +776,159 @@ is queried for any custom attribute.</p>
 <span class="c1"># When a group is not monophyletic nor paraphyletic, it is called polyphyletic.</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">check_monophyly</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;i&#39;</span><span class="p">,</span> <span class="s1">&#39;h&#39;</span><span class="p">],</span> <span class="n">prop</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">))</span>
 <span class="c1"># False, &#39;polyphyletic&#39;, {e, a, o}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When the property is set to “species” in a <code class="xref py py-class docutils literal notranslate"><span class="pre">PhyloTree</span></code> node,
+this method will correspond to the standard phylogenetic definition
+of monophyletic, paraphyletic, and polyphyletic.</p>
+</div>
+<p>Finally, the <code class="xref py py-func docutils literal notranslate"><span class="pre">Tree.get_monophyletic()</span></code> method is also provided,
+which returns a list of nodes within a tree where a given set of
+properties are monophyletic. Note that, although a set of values are
+not monophyletic regarding the whole tree, several independent
+monophyletic partitions could be found within the same topology.</p>
+<p>In the following example we get all clusters within the same tree
+exclusively grouping a custom set of annotations:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s2">&quot;((((((a,e),i),o),h),u),((f,g),(j,k)));&quot;</span><span class="p">)</span>
+
+<span class="c1"># Annotate the tree using external data.</span>
+<span class="n">colors</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;e&#39;</span><span class="p">:</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span>
+          <span class="s1">&#39;i&#39;</span><span class="p">:</span> <span class="s1">&#39;yellow&#39;</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">:</span> <span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="s1">&#39;u&#39;</span><span class="p">:</span><span class="s1">&#39;purple&#39;</span><span class="p">,</span>
+          <span class="s1">&#39;f&#39;</span><span class="p">:</span> <span class="s1">&#39;yellow&#39;</span><span class="p">,</span> <span class="s1">&#39;g&#39;</span><span class="p">:</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span>
+          <span class="s1">&#39;j&#39;</span><span class="p">:</span> <span class="s1">&#39;yellow&#39;</span><span class="p">,</span> <span class="s1">&#39;k&#39;</span><span class="p">:</span> <span class="s1">&#39;yellow&#39;</span><span class="p">}</span>
+
+<span class="k">for</span> <span class="n">leaf</span> <span class="ow">in</span> <span class="n">t</span><span class="p">:</span>
+    <span class="n">leaf</span><span class="o">.</span><span class="n">add_props</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">leaf</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;none&#39;</span><span class="p">))</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">],</span> <span class="n">show_internal</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">compact</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<span class="c1">#          ╭─┬╴a,green</span>
+<span class="c1">#        ╭─┤ ╰╴e,green</span>
+<span class="c1">#      ╭─┤ ╰╴i,yellow</span>
+<span class="c1">#    ╭─┤ ╰╴o,black</span>
+<span class="c1">#  ╭─┤ ╰╴h,none</span>
+<span class="c1"># ─┤ ╰╴u,purple</span>
+<span class="c1">#  │ ╭─┬╴f,yellow</span>
+<span class="c1">#  ╰─┤ ╰╴g,green</span>
+<span class="c1">#    ╰─┬╴j,yellow</span>
+<span class="c1">#      ╰╴k,yellow</span>
+
+<span class="c1"># Obtain clusters exclusively green and yellow.</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Green-yellow clusters:&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">get_monophyletic</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">&#39;color&#39;</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;yellow&#39;</span><span class="p">]):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">],</span> <span class="n">show_internal</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">compact</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+
+<span class="c1"># Green-yellow clusters:</span>
+<span class="c1">#  ╭─┬╴a,green</span>
+<span class="c1"># ─┤ ╰╴e,green</span>
+<span class="c1">#  ╰╴i,yellow</span>
+<span class="c1">#  ╭─┬╴f,yellow</span>
+<span class="c1"># ─┤ ╰╴g,green</span>
+<span class="c1">#  ╰─┬╴j,yellow</span>
+<span class="c1">#    ╰╴k,yellow</span>
+</pre></div>
+</div>
+</section>
+<section id="caching-tree-content-for-faster-lookup-operations">
+<span id="cache-node-content"></span><h2><a class="toc-backref" href="#id23" role="doc-backlink">Caching tree content for faster lookup operations</a><a class="headerlink" href="#caching-tree-content-for-faster-lookup-operations" title="Link to this heading">¶</a></h2>
+<p>If your program needs to access to the content of different nodes very
+frequently, traversing the tree to get the leaves of each node over
+and over will produce significant slowdowns in your algorithm.</p>
+<p>ETE provides a convenient methods to cache frequently used data. The
+method <code class="xref py py-func docutils literal notranslate"><span class="pre">Tree.get_cached_content()</span></code> returns a dictionary in which
+keys are node instances and values represent the content of such
+nodes. By default, “content” is understood as a set of leaf nodes.
+After you retrieve this cached data, looking up the size or tip names
+under a given node will be instantaneous.</p>
+<p>Instead of caching the nodes themselves, specific properties can be
+cached by setting a custom <code class="xref py py-attr docutils literal notranslate"><span class="pre">prop</span></code> value.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">()</span>
+<span class="n">t</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span>
+
+<span class="n">node2leaves</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">get_cached_content</span><span class="p">()</span>
+
+<span class="c1"># Print the size of each node, without the need of traversing the subtrees every time.</span>
+<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">traverse</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Node </span><span class="si">%s</span><span class="s1"> contains </span><span class="si">%d</span><span class="s1"> tips.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">node2leaves</span><span class="p">[</span><span class="n">n</span><span class="p">])))</span>
+</pre></div>
+</div>
+</section>
+<section id="node-annotation">
+<h2><a class="toc-backref" href="#id24" role="doc-backlink">Node annotation</a><a class="headerlink" href="#node-annotation" title="Link to this heading">¶</a></h2>
+<p>Adding properties to the nodes of a tree is called tree annotation.
+ETE stores the properties (annotations) of a node in a dictionary
+called <code class="docutils literal notranslate"><span class="pre">props</span></code>.</p>
+<p>In a phylogenetic tree, the nodes (with their branches) often have
+names, branch lengths, and branch supports. ETE provides a shortcut
+for their corresponding properties <code class="xref py py-attr docutils literal notranslate"><span class="pre">name</span></code>, <code class="xref py py-attr docutils literal notranslate"><span class="pre">dist</span></code>, and
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">support</span></code>, so instead of writing <code class="docutils literal notranslate"><span class="pre">n.props.get('name')</span></code>, you
+can write <code class="docutils literal notranslate"><span class="pre">n.name</span></code>, and similarly for <code class="docutils literal notranslate"><span class="pre">n.dist</span></code> and <code class="docutils literal notranslate"><span class="pre">n.support</span></code>.</p>
+<p>The <code class="xref py py-func docutils literal notranslate"><span class="pre">Tree.add_prop()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">Tree.add_props()</span></code> methods allow to
+add extra properties (features, annotations) to any node. The first
+one allows to add one one feature at a time, while the second one can
+be used to add many features with the same call.</p>
+<p>Similarly, <code class="xref py py-func docutils literal notranslate"><span class="pre">Tree.del_prop()</span></code> can be used to delete a property.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((H:0.3,I:0.1),A:1,(B:0.4,(C:0.5,(J:1.3,(F:1.2,D:0.1)))));&#39;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;dist&#39;</span><span class="p">],</span> <span class="n">compact</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">show_internal</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+<span class="c1">#  ╭─┬╴H,0.3</span>
+<span class="c1"># ─┤ ╰╴I,0.1</span>
+<span class="c1">#  ├╴A,1.0</span>
+<span class="c1">#  ╰─┬╴B,0.4</span>
+<span class="c1">#    ╰─┬╴C,0.5</span>
+<span class="c1">#      ╰─┬╴J,1.3</span>
+<span class="c1">#        ╰─┬╴F,1.2</span>
+<span class="c1">#          ╰╴D,0.1</span>
+
+<span class="c1"># Reference some nodes (to use later).</span>
+<span class="n">A</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">]</span>  <span class="c1"># by name</span>
+<span class="n">C</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="s1">&#39;C&#39;</span><span class="p">]</span>
+<span class="n">H</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">]</span>
+<span class="n">ancestor_JFC</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">common_ancestor</span><span class="p">([</span><span class="s1">&#39;J&#39;</span><span class="p">,</span> <span class="s1">&#39;F&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">])</span>  <span class="c1"># by common ancestor</span>
+
+<span class="c1"># Let&#39;s now add some custom features to our nodes. add_props can be</span>
+<span class="c1"># used to add many features at the same time.</span>
+<span class="n">C</span><span class="o">.</span><span class="n">add_props</span><span class="p">(</span><span class="n">vowel</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="n">A</span><span class="o">.</span><span class="n">add_props</span><span class="p">(</span><span class="n">vowel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+<span class="n">ancestor_JFC</span><span class="o">.</span><span class="n">add_props</span><span class="p">(</span><span class="n">nodetype</span><span class="o">=</span><span class="s1">&#39;internal&#39;</span><span class="p">)</span>
+
+<span class="c1"># Or, using the one-liner notation.</span>
+<span class="n">H</span><span class="o">.</span><span class="n">add_props</span><span class="p">(</span><span class="n">vowel</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">ancestor_JFC</span><span class="p">]:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Properties of </span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">props</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="c1"># But we can automatize this. (Note that this overwrites the previous values).</span>
+<span class="k">for</span> <span class="n">leaf</span> <span class="ow">in</span> <span class="n">t</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">leaf</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="s1">&#39;AEIOU&#39;</span><span class="p">:</span>
+        <span class="n">leaf</span><span class="o">.</span><span class="n">add_props</span><span class="p">(</span><span class="n">vowel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">leaf</span><span class="o">.</span><span class="n">add_props</span><span class="p">(</span><span class="n">vowel</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># Now we use this information to analyze the tree.</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;This tree has&#39;</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">search_nodes</span><span class="p">(</span><span class="n">vowel</span><span class="o">=</span><span class="kc">True</span><span class="p">)),</span> <span class="s1">&#39;vowel nodes&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;They are:&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">leaf</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">leaf</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">leaves</span><span class="p">()</span> <span class="k">if</span> <span class="n">leaf</span><span class="o">.</span><span class="n">props</span><span class="p">[</span><span class="s1">&#39;vowel&#39;</span><span class="p">]])</span>
+
+<span class="c1"># But features may refer to any kind of data, not only simple values.</span>
+<span class="c1"># For example, we can calculate some values and store them within nodes.</span>
+<span class="c1">#</span>
+<span class="c1"># Let&#39;s detect leaves under &#39;ancestor_JFC&#39; with distance higher than 1.</span>
+<span class="c1"># Note that it traverses a subtree which starts from &#39;ancestor_JFC&#39;.</span>
+<span class="n">matches</span> <span class="o">=</span> <span class="p">[</span><span class="n">leaf</span> <span class="k">for</span> <span class="n">leaf</span> <span class="ow">in</span> <span class="n">ancestor_JFC</span><span class="o">.</span><span class="n">leaves</span><span class="p">()</span> <span class="k">if</span> <span class="n">leaf</span><span class="o">.</span><span class="n">dist</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">]</span>
+
+<span class="c1"># And save this pre-computed information into the ancestor node.</span>
+<span class="n">ancestor_JFC</span><span class="o">.</span><span class="n">add_props</span><span class="p">(</span><span class="n">long_branch_nodes</span><span class="o">=</span><span class="n">matches</span><span class="p">)</span>
+
+<span class="c1"># Prints the precomputed nodes</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;These are the leaves under ancestor_JFC with long branches:&#39;</span><span class="p">,</span>
+      <span class="p">[</span><span class="n">n</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">ancestor_JFC</span><span class="o">.</span><span class="n">props</span><span class="p">[</span><span class="s1">&#39;long_branch_nodes&#39;</span><span class="p">]])</span>
+
+<span class="c1"># We can also use the add_props() method to dynamically add new features.</span>
+<span class="n">value</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s1">&#39;Custom label value: &#39;</span><span class="p">)</span>
+<span class="n">ancestor_JFC</span><span class="o">.</span><span class="n">add_props</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">value</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Ancestor has now the &quot;label&quot; property with value &quot;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&quot;:&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">ancestor_JFC</span><span class="o">.</span><span class="n">props</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
