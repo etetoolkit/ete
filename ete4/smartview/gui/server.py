@@ -684,19 +684,19 @@ def retrieve_layouts(layouts):
 
 
 def retrieve_tree(tid):
-    """Retrieve tree from tmp pickle file."""
-    # Called when tree has been deleted from memory.
-    start = time()
-    with open(f'/tmp/{tid}.pickle', 'rb') as handle:
-        data = pickle.load(handle)
+    """Retrieve tree from file and return its name, tree structure, and layouts.
 
-    print(f'Unpickle: {time() - start}')
+    It retrieves all that from a previously saved pickle file in /tmp."""
+    # Called when tree has been deleted from memory.
+    tmpfile = f'/tmp/{tid}.pickle'  # beautiful...
+    with open(tmpfile, 'rb') as handle:
+        data = pickle.load(handle)
 
     name = data["name"]
     tree = data["tree"]
     layouts = retrieve_layouts(data["layouts"])
 
-    app.trees[tid].timer = time()
+    app.trees[tid].timer = time()  # to track if it is active
 
     return name, tree, layouts
 
