@@ -723,8 +723,9 @@ def get_drawer(tree_id, args):
         zoom = (get('zx', 1), get('zy', 1), get('za', 1))
         assert zoom[0] > 0 and zoom[1] > 0 and zoom[2] > 0, 'zoom must be > 0'
 
+        load_tree(tree_id)  # in case it went out of memory
         tid, _ = get_tid(tree_id)
-        tree = app.trees[int(tid)]
+        tree = app.trees[tid]
 
         active_layouts = args.get('layouts')
         if active_layouts != None:
@@ -1629,8 +1630,8 @@ def maintenance(app, check_interval=60, max_time=30*60):
         for tid in tids:
             inactivity_time = time() - app.trees[tid].timer
             if inactivity_time > max_time:
-                #del_tree(tid)  # TODO: do del the tree, but also recover!
-                pass
+                app.trees.pop(tid)  # delete from memory
+                # Will be reloaded from disk next time it is accessed.
 
         sleep(check_interval)
 
