@@ -6,6 +6,7 @@ from hashlib import md5
 from functools import cmp_to_key
 import pickle
 import logging
+import math
 
 from . import text_viz
 from .. import utils
@@ -1413,171 +1414,171 @@ cdef class Tree(object):
 
         return leaves
 
-    def robinson_foulds(self, t2, attr_t1="name", attr_t2="name",
+    def robinson_foulds(self, t2, prop_t1='name', prop_t2='name',
                         unrooted_trees=False, expand_polytomies=False,
                         polytomy_size_limit=5, skip_large_polytomies=False,
                         correct_by_polytomy_size=False, min_support_t1=0.0,
                         min_support_t2=0.0):
+        """Return the Robinson-Foulds distance to the tree, and related info.
+
+        The returned tuple contains the Robinson-Foulds symmetric
+        distance (rf), but also more information::
+
+          (rf, rf_max, common,
+           edges_t1, edges_t2, discarded_edges_t1, discarded_edges_t2)
+
+        :param t2: Target tree (tree to compare to the reference tree).
+        :param prop_t1: Property to use in the reference tree as the
+            node name when comparing trees.
+        :param prop_t2: Property to use in the target tree as the node
+            name when comparing trees.
+        :param unrooted_trees: If True, consider trees as unrooted.
+        :param expand_polytomies: If True, all polytomies in the
+           reference and target tree will be expanded into all
+           possible binary trees. Robinson-Foulds distance will be
+           calculated between all tree combinations and the minimum
+           value will be returned. See also :func:`Tree.expand_polytomy`.
         """
-        .. versionadded: 2.2
-
-        Returns the Robinson-Foulds symmetric distance between current
-        tree and a different tree instance.
-
-        :param t2: reference tree
-
-        :param name attr_t1: Compare trees using a custom node
-                              attribute as a node name.
-
-        :param name attr_t2: Compare trees using a custom node
-                              attribute as a node name in target tree.
-
-        :param False unrooted_trees: If True, consider trees as unrooted.
-
-        :param False expand_polytomies: If True, all polytomies in the reference
-           and target tree will be expanded into all possible binary
-           trees. Robinson-foulds distance will be calculated between all
-           tree combinations and the minimum value will be returned.
-           See also, :func:`NodeTree.expand_polytomy`.
-
-        :returns: (rf, rf_max, common_attrs, names, edges_t1, edges_t2,  discarded_edges_t1, discarded_edges_t2)
-
-        """
-        ref_t = self
+        # Give aliases for clarity.
+        origin_t = self  # reference tree
         target_t = t2
-        if not unrooted_trees and (len(ref_t.children) > 2 or len(target_t.children) > 2):
-            raise TreeError("Unrooted tree found! You may want to activate the unrooted_trees flag.")
+
+        # Check that the arguments are consistent.
+        if not unrooted_trees and (len(origin_t.children) > 2 or
+                                   len(target_t.children) > 2):
+            raise TreeError('Unrooted tree found! You may want to set unrooted_trees=True.')
 
         if expand_polytomies and correct_by_polytomy_size:
-            raise TreeError("expand_polytomies and correct_by_polytomy_size are mutually exclusive.")
+            raise TreeError('expand_polytomies and correct_by_polytomy_size are mutually exclusive.')
 
         if expand_polytomies and unrooted_trees:
-            raise TreeError("expand_polytomies and unrooted_trees arguments cannot be enabled at the same time")
+            raise TreeError('expand_polytomies and unrooted_trees are mutually exclusive.')
 
+        # Some helper functions to access properties.
+        def has_prop(node, prop):
+            return hasattr(node, prop) or prop in node.props
 
-        attrs_t1 = set([getattr(n, attr_t1) for n in ref_t.leaves() if hasattr(n, attr_t1)])
-        attrs_t2 = set([getattr(n, attr_t2) for n in target_t.leaves() if hasattr(n, attr_t2)])
-        common_attrs = attrs_t1 & attrs_t2
-        # release mem
-        attrs_t1, attrs_t2 = None, None
+        def get_prop(node, prop):
+            return getattr(node, prop, node.props.get(prop, None))
+
+        common = (  # common leaf values in the two trees
+            {get_prop(n, prop_t1) for n in origin_t if has_prop(n, prop_t1)} &
+            {get_prop(n, prop_t2) for n in target_t if has_prop(n, prop_t2)})
 
         # Check for duplicated items (is it necessary? can we optimize? what's the impact in performance?')
-        size1 = len([True for n in ref_t.leaves() if getattr(n, attr_t1, None) in common_attrs])
-        size2 = len([True for n in target_t.leaves() if getattr(n, attr_t2, None) in common_attrs])
-        if size1 > len(common_attrs):
-            raise TreeError('Duplicated items found in source tree')
-        if size2 > len(common_attrs):
-            raise TreeError('Duplicated items found in reference tree')
+        size1 = sum(1 for n in origin_t if get_prop(n, prop_t1) in common)
+        size2 = sum(1 for n in target_t if get_prop(n, prop_t2) in common)
+
+        if size1 > len(common):
+            raise TreeError('Duplicated items found in reference tree.')
+        if size2 > len(common):
+            raise TreeError('Duplicated items found in target tree.')
 
         if expand_polytomies:
-            ref_trees = [Tree(nw) for nw in
-                         ref_t.expand_polytomies(map_attr=attr_t1,
-                                                 polytomy_size_limit=polytomy_size_limit,
-                                                 skip_large_polytomies=skip_large_polytomies)]
-            target_trees = [Tree(nw) for nw in
-                            target_t.expand_polytomies(map_attr=attr_t2,
+            origin_trees = [Tree(nw) for nw in
+                            origin_t.expand_polytomies(map_prop=prop_t1,
                                                        polytomy_size_limit=polytomy_size_limit,
                                                        skip_large_polytomies=skip_large_polytomies)]
-            attr_t1, attr_t2 = "name", "name"
+            target_trees = [Tree(nw) for nw in
+                            target_t.expand_polytomies(map_prop=prop_t2,
+                                                       polytomy_size_limit=polytomy_size_limit,
+                                                       skip_large_polytomies=skip_large_polytomies)]
+            prop_t1, prop_t2 = 'name', 'name'
         else:
-            ref_trees = [ref_t]
+            origin_trees = [origin_t]
             target_trees = [target_t]
 
         polytomy_correction = 0
         if correct_by_polytomy_size:
-            corr1 = sum([0]+[len(n.children) - 2 for n in ref_t.traverse() if len(n.children) > 2])
-            corr2 = sum([0]+[len(n.children) - 2 for n in target_t.traverse() if len(n.children) > 2])
-            if corr1 and corr2:
-                raise TreeError("Both trees contain polytomies! Try expand_polytomies=True instead")
-            else:
-                polytomy_correction = max([corr1, corr2])
+            corr1 = sum(len(n.children) - 2 for n in origin_t.traverse() if len(n.children) > 2)
+            corr2 = sum(len(n.children) - 2 for n in target_t.traverse() if len(n.children) > 2)
+
+            if corr1 > 0 and corr2 > 0:
+                raise TreeError('Both trees contain polytomies! Try expand_polytomies=True instead.')
+
+            polytomy_correction = max(corr1, corr2)
+
+        def from_common(nodes, prop):  # helper function
+            """Yield values (if existing in both trees) for property prop."""
+            for node in nodes:
+                if has_prop(node, prop):
+                    value = get_prop(node, prop)
+                    if value in common:
+                        yield value
 
         min_comparison = None
-        for t1 in ref_trees:
-            t1_content = t1.get_cached_content()
-            t1_leaves = t1_content[t1]
+        for t1 in origin_trees:
+            t1_leaves = t1.get_cached_content()
+            t1_leaves_all = t1_leaves[t1]
+
             if unrooted_trees:
-                edges1 = set([
-                        tuple(sorted([tuple(sorted([getattr(n, attr_t1) for n in content if hasattr(n, attr_t1) and getattr(n, attr_t1) in common_attrs])),
-                                      tuple(sorted([getattr(n, attr_t1) for n in t1_leaves-content if hasattr(n, attr_t1) and getattr(n, attr_t1) in common_attrs]))]))
-                        for content in t1_content.values()])
-                edges1.discard(((),()))
+                edges1 = {  # set that looks like {((a, b, ...), (x, y, ...)), ...}
+                    tuple(sorted([
+                        tuple(sorted(from_common(leaves, prop_t1))),
+                        tuple(sorted(from_common(t1_leaves_all - leaves, prop_t1)))]))
+                    for leaves in t1_leaves.values()}
+                edges1.discard(((), ()))  # probably unnecessary
             else:
-                edges1 = set([
-                        tuple(sorted([getattr(n, attr_t1) for n in content if hasattr(n, attr_t1) and getattr(n, attr_t1) in common_attrs]))
-                        for content in t1_content.values()])
+                edges1 = {tuple(sorted(from_common(leaves, prop_t1)))
+                          for leaves in t1_leaves.values()}
                 edges1.discard(())
 
             if min_support_t1:
-                support_t1 = dict([
-                        (tuple(sorted([getattr(n, attr_t1) for n in content if hasattr(n, attr_t1) and getattr(n, attr_t1) in common_attrs])), branch.support or 0)
-                        for branch, content in t1_content.items()])
+                support_t1 = {tuple(sorted(from_common(leaves, prop_t1) for n in leaves)): branch.support or 0
+                              for branch, leaves in t1_leaves.items()}
 
             for t2 in target_trees:
-                t2_content = t2.get_cached_content()
-                t2_leaves = t2_content[t2]
+                t2_leaves = t2.get_cached_content()
+                t2_leaves_all = t2_leaves[t2]
+
                 if unrooted_trees:
-                    edges2 = set([
-                            tuple(sorted([
-                                        tuple(sorted([getattr(n, attr_t2) for n in content if hasattr(n, attr_t2) and getattr(n, attr_t2) in common_attrs])),
-                                        tuple(sorted([getattr(n, attr_t2) for n in t2_leaves-content if hasattr(n, attr_t2) and getattr(n, attr_t2) in common_attrs]))]))
-                            for content in t2_content.values()])
-                    edges2.discard(((),()))
+                    edges2 = {
+                        tuple(sorted([
+                            tuple(sorted(from_common(leaves, prop_t2))),
+                            tuple(sorted(from_common(t2_leaves_all - leaves, prop_t2)))]))
+                        for leaves in t2_leaves.values()}
+                    edges2.discard(((), ()))
                 else:
-                    edges2 = set([
-                            tuple(sorted([getattr(n, attr_t2) for n in content if hasattr(n, attr_t2) and getattr(n, attr_t2) in common_attrs]))
-                            for content in t2_content.values()])
+                    edges2 = {tuple(sorted(from_common(leaves, prop_t2)))
+                              for leaves in t2_leaves.values()}
                     edges2.discard(())
 
                 if min_support_t2:
-                    support_t2 = dict([
-                        (tuple(sorted(([getattr(n, attr_t2) for n in content if hasattr(n, attr_t2) and getattr(n, attr_t2) in common_attrs]))), branch.support or 0)
-                        for branch, content in t2_content.items()])
-
+                    support_t2 = {tuple(sorted(from_common(leaves, prop_t2) for n in leaves)): branch.support or 0
+                                  for branch, leaves in t2_leaves.items()}
 
                 # if a support value is passed as a constraint, discard lowly supported branches from the analysis
                 discard_t1, discard_t2 = set(), set()
                 if min_support_t1 and unrooted_trees:
-                    discard_t1 = set([p for p in edges1 if support_t1.get(p[0], support_t1.get(p[1], 999999999)) < min_support_t1])
+                    discard_t1 = {p for p in edges1 if support_t1.get(p[0], support_t1.get(p[1], math.inf)) < min_support_t1}
                 elif min_support_t1:
-                    discard_t1 = set([p for p in edges1 if support_t1[p] is not None and support_t1[p] is not None and support_t1[p] < min_support_t1])
+                    discard_t1 = {p for p in edges1 if support_t1[p] is not None and support_t1[p] < min_support_t1}
 
                 if min_support_t2 and unrooted_trees:
-                    discard_t2 = set([p for p in edges2 if support_t2.get(p[0], support_t2.get(p[1], 999999999)) < min_support_t2])
+                    discard_t2 = {p for p in edges2 if support_t2.get(p[0], support_t2.get(p[1], math.inf)) < min_support_t2}
                 elif min_support_t2:
-                    discard_t2 = set([p for p in edges2 if support_t2[p] is not None and support_t2[p] < min_support_t2])
-
-
-                #rf = len(edges1 ^ edges2) - (len(discard_t1) + len(discard_t2)) - polytomy_correction # poly_corr is 0 if the flag is not enabled
-                #rf = len((edges1-discard_t1) ^ (edges2-discard_t2)) - polytomy_correction
+                    discard_t2 = {p for p in edges2 if support_t2[p] is not None and support_t2[p] < min_support_t2}
 
                 # the two root edges are never counted here, as they are always
-                # present in both trees because of the common attr filters
+                # present in both trees because of the common property filters
                 rf = len(((edges1 ^ edges2) - discard_t2) - discard_t1) - polytomy_correction
 
                 if unrooted_trees:
-                    # thought this may work, but it does not, still I don't see why
-                    #max_parts = (len(common_attrs)*2) - 6 - len(discard_t1) - len(discard_t2)
-                    max_parts = (len([p for p in edges1 - discard_t1 if len(p[0])>1 and len(p[1])>1]) +
-                                 len([p for p in edges2 - discard_t2 if len(p[0])>1 and len(p[1])>1]))
+                    max_parts = (
+                        sum(1 for p in edges1 - discard_t1 if len(p[0]) > 1 and len(p[1]) > 1) +
+                        sum(1 for p in edges2 - discard_t2 if len(p[0]) > 1 and len(p[1]) > 1))
                 else:
-                    # thought this may work, but it does not, still I don't see why
-                    #max_parts = (len(common_attrs)*2) - 4 - len(discard_t1) - len(discard_t2)
-
                     # Otherwise we need to count the actual number of valid
                     # partitions in each tree -2 is to avoid counting the root
                     # partition of the two trees (only needed in rooted trees)
-                    max_parts = (len([p for p in edges1 - discard_t1 if len(p)>1]) +
-                                 len([p for p in edges2 - discard_t2 if len(p)>1])) - 2
-
-                    # print max_parts
+                    max_parts = (
+                        sum(1 for p in edges1 - discard_t1 if len(p) > 1) +
+                        sum(1 for p in edges2 - discard_t2 if len(p) > 1)) - 2
 
                 if not min_comparison or (min_comparison[0] is not None and min_comparison[0] > rf):
-                    min_comparison = [rf, max_parts, common_attrs, edges1, edges2, discard_t1, discard_t2]
+                    min_comparison = [rf, max_parts, common, edges1, edges2, discard_t1, discard_t2]
 
         return min_comparison
-
-
 
     def compare(self, ref_tree, use_collateral=False, min_support_source=0.0, min_support_ref=0.0,
                 has_duplications=False, expand_polytomies=False, unrooted=False,
@@ -1602,8 +1603,8 @@ cdef class Tree(object):
             rf, maxrf, common, ref_p, src_p, ref_disc, src_disc  = ref_tree.robinson_foulds(src_tree,
                                                                                             expand_polytomies=expand_polytomies,
                                                                                             unrooted_trees=unrooted,
-                                                                                            attr_t1=ref_tree_attr,
-                                                                                            attr_t2=source_tree_attr,
+                                                                                            prop_t1=ref_tree_attr,
+                                                                                            prop_t2=source_tree_attr,
                                                                                             min_support_t2=min_support_source,
                                                                                             min_support_t1=min_support_ref)
 
@@ -1740,24 +1741,24 @@ cdef class Tree(object):
             result["ref_edges"] = valid_ref_edges
         return result
 
-    def _diff(self, t2, output='topology', attr_t1='name', attr_t2='name', color=True):
+    def _diff(self, t2, output='topology', prop_t1='name', prop_t2='name', color=True):
         """Return the difference between two tree topologies.
 
         :param [raw|table|topology|diffs|diffs_tab] output: Output type.
         """
         from ..tools import ete_diff
 
-        difftable = ete_diff.treediff(self, t2, prop1=attr_t1, prop2=attr_t2)
+        difftable = ete_diff.treediff(self, t2, prop1=prop_t1, prop2=prop_t2)
 
         # TODO: Fix the show_difftable*() functions and return get_difftable*() here.
         if output == 'topology':
-            ete_diff.show_difftable_topo(difftable, attr_t1, attr_t2, usecolor=color)
+            ete_diff.show_difftable_topo(difftable, prop_t1, prop_t2, usecolor=color)
         elif output == 'diffs':
             ete_diff.show_difftable(difftable)
         elif output == 'diffs_tab':
             ete_diff.show_difftable_tab(difftable)
         elif output == 'table':
-            rf, rf_max, _, _, _, _, _ = self.robinson_foulds(t2, attr_t1=attr_t1, attr_t2=attr_t2)[:2]
+            rf, rf_max, _, _, _, _, _ = self.robinson_foulds(t2, prop_t1=prop_t1, prop_t2=prop_t2)[:2]
             ete_diff.show_difftable_summary(difftable, rf, rf_max)
         elif output == 'raw':
             return difftable
@@ -1902,14 +1903,14 @@ cdef class Tree(object):
 
         yield from self.leaves(is_leaf_fn=is_monophyletic)
 
-    def expand_polytomies(self, map_attr="name", polytomy_size_limit=5,
+    def expand_polytomies(self, map_prop="name", polytomy_size_limit=5,
                           skip_large_polytomies=False):
-        '''
-        .. versionadded:: 2.3
+        """Return all combinations of solutions of the multifurcated nodes.
 
-        Given a tree with one or more polytomies, this functions returns the
-        list of all trees (in newick format) resulting from the combination of
-        all possible solutions of the multifurcated nodes.
+        If the tree has one or more polytomies, this functions returns
+        the list of all trees (in newick format) resulting from the
+        combination of all possible solutions of the multifurcated
+        nodes.
 
         .. warning:
 
@@ -1925,8 +1926,8 @@ cdef class Tree(object):
            polytomy size: 8 number of binary trees: 135135
            polytomy size: 9 number of binary trees: 2027025
 
-        http://ajmonline.org/2010/darwin.php
-        '''
+        See https://ajmonline.org/2010/darwin.php
+        """
 
         class TipTuple(tuple):
             pass
@@ -1950,7 +1951,7 @@ cdef class Tree(object):
         n2subtrees = {}
         for n in self.traverse("postorder"):
             if n.is_leaf:
-                subtrees = [n.props.get(map_attr)]
+                subtrees = [n.props.get(map_prop)]
             else:
                 subtrees = []
                 if len(n.children) > polytomy_size_limit:
