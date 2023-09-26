@@ -230,16 +230,16 @@ populated tree:</p>
 <span class="c1"># {&#39;name&#39;: &#39;root&#39;, &#39;dist&#39;: 1.0, &#39;support&#39;: 0.5, &#39;coolness&#39;: &#39;high&#39;}</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>  <span class="c1"># will look more or less like:</span>
-<span class="c1">#  ╭─┬╴aaaaaaaaaa</span>
-<span class="c1">#  │ ╰╴aaaaaaaaab</span>
-<span class="c1"># ─┤ ╭─┬╴aaaaaaaaac</span>
-<span class="c1">#  │ │ ╰─┬╴aaaaaaaaad</span>
-<span class="c1">#  ╰─┤   ╰─┬╴aaaaaaaaae</span>
-<span class="c1">#    │     ╰╴aaaaaaaaaf</span>
-<span class="c1">#    ╰─┬╴aaaaaaaaag</span>
-<span class="c1">#      ╰─┬╴aaaaaaaaah</span>
-<span class="c1">#        ╰─┬╴aaaaaaaaai</span>
-<span class="c1">#          ╰╴aaaaaaaaaj</span>
+<span class="c1">#  ╭─┬╴a</span>
+<span class="c1">#  │ ╰╴b</span>
+<span class="c1"># ─┤ ╭─┬╴c</span>
+<span class="c1">#  │ │ ╰─┬╴d</span>
+<span class="c1">#  ╰─┤   ╰─┬╴e</span>
+<span class="c1">#    │     ╰╴f</span>
+<span class="c1">#    ╰─┬╴g</span>
+<span class="c1">#      ╰─┬╴h</span>
+<span class="c1">#        ╰─┬╴i</span>
+<span class="c1">#          ╰╴j</span>
 </pre></div>
 </div>
 </section>
@@ -817,12 +817,14 @@ exclusively grouping a custom set of annotations:</p>
 <span class="c1"># Obtain clusters exclusively green and yellow.</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Green-yellow clusters:&#39;</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">get_monophyletic</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">&#39;color&#39;</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;yellow&#39;</span><span class="p">]):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">],</span> <span class="n">show_internal</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">compact</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
-
+    <span class="nb">print</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">],</span> <span class="n">show_internal</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">compact</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 <span class="c1"># Green-yellow clusters:</span>
+<span class="c1">#</span>
 <span class="c1">#  ╭─┬╴a,green</span>
 <span class="c1"># ─┤ ╰╴e,green</span>
 <span class="c1">#  ╰╴i,yellow</span>
+<span class="c1">#</span>
 <span class="c1">#  ╭─┬╴f,yellow</span>
 <span class="c1"># ─┤ ╰╴g,green</span>
 <span class="c1">#  ╰─┬╴j,yellow</span>
@@ -871,15 +873,22 @@ be used to add many features with the same call.</p>
 <p>Similarly, <code class="xref py py-func docutils literal notranslate"><span class="pre">Tree.del_prop()</span></code> can be used to delete a property.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((H:0.3,I:0.1),A:1,(B:0.4,(C:0.5,(J:1.3,(F:1.2,D:0.1)))));&#39;</span><span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;dist&#39;</span><span class="p">],</span> <span class="n">compact</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">show_internal</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
-<span class="c1">#  ╭─┬╴H,0.3</span>
-<span class="c1"># ─┤ ╰╴I,0.1</span>
-<span class="c1">#  ├╴A,1.0</span>
-<span class="c1">#  ╰─┬╴B,0.4</span>
-<span class="c1">#    ╰─┬╴C,0.5</span>
-<span class="c1">#      ╰─┬╴J,1.3</span>
-<span class="c1">#        ╰─┬╴F,1.2</span>
-<span class="c1">#          ╰╴D,0.1</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">to_str</span><span class="p">())</span>
+<span class="c1">#      ╭╴name=H,dist=0.3</span>
+<span class="c1">#   ╭──┤</span>
+<span class="c1">#   │  ╰╴name=I,dist=0.1</span>
+<span class="c1">#   │</span>
+<span class="c1"># ──┼╴name=A,dist=1.0</span>
+<span class="c1">#   │</span>
+<span class="c1">#   │  ╭╴name=B,dist=0.4</span>
+<span class="c1">#   ╰──┤</span>
+<span class="c1">#      │  ╭╴name=C,dist=0.5</span>
+<span class="c1">#      ╰──┤</span>
+<span class="c1">#         │  ╭╴name=J,dist=1.3</span>
+<span class="c1">#         ╰──┤</span>
+<span class="c1">#            │  ╭╴name=F,dist=1.2</span>
+<span class="c1">#            ╰──┤</span>
+<span class="c1">#               ╰╴name=D,dist=0.1</span>
 
 <span class="c1"># Reference some nodes (to use later).</span>
 <span class="n">A</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">]</span>  <span class="c1"># by name</span>
@@ -887,24 +896,20 @@ be used to add many features with the same call.</p>
 <span class="n">H</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">]</span>
 <span class="n">ancestor_JFC</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">common_ancestor</span><span class="p">([</span><span class="s1">&#39;J&#39;</span><span class="p">,</span> <span class="s1">&#39;F&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">])</span>  <span class="c1"># by common ancestor</span>
 
-<span class="c1"># Let&#39;s now add some custom features to our nodes. add_props can be</span>
-<span class="c1"># used to add many features at the same time.</span>
+<span class="c1"># Let&#39;s now add some custom features to our nodes.</span>
 <span class="n">C</span><span class="o">.</span><span class="n">add_props</span><span class="p">(</span><span class="n">vowel</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
 <span class="n">A</span><span class="o">.</span><span class="n">add_props</span><span class="p">(</span><span class="n">vowel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
 <span class="n">ancestor_JFC</span><span class="o">.</span><span class="n">add_props</span><span class="p">(</span><span class="n">nodetype</span><span class="o">=</span><span class="s1">&#39;internal&#39;</span><span class="p">)</span>
-
-<span class="c1"># Or, using the one-liner notation.</span>
 <span class="n">H</span><span class="o">.</span><span class="n">add_props</span><span class="p">(</span><span class="n">vowel</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
 
 <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">ancestor_JFC</span><span class="p">]:</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Properties of </span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">props</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
-<span class="c1"># But we can automatize this. (Note that this overwrites the previous values).</span>
+<span class="c1"># Let&#39;s annotate by looping over all nodes.</span>
+<span class="c1"># (Note that this overwrites the previous values.)</span>
 <span class="k">for</span> <span class="n">leaf</span> <span class="ow">in</span> <span class="n">t</span><span class="p">:</span>
-    <span class="k">if</span> <span class="n">leaf</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="s1">&#39;AEIOU&#39;</span><span class="p">:</span>
-        <span class="n">leaf</span><span class="o">.</span><span class="n">add_props</span><span class="p">(</span><span class="n">vowel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">leaf</span><span class="o">.</span><span class="n">add_props</span><span class="p">(</span><span class="n">vowel</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">is_vowel</span> <span class="o">=</span> <span class="n">leaf</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="s1">&#39;AEIOU&#39;</span>
+    <span class="n">leaf</span><span class="o">.</span><span class="n">add_props</span><span class="p">(</span><span class="n">vowel</span><span class="o">=</span><span class="n">is_vowel</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
 <span class="c1"># Now we use this information to analyze the tree.</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;This tree has&#39;</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">search_nodes</span><span class="p">(</span><span class="n">vowel</span><span class="o">=</span><span class="kc">True</span><span class="p">)),</span> <span class="s1">&#39;vowel nodes&#39;</span><span class="p">)</span>
@@ -929,6 +934,94 @@ be used to add many features with the same call.</p>
 <span class="n">ancestor_JFC</span><span class="o">.</span><span class="n">add_props</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">value</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Ancestor has now the &quot;label&quot; property with value &quot;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&quot;:&#39;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">ancestor_JFC</span><span class="o">.</span><span class="n">props</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The original newick format did not support adding extra features to a
+tree. ETE includes support for the <a class="reference external" href="http://phylosoft.org/NHX">New Hampshire eXtended format</a> (NHX), which uses the original newick
+standard and adds the possibility of saving additional data related to
+each tree node.</p>
+<p>Here is an example of a extended newick representation in which extra
+information is added to an internal node:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">A</span><span class="p">:</span><span class="mf">0.3</span><span class="p">,(</span><span class="n">B</span><span class="p">:</span><span class="mf">0.7</span><span class="p">,(</span><span class="n">D</span><span class="p">:</span><span class="mf">0.6</span><span class="p">,</span><span class="n">G</span><span class="p">:</span><span class="mf">0.1</span><span class="p">):</span><span class="mf">0.6</span><span class="p">[</span><span class="o">&amp;&amp;</span><span class="n">NHX</span><span class="p">:</span><span class="n">conf</span><span class="o">=</span><span class="mf">0.1</span><span class="p">:</span><span class="n">name</span><span class="o">=</span><span class="n">internal</span><span class="p">]):</span><span class="mf">0.5</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>As you can see, extra node features in the NHX format are enclosed
+between brackets. ETE is able to read and write features using this
+format, however, the encoded information is expected to be exportable
+as plain text.</p>
+<p>The NHX format is automatically detected when reading a newick file,
+and the detected node properties are added. You can access the
+information by using <code class="docutils literal notranslate"><span class="pre">node.props[prop_name]</span></code>.</p>
+<p>Similarly, properties added to a tree can be included within the
+normal newick representation using the NHX notation. For this, you can
+call the <code class="xref py py-func docutils literal notranslate"><span class="pre">Tree.write()</span></code> method using the <code class="xref py py-attr docutils literal notranslate"><span class="pre">props</span></code> argument,
+which is expected to be a list with the feature names that you want to
+include in the newick string. Use <code class="xref py py-attr docutils literal notranslate"><span class="pre">props=None</span></code>) to include all
+the node’s data into the newick string.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((H:0.3,I:0.1),A:1,(B:0.4,(C:0.5,(J:1.3,(F:1.2,D:0.1)))));&#39;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+<span class="c1">#  ╭─┬╴H</span>
+<span class="c1"># ─┤ ╰╴I</span>
+<span class="c1">#  ├╴A</span>
+<span class="c1">#  ╰─┬╴B</span>
+<span class="c1">#    ╰─┬╴C</span>
+<span class="c1">#      ╰─┬╴J</span>
+<span class="c1">#        ╰─┬╴F</span>
+<span class="c1">#          ╰╴D</span>
+
+<span class="c1"># Add some more properties to leaves:</span>
+<span class="k">for</span> <span class="n">leaf</span> <span class="ow">in</span> <span class="n">t</span><span class="p">:</span>
+    <span class="n">is_vowel</span> <span class="o">=</span> <span class="n">leaf</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="s1">&#39;AEIOU&#39;</span>
+    <span class="n">leaf</span><span class="o">.</span><span class="n">add_props</span><span class="p">(</span><span class="n">vowel</span><span class="o">=</span><span class="n">is_vowel</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;NHX notation including vowel and confidence properties:&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;vowel&#39;</span><span class="p">]))</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;NHX notation including all data in the nodes:&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="kc">None</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>To read NHX notation you can just read it as a normal newick:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load the NHX example from https://www.phylosoft.org/NHX/</span>
+<span class="n">nw</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">(((ADH2:0.1[&amp;&amp;NHX:S=human:E=1.1.1.1], ADH1:0.11[&amp;&amp;NHX:S=human:E=1.1.1.1])</span>
+<span class="s2">:0.05[&amp;&amp;NHX:S=Primates:E=1.1.1.1:D=Y:B=100], ADHY:0.1[&amp;&amp;NHX:S=nematode:</span>
+<span class="s2">E=1.1.1.1],ADHX:0.12[&amp;&amp;NHX:S=insect:E=1.1.1.1]):0.1[&amp;&amp;NHX:S=Metazoa:</span>
+<span class="s2">E=1.1.1.1:D=N], (ADH4:0.09[&amp;&amp;NHX:S=yeast:E=1.1.1.1],ADH3:0.13[&amp;&amp;NHX:S=yeast:</span>
+<span class="s2">E=1.1.1.1], ADH2:0.12[&amp;&amp;NHX:S=yeast:E=1.1.1.1],ADH1:0.11[&amp;&amp;NHX:S=yeast:E=1.1.1.1]):0.1</span>
+<span class="s2">[&amp;&amp;NHX:S=Fungi])[&amp;&amp;NHX:E=1.1.1.1:D=N];</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="n">nw</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">],</span> <span class="n">compact</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<span class="c1">#                                    ╭╴(empty),Primates╶┬╴ADH2,human</span>
+<span class="c1">#                  ╭╴(empty),Metazoa╶┤                  ╰╴ADH1,human</span>
+<span class="c1">#                  │                 ├╴ADHY,nematode</span>
+<span class="c1"># ╴(empty),(empty)╶┤                 ╰╴ADHX,insect</span>
+<span class="c1">#                  │               ╭╴ADH4,yeast</span>
+<span class="c1">#                  ╰╴(empty),Fungi╶┼╴ADH3,yeast</span>
+<span class="c1">#                                  ├╴ADH2,yeast</span>
+<span class="c1">#                                  ╰╴ADH1,yeast</span>
+
+<span class="c1"># And access the node&#39;s properties.</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;S property for the nodes that have it:&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">traverse</span><span class="p">():</span>
+    <span class="k">if</span> <span class="s1">&#39;S&#39;</span> <span class="ow">in</span> <span class="n">n</span><span class="o">.</span><span class="n">props</span><span class="p">:</span>
+       <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;  </span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">name</span> <span class="k">if</span> <span class="n">n</span><span class="o">.</span><span class="n">name</span> <span class="k">else</span> <span class="n">n</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">n</span><span class="o">.</span><span class="n">props</span><span class="p">[</span><span class="s1">&#39;S&#39;</span><span class="p">]))</span>
+<span class="c1"># S property for the nodes that have it:</span>
+<span class="c1">#   [0]: Metazoa</span>
+<span class="c1">#   [1]: Fungi</span>
+<span class="c1">#   [0, 0]: Primates</span>
+<span class="c1">#   ADHY: nematode</span>
+<span class="c1">#   ADHX: insect</span>
+<span class="c1">#   ADH4: yeast</span>
+<span class="c1">#   ADH3: yeast</span>
+<span class="c1">#   ADH2: yeast</span>
+<span class="c1">#   ADH1: yeast</span>
+<span class="c1">#   ADH2: human</span>
+<span class="c1">#   ADH1: human</span>
 </pre></div>
 </div>
 </section>
