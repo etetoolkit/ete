@@ -1073,7 +1073,7 @@ cdef class Tree(object):
                 tname = ''.join(next(avail_names))
             n.name = tname
 
-    def set_outgroup_jordi(self, outgroup, branch_properties=None):
+    def set_outgroup_v2(self, outgroup, branch_properties=None):
         """Set the given outgroup node at the root and return it.
 
         :param outgroup: The node too use as future root.
