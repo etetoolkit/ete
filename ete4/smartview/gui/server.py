@@ -773,8 +773,6 @@ def get_drawer(tree_id, args):
         abort(400, f'not a valid drawer: {drawer_name}')
     except (ValueError, AssertionError) as e:
         abort(400, str(e))
-    except:
-        pass
 
 
 def get_newick(tree_id, max_mb):
