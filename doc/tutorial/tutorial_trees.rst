@@ -1371,3 +1371,323 @@ Example::
    #                     │                          ╭╴name=C
    #                     ╰╴name=Internal_2,dist=0.5╶┤
    #                                                ╰╴name=D
+
+
+.. _resolve_polytomy:
+
+Solving multifurcations
+-----------------------
+
+When a tree contains a polytomy (a node with more than 2 children),
+the method :func:`resolve_polytomy` can be used to convert the node
+into a randomly bifurcated structure. This is really not a solution
+for the polytomy but it allows to export the tree as a strictly
+bifurcated newick structure, which is a requirement for some external
+software.
+
+The method can be used on a very specific node while keeping the rest
+of the tree intact by disabling the :attr:`recursive` flag.
+
+Example::
+
+  t = Tree('(((a,b,c),(d,e,f,g)),(f,i,h));')
+
+  print(t)
+  #      ╭╴a
+  #    ╭─┼╴b
+  #  ╭─┤ ╰╴c
+  #  │ │ ╭╴d
+  #  │ ╰─┼╴e
+  # ─┤   ├╴f
+  #  │   ╰╴g
+  #  │ ╭╴f
+  #  ╰─┼╴i
+  #    ╰╴h
+
+  polynode = t.common_ancestor(['a', 'b'])
+  polynode.resolve_polytomy(recursive=False)
+
+  print(t)
+  #      ╭─┬╴b
+  #    ╭─┤ ╰╴c
+  #  ╭─┤ ╰╴a
+  #  │ │ ╭╴d
+  #  │ ╰─┼╴e
+  # ─┤   ├╴f
+  #  │   ╰╴g
+  #  │ ╭╴f
+  #  ╰─┼╴i
+  #    ╰╴h
+
+  t.resolve_polytomy(recursive=True)
+
+  print(t)
+  #      ╭─┬╴b
+  #    ╭─┤ ╰╴c
+  #    │ ╰╴a
+  #  ╭─┤   ╭─┬╴f
+  #  │ │ ╭─┤ ╰╴g
+  # ─┤ ╰─┤ ╰╴e
+  #  │   ╰╴d
+  #  │ ╭─┬╴i
+  #  ╰─┤ ╰╴h
+  #    ╰╴f
+
+
+Tree rooting
+------------
+
+Tree rooting is understood as the technique by with a given tree is
+conceptually polarized from more basal to more terminal nodes.
+
+In phylogenetics, for instance, this a crucial step prior to the
+interpretation of trees, since it will determine the evolutionary
+relationships among the species involved.
+
+The concept of rooted trees is different than just having a root node,
+which is always necessary to handle a tree data structure. Usually,
+the way in which a tree is differentiated between rooted and unrooted,
+is by counting the number of branches of the current root node. Thus,
+if the root node has more than two child branches, the tree is
+considered unrooted. By contrast, when only two main branches exist
+under the root node, the tree is considered rooted.
+
+Having an unrooted tree means that any internal branch within the tree
+could be regarded as the root node, and there is no conceptual reason
+to place the root node where it is placed at the moment. Therefore, in
+an unrooted tree, there is no information about which internal nodes
+are more basal than others.
+
+By setting the root node between a given edge/branch of the tree
+structure the tree is polarized, meaning that the two branches under
+the root node are the most basal nodes. In practice, this is usually
+done by setting an **outgroup node**, which would represent one of
+these main root branches. The second one will be, obviously, the
+brother node. When you set an outgroup on unrooted trees, the
+multifurcations at the current root node are solved.
+
+In order to root an unrooted tree or re-root a tree structure, ETE
+implements the :func:`Tree.set_outgroup` method, which is present in
+any tree node instance. Similarly, the :func:`Tree.unroot` method can
+be used to perform the opposite action.
+
+Example::
+
+  # Create an unrooted tree. Note that 3 branches hang from the root
+  # node. This usually means that no information is available about
+  # which of the nodes is more basal.
+  t = Tree('(A,(H,F),(B,(E,D)));')
+
+  print(t)
+  #  ╭╴A
+  # ─┼─┬╴H
+  #  │ ╰╴F
+  #  ╰─┬╴B
+  #    ╰─┬╴E
+  #      ╰╴D
+
+  # Let's define the ancestor of E and D as the tree outgroup.
+  # Of course, the definition of an outgroup will depend on user criteria.
+  ancestor = t.common_ancestor(['E', 'D'])
+  t.set_outgroup(ancestor)
+
+  print(t)  # tree rooted at E and D's ancestor is more basal that the others
+  #  ╭─┬╴E
+  # ─┤ ╰╴D
+  #  ╰─┬╴B
+  #    ╰─┬╴A
+  #      ╰─┬╴H
+  #        ╰╴F
+
+  # Note that setting a different outgroup, a different interpretation
+  # of the tree is possible.
+  t.set_outgroup(t['A'])
+
+  print(t)  # tree rooted at a terminal node
+  #  ╭╴A
+  # ─┤ ╭─┬╴H
+  #  ╰─┤ ╰╴F
+  #    ╰─┬╴B
+  #      ╰─┬╴E
+  #        ╰╴D
+
+Note that although **rooting** is usually regarded as a whole-tree
+operation, ETE allows to root subparts of the tree without affecting
+its parent tree structure::
+
+  t = Tree('(((A,C),((H,F),(L,M))),((B,(J,K)),(E,D)));')
+
+  print(t)
+  #    ╭─┬╴A
+  #  ╭─┤ ╰╴C
+  #  │ │ ╭─┬╴H
+  #  │ ╰─┤ ╰╴F
+  # ─┤   ╰─┬╴L
+  #  │     ╰╴M
+  #  │ ╭─┬╴B
+  #  ╰─┤ ╰─┬╴J
+  #    │   ╰╴K
+  #    ╰─┬╴E
+  #      ╰╴D
+
+  # Each main branch of the tree is independently rooted.
+  node1 = t.common_ancestor(['A', 'H'])
+  node2 = t.common_ancestor(['B', 'D'])
+
+  node1.set_outgroup('H')
+  node2.set_outgroup('E')
+
+  print(t)  # tree after rooting each node independently
+  #    ╭╴H
+  #  ╭─┤ ╭╴F
+  #  │ ╰─┤ ╭─┬╴L
+  # ─┤   ╰─┤ ╰╴M
+  #  │     ╰─┬╴A
+  #  │       ╰╴C
+  #  ╰─┬╴E
+  #    ╰─┬╴D
+  #      ╰─┬╴B
+  #        ╰─┬╴J
+  #          ╰╴K
+
+
+Working with branch distances
+-----------------------------
+
+The branch length between one node an its parent is encoded as the
+:attr:`Tree.dist` property. Together with tree topology, branch
+lengths define the relationships among nodes.
+
+
+Getting distances between nodes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The :func:`Tree.get_distance` method can be used to calculate the
+distance between two connected nodes. The method accepts as arguments
+two descendant nodes.
+
+Example::
+
+  # Create a tree with branch lenght information.
+  nw = """(((A:1,B:2):1,C:3):1,
+  (((((D:0.5,I:0):0,F:0):0,G:0):0,H:0):0,E:0.2):3):2;
+  """.replace('\n', '')
+
+  t = Tree(nw)
+
+  print(t)
+  print(t.to_str(props=['dist'], compact=True))
+  #   ╭─┬╴A
+  # ╭─┤ ╰╴B
+  # │ ╰╴C
+  # │       ╭─┬╴D
+  #─┤     ╭─┤ ╰╴I
+  # │   ╭─┤ ╰╴F
+  # │ ╭─┤ ╰╴G
+  # ╰─┤ ╰╴H
+  #   ╰╴E
+  #            ╭╴1.0╶┬╴1.0
+  #      ╭╴1.0╶┤     ╰╴2.0
+  #      │     ╰╴3.0
+  #      │                       ╭╴0.0╶┬╴0.5
+  # ╴2.0╶┤                 ╭╴0.0╶┤     ╰╴0.0
+  #      │           ╭╴0.0╶┤     ╰╴0.0
+  #      │     ╭╴0.0╶┤     ╰╴0.0
+  #      ╰╴3.0╶┤     ╰╴0.0
+  #            ╰╴0.2
+
+  # Calculate distance between two nodes.
+  print('The distance between A and C is', t.get_distance('A', 'C'))
+  # The distance between A and C is 5.0
+
+  # Calculate the toplogical distance (number of nodes in between).
+  print('The number of nodes between A and D is',
+        t.get_distance('A', 'D', topological=True))
+  # The number of nodes between A and D is 9
+
+Additionally to this, ETE incorporates two more methods to calculate
+the most distant node from a given point in a tree. You can use the
+:func:`Tree.get_farthest_node` method to retrieve the most distant
+point from a node within the whole tree structure. Alternatively,
+:func:`Tree.get_farthest_leaf` will return the most distant descendant
+(always a leaf). If more than one node matches the farthest distance,
+the first occurrence is returned.
+
+Distance between nodes can also be computed as the number of nodes
+between them (considering all branch lengths equal to 1.0). To do so,
+use ``topological=True`` as an argument::
+
+  # Find the farthest node from E within the whole structure.
+  farthest, dist = t['E'].get_farthest_node()
+
+  print('The farthest node from E is', farthest.name, 'with dist', dist)
+  # The farthest node from E is B with dist 7.2
+
+  # Find the farthest node from E within the whole structure,
+  # regarding the number of nodes in between as distance value.
+  farthest, dist = t['E'].get_farthest_node(topological=True)
+
+  print('The farthest (topologically) node from E is',
+        farthest.name, 'with', dist, 'nodes in between')
+  # The farthest (topologically) node from E is D with 4.0 nodes in between
+
+
+.. _sub:getting-midpoint-outgroup:
+
+Getting midpoint outgroup
+-------------------------
+
+In order to obtain a balanced rooting of the tree, you can set as the
+tree outgroup that partition which splits the tree into two equally
+distant clusters (using branch lengths). This is called the midpoint
+outgroup.
+
+The :func:`Tree.get_midpoint_outgroup` method will return the outgroup
+partition that splits the current node into two balanced branches in
+terms of node distances.
+
+Example::
+
+  # Generate a random tree.
+  t = Tree()
+  t.populate(15)
+
+  print(t)  # will look more or less like...
+  #   ╭─┬╴f
+  # ╭─┤ ╰─┬╴g
+  # │ │   ╰╴h
+  # │ ╰─┬╴i
+  # │   ╰╴j
+  #─┤   ╭─┬╴k
+  # │   │ ╰─┬╴l
+  # │ ╭─┤   ╰╴m
+  # │ │ │ ╭─┬╴n
+  # ╰─┤ ╰─┤ ╰╴o
+  #   │   ╰─┬╴a
+  #   │     ╰╴b
+  #   ╰─┬╴c
+  #     ╰─┬╴d
+  #       ╰╴e
+
+  # Calculate the midpoint node.
+  R = t.get_midpoint_outgroup()
+
+  # And set it as tree outgroup.
+  t.set_outgroup(R)
+
+  print(t)  # will look more or less like...
+  #     ╭─┬╴k
+  #     │ ╰─┬╴l
+  #   ╭─┤   ╰╴m
+  #   │ │ ╭─┬╴n
+  # ╭─┤ ╰─┤ ╰╴o
+  # │ │   ╰─┬╴a
+  # │ │     ╰╴b
+  #─┤ ╰─┬╴c
+  # │   ╰─┬╴d
+  # │     ╰╴e
+  # │ ╭─┬╴f
+  # ╰─┤ ╰─┬╴g
+  #   │   ╰╴h
+  #   ╰─┬╴i
+  #     ╰╴j
