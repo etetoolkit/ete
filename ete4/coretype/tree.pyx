@@ -361,8 +361,11 @@ cdef class Tree(object):
         :param dist: Distance from the node to the child.
         :param support: Support value of child partition.
         """
+        if child and type(child) != self.__class__:
+            raise TreeError(f'Incorrect child type: {type(child)}')
+
         if child is None:
-            child = self.__class__()
+            child = self.__class__()  # can be Tree(), PhyloTree(), etc.
 
         if name is not None:
             child.name = name
@@ -370,9 +373,6 @@ cdef class Tree(object):
             child.dist = dist
         if support is not None:
             child.support = support
-
-        if type(child) != type(self):
-            raise TreeError(f'Incorrect child type: {type(child)}')
 
         child.up = self
         self.children.append(child)
@@ -387,28 +387,28 @@ cdef class Tree(object):
     def pop_child(self, child_idx=-1):
         try:
             child = self.children.pop(child_idx)
-        except ValueError as e:
-            raise TreeError("child not found")
-        else:
             child.up = None
             return child
+        except ValueError as e:
+            raise TreeError(f'Cannot pop child: not found ({e})')
 
     def remove_child(self, child):
-        """
-        Removes a child from this node (parent and child
-        nodes still exit but are no longer connected).
+        """Remove child from this node and return it.
+
+        After calling this function, parent and child nodes still exit,
+        but are no longer connected.
         """
         try:
-            self.children.remove(child)
-        except ValueError as e:
-            raise TreeError("child not found")
-        else:
-            child.up = None
+            self.children.remove(child)  # parent will not know about child
+            child.up = None  # child will not know about parent
             return child
+        except ValueError as e:
+            raise TreeError(f'Cannot remove child: not found ({e})')
 
     def remove_children(self):
-        children = list(self.children)
-        return [ self.remove_child(child) for child in children ]
+        """Remove all children from this node and return a list with them."""
+        children = list(self.children)  # we need to make a copy of the list!
+        return [self.remove_child(node) for node in children]
 
     def add_sister(self, sister=None, name=None, dist=None):
         """Add a sister to this node and return it.
@@ -417,8 +417,8 @@ cdef class Tree(object):
         """
         if self.up is None:
             raise TreeError("A parent node is required to add a sister")
-        else:
-            return self.up.add_child(child=sister, name=name, dist=dist)
+
+        return self.up.add_child(child=sister, name=name, dist=dist)
 
     def remove_sister(self, sister=None):
         """Remove a sister node.
@@ -1905,8 +1905,7 @@ cdef class Tree(object):
         combination of all possible solutions of the multifurcated
         nodes.
 
-        .. warning:
-
+        .. warning::
            Please note that the number of of possible binary trees grows
            exponentially with the number and size of polytomies. Using this
            function with large multifurcations is not feasible:
