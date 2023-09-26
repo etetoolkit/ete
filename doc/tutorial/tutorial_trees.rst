@@ -130,16 +130,16 @@ populated tree::
   # {'name': 'root', 'dist': 1.0, 'support': 0.5, 'coolness': 'high'}
 
   print(t)  # will look more or less like:
-  #  ╭─┬╴aaaaaaaaaa
-  #  │ ╰╴aaaaaaaaab
-  # ─┤ ╭─┬╴aaaaaaaaac
-  #  │ │ ╰─┬╴aaaaaaaaad
-  #  ╰─┤   ╰─┬╴aaaaaaaaae
-  #    │     ╰╴aaaaaaaaaf
-  #    ╰─┬╴aaaaaaaaag
-  #      ╰─┬╴aaaaaaaaah
-  #        ╰─┬╴aaaaaaaaai
-  #          ╰╴aaaaaaaaaj
+  #  ╭─┬╴a
+  #  │ ╰╴b
+  # ─┤ ╭─┬╴c
+  #  │ │ ╰─┬╴d
+  #  ╰─┤   ╰─┬╴e
+  #    │     ╰╴f
+  #    ╰─┬╴g
+  #      ╰─┬╴h
+  #        ╰─┬╴i
+  #          ╰╴j
 
 
 Reading newick trees
@@ -709,12 +709,14 @@ exclusively grouping a custom set of annotations::
   # Obtain clusters exclusively green and yellow.
   print('Green-yellow clusters:')
   for node in t.get_monophyletic(prop='color', values=['green', 'yellow']):
-      print(node.to_str(props=[ 'name', 'color'], show_internal=False, compact=True))
-
+      print()
+      print(node.to_str(props=['name', 'color'], show_internal=False, compact=True))
   # Green-yellow clusters:
+  #
   #  ╭─┬╴a,green
   # ─┤ ╰╴e,green
   #  ╰╴i,yellow
+  #
   #  ╭─┬╴f,yellow
   # ─┤ ╰╴g,green
   #  ╰─┬╴j,yellow
@@ -919,7 +921,6 @@ To read NHX notation you can just read it as a normal newick::
   for n in t.traverse():
       if 'S' in n.props:
          print('  %s: %s' % (n.name if n.name else n.id, n.props['S']))
-
   # S property for the nodes that have it:
   #   [0]: Metazoa
   #   [1]: Fungi
