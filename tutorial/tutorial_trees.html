@@ -79,6 +79,29 @@
 <li><p><a class="reference internal" href="#checking-the-monophyly-of-properties-within-a-tree" id="id22">Checking the monophyly of properties within a tree</a></p></li>
 <li><p><a class="reference internal" href="#caching-tree-content-for-faster-lookup-operations" id="id23">Caching tree content for faster lookup operations</a></p></li>
 <li><p><a class="reference internal" href="#node-annotation" id="id24">Node annotation</a></p></li>
+<li><p><a class="reference internal" href="#comparing-trees" id="id25">Comparing trees</a></p>
+<ul>
+<li><p><a class="reference internal" href="#distances-between-trees" id="id26">Distances between trees</a></p></li>
+<li><p><a class="reference internal" href="#robinson-foulds-distance" id="id27">Robinson-Foulds distance</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#modifying-tree-topology" id="id28">Modifying tree topology</a></p>
+<ul>
+<li><p><a class="reference internal" href="#creating-trees-from-scratch" id="id29">Creating trees from scratch</a></p></li>
+<li><p><a class="reference internal" href="#how-to-delete-eliminate-or-remove-detach-nodes" id="id30">How to delete/eliminate or remove/detach nodes</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#pruning-trees" id="id31">Pruning trees</a></p></li>
+<li><p><a class="reference internal" href="#concatenating-trees" id="id32">Concatenating trees</a></p></li>
+<li><p><a class="reference internal" href="#copying-duplicating-trees" id="id33">Copying (duplicating) trees</a></p></li>
+<li><p><a class="reference internal" href="#solving-multifurcations" id="id34">Solving multifurcations</a></p></li>
+<li><p><a class="reference internal" href="#tree-rooting" id="id35">Tree rooting</a></p></li>
+<li><p><a class="reference internal" href="#working-with-branch-distances" id="id36">Working with branch distances</a></p>
+<ul>
+<li><p><a class="reference internal" href="#getting-distances-between-nodes" id="id37">Getting distances between nodes</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#getting-midpoint-outgroup" id="id38">Getting midpoint outgroup</a></p></li>
 </ul>
 </li>
 </ul>
@@ -308,7 +331,7 @@ pointer to its parent’s node, while the latter is a list of children
 nodes. Although it is possible to modify the structure of a tree by
 changing these attributes, it is strongly recommend not to do it.
 Several methods are provided to manipulate each node’s connections in
-a safe way (see <span class="xref std std-ref">sec:modifying-tree-topology</span>).</p>
+a safe way (see <a class="reference internal" href="#sec-modifying-tree-topology"><span class="std std-ref">Comparing trees</span></a>).</p>
 <p>In addition, three other basic attributes are always present in any
 tree node instance (let’s call it <code class="docutils literal notranslate"><span class="pre">node</span></code>):</p>
 <table class="docutils align-default">
@@ -871,6 +894,7 @@ add extra properties (features, annotations) to any node. The first
 one allows to add one one feature at a time, while the second one can
 be used to add many features with the same call.</p>
 <p>Similarly, <code class="xref py py-func docutils literal notranslate"><span class="pre">Tree.del_prop()</span></code> can be used to delete a property.</p>
+<p>Example using annotations when working on a tree:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((H:0.3,I:0.1),A:1,(B:0.4,(C:0.5,(J:1.3,(F:1.2,D:0.1)))));&#39;</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">to_str</span><span class="p">())</span>
@@ -1022,6 +1046,724 @@ the node’s data into the newick string.</p>
 <span class="c1">#   ADH1: yeast</span>
 <span class="c1">#   ADH2: human</span>
 <span class="c1">#   ADH1: human</span>
+</pre></div>
+</div>
+</section>
+<section id="comparing-trees">
+<span id="robinson-foulds"></span><span id="sec-modifying-tree-topology"></span><h2><a class="toc-backref" href="#id25" role="doc-backlink">Comparing trees</a><a class="headerlink" href="#comparing-trees" title="Link to this heading">¶</a></h2>
+<section id="distances-between-trees">
+<h3><a class="toc-backref" href="#id26" role="doc-backlink">Distances between trees</a><a class="headerlink" href="#distances-between-trees" title="Link to this heading">¶</a></h3>
+<p>The <code class="xref py py-func docutils literal notranslate"><span class="pre">Tree.compare()</span></code> function allows to calculate distances
+between two trees based on any node property (i.e. name, species,
+other tags) using Robinson-Foulds and edge compatibility distances. It
+automatically handles differences in tree sizes, shared nodes and
+duplicated feature names.</p>
+<p>Its result is a dictionary with the following contents:</p>
+<ul class="simple">
+<li><p>result[‘rf’] = Robinson-Foulds distance between the two trees.
+(Average of Robinson-Foulds distances if target tree contained
+duplication and was split in several subtrees.)</p></li>
+<li><p>result[‘max_rf’] = Maximum Robinson-Foulds distance expected for this comparison.</p></li>
+<li><p>result[‘norm_rf’] = Normalized Robinson-Foulds distance (from 0 to 1).</p></li>
+<li><p>result[‘effective_tree_size’] = Size of the compared trees, which
+are pruned to the common shared nodes.</p></li>
+<li><p>result[‘ref_edges_in_source’] = Compatibility score of the target
+tree with respect to the source tree (how many edges in reference
+are found in the source).</p></li>
+<li><p>result[‘source_edges_in_ref’] = Compatibility score of the source
+tree with respect to the reference tree (how many edges in source
+are found in the reference).</p></li>
+<li><p>result[‘source_subtrees’] = Number of subtrees in the source tree (1
+if it does not contain duplications).</p></li>
+<li><p>result[‘common_edges’] = Set of common edges between source tree and
+reference.</p></li>
+<li><p>result[‘source_edges’] = Set of edges found in the source tree.</p></li>
+<li><p>result[‘ref_edges’] = Set of edges found in the reference tree.</p></li>
+<li><p>result[‘treeko_dist’] = TreeKO speciation distance for comparisons
+including duplication nodes.</p></li>
+</ul>
+</section>
+<section id="robinson-foulds-distance">
+<h3><a class="toc-backref" href="#id27" role="doc-backlink">Robinson-Foulds distance</a><a class="headerlink" href="#robinson-foulds-distance" title="Link to this heading">¶</a></h3>
+<p>Two tree topologies can be compared using the Robinson-Foulds (RF)
+metric. The method <code class="xref py py-func docutils literal notranslate"><span class="pre">Tree.robinson_foulds()</span></code> available for any ETE
+tree node allows to:</p>
+<ul class="simple">
+<li><p>Compare two tree topologies by their name labels (default) or any
+other annotated feature in the tree.</p></li>
+<li><p>Compare topologies of different size and content. When two trees
+contain a different set of labels, only shared leaves will be used.</p></li>
+<li><p>Examine size and content of matching and missing partitions. Since
+the method returns the list of partitions found in both trees,
+details about matching partitions can be obtained easily.</p></li>
+<li><p>Discard edges from the comparison based on their support value.</p></li>
+<li><p>Automatically expand polytomies (multifurcations) in source and
+target trees.</p></li>
+</ul>
+<p>There is also a command line tool providing most used features:
+<code class="docutils literal notranslate"><span class="pre">ete</span> <span class="pre">compare</span></code>.</p>
+<p>The following example shows several of the above mentioned features:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t1</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(((a,b),c),((e,f),g));&#39;</span><span class="p">)</span>
+<span class="n">t2</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(((a,c),b),((e,f),g));&#39;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t2</span><span class="p">)</span>
+<span class="c1">#    ╭─┬╴a</span>
+<span class="c1">#  ╭─┤ ╰╴b</span>
+<span class="c1"># ─┤ ╰╴c</span>
+<span class="c1">#  │ ╭─┬╴e</span>
+<span class="c1">#  ╰─┤ ╰╴f</span>
+<span class="c1">#    ╰╴g</span>
+<span class="c1">#    ╭─┬╴a</span>
+<span class="c1">#  ╭─┤ ╰╴c</span>
+<span class="c1"># ─┤ ╰╴b</span>
+<span class="c1">#  │ ╭─┬╴e</span>
+<span class="c1">#  ╰─┤ ╰╴f</span>
+<span class="c1">#    ╰╴g</span>
+
+<span class="n">rf</span><span class="p">,</span> <span class="n">rf_max</span><span class="p">,</span> <span class="n">common</span><span class="p">,</span> <span class="n">parts_t1</span><span class="p">,</span> <span class="n">parts_t2</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">t1</span><span class="o">.</span><span class="n">robinson_foulds</span><span class="p">(</span><span class="n">t2</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;RF distance is </span><span class="si">{</span><span class="n">rf</span><span class="si">}</span><span class="s1"> over a total of </span><span class="si">{</span><span class="n">rf_max</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Partitions in tree2 that were not found in tree1:&#39;</span><span class="p">,</span> <span class="n">parts_t1</span> <span class="o">-</span> <span class="n">parts_t2</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Partitions in tree1 that were not found in tree2:&#39;</span><span class="p">,</span> <span class="n">parts_t2</span> <span class="o">-</span> <span class="n">parts_t1</span><span class="p">)</span>
+<span class="c1"># RF distance is 2 over a total of 8</span>
+<span class="c1"># Partitions in tree2 that were not found in tree1: {(&#39;a&#39;, &#39;b&#39;)}</span>
+<span class="c1"># Partitions in tree1 that were not found in tree2: {(&#39;a&#39;, &#39;c&#39;)}</span>
+</pre></div>
+</div>
+<p>We can also compare trees sharing only part of their labels:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t1</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(((a,b),c),((e,f),g));&#39;</span><span class="p">)</span>
+<span class="n">t2</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(((a,c),b),(g,H));&#39;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t2</span><span class="p">)</span>
+<span class="c1">#    ╭─┬╴a</span>
+<span class="c1">#  ╭─┤ ╰╴b</span>
+<span class="c1"># ─┤ ╰╴c</span>
+<span class="c1">#  │ ╭─┬╴e</span>
+<span class="c1">#  ╰─┤ ╰╴f</span>
+<span class="c1">#    ╰╴g</span>
+<span class="c1">#    ╭─┬╴a</span>
+<span class="c1">#  ╭─┤ ╰╴c</span>
+<span class="c1"># ─┤ ╰╴b</span>
+<span class="c1">#  ╰─┬╴g</span>
+<span class="c1">#    ╰╴H</span>
+
+<span class="n">rf</span><span class="p">,</span> <span class="n">rf_max</span><span class="p">,</span> <span class="n">common</span><span class="p">,</span> <span class="n">parts_t1</span><span class="p">,</span> <span class="n">parts_t2</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">t1</span><span class="o">.</span><span class="n">robinson_foulds</span><span class="p">(</span><span class="n">t2</span><span class="p">)</span>
+
+<span class="c1"># Same distance holds even for partially overlapping trees.</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;RF distance is </span><span class="si">{</span><span class="n">rf</span><span class="si">}</span><span class="s1"> over a total of </span><span class="si">{</span><span class="n">rf_max</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Partitions in tree2 that were not found in tree1:&#39;</span><span class="p">,</span> <span class="n">parts_t1</span> <span class="o">-</span> <span class="n">parts_t2</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Partitions in tree1 that were not found in tree2:&#39;</span><span class="p">,</span> <span class="n">parts_t2</span> <span class="o">-</span> <span class="n">parts_t1</span><span class="p">)</span>
+<span class="c1"># RF distance is 2 over a total of 4</span>
+<span class="c1"># Partitions in tree2 that were not found in tree1: {(&#39;a&#39;, &#39;b&#39;)}</span>
+<span class="c1"># Partitions in tree1 that were not found in tree2: {(&#39;a&#39;, &#39;c&#39;)}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="modifying-tree-topology">
+<h2><a class="toc-backref" href="#id28" role="doc-backlink">Modifying tree topology</a><a class="headerlink" href="#modifying-tree-topology" title="Link to this heading">¶</a></h2>
+<section id="creating-trees-from-scratch">
+<h3><a class="toc-backref" href="#id29" role="doc-backlink">Creating trees from scratch</a><a class="headerlink" href="#creating-trees-from-scratch" title="Link to this heading">¶</a></h3>
+<p>If no arguments are passed to the <code class="xref py py-class docutils literal notranslate"><span class="pre">Tree</span></code> class constructor,
+an empty tree node will be returned. Such an orphan node can be used
+to populate a tree from scratch. For this, the <code class="xref py py-attr docutils literal notranslate"><span class="pre">Tree.up</span></code>,
+and <code class="xref py py-attr docutils literal notranslate"><span class="pre">Tree.children</span></code> attributes should never be used (unless
+it is strictly necessary). Instead, several methods exist to
+manipulate the topology of a tree:</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.populate" title="ete4.Tree.populate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ete4.Tree.populate</span></code></a>(size[, names_library, ...])</p></td>
+<td><p>Populate current node with branches generating a random topology.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.add_child" title="ete4.Tree.add_child"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ete4.Tree.add_child</span></code></a>([child, name, dist, support])</p></td>
+<td><p>Add a new child to this node and return it.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.delete" title="ete4.Tree.delete"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ete4.Tree.delete</span></code></a>([prevent_nondicotomic, ...])</p></td>
+<td><p>Delete node from the tree structure, keeping its children.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.detach" title="ete4.Tree.detach"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ete4.Tree.detach</span></code></a>()</p></td>
+<td><p>Detach this node (and descendants) from its parent and return itself.</p></td>
+</tr>
+</tbody>
+</table>
+<p>As an example of how to use them:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">()</span>  <span class="c1"># create an empty tree</span>
+
+<span class="n">A</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>  <span class="c1"># add new child to the tree root and return it</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;B&#39;</span><span class="p">)</span>
+
+<span class="n">C</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>  <span class="c1"># add new child to one of the branches</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">add_sister</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;D&#39;</span><span class="p">)</span>  <span class="c1"># add a second child to same branch as before</span>
+<span class="c1"># Note that the last one did it by using a sister as the starting point.</span>
+
+<span class="n">R</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;R&#39;</span><span class="p">)</span>  <span class="c1"># add a third child (multifurcations are ok)</span>
+
+<span class="c1"># Add 6 random leaves to the R branch, with names &#39;r1&#39; to &#39;r6&#39;.</span>
+<span class="n">R</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="n">names_library</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;r1&#39;</span><span class="p">,</span> <span class="s1">&#39;r2&#39;</span><span class="p">,</span> <span class="s1">&#39;r3&#39;</span><span class="p">,</span> <span class="s1">&#39;r4&#39;</span><span class="p">,</span> <span class="s1">&#39;r5&#39;</span><span class="p">,</span> <span class="s1">&#39;r6&#39;</span><span class="p">])</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+<span class="c1">#    ╭╴C</span>
+<span class="c1">#  ╭─┼╴D</span>
+<span class="c1">#  │ ╰─┬╴r6</span>
+<span class="c1">#  │   ╰─┬╴r5</span>
+<span class="c1"># ─┤     ╰─┬╴r4</span>
+<span class="c1">#  │       ╰─┬╴r3</span>
+<span class="c1">#  │         ╰─┬╴r2</span>
+<span class="c1">#  │           ╰╴r1</span>
+<span class="c1">#  ╰╴B</span>
+</pre></div>
+</div>
+<p>A common use of the <code class="xref py py-func docutils literal notranslate"><span class="pre">populate()</span></code> method is to quickly create
+example trees from scratch. Here we create a random tree with 100
+leaves:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">()</span>
+<span class="n">t</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="how-to-delete-eliminate-or-remove-detach-nodes">
+<h3><a class="toc-backref" href="#id30" role="doc-backlink">How to delete/eliminate or remove/detach nodes</a><a class="headerlink" href="#how-to-delete-eliminate-or-remove-detach-nodes" title="Link to this heading">¶</a></h3>
+<p>In ETE there is a difference between detaching and deleting a node.</p>
+<p>Detaching disconnects a complete partition from the tree structure, so
+all its descendants are also disconnected from the tree. There are two
+methods to perform this action: <code class="xref py py-func docutils literal notranslate"><span class="pre">Tree.remove_child()</span></code> and
+<code class="xref py py-func docutils literal notranslate"><span class="pre">Tree.detach()</span></code>.</p>
+<p>In contrast, deleting a node means eliminating such node without
+affecting its descendants. Children from the deleted node are
+automatically connected to the next possible parent.</p>
+<p>This is better understood with the following example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((((H,K)D,(F,I)G)B,E)A,((L,(N,Q)O)J,(P,S)M)C);&#39;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">compact</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<span class="c1">#                  ╭╴D╶┬╴H</span>
+<span class="c1">#              ╭╴B╶┤   ╰╴K</span>
+<span class="c1">#          ╭╴A╶┤   ╰╴G╶┬╴F</span>
+<span class="c1">#          │   │       ╰╴I</span>
+<span class="c1"># ╴(empty)╶┤   ╰╴E</span>
+<span class="c1">#          │   ╭╴J╶┬╴L</span>
+<span class="c1">#          ╰╴C╶┤   ╰╴O╶┬╴N</span>
+<span class="c1">#              │       ╰╴Q</span>
+<span class="c1">#              ╰╴M╶┬╴P</span>
+<span class="c1">#                  ╰╴S</span>
+
+<span class="c1"># Get specific nodes.</span>
+<span class="n">G</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="s1">&#39;G&#39;</span><span class="p">]</span>
+<span class="n">J</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="s1">&#39;J&#39;</span><span class="p">]</span>
+<span class="n">C</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="s1">&#39;C&#39;</span><span class="p">]</span>
+
+<span class="c1"># If we REMOVE the node J from the tree, the whole partition under J will</span>
+<span class="c1"># be detached from the tree and it will be considered an independent tree.</span>
+<span class="c1"># We can do the same with either J.detach() or C.remove_child(J).</span>
+<span class="n">removed_node</span> <span class="o">=</span> <span class="n">J</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>  <span class="c1"># same as C.remove_child(J)</span>
+
+<span class="c1"># Tree after REMOVING the node J:</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">compact</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<span class="c1">#                  ╭╴D╶┬╴H</span>
+<span class="c1">#              ╭╴B╶┤   ╰╴K</span>
+<span class="c1">#          ╭╴A╶┤   ╰╴G╶┬╴F</span>
+<span class="c1"># ╴(empty)╶┤   │       ╰╴I</span>
+<span class="c1">#          │   ╰╴E</span>
+<span class="c1">#          ╰╴C╶╌╴M╶┬╴P</span>
+<span class="c1">#                  ╰╴S</span>
+
+<span class="c1"># However, if we DELETE the node G, only G will be eliminated from the</span>
+<span class="c1"># tree, and all its descendants will then hang from the next upper node.</span>
+<span class="n">G</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+
+<span class="c1"># Tree after DELETING the node G:</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">compact</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<span class="c1">#                  ╭╴D╶┬╴H</span>
+<span class="c1">#              ╭╴B╶┤   ╰╴K</span>
+<span class="c1">#          ╭╴A╶┤   ├╴F</span>
+<span class="c1"># ╴(empty)╶┤   │   ╰╴I</span>
+<span class="c1">#          │   ╰╴E</span>
+<span class="c1">#          ╰╴C╶╌╴M╶┬╴P</span>
+<span class="c1">#                  ╰╴S</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="pruning-trees">
+<h2><a class="toc-backref" href="#id31" role="doc-backlink">Pruning trees</a><a class="headerlink" href="#pruning-trees" title="Link to this heading">¶</a></h2>
+<p>Pruning a tree means to obtain the topology that connects a certain
+group of items by removing the unnecessary edges. To facilitate this
+task, ETE implements the <code class="xref py py-func docutils literal notranslate"><span class="pre">Tree.prune()</span></code> method, which can be used
+by providing the list of terminal and/or internal nodes that must be
+kept in the tree.</p>
+<p>The <cite>preserve_branch_length</cite> flag allows to remove nodes from a tree
+while keeping original distances among remaining nodes.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((((H,K),(F,I)G),E),((L,(N,Q)O),(P,S)));&#39;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+<span class="c1">#      ╭─┬╴H</span>
+<span class="c1">#    ╭─┤ ╰╴K</span>
+<span class="c1">#  ╭─┤ ╰─┬╴F</span>
+<span class="c1">#  │ │   ╰╴I</span>
+<span class="c1"># ─┤ ╰╴E</span>
+<span class="c1">#  │ ╭─┬╴L</span>
+<span class="c1">#  ╰─┤ ╰─┬╴N</span>
+<span class="c1">#    │   ╰╴Q</span>
+<span class="c1">#    ╰─┬╴P</span>
+<span class="c1">#      ╰╴S</span>
+
+<span class="c1"># Prune the tree in order to keep only some leaf nodes.</span>
+<span class="n">t</span><span class="o">.</span><span class="n">prune</span><span class="p">([</span><span class="s1">&#39;H&#39;</span><span class="p">,</span> <span class="s1">&#39;F&#39;</span><span class="p">,</span> <span class="s1">&#39;E&#39;</span><span class="p">,</span> <span class="s1">&#39;Q&#39;</span><span class="p">,</span> <span class="s1">&#39;P&#39;</span><span class="p">])</span>
+
+<span class="c1"># Pruned tree:</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+<span class="c1">#    ╭─┬╴H</span>
+<span class="c1">#  ╭─┤ ╰╴F</span>
+<span class="c1"># ─┤ ╰╴E</span>
+<span class="c1">#  ╰─┬╴Q</span>
+<span class="c1">#    ╰╴P</span>
+</pre></div>
+</div>
+<p>In the next section we will see hot to re-create the same tree again.</p>
+</section>
+<section id="concatenating-trees">
+<h2><a class="toc-backref" href="#id32" role="doc-backlink">Concatenating trees</a><a class="headerlink" href="#concatenating-trees" title="Link to this heading">¶</a></h2>
+<p>Given that all tree nodes share the same basic properties, they can be
+connected freely. In fact, any node can add a whole subtree as a
+child, so we can actually <em>cut &amp; paste</em> partitions.</p>
+<p>To do so, you can call the <code class="xref py py-func docutils literal notranslate"><span class="pre">Tree.add_child()</span></code> method using another tree
+node as first argument. If such a node is the root node of a
+different tree, you will concatenate the two tree structures.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This kind of operation may result in circular tree structures if you
+add a node’s ancestor as one of its descendants. ETE performs some
+basic checks, but a full check would affect seriously the
+performance. For this reason, users themselves should take care not
+to create circular structures by mistake.</p>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t1</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(A,(B,C));&#39;</span><span class="p">)</span>
+<span class="n">t2</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((D,E),(F,G));&#39;</span><span class="p">)</span>
+<span class="n">t3</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(H,((I,J),(K,L)));&#39;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t2</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t3</span><span class="p">)</span>
+<span class="c1"># ─┬╴A</span>
+<span class="c1">#  ╰─┬╴B</span>
+<span class="c1">#    ╰╴C</span>
+<span class="c1">#  ╭─┬╴D</span>
+<span class="c1"># ─┤ ╰╴E</span>
+<span class="c1">#  ╰─┬╴F</span>
+<span class="c1">#    ╰╴G</span>
+<span class="c1">#  ╭╴H</span>
+<span class="c1"># ─┤ ╭─┬╴I</span>
+<span class="c1">#  ╰─┤ ╰╴J</span>
+<span class="c1">#    ╰─┬╴K</span>
+<span class="c1">#      ╰╴L</span>
+
+<span class="c1"># Add two other trees as children of node A.</span>
+<span class="n">A</span> <span class="o">=</span> <span class="n">t1</span><span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">]</span>
+
+<span class="n">A</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">t2</span><span class="p">)</span>
+<span class="n">A</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">t3</span><span class="p">)</span>
+
+<span class="c1"># Resulting concatenated tree:</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t1</span><span class="p">)</span>
+<span class="c1">#      ╭─┬╴D</span>
+<span class="c1">#    ╭─┤ ╰╴E</span>
+<span class="c1">#    │ ╰─┬╴F</span>
+<span class="c1">#  ╭─┤   ╰╴G</span>
+<span class="c1">#  │ │ ╭╴H</span>
+<span class="c1">#  │ ╰─┤ ╭─┬╴I</span>
+<span class="c1"># ─┤   ╰─┤ ╰╴J</span>
+<span class="c1">#  │     ╰─┬╴K</span>
+<span class="c1">#  │       ╰╴L</span>
+<span class="c1">#  ╰─┬╴B</span>
+<span class="c1">#    ╰╴C</span>
+</pre></div>
+</div>
+</section>
+<section id="copying-duplicating-trees">
+<span id="copying-trees"></span><span id="sec-tree-rooting"></span><h2><a class="toc-backref" href="#id33" role="doc-backlink">Copying (duplicating) trees</a><a class="headerlink" href="#copying-duplicating-trees" title="Link to this heading">¶</a></h2>
+<p>ETE provides several strategies to clone tree structures. The method
+<code class="xref py py-func docutils literal notranslate"><span class="pre">Tree.copy()</span></code> can be used to produce a new independent tree
+object with the exact same topology and features as the original.
+However, as trees may involve many intricate levels of branches and
+nested features, 4 different methods are available to create a tree
+copy:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>“newick”: Tree topology, node names, branch lengths and branch
+support values will be copied as represented in the newick string
+This method is based on newick format serialization works very fast
+even for large trees.</p></li>
+<li><p>“newick-extended”: Tree topology and all node features will be
+copied based on the extended newick format representation. Only
+node features will be copied, thus excluding other node
+attributes. As this method is also based on newick serialisation,
+features will be converted into text strings when making the
+copy. Performance will depend on the tree size and the number and
+type of features being copied.</p></li>
+<li><p>“cpickle”: This is the default method. The whole node structure and
+its content will be cloned based on the cPickle object
+serialization python approach.  This method is slower, but
+recommended for full tree copying.</p></li>
+<li><p>“deepcopy”: The whole node structure and its content is copied
+based on the standard “copy” Python functionality. This is the
+slowest method, but it allows to copy very complex objects even
+when attributes point to lambda functions.</p></li>
+</ul>
+</div></blockquote>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((A,B)Internal_1:0.7,(C,D)Internal_2:0.5)root:1.3;&#39;</span><span class="p">)</span>
+
+<span class="c1"># Add a custom annotation to the node named A.</span>
+<span class="n">t</span><span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_props</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;custom value&#39;</span><span class="p">)</span>
+
+<span class="c1"># Add a complex feature to the A node, consisting of a list of lists.</span>
+<span class="n">t</span><span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_props</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="p">[[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">]])</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">to_str</span><span class="p">())</span>
+<span class="c1">#                                                ╭╴name=A,label=custom value,complex=[[0, 1], [2, 3]]</span>
+<span class="c1">#                     ╭╴name=Internal_1,dist=0.7╶┤</span>
+<span class="c1">#                     │                          ╰╴name=B</span>
+<span class="c1"># ╴name=root,dist=1.3╶┤</span>
+<span class="c1">#                     │                          ╭╴name=C</span>
+<span class="c1">#                     ╰╴name=Internal_2,dist=0.5╶┤</span>
+<span class="c1">#                                                ╰╴name=D</span>
+
+<span class="c1"># Newick copy will lose custom node annotations, complex features,</span>
+<span class="c1"># but not names and branch values.</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="s1">&#39;newick&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">to_str</span><span class="p">())</span>
+<span class="c1">#                                                ╭╴name=A</span>
+<span class="c1">#                     ╭╴name=Internal_1,dist=0.7╶┤</span>
+<span class="c1">#                     │                          ╰╴name=B</span>
+<span class="c1"># ╴name=root,dist=1.3╶┤</span>
+<span class="c1">#                     │                          ╭╴name=C</span>
+<span class="c1">#                     ╰╴name=Internal_2,dist=0.5╶┤</span>
+<span class="c1">#                                                ╰╴name=D</span>
+
+<span class="c1"># Extended newick copy will transfer custom annotations as text</span>
+<span class="c1"># strings, so complex features are lost.</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="s1">&#39;newick-extended&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">to_str</span><span class="p">())</span>
+<span class="c1">#                              ╭╴name=A,complex=_0_ 1_|_2_ 3_,label=custom value</span>
+<span class="c1">#   ╭╴name=Internal_1,dist=0.7╶┤</span>
+<span class="c1">#   │                          ╰╴name=B</span>
+<span class="c1"># ──┤</span>
+<span class="c1">#   │                          ╭╴name=C</span>
+<span class="c1">#   ╰╴name=Internal_2,dist=0.5╶┤</span>
+<span class="c1">#                              ╰╴name=D</span>
+
+<span class="c1"># The default pickle method will produce an exact clone of the</span>
+<span class="c1"># original tree, where features are duplicated keeping their</span>
+<span class="c1"># python data type.</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">to_str</span><span class="p">())</span>
+<span class="c1">#                                                ╭╴name=A,label=custom value,complex=[[0, 1], [2, 3]]</span>
+<span class="c1">#                     ╭╴name=Internal_1,dist=0.7╶┤</span>
+<span class="c1">#                     │                          ╰╴name=B</span>
+<span class="c1"># ╴name=root,dist=1.3╶┤</span>
+<span class="c1">#                     │                          ╭╴name=C</span>
+<span class="c1">#                     ╰╴name=Internal_2,dist=0.5╶┤</span>
+<span class="c1">#                                                ╰╴name=D</span>
+</pre></div>
+</div>
+</section>
+<section id="solving-multifurcations">
+<span id="resolve-polytomy"></span><h2><a class="toc-backref" href="#id34" role="doc-backlink">Solving multifurcations</a><a class="headerlink" href="#solving-multifurcations" title="Link to this heading">¶</a></h2>
+<p>When a tree contains a polytomy (a node with more than 2 children),
+the method <code class="xref py py-func docutils literal notranslate"><span class="pre">resolve_polytomy()</span></code> can be used to convert the node
+into a randomly bifurcated structure. This is really not a solution
+for the polytomy but it allows to export the tree as a strictly
+bifurcated newick structure, which is a requirement for some external
+software.</p>
+<p>The method can be used on a very specific node while keeping the rest
+of the tree intact by disabling the <code class="xref py py-attr docutils literal notranslate"><span class="pre">recursive</span></code> flag.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(((a,b,c),(d,e,f,g)),(f,i,h));&#39;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+<span class="c1">#      ╭╴a</span>
+<span class="c1">#    ╭─┼╴b</span>
+<span class="c1">#  ╭─┤ ╰╴c</span>
+<span class="c1">#  │ │ ╭╴d</span>
+<span class="c1">#  │ ╰─┼╴e</span>
+<span class="c1"># ─┤   ├╴f</span>
+<span class="c1">#  │   ╰╴g</span>
+<span class="c1">#  │ ╭╴f</span>
+<span class="c1">#  ╰─┼╴i</span>
+<span class="c1">#    ╰╴h</span>
+
+<span class="n">polynode</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">common_ancestor</span><span class="p">([</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">])</span>
+<span class="n">polynode</span><span class="o">.</span><span class="n">resolve_polytomy</span><span class="p">(</span><span class="n">recursive</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+<span class="c1">#      ╭─┬╴b</span>
+<span class="c1">#    ╭─┤ ╰╴c</span>
+<span class="c1">#  ╭─┤ ╰╴a</span>
+<span class="c1">#  │ │ ╭╴d</span>
+<span class="c1">#  │ ╰─┼╴e</span>
+<span class="c1"># ─┤   ├╴f</span>
+<span class="c1">#  │   ╰╴g</span>
+<span class="c1">#  │ ╭╴f</span>
+<span class="c1">#  ╰─┼╴i</span>
+<span class="c1">#    ╰╴h</span>
+
+<span class="n">t</span><span class="o">.</span><span class="n">resolve_polytomy</span><span class="p">(</span><span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+<span class="c1">#      ╭─┬╴b</span>
+<span class="c1">#    ╭─┤ ╰╴c</span>
+<span class="c1">#    │ ╰╴a</span>
+<span class="c1">#  ╭─┤   ╭─┬╴f</span>
+<span class="c1">#  │ │ ╭─┤ ╰╴g</span>
+<span class="c1"># ─┤ ╰─┤ ╰╴e</span>
+<span class="c1">#  │   ╰╴d</span>
+<span class="c1">#  │ ╭─┬╴i</span>
+<span class="c1">#  ╰─┤ ╰╴h</span>
+<span class="c1">#    ╰╴f</span>
+</pre></div>
+</div>
+</section>
+<section id="tree-rooting">
+<h2><a class="toc-backref" href="#id35" role="doc-backlink">Tree rooting</a><a class="headerlink" href="#tree-rooting" title="Link to this heading">¶</a></h2>
+<p>Tree rooting is understood as the technique by with a given tree is
+conceptually polarized from more basal to more terminal nodes.</p>
+<p>In phylogenetics, for instance, this a crucial step prior to the
+interpretation of trees, since it will determine the evolutionary
+relationships among the species involved.</p>
+<p>The concept of rooted trees is different than just having a root node,
+which is always necessary to handle a tree data structure. Usually,
+the way in which a tree is differentiated between rooted and unrooted,
+is by counting the number of branches of the current root node. Thus,
+if the root node has more than two child branches, the tree is
+considered unrooted. By contrast, when only two main branches exist
+under the root node, the tree is considered rooted.</p>
+<p>Having an unrooted tree means that any internal branch within the tree
+could be regarded as the root node, and there is no conceptual reason
+to place the root node where it is placed at the moment. Therefore, in
+an unrooted tree, there is no information about which internal nodes
+are more basal than others.</p>
+<p>By setting the root node between a given edge/branch of the tree
+structure the tree is polarized, meaning that the two branches under
+the root node are the most basal nodes. In practice, this is usually
+done by setting an <strong>outgroup node</strong>, which would represent one of
+these main root branches. The second one will be, obviously, the
+brother node. When you set an outgroup on unrooted trees, the
+multifurcations at the current root node are solved.</p>
+<p>In order to root an unrooted tree or re-root a tree structure, ETE
+implements the <code class="xref py py-func docutils literal notranslate"><span class="pre">Tree.set_outgroup()</span></code> method, which is present in
+any tree node instance. Similarly, the <code class="xref py py-func docutils literal notranslate"><span class="pre">Tree.unroot()</span></code> method can
+be used to perform the opposite action.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create an unrooted tree. Note that 3 branches hang from the root</span>
+<span class="c1"># node. This usually means that no information is available about</span>
+<span class="c1"># which of the nodes is more basal.</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(A,(H,F),(B,(E,D)));&#39;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+<span class="c1">#  ╭╴A</span>
+<span class="c1"># ─┼─┬╴H</span>
+<span class="c1">#  │ ╰╴F</span>
+<span class="c1">#  ╰─┬╴B</span>
+<span class="c1">#    ╰─┬╴E</span>
+<span class="c1">#      ╰╴D</span>
+
+<span class="c1"># Let&#39;s define the ancestor of E and D as the tree outgroup.</span>
+<span class="c1"># Of course, the definition of an outgroup will depend on user criteria.</span>
+<span class="n">ancestor</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">common_ancestor</span><span class="p">([</span><span class="s1">&#39;E&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">])</span>
+<span class="n">t</span><span class="o">.</span><span class="n">set_outgroup</span><span class="p">(</span><span class="n">ancestor</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>  <span class="c1"># tree rooted at E and D&#39;s ancestor is more basal that the others</span>
+<span class="c1">#  ╭─┬╴E</span>
+<span class="c1"># ─┤ ╰╴D</span>
+<span class="c1">#  ╰─┬╴B</span>
+<span class="c1">#    ╰─┬╴A</span>
+<span class="c1">#      ╰─┬╴H</span>
+<span class="c1">#        ╰╴F</span>
+
+<span class="c1"># Note that setting a different outgroup, a different interpretation</span>
+<span class="c1"># of the tree is possible.</span>
+<span class="n">t</span><span class="o">.</span><span class="n">set_outgroup</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">])</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>  <span class="c1"># tree rooted at a terminal node</span>
+<span class="c1">#  ╭╴A</span>
+<span class="c1"># ─┤ ╭─┬╴H</span>
+<span class="c1">#  ╰─┤ ╰╴F</span>
+<span class="c1">#    ╰─┬╴B</span>
+<span class="c1">#      ╰─┬╴E</span>
+<span class="c1">#        ╰╴D</span>
+</pre></div>
+</div>
+<p>Note that although <strong>rooting</strong> is usually regarded as a whole-tree
+operation, ETE allows to root subparts of the tree without affecting
+its parent tree structure:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(((A,C),((H,F),(L,M))),((B,(J,K)),(E,D)));&#39;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+<span class="c1">#    ╭─┬╴A</span>
+<span class="c1">#  ╭─┤ ╰╴C</span>
+<span class="c1">#  │ │ ╭─┬╴H</span>
+<span class="c1">#  │ ╰─┤ ╰╴F</span>
+<span class="c1"># ─┤   ╰─┬╴L</span>
+<span class="c1">#  │     ╰╴M</span>
+<span class="c1">#  │ ╭─┬╴B</span>
+<span class="c1">#  ╰─┤ ╰─┬╴J</span>
+<span class="c1">#    │   ╰╴K</span>
+<span class="c1">#    ╰─┬╴E</span>
+<span class="c1">#      ╰╴D</span>
+
+<span class="c1"># Each main branch of the tree is independently rooted.</span>
+<span class="n">node1</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">common_ancestor</span><span class="p">([</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;H&#39;</span><span class="p">])</span>
+<span class="n">node2</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">common_ancestor</span><span class="p">([</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">])</span>
+
+<span class="n">node1</span><span class="o">.</span><span class="n">set_outgroup</span><span class="p">(</span><span class="s1">&#39;H&#39;</span><span class="p">)</span>
+<span class="n">node2</span><span class="o">.</span><span class="n">set_outgroup</span><span class="p">(</span><span class="s1">&#39;E&#39;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>  <span class="c1"># tree after rooting each node independently</span>
+<span class="c1">#    ╭╴H</span>
+<span class="c1">#  ╭─┤ ╭╴F</span>
+<span class="c1">#  │ ╰─┤ ╭─┬╴L</span>
+<span class="c1"># ─┤   ╰─┤ ╰╴M</span>
+<span class="c1">#  │     ╰─┬╴A</span>
+<span class="c1">#  │       ╰╴C</span>
+<span class="c1">#  ╰─┬╴E</span>
+<span class="c1">#    ╰─┬╴D</span>
+<span class="c1">#      ╰─┬╴B</span>
+<span class="c1">#        ╰─┬╴J</span>
+<span class="c1">#          ╰╴K</span>
+</pre></div>
+</div>
+</section>
+<section id="working-with-branch-distances">
+<h2><a class="toc-backref" href="#id36" role="doc-backlink">Working with branch distances</a><a class="headerlink" href="#working-with-branch-distances" title="Link to this heading">¶</a></h2>
+<p>The branch length between one node an its parent is encoded as the
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">Tree.dist</span></code> property. Together with tree topology, branch
+lengths define the relationships among nodes.</p>
+<section id="getting-distances-between-nodes">
+<h3><a class="toc-backref" href="#id37" role="doc-backlink">Getting distances between nodes</a><a class="headerlink" href="#getting-distances-between-nodes" title="Link to this heading">¶</a></h3>
+<p>The <code class="xref py py-func docutils literal notranslate"><span class="pre">Tree.get_distance()</span></code> method can be used to calculate the
+distance between two connected nodes. The method accepts as arguments
+two descendant nodes.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create a tree with branch lenght information.</span>
+<span class="n">nw</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;(((A:1,B:2):1,C:3):1,</span>
+<span class="s2">(((((D:0.5,I:0):0,F:0):0,G:0):0,H:0):0,E:0.2):3):2;</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="n">nw</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;dist&#39;</span><span class="p">],</span> <span class="n">compact</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<span class="c1">#   ╭─┬╴A</span>
+<span class="c1"># ╭─┤ ╰╴B</span>
+<span class="c1"># │ ╰╴C</span>
+<span class="c1"># │       ╭─┬╴D</span>
+<span class="c1">#─┤     ╭─┤ ╰╴I</span>
+<span class="c1"># │   ╭─┤ ╰╴F</span>
+<span class="c1"># │ ╭─┤ ╰╴G</span>
+<span class="c1"># ╰─┤ ╰╴H</span>
+<span class="c1">#   ╰╴E</span>
+<span class="c1">#            ╭╴1.0╶┬╴1.0</span>
+<span class="c1">#      ╭╴1.0╶┤     ╰╴2.0</span>
+<span class="c1">#      │     ╰╴3.0</span>
+<span class="c1">#      │                       ╭╴0.0╶┬╴0.5</span>
+<span class="c1"># ╴2.0╶┤                 ╭╴0.0╶┤     ╰╴0.0</span>
+<span class="c1">#      │           ╭╴0.0╶┤     ╰╴0.0</span>
+<span class="c1">#      │     ╭╴0.0╶┤     ╰╴0.0</span>
+<span class="c1">#      ╰╴3.0╶┤     ╰╴0.0</span>
+<span class="c1">#            ╰╴0.2</span>
+
+<span class="c1"># Calculate distance between two nodes.</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The distance between A and C is&#39;</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">get_distance</span><span class="p">(</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">))</span>
+<span class="c1"># The distance between A and C is 5.0</span>
+
+<span class="c1"># Calculate the toplogical distance (number of nodes in between).</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The number of nodes between A and D is&#39;</span><span class="p">,</span>
+      <span class="n">t</span><span class="o">.</span><span class="n">get_distance</span><span class="p">(</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">,</span> <span class="n">topological</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<span class="c1"># The number of nodes between A and D is 9</span>
+</pre></div>
+</div>
+<p>Additionally to this, ETE incorporates two more methods to calculate
+the most distant node from a given point in a tree. You can use the
+<code class="xref py py-func docutils literal notranslate"><span class="pre">Tree.get_farthest_node()</span></code> method to retrieve the most distant
+point from a node within the whole tree structure. Alternatively,
+<code class="xref py py-func docutils literal notranslate"><span class="pre">Tree.get_farthest_leaf()</span></code> will return the most distant descendant
+(always a leaf). If more than one node matches the farthest distance,
+the first occurrence is returned.</p>
+<p>Distance between nodes can also be computed as the number of nodes
+between them (considering all branch lengths equal to 1.0). To do so,
+use <code class="docutils literal notranslate"><span class="pre">topological=True</span></code> as an argument:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Find the farthest node from E within the whole structure.</span>
+<span class="n">farthest</span><span class="p">,</span> <span class="n">dist</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="s1">&#39;E&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_farthest_node</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The farthest node from E is&#39;</span><span class="p">,</span> <span class="n">farthest</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;with dist&#39;</span><span class="p">,</span> <span class="n">dist</span><span class="p">)</span>
+<span class="c1"># The farthest node from E is B with dist 7.2</span>
+
+<span class="c1"># Find the farthest node from E within the whole structure,</span>
+<span class="c1"># regarding the number of nodes in between as distance value.</span>
+<span class="n">farthest</span><span class="p">,</span> <span class="n">dist</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="s1">&#39;E&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_farthest_node</span><span class="p">(</span><span class="n">topological</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The farthest (topologically) node from E is&#39;</span><span class="p">,</span>
+      <span class="n">farthest</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;with&#39;</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="s1">&#39;nodes in between&#39;</span><span class="p">)</span>
+<span class="c1"># The farthest (topologically) node from E is D with 4.0 nodes in between</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="getting-midpoint-outgroup">
+<span id="sub-getting-midpoint-outgroup"></span><h2><a class="toc-backref" href="#id38" role="doc-backlink">Getting midpoint outgroup</a><a class="headerlink" href="#getting-midpoint-outgroup" title="Link to this heading">¶</a></h2>
+<p>In order to obtain a balanced rooting of the tree, you can set as the
+tree outgroup that partition which splits the tree into two equally
+distant clusters (using branch lengths). This is called the midpoint
+outgroup.</p>
+<p>The <code class="xref py py-func docutils literal notranslate"><span class="pre">Tree.get_midpoint_outgroup()</span></code> method will return the outgroup
+partition that splits the current node into two balanced branches in
+terms of node distances.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Generate a random tree.</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">()</span>
+<span class="n">t</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>  <span class="c1"># will look more or less like...</span>
+<span class="c1">#   ╭─┬╴f</span>
+<span class="c1"># ╭─┤ ╰─┬╴g</span>
+<span class="c1"># │ │   ╰╴h</span>
+<span class="c1"># │ ╰─┬╴i</span>
+<span class="c1"># │   ╰╴j</span>
+<span class="c1">#─┤   ╭─┬╴k</span>
+<span class="c1"># │   │ ╰─┬╴l</span>
+<span class="c1"># │ ╭─┤   ╰╴m</span>
+<span class="c1"># │ │ │ ╭─┬╴n</span>
+<span class="c1"># ╰─┤ ╰─┤ ╰╴o</span>
+<span class="c1">#   │   ╰─┬╴a</span>
+<span class="c1">#   │     ╰╴b</span>
+<span class="c1">#   ╰─┬╴c</span>
+<span class="c1">#     ╰─┬╴d</span>
+<span class="c1">#       ╰╴e</span>
+
+<span class="c1"># Calculate the midpoint node.</span>
+<span class="n">R</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">get_midpoint_outgroup</span><span class="p">()</span>
+
+<span class="c1"># And set it as tree outgroup.</span>
+<span class="n">t</span><span class="o">.</span><span class="n">set_outgroup</span><span class="p">(</span><span class="n">R</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>  <span class="c1"># will look more or less like...</span>
+<span class="c1">#     ╭─┬╴k</span>
+<span class="c1">#     │ ╰─┬╴l</span>
+<span class="c1">#   ╭─┤   ╰╴m</span>
+<span class="c1">#   │ │ ╭─┬╴n</span>
+<span class="c1"># ╭─┤ ╰─┤ ╰╴o</span>
+<span class="c1"># │ │   ╰─┬╴a</span>
+<span class="c1"># │ │     ╰╴b</span>
+<span class="c1">#─┤ ╰─┬╴c</span>
+<span class="c1"># │   ╰─┬╴d</span>
+<span class="c1"># │     ╰╴e</span>
+<span class="c1"># │ ╭─┬╴f</span>
+<span class="c1"># ╰─┤ ╰─┬╴g</span>
+<span class="c1">#   │   ╰╴h</span>
+<span class="c1">#   ╰─┬╴i</span>
+<span class="c1">#     ╰╴j</span>
 </pre></div>
 </div>
 </section>

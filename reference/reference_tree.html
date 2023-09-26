@@ -106,9 +106,9 @@ the layout function.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>face</strong> – Face to add.</p></li>
-<li><p><strong>column</strong> (<em>int</em>) – Column number where the face will go. Starts at 0.</p></li>
-<li><p><strong>position</strong> (<em>str</em>) – Position to place the face in the node. Posible
-values are: “branch-right”, “branch-top”, “branch-bottom”, “aligned”</p></li>
+<li><p><strong>column</strong> – Column number where the face will go. Starts at 0.</p></li>
+<li><p><strong>position</strong> – Position to place the face in the node. Posible
+values are: “branch-right”, “branch-top”, “branch-bottom”, “aligned”.</p></li>
 </ul>
 </dd>
 </dl>
@@ -117,17 +117,17 @@ values are: “branch-right”, “branch-top”, “branch-bottom”, “aligne
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.Tree.add_face_treeview">
 <span class="sig-name descname"><span class="pre">add_face_treeview</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">face</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'branch-right'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.add_face_treeview" title="Link to this definition">¶</a></dt>
-<dd><p>Add a fixed face to the node.  This type of faces will be
-always attached to nodes, independently of the layout
-function.</p>
+<dd><p>Add a fixed face to the node.</p>
+<p>This type of faces will be always attached to nodes,
+independently of the layout function.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>face</strong> – a Face or inherited instance</p></li>
+<li><p><strong>face</strong> – Face to add.</p></li>
 <li><p><strong>column</strong> – An integer number starting from 0</p></li>
-<li><p><strong>position</strong> (<em>&quot;branch-right&quot;</em>) – Posible values are:
-“branch-right”, “branch-top”, “branch-bottom”, “float”,
-“aligned”</p></li>
+<li><p><strong>position</strong> – Position to place the face in the node. Posible
+values are: “branch-right”, “branch-top”, “branch-bottom”, “float”,
+“aligned”.</p></li>
 </ul>
 </dd>
 </dl>
@@ -147,7 +147,7 @@ function.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.Tree.add_prop">
-<span class="sig-name descname"><span class="pre">add_prop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prop_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.add_prop" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">add_prop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.add_prop" title="Link to this definition">¶</a></dt>
 <dd><p>Add or update node’s property to the given value.</p>
 </dd></dl>
 
@@ -235,11 +235,11 @@ representation of the distance between each node.</p>
 </pre></div>
 </div>
 <p>and:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">E</span><span class="p">)</span> <span class="o">=</span> <span class="n">d</span><span class="p">(</span><span class="n">z</span><span class="p">,</span><span class="n">A</span><span class="p">)</span> <span class="o">+</span> <span class="n">d</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">E</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">E</span><span class="p">)</span> <span class="o">=</span> <span class="n">d</span><span class="p">(</span><span class="n">z</span><span class="p">,</span><span class="n">A</span><span class="p">)</span> <span class="o">+</span> <span class="n">d</span><span class="p">(</span><span class="n">z</span><span class="p">,</span><span class="n">E</span><span class="p">)</span>
        <span class="o">=</span> <span class="p">(</span><span class="n">d</span><span class="p">(</span><span class="n">z</span><span class="p">,</span><span class="n">y</span><span class="p">)</span> <span class="o">+</span> <span class="n">d</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">A</span><span class="p">))</span> <span class="o">+</span> <span class="p">(</span><span class="n">d</span><span class="p">(</span><span class="n">z</span><span class="p">,</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">d</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">w</span><span class="p">)</span> <span class="o">+</span> <span class="n">d</span><span class="p">(</span><span class="n">w</span><span class="p">,</span><span class="n">E</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>To compute it, we use an idea from:
+<p>To compute it, we use an idea from
 <a class="reference external" href="https://gist.github.com/jhcepas/279f9009f46bf675e3a890c19191158b">https://gist.github.com/jhcepas/279f9009f46bf675e3a890c19191158b</a></p>
 <p>First, for each node we find its path to the root. For example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">A</span> <span class="o">-&gt;</span> <span class="n">A</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span>
@@ -321,7 +321,7 @@ objects even if attributes point to lambda functions, etc.)</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.Tree.del_prop">
 <span class="sig-name descname"><span class="pre">del_prop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prop_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.del_prop" title="Link to this definition">¶</a></dt>
-<dd><p>Permanently deletes a node’s property.</p>
+<dd><p>Permanently delete a node’s property.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -342,21 +342,21 @@ nodes.</p></li>
 </dd>
 </dl>
 <p>Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>t = Tree(&#39;(C,(B,A)H)root;&#39;)
-print(t.to_str(props=[&#39;name&#39;]))
-          ╭╴C
-    ╴root╶┤
-          │   ╭╴B
-          ╰╴H╶┤
-              ╰╴A
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(C,(B,A)H)root;&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]))</span>
+<span class="c1">#       ╭╴C</span>
+<span class="c1"># ╴root╶┤</span>
+<span class="c1">#       │   ╭╴B</span>
+<span class="c1">#       ╰╴H╶┤</span>
+<span class="c1">#           ╰╴A</span>
 
-t[&#39;H&#39;].delete()  # delete the &quot;H&quot; node
-print(t.to_str(props=[&#39;name&#39;]))
-          ╭╴C
-          │
-    ╴root╶┼╴B
-          │
-          ╰╴A
+<span class="n">t</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>  <span class="c1"># delete the &quot;H&quot; node</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]))</span>
+<span class="c1">#       ╭╴C</span>
+<span class="c1">#       │</span>
+<span class="c1"># ╴root╶┼╴B</span>
+<span class="c1">#       │</span>
+<span class="c1">#       ╰╴A</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -376,11 +376,10 @@ print(t.to_str(props=[&#39;name&#39;]))
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.Tree.detach">
 <span class="sig-name descname"><span class="pre">detach</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.detach" title="Link to this definition">¶</a></dt>
-<dd><p>Detachs this node (and all its descendants) from its parent
-and returns the referent to itself.</p>
-<p>Detached node conserves all its structure of descendants, and can
-be attached to another node through the ‘add_child’ function. This
-mechanism can be seen as a cut and paste.</p>
+<dd><p>Detach this node (and descendants) from its parent and return itself.</p>
+<p>The detached node conserves all its structure of descendants,
+and can be attached to another node with the <a class="reference internal" href="#ete4.Tree.add_child" title="ete4.Tree.add_child"><code class="xref py py-func docutils literal notranslate"><span class="pre">add_child()</span></code></a>
+function. This mechanism can be seen as a “cut and paste”.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -411,6 +410,19 @@ leaves that descend from it. If passed, it won’t be recomputed.</p>
 the list of all trees (in newick format) resulting from the
 combination of all possible solutions of the multifurcated
 nodes.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Please note that the number of of possible binary trees grows
+exponentially with the number and size of polytomies. Using this
+function with large multifurcations is not feasible:</p>
+<p>polytomy size: 3 number of binary trees: 3
+polytomy size: 4 number of binary trees: 15
+polytomy size: 5 number of binary trees: 105
+polytomy size: 6 number of binary trees: 945
+polytomy size: 7 number of binary trees: 10395
+polytomy size: 8 number of binary trees: 135135
+polytomy size: 9 number of binary trees: 2027025</p>
+</div>
 <p>See <a class="reference external" href="https://ajmonline.org/2010/darwin.php">https://ajmonline.org/2010/darwin.php</a></p>
 </dd></dl>
 
@@ -833,14 +845,16 @@ parent’s branch, thus keeping original distances among nodes.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.Tree.remove_child">
 <span class="sig-name descname"><span class="pre">remove_child</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">child</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.remove_child" title="Link to this definition">¶</a></dt>
-<dd><p>Removes a child from this node (parent and child
-nodes still exit but are no longer connected).</p>
+<dd><p>Remove child from this node and return it.</p>
+<p>After calling this function, parent and child nodes still exit,
+but are no longer connected.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.Tree.remove_children">
 <span class="sig-name descname"><span class="pre">remove_children</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.remove_children" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Remove all children from this node and return a list with them.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.Tree.remove_sister">
@@ -882,21 +896,21 @@ properties</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.Tree.resolve_polytomy">
-<span class="sig-name descname"><span class="pre">resolve_polytomy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">default_dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_support</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recursive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.resolve_polytomy" title="Link to this definition">¶</a></dt>
-<dd><p>Resolve all polytomies under current node by creating an
-arbitrary dicotomic structure among the affected nodes. This
-function randomly modifies current tree topology and should
-only be used for compatibility reasons (i.e. programs
-rejecting multifurcated node in the newick representation).</p>
+<span class="sig-name descname"><span class="pre">resolve_polytomy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recursive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">defaults</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.resolve_polytomy" title="Link to this definition">¶</a></dt>
+<dd><p>Resolve all polytomies under the current node, randomly.</p>
+<p>A polytomy is a node that has more than 2 children. This
+function resolves them by creating an arbitrary dicotomic
+structure among the affected nodes. It randomly modifies the
+current tree topology and should only be used for
+compatibility reasons (like to later use programs that reject
+multifurcated nodes).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>default_dist</strong> (<em>0.0</em>) – artificial branch distance of new
-nodes.</p></li>
-<li><p><strong>default_support</strong> (<em>0.0</em>) – artificial branch support of new
-nodes.</p></li>
-<li><p><strong>recursive</strong> (<em>True</em>) – Resolve any polytomy under this
-node. When False, only current node will be checked and fixed.</p></li>
+<li><p><strong>recursive</strong> – If True, resolve all polytomies under this
+node too. Otherwise, only the current node will be
+checked and fixed.</p></li>
+<li><p><strong>defaults</strong> – Dictionary of properties to use for new nodes.</p></li>
 </ul>
 </dd>
 </dl>
