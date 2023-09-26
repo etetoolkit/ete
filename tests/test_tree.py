@@ -127,13 +127,13 @@ class Test_Coretype_Tree(unittest.TestCase):
         t = Tree('((a,b)x,(c,d)y);')
 
         self.assertEqual(t.to_str(props=['name']), strip("""
-                     ╭╴a
-                 ╭╴x╶┤
-                 │   ╰╴b
-        ╴(empty)╶┤
-                 │   ╭╴c
-                 ╰╴y╶┤
-                     ╰╴d
+               ╭╴a
+           ╭╴x╶┤
+           │   ╰╴b
+        ╴⊗╶┤
+           │   ╭╴c
+           ╰╴y╶┤
+               ╰╴d
         """))
         self.assertEqual(t.to_str(compact=True, show_internal=False, props=['name']), strip("""
          ╭─┬╴a
@@ -142,7 +142,7 @@ class Test_Coretype_Tree(unittest.TestCase):
            ╰╴d
         """))
         self.assertEqual(t.to_str(props=['name'], waterfall=True), strip("""
-        (empty)
+        ⊗
         ├─┐x
         │ ├─╴a
         │ └─╴b
@@ -151,25 +151,24 @@ class Test_Coretype_Tree(unittest.TestCase):
           └─╴d
         """))
         self.assertEqual(t.to_str(props=['dist', 'support']), strip("""
-                                           ╭╴(empty),(empty)
-                         ╭╴(empty),(empty)╶┤
-                         │                 ╰╴(empty),(empty)
-        ╴(empty),(empty)╶┤
-                         │                 ╭╴(empty),(empty)
-                         ╰╴(empty),(empty)╶┤
-                                           ╰╴(empty),(empty)
-
+                   ╭╴⊗,⊗
+             ╭╴⊗,⊗╶┤
+             │     ╰╴⊗,⊗
+        ╴⊗,⊗╶┤
+             │     ╭╴⊗,⊗
+             ╰╴⊗,⊗╶┤
+                   ╰╴⊗,⊗
         """))
 
         t2 = Tree('((a:1,b:2)x:3,(c:4,d:5)y:6);')
         self.assertEqual(t2.to_str(props=['dist']), strip("""
-                       ╭╴1.0
-                 ╭╴3.0╶┤
-                 │     ╰╴2.0
-        ╴(empty)╶┤
-                 │     ╭╴4.0
-                 ╰╴6.0╶┤
-                       ╰╴5.0
+                 ╭╴1.0
+           ╭╴3.0╶┤
+           │     ╰╴2.0
+        ╴⊗╶┤
+           │     ╭╴4.0
+           ╰╴6.0╶┤
+                 ╰╴5.0
         """))
 
         self.assertEqual(t2.to_str(), strip("""
@@ -708,42 +707,42 @@ class Test_Coretype_Tree(unittest.TestCase):
         """Test the alternative rooting ("set outgroup") algorithm."""
         t = Tree('((d,e)b,(f,g)c);')
         self.assertLooks(t, """
-                         ╭╴b╶┬╴d
-                ╴(empty)╶┤   ╰╴e
-                         ╰╴c╶┬╴f
-                             ╰╴g
+                   ╭╴b╶┬╴d
+                ╴⊗╶┤   ╰╴e
+                   ╰╴c╶┬╴f
+                       ╰╴g
         """)
 
         t = t.set_outgroup_v2(t['e'])
         self.assertLooks(t, """
-                ╴(empty)╶┬╴e
-                         ╰╴b╶┬╴d
-                             ╰╴c╶┬╴f
-                                 ╰╴g
+                ╴⊗╶┬╴e
+                   ╰╴b╶┬╴d
+                       ╰╴c╶┬╴f
+                           ╰╴g
         """)
 
         t = t.set_outgroup_v2(t['d'])
         self.assertLooks(t, """
-                         ╭╴d
-                ╴(empty)╶┤   ╭╴c╶┬╴f
-                         ╰╴b╶┤   ╰╴g
-                             ╰╴e
+                   ╭╴d
+                ╴⊗╶┤   ╭╴c╶┬╴f
+                   ╰╴b╶┤   ╰╴g
+                       ╰╴e
         """)
 
         t = t.set_outgroup_v2(t['c'])
         self.assertLooks(t, """
-                         ╭╴c╶┬╴f
-                ╴(empty)╶┤   ╰╴g
-                         ╰╴b╶┬╴e
-                             ╰╴d
+                   ╭╴c╶┬╴f
+                ╴⊗╶┤   ╰╴g
+                   ╰╴b╶┬╴e
+                       ╰╴d
         """)
 
         t = t.set_outgroup_v2(t['b'])
         self.assertLooks(t, """
-                         ╭╴b╶┬╴e
-                ╴(empty)╶┤   ╰╴d
-                         ╰╴c╶┬╴f
-                             ╰╴g
+                   ╭╴b╶┬╴e
+                ╴⊗╶┤   ╰╴d
+                   ╰╴c╶┬╴f
+                       ╰╴g
         """)
 
     def test_rooting(self):

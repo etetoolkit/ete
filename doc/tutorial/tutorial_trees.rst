@@ -410,15 +410,15 @@ grouping the same tip labels are collapsed::
   t = Tree('((((a,a,a)a,a)aa,(b,b)b)ab,(c,(d,d)d)cd);')
 
   print(t.to_str(props=['name'], compact=True))  # show internal names too
-  #                        ╭╴a
-  #                    ╭╴a╶┼╴a
-  #               ╭╴aa╶┤   ╰╴a
-  #          ╭╴ab╶┤    ╰╴a
-  # ╴(empty)╶┤    ╰╴b╶┬╴b
-  #          │        ╰╴b
-  #          ╰╴cd╶┬╴c
-  #               ╰╴d╶┬╴d
-  #                   ╰╴d
+  #                  ╭╴a
+  #              ╭╴a╶┼╴a
+  #         ╭╴aa╶┤   ╰╴a
+  #    ╭╴ab╶┤    ╰╴a
+  # ╴⊗╶┤    ╰╴b╶┬╴b
+  #    │        ╰╴b
+  #    ╰╴cd╶┬╴c
+  #         ╰╴d╶┬╴d
+  #             ╰╴d
 
   # Cache for every node (for each node, a set of all its leaves' names).
   node2labels = t.get_cached_content('name')
@@ -433,10 +433,10 @@ grouping the same tip labels are collapsed::
   t2 = Tree( t.write(is_leaf_fn=collapsed_leaf) )
 
   print(t2.to_str(props=['name'], compact=True))
-  #          ╭╴ab╶┬╴aa
-  # ╴(empty)╶┤    ╰╴b
-  #          ╰╴cd╶┬╴c
-  #               ╰╴d
+  #    ╭╴ab╶┬╴aa
+  # ╴⊗╶┤    ╰╴b
+  #    ╰╴cd╶┬╴c
+  #         ╰╴d
 
 Another interesting use of this approach is to find the first matching
 nodes in a given tree that match a custom set of criteria, without
@@ -448,13 +448,13 @@ length is defined and larger than one::
   t = Tree('(((a,b)ab:2,(c,d)cd:2)abcd:2,((e,f):2,g)efg:2);')
 
   print(t.to_str(props=['name', 'dist'], compact=True))  # name and distance
-  #                             ╭╴ab,2.0╶┬╴a,(empty)
-  #                  ╭╴abcd,2.0╶┤        ╰╴b,(empty)
-  #                  │          ╰╴cd,2.0╶┬╴c,(empty)
-  # ╴(empty),(empty)╶┤                   ╰╴d,(empty)
-  #                  │         ╭╴(empty),2.0╶┬╴e,(empty)
-  #                  ╰╴efg,2.0╶┤             ╰╴f,(empty)
-  #                            ╰╴g,(empty)
+  #                 ╭╴ab,2.0╶┬╴a,⊗
+  #      ╭╴abcd,2.0╶┤        ╰╴b,⊗
+  #      │          ╰╴cd,2.0╶┬╴c,⊗
+  # ╴⊗,⊗╶┤                   ╰╴d,⊗
+  #      │         ╭╴⊗,2.0╶┬╴e,⊗
+  #      ╰╴efg,2.0╶┤       ╰╴f,⊗
+  #                ╰╴g,⊗
 
   def processable_node(node):
       return node.dist and node.dist > 1
@@ -645,15 +645,15 @@ is queried for any custom attribute.
 
   t = Tree('((((((a,e),i),o),h),u),((f,g),j));')
   print(t)
-  #         ╭─┬╴a
-  #       ╭─┤ ╰╴e
-  #     ╭─┤ ╰╴i
-  #   ╭─┤ ╰╴o
-  # ╭─┤ ╰╴h
-  #─┤ ╰╴u
-  # │ ╭─┬╴f
-  # ╰─┤ ╰╴g
-  #   ╰╴j
+  #          ╭─┬╴a
+  #        ╭─┤ ╰╴e
+  #      ╭─┤ ╰╴i
+  #    ╭─┤ ╰╴o
+  #  ╭─┤ ╰╴h
+  # ─┤ ╰╴u
+  #  │ ╭─┬╴f
+  #  ╰─┤ ╰╴g
+  #    ╰╴j
 
   # We can check how, indeed, all vowels are not monophyletic in the previous
   # tree, but paraphyletic (monophyletic except for a group that is monophyletic):
@@ -662,7 +662,7 @@ is queried for any custom attribute.
 
   # However, the following set of vowels are monophyletic:
   print(t.check_monophyly(values=['a', 'e', 'i', 'o'], prop='name'))
-  # True (it is monophyletic), 'monophyletic' (type of group), {} (no leaves left)
+  # True (it is monophyletic), 'monophyletic' (type of group), set() (no leaves left)
 
   # When a group is not monophyletic nor paraphyletic, it is called polyphyletic.
   print(t.check_monophyly(values=['i', 'h'], prop='name'))
@@ -907,14 +907,14 @@ To read NHX notation you can just read it as a normal newick::
   t = Tree(nw)
 
   print(t.to_str(props=['name', 'S'], compact=True))
-  #                                    ╭╴(empty),Primates╶┬╴ADH2,human
-  #                  ╭╴(empty),Metazoa╶┤                  ╰╴ADH1,human
-  #                  │                 ├╴ADHY,nematode
-  # ╴(empty),(empty)╶┤                 ╰╴ADHX,insect
-  #                  │               ╭╴ADH4,yeast
-  #                  ╰╴(empty),Fungi╶┼╴ADH3,yeast
-  #                                  ├╴ADH2,yeast
-  #                                  ╰╴ADH1,yeast
+  #                  ╭╴⊗,Primates╶┬╴ADH2,human
+  #      ╭╴⊗,Metazoa╶┤            ╰╴ADH1,human
+  #      │           ├╴ADHY,nematode
+  # ╴⊗,⊗╶┤           ╰╴ADHX,insect
+  #      │         ╭╴ADH4,yeast
+  #      ╰╴⊗,Fungi╶┼╴ADH3,yeast
+  #                ├╴ADH2,yeast
+  #                ╰╴ADH1,yeast
 
   # And access the node's properties.
   print('S property for the nodes that have it:')
@@ -1130,16 +1130,16 @@ This is better understood with the following example::
   t = Tree('((((H,K)D,(F,I)G)B,E)A,((L,(N,Q)O)J,(P,S)M)C);')
 
   print(t.to_str(props=['name'], compact=True))
-  #                  ╭╴D╶┬╴H
-  #              ╭╴B╶┤   ╰╴K
-  #          ╭╴A╶┤   ╰╴G╶┬╴F
-  #          │   │       ╰╴I
-  # ╴(empty)╶┤   ╰╴E
-  #          │   ╭╴J╶┬╴L
-  #          ╰╴C╶┤   ╰╴O╶┬╴N
-  #              │       ╰╴Q
-  #              ╰╴M╶┬╴P
-  #                  ╰╴S
+  #            ╭╴D╶┬╴H
+  #        ╭╴B╶┤   ╰╴K
+  #    ╭╴A╶┤   ╰╴G╶┬╴F
+  #    │   │       ╰╴I
+  # ╴⊗╶┤   ╰╴E
+  #    │   ╭╴J╶┬╴L
+  #    ╰╴C╶┤   ╰╴O╶┬╴N
+  #        │       ╰╴Q
+  #        ╰╴M╶┬╴P
+  #            ╰╴S
 
   # Get specific nodes.
   G = t['G']
@@ -1153,13 +1153,13 @@ This is better understood with the following example::
 
   # Tree after REMOVING the node J:
   print(t.to_str(props=['name'], compact=True))
-  #                  ╭╴D╶┬╴H
-  #              ╭╴B╶┤   ╰╴K
-  #          ╭╴A╶┤   ╰╴G╶┬╴F
-  # ╴(empty)╶┤   │       ╰╴I
-  #          │   ╰╴E
-  #          ╰╴C╶╌╴M╶┬╴P
-  #                  ╰╴S
+  #            ╭╴D╶┬╴H
+  #        ╭╴B╶┤   ╰╴K
+  #    ╭╴A╶┤   ╰╴G╶┬╴F
+  # ╴⊗╶┤   │       ╰╴I
+  #    │   ╰╴E
+  #    ╰╴C╶╌╴M╶┬╴P
+  #            ╰╴S
 
   # However, if we DELETE the node G, only G will be eliminated from the
   # tree, and all its descendants will then hang from the next upper node.
@@ -1167,13 +1167,13 @@ This is better understood with the following example::
 
   # Tree after DELETING the node G:
   print(t.to_str(props=['name'], compact=True))
-  #                  ╭╴D╶┬╴H
-  #              ╭╴B╶┤   ╰╴K
-  #          ╭╴A╶┤   ├╴F
-  # ╴(empty)╶┤   │   ╰╴I
-  #          │   ╰╴E
-  #          ╰╴C╶╌╴M╶┬╴P
-  #                  ╰╴S
+  #            ╭╴D╶┬╴H
+  #        ╭╴B╶┤   ╰╴K
+  #    ╭╴A╶┤   ├╴F
+  # ╴⊗╶┤   │   ╰╴I
+  #    │   ╰╴E
+  #    ╰╴C╶╌╴M╶┬╴P
+  #            ╰╴S
 
 
 Pruning trees
@@ -1577,15 +1577,15 @@ Example::
 
   print(t)
   print(t.to_str(props=['dist'], compact=True))
-  #   ╭─┬╴A
-  # ╭─┤ ╰╴B
-  # │ ╰╴C
-  # │       ╭─┬╴D
-  #─┤     ╭─┤ ╰╴I
-  # │   ╭─┤ ╰╴F
-  # │ ╭─┤ ╰╴G
-  # ╰─┤ ╰╴H
-  #   ╰╴E
+  #    ╭─┬╴A
+  #  ╭─┤ ╰╴B
+  #  │ ╰╴C
+  #  │       ╭─┬╴D
+  # ─┤     ╭─┤ ╰╴I
+  #  │   ╭─┤ ╰╴F
+  #  │ ╭─┤ ╰╴G
+  #  ╰─┤ ╰╴H
+  #    ╰╴E
   #            ╭╴1.0╶┬╴1.0
   #      ╭╴1.0╶┤     ╰╴2.0
   #      │     ╰╴3.0
@@ -1653,21 +1653,21 @@ Example::
   t.populate(15)
 
   print(t)  # will look more or less like...
-  #   ╭─┬╴f
-  # ╭─┤ ╰─┬╴g
-  # │ │   ╰╴h
-  # │ ╰─┬╴i
-  # │   ╰╴j
-  #─┤   ╭─┬╴k
-  # │   │ ╰─┬╴l
-  # │ ╭─┤   ╰╴m
-  # │ │ │ ╭─┬╴n
-  # ╰─┤ ╰─┤ ╰╴o
-  #   │   ╰─┬╴a
-  #   │     ╰╴b
-  #   ╰─┬╴c
-  #     ╰─┬╴d
-  #       ╰╴e
+  #    ╭─┬╴f
+  #  ╭─┤ ╰─┬╴g
+  #  │ │   ╰╴h
+  #  │ ╰─┬╴i
+  #  │   ╰╴j
+  # ─┤   ╭─┬╴k
+  #  │   │ ╰─┬╴l
+  #  │ ╭─┤   ╰╴m
+  #  │ │ │ ╭─┬╴n
+  #  ╰─┤ ╰─┤ ╰╴o
+  #    │   ╰─┬╴a
+  #    │     ╰╴b
+  #    ╰─┬╴c
+  #      ╰─┬╴d
+  #        ╰╴e
 
   # Calculate the midpoint node.
   R = t.get_midpoint_outgroup()
@@ -1676,18 +1676,18 @@ Example::
   t.set_outgroup(R)
 
   print(t)  # will look more or less like...
-  #     ╭─┬╴k
-  #     │ ╰─┬╴l
-  #   ╭─┤   ╰╴m
-  #   │ │ ╭─┬╴n
-  # ╭─┤ ╰─┤ ╰╴o
-  # │ │   ╰─┬╴a
-  # │ │     ╰╴b
-  #─┤ ╰─┬╴c
-  # │   ╰─┬╴d
-  # │     ╰╴e
-  # │ ╭─┬╴f
-  # ╰─┤ ╰─┬╴g
-  #   │   ╰╴h
-  #   ╰─┬╴i
-  #     ╰╴j
+  #      ╭─┬╴k
+  #      │ ╰─┬╴l
+  #    ╭─┤   ╰╴m
+  #    │ │ ╭─┬╴n
+  #  ╭─┤ ╰─┤ ╰╴o
+  #  │ │   ╰─┬╴a
+  #  │ │     ╰╴b
+  # ─┤ ╰─┬╴c
+  #  │   ╰─┬╴d
+  #  │     ╰╴e
+  #  │ ╭─┬╴f
+  #  ╰─┤ ╰─┬╴g
+  #    │   ╰╴h
+  #    ╰─┬╴i
+  #      ╰╴j

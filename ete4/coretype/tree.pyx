@@ -2182,11 +2182,11 @@ cdef class Tree(object):
                                             ('C', 'D', 1),
                                             ('C', 'E', 1.5)])
           print(t.to_str(props=['name', 'dist']))
-          #            ╭╴B,0.1
-          # ╴A,(empty)╶┤
-          #            │       ╭╴D,1.0
-          #            ╰╴C,0.2╶┤
-          #                    ╰╴E,1.5
+          #      ╭╴B,0.1
+          # ╴A,⊗╶┤
+          #      │       ╭╴D,1.0
+          #      ╰╴C,0.2╶┤
+          #              ╰╴E,1.5
         """
         def get_node(nodename, dist=None):
             if nodename not in nodes_by_name:

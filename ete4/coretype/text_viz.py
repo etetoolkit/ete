@@ -53,7 +53,7 @@ def ascii_art(tree, show_internal=True, props=None, px=0, py=0, px0=0):
     # Node description (including all the requested properties).
     descr = ','.join(
         (f'{k}={v}' for k, v in tree.props.items()) if props is None else
-        (str(tree.props.get(p, '')) or '(empty)' for p in props))
+        (str(tree.props.get(p, '')) or '⊗' for p in props))
 
     if tree.is_leaf:
         return (['─' * px0 + '╴' + descr], 0)
@@ -140,7 +140,7 @@ def to_waterfall(tree, props=None, px=1, are_last=None):
     # Node description (including all the requested properties).
     descr = ','.join(
         (f'{k}={v}' for k, v in tree.props.items()) if props is None else
-        (str(tree.props.get(p, '')) or '(empty)' for p in props))
+        (str(tree.props.get(p, '')) or '⊗' for p in props))
 
     branches = get_branches_repr(are_last, tree.is_leaf, px)
 
