@@ -1,5 +1,5 @@
-Working With Tree Data Structures
-=================================
+Working with the Tree structure
+===============================
 
 .. contents::
 
