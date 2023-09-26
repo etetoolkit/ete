@@ -335,7 +335,7 @@ cdef class Tree(object):
             self.add_prop(prop_name, value)
 
     def del_prop(self, prop_name):
-        """Permanently deletes a node's property."""
+        """Permanently delete a node's property."""
         self.props.pop(prop_name, None)
 
     # DEPRECATED #
@@ -459,19 +459,19 @@ cdef class Tree(object):
 
             t = Tree('(C,(B,A)H)root;')
             print(t.to_str(props=['name']))
-                      ╭╴C
-                ╴root╶┤
-                      │   ╭╴B
-                      ╰╴H╶┤
-                          ╰╴A
+            #       ╭╴C
+            # ╴root╶┤
+            #       │   ╭╴B
+            #       ╰╴H╶┤
+            #           ╰╴A
 
             t['H'].delete()  # delete the "H" node
             print(t.to_str(props=['name']))
-                      ╭╴C
-                      │
-                ╴root╶┼╴B
-                      │
-                      ╰╴A
+            #       ╭╴C
+            #       │
+            # ╴root╶┼╴B
+            #       │
+            #       ╰╴A
         """
         parent = self.up
         if not parent:
@@ -493,18 +493,16 @@ cdef class Tree(object):
                           preserve_branch_length=preserve_branch_length)
 
     def detach(self):
-        """
-        Detachs this node (and all its descendants) from its parent
-        and returns the referent to itself.
+        """Detach this node (and descendants) from its parent and return itself.
 
-        Detached node conserves all its structure of descendants, and can
-        be attached to another node through the 'add_child' function. This
-        mechanism can be seen as a cut and paste.
+        The detached node conserves all its structure of descendants,
+        and can be attached to another node with the :func:`add_child`
+        function. This mechanism can be seen as a "cut and paste".
         """
-
         if self.up:
             self.up.children.remove(self)
             self.up = None
+
         return self
 
     def prune(self, nodes, preserve_branch_length=False):
@@ -2034,10 +2032,10 @@ cdef class Tree(object):
 
         and::
 
-          d(A,E) = d(z,A) + d(z, E)
+          d(A,E) = d(z,A) + d(z,E)
                  = (d(z,y) + d(y,A)) + (d(z,x) + d(x,w) + d(w,E))
 
-        To compute it, we use an idea from:
+        To compute it, we use an idea from
         https://gist.github.com/jhcepas/279f9009f46bf675e3a890c19191158b
 
         First, for each node we find its path to the root. For example::
@@ -2117,21 +2115,19 @@ cdef class Tree(object):
         else:
             raise ValueError('Invalid face format for: %r' % face)
 
-    def add_face_treeview(self, face, column, position="branch-right"):
-        """
-        .. versionadded: 2.1
+    def add_face_treeview(self, face, column, position='branch-right'):
+        """Add a fixed face to the node.
 
-        Add a fixed face to the node.  This type of faces will be
-        always attached to nodes, independently of the layout
-        function.
+        This type of faces will be always attached to nodes,
+        independently of the layout function.
 
-        :argument face: a Face or inherited instance
-        :argument column: An integer number starting from 0
-        :argument "branch-right" position: Posible values are:
-          "branch-right", "branch-top", "branch-bottom", "float",
-          "aligned"
+        :param face: Face to add.
+        :param column: An integer number starting from 0
+        :param position: Position to place the face in the node. Posible
+            values are: "branch-right", "branch-top", "branch-bottom", "float",
+            "aligned".
         """
-        from ..treeview.main import  _FaceAreas, FaceContainer, FACE_POSITIONS
+        from ..treeview.main import _FaceAreas, FaceContainer, FACE_POSITIONS
 
         if "_faces" not in self.props:
             self.props["_faces"] = _FaceAreas()
@@ -2141,7 +2137,6 @@ cdef class Tree(object):
 
         if isinstance(face, Face):
             getattr(self.props["_faces"], position).add_face(face, column=column)
-
         else:
             raise ValueError("not a Face instance")
 
@@ -2153,9 +2148,9 @@ cdef class Tree(object):
         the layout function.
 
         :param face: Face to add.
-        :param int column: Column number where the face will go. Starts at 0.
-        :param str position: Position to place the face in the node. Posible
-            values are: "branch-right", "branch-top", "branch-bottom", "aligned"
+        :param column: Column number where the face will go. Starts at 0.
+        :param position: Position to place the face in the node. Posible
+            values are: "branch-right", "branch-top", "branch-bottom", "aligned".
         """
         # TODO: Is it true that "This type of faces will be always attached
         # to nodes, independently of the layout function"? And why?
