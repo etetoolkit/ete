@@ -6,9 +6,6 @@ Sorting, changing the root to a node, moving branches, removing (prunning)...
 
 # "Arboriculture" may be more precise than "gardening", but it's a mouthful :)
 
-from ete4 import Tree
-
-
 def sort(tree, key=None, reverse=False):
     """Sort the tree in-place."""
     key = key or (lambda node: (node.size[1], node.size[0], node.name))
@@ -102,7 +99,7 @@ def split_branch(node, bprops=None):
     pos_in_parent = up.children.index(node)  # save its position in parent
     up.children.pop(pos_in_parent)  # detach from parent
 
-    intermediate = Tree()  # create intermediate node
+    intermediate = node.__class__()  # create intermediate node (of same type)
     intermediate.add_child(node)
 
     if 'dist' in node.props:  # split dist between the new and old nodes
