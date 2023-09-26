@@ -1959,47 +1959,42 @@ cdef class Tree(object):
             n2subtrees[n] = subtrees
         return ["%s;"%str(nw) for nw in n2subtrees[self]] # tuples are in newick format ^_^
 
-    def resolve_polytomy(self, default_dist=0.0, default_support=0.0,
-                         recursive=True):
+    def resolve_polytomy(self, recursive=True, defaults=None):
+        """Resolve all polytomies under the current node, randomly.
+
+        A polytomy is a node that has more than 2 children. This
+        function resolves them by creating an arbitrary dicotomic
+        structure among the affected nodes. It randomly modifies the
+        current tree topology and should only be used for
+        compatibility reasons (like to later use programs that reject
+        multifurcated nodes).
+
+        :param recursive: If True, resolve all polytomies under this
+             node too. Otherwise, only the current node will be
+             checked and fixed.
+        :param defaults: Dictionary of properties to use for new nodes.
         """
-        .. versionadded: 2.2
+        def resolve(node):
+            if len(node.children) <= 2:
+                return  # nothing to resolve here!
 
-        Resolve all polytomies under current node by creating an
-        arbitrary dicotomic structure among the affected nodes. This
-        function randomly modifies current tree topology and should
-        only be used for compatibility reasons (i.e. programs
-        rejecting multifurcated node in the newick representation).
+            children = node.remove_children()
+            next_node = root = node
+            for i in range(len(children) - 2):
+                next_node = next_node.add_child()
+                next_node.props.update(defaults or {})
 
-        :param 0.0 default_dist: artificial branch distance of new
-            nodes.
+            next_node = root
+            for ch in children:
+                next_node.add_child(ch)
+                if ch != children[-2]:
+                    next_node = next_node.children[0]
 
-        :param 0.0 default_support: artificial branch support of new
-            nodes.
+        resolve(self)
 
-        :param True recursive: Resolve any polytomy under this
-             node. When False, only current node will be checked and fixed.
-        """
-
-
-        def _resolve(node):
-            if len(node.children) > 2:
-                children = list(node.remove_children())
-                next_node = root = node
-                for i in range(len(children)-2):
-                    next_node = next_node.add_child()
-                    next_node.dist = default_dist
-                    next_node.support = default_support
-
-                next_node = root
-                for ch in children:
-                    next_node.add_child(ch)
-                    if ch != children[-2]:
-                        next_node = next_node.children[0]
-        target = [self]
         if recursive:
-            target.extend([n for n in self.descendants()])
-        for n in target:
-            _resolve(n)
+            for n in self.descendants():
+                resolve(n)
 
     def cophenetic_matrix(self):
         """Return a cophenetic distance matrix of the tree.
