@@ -1502,7 +1502,7 @@ def get_tid(tree_id):
 def del_tree(tid):
     "Delete a tree and everywhere where it appears referenced"
     shutil.rmtree(f'/tmp/{tid}.pickle', ignore_errors=True)
-    return app.trees.pop(tid, None)
+    app.trees.pop(tid, None)
 
 
 def get_fields(required=None, valid_extra=None):
