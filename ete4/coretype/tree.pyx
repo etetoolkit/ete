@@ -1222,9 +1222,7 @@ cdef class Tree(object):
         :var None h: height of the image in :attr:`units`
         :var None w: width of the image in :attr:`units`
         :var 90 dpi: dots per inches.
-
         """
-
         from ..treeview import drawer
         if file_name.startswith('%%return'):
             return drawer.get_img(self, w=w, h=h,
@@ -1785,13 +1783,11 @@ cdef class Tree(object):
             yield (leaves_descendant, all_leaves - leaves_descendant)
 
     def standardize(self, delete_orphan=True, preserve_branch_length=True):
-        """
-        .. versionadded:: 2.3
+        """Resolve multifurcations and remove single-child nodes.
 
-        process current tree structure to produce a standardized topology: nodes
-        with only one child are removed and multifurcations are automatically resolved.
-
-
+        This function changes the current tree structure to produce a
+        standardized topology: nodes with only one child are removed
+        and multifurcations are automatically resolved.
         """
         self.resolve_polytomy()
 
@@ -1799,7 +1795,6 @@ cdef class Tree(object):
             if len(n.children) == 1:
                 n.delete(prevent_nondicotomic=True,
                          preserve_branch_length=preserve_branch_length)
-
 
     def get_topology_id(self, prop='name'):
         """Return a unique ID representing the topology of the tree.
@@ -1823,7 +1818,6 @@ cdef class Tree(object):
             edge_keys.append(sorted([k1, k2]))
 
         return md5(str(sorted(edge_keys)).encode('utf-8')).hexdigest()
-
 
     def to_ultrametric(self, topological=False):
         """Convert tree to ultrametric (all leaves equally distant from root)."""
@@ -2065,12 +2059,12 @@ cdef class Tree(object):
 
         For this tree, we will return the two dimensional array::
 
-                           A                  B                   C                   D                     E
-          A                0           d(A-y) + d(B-y)     d(A-z) + d(C-z)     d(A-z) + d(D-z)       d(A-z) + d(E-z)
-          B         d(B-y) + d(A-y)           0            d(B-z) + d(C-z)     d(B-z) + d(D-z)       d(B-z) + d(E-z)
-          C         d(C-z) + d(A-z)    d(C-z) + d(B-z)            0            d(C-x) + d(D-x)       d(C-x) + d(E-x)
-          D         d(D-z) + d(A-z)    d(D-z) + d(B-z)     d(D-x) + d(C-x)            0              d(D-w) + d(E-w)
-          E         d(E-z) + d(A-z)    d(E-z) + d(B-z)     d(E-x) + d(C-x)     d(E-w) + d(D-w)              0
+                    A                B                C                D                E
+          A         0         d(A-y) + d(B-y)  d(A-z) + d(C-z)  d(A-z) + d(D-z)  d(A-z) + d(E-z)
+          B  d(B-y) + d(A-y)         0         d(B-z) + d(C-z)  d(B-z) + d(D-z)  d(B-z) + d(E-z)
+          C  d(C-z) + d(A-z)  d(C-z) + d(B-z)         0         d(C-x) + d(D-x)  d(C-x) + d(E-x)
+          D  d(D-z) + d(A-z)  d(D-z) + d(B-z)  d(D-x) + d(C-x)         0         d(D-w) + d(E-w)
+          E  d(E-z) + d(A-z)  d(E-z) + d(B-z)  d(E-x) + d(C-x)  d(E-w) + d(D-w)         0
 
         We will also return the one dimensional array with the leaves
         in the order in which they appear in the matrix (i.e. the
@@ -2136,7 +2130,6 @@ cdef class Tree(object):
           "branch-right", "branch-top", "branch-bottom", "float",
           "aligned"
         """
-
         from ..treeview.main import  _FaceAreas, FaceContainer, FACE_POSITIONS
 
         if "_faces" not in self.props:
