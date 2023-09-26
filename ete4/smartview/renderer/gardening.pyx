@@ -52,8 +52,8 @@ def assert_consistency(root):
 
     if len(root.children) == 2:
         ch1, ch2 = root.children
-        assert ch1.props.get('support') == ch2.props.get('support'), \
-            'branches have inconsistent support at the root'
+        s1, s2 = ch1.props.get('support'), ch2.props.get('support')
+        assert s1 == s2, 'inconsistent support at the root: %r != %r' % (s1, s2)
 
 
 def get_root_id(node):
