@@ -1145,7 +1145,8 @@ cdef class Tree(object):
             down_branch_connector.up = quien_va_ser_padre
             quien_va_ser_padre.up = quien_fue_padre
 
-            if buffered_dist is not None:
+            if (down_branch_connector.dist is not None and
+                buffered_dist is not None):
                 down_branch_connector.dist += buffered_dist
             outgroup2 = parent_outgroup
             parent_outgroup.children.remove(outgroup)
