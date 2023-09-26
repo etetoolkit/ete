@@ -774,7 +774,7 @@ be used to add many features with the same call.
 
 Similarly, :func:`Tree.del_prop` can be used to delete a property.
 
-::
+Example using annotations when working on a tree::
 
   t = Tree('((H:0.3,I:0.1),A:1,(B:0.4,(C:0.5,(J:1.3,(F:1.2,D:0.1)))));')
 
@@ -933,3 +933,441 @@ To read NHX notation you can just read it as a normal newick::
   #   ADH1: yeast
   #   ADH2: human
   #   ADH1: human
+
+
+.. _sec:modifying-tree-topology:
+
+.. _robinson_foulds:
+
+Comparing trees
+---------------
+
+Distances between trees
+~~~~~~~~~~~~~~~~~~~~~~~
+
+The :func:`Tree.compare` function allows to calculate distances
+between two trees based on any node property (i.e. name, species,
+other tags) using Robinson-Foulds and edge compatibility distances. It
+automatically handles differences in tree sizes, shared nodes and
+duplicated feature names.
+
+Its result is a dictionary with the following contents:
+
+- result['rf'] = Robinson-Foulds distance between the two trees.
+  (Average of Robinson-Foulds distances if target tree contained
+  duplication and was split in several subtrees.)
+- result['max_rf'] = Maximum Robinson-Foulds distance expected for this comparison.
+- result['norm_rf'] = Normalized Robinson-Foulds distance (from 0 to 1).
+- result['effective_tree_size'] = Size of the compared trees, which
+  are pruned to the common shared nodes.
+- result['ref_edges_in_source'] = Compatibility score of the target
+  tree with respect to the source tree (how many edges in reference
+  are found in the source).
+- result['source_edges_in_ref'] = Compatibility score of the source
+  tree with respect to the reference tree (how many edges in source
+  are found in the reference).
+- result['source_subtrees'] = Number of subtrees in the source tree (1
+  if it does not contain duplications).
+- result['common_edges'] = Set of common edges between source tree and
+  reference.
+- result['source_edges'] = Set of edges found in the source tree.
+- result['ref_edges'] = Set of edges found in the reference tree.
+- result['treeko_dist'] = TreeKO speciation distance for comparisons
+  including duplication nodes.
+
+
+Robinson-Foulds distance
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Two tree topologies can be compared using the Robinson-Foulds (RF)
+metric. The method :func:`Tree.robinson_foulds` available for any ETE
+tree node allows to:
+
+- Compare two tree topologies by their name labels (default) or any
+  other annotated feature in the tree.
+- Compare topologies of different size and content. When two trees
+  contain a different set of labels, only shared leaves will be used.
+- Examine size and content of matching and missing partitions. Since
+  the method returns the list of partitions found in both trees,
+  details about matching partitions can be obtained easily.
+- Discard edges from the comparison based on their support value.
+- Automatically expand polytomies (multifurcations) in source and
+  target trees.
+
+There is also a command line tool providing most used features:
+``ete compare``.
+
+The following example shows several of the above mentioned features::
+
+  t1 = Tree('(((a,b),c),((e,f),g));')
+  t2 = Tree('(((a,c),b),((e,f),g));')
+
+  print(t1)
+  print(t2)
+  #    ╭─┬╴a
+  #  ╭─┤ ╰╴b
+  # ─┤ ╰╴c
+  #  │ ╭─┬╴e
+  #  ╰─┤ ╰╴f
+  #    ╰╴g
+  #    ╭─┬╴a
+  #  ╭─┤ ╰╴c
+  # ─┤ ╰╴b
+  #  │ ╭─┬╴e
+  #  ╰─┤ ╰╴f
+  #    ╰╴g
+
+  rf, rf_max, common, parts_t1, parts_t2, _, _ = t1.robinson_foulds(t2)
+
+  print(f'RF distance is {rf} over a total of {rf_max}')
+  print('Partitions in tree2 that were not found in tree1:', parts_t1 - parts_t2)
+  print('Partitions in tree1 that were not found in tree2:', parts_t2 - parts_t1)
+  # RF distance is 2 over a total of 8
+  # Partitions in tree2 that were not found in tree1: {('a', 'b')}
+  # Partitions in tree1 that were not found in tree2: {('a', 'c')}
+
+We can also compare trees sharing only part of their labels::
+
+  t1 = Tree('(((a,b),c),((e,f),g));')
+  t2 = Tree('(((a,c),b),(g,H));')
+
+  print(t1)
+  print(t2)
+  #    ╭─┬╴a
+  #  ╭─┤ ╰╴b
+  # ─┤ ╰╴c
+  #  │ ╭─┬╴e
+  #  ╰─┤ ╰╴f
+  #    ╰╴g
+  #    ╭─┬╴a
+  #  ╭─┤ ╰╴c
+  # ─┤ ╰╴b
+  #  ╰─┬╴g
+  #    ╰╴H
+
+  rf, rf_max, common, parts_t1, parts_t2, _, _ = t1.robinson_foulds(t2)
+
+  # Same distance holds even for partially overlapping trees.
+  print(f'RF distance is {rf} over a total of {rf_max}')
+  print('Partitions in tree2 that were not found in tree1:', parts_t1 - parts_t2)
+  print('Partitions in tree1 that were not found in tree2:', parts_t2 - parts_t1)
+  # RF distance is 2 over a total of 4
+  # Partitions in tree2 that were not found in tree1: {('a', 'b')}
+  # Partitions in tree1 that were not found in tree2: {('a', 'c')}
+
+
+Modifying tree topology
+-----------------------
+
+Creating trees from scratch
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If no arguments are passed to the :class:`Tree` class constructor,
+an empty tree node will be returned. Such an orphan node can be used
+to populate a tree from scratch. For this, the :attr:`Tree.up`,
+and :attr:`Tree.children` attributes should never be used (unless
+it is strictly necessary). Instead, several methods exist to
+manipulate the topology of a tree:
+
+.. autosummary::
+
+   ete4.Tree.populate
+   ete4.Tree.add_child
+   ete4.Tree.delete
+   ete4.Tree.detach
+
+As an example of how to use them::
+
+  t = Tree()  # create an empty tree
+
+  A = t.add_child(name='A')  # add new child to the tree root and return it
+  B = t.add_child(name='B')
+
+  C = A.add_child(name='C')  # add new child to one of the branches
+  D = C.add_sister(name='D')  # add a second child to same branch as before
+  # Note that the last one did it by using a sister as the starting point.
+
+  R = A.add_child(name='R')  # add a third child (multifurcations are ok)
+
+  # Add 6 random leaves to the R branch, with names 'r1' to 'r6'.
+  R.populate(6, names_library=['r1', 'r2', 'r3', 'r4', 'r5', 'r6'])
+
+  print(t)
+  #    ╭╴C
+  #  ╭─┼╴D
+  #  │ ╰─┬╴r6
+  #  │   ╰─┬╴r5
+  # ─┤     ╰─┬╴r4
+  #  │       ╰─┬╴r3
+  #  │         ╰─┬╴r2
+  #  │           ╰╴r1
+  #  ╰╴B
+
+A common use of the :func:`populate` method is to quickly create
+example trees from scratch. Here we create a random tree with 100
+leaves::
+
+  t = Tree()
+  t.populate(100)
+
+
+How to delete/eliminate or remove/detach nodes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In ETE there is a difference between detaching and deleting a node.
+
+Detaching disconnects a complete partition from the tree structure, so
+all its descendants are also disconnected from the tree. There are two
+methods to perform this action: :func:`Tree.remove_child` and
+:func:`Tree.detach`.
+
+In contrast, deleting a node means eliminating such node without
+affecting its descendants. Children from the deleted node are
+automatically connected to the next possible parent.
+
+This is better understood with the following example::
+
+  t = Tree('((((H,K)D,(F,I)G)B,E)A,((L,(N,Q)O)J,(P,S)M)C);')
+
+  print(t.to_str(props=['name'], compact=True))
+  #                  ╭╴D╶┬╴H
+  #              ╭╴B╶┤   ╰╴K
+  #          ╭╴A╶┤   ╰╴G╶┬╴F
+  #          │   │       ╰╴I
+  # ╴(empty)╶┤   ╰╴E
+  #          │   ╭╴J╶┬╴L
+  #          ╰╴C╶┤   ╰╴O╶┬╴N
+  #              │       ╰╴Q
+  #              ╰╴M╶┬╴P
+  #                  ╰╴S
+
+  # Get specific nodes.
+  G = t['G']
+  J = t['J']
+  C = t['C']
+
+  # If we REMOVE the node J from the tree, the whole partition under J will
+  # be detached from the tree and it will be considered an independent tree.
+  # We can do the same with either J.detach() or C.remove_child(J).
+  removed_node = J.detach()  # same as C.remove_child(J)
+
+  # Tree after REMOVING the node J:
+  print(t.to_str(props=['name'], compact=True))
+  #                  ╭╴D╶┬╴H
+  #              ╭╴B╶┤   ╰╴K
+  #          ╭╴A╶┤   ╰╴G╶┬╴F
+  # ╴(empty)╶┤   │       ╰╴I
+  #          │   ╰╴E
+  #          ╰╴C╶╌╴M╶┬╴P
+  #                  ╰╴S
+
+  # However, if we DELETE the node G, only G will be eliminated from the
+  # tree, and all its descendants will then hang from the next upper node.
+  G.delete()
+
+  # Tree after DELETING the node G:
+  print(t.to_str(props=['name'], compact=True))
+  #                  ╭╴D╶┬╴H
+  #              ╭╴B╶┤   ╰╴K
+  #          ╭╴A╶┤   ├╴F
+  # ╴(empty)╶┤   │   ╰╴I
+  #          │   ╰╴E
+  #          ╰╴C╶╌╴M╶┬╴P
+  #                  ╰╴S
+
+
+Pruning trees
+-------------
+
+Pruning a tree means to obtain the topology that connects a certain
+group of items by removing the unnecessary edges. To facilitate this
+task, ETE implements the :func:`Tree.prune` method, which can be used
+by providing the list of terminal and/or internal nodes that must be
+kept in the tree.
+
+The `preserve_branch_length` flag allows to remove nodes from a tree
+while keeping original distances among remaining nodes.
+
+Example::
+
+  t = Tree('((((H,K),(F,I)G),E),((L,(N,Q)O),(P,S)));')
+
+  print(t)
+  #      ╭─┬╴H
+  #    ╭─┤ ╰╴K
+  #  ╭─┤ ╰─┬╴F
+  #  │ │   ╰╴I
+  # ─┤ ╰╴E
+  #  │ ╭─┬╴L
+  #  ╰─┤ ╰─┬╴N
+  #    │   ╰╴Q
+  #    ╰─┬╴P
+  #      ╰╴S
+
+  # Prune the tree in order to keep only some leaf nodes.
+  t.prune(['H', 'F', 'E', 'Q', 'P'])
+
+  # Pruned tree:
+  print(t)
+  #    ╭─┬╴H
+  #  ╭─┤ ╰╴F
+  # ─┤ ╰╴E
+  #  ╰─┬╴Q
+  #    ╰╴P
+
+In the next section we will see hot to re-create the same tree again.
+
+
+Concatenating trees
+-------------------
+
+Given that all tree nodes share the same basic properties, they can be
+connected freely. In fact, any node can add a whole subtree as a
+child, so we can actually *cut & paste* partitions.
+
+To do so, you can call the :func:`Tree.add_child` method using another tree
+node as first argument. If such a node is the root node of a
+different tree, you will concatenate the two tree structures.
+
+.. warning::
+  This kind of operation may result in circular tree structures if you
+  add a node's ancestor as one of its descendants. ETE performs some
+  basic checks, but a full check would affect seriously the
+  performance. For this reason, users themselves should take care not
+  to create circular structures by mistake.
+
+::
+
+  t1 = Tree('(A,(B,C));')
+  t2 = Tree('((D,E),(F,G));')
+  t3 = Tree('(H,((I,J),(K,L)));')
+
+  print(t1)
+  print(t2)
+  print(t3)
+  # ─┬╴A
+  #  ╰─┬╴B
+  #    ╰╴C
+  #  ╭─┬╴D
+  # ─┤ ╰╴E
+  #  ╰─┬╴F
+  #    ╰╴G
+  #  ╭╴H
+  # ─┤ ╭─┬╴I
+  #  ╰─┤ ╰╴J
+  #    ╰─┬╴K
+  #      ╰╴L
+
+  # Add two other trees as children of node A.
+  A = t1['A']
+
+  A.add_child(t2)
+  A.add_child(t3)
+
+  # Resulting concatenated tree:
+  print(t1)
+  #      ╭─┬╴D
+  #    ╭─┤ ╰╴E
+  #    │ ╰─┬╴F
+  #  ╭─┤   ╰╴G
+  #  │ │ ╭╴H
+  #  │ ╰─┤ ╭─┬╴I
+  # ─┤   ╰─┤ ╰╴J
+  #  │     ╰─┬╴K
+  #  │       ╰╴L
+  #  ╰─┬╴B
+  #    ╰╴C
+
+
+.. _sec:tree-rooting:
+
+.. _copying_trees:
+
+Copying (duplicating) trees
+---------------------------
+
+ETE provides several strategies to clone tree structures. The method
+:func:`Tree.copy()` can be used to produce a new independent tree
+object with the exact same topology and features as the original.
+However, as trees may involve many intricate levels of branches and
+nested features, 4 different methods are available to create a tree
+copy:
+
+ - "newick": Tree topology, node names, branch lengths and branch
+   support values will be copied as represented in the newick string
+   This method is based on newick format serialization works very fast
+   even for large trees.
+
+ - "newick-extended": Tree topology and all node features will be
+   copied based on the extended newick format representation. Only
+   node features will be copied, thus excluding other node
+   attributes. As this method is also based on newick serialisation,
+   features will be converted into text strings when making the
+   copy. Performance will depend on the tree size and the number and
+   type of features being copied.
+
+ - "cpickle": This is the default method. The whole node structure and
+   its content will be cloned based on the cPickle object
+   serialization python approach.  This method is slower, but
+   recommended for full tree copying.
+
+ - "deepcopy": The whole node structure and its content is copied
+   based on the standard "copy" Python functionality. This is the
+   slowest method, but it allows to copy very complex objects even
+   when attributes point to lambda functions.
+
+Example::
+
+   t = Tree('((A,B)Internal_1:0.7,(C,D)Internal_2:0.5)root:1.3;')
+
+   # Add a custom annotation to the node named A.
+   t['A'].add_props(label='custom value')
+
+   # Add a complex feature to the A node, consisting of a list of lists.
+   t['A'].add_props(complex=[[0,1], [2,3]])
+
+   print(t.to_str())
+   #                                                ╭╴name=A,label=custom value,complex=[[0, 1], [2, 3]]
+   #                     ╭╴name=Internal_1,dist=0.7╶┤
+   #                     │                          ╰╴name=B
+   # ╴name=root,dist=1.3╶┤
+   #                     │                          ╭╴name=C
+   #                     ╰╴name=Internal_2,dist=0.5╶┤
+   #                                                ╰╴name=D
+
+   # Newick copy will lose custom node annotations, complex features,
+   # but not names and branch values.
+
+   print(t.copy('newick').to_str())
+   #                                                ╭╴name=A
+   #                     ╭╴name=Internal_1,dist=0.7╶┤
+   #                     │                          ╰╴name=B
+   # ╴name=root,dist=1.3╶┤
+   #                     │                          ╭╴name=C
+   #                     ╰╴name=Internal_2,dist=0.5╶┤
+   #                                                ╰╴name=D
+
+   # Extended newick copy will transfer custom annotations as text
+   # strings, so complex features are lost.
+
+   print(t.copy('newick-extended').to_str())
+   #                              ╭╴name=A,complex=_0_ 1_|_2_ 3_,label=custom value
+   #   ╭╴name=Internal_1,dist=0.7╶┤
+   #   │                          ╰╴name=B
+   # ──┤
+   #   │                          ╭╴name=C
+   #   ╰╴name=Internal_2,dist=0.5╶┤
+   #                              ╰╴name=D
+
+   # The default pickle method will produce an exact clone of the
+   # original tree, where features are duplicated keeping their
+   # python data type.
+
+   print(t.copy().to_str())
+   #                                                ╭╴name=A,label=custom value,complex=[[0, 1], [2, 3]]
+   #                     ╭╴name=Internal_1,dist=0.7╶┤
+   #                     │                          ╰╴name=B
+   # ╴name=root,dist=1.3╶┤
+   #                     │                          ╭╴name=C
+   #                     ╰╴name=Internal_2,dist=0.5╶┤
+   #                                                ╰╴name=D
