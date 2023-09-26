@@ -183,8 +183,8 @@ def callback():
 def callback(tree_id):
     # Return dict that, for every layout module in the tree, has a dict
     # with the names of its layouts and whether they are active or not.
-    tid = get_tid(tree_id)[0]
-    tree_layouts = app.trees[int(tid)].layouts
+    tid, _ = get_tid(tree_id)
+    tree_layouts = app.trees[tid].layouts
 
     layouts = {}
     for module, lys in tree_layouts.items():
@@ -807,8 +807,8 @@ def store_search(tree_id, args):
 
         parents = get_parents(results)
 
-        tid = get_tid(tree_id)[0]
-        app.trees[int(tid)].searches[text] = (results, parents)
+        tid, _ = get_tid(tree_id)
+        app.trees[tid].searches[text] = (results, parents)
 
         return len(results), len(parents)
     except Exception as e:
@@ -831,7 +831,7 @@ def find_node(tree, args):
 
 def get_selections(tree_id):
     tid, subtree = get_tid(tree_id)
-    tree = app.trees[int(tid)]
+    tree = app.trees[tid]
     node = gdn.get_node(tree.tree, subtree)
     return [ name for name, (results, _) in tree.selected.items() if node in results ]
 
@@ -929,7 +929,7 @@ def change_selection_name(tid, args):
 
 def unselect_node(tree_id, args):
     tid, subtree = get_tid(tree_id)
-    tree = app.trees[int(tid)]
+    tree = app.trees[tid]
     node = gdn.get_node(tree.tree, subtree)
     name = args.pop('text', '').strip()
 
