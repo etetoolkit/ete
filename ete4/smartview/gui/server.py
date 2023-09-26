@@ -751,7 +751,14 @@ def get_drawer(tree_id, args):
         collapsed_ids = set(tuple(int(i) for i in node_id.split(','))
             for node_id in json.loads(args.get('collapsed_ids', '[]')))
 
-        update_ultrametric(args.get('ultrametric'), tid)
+        ultrametric = args.get('ultrametric') == '1'  # asked for ultrametric?
+        if ultrametric and not tree.style.ultrametric:  # change to on
+            tree.tree.to_ultrametric()
+            gdn.standardize(tree.tree)
+            initialize_tree_style(tree, ultrametric=True)
+        elif not ultrametric and tree.style.ultrametric:  # change to off
+            app.trees.pop(tid, None)  # delete from memory
+            # Forces it to be reloaded from disk next time it is accessed.
 
         active = tree.active
         selected = tree.selected
@@ -1481,23 +1488,8 @@ def update_layouts(active_layouts, tid):
                 t.initialized = False
 
 
-def update_ultrametric(ultrametric, tid):
-    """ Update trees if ultrametric option toggled """
-    tree = app.trees[int(tid)]
-    # Boolean from front-end 0 or 1
-    ultrametric = True if (ultrametric and int(ultrametric)) else False
-    if tree.style.ultrametric != ultrametric:
-        tree.style.ultrametric = ultrametric
-        if ultrametric == True:
-            tree.tree.to_ultrametric()
-            gdn.standardize(tree.tree)
-            initialize_tree_style(tree, ultrametric=True)
-        else:
-            app.trees.pop(tid, None) # delete from memory
-
-
 def get_tid(tree_id):
-    "Return the tree id and the subtree id, with the appropriate types"
+    """Return the tree id and the subtree id, with the appropriate types."""
     # Example: '3342,1,0,1,1' -> (3342, [1, 0, 1, 1])
     try:
         if type(tree_id) == int:
