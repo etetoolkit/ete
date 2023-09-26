@@ -320,19 +320,14 @@ cdef class Tree(object):
         """Yield all the terminal nodes (leaves)."""
         yield from self.leaves()
 
-    def add_prop(self, prop_name, value):
+    def add_prop(self, name, value):
         """Add or update node's property to the given value."""
-        if prop_name == 'dist':
-            self.dist = value
-        elif prop_name == 'support':
-            self.support = value
-        else:
-            self.props[prop_name] = value
+        self.props[name] = value
 
     def add_props(self, **props):
         """Add or update several properties."""
-        for prop_name, value in props.items():
-            self.add_prop(prop_name, value)
+        for name, value in props.items():
+            self.add_prop(name, value)
 
     def del_prop(self, prop_name):
         """Permanently delete a node's property."""
