@@ -96,6 +96,13 @@ t.explore()
 It will open a browser window with an interface to explore the tree.
 
 
+# Documentation
+
+Most documentation is automatically generated with
+[sphinx](https://www.sphinx-doc.org) from the contents of the `doc`
+directory, and is available at https://etetoolkit.github.io/ete/ .
+
+
 # Gallery of examples
 
 ![](https://raw.githubusercontent.com/etetoolkit/ete/ete4/doc/gallery.png)
