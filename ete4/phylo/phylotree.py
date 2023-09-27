@@ -99,7 +99,7 @@ def _get_subtrees(tree, full_copy=False, properties=None, newick_only=False):
             for leaf in t.leaves():
                 _nid = int(leaf.name)
                 for p in properties:
-                    leaf.add_prop(p, getattr(nid2node[_nid], f))
+                    leaf.add_prop(p, getattr(nid2node[_nid], p))
             yield t
 
 def calc_subtrees(tree):
