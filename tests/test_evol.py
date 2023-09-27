@@ -18,7 +18,7 @@ def random_swap(tree):
     '''
     swap randomly tree, to make sure labelling as paml is well done
     '''
-    for node in tree.iter_descendants():
+    for node in tree.descendants():
         if int (rnd()*100)%3:
             node.swap_children()
 
@@ -26,7 +26,7 @@ def check_annotation (tree):
     '''
     check each node is labelled with a node_id
     '''
-    for node in tree.iter_descendants():
+    for node in tree.descendants():
         if not node.props.get('node_id'):
             raise Exception ('Error, unable to label with paml ids')
     return True
@@ -61,7 +61,7 @@ class TestEvolEvolTree(unittest.TestCase):
             self.assertEqual((t & 'seq3').props.get('nt_sequence'), 'ATGTTT')
 
     def test_load_model(self):
-        tree = EvolTree (WRKDIR + 'tree.nw')
+        tree = EvolTree(open(WRKDIR + 'tree.nw'))
         tree.workdir = 'protamine/PRM1/paml/'
         tree.link_to_evol_model (WRKDIR + 'paml/fb/fb.out', 'fb')
         tree.link_to_evol_model (WRKDIR + 'paml/M1/M1.out', 'M1')
@@ -79,7 +79,7 @@ class TestEvolEvolTree(unittest.TestCase):
         self.assert_(' #193' in str(tree.get_evol_model('fb')))
 
     def test_get_most_likely(self):
-        tree = EvolTree (WRKDIR + 'tree.nw')
+        tree = EvolTree(open(WRKDIR + 'tree.nw'))
         tree.workdir = 'protamine/PRM1/paml/'
         tree.link_to_evol_model (WRKDIR + 'paml/M1/M1.out', 'M1')
         tree.link_to_evol_model (WRKDIR + 'paml/M2/M2.out', 'M2')
@@ -87,14 +87,14 @@ class TestEvolEvolTree(unittest.TestCase):
                          round(6.3280740347111373e-10,16))
 
     def test_labelling_tree(self):
-        tree = EvolTree (WRKDIR + 'tree.nw')
+        tree = EvolTree(open(WRKDIR + 'tree.nw'))
         tree.workdir = 'protamine/PRM1/paml/'
         random_swap(tree)
         tree.link_to_evol_model (WRKDIR + 'paml/fb/fb.out', 'fb')
         self.assert_(check_annotation (tree))
 
     def test_deep_copy(self):
-        tree = EvolTree (WRKDIR + 'tree.nw')
+        tree = EvolTree(open(WRKDIR + 'tree.nw'))
         tree.workdir = 'protamine/PRM1/paml/'
         tree.link_to_evol_model (WRKDIR + 'paml/fb/fb.out', 'fb')
         fba = deepcopy (tree.get_evol_model('fb'))
@@ -103,7 +103,7 @@ class TestEvolEvolTree(unittest.TestCase):
                          str(tree.get_evol_model('fb'))
                      )
     def test_call_histface(self):
-        tree = EvolTree (WRKDIR + 'tree.nw')
+        tree = EvolTree(open(WRKDIR + 'tree.nw'))
         tree.workdir = 'protamine/PRM1/paml/'
         tree.link_to_alignment  (WRKDIR + 'alignments.fasta_ali')
         tree.link_to_evol_model (WRKDIR + 'paml/M2/M2.out', 'M2.a')
