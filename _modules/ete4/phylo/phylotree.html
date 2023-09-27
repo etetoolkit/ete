@@ -7,7 +7,6 @@
     <title>ete4.phylo.phylotree &#8212; ETE Toolkit 4.0.0-beta documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=4f649999" />
     <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=039e1c02" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
     <script src="../../../_static/documentation_options.js?v=f03ed5e5"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
@@ -307,12 +306,15 @@
 <span class="sd">    specific properties and methods to work with phylogentic trees.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+<div class="viewcode-block" id="PhyloTree.__init__">
+<a class="viewcode-back" href="../../../reference/reference_phylo.html#ete4.PhyloTree.__init__">[docs]</a>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">newick</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">children</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">alignment</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">alg_format</span><span class="o">=</span><span class="s2">&quot;fasta&quot;</span><span class="p">,</span> <span class="n">sp_naming_function</span><span class="o">=</span><span class="n">_parse_species</span><span class="p">,</span>
                  <span class="n">parser</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param newick: Path to the file containing the tree or, alternatively,</span>
-<span class="sd">            the text string containing the same information.</span>
+<span class="sd">        :param newick: If not None, initializes the tree from a newick,</span>
+<span class="sd">            which can be a string or file object containing it.</span>
+<span class="sd">        :param children: If not None, the children to add to this node.</span>
 <span class="sd">        :param alignment: File containing a multiple sequence alignment.</span>
 <span class="sd">        :param alg_format: &quot;fasta&quot;, &quot;phylip&quot; or &quot;iphylip&quot; (interleaved).</span>
 <span class="sd">        :param parser: Parser to read the newick.</span>
@@ -331,7 +333,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">link_to_alignment</span><span class="p">(</span><span class="n">alignment</span><span class="p">,</span> <span class="n">alg_format</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">newick</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">set_species_naming_function</span><span class="p">(</span><span class="n">sp_naming_function</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_species_naming_function</span><span class="p">(</span><span class="n">sp_naming_function</span><span class="p">)</span></div>
+
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">species</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>

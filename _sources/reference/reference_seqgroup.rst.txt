@@ -1,5 +1,5 @@
-SeqGroup
-========
+Multiple Sequence Alignments (SeqGroup)
+=======================================
 
 .. automodule:: ete4.coretype.seqgroup
    :members:

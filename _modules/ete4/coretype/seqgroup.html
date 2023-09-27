@@ -7,7 +7,6 @@
     <title>ete4.coretype.seqgroup &#8212; ETE Toolkit 4.0.0-beta documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=4f649999" />
     <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=039e1c02" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
     <script src="../../../_static/documentation_options.js?v=f03ed5e5"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
@@ -57,7 +56,7 @@
 <a class="viewcode-back" href="../../../reference/reference_seqgroup.html#ete4.coretype.seqgroup.SeqGroup.__init__">[docs]</a>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequences</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;fasta&#39;</span><span class="p">,</span>
                  <span class="n">fix_duplicates</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param sequences: Path to the file containing the sequences or,</span>
 <span class="sd">            alternatively, the text string containing them.</span>
 <span class="sd">        :param format: Encoding format of sequences. Supported formats</span>
@@ -69,9 +68,12 @@
 
 <span class="sd">        Example::</span>
 
-<span class="sd">          msf = &#39;&gt;seq1\\nAAAAAAAAAAA\\n&gt;seq2\\nTTTTTTTTTTTTT\\n&#39;</span>
-<span class="sd">          seqs = SeqGroup(msf, format=&#39;fasta&#39;)</span>
-<span class="sd">          print seqs.get_seq(&#39;seq1&#39;)</span>
+<span class="sd">          seqs_str = (&#39;&gt;seq1\n&#39;</span>
+<span class="sd">                      &#39;AAAAAAAAAAA\n&#39;</span>
+<span class="sd">                      &#39;&gt;seq2\n&#39;</span>
+<span class="sd">                      &#39;TTTTTTTTTTTTT\n&#39;)</span>
+<span class="sd">          seqs = SeqGroup(seqs_str, format=&#39;fasta&#39;)</span>
+<span class="sd">          print(seqs.get_seq(&#39;seq1&#39;))</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parsers</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s1">&#39;fasta&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">read_fasta</span><span class="p">,</span> <span class="n">write_fasta</span><span class="p">,</span> <span class="p">{}],</span>

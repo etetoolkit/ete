@@ -8,7 +8,6 @@
     <title>Reference Guide &#8212; ETE Toolkit 4.0.0-beta documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=4f649999" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=039e1c02" />
-    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
     <script src="../_static/documentation_options.js?v=f03ed5e5"></script>
     <script src="../_static/doctools.js?v=888ff710"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
@@ -16,7 +15,7 @@
     <link rel="author" title="About these documents" href="../about.html" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Tree" href="reference_tree.html" />
+    <link rel="next" title="Tree (main class)" href="reference_tree.html" />
     <link rel="prev" title="Phylogenetic trees" href="../tutorial/tutorial_phylogeny.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
@@ -36,31 +35,13 @@
             
   <section id="reference-guide">
 <h1>Reference Guide<a class="headerlink" href="#reference-guide" title="Link to this heading">¶</a></h1>
-digraph inheritance9e90e02d16 {
-bgcolor=transparent;
-rankdir=LR;
-size=&quot;8.0, 12.0&quot;;
-  &quot;ClusterTree&quot; [URL=&quot;reference_clustering.html#ete4.clustering.clustertree.ClusterTree&quot;,fillcolor=white,fontname=&quot;Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans&quot;,fontsize=10,height=0.25,shape=box,style=&quot;setlinewidth(0.5),filled&quot;,target=&quot;_top&quot;,tooltip=&quot;A ClusterTree is a Tree that represents a clustering result.&quot;];
-  &quot;Tree&quot; -&gt; &quot;ClusterTree&quot; [arrowsize=0.5,style=&quot;setlinewidth(0.5)&quot;];
-  &quot;PhyloTree&quot; [URL=&quot;reference_phylo.html#ete4.PhyloTree&quot;,fillcolor=white,fontname=&quot;Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans&quot;,fontsize=10,height=0.25,shape=box,style=&quot;setlinewidth(0.5),filled&quot;,target=&quot;_top&quot;,tooltip=&quot;Class to store a phylogenetic tree.&quot;];
-  &quot;Tree&quot; -&gt; &quot;PhyloTree&quot; [arrowsize=0.5,style=&quot;setlinewidth(0.5)&quot;];
-  &quot;Tree&quot; [URL=&quot;reference_tree.html#ete4.Tree&quot;,fillcolor=white,fontname=&quot;Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans&quot;,fontsize=10,height=0.25,shape=box,style=&quot;setlinewidth(0.5),filled&quot;,target=&quot;_top&quot;,tooltip=&quot;The Tree class is used to store a tree structure.&quot;];
-  &quot;TreeError&quot; [fillcolor=white,fontname=&quot;Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans&quot;,fontsize=10,height=0.25,shape=box,style=&quot;setlinewidth(0.5),filled&quot;];
-}
-<p>Current modules:</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="reference_tree.html">Tree</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="reference_tree.html">Tree (main class)</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="reference_tree.html#ete4.Tree"><code class="docutils literal notranslate"><span class="pre">Tree</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="reference_treeview.html">Treeview</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="reference_treeview.html#treestyle">TreeStyle</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference_treeview.html#nodestyle">NodeStyle</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference_treeview.html#faces">Faces</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="reference_phylo.html">PhyloTree class</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="reference_phylo.html">Phylogenetic trees</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="reference_phylo.html#ete4.PhyloTree"><code class="docutils literal notranslate"><span class="pre">PhyloTree</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_phylo.html#ete4.phylo.EvolEvent"><code class="docutils literal notranslate"><span class="pre">EvolEvent</span></code></a></li>
 </ul>
@@ -69,8 +50,14 @@ size=&quot;8.0, 12.0&quot;;
 <li class="toctree-l2"><a class="reference internal" href="reference_clustering.html#ete4.clustering.clustertree.ClusterTree"><code class="docutils literal notranslate"><span class="pre">ClusterTree</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="reference_seqgroup.html">SeqGroup</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="reference_seqgroup.html">Multiple Sequence Alignments (SeqGroup)</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="reference_seqgroup.html#ete4.coretype.seqgroup.SeqGroup"><code class="docutils literal notranslate"><span class="pre">SeqGroup</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reference_treeview.html">Treeview (graphics)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference_treeview.html#treestyle">TreeStyle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_treeview.html#nodestyle">NodeStyle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_treeview.html#faces">Faces</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="reference_ncbi.html">NCBITaxa</a><ul>
@@ -105,11 +92,11 @@ size=&quot;8.0, 12.0&quot;;
 <li class="toctree-l1"><a class="reference internal" href="../faqs.html">Frequently Asked Questions (FAQs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorial/index.html">ETE Tutorial</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Reference Guide</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="reference_tree.html">Tree</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference_treeview.html">Treeview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference_phylo.html">PhyloTree class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_tree.html">Tree (main class)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_phylo.html">Phylogenetic trees</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_clustering.html">Clustering</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference_seqgroup.html">SeqGroup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_seqgroup.html">Multiple Sequence Alignments (SeqGroup)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_treeview.html">Treeview (graphics)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_ncbi.html">NCBITaxa</a></li>
 </ul>
 </li>
@@ -120,7 +107,7 @@ size=&quot;8.0, 12.0&quot;;
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
       <li>Previous: <a href="../tutorial/tutorial_phylogeny.html" title="previous chapter">Phylogenetic trees</a></li>
-      <li>Next: <a href="reference_tree.html" title="next chapter">Tree</a></li>
+      <li>Next: <a href="reference_tree.html" title="next chapter">Tree (main class)</a></li>
   </ul></li>
 </ul>
 </div>
