@@ -271,35 +271,9 @@ class PhyloTree(Tree):
     specific properties and methods to work with phylogentic trees.
     """
 
-    def _get_species(self):
-        if self.props.get('_speciesFunction'):
-            try:
-                return self.props.get('_speciesFunction')(self.name)
-            except:
-                return self.props.get('_speciesFunction')(self)
-        else:
-            return self.props.get('_species')
-
-    def _set_species(self, value):
-        if self.props.get('_speciesFunction'):
-            pass
-        else:
-            self.add_prop('_species', value)
-
-    # This tweak overwrites the native 'name' attribute to create a
-    # property that updates the species code every time name is
-    # changed
-
-    #: .. currentmodule:: ete3
-    #:
-    #Species code associated to the node. This property can be
-    #automatically extracted from the Tree.name attribute or
-    #manually set (see :func:`PhyloTree.set_species_naming_function`).
-    species = property(fget = _get_species, fset = _set_species)
-
     def __init__(self, newick=None, children=None, alignment=None,
                  alg_format="fasta", sp_naming_function=_parse_species,
-                 parser=None, **kargs):
+                 parser=None):
         """
         :param newick: Path to the file containing the tree or, alternatively,
             the text string containing the same information.
@@ -312,22 +286,33 @@ class PhyloTree(Tree):
             the 3 first letters of node names will be used as species
             identifier.
         """
-        # _update names?
-        self.props = {}
-        self.add_props(_name="NoName", _species="Unknown",
-                            _speciesFunction=None)
-        # Caution! native __init__ has to be called after setting
-        # _speciesFunction to None!!
-        Tree.__init__(self, data=newick, children=children,
-                      parser=parser, **kargs)
+        super().__init__(data=newick, children=children, parser=parser)
 
         # This will be only executed after reading the whole tree,
         # because the argument 'alignment' is not passed to the
-        # PhyloTree constructor during parsing
+        # PhyloTree constructor during parsing.
         if alignment:
             self.link_to_alignment(alignment, alg_format)
+
         if newick:
             self.set_species_naming_function(sp_naming_function)
+
+    @property
+    def species(self):
+        if self.props.get('_speciesFunction'):
+            try:
+                return self.props.get('_speciesFunction')(self.name)
+            except:
+                return self.props.get('_speciesFunction')(self)
+        else:
+            return self.props.get('species')
+
+    @species.setter
+    def species(self, value):
+        assert self.props.get('_speciesFunction') is None, \
+            ('Species naming function present, cannot set species manually. '
+             'Maybe call set_species_naming_function() first?')
+        self.props['species'] = value
 
     def __repr__(self):
         return "PhyloTree '%s' (%s)" % (self.name, hex(self.__hash__()))
@@ -340,26 +325,21 @@ class PhyloTree(Tree):
         return super().write(outfile, props, parser, format_root_node, is_leaf_fn)
 
     def set_species_naming_function(self, fn):
-        """
-        Sets the parsing function used to extract species name from a
-        node's name.
+        """Set the function used to get the species from the node's name.
 
-        :argument fn: Pointer to a parsing python function that
-          receives nodename as first argument and returns the species
-          name.
+        :param fn: Function that takes a nodename and returns the species name.
 
-        ::
+        Example of a parsing function::
 
-          # Example of a parsing function to extract species names for
-          # all nodes in a given tree.
           def parse_sp_name(node_name):
               return node_name.split("_")[1]
           tree.set_species_naming_function(parse_sp_name)
-
         """
-        if fn:
-            for n in self.traverse():
-                n.add_prop("_speciesFunction", fn)
+        for n in self.traverse():
+            if fn is not None:
+                n.props['_speciesFunction'] = fn
+            else:
+                n.props.pop('_speciesFunction', None)
 
     def link_to_alignment(self, alignment, alg_format="fasta", **kwargs):
         missing_leaves = []
