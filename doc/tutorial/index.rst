@@ -7,3 +7,4 @@ Contents:
    :maxdepth: 3
 
    tutorial_trees
+   tutorial_phylogeny
