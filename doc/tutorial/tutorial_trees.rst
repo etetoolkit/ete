@@ -902,7 +902,7 @@ To read NHX notation you can just read it as a normal newick::
   E=1.1.1.1:D=N], (ADH4:0.09[&&NHX:S=yeast:E=1.1.1.1],ADH3:0.13[&&NHX:S=yeast:
   E=1.1.1.1], ADH2:0.12[&&NHX:S=yeast:E=1.1.1.1],ADH1:0.11[&&NHX:S=yeast:E=1.1.1.1]):0.1
   [&&NHX:S=Fungi])[&&NHX:E=1.1.1.1:D=N];
-  """.replace('\n', '')
+  """
 
   t = Tree(nw)
 
@@ -1571,7 +1571,7 @@ Example::
   # Create a tree with branch lenght information.
   nw = """(((A:1,B:2):1,C:3):1,
   (((((D:0.5,I:0):0,F:0):0,G:0):0,H:0):0,E:0.2):3):2;
-  """.replace('\n', '')
+  """
 
   t = Tree(nw)
 

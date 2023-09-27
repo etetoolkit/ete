@@ -316,7 +316,7 @@ class Test_Coretype_Tree(unittest.TestCase):
         # invalid NHX format
         self.assertRaises(NewickError, Tree, "(((A, B), C)[&&NHX:nameI]);")
         # unsupported newick stream
-        self.assertRaises(AssertionError, Tree, [1,2,3])
+        self.assertRaises(Exception, Tree, [1,2,3])
 
     def test_quoted_names(self):
         complex_name = "((A:0.0001[&&NHX:hello=true],B:0.011)90:0.01[&&NHX:hello=true],(C:0.01, D:0.001)hello:0.01);"

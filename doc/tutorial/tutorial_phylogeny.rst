@@ -225,7 +225,7 @@ Example::
   (((Hsa_001[&&NHX:species=Human],Ptr_001[&&NHX:species=Chimp]),
   (Cfa_001[&&NHX:species=Dog],Mms_001[&&NHX:species=Mouse])),
   (Dme_001[&&NHX:species=Fly],Dme_002[&&NHX:species=Fly]));
-  """.replace('\n', '')
+  """
 
   t = PhyloTree(mynewick, sp_naming_function=None)
 

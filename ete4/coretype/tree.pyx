@@ -85,7 +85,7 @@ cdef class Tree(object):
 
         self.size = (0, 0)
 
-        data = data.read().strip() if hasattr(data, 'read') else data
+        data = data.read() if hasattr(data, 'read') else data
 
         if data is None:
             self.props = {}
@@ -96,6 +96,8 @@ cdef class Tree(object):
 
             assert (type(parser) in [dict, int] or
                     parser in [None, 'newick', 'ete', 'auto']), 'bad parser'
+
+            data = data.strip()
 
             if parser is None or parser == 'auto':
                 guess_format = lambda x: 'newick'  # TODO
