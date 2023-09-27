@@ -996,23 +996,22 @@ cdef class Tree(object):
 
         return current  # the midpoint was the root (we went back to it)
 
-    def populate(self, size, names_library=None, reuse_names=False,
-                 random_branches=False, branch_range=(0, 1),
-                 support_range=(0, 1)):
+    def populate(self, size, names_library=None, random_branches=False,
+                 dist_range=(0, 1), support_range=(0, 1)):
         """Populate current node with branches generating a random topology.
 
-        :param None names_library: If provided, names library (list,
-            set, dict, etc.) will be used to name nodes.
-        :param False reuse_names: If True, node names will not be
-            necessarily unique, which makes the process a bit more
-            efficient.
-        :param False random_branches: If True, branch distances and
-            support values will be randomized.
-        :param (0,1) branch_range: If random_branches is True, this
-            range of values will be used to generate random distances.
-        :param (0,1) support_range: If random_branches is True, this
-            range of values will be used to generate random branch
-            support values.
+        All the nodes added will either be leaves or have two branches.
+
+        :param size: Number of leaves to add. The necessary
+            intermediate nodes will be created too.
+        :param names_library: Collection (list or set) used to name leaves.
+            If None, leaves will be named using short letter sequences.
+        :param random_branches: If True, branch distances and support
+            values will be randomized.
+        :param dist_range: Range (tuple with min and max) of distances
+            used to generate branch distances if random_branches is True.
+        :param support_range: Range (tuple with min and max) of distances
+            used to generate branch supports if random_branches is True.
         """
         NewNode = self.__class__
 
@@ -1020,29 +1019,28 @@ cdef class Tree(object):
             connector = NewNode()
             for ch in self.get_children():
                 ch.detach()
-                connector.add_child(child = ch)
+                connector.add_child(ch)
             root = NewNode()
-            self.add_child(child = connector)
-            self.add_child(child = root)
+            self.add_child(connector)
+            self.add_child(root)
         else:
             root = self
 
         root.dist = root.dist or 0
         root.support = root.support or 1
 
-        next_deq = deque([root])
-        for i in range(size-1):
-            if random.randint(0, 1):
-                p = next_deq.pop()
-            else:
-                p = next_deq.popleft()
+        next_deq = deque([root])  # will contain the current leaves
+        for i in range(size - 1):
+            p = next_deq.popleft() if random.randint(0, 1) else next_deq.pop()
 
             c1 = p.add_child()
             c2 = p.add_child()
+
             next_deq.extend([c1, c2])
+
             if random_branches:
-                c1.dist = random.uniform(*branch_range)
-                c2.dist = random.uniform(*branch_range)
+                c1.dist = random.uniform(*dist_range)
+                c2.dist = random.uniform(*dist_range)
                 c1.support = random.uniform(*support_range)
                 c2.support = random.uniform(*support_range)
             else:
@@ -1051,21 +1049,27 @@ cdef class Tree(object):
                 c1.support = 1.0
                 c2.support = 1.0
 
-        # next contains leaf nodes
-        charset =  "abcdefghijklmnopqrstuvwxyz"
-        if names_library:
-            names_library = deque(names_library)
+        # Give names to leaves.
+        if names_library is not None:
+            assert len(names_library) >= len(next_deq), \
+                ('names_library too small (%d) to name all leaves (%d)' %
+                 (len(names_library), len(next_deq)))
+
+            names = names_library.copy()  # so we don't modify the original
+            for n in next_deq:
+                n.name = names.pop()
         else:
-            avail_names = itertools.combinations_with_replacement(charset, 10)
-        for n in next_deq:
-            if names_library:
-                if reuse_names:
-                    tname = random.sample(names_library, 1)[0]
-                else:
-                    tname = names_library.pop()
-            else:
-                tname = ''.join(next(avail_names))
-            n.name = tname
+            chars = 'abcdefghijklmnopqrstuvwxyz'
+
+            for i, n in enumerate(next_deq):
+                # Create a short name corresponding to the index i.
+                # 0: 'a', 1: 'b', ..., 25: 'z', 26: 'aa', 27: 'ab', ...
+                name = ''
+                while i >= 0:
+                    name = chars[i % len(chars)] + name
+                    i = i // len(chars) - 1
+
+                n.name = name
 
     def set_outgroup_v2(self, outgroup, branch_properties=None):
         """Set the given outgroup node at the root and return it.
