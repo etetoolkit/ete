@@ -199,16 +199,18 @@ are collapsed.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.PhyloTree.get_my_evol_events">
 <span class="sig-name descname"><span class="pre">get_my_evol_events</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sos_thr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/phylo/phylotree.html#PhyloTree.get_my_evol_events"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.PhyloTree.get_my_evol_events" title="Link to this definition">¶</a></dt>
-<dd><p>Returns a list of duplication and speciation events in
-which the current node has been involved. Scanned nodes are
-also labeled internally as dup=True|False. You can access this
-labels using the ‘node.dup’ sintaxis.</p>
-<p>Method: the algorithm scans all nodes from the given leafName to
-the root. Nodes are assumed to be duplications when a species
-overlap is found between its child linages. Method is described
-more detail in:</p>
-<p>“The Human Phylome.” Huerta-Cepas J, Dopazo H, Dopazo J, Gabaldon
-T. Genome Biol. 2007;8(6):R109.</p>
+<dd><p>Return list of duplication and speciation events involving this node.</p>
+<p>Scanned nodes are also labeled internally as dup=True|False.
+You can access these labels using <code class="docutils literal notranslate"><span class="pre">node.dup</span></code>.</p>
+<p>The algorithm scans all nodes from the given leafName to the
+root. Nodes are assumed to be duplications when a species
+overlap is found between its child linages. The method is
+described in more detail in:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Citation<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>The Human Phylome</em>. T. Genome Biol. 2007;8(6):R109.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">

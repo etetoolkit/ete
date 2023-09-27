@@ -50,6 +50,26 @@
 <li><p><a class="reference internal" href="#manual-control-of-the-species-info" id="id8">Manual control of the species info</a></p></li>
 </ul>
 </li>
+<li><p><a class="reference internal" href="#detecting-evolutionary-events" id="id9">Detecting evolutionary events</a></p>
+<ul>
+<li><p><a class="reference internal" href="#species-overlap-so-algorithm" id="id10">Species Overlap (SO) algorithm</a></p></li>
+<li><p><a class="reference internal" href="#tree-reconciliation-algorithm" id="id11">Tree reconciliation algorithm</a></p></li>
+<li><p><a class="reference internal" href="#a-closer-look-to-the-evolutionary-event-object" id="id12">A closer look to the evolutionary event object</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#relative-dating-of-phylogenetic-nodes" id="id13">Relative dating of phylogenetic nodes</a></p>
+<ul>
+<li><p><a class="reference internal" href="#implementation" id="id14">Implementation</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#automatic-rooting-outgroup-detection" id="id15">Automatic rooting (outgroup detection)</a></p></li>
+<li><p><a class="reference internal" href="#working-with-duplicated-gene-families" id="id16">Working with duplicated gene families</a></p>
+<ul>
+<li><p><a class="reference internal" href="#treeko-splitting-gene-trees-into-species-trees" id="id17">TreeKO (splitting gene trees into species trees)</a></p></li>
+<li><p><a class="reference internal" href="#splitting-gene-trees-by-duplication-events" id="id18">Splitting gene trees by duplication events</a></p></li>
+<li><p><a class="reference internal" href="#collapse-species-specific-duplications" id="id19">Collapse species specific duplications</a></p></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -70,7 +90,7 @@ in the tree will represent a speciation or duplication event.</p>
 <h2><a class="toc-backref" href="#id3" role="doc-backlink">Linking phylogenetic trees with multiple sequence alignments</a><a class="headerlink" href="#linking-phylogenetic-trees-with-multiple-sequence-alignments" title="Link to this heading">¶</a></h2>
 <p><code class="xref py py-class docutils literal notranslate"><span class="pre">PhyloTree</span></code> instances allow molecular phylogenies to be linked
 to Multiple Sequence Alignments (MSA). To associate an MSA with a
-phylogenetic tree you can use the <code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloNode.link_to_alignment()</span></code>
+phylogenetic tree you can use the <code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.link_to_alignment()</span></code>
 method. You can use the <code class="xref py py-attr docutils literal notranslate"><span class="pre">alg_format</span></code> argument to specify its
 format (See <code class="xref py py-class docutils literal notranslate"><span class="pre">SeqGroup</span></code> documentation for available formats).</p>
 <p>Given that the <a class="reference external" href="https://en.wikipedia.org/wiki/FASTA_format">FASTA format</a> is not only applicable
@@ -81,27 +101,27 @@ sequences of different lengths with tree nodes.</p>
 
 <span class="n">fasta_txt</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">&gt;seqA</span>
-<span class="s2">MAEIPDETIQQFMALT---HNIAVQYLSEFGDLNEALNSYYASQTDDIKDRREEAH</span>
+<span class="s2">MAEIPDETIQQFMALT---HNIAVQYLSEFGTDDIKDRREEAH</span>
 <span class="s2">&gt;seqB</span>
-<span class="s2">MAEIPDATIQQFMALTNVSHNIAVQY--EFGDLNEALNSYYAYQTDDQKDRREEAH</span>
+<span class="s2">MAEIPDATIQQFMALTNVSHNIAVQY--EFGTDDQKDRREEAH</span>
 <span class="s2">&gt;seqC</span>
-<span class="s2">MAEIPDATIQ---ALTNVSHNIAVQYLSEFGDLNEALNSYYASQTDDQPDRREEAH</span>
+<span class="s2">MAEIPDATIQ---ALTNVSHNIAVQYLSEFGTDDQPDRREEAH</span>
 <span class="s2">&gt;seqD</span>
-<span class="s2">MAEAPDETIQQFMALTNVSHNIAVQYLSEFGDLNEAL--------------REEAH</span>
+<span class="s2">MAEAPDETIQQFMALTNVSHNIAVQYLSEFG-------REEAH</span>
 <span class="s2">&quot;&quot;&quot;</span>
 
 <span class="c1"># Load a tree and link it to an alignment.</span>
 <span class="n">t</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="s1">&#39;(((seqA,seqB),seqC),seqD);&#39;</span><span class="p">)</span>
 <span class="n">t</span><span class="o">.</span><span class="n">link_to_alignment</span><span class="p">(</span><span class="n">alignment</span><span class="o">=</span><span class="n">fasta_txt</span><span class="p">,</span> <span class="n">alg_format</span><span class="o">=</span><span class="s1">&#39;fasta&#39;</span><span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;sequence&#39;</span><span class="p">]))</span>
-<span class="c1">#                  ╭╴seqA,MAEIPDETIQQFMALT---HNIAVQYLSEFGDLNEALNSYYASQTDDIKDRREEAH</span>
-<span class="c1">#            ╭╴⊗,⊗╶┤</span>
-<span class="c1">#      ╭╴⊗,⊗╶┤     ╰╴seqB,MAEIPDATIQQFMALTNVSHNIAVQY--EFGDLNEALNSYYAYQTDDQKDRREEAH</span>
-<span class="c1">#      │     │</span>
-<span class="c1"># ╴⊗,⊗╶┤     ╰╴seqC,MAEIPDATIQ---ALTNVSHNIAVQYLSEFGDLNEALNSYYASQTDDQPDRREEAH</span>
-<span class="c1">#      │</span>
-<span class="c1">#      ╰╴seqD,MAEAPDETIQQFMALTNVSHNIAVQYLSEFGDLNEAL--------------REEAH</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;sequence&#39;</span><span class="p">],</span> <span class="n">show_internal</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+<span class="c1">#      ╭╴seqA,MAEIPDETIQQFMALT---HNIAVQYLSEFGTDDIKDRREEAH</span>
+<span class="c1">#    ╭─┤</span>
+<span class="c1">#  ╭─┤ ╰╴seqB,MAEIPDATIQQFMALTNVSHNIAVQY--EFGTDDQKDRREEAH</span>
+<span class="c1">#  │ │</span>
+<span class="c1"># ─┤ ╰╴seqC,MAEIPDATIQ---ALTNVSHNIAVQYLSEFGTDDQPDRREEAH</span>
+<span class="c1">#  │</span>
+<span class="c1">#  ╰╴seqD,MAEAPDETIQQFMALTNVSHNIAVQYLSEFG-------REEAH</span>
 </pre></div>
 </div>
 <p>The same could be done at the time the tree is being loaded, by using
@@ -253,8 +273,8 @@ and evolutionary events labeling.</p>
 names separately. This is useful when working with molecular
 phylogenies, in which node names usually represent sequence
 identifiers.</p>
-<p>Species names will be stored in the <code class="xref py py-attr docutils literal notranslate"><span class="pre">PhyloNode.species</span></code>
-attribute of each leaf node. The method <code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloNode.get_species()</span></code>
+<p>Species names will be stored in the <code class="xref py py-attr docutils literal notranslate"><span class="pre">PhyloTree.species</span></code>
+attribute of each leaf node. The method <code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.get_species()</span></code>
 can be used obtain the set of species names found under a given
 internal node (speciation or duplication event). Often, sequence names
 do contain species information as a part of the name, and ETE can
@@ -295,12 +315,12 @@ nodes:</p>
 <section id="automatic-custom-control-of-the-species-info">
 <h3><a class="toc-backref" href="#id7" role="doc-backlink">Automatic (custom) control of the species info</a><a class="headerlink" href="#automatic-custom-control-of-the-species-info" title="Link to this heading">¶</a></h3>
 <p>The default behavior can be changed by using the
-<code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloNode.set_species_naming_function()</span></code> method or by using the
+<code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.set_species_naming_function()</span></code> method or by using the
 <code class="xref py py-attr docutils literal notranslate"><span class="pre">sp_naming_function</span></code> argument of the <code class="xref py py-class docutils literal notranslate"><span class="pre">PhyloTree</span></code> class.</p>
 <p>Note that, using the <code class="xref py py-attr docutils literal notranslate"><span class="pre">sp_naming_function</span></code> argument, the whole
 tree structure will be initialized to use the provided parsing
 function to obtain species name information.
-<code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloNode.set_species_naming_function()</span></code> (present in all tree
+<code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.set_species_naming_function()</span></code> (present in all tree
 nodes) can be used to change the behavior in a previously loaded tree,
 or to set different parsing functions to different parts of the tree.</p>
 <p>Example:</p>
@@ -344,7 +364,7 @@ or to set different parsing functions to different parts of the tree.</p>
 <h3><a class="toc-backref" href="#id8" role="doc-backlink">Manual control of the species info</a><a class="headerlink" href="#manual-control-of-the-species-info" title="Link to this heading">¶</a></h3>
 <p>To disable the automatic generation of species names based on node
 names, a <code class="docutils literal notranslate"><span class="pre">None</span></code> value can be passed to the
-<code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloNode.set_species_naming_function()</span></code> function. From then on,
+<code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.set_species_naming_function()</span></code> function. From then on,
 the species attribute will not be automatically updated based on the name
 of nodes and it could be controlled manually.</p>
 <p>Example:</p>
@@ -358,7 +378,7 @@ of nodes and it could be controlled manually.</p>
 <span class="s2">(((Hsa_001[&amp;&amp;NHX:species=Human],Ptr_001[&amp;&amp;NHX:species=Chimp]),</span>
 <span class="s2">(Cfa_001[&amp;&amp;NHX:species=Dog],Mms_001[&amp;&amp;NHX:species=Mouse])),</span>
 <span class="s2">(Dme_001[&amp;&amp;NHX:species=Fly],Dme_002[&amp;&amp;NHX:species=Fly]));</span>
-<span class="s2">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+<span class="s2">&quot;&quot;&quot;</span>
 
 <span class="n">t</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="n">mynewick</span><span class="p">,</span> <span class="n">sp_naming_function</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 
@@ -370,6 +390,607 @@ of nodes and it could be controlled manually.</p>
 <span class="c1"># Node: Mms_001   Species: Mouse</span>
 <span class="c1"># Node: Dme_001   Species: Fly</span>
 <span class="c1"># Node: Dme_002   Species: Fly</span>
+</pre></div>
+</div>
+<p>Download full example: <a class="reference download internal" download="" href="../_downloads/b7c247576e13c1afcb798e6d1c1e78df/species_aware_phylogenies.py"><code class="xref download docutils literal notranslate"><span class="pre">species-aware</span> <span class="pre">trees</span></code></a>.</p>
+</section>
+</section>
+<section id="detecting-evolutionary-events">
+<h2><a class="toc-backref" href="#id9" role="doc-backlink">Detecting evolutionary events</a><a class="headerlink" href="#detecting-evolutionary-events" title="Link to this heading">¶</a></h2>
+<p>There are several ways to automatically detect duplication and
+speciation nodes. ETE provides two ways.</p>
+<p>The first implements the algorithm described in <a class="reference external" href="https://genomebiology.biomedcentral.com/articles/10.1186/gb-2007-8-6-r109">Huerta-Cepas (2007)</a>
+and is based on the species overlap (SO) between partitions and thus
+does not depend on the availability of a species tree.</p>
+<p>The second, which requires the comparison between the gene tree and a
+previously defined species tree, implements a strict tree
+reconciliation algorithm (Page and Charleston, 1997). By detecting
+evolutionary events, orthology and paralogy relationships among
+sequences can also be inferred.</p>
+<p>You can find a comparison of both methods in
+<a class="reference external" href="http://www.plosone.org/article/info:doi%2F10.1371%2Fjournal.pone.0004357">Marcet-Houben and Gabaldon (2009)</a>.</p>
+<section id="species-overlap-so-algorithm">
+<span id="spoverlap"></span><h3><a class="toc-backref" href="#id10" role="doc-backlink">Species Overlap (SO) algorithm</a><a class="headerlink" href="#species-overlap-so-algorithm" title="Link to this heading">¶</a></h3>
+<p>In order to apply the SO algorithm, you can use the
+<code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.get_descendant_evol_events()</span></code> method (it will detect
+all evolutionary events under the current node) or the
+<code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.get_my_evol_events()</span></code> method (it will detect only the
+evolutionary events in which the current node, a leaf, is involved).</p>
+<p>By default the <strong>species overlap score (SOS) threshold</strong> is set to
+0.0, which means that a single species in common between two node
+branches will rise a duplication event. This has been shown to perform
+the best with real data, however you can adjust the threshold using
+the <code class="docutils literal notranslate"><span class="pre">sos_thr</span></code> argument present in both methods.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">PhyloTree</span>
+
+<span class="c1"># Load an example tree.</span>
+<span class="n">nw</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">((Dme_001,Dme_002),(((Cfa_001,Mms_001),((Hsa_001,Ptr_001),Mmu_001)),</span>
+<span class="s2">(Ptr_002,(Hsa_002,Mmu_002))));</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="n">nw</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+<span class="c1">#  ╭─┬╴Dme_001</span>
+<span class="c1">#  │ ╰╴Dme_002</span>
+<span class="c1"># ─┤   ╭─┬╴Cfa_001</span>
+<span class="c1">#  │ ╭─┤ ╰╴Mms_001</span>
+<span class="c1">#  │ │ │ ╭─┬╴Hsa_001</span>
+<span class="c1">#  ╰─┤ ╰─┤ ╰╴Ptr_001</span>
+<span class="c1">#    │   ╰╴Mmu_001</span>
+<span class="c1">#    ╰─┬╴Ptr_002</span>
+<span class="c1">#      ╰─┬╴Hsa_002</span>
+<span class="c1">#        ╰╴Mmu_002</span>
+
+<span class="c1"># To obtain all the evolutionary events involving a given leaf node we</span>
+<span class="c1"># use the get_my_evol_events method.</span>
+<span class="n">human_seq</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="s1">&#39;Hsa_001&#39;</span><span class="p">]</span>
+
+<span class="n">events</span> <span class="o">=</span> <span class="n">human_seq</span><span class="o">.</span><span class="n">get_my_evol_events</span><span class="p">()</span>  <span class="c1"># obtain its evolutionary events</span>
+
+<span class="c1"># Print its orthology and paralogy relationships.</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Events detected that involve Hsa_001:&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span><span class="p">:</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;S&#39;</span><span class="p">:</span> <span class="s1">&#39;Orthology&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">:</span> <span class="s1">&#39;Paralogy&#39;</span><span class="p">}[</span><span class="n">ev</span><span class="o">.</span><span class="n">etype</span><span class="p">]</span>  <span class="c1"># relationship</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%11s</span><span class="s1">: </span><span class="si">%s</span><span class="s1"> &lt;==&gt; </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">in_seqs</span><span class="p">),</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">out_seqs</span><span class="p">)))</span>
+
+<span class="c1"># Events detected that involve Hsa_001:</span>
+<span class="c1">#   Orthology: Hsa_001 &lt;==&gt; Ptr_001</span>
+<span class="c1">#   Orthology: Ptr_001,Hsa_001 &lt;==&gt; Mmu_001</span>
+<span class="c1">#   Orthology: Ptr_001,Hsa_001,Mmu_001 &lt;==&gt; Mms_001,Cfa_001</span>
+<span class="c1">#    Paralogy: Mms_001,Mmu_001,Ptr_001,Hsa_001,Cfa_001 &lt;==&gt; Ptr_002,Mmu_002,Hsa_002</span>
+<span class="c1">#   Orthology: Hsa_002,Mms_001,Mmu_001,Ptr_001,Hsa_001,Ptr_002,Mmu_002,Cfa_001 &lt;==&gt; Dme_001,Dme_002</span>
+
+<span class="c1"># Alternatively, you can scan the whole tree topology.</span>
+<span class="n">events</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">get_descendant_evol_events</span><span class="p">()</span>
+
+<span class="c1"># Print its orthology and paralogy relationships.</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Events detected from the root of the tree:&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span><span class="p">:</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;S&#39;</span><span class="p">:</span> <span class="s1">&#39;Orthology&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">:</span> <span class="s1">&#39;Paralogy&#39;</span><span class="p">}[</span><span class="n">ev</span><span class="o">.</span><span class="n">etype</span><span class="p">]</span>  <span class="c1"># relationship</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%11s</span><span class="s1">: </span><span class="si">%s</span><span class="s1"> &lt;==&gt; </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">in_seqs</span><span class="p">),</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">out_seqs</span><span class="p">)))</span>
+<span class="c1"># Events detected from the root of the tree:</span>
+<span class="c1">#   Orthology: Dme_001,Dme_002 &lt;==&gt; Hsa_002,Mms_001,Mmu_001,Ptr_001,Hsa_001,Ptr_002,Mmu_002,Cfa_001</span>
+<span class="c1">#    Paralogy: Dme_001 &lt;==&gt; Dme_002</span>
+<span class="c1">#    Paralogy: Mms_001,Mmu_001,Ptr_001,Hsa_001,Cfa_001 &lt;==&gt; Ptr_002,Mmu_002,Hsa_002</span>
+<span class="c1">#   Orthology: Mms_001,Cfa_001 &lt;==&gt; Ptr_001,Hsa_001,Mmu_001</span>
+<span class="c1">#   Orthology: Ptr_002 &lt;==&gt; Mmu_002,Hsa_002</span>
+<span class="c1">#   Orthology: Cfa_001 &lt;==&gt; Mms_001</span>
+<span class="c1">#   Orthology: Ptr_001,Hsa_001 &lt;==&gt; Mmu_001</span>
+<span class="c1">#   Orthology: Hsa_002 &lt;==&gt; Mmu_002</span>
+<span class="c1">#   Orthology: Hsa_001 &lt;==&gt; Ptr_001</span>
+
+<span class="c1"># If we are only interested in the orthology and paralogy relationship</span>
+<span class="c1"># among a given set of species, we can filter the list of sequences.</span>
+<span class="k">def</span> <span class="nf">fseqs</span><span class="p">(</span><span class="n">slist</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return only the sequences in slist that are from human or mouse.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">slist</span> <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;Hsa&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">s</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;Mms&#39;</span><span class="p">)]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Paralogy relationships among human and mouse:&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">ev</span><span class="o">.</span><span class="n">etype</span> <span class="o">==</span> <span class="s1">&#39;D&#39;</span><span class="p">:</span>
+        <span class="c1"># Prints paralogy relationships considering only human and</span>
+        <span class="c1"># mouse. Some duplication events may not involve such species,</span>
+        <span class="c1"># so they will be empty.</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fseqs</span><span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">in_seqs</span><span class="p">)),</span> <span class="s1">&#39;&lt;==&gt;&#39;</span><span class="p">,</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fseqs</span><span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">out_seqs</span><span class="p">)))</span>
+<span class="c1"># Paralogy relationships among human and mouse:</span>
+<span class="c1">#  &lt;==&gt;</span>
+<span class="c1"># Hsa_001,Mms_001 &lt;==&gt; Hsa_002</span>
+
+<span class="c1"># Note that besides the list of events returned, the detection</span>
+<span class="c1"># algorithm has labeled the tree nodes according with the</span>
+<span class="c1"># predictions. We can use such lables as normal node features.</span>
+<span class="n">dups</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">search_nodes</span><span class="p">(</span><span class="n">evoltype</span><span class="o">=</span><span class="s1">&#39;D&#39;</span><span class="p">))</span>  <span class="c1"># get all duplication nodes</span>
+</pre></div>
+</div>
+</section>
+<section id="tree-reconciliation-algorithm">
+<h3><a class="toc-backref" href="#id11" role="doc-backlink">Tree reconciliation algorithm</a><a class="headerlink" href="#tree-reconciliation-algorithm" title="Link to this heading">¶</a></h3>
+<p>The tree reconciliation algorithm uses a predefined species tree to
+infer all the necessary gene losses that explain a given gene tree
+topology. Consequently, duplication and separation nodes will strictly
+follow the species tree topology.</p>
+<p>To perform a tree reconciliation analysis over a given node in a
+molecular phylogeny you can use the <code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.reconcile()</span></code>
+method, which requires a species <code class="xref py py-class docutils literal notranslate"><span class="pre">PhyloTree</span></code> as its first
+argument. Leaf node names in the the species are expected to be the
+same species codes in the gene tree (see <a class="reference internal" href="#taxonomic-info">taxonomic_info</a>). All
+species codes present in the gene tree should appear in the species
+tree.</p>
+<p>As a result, the <code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.reconcile()</span></code> method will label the
+original gene tree nodes as duplication or speciation, will return the
+list of inferred events, and will return a new <strong>reconcilied tree</strong>
+(<code class="xref py py-class docutils literal notranslate"><span class="pre">PhyloTree</span></code> instance), in which inferred gene losses are
+present and labeled.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">PhyloTree</span>
+
+<span class="c1"># Load a gene tree and its corresponding species tree. Note that</span>
+<span class="c1"># species names in sptree are the 3 firs letters of leaf nodes in</span>
+<span class="c1"># genetree.</span>
+<span class="n">gene_tree_nw</span> <span class="o">=</span> <span class="s1">&#39;((Dme_001,Dme_002),(((Cfa_001,Mms_001),((Hsa_001,Ptr_001),Mmu_001)),(Ptr_002,(Hsa_002,Mmu_002))));&#39;</span>
+<span class="n">species_tree_nw</span> <span class="o">=</span> <span class="s1">&#39;((((Hsa,Ptr),Mmu),(Mms,Cfa)),Dme);&#39;</span>
+
+<span class="n">genetree</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="n">gene_tree_nw</span><span class="p">)</span>
+<span class="n">sptree</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="n">species_tree_nw</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">genetree</span><span class="p">)</span>
+<span class="c1">#  ╭─┬╴Dme_001</span>
+<span class="c1">#  │ ╰╴Dme_002</span>
+<span class="c1"># ─┤   ╭─┬╴Cfa_001</span>
+<span class="c1">#  │ ╭─┤ ╰╴Mms_001</span>
+<span class="c1">#  │ │ │ ╭─┬╴Hsa_001</span>
+<span class="c1">#  ╰─┤ ╰─┤ ╰╴Ptr_001</span>
+<span class="c1">#    │   ╰╴Mmu_001</span>
+<span class="c1">#    ╰─┬╴Ptr_002</span>
+<span class="c1">#      ╰─┬╴Hsa_002</span>
+<span class="c1">#        ╰╴Mmu_002</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">sptree</span><span class="p">)</span>
+<span class="c1">#      ╭─┬╴Hsa</span>
+<span class="c1">#    ╭─┤ ╰╴Ptr</span>
+<span class="c1">#  ╭─┤ ╰╴Mmu</span>
+<span class="c1"># ─┤ ╰─┬╴Mms</span>
+<span class="c1">#  │   ╰╴Cfa</span>
+<span class="c1">#  ╰╴Dme</span>
+
+<span class="c1"># Let&#39;s reconcile our gene tree with the species tree.</span>
+<span class="n">recon_tree</span><span class="p">,</span> <span class="n">events</span> <span class="o">=</span> <span class="n">genetree</span><span class="o">.</span><span class="n">reconcile</span><span class="p">(</span><span class="n">sptree</span><span class="p">)</span>
+
+<span class="c1"># A new &quot;reconcilied tree&quot; is returned. As well as the list of</span>
+<span class="c1"># inferred events.</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Orthology and paralogy relationships:&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">ev</span><span class="o">.</span><span class="n">etype</span> <span class="o">==</span> <span class="s1">&#39;S&#39;</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;  Orthology:&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">inparalogs</span><span class="p">),</span> <span class="s1">&#39;&lt;==&gt;&#39;</span><span class="p">,</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">orthologs</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">ev</span><span class="o">.</span><span class="n">etype</span> <span class="o">==</span> <span class="s1">&#39;D&#39;</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;   Paralogy:&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">inparalogs</span><span class="p">),</span> <span class="s1">&#39;&lt;==&gt;&#39;</span><span class="p">,</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">outparalogs</span><span class="p">))</span>
+
+<span class="c1"># Orthology and paralogy relationships:</span>
+<span class="c1">#    Paralogy: Dme_001 &lt;==&gt; Dme_002</span>
+<span class="c1">#   Orthology: Cfa_001 &lt;==&gt; Mms_001</span>
+<span class="c1">#   Orthology: Hsa_001 &lt;==&gt; Ptr_001</span>
+<span class="c1">#   Orthology: Hsa_001,Ptr_001 &lt;==&gt; Mmu_001</span>
+<span class="c1">#   Orthology: Cfa_001,Mms_001 &lt;==&gt; Hsa_001,Ptr_001,Mmu_001</span>
+<span class="c1">#   Orthology: Hsa_002 &lt;==&gt; Mmu_002</span>
+<span class="c1">#    Paralogy: Ptr_002 &lt;==&gt; Hsa_002,Mmu_002</span>
+<span class="c1">#    Paralogy: Cfa_001,Mms_001,Hsa_001,Ptr_001,Mmu_001 &lt;==&gt; Ptr_002,Hsa_002,Mmu_002</span>
+<span class="c1">#   Orthology: Dme_001,Dme_002 &lt;==&gt; Cfa_001,Mms_001,Hsa_001,Ptr_001,Mmu_001,Ptr_002,Hsa_002,Mmu_002</span>
+
+<span class="c1"># And we can explore the resulting reconciled tree. Notice how the</span>
+<span class="c1"># reconcilied tree is the same as the gene tree with some added</span>
+<span class="c1"># branches. They are inferred gene losses.</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">recon_tree</span><span class="p">)</span>
+<span class="c1">#  ╭─┬╴Dme_001</span>
+<span class="c1">#  │ ╰╴Dme_002</span>
+<span class="c1">#  │   ╭─┬╴Cfa_001</span>
+<span class="c1"># ─┤ ╭─┤ ╰╴Mms_001</span>
+<span class="c1">#  │ │ │ ╭─┬╴Hsa_001</span>
+<span class="c1">#  │ │ ╰─┤ ╰╴Ptr_001</span>
+<span class="c1">#  ╰─┤   ╰╴Mmu_001</span>
+<span class="c1">#    │ ╭─┬╴Mms</span>
+<span class="c1">#    │ │ ╰╴Cfa</span>
+<span class="c1">#    ╰─┤   ╭─┬╴Hsa</span>
+<span class="c1">#      │ ╭─┤ ╰╴Ptr_002</span>
+<span class="c1">#      ╰─┤ ╰╴Mmu</span>
+<span class="c1">#        │ ╭─┬╴Ptr</span>
+<span class="c1">#        ╰─┤ ╰╴Hsa_002</span>
+<span class="c1">#          ╰╴Mmu_002</span>
+
+<span class="c1"># And we can visualize the trees using the default phylogeny</span>
+<span class="c1"># visualization layout.</span>
+<span class="n">genetree</span><span class="o">.</span><span class="n">explore</span><span class="p">()</span>
+<span class="n">recon_tree</span><span class="o">.</span><span class="n">explore</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="a-closer-look-to-the-evolutionary-event-object">
+<h3><a class="toc-backref" href="#id12" role="doc-backlink">A closer look to the evolutionary event object</a><a class="headerlink" href="#a-closer-look-to-the-evolutionary-event-object" title="Link to this heading">¶</a></h3>
+<p>Both methods, species overlap and tree reconciliation, can be used to
+label each tree node as a duplication or speciation event. Thus, the
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">PhyloTree.evoltype</span></code> attribute of every node will be set to one
+of the following states: <code class="docutils literal notranslate"><span class="pre">D</span></code> (Duplication), <code class="docutils literal notranslate"><span class="pre">S</span></code> (Speciation) or
+<code class="docutils literal notranslate"><span class="pre">L</span></code> gene loss.</p>
+<p>Additionally, a list of all the detected events is returned. Each
+event is a python object of type <code class="xref py py-class docutils literal notranslate"><span class="pre">phylo.EvolEvent</span></code>, containing
+some basic information about each event (<code class="xref py py-attr docutils literal notranslate"><span class="pre">etype</span></code>,
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">in_seqs</span></code>, <code class="xref py py-attr docutils literal notranslate"><span class="pre">out_seqs</span></code>, <code class="xref py py-attr docutils literal notranslate"><span class="pre">node</span></code>).</p>
+<p>If an event represents a duplication, <code class="docutils literal notranslate"><span class="pre">in_seqs</span></code> <em>are all paralogous</em>
+to <code class="docutils literal notranslate"><span class="pre">out_seqs</span></code>. Similarly, if an event represents a speciation,
+<code class="docutils literal notranslate"><span class="pre">in_seqs</span></code> <em>are all orthologous</em> to <code class="docutils literal notranslate"><span class="pre">out_seqs</span></code>.</p>
+</section>
+</section>
+<section id="relative-dating-of-phylogenetic-nodes">
+<h2><a class="toc-backref" href="#id13" role="doc-backlink">Relative dating of phylogenetic nodes</a><a class="headerlink" href="#relative-dating-of-phylogenetic-nodes" title="Link to this heading">¶</a></h2>
+<p>In molecular phylogeny, nodes can be interpreted as evolutionary
+events. Therefore, they represent duplication or speciation events.</p>
+<p>In the case of gene duplication events, nodes can also be assigned to
+a certain point in a relative temporal scale. In other words, you can
+obtain a relative dating of all the duplication events detected.</p>
+<p>Although <strong>absolute dating is always preferred and more precise</strong>,
+topological dating provides a faster approach to compare the relative
+age of paralogous sequences (<a class="reference external" href="https://bioinformatics.oxfordjournals.org/content/27/1/38.long">read this</a> for
+a comparison with other methods, such as the use of synonymous
+substitution rates as a proxy to the divergence time).</p>
+<p>Some applications of topological dating can be found in <a class="reference external" href="https://genomebiology.biomedcentral.com/articles/10.1186/gb-2007-8-6-r109">Huerta-Cepas
+et al, 2007</a> or in <a class="reference external" href="https://bib.oxfordjournals.org/content/12/5/442.abstract">Huerta-Cepas et al, 2011</a> or in
+<a class="reference external" href="https://www.nature.com/nature/journal/v468/n7325/full/nature09634.html">Kalinka et al, 2001</a>.</p>
+<section id="implementation">
+<h3><a class="toc-backref" href="#id14" role="doc-backlink">Implementation</a><a class="headerlink" href="#implementation" title="Link to this heading">¶</a></h3>
+<p>The aim of relative dating is to establish a gradient of ages among
+sequences. For this, a reference species needs to be fixed, so the
+gradient of ages will be referred to that referent point.</p>
+<p>Thus, if our reference species is <cite>Human</cite>, we could establish the
+following gradient of species:</p>
+<ul class="simple">
+<li><p>(1) Human -&gt; (2) Other Primates -&gt; (3) Mammals -&gt; (4) Vertebrates</p></li>
+</ul>
+<p>So, nodes in a tree can be assigned to one of the above categories
+depending on the sequences grouped. For instance:</p>
+<ul class="simple">
+<li><p>A node with only human sequences will be mapped to (1)</p></li>
+<li><p>A node with human and orangutan sequences will be mapped to (2)</p></li>
+<li><p>A node with human a fish sequences will be mapped to (4)</p></li>
+</ul>
+<p>This simple calculation can be done automatically by encoding the
+gradient of species ages as a dictionary:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">relative_dist</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;human&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>  <span class="c1"># human</span>
+    <span class="s1">&#39;chimp&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>  <span class="c1"># primates non human</span>
+    <span class="s1">&#39;rat&#39;</span><span class="p">:</span>   <span class="mi">2</span><span class="p">,</span>  <span class="c1"># mammals non primates</span>
+    <span class="s1">&#39;mouse&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>  <span class="c1"># mammals non primates</span>
+    <span class="s1">&#39;fish&#39;</span><span class="p">:</span>  <span class="mi">3</span>   <span class="c1"># vertebrates non mammals</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Once done, ETE can check the relative age of any tree node. The
+<code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.get_age()</span></code> method can be used to that purpose.</p>
+<p>For example, let’s consider the following gene tree:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>                         ╭╴humanA
+                     ╭╴⊗╶┤
+                     │   ╰╴chimpA
+              ╭╴Dup1╶┤
+              │      │   ╭╴humanB
+          ╭╴⊗╶┤      ╰╴⊗╶┤
+          │   │          ╰╴chimpB
+      ╭╴⊗╶┤   │
+      │   │   ╰╴mouseA
+      │   │
+      │   ╰╴fish
+╴Dup3╶┤
+      │              ╭╴humanC
+      │          ╭╴⊗╶┤
+      │      ╭╴⊗╶┤   ╰╴chimpC
+      │      │   │
+      ╰╴Dup2╶┤   ╰╴humanD
+             │
+             │   ╭╴ratC
+             ╰╴⊗╶┤
+                 ╰╴mouseC
+</pre></div>
+</div>
+<p>The expected node dating would be:</p>
+<ul class="simple">
+<li><p>Dup1 will be assigned to primates (most distant species is chimp).
+<code class="docutils literal notranslate"><span class="pre">Dup1.get_age(relative_dist)</span></code> will return 1.</p></li>
+<li><p>Dup2 will be assigned to mammals [2] (most distant species are rat
+and mouse). <code class="docutils literal notranslate"><span class="pre">Dup2.get_age(relative_dist)</span></code> will return 2.</p></li>
+<li><p>Dup3 will be assigned to mammals [3] (most distant species is fish).
+<code class="docutils literal notranslate"><span class="pre">Dup3.get_age(relative_dist)</span></code> will return 3.</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">PhyloTree</span>
+
+<span class="c1"># Create a gene phylogeny with several duplication events at different</span>
+<span class="c1"># levels. Note that we are using the default method for detecting the</span>
+<span class="c1"># species code of leaves (three first lettes in the node name are</span>
+<span class="c1"># considered the species code).</span>
+<span class="n">nw</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">((Dme_001,Dme_002),(((Cfa_001,Mms_001),((((Hsa_001,Hsa_003),Ptr_001)</span>
+<span class="s2">,Mmu_001),((Hsa_004,Ptr_004),Mmu_004))),(Ptr_002,(Hsa_002,Mmu_002))));</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="n">nw</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+<span class="c1">#  ╭─┬╴Dme_001</span>
+<span class="c1">#  │ ╰╴Dme_002</span>
+<span class="c1">#  │   ╭─┬╴Cfa_001</span>
+<span class="c1"># ─┤   │ ╰╴Mms_001</span>
+<span class="c1">#  │ ╭─┤     ╭─┬╴Hsa_001</span>
+<span class="c1">#  │ │ │   ╭─┤ ╰╴Hsa_003</span>
+<span class="c1">#  │ │ │ ╭─┤ ╰╴Ptr_001</span>
+<span class="c1">#  ╰─┤ ╰─┤ ╰╴Mmu_001</span>
+<span class="c1">#    │   │ ╭─┬╴Hsa_004</span>
+<span class="c1">#    │   ╰─┤ ╰╴Ptr_004</span>
+<span class="c1">#    │     ╰╴Mmu_004</span>
+<span class="c1">#    ╰─┬╴Ptr_002</span>
+<span class="c1">#      ╰─┬╴Hsa_002</span>
+<span class="c1">#        ╰╴Mmu_002</span>
+
+<span class="c1"># Create a dictionary with relative ages for the species present in</span>
+<span class="c1"># the phylogenetic tree. Note that ages are only relative numbers to</span>
+<span class="c1"># define which species are older, and that different species can</span>
+<span class="c1"># belong to the same age.</span>
+<span class="n">species2age</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;Hsa&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>  <span class="c1"># Homo sapiens (Hominids)</span>
+    <span class="s1">&#39;Ptr&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>  <span class="c1"># P. troglodytes (primates)</span>
+    <span class="s1">&#39;Mmu&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>  <span class="c1"># Macaca mulata (primates)</span>
+    <span class="s1">&#39;Mms&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>  <span class="c1"># Mus musculus (mammals)</span>
+    <span class="s1">&#39;Cfa&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>  <span class="c1"># Canis familiaris (mammals)</span>
+    <span class="s1">&#39;Dme&#39;</span><span class="p">:</span> <span class="mi">4</span>   <span class="c1"># Drosophila melanogaster (metazoa)</span>
+<span class="p">}</span>
+
+<span class="c1"># We can translate each number to its correspondig taxonomic number.</span>
+<span class="n">age2name</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="mi">1</span><span class="p">:</span> <span class="s1">&#39;hominids&#39;</span><span class="p">,</span>
+    <span class="mi">2</span><span class="p">:</span> <span class="s1">&#39;primates&#39;</span><span class="p">,</span>
+    <span class="mi">3</span><span class="p">:</span> <span class="s1">&#39;mammals&#39;</span><span class="p">,</span>
+    <span class="mi">4</span><span class="p">:</span> <span class="s1">&#39;metazoa&#39;</span>
+<span class="p">}</span>
+
+<span class="n">event1</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">common_ancestor</span><span class="p">([</span><span class="s1">&#39;Hsa_001&#39;</span><span class="p">,</span> <span class="s1">&#39;Hsa_004&#39;</span><span class="p">])</span>
+<span class="n">event2</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">common_ancestor</span><span class="p">([</span><span class="s1">&#39;Hsa_001&#39;</span><span class="p">,</span> <span class="s1">&#39;Hsa_002&#39;</span><span class="p">])</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The duplication event leading to the human sequences Hsa_001 and &#39;</span>
+      <span class="s1">&#39;Hsa_004 is dated at:&#39;</span><span class="p">,</span> <span class="n">age2name</span><span class="p">[</span><span class="n">event1</span><span class="o">.</span><span class="n">get_age</span><span class="p">(</span><span class="n">species2age</span><span class="p">)])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The duplication event leading to the human sequences Hsa_001 and &#39;</span>
+      <span class="s1">&#39;Hsa_002 is dated at:&#39;</span><span class="p">,</span> <span class="n">age2name</span><span class="p">[</span><span class="n">event2</span><span class="o">.</span><span class="n">get_age</span><span class="p">(</span><span class="n">species2age</span><span class="p">)])</span>
+<span class="c1"># The duplication event leading to the human sequences Hsa_001 and Hsa_004</span>
+<span class="c1"># is dated at: primates</span>
+<span class="c1"># The duplication event leading to the human sequences Hsa_001 and Hsa_002</span>
+<span class="c1"># is dated at: mammals</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Note that relative distances will vary depending on your reference
+species.</p>
+</div>
+</section>
+</section>
+<section id="automatic-rooting-outgroup-detection">
+<h2><a class="toc-backref" href="#id15" role="doc-backlink">Automatic rooting (outgroup detection)</a><a class="headerlink" href="#automatic-rooting-outgroup-detection" title="Link to this heading">¶</a></h2>
+<p>Two methods are provided to assist in the automatic rooting of
+phylogenetic trees. Since tree nodes contain relative age information
+(based on the species code autodetection), the same relative age
+dictionaries can be used to detect the farthest and oldest node in a
+tree to given sequences.</p>
+<p><code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.get_farthest_oldest_node()</span></code> and
+<code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.get_farthest_oldest_leaf()</span></code> can be used for that
+purpose.</p>
+</section>
+<section id="working-with-duplicated-gene-families">
+<h2><a class="toc-backref" href="#id16" role="doc-backlink">Working with duplicated gene families</a><a class="headerlink" href="#working-with-duplicated-gene-families" title="Link to this heading">¶</a></h2>
+<section id="treeko-splitting-gene-trees-into-species-trees">
+<span id="treeko-trees"></span><h3><a class="toc-backref" href="#id17" role="doc-backlink">TreeKO (splitting gene trees into species trees)</a><a class="headerlink" href="#treeko-splitting-gene-trees-into-species-trees" title="Link to this heading">¶</a></h3>
+<p>Comparisons between tree topologies provide important information for
+many evolutionary studies. <a class="reference external" href="http://treeko.cgenomics.org">TreeKO</a>
+(<a class="reference external" href="https://www.ncbi.nlm.nih.gov/pubmed/21335609">Marcet and Gabaldon, 2011</a>)
+is a method that allows the comparison of any two tree topologies,
+even those with missing leaves and duplications. This is important in
+genome-wide analysis since many trees do not have exact leaf pairings
+and therefore most tree comparison methods are rendered useless.</p>
+<p>Although TreeKO is available as a standalone package, it uses ETE to
+generate all possible species tree topologies within a duplicated gene
+family tree.</p>
+<p>Thus, the ETE method <code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.get_speciation_trees()</span></code> is
+expected to provide the core functionality required to perform a
+TreeKO analysis. It returns a list of all possible species trees
+observed after combining the different non-duplicated subparts under a
+gene family tree node.</p>
+<p>Duplication events will be automatically identified using the species
+overlap algorithm described within this manual. However, duplication
+nodes can be manually labeled and used by disabling the
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">autodetect_duplication</span></code> flag.</p>
+<p>Because of the combinatorial background of the TreeKO method, the
+number of speciation trees generated by this function may vary
+enormously (ranging from few hundreds to tens of thousands of
+topologies).</p>
+<p>Here is a basic example on how to use it:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">PhyloTree</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="s1">&#39;((((Human_1,Chimp_1),(Human_2,(Chimp_2,Chimp_3))),((Fish_1, (Human_3,Fish_3)),Yeast_2)),Yeast_1);&#39;</span><span class="p">)</span>
+
+<span class="n">t</span><span class="o">.</span><span class="n">set_species_naming_function</span><span class="p">(</span><span class="k">lambda</span> <span class="n">node</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;species&#39;</span><span class="p">],</span> <span class="n">show_internal</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+<span class="c1">#        ╭╴Human_1,Human</span>
+<span class="c1">#      ╭─┤</span>
+<span class="c1">#      │ ╰╴Chimp_1,Chimp</span>
+<span class="c1">#    ╭─┤</span>
+<span class="c1">#    │ │ ╭╴Human_2,Human</span>
+<span class="c1">#    │ ╰─┤</span>
+<span class="c1">#    │   │ ╭╴Chimp_2,Chimp</span>
+<span class="c1">#    │   ╰─┤</span>
+<span class="c1">#  ╭─┤     ╰╴Chimp_3,Chimp</span>
+<span class="c1">#  │ │</span>
+<span class="c1">#  │ │   ╭╴Fish_1,Fish</span>
+<span class="c1">#  │ │ ╭─┤</span>
+<span class="c1">#  │ │ │ │ ╭╴Human_3,Human</span>
+<span class="c1"># ─┤ ╰─┤ ╰─┤</span>
+<span class="c1">#  │   │   ╰╴Fish_3,Fish</span>
+<span class="c1">#  │   │</span>
+<span class="c1">#  │   ╰╴Yeast_2,Yeast</span>
+<span class="c1">#  │</span>
+<span class="c1">#  ╰╴Yeast_1,Yeast</span>
+
+<span class="c1"># We obtain a list of species trees inferred from the duplication</span>
+<span class="c1"># events. Note that species-specific duplications are ignored.</span>
+
+<span class="n">ntrees</span><span class="p">,</span> <span class="n">ndups</span><span class="p">,</span> <span class="n">sptrees</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">get_speciation_trees</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Found </span><span class="si">{</span><span class="n">ntrees</span><span class="si">}</span><span class="s1"> species trees and </span><span class="si">{</span><span class="n">ndups</span><span class="si">}</span><span class="s1"> duplication nodes.&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">spt</span> <span class="ow">in</span> <span class="n">sptrees</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">spt</span><span class="p">)</span>
+<span class="c1"># Found 5 species trees and 4 duplication nodes.</span>
+<span class="c1">#</span>
+<span class="c1"># ─┬╴Human_1</span>
+<span class="c1">#  ╰╴Chimp_1</span>
+<span class="c1">#</span>
+<span class="c1"># ─┬╴Human_2</span>
+<span class="c1">#  ╰─┬╴Chimp_2</span>
+<span class="c1">#    ╰╴Chimp_3</span>
+<span class="c1">#</span>
+<span class="c1"># ─┬╴Fish_1</span>
+<span class="c1">#  ╰╴Yeast_2</span>
+<span class="c1">#</span>
+<span class="c1">#  ╭─┬╴Human_3</span>
+<span class="c1"># ─┤ ╰╴Fish_3</span>
+<span class="c1">#  ╰╴Yeast_2</span>
+<span class="c1">#</span>
+<span class="c1"># ╴Yeast_1</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For performance reasons, species trees are created without any link
+to the original gene family tree, rather than the species name of
+each node. However, the <code class="xref py py-attr docutils literal notranslate"><span class="pre">map_features</span></code> attribute can be used
+to keep certain attributes of the original tree into the generated
+species trees.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the efficiency of the method to generate all possible trees
+has been significantly improved from ETE version 2.2, creating
+thousands of new PhyloTree objects could affect performance. The
+flag <code class="xref py py-attr docutils literal notranslate"><span class="pre">newick_only</span></code> is now available to limit the output to a
+newick string per generated tree, thus improving the speed they can
+be processed or dumped into a file.</p>
+</div>
+</section>
+<section id="splitting-gene-trees-by-duplication-events">
+<span id="split-by-dup"></span><h3><a class="toc-backref" href="#id18" role="doc-backlink">Splitting gene trees by duplication events</a><a class="headerlink" href="#splitting-gene-trees-by-duplication-events" title="Link to this heading">¶</a></h3>
+<p>A much simpler approach to separate duplicates within the same gene
+family tree is to split the topology by their duplication nodes. For
+this, the method <code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.split_by_dups()</span></code> is provided.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">PhyloTree</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="s1">&#39;((((Human_1,Chimp_1),(Human_2,(Chimp_2,Chimp_3))),((Fish_1,(Human_3,Fish_3)),Yeast_2)),Yeast_1);&#39;</span><span class="p">)</span>
+
+<span class="n">t</span><span class="o">.</span><span class="n">set_species_naming_function</span><span class="p">(</span><span class="k">lambda</span> <span class="n">node</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;species&#39;</span><span class="p">],</span> <span class="n">show_internal</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+<span class="c1">#        ╭╴Human_1,Human</span>
+<span class="c1">#      ╭─┤</span>
+<span class="c1">#      │ ╰╴Chimp_1,Chimp</span>
+<span class="c1">#    ╭─┤</span>
+<span class="c1">#    │ │ ╭╴Human_2,Human</span>
+<span class="c1">#    │ ╰─┤</span>
+<span class="c1">#    │   │ ╭╴Chimp_2,Chimp</span>
+<span class="c1">#    │   ╰─┤</span>
+<span class="c1">#  ╭─┤     ╰╴Chimp_3,Chimp</span>
+<span class="c1">#  │ │</span>
+<span class="c1">#  │ │   ╭╴Fish_1,Fish</span>
+<span class="c1">#  │ │ ╭─┤</span>
+<span class="c1">#  │ │ │ │ ╭╴Human_3,Human</span>
+<span class="c1"># ─┤ ╰─┤ ╰─┤</span>
+<span class="c1">#  │   │   ╰╴Fish_3,Fish</span>
+<span class="c1">#  │   │</span>
+<span class="c1">#  │   ╰╴Yeast_2,Yeast</span>
+<span class="c1">#  │</span>
+<span class="c1">#  ╰╴Yeast_1,Yeast</span>
+
+<span class="c1"># Again, species specific duplications are ignored.</span>
+<span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">split_by_dups</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="c1"># ─┬╴Human_1</span>
+<span class="c1">#  ╰╴Chimp_1</span>
+<span class="c1">#</span>
+<span class="c1"># ─┬╴Human_2</span>
+<span class="c1">#  ╰─┬╴Chimp_2</span>
+<span class="c1">#    ╰╴Chimp_3</span>
+<span class="c1">#</span>
+<span class="c1"># ╴Yeast_2</span>
+<span class="c1">#</span>
+<span class="c1"># ╴Fish_1</span>
+<span class="c1">#</span>
+<span class="c1"># ─┬╴Human_3</span>
+<span class="c1">#  ╰╴Fish_3</span>
+<span class="c1">#</span>
+<span class="c1"># ╴Yeast_1</span>
+</pre></div>
+</div>
+</section>
+<section id="collapse-species-specific-duplications">
+<span id="collapse-expansions"></span><h3><a class="toc-backref" href="#id19" role="doc-backlink">Collapse species specific duplications</a><a class="headerlink" href="#collapse-species-specific-duplications" title="Link to this heading">¶</a></h3>
+<p>The method <code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.collapse_lineage_specific_expansions()</span></code>
+returns a pruned version of a tree, where nodes representing lineage
+specific expansions are converted into a single leaf node.</p>
+<p>From the previous examples, the lineage specific duplication of
+Chimp_1 and Chimp_2 could be easily collapsed into a single node.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">PhyloTree</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="s1">&#39;((((Human_1,Chimp_1),(Human_2,(Chimp_2,Chimp_3))),((Fish_1,(Human_3,Fish_3)),Yeast_2)),Yeast_1);&#39;</span><span class="p">)</span>
+
+<span class="n">t</span><span class="o">.</span><span class="n">set_species_naming_function</span><span class="p">(</span><span class="k">lambda</span> <span class="n">node</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;species&#39;</span><span class="p">],</span> <span class="n">show_internal</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+<span class="c1">#        ╭╴Human_1,Human</span>
+<span class="c1">#      ╭─┤</span>
+<span class="c1">#      │ ╰╴Chimp_1,Chimp</span>
+<span class="c1">#    ╭─┤</span>
+<span class="c1">#    │ │ ╭╴Human_2,Human</span>
+<span class="c1">#    │ ╰─┤</span>
+<span class="c1">#    │   │ ╭╴Chimp_2,Chimp</span>
+<span class="c1">#    │   ╰─┤                   &lt;-- look at these two leaves</span>
+<span class="c1">#  ╭─┤     ╰╴Chimp_3,Chimp</span>
+<span class="c1">#  │ │</span>
+<span class="c1">#  │ │   ╭╴Fish_1,Fish</span>
+<span class="c1">#  │ │ ╭─┤</span>
+<span class="c1">#  │ │ │ │ ╭╴Human_3,Human</span>
+<span class="c1"># ─┤ ╰─┤ ╰─┤</span>
+<span class="c1">#  │   │   ╰╴Fish_3,Fish</span>
+<span class="c1">#  │   │</span>
+<span class="c1">#  │   ╰╴Yeast_2,Yeast</span>
+<span class="c1">#  │</span>
+<span class="c1">#  ╰╴Yeast_1,Yeast</span>
+
+<span class="n">t2</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">collapse_lineage_specific_expansions</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t2</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;species&#39;</span><span class="p">],</span> <span class="n">show_internal</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+<span class="c1">#        ╭╴Human_1,Human</span>
+<span class="c1">#      ╭─┤</span>
+<span class="c1">#      │ ╰╴Chimp_1,Chimp</span>
+<span class="c1">#    ╭─┤</span>
+<span class="c1">#    │ │ ╭╴Human_2,Human</span>
+<span class="c1">#    │ ╰─┤</span>
+<span class="c1">#    │   ╰╴Chimp_3,Chimp       &lt;-- they are collapsed now</span>
+<span class="c1">#  ╭─┤</span>
+<span class="c1">#  │ │   ╭╴Fish_1,Fish</span>
+<span class="c1">#  │ │ ╭─┤</span>
+<span class="c1">#  │ │ │ │ ╭╴Human_3,Human</span>
+<span class="c1"># ─┤ ╰─┤ ╰─┤</span>
+<span class="c1">#  │   │   ╰╴Fish_3,Fish</span>
+<span class="c1">#  │   │</span>
+<span class="c1">#  │   ╰╴Yeast_2,Yeast</span>
+<span class="c1">#  │</span>
+<span class="c1">#  ╰╴Yeast_1,Yeast</span>
 </pre></div>
 </div>
 </section>

@@ -132,7 +132,7 @@
             <span class="k">for</span> <span class="n">leaf</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">leaves</span><span class="p">():</span>
                 <span class="n">_nid</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">leaf</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">:</span>
-                    <span class="n">leaf</span><span class="o">.</span><span class="n">add_prop</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">nid2node</span><span class="p">[</span><span class="n">_nid</span><span class="p">],</span> <span class="n">f</span><span class="p">))</span>
+                    <span class="n">leaf</span><span class="o">.</span><span class="n">add_prop</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">nid2node</span><span class="p">[</span><span class="n">_nid</span><span class="p">],</span> <span class="n">p</span><span class="p">))</span>
             <span class="k">yield</span> <span class="n">t</span>
 
 <span class="k">def</span> <span class="nf">calc_subtrees</span><span class="p">(</span><span class="n">tree</span><span class="p">):</span>
@@ -275,7 +275,7 @@
         <span class="k">for</span> <span class="n">_n</span> <span class="ow">in</span> <span class="n">to_visit</span><span class="p">:</span>
             <span class="n">_n</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
 
-        <span class="n">freaks</span> <span class="o">=</span> <span class="p">[</span><span class="n">_n</span> <span class="k">for</span> <span class="n">_n</span> <span class="ow">in</span> <span class="n">n</span><span class="o">.</span><span class="n">iter_descendants</span><span class="p">()</span> <span class="k">if</span>
+        <span class="n">freaks</span> <span class="o">=</span> <span class="p">[</span><span class="n">_n</span> <span class="k">for</span> <span class="n">_n</span> <span class="ow">in</span> <span class="n">n</span><span class="o">.</span><span class="n">descendants</span><span class="p">()</span> <span class="k">if</span>
                   <span class="nb">len</span><span class="p">(</span><span class="n">_n</span><span class="o">.</span><span class="n">children</span><span class="p">)</span><span class="o">==</span><span class="mi">1</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">_n</span><span class="p">,</span> <span class="s2">&quot;_leaf&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_n</span><span class="o">.</span><span class="n">children</span><span class="p">)]</span>
         <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">freaks</span><span class="p">:</span>
             <span class="n">s</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">prevent_nondicotomic</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -457,18 +457,18 @@
 <div class="viewcode-block" id="PhyloTree.get_my_evol_events">
 <a class="viewcode-back" href="../../../reference/reference_phylo.html#ete4.PhyloTree.get_my_evol_events">[docs]</a>
     <span class="k">def</span> <span class="nf">get_my_evol_events</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sos_thr</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Returns a list of duplication and speciation events in</span>
-<span class="sd">        which the current node has been involved. Scanned nodes are</span>
-<span class="sd">        also labeled internally as dup=True|False. You can access this</span>
-<span class="sd">        labels using the &#39;node.dup&#39; sintaxis.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return list of duplication and speciation events involving this node.</span>
 
-<span class="sd">        Method: the algorithm scans all nodes from the given leafName to</span>
-<span class="sd">        the root. Nodes are assumed to be duplications when a species</span>
-<span class="sd">        overlap is found between its child linages. Method is described</span>
-<span class="sd">        more detail in:</span>
+<span class="sd">        Scanned nodes are also labeled internally as dup=True|False.</span>
+<span class="sd">        You can access these labels using ``node.dup``.</span>
 
-<span class="sd">        &quot;The Human Phylome.&quot; Huerta-Cepas J, Dopazo H, Dopazo J, Gabaldon</span>
-<span class="sd">        T. Genome Biol. 2007;8(6):R109.</span>
+<span class="sd">        The algorithm scans all nodes from the given leafName to the</span>
+<span class="sd">        root. Nodes are assumed to be duplications when a species</span>
+<span class="sd">        overlap is found between its child linages. The method is</span>
+<span class="sd">        described in more detail in:</span>
+
+<span class="sd">        :Citation:</span>
+<span class="sd">            *The Human Phylome*. T. Genome Biol. 2007;8(6):R109.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">spoverlap</span><span class="o">.</span><span class="n">get_evol_events_from_leaf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sos_thr</span><span class="o">=</span><span class="n">sos_thr</span><span class="p">)</span></div>
 
@@ -551,14 +551,14 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">root</span> <span class="o">=</span> <span class="bp">self</span>
-        <span class="n">all_seqs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_leaf_names</span><span class="p">())</span>
+        <span class="n">all_seqs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">leaf_names</span><span class="p">())</span>
         <span class="n">outgroup_dist</span>  <span class="o">=</span> <span class="mi">0</span>
         <span class="n">best_balance</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">species2age</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
         <span class="n">outgroup_node</span>  <span class="o">=</span> <span class="bp">self</span>
         <span class="n">outgroup_size</span> <span class="o">=</span> <span class="mi">0</span>
 
-        <span class="k">for</span> <span class="n">leaf</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">iter_descendants</span><span class="p">():</span>
-            <span class="n">leaf_seqs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">leaf</span><span class="o">.</span><span class="n">get_leaf_names</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">leaf</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">descendants</span><span class="p">():</span>
+            <span class="n">leaf_seqs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">leaf</span><span class="o">.</span><span class="n">leaf_names</span><span class="p">())</span>
             <span class="n">size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">leaf_seqs</span><span class="p">)</span>
 
             <span class="n">leaf_species</span> <span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">props</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;_speciesFunction&#39;</span><span class="p">)(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">leaf_seqs</span><span class="p">]</span>
