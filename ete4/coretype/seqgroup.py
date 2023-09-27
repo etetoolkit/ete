@@ -19,7 +19,7 @@ class SeqGroup:
 
     def __init__(self, sequences=None, format='fasta',
                  fix_duplicates=True, **kwargs):
-        """
+        r"""
         :param sequences: Path to the file containing the sequences or,
             alternatively, the text string containing them.
         :param format: Encoding format of sequences. Supported formats
@@ -31,9 +31,12 @@ class SeqGroup:
 
         Example::
 
-          msf = '>seq1\\nAAAAAAAAAAA\\n>seq2\\nTTTTTTTTTTTTT\\n'
-          seqs = SeqGroup(msf, format='fasta')
-          print seqs.get_seq('seq1')
+          seqs_str = ('>seq1\n'
+                      'AAAAAAAAAAA\n'
+                      '>seq2\n'
+                      'TTTTTTTTTTTTT\n')
+          seqs = SeqGroup(seqs_str, format='fasta')
+          print(seqs.get_seq('seq1'))
         """
         self.parsers = {
             'fasta': [read_fasta, write_fasta, {}],
