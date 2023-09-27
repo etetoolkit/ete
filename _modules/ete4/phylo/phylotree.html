@@ -307,35 +307,9 @@
 <span class="sd">    specific properties and methods to work with phylogentic trees.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">_get_species</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">props</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;_speciesFunction&#39;</span><span class="p">):</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">props</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;_speciesFunction&#39;</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-            <span class="k">except</span><span class="p">:</span>
-                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">props</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;_speciesFunction&#39;</span><span class="p">)(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">props</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;_species&#39;</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_set_species</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">props</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;_speciesFunction&#39;</span><span class="p">):</span>
-            <span class="k">pass</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">add_prop</span><span class="p">(</span><span class="s1">&#39;_species&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-
-    <span class="c1"># This tweak overwrites the native &#39;name&#39; attribute to create a</span>
-    <span class="c1"># property that updates the species code every time name is</span>
-    <span class="c1"># changed</span>
-
-    <span class="c1">#: .. currentmodule:: ete3</span>
-    <span class="c1">#:</span>
-    <span class="c1">#Species code associated to the node. This property can be</span>
-    <span class="c1">#automatically extracted from the Tree.name attribute or</span>
-    <span class="c1">#manually set (see :func:`PhyloTree.set_species_naming_function`).</span>
-    <span class="n">species</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">fget</span> <span class="o">=</span> <span class="n">_get_species</span><span class="p">,</span> <span class="n">fset</span> <span class="o">=</span> <span class="n">_set_species</span><span class="p">)</span>
-
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">newick</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">children</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">alignment</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">alg_format</span><span class="o">=</span><span class="s2">&quot;fasta&quot;</span><span class="p">,</span> <span class="n">sp_naming_function</span><span class="o">=</span><span class="n">_parse_species</span><span class="p">,</span>
-                 <span class="n">parser</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kargs</span><span class="p">):</span>
+                 <span class="n">parser</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param newick: Path to the file containing the tree or, alternatively,</span>
 <span class="sd">            the text string containing the same information.</span>
@@ -348,22 +322,33 @@
 <span class="sd">            the 3 first letters of node names will be used as species</span>
 <span class="sd">            identifier.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># _update names?</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">props</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">add_props</span><span class="p">(</span><span class="n">_name</span><span class="o">=</span><span class="s2">&quot;NoName&quot;</span><span class="p">,</span> <span class="n">_species</span><span class="o">=</span><span class="s2">&quot;Unknown&quot;</span><span class="p">,</span>
-                            <span class="n">_speciesFunction</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-        <span class="c1"># Caution! native __init__ has to be called after setting</span>
-        <span class="c1"># _speciesFunction to None!!</span>
-        <span class="n">Tree</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">newick</span><span class="p">,</span> <span class="n">children</span><span class="o">=</span><span class="n">children</span><span class="p">,</span>
-                      <span class="n">parser</span><span class="o">=</span><span class="n">parser</span><span class="p">,</span> <span class="o">**</span><span class="n">kargs</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">newick</span><span class="p">,</span> <span class="n">children</span><span class="o">=</span><span class="n">children</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="n">parser</span><span class="p">)</span>
 
         <span class="c1"># This will be only executed after reading the whole tree,</span>
         <span class="c1"># because the argument &#39;alignment&#39; is not passed to the</span>
-        <span class="c1"># PhyloTree constructor during parsing</span>
+        <span class="c1"># PhyloTree constructor during parsing.</span>
         <span class="k">if</span> <span class="n">alignment</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">link_to_alignment</span><span class="p">(</span><span class="n">alignment</span><span class="p">,</span> <span class="n">alg_format</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="n">newick</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">set_species_naming_function</span><span class="p">(</span><span class="n">sp_naming_function</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">species</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">props</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;_speciesFunction&#39;</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">props</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;_speciesFunction&#39;</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">props</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;_speciesFunction&#39;</span><span class="p">)(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">props</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;species&#39;</span><span class="p">)</span>
+
+    <span class="nd">@species</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">species</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">props</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;_speciesFunction&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">,</span> \
+            <span class="p">(</span><span class="s1">&#39;Species naming function present, cannot set species manually. &#39;</span>
+             <span class="s1">&#39;Maybe call set_species_naming_function() first?&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">props</span><span class="p">[</span><span class="s1">&#39;species&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="s2">&quot;PhyloTree &#39;</span><span class="si">%s</span><span class="s2">&#39; (</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="nb">hex</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="fm">__hash__</span><span class="p">()))</span>
@@ -381,26 +366,21 @@
 <div class="viewcode-block" id="PhyloTree.set_species_naming_function">
 <a class="viewcode-back" href="../../../reference/reference_phylo.html#ete4.PhyloTree.set_species_naming_function">[docs]</a>
     <span class="k">def</span> <span class="nf">set_species_naming_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Sets the parsing function used to extract species name from a</span>
-<span class="sd">        node&#39;s name.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the function used to get the species from the node&#39;s name.</span>
 
-<span class="sd">        :argument fn: Pointer to a parsing python function that</span>
-<span class="sd">          receives nodename as first argument and returns the species</span>
-<span class="sd">          name.</span>
+<span class="sd">        :param fn: Function that takes a nodename and returns the species name.</span>
 
-<span class="sd">        ::</span>
+<span class="sd">        Example of a parsing function::</span>
 
-<span class="sd">          # Example of a parsing function to extract species names for</span>
-<span class="sd">          # all nodes in a given tree.</span>
 <span class="sd">          def parse_sp_name(node_name):</span>
 <span class="sd">              return node_name.split(&quot;_&quot;)[1]</span>
 <span class="sd">          tree.set_species_naming_function(parse_sp_name)</span>
-
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">fn</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">traverse</span><span class="p">():</span>
-                <span class="n">n</span><span class="o">.</span><span class="n">add_prop</span><span class="p">(</span><span class="s2">&quot;_speciesFunction&quot;</span><span class="p">,</span> <span class="n">fn</span><span class="p">)</span></div>
+        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">traverse</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">fn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">n</span><span class="o">.</span><span class="n">props</span><span class="p">[</span><span class="s1">&#39;_speciesFunction&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fn</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">n</span><span class="o">.</span><span class="n">props</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;_speciesFunction&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PhyloTree.link_to_alignment">

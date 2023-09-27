@@ -38,7 +38,7 @@
 <h1>PhyloTree class<a class="headerlink" href="#phylotree-class" title="Link to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="ete4.PhyloTree">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PhyloTree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">newick=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">children=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alignment=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alg_format='fasta'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sp_naming_function=&lt;function</span> <span class="pre">_parse_species&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parser=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/phylo/phylotree.html#PhyloTree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.PhyloTree" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PhyloTree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">newick=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">children=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alignment=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alg_format='fasta'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sp_naming_function=&lt;function</span> <span class="pre">_parse_species&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parser=None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/phylo/phylotree.html#PhyloTree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.PhyloTree" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="reference_tree.html#ete4.Tree" title="ete4.coretype.tree.Tree"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tree</span></code></a></p>
 <p>Class to store a phylogenetic tree.</p>
 <p>Extends the standard <a class="reference internal" href="reference_tree.html#ete4.Tree" title="ete4.Tree"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tree</span></code></a> instance by adding
@@ -246,18 +246,14 @@ reconciliation.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.PhyloTree.set_species_naming_function">
 <span class="sig-name descname"><span class="pre">set_species_naming_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fn</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/phylo/phylotree.html#PhyloTree.set_species_naming_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.PhyloTree.set_species_naming_function" title="Link to this definition">¶</a></dt>
-<dd><p>Sets the parsing function used to extract species name from a
-node’s name.</p>
+<dd><p>Set the function used to get the species from the node’s name.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>fn</strong> – Pointer to a parsing python function that
-receives nodename as first argument and returns the species
-name.</p>
+<dd class="field-odd"><p><strong>fn</strong> – Function that takes a nodename and returns the species name.</p>
 </dd>
 </dl>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Example of a parsing function to extract species names for</span>
-<span class="c1"># all nodes in a given tree.</span>
-<span class="k">def</span> <span class="nf">parse_sp_name</span><span class="p">(</span><span class="n">node_name</span><span class="p">):</span>
+<p>Example of a parsing function:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">parse_sp_name</span><span class="p">(</span><span class="n">node_name</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">node_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
 <span class="n">tree</span><span class="o">.</span><span class="n">set_species_naming_function</span><span class="p">(</span><span class="n">parse_sp_name</span><span class="p">)</span>
 </pre></div>

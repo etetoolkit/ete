@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Phylogenetic trees &#8212; ETE Toolkit 4.0.0-beta documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=039e1c02" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
+    <script src="../_static/documentation_options.js?v=f03ed5e5"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Reference Guide" href="../reference/index.html" />
+    <link rel="prev" title="Working with the Tree structure" href="tutorial_trees.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="phylogenetic-trees">
+<h1><a class="toc-backref" href="#id1" role="doc-backlink">Phylogenetic trees</a><a class="headerlink" href="#phylogenetic-trees" title="Link to this heading">¶</a></h1>
+<nav class="contents" id="contents">
+<p class="topic-title">Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#phylogenetic-trees" id="id1">Phylogenetic trees</a></p>
+<ul>
+<li><p><a class="reference internal" href="#overview" id="id2">Overview</a></p></li>
+<li><p><a class="reference internal" href="#linking-phylogenetic-trees-with-multiple-sequence-alignments" id="id3">Linking phylogenetic trees with multiple sequence alignments</a></p></li>
+<li><p><a class="reference internal" href="#visualization-of-phylogenetic-trees" id="id4">Visualization of phylogenetic trees</a></p></li>
+<li><p><a class="reference internal" href="#adding-taxonomic-information" id="id5">Adding taxonomic information</a></p>
+<ul>
+<li><p><a class="reference internal" href="#automatic-control-of-species-info" id="id6">Automatic control of species info</a></p></li>
+<li><p><a class="reference internal" href="#automatic-custom-control-of-the-species-info" id="id7">Automatic (custom) control of the species info</a></p></li>
+<li><p><a class="reference internal" href="#manual-control-of-the-species-info" id="id8">Manual control of the species info</a></p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+<section id="overview">
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">Overview</a><a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
+<p>Phylogenetic trees are the result of most evolutionary analyses. They
+represent the evolutionary relationships among a set of species or, in
+molecular biology, a set of homologous sequences.</p>
+<p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">PhyloTree</span></code> class is an extension of the base <code class="xref py py-class docutils literal notranslate"><span class="pre">Tree</span></code>
+class, providing an appropriate way to deal with phylogenetic trees.
+Thus, while leaves are considered to represent species (or sequences
+from a given species genome), internal nodes are considered ancestral
+nodes. A direct consequence of this is, for instance, that every split
+in the tree will represent a speciation or duplication event.</p>
+</section>
+<section id="linking-phylogenetic-trees-with-multiple-sequence-alignments">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Linking phylogenetic trees with multiple sequence alignments</a><a class="headerlink" href="#linking-phylogenetic-trees-with-multiple-sequence-alignments" title="Link to this heading">¶</a></h2>
+<p><code class="xref py py-class docutils literal notranslate"><span class="pre">PhyloTree</span></code> instances allow molecular phylogenies to be linked
+to Multiple Sequence Alignments (MSA). To associate an MSA with a
+phylogenetic tree you can use the <code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloNode.link_to_alignment()</span></code>
+method. You can use the <code class="xref py py-attr docutils literal notranslate"><span class="pre">alg_format</span></code> argument to specify its
+format (See <code class="xref py py-class docutils literal notranslate"><span class="pre">SeqGroup</span></code> documentation for available formats).</p>
+<p>Given that the <a class="reference external" href="https://en.wikipedia.org/wiki/FASTA_format">FASTA format</a> is not only applicable
+for MSA but also for <strong>unaligned sequences</strong>, you may also associate
+sequences of different lengths with tree nodes.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">PhyloTree</span>
+
+<span class="n">fasta_txt</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">&gt;seqA</span>
+<span class="s2">MAEIPDETIQQFMALT---HNIAVQYLSEFGDLNEALNSYYASQTDDIKDRREEAH</span>
+<span class="s2">&gt;seqB</span>
+<span class="s2">MAEIPDATIQQFMALTNVSHNIAVQY--EFGDLNEALNSYYAYQTDDQKDRREEAH</span>
+<span class="s2">&gt;seqC</span>
+<span class="s2">MAEIPDATIQ---ALTNVSHNIAVQYLSEFGDLNEALNSYYASQTDDQPDRREEAH</span>
+<span class="s2">&gt;seqD</span>
+<span class="s2">MAEAPDETIQQFMALTNVSHNIAVQYLSEFGDLNEAL--------------REEAH</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="c1"># Load a tree and link it to an alignment.</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="s1">&#39;(((seqA,seqB),seqC),seqD);&#39;</span><span class="p">)</span>
+<span class="n">t</span><span class="o">.</span><span class="n">link_to_alignment</span><span class="p">(</span><span class="n">alignment</span><span class="o">=</span><span class="n">fasta_txt</span><span class="p">,</span> <span class="n">alg_format</span><span class="o">=</span><span class="s1">&#39;fasta&#39;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;sequence&#39;</span><span class="p">]))</span>
+<span class="c1">#                  ╭╴seqA,MAEIPDETIQQFMALT---HNIAVQYLSEFGDLNEALNSYYASQTDDIKDRREEAH</span>
+<span class="c1">#            ╭╴⊗,⊗╶┤</span>
+<span class="c1">#      ╭╴⊗,⊗╶┤     ╰╴seqB,MAEIPDATIQQFMALTNVSHNIAVQY--EFGDLNEALNSYYAYQTDDQKDRREEAH</span>
+<span class="c1">#      │     │</span>
+<span class="c1"># ╴⊗,⊗╶┤     ╰╴seqC,MAEIPDATIQ---ALTNVSHNIAVQYLSEFGDLNEALNSYYASQTDDQPDRREEAH</span>
+<span class="c1">#      │</span>
+<span class="c1">#      ╰╴seqD,MAEAPDETIQQFMALTNVSHNIAVQYLSEFGDLNEAL--------------REEAH</span>
+</pre></div>
+</div>
+<p>The same could be done at the time the tree is being loaded, by using
+the <code class="xref py py-attr docutils literal notranslate"><span class="pre">alignment</span></code> and <code class="xref py py-attr docutils literal notranslate"><span class="pre">alg_format</span></code> arguments of
+<code class="xref py py-class docutils literal notranslate"><span class="pre">PhyloTree</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load a tree and link it to an alignment.</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="s1">&#39;(((seqA,seqB),seqC),seqD);&#39;</span><span class="p">,</span>
+              <span class="n">alignment</span><span class="o">=</span><span class="n">fasta_txt</span><span class="p">,</span> <span class="n">alg_format</span><span class="o">=</span><span class="s1">&#39;fasta&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>ETE’s sequence linking process is not strict, which means that a
+perfect match between all node names and sequences names is not
+required. Thus, if only one match is found between sequences names
+within the MSA file and tree node names, only one tree node will
+contain an associated sequence.</p>
+<p>Also, it is important to note that sequence linking is not limited to
+terminal nodes. If internal nodes are named, and such names find a
+match within the provided MSA file, their corresponding sequences will
+be also loaded into the tree structure.</p>
+<p>Once a MSA is linked, sequences will be available for every tree node
+through its <code class="xref py py-attr docutils literal notranslate"><span class="pre">node.sequence</span></code> attribute.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">PhyloTree</span>
+
+<span class="n">fasta_txt</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2"> &gt;seqA</span>
+<span class="s2"> MAEIPDETIQQFMALT---HNIAVQYLSEFGDLNEALNSYYASQTDDIKDRREEAH</span>
+<span class="s2"> &gt;seqB</span>
+<span class="s2"> MAEIPDATIQQFMALTNVSHNIAVQY--EFGDLNEALNSYYAYQTDDQKDRREEAH</span>
+<span class="s2"> &gt;seqC</span>
+<span class="s2"> MAEIPDATIQ---ALTNVSHNIAVQYLSEFGDLNEALNSYYASQTDDQPDRREEAH</span>
+<span class="s2"> &gt;seqD</span>
+<span class="s2"> MAEAPDETIQQFMALTNVSHNIAVQYLSEFGDLNEAL--------------REEAH</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="n">iphylip_txt</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2"> 4 76</span>
+<span class="s2">      seqA   MAEIPDETIQ QFMALT---H NIAVQYLSEF GDLNEALNSY YASQTDDIKD RREEAHQFMA</span>
+<span class="s2">      seqB   MAEIPDATIQ QFMALTNVSH NIAVQY--EF GDLNEALNSY YAYQTDDQKD RREEAHQFMA</span>
+<span class="s2">      seqC   MAEIPDATIQ ---ALTNVSH NIAVQYLSEF GDLNEALNSY YASQTDDQPD RREEAHQFMA</span>
+<span class="s2">      seqD   MAEAPDETIQ QFMALTNVSH NIAVQYLSEF GDLNEAL--- ---------- -REEAHQ---</span>
+<span class="s2">             LTNVSHQFMA LTNVSH</span>
+<span class="s2">             LTNVSH---- ------</span>
+<span class="s2">             LTNVSH---- ------</span>
+<span class="s2">             -------FMA LTNVSH</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="c1"># Load a tree and link it to an alignment. As usual, &#39;alignment&#39; can</span>
+<span class="c1"># be the path to a file or data in text format.</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="s1">&#39;(((seqA,seqB),seqC),seqD);&#39;</span><span class="p">,</span> <span class="n">alignment</span><span class="o">=</span><span class="n">fasta_txt</span><span class="p">,</span> <span class="n">alg_format</span><span class="o">=</span><span class="s1">&#39;fasta&#39;</span><span class="p">)</span>
+
+<span class="c1"># We can now access the sequence of every leaf node.</span>
+<span class="k">for</span> <span class="n">leaf</span> <span class="ow">in</span> <span class="n">t</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">leaf</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">leaf</span><span class="o">.</span><span class="n">props</span><span class="p">[</span><span class="s1">&#39;sequence&#39;</span><span class="p">])</span>
+<span class="c1"># seqD MAEAPDETIQQFMALTNVSHNIAVQYLSEFGDLNEAL--------------REEAH</span>
+<span class="c1"># seqC MAEIPDATIQ---ALTNVSHNIAVQYLSEFGDLNEALNSYYASQTDDQPDRREEAH</span>
+<span class="c1"># seqA MAEIPDETIQQFMALT---HNIAVQYLSEFGDLNEALNSYYASQTDDIKDRREEAH</span>
+<span class="c1"># seqB MAEIPDATIQQFMALTNVSHNIAVQY--EFGDLNEALNSYYAYQTDDQKDRREEAH</span>
+
+<span class="c1"># The associated alignment can be changed at any time.</span>
+<span class="n">t</span><span class="o">.</span><span class="n">link_to_alignment</span><span class="p">(</span><span class="n">alignment</span><span class="o">=</span><span class="n">iphylip_txt</span><span class="p">,</span> <span class="n">alg_format</span><span class="o">=</span><span class="s1">&#39;iphylip&#39;</span><span class="p">)</span>
+
+<span class="c1"># Let&#39;s check that sequences have changed</span>
+<span class="k">for</span> <span class="n">leaf</span> <span class="ow">in</span> <span class="n">t</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">leaf</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">leaf</span><span class="o">.</span><span class="n">props</span><span class="p">[</span><span class="s1">&#39;sequence&#39;</span><span class="p">])</span>
+<span class="c1"># seqD MAEAPDETIQQFMALTNVSHNIAVQYLSEFGDLNEAL--------------REEAHQ----------FMALTNVSH</span>
+<span class="c1"># seqC MAEIPDATIQ---ALTNVSHNIAVQYLSEFGDLNEALNSYYASQTDDQPDRREEAHQFMALTNVSH----------</span>
+<span class="c1"># seqA MAEIPDETIQQFMALT---HNIAVQYLSEFGDLNEALNSYYASQTDDIKDRREEAHQFMALTNVSHQFMALTNVSH</span>
+<span class="c1"># seqB MAEIPDATIQQFMALTNVSHNIAVQY--EFGDLNEALNSYYAYQTDDQKDRREEAHQFMALTNVSH----------</span>
+
+<span class="c1"># The sequence is considered as a node property, so you can</span>
+<span class="c1"># even include sequences in your extended newick format.</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;sequence&#39;</span><span class="p">],</span> <span class="n">parser</span><span class="o">=</span><span class="mi">9</span><span class="p">))</span>
+<span class="c1"># (((seqA[&amp;&amp;NHX:sequence=MAEIPDETIQQFMALT---HNIAVQYLSEFGDLNEALNSYYASQTDDIKDRREEAHQF</span>
+<span class="c1"># MALTNVSHQFMALTNVSH],seqB[&amp;&amp;NHX:sequence=MAEIPDATIQQFMALTNVSHNIAVQY--EFGDLNEALNSY</span>
+<span class="c1"># YAYQTDDQKDRREEAHQFMALTNVSH----------]),seqC[&amp;&amp;NHX:sequence=MAEIPDATIQ---ALTNVSHNIA</span>
+<span class="c1"># VQYLSEFGDLNEALNSYYASQTDDQPDRREEAHQFMALTNVSH----------]),seqD[&amp;&amp;NHX:sequence=MAEAPD</span>
+<span class="c1"># ETIQQFMALTNVSHNIAVQYLSEFGDLNEAL--------------REEAHQ----------FMALTNVSH]);</span>
+
+<span class="c1"># And yes, you can save this newick text and reload it into a PhyloTree instance.</span>
+<span class="n">sametree</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;sequence&#39;</span><span class="p">]))</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">sametree</span><span class="p">)</span>  <span class="c1"># recovered tree with sequences</span>
+<span class="c1">#    ╭─┬╴seqA</span>
+<span class="c1">#  ╭─┤ ╰╴seqB</span>
+<span class="c1"># ─┤ ╰╴seqC</span>
+<span class="c1">#  ╰╴seqD</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;seqA sequence:&#39;</span><span class="p">,</span> <span class="n">t</span><span class="p">[</span><span class="s1">&#39;seqA&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sequence</span><span class="p">)</span>
+<span class="c1"># seqA sequence: MAEIPDETIQQFMALT---HNIAVQYLSEFGDLNEALNSYYASQTDDIKDRREEAHQFMALTNVSHQFMALTNVSH</span>
+</pre></div>
+</div>
+</section>
+<section id="visualization-of-phylogenetic-trees">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Visualization of phylogenetic trees</a><a class="headerlink" href="#visualization-of-phylogenetic-trees" title="Link to this heading">¶</a></h2>
+<p>PhyloTree instances can benefit from all the features of the
+programmable drawing engine. However, a built-in phylogenetic layout
+is provided for convenience.</p>
+<p>All PhyloTree instances are, by default, attached to such layout for
+tree visualization, thus allowing for in-place alignment visualization
+and evolutionary events labeling.</p>
+<figure class="align-default">
+<img alt="../_images/phylotree.png" src="../_images/phylotree.png" />
+</figure>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">PhyloTree</span><span class="p">,</span> <span class="n">TreeStyle</span>
+
+<span class="n">alg</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2"> &gt;Dme_001</span>
+<span class="s2"> MAEIPDETIQQFMALT---HNIAVQYLSEFGDLNEAL--YYASQTDDIKDRREEAH</span>
+<span class="s2"> &gt;Dme_002</span>
+<span class="s2"> MAEIPDATIQQFMALTNVSHNIAVQY--EFGDLNEALNSYYAYQTDDQKDRREEAH</span>
+<span class="s2"> &gt;Cfa_001</span>
+<span class="s2"> MAEIPDATIQ---ALTNVSHNIAVQYLSEFGDLNEALNSYYASQTDDQPDRREEAH</span>
+<span class="s2"> &gt;Mms_001</span>
+<span class="s2"> MAEAPDETIQQFMALTNVSHNIAVQYLSEFGDLNEAL--------------REEAH</span>
+<span class="s2"> &gt;Hsa_001</span>
+<span class="s2"> MAEIPDETIQQFMALT---HNIAVQYLSEFGDLNEALNSYYASQTDDIKDRREEAH</span>
+<span class="s2"> &gt;Ptr_002</span>
+<span class="s2"> MAEIPDATIQ-FMALTNVSHNIAVQY--EFGDLNEALNSY--YQTDDQKDRREEAH</span>
+<span class="s2"> &gt;Mmu_002</span>
+<span class="s2"> MAEIPDATIQ---ALTNVSHNIAVQYLSEFGDLNEALNSYYASQTDDQPDRREEAH</span>
+<span class="s2"> &gt;Hsa_002</span>
+<span class="s2"> MAEAPDETIQQFM-LTNVSHNIAVQYLSEFGDLNEAL--------------REEAH</span>
+<span class="s2"> &gt;Mmu_001</span>
+<span class="s2"> MAEIPDETIQQFMALT---HNIAVQYLSEFGDLNEALNSYYASQTDDIKDRREEAH</span>
+<span class="s2"> &gt;Ptr_001</span>
+<span class="s2"> MAEIPDATIQ-FMALTNVSHNIAVQY--EFGDLNEALNSY--YQTDDQKDRREEAH</span>
+<span class="s2"> &gt;Mmu_001</span>
+<span class="s2"> MAEIPDATIQ---ALTNVSHNIAVQYLSEFGDLNEALNSYYASQTDDQPDRREEAH</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="c1"># Performs a tree reconciliation analysis</span>
+<span class="n">gene_tree_nw</span> <span class="o">=</span> <span class="s1">&#39;((Dme_001,Dme_002),(((Cfa_001,Mms_001),((Hsa_001,Ptr_001),Mmu_001)),(Ptr_002,(Hsa_002,Mmu_002))));&#39;</span>
+<span class="n">species_tree_nw</span> <span class="o">=</span> <span class="s2">&quot;((((Hsa, Ptr), Mmu), (Mms, Cfa)), Dme);&quot;</span>
+
+<span class="n">genetree</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="n">gene_tree_nw</span><span class="p">)</span>
+<span class="n">sptree</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="n">species_tree_nw</span><span class="p">)</span>
+
+<span class="n">recon_tree</span><span class="p">,</span> <span class="n">events</span> <span class="o">=</span> <span class="n">genetree</span><span class="o">.</span><span class="n">reconcile</span><span class="p">(</span><span class="n">sptree</span><span class="p">)</span>
+
+<span class="n">recon_tree</span><span class="o">.</span><span class="n">link_to_alignment</span><span class="p">(</span><span class="n">alg</span><span class="p">)</span>
+
+<span class="n">recon_tree</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">tree_style</span><span class="o">=</span><span class="n">TreeStyle</span><span class="p">())</span>
+</pre></div>
+</div>
+</section>
+<section id="adding-taxonomic-information">
+<span id="taxonomic-info"></span><h2><a class="toc-backref" href="#id5" role="doc-backlink">Adding taxonomic information</a><a class="headerlink" href="#adding-taxonomic-information" title="Link to this heading">¶</a></h2>
+<p><code class="xref py py-class docutils literal notranslate"><span class="pre">PhyloTree</span></code> instances allow to deal with leaf names and species
+names separately. This is useful when working with molecular
+phylogenies, in which node names usually represent sequence
+identifiers.</p>
+<p>Species names will be stored in the <code class="xref py py-attr docutils literal notranslate"><span class="pre">PhyloNode.species</span></code>
+attribute of each leaf node. The method <code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloNode.get_species()</span></code>
+can be used obtain the set of species names found under a given
+internal node (speciation or duplication event). Often, sequence names
+do contain species information as a part of the name, and ETE can
+parse this information automatically.</p>
+<p>There are three ways to establish the species of the different tree
+nodes:</p>
+<ul class="simple">
+<li><p>By using the three first letters of the node’s name (default)</p></li>
+<li><p>By dynamically calling a function based on the node’s name</p></li>
+<li><p>By setting it manually for each node</p></li>
+</ul>
+<section id="automatic-control-of-species-info">
+<h3><a class="toc-backref" href="#id6" role="doc-backlink">Automatic control of species info</a><a class="headerlink" href="#automatic-control-of-species-info" title="Link to this heading">¶</a></h3>
+<p>Example of the default retrieval of species information:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">PhyloTree</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="s1">&#39;(((Hsa_001,Ptr_001),(Cfa_001,Mms_001)),(Dme_001,Dme_002));&#39;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+<span class="c1">#    ╭─┬╴Hsa_001</span>
+<span class="c1">#  ╭─┤ ╰╴Ptr_001</span>
+<span class="c1"># ─┤ ╰─┬╴Cfa_001</span>
+<span class="c1">#  │   ╰╴Mms_001</span>
+<span class="c1">#  ╰─┬╴Dme_001</span>
+<span class="c1">#    ╰╴Dme_002</span>
+
+<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">t</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Node:&#39;</span><span class="p">,</span> <span class="n">n</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;  Species:&#39;</span><span class="p">,</span> <span class="n">n</span><span class="o">.</span><span class="n">species</span><span class="p">)</span>
+<span class="c1"># Node: Hsa_001   Species: Hsa</span>
+<span class="c1"># Node: Ptr_001   Species: Ptr</span>
+<span class="c1"># Node: Cfa_001   Species: Cfa</span>
+<span class="c1"># Node: Mms_001   Species: Mms</span>
+<span class="c1"># Node: Dme_001   Species: Dme</span>
+<span class="c1"># Node: Dme_002   Species: Dme</span>
+</pre></div>
+</div>
+</section>
+<section id="automatic-custom-control-of-the-species-info">
+<h3><a class="toc-backref" href="#id7" role="doc-backlink">Automatic (custom) control of the species info</a><a class="headerlink" href="#automatic-custom-control-of-the-species-info" title="Link to this heading">¶</a></h3>
+<p>The default behavior can be changed by using the
+<code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloNode.set_species_naming_function()</span></code> method or by using the
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">sp_naming_function</span></code> argument of the <code class="xref py py-class docutils literal notranslate"><span class="pre">PhyloTree</span></code> class.</p>
+<p>Note that, using the <code class="xref py py-attr docutils literal notranslate"><span class="pre">sp_naming_function</span></code> argument, the whole
+tree structure will be initialized to use the provided parsing
+function to obtain species name information.
+<code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloNode.set_species_naming_function()</span></code> (present in all tree
+nodes) can be used to change the behavior in a previously loaded tree,
+or to set different parsing functions to different parts of the tree.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">PhyloTree</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="s1">&#39;(((Hsa_001,Ptr_001),(Cfa_001,Mms_001)),(Dme_001,Dme_002));&#39;</span><span class="p">)</span>
+
+<span class="c1"># Let&#39;s use our own leaf name parsing function to obtain species names.</span>
+<span class="c1"># We just need to create a function that takes a node&#39;s name as argument</span>
+<span class="c1"># and return its corresponding species name.</span>
+<span class="k">def</span> <span class="nf">get_species_name</span><span class="p">(</span><span class="n">node_name_string</span><span class="p">):</span>
+    <span class="c1"># Species code is the first part of leaf name (separated by an</span>
+    <span class="c1"># underscore character).</span>
+    <span class="n">spcode</span> <span class="o">=</span> <span class="n">node_name_string</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># We could even translate the code to complete names.</span>
+    <span class="n">code2name</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;Dme&#39;</span><span class="p">:</span><span class="s1">&#39;Drosophila melanogaster&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Hsa&#39;</span><span class="p">:</span><span class="s1">&#39;Homo sapiens&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Ptr&#39;</span><span class="p">:</span><span class="s1">&#39;Pan troglodytes&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Mms&#39;</span><span class="p">:</span><span class="s1">&#39;Mus musculus&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Cfa&#39;</span><span class="p">:</span><span class="s1">&#39;Canis familiaris&#39;</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">code2name</span><span class="p">[</span><span class="n">spcode</span><span class="p">]</span>
+
+<span class="c1"># Now, let&#39;s ask the tree to use our custom species naming function.</span>
+<span class="n">t</span><span class="o">.</span><span class="n">set_species_naming_function</span><span class="p">(</span><span class="n">get_species_name</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">t</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Node:&#39;</span><span class="p">,</span> <span class="n">n</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;  Species:&#39;</span><span class="p">,</span> <span class="n">n</span><span class="o">.</span><span class="n">species</span><span class="p">)</span>
+<span class="c1"># Node: Hsa_001   Species: Homo sapiens</span>
+<span class="c1"># Node: Ptr_001   Species: Pan troglodytes</span>
+<span class="c1"># Node: Cfa_001   Species: Canis familiaris</span>
+<span class="c1"># Node: Mms_001   Species: Mus musculus</span>
+<span class="c1"># Node: Dme_001   Species: Drosophila melanogaster</span>
+<span class="c1"># Node: Dme_002   Species: Drosophila melanogaster</span>
+</pre></div>
+</div>
+</section>
+<section id="manual-control-of-the-species-info">
+<h3><a class="toc-backref" href="#id8" role="doc-backlink">Manual control of the species info</a><a class="headerlink" href="#manual-control-of-the-species-info" title="Link to this heading">¶</a></h3>
+<p>To disable the automatic generation of species names based on node
+names, a <code class="docutils literal notranslate"><span class="pre">None</span></code> value can be passed to the
+<code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloNode.set_species_naming_function()</span></code> function. From then on,
+the species attribute will not be automatically updated based on the name
+of nodes and it could be controlled manually.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">PhyloTree</span>
+
+<span class="c1"># You can disable the automatic generation of species names.</span>
+<span class="c1"># To do so, you can set the species naming function to None.</span>
+<span class="c1"># This is useful to set the species names manually, or for reading them</span>
+<span class="c1"># from a newick file. Otherwise, the species property would be overwriten.</span>
+<span class="n">mynewick</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">(((Hsa_001[&amp;&amp;NHX:species=Human],Ptr_001[&amp;&amp;NHX:species=Chimp]),</span>
+<span class="s2">(Cfa_001[&amp;&amp;NHX:species=Dog],Mms_001[&amp;&amp;NHX:species=Mouse])),</span>
+<span class="s2">(Dme_001[&amp;&amp;NHX:species=Fly],Dme_002[&amp;&amp;NHX:species=Fly]));</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="n">mynewick</span><span class="p">,</span> <span class="n">sp_naming_function</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">t</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Node:&#39;</span><span class="p">,</span> <span class="n">n</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;  Species:&#39;</span><span class="p">,</span> <span class="n">n</span><span class="o">.</span><span class="n">species</span><span class="p">)</span>
+<span class="c1"># Node: Hsa_001   Species: Human</span>
+<span class="c1"># Node: Ptr_001   Species: Chimp</span>
+<span class="c1"># Node: Cfa_001   Species: Dog</span>
+<span class="c1"># Node: Mms_001   Species: Mouse</span>
+<span class="c1"># Node: Dme_001   Species: Fly</span>
+<span class="c1"># Node: Dme_002   Species: Fly</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">ETE Toolkit</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs.html">Frequently Asked Questions (FAQs)</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">ETE Tutorial</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="tutorial_trees.html">Working with the Tree structure</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Phylogenetic trees</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference Guide</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">ETE Tutorial</a><ul>
+      <li>Previous: <a href="tutorial_trees.html" title="previous chapter">Working with the Tree structure</a></li>
+      <li>Next: <a href="../reference/index.html" title="next chapter">Reference Guide</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2008 - 2023, The ETE Toolkit Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+      |
+      <a href="../_sources/tutorial/tutorial_phylogeny.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
