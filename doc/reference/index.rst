@@ -1,14 +1,6 @@
 Reference Guide
 ===============
 
-.. inheritance-diagram::
-   ete4.coretype.tree
-   ete4.phylo.phylotree
-   ete4.clustering.clustertree
-   :parts: 1
-
-Current modules:
-
 .. toctree::
    :maxdepth: 2
 

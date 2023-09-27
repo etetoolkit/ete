@@ -29,7 +29,6 @@ sys.path.insert(0, os.path.abspath('..'))
 
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.viewcode',
-              'sphinx.ext.inheritance_diagram',
               'sphinx.ext.autosummary']
 
 templates_path = ['_templates']
