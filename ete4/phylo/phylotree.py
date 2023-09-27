@@ -396,18 +396,18 @@ class PhyloTree(Tree):
         return get_reconciled_tree(self, species_tree, [])
 
     def get_my_evol_events(self, sos_thr=0.0):
-        """ Returns a list of duplication and speciation events in
-        which the current node has been involved. Scanned nodes are
-        also labeled internally as dup=True|False. You can access this
-        labels using the 'node.dup' sintaxis.
+        """Return list of duplication and speciation events involving this node.
 
-        Method: the algorithm scans all nodes from the given leafName to
-        the root. Nodes are assumed to be duplications when a species
-        overlap is found between its child linages. Method is described
-        more detail in:
+        Scanned nodes are also labeled internally as dup=True|False.
+        You can access these labels using ``node.dup``.
 
-        "The Human Phylome." Huerta-Cepas J, Dopazo H, Dopazo J, Gabaldon
-        T. Genome Biol. 2007;8(6):R109.
+        The algorithm scans all nodes from the given leafName to the
+        root. Nodes are assumed to be duplications when a species
+        overlap is found between its child linages. The method is
+        described in more detail in:
+
+        :Citation:
+            *The Human Phylome*. T. Genome Biol. 2007;8(6):R109.
         """
         return spoverlap.get_evol_events_from_leaf(self, sos_thr=sos_thr)
 
