@@ -275,8 +275,9 @@ class PhyloTree(Tree):
                  alg_format="fasta", sp_naming_function=_parse_species,
                  parser=None):
         """
-        :param newick: Path to the file containing the tree or, alternatively,
-            the text string containing the same information.
+        :param newick: If not None, initializes the tree from a newick,
+            which can be a string or file object containing it.
+        :param children: If not None, the children to add to this node.
         :param alignment: File containing a multiple sequence alignment.
         :param alg_format: "fasta", "phylip" or "iphylip" (interleaved).
         :param parser: Parser to read the newick.
