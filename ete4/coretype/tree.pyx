@@ -195,6 +195,11 @@ cdef class Tree(object):
             node = node.up
         return n
 
+    def get_prop(self, prop, default=None):
+        """Return the node's property prop (an attribute or in self.props)."""
+        attr = getattr(self, prop, None)
+        return attr if attr is not None else self.props.get(prop, default)
+
     # TODO: Move all the next functions out of the Tree class.
     def _get_style(self):
         if self._img_style is None:
@@ -1384,14 +1389,9 @@ cdef class Tree(object):
         :param leaves_only: If False, for each node it stores all its
             descendant nodes, not only its leaves.
         """
-        def get_prop():  # return the property prop associated to self
-            try:
-                return getattr(self, prop)
-            except AttributeError:
-                return self.props.get(prop)
 
         def get_content():  # return the node itself, or its requested prop
-            return self if prop is None else get_prop()
+            return self if prop is None else self.get_prop(prop)
 
         # Leaves, or nodes, or just their requested property, for each node.
         leaves = {self: container_type(
@@ -1456,16 +1456,13 @@ cdef class Tree(object):
         def has_prop(node, prop):
             return hasattr(node, prop) or prop in node.props
 
-        def get_prop(node, prop):
-            return getattr(node, prop, node.props.get(prop, None))
-
         common = (  # common leaf values in the two trees
-            {get_prop(n, prop_t1) for n in origin_t if has_prop(n, prop_t1)} &
-            {get_prop(n, prop_t2) for n in target_t if has_prop(n, prop_t2)})
+            {n.get_prop(prop_t1) for n in origin_t if has_prop(n, prop_t1)} &
+            {n.get_prop(prop_t2) for n in target_t if has_prop(n, prop_t2)})
 
         # Check for duplicated items (is it necessary? can we optimize? what's the impact in performance?')
-        size1 = sum(1 for n in origin_t if get_prop(n, prop_t1) in common)
-        size2 = sum(1 for n in target_t if get_prop(n, prop_t2) in common)
+        size1 = sum(1 for n in origin_t if n.get_prop(prop_t1) in common)
+        size2 = sum(1 for n in target_t if n.get_prop(prop_t2) in common)
 
         if size1 > len(common):
             raise TreeError('Duplicated items found in reference tree.')
@@ -1500,7 +1497,7 @@ cdef class Tree(object):
             """Yield values (if existing in both trees) for property prop."""
             for node in nodes:
                 if has_prop(node, prop):
-                    value = get_prop(node, prop)
+                    value = node.get_prop(prop)
                     if value in common:
                         yield value
 
