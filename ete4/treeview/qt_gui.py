@@ -491,7 +491,7 @@ class _PropertiesDialog(QWidget):
             self.model_lbl = QLabel('Available models: ', self)
             self.layout.addWidget(self.model_lbl)
 
-            if hasattr(self.scene.tree.get_leaves()[0], 'nt_sequence'):
+            if hasattr(next(self.scene.tree.leaves()), 'nt_sequence'):
                 self.combo_run = QComboBox()
                 self.layout.addWidget(self.combo_run)
                 avail_models = sorted(list(AVAIL.keys()))
@@ -522,7 +522,7 @@ class _PropertiesDialog(QWidget):
         print('Running model %s from GUI...' % model)
         if AVAIL[model]['allow_mark']:
             # TODO if allow mark model and no mark => popup window
-            marks = [str(n.node_id) for n in self.scene.tree.iter_descendants()
+            marks = [str(n.node_id) for n in self.scene.tree.descendants()
                      if n.mark]
             if not marks:
                 QMessageBox.information(
@@ -581,9 +581,9 @@ class _PropertiesDialog(QWidget):
         if self._mode == 0: # node
             self.get_props_in_nodes([node])
         elif self._mode == 1: # childs
-            self.get_props_in_nodes(node.get_leaves())
+            self.get_props_in_nodes(list(node.leaves()))
         elif self._mode == 2: # partition
-            self.get_props_in_nodes([node]+node.get_descendants())
+            self.get_props_in_nodes(list(node.traverse()))
 
         total_props = len(self.prop2nodes) + len(list(self.style2nodes.keys()))
         self.model = QStandardItemModel(total_props, 2)

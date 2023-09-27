@@ -242,7 +242,7 @@ def get_subparts(n):
         for _n in to_visit:
             _n.detach()
 
-        freaks = [_n for _n in n.iter_descendants() if
+        freaks = [_n for _n in n.descendants() if
                   len(_n.children)==1 or (not hasattr(_n, "_leaf") and not _n.children)]
         for s in freaks:
             s.delete(prevent_nondicotomic=True)
@@ -478,14 +478,14 @@ class PhyloTree(Tree):
 
         """
         root = self
-        all_seqs = set(self.get_leaf_names())
+        all_seqs = set(self.leaf_names())
         outgroup_dist  = 0
         best_balance = max(species2age.values())
         outgroup_node  = self
         outgroup_size = 0
 
-        for leaf in root.iter_descendants():
-            leaf_seqs = set(leaf.get_leaf_names())
+        for leaf in root.descendants():
+            leaf_seqs = set(leaf.leaf_names())
             size = len(leaf_seqs)
 
             leaf_species =[self.props.get('_speciesFunction')(s) for s in leaf_seqs]

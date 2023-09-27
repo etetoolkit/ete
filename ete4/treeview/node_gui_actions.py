@@ -14,15 +14,15 @@ class NewickDialog(QDialog):
         f = int(self._conf.nwFormat.currentText())
 
         if self._conf.useAllFeatures.isChecked():
-            features = []
+            props = None
         elif self._conf.features_list.count() == 0:
-            features = None
+            props = []
         else:
-            features = set()
+            props = set()
             for i in range(self._conf.features_list.count()):
-                features.add(str(self._conf.features_list.item(i).text()))
+                props.add(str(self._conf.features_list.item(i).text()))
 
-        nw = self.node.write(format=f, features=features)
+        nw = self.node.write(parser=f, props=props)
         self._conf.newickBox.setText(nw)
 
     def add_prop(self):
@@ -176,13 +176,13 @@ class _NodeActions(object):
 
     def _gui_mark_group(self, mark=None):
         self.node.mark_tree([self.node.node_id], marks=[mark])
-        for leaf in self.node.iter_descendants():
+        for leaf in self.node.descendants():
             leaf.mark_tree([leaf.node_id], marks=[mark])
         self.scene().GUI.redraw()
 
     def _gui_unmark_group(self):
         self.node.mark = ""
-        for leaf in self.node.iter_descendants():
+        for leaf in self.node.descendants():
             leaf.mark = ""
         self.scene().GUI.redraw()
 

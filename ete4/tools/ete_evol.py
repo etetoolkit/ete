@@ -277,7 +277,7 @@ def clean_tree(tree):
     """
     remove marks from tree
     """
-    for n in tree.get_descendants() + [tree]:
+    for n in tree.traverse():
         n.mark = ''
 
 
@@ -313,10 +313,10 @@ def update_marks_from_args(nodes, marks, tree, args):
                                                       subgroup else '@;;@')
                         node1 = get_node(tree, node1)
                         node2 = get_node(tree, node2)
-                        anc = tree.get_common_ancestor(node1, node2)
+                        anc = tree.common_ancestor([node1, node2])
                         # mark from ancestor
                         if '@;;;@' in subgroup:
-                            for node in anc.get_descendants() + [anc]:
+                            for node in anc.traverse():
                                 marks[-1].append('#' + str(mark))
                                 nodes[-1].append(node.node_id)
                         # mark at ancestor
@@ -338,7 +338,7 @@ def update_marks_from_args(nodes, marks, tree, args):
     if args.mark_internals:
         if args.mark:
             exit('ERROR: incompatible marking options')
-        marks.extend([['#1' for _ in n.iter_descendants()]
+        marks.extend([['#1' for _ in n.descendants()]
                       for n in tree.descendants() if not n.is_leaf])
         nodes.extend([[n2.node_id for n2 in n.descendants()]
                       for n in tree.descendants() if not n.is_leaf])
@@ -387,7 +387,7 @@ def interactive_mark(tree, mode='new'):
     tree._set_mark_mode(True)
     tree.show(tree_style=ts)
     tree._set_mark_mode(False)
-    for n in tree.iter_descendants():
+    for n in tree.descendants():
         if n.mark:
             submarks.append(n.mark)
             subnodes.append(n.node_id)
@@ -417,7 +417,7 @@ def name_model(tree, base_name):
     transform the name string into summary of its name and a digestion of the
     full name
     """
-    return base_name[:12] + '~' + md5((tree.get_topology_id(attr="name") +
+    return base_name[:12] + '~' + md5((tree.get_topology_id("name") +
                                        base_name).encode('utf8')).hexdigest()
 
 
@@ -828,15 +828,15 @@ def run(args):
         if args.node_ids:
             print('\n%-7s : %s' % ("Node ID", "Leaf name"))
             print('-'*50)
-            for n in tree.iter_leaves():
+            for n in tree.leaves():
                 print('   %-4s : %s' % (n.node_id, n.name))
             print('\n%-7s : %s' % ("Node ID", "Descendant leaves names"))
             print('-'*50)
-            for n in tree.iter_descendants():
+            for n in tree.descendants():
                 if n.is_leaf:
                     continue
                 print('   %-4s : %s' % (n.node_id, ', '.join(
-                    [l.name for l in n.iter_leaves()])))
+                    [l.name for l in n.leaves()])))
             print('\n   %-4s : %s' % (tree.node_id, 'ROOT'))
             return
 

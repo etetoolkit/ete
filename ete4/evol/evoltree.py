@@ -141,7 +141,7 @@ class EvolNode(PhyloTree):
         returns node list corresponding to a given idname
         '''
         try:
-            for n in self.iter_descendants():
+            for n in self.descendants():
                 if n.props.get('node_id') == idname:
                     return n
             if self.props.get('node_id') == idname:
@@ -258,7 +258,7 @@ class EvolNode(PhyloTree):
         super(EvolTree, self).link_to_alignment(alignment,
                                                 alg_format=alg_format, **kwargs)
         check_len = 0
-        for leaf in self.iter_leaves():
+        for leaf in self.leaves():
             seq_len = len(str(leaf.props.get('sequence')))
             if check_len and check_len != seq_len:
                 warn('WARNING: sequences with different lengths found!')
@@ -510,7 +510,7 @@ class EvolNode(PhyloTree):
         # branch-site outfiles do not give specific branch info
         if not model.branches:
             return
-        for node in self.iter_descendants():
+        for node in self.descendants():
             if not evol in model.branches[node.props.get('node_id')]:
                 continue
             node.dist = model.branches[node.props.get('node_id')][evol]

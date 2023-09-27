@@ -106,7 +106,7 @@ class Model:
         checks if tree is marked and if model allows marks.
         fill up branches dict with marks
         """
-        has_mark = any(n.props.get('mark') for n in self._tree.iter_descendants())
+        has_mark = any(n.props.get('mark') for n in self._tree.descendants())
         for i, node in enumerate(self._tree.traverse()):
             if has_mark and self.properties['allow_mark']:
                 self.branches[node.props.get('node_id')] = {'mark': node.props.get('mark') or ' #0'}
