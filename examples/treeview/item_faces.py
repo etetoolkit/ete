@@ -106,7 +106,7 @@ def master_ly(node):
 def get_example_tree():
 
     t = Tree()
-    t.populate(8, reuse_names=False)
+    t.populate(8)
 
     ts = TreeStyle()
     ts.layout_fn = master_ly

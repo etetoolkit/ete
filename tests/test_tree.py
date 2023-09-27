@@ -615,7 +615,7 @@ class Test_Coretype_Tree(unittest.TestCase):
         self.assertEqual(len(t), prev_size+25)
         for i in range(10):
             t = Tree()
-            t.populate(100, reuse_names=False)
+            t.populate(100)
             # Checks that all names are actually unique
             self.assertEqual(len(set(t.leaf_names())), 100)
 
@@ -836,9 +836,8 @@ class Test_Coretype_Tree(unittest.TestCase):
         t.set_outgroup(t["a"])
 
         # Test branch support and distances after rooting
-        SIZE = 35
         t = Tree()
-        t.populate(SIZE, reuse_names=False)
+        t.populate(35)
         t.unroot()
         for n in t.descendants():
             if n is not t:

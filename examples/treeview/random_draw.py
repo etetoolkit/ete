@@ -61,7 +61,7 @@ def tiny_ly(node):
 
 size = 15
 t = Tree()
-t.populate(size, reuse_names=False)
+t.populate(size)
 
 I = TreeStyle()
 I.mode = "r"
