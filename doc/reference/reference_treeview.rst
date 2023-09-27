@@ -1,5 +1,5 @@
-Treeview
-========
+Treeview (graphics)
+===================
 
 .. contents::
 
