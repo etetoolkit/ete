@@ -23,7 +23,7 @@ Linking phylogenetic trees with multiple sequence alignments
 
 :class:`PhyloTree` instances allow molecular phylogenies to be linked
 to Multiple Sequence Alignments (MSA). To associate an MSA with a
-phylogenetic tree you can use the :func:`PhyloNode.link_to_alignment`
+phylogenetic tree you can use the :func:`PhyloTree.link_to_alignment`
 method. You can use the :attr:`alg_format` argument to specify its
 format (See :class:`SeqGroup` documentation for available formats).
 
@@ -51,14 +51,14 @@ Example::
   t = PhyloTree('(((seqA,seqB),seqC),seqD);')
   t.link_to_alignment(alignment=fasta_txt, alg_format='fasta')
 
-  print(t.to_str(props=['name', 'sequence']))
-  #                  ╭╴seqA,MAEIPDETIQQFMALT---HNIAVQYLSEFGTDDIKDRREEAH
-  #            ╭╴⊗,⊗╶┤
-  #      ╭╴⊗,⊗╶┤     ╰╴seqB,MAEIPDATIQQFMALTNVSHNIAVQY--EFGTDDQKDRREEAH
-  #      │     │
-  # ╴⊗,⊗╶┤     ╰╴seqC,MAEIPDATIQ---ALTNVSHNIAVQYLSEFGTDDQPDRREEAH
-  #      │
-  #      ╰╴seqD,MAEAPDETIQQFMALTNVSHNIAVQYLSEFG-------REEAH
+  print(t.to_str(props=['name', 'sequence'], show_internal=False))
+  #      ╭╴seqA,MAEIPDETIQQFMALT---HNIAVQYLSEFGTDDIKDRREEAH
+  #    ╭─┤
+  #  ╭─┤ ╰╴seqB,MAEIPDATIQQFMALTNVSHNIAVQY--EFGTDDQKDRREEAH
+  #  │ │
+  # ─┤ ╰╴seqC,MAEIPDATIQ---ALTNVSHNIAVQYLSEFGTDDQPDRREEAH
+  #  │
+  #  ╰╴seqD,MAEAPDETIQQFMALTNVSHNIAVQYLSEFG-------REEAH
 
 The same could be done at the time the tree is being loaded, by using
 the :attr:`alignment` and :attr:`alg_format` arguments of
@@ -111,8 +111,8 @@ names separately. This is useful when working with molecular
 phylogenies, in which node names usually represent sequence
 identifiers.
 
-Species names will be stored in the :attr:`PhyloNode.species`
-attribute of each leaf node. The method :func:`PhyloNode.get_species`
+Species names will be stored in the :attr:`PhyloTree.species`
+attribute of each leaf node. The method :func:`PhyloTree.get_species`
 can be used obtain the set of species names found under a given
 internal node (speciation or duplication event). Often, sequence names
 do contain species information as a part of the name, and ETE can
@@ -157,13 +157,13 @@ Automatic (custom) control of the species info
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The default behavior can be changed by using the
-:func:`PhyloNode.set_species_naming_function` method or by using the
+:func:`PhyloTree.set_species_naming_function` method or by using the
 :attr:`sp_naming_function` argument of the :class:`PhyloTree` class.
 
 Note that, using the :attr:`sp_naming_function` argument, the whole
 tree structure will be initialized to use the provided parsing
 function to obtain species name information.
-:func:`PhyloNode.set_species_naming_function` (present in all tree
+:func:`PhyloTree.set_species_naming_function` (present in all tree
 nodes) can be used to change the behavior in a previously loaded tree,
 or to set different parsing functions to different parts of the tree.
 
@@ -209,7 +209,7 @@ Manual control of the species info
 
 To disable the automatic generation of species names based on node
 names, a ``None`` value can be passed to the
-:func:`PhyloNode.set_species_naming_function` function. From then on,
+:func:`PhyloTree.set_species_naming_function` function. From then on,
 the species attribute will not be automatically updated based on the name
 of nodes and it could be controlled manually.
 
