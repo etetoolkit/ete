@@ -1013,6 +1013,9 @@ cdef class Tree(object):
         :param support_range: Range (tuple with min and max) of distances
             used to generate branch supports if random_branches is True.
         """
+        assert names_library is None or len(names_library) >= size, \
+            f'names_library too small ({len(names_library)}) for size {size}'
+
         NewNode = self.__class__
 
         if len(self.children) > 1:
@@ -1051,17 +1054,12 @@ cdef class Tree(object):
 
         # Give names to leaves.
         if names_library is not None:
-            assert len(names_library) >= len(next_deq), \
-                ('names_library too small (%d) to name all leaves (%d)' %
-                 (len(names_library), len(next_deq)))
-
-            names = names_library.copy()  # so we don't modify the original
-            for n in next_deq:
-                n.name = names.pop()
+            for node, name in zip(next_deq, names_library):
+                node.name = name
         else:
             chars = 'abcdefghijklmnopqrstuvwxyz'
 
-            for i, n in enumerate(next_deq):
+            for i, node in enumerate(next_deq):
                 # Create a short name corresponding to the index i.
                 # 0: 'a', 1: 'b', ..., 25: 'z', 26: 'aa', 27: 'ab', ...
                 name = ''
@@ -1069,7 +1067,7 @@ cdef class Tree(object):
                     name = chars[i % len(chars)] + name
                     i = i // len(chars) - 1
 
-                n.name = name
+                node.name = name
 
     def set_outgroup_v2(self, outgroup, branch_properties=None):
         """Set the given outgroup node at the root and return it.
