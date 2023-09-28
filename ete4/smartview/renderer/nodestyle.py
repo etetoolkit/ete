@@ -41,8 +41,7 @@ class NodeStyle(dict):
     """
 
     def __init__(self, *args, **kargs):
-        """Constructor.
-
+        """
         :param #0030c1 fgcolor: RGB code or name in :data:`SVG_COLORS`
         :param #FFFFFF bgcolor: RGB code or name in :data:`SVG_COLORS`
         :param #FFFFFF node_bgcolor: RGB code or name in :data:`SVG_COLORS`
