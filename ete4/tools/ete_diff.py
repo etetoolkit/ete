@@ -10,7 +10,13 @@ import itertools
 import multiprocessing as mp
 from ..coretype.tree import Tree
 from ..utils import print_table, color
-from lap import lapjv
+
+try:
+    from lap import lapjv
+except ImportError:
+    def lapjv(*args, **kwargs):
+        raise ValueError('lapjv could not be imported.')
+
 import textwrap
 import argparse
 import logging
