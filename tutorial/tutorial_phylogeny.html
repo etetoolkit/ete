@@ -79,7 +79,7 @@
 <p>Phylogenetic trees are the result of most evolutionary analyses. They
 represent the evolutionary relationships among a set of species or, in
 molecular biology, a set of homologous sequences.</p>
-<p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">PhyloTree</span></code> class is an extension of the base <code class="xref py py-class docutils literal notranslate"><span class="pre">Tree</span></code>
+<p>The <a class="reference internal" href="../reference/reference_phylo.html#ete4.PhyloTree" title="ete4.PhyloTree"><code class="xref py py-class docutils literal notranslate"><span class="pre">PhyloTree</span></code></a> class is an extension of the base <a class="reference internal" href="../reference/reference_tree.html#ete4.Tree" title="ete4.Tree"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tree</span></code></a>
 class, providing an appropriate way to deal with phylogenetic trees.
 Thus, while leaves are considered to represent species (or sequences
 from a given species genome), internal nodes are considered ancestral
@@ -88,9 +88,9 @@ in the tree will represent a speciation or duplication event.</p>
 </section>
 <section id="linking-phylogenetic-trees-with-multiple-sequence-alignments">
 <h2><a class="toc-backref" href="#id3" role="doc-backlink">Linking phylogenetic trees with multiple sequence alignments</a><a class="headerlink" href="#linking-phylogenetic-trees-with-multiple-sequence-alignments" title="Link to this heading">¶</a></h2>
-<p><code class="xref py py-class docutils literal notranslate"><span class="pre">PhyloTree</span></code> instances allow molecular phylogenies to be linked
+<p><a class="reference internal" href="../reference/reference_phylo.html#ete4.PhyloTree" title="ete4.PhyloTree"><code class="xref py py-class docutils literal notranslate"><span class="pre">PhyloTree</span></code></a> instances allow molecular phylogenies to be linked
 to Multiple Sequence Alignments (MSA). To associate an MSA with a
-phylogenetic tree you can use the <code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.link_to_alignment()</span></code>
+phylogenetic tree you can use the <a class="reference internal" href="../reference/reference_phylo.html#ete4.PhyloTree.link_to_alignment" title="ete4.PhyloTree.link_to_alignment"><code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.link_to_alignment()</span></code></a>
 method. You can use the <code class="xref py py-attr docutils literal notranslate"><span class="pre">alg_format</span></code> argument to specify its
 format (See <code class="xref py py-class docutils literal notranslate"><span class="pre">SeqGroup</span></code> documentation for available formats).</p>
 <p>Given that the <a class="reference external" href="https://en.wikipedia.org/wiki/FASTA_format">FASTA format</a> is not only applicable
@@ -126,7 +126,7 @@ sequences of different lengths with tree nodes.</p>
 </div>
 <p>The same could be done at the time the tree is being loaded, by using
 the <code class="xref py py-attr docutils literal notranslate"><span class="pre">alignment</span></code> and <code class="xref py py-attr docutils literal notranslate"><span class="pre">alg_format</span></code> arguments of
-<code class="xref py py-class docutils literal notranslate"><span class="pre">PhyloTree</span></code>:</p>
+<a class="reference internal" href="../reference/reference_phylo.html#ete4.PhyloTree" title="ete4.PhyloTree"><code class="xref py py-class docutils literal notranslate"><span class="pre">PhyloTree</span></code></a>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load a tree and link it to an alignment.</span>
 <span class="n">t</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="s1">&#39;(((seqA,seqB),seqC),seqD);&#39;</span><span class="p">,</span>
               <span class="n">alignment</span><span class="o">=</span><span class="n">fasta_txt</span><span class="p">,</span> <span class="n">alg_format</span><span class="o">=</span><span class="s1">&#39;fasta&#39;</span><span class="p">)</span>
@@ -269,12 +269,12 @@ and evolutionary events labeling.</p>
 </section>
 <section id="adding-taxonomic-information">
 <span id="taxonomic-info"></span><h2><a class="toc-backref" href="#id5" role="doc-backlink">Adding taxonomic information</a><a class="headerlink" href="#adding-taxonomic-information" title="Link to this heading">¶</a></h2>
-<p><code class="xref py py-class docutils literal notranslate"><span class="pre">PhyloTree</span></code> instances allow to deal with leaf names and species
+<p><a class="reference internal" href="../reference/reference_phylo.html#ete4.PhyloTree" title="ete4.PhyloTree"><code class="xref py py-class docutils literal notranslate"><span class="pre">PhyloTree</span></code></a> instances allow to deal with leaf names and species
 names separately. This is useful when working with molecular
 phylogenies, in which node names usually represent sequence
 identifiers.</p>
-<p>Species names will be stored in the <code class="xref py py-attr docutils literal notranslate"><span class="pre">PhyloTree.species</span></code>
-attribute of each leaf node. The method <code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.get_species()</span></code>
+<p>Species names will be stored in the <a class="reference internal" href="../reference/reference_phylo.html#ete4.PhyloTree.species" title="ete4.PhyloTree.species"><code class="xref py py-attr docutils literal notranslate"><span class="pre">PhyloTree.species</span></code></a>
+attribute of each leaf node. The method <a class="reference internal" href="../reference/reference_phylo.html#ete4.PhyloTree.get_species" title="ete4.PhyloTree.get_species"><code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.get_species()</span></code></a>
 can be used obtain the set of species names found under a given
 internal node (speciation or duplication event). Often, sequence names
 do contain species information as a part of the name, and ETE can
@@ -315,12 +315,12 @@ nodes:</p>
 <section id="automatic-custom-control-of-the-species-info">
 <h3><a class="toc-backref" href="#id7" role="doc-backlink">Automatic (custom) control of the species info</a><a class="headerlink" href="#automatic-custom-control-of-the-species-info" title="Link to this heading">¶</a></h3>
 <p>The default behavior can be changed by using the
-<code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.set_species_naming_function()</span></code> method or by using the
-<code class="xref py py-attr docutils literal notranslate"><span class="pre">sp_naming_function</span></code> argument of the <code class="xref py py-class docutils literal notranslate"><span class="pre">PhyloTree</span></code> class.</p>
+<a class="reference internal" href="../reference/reference_phylo.html#ete4.PhyloTree.set_species_naming_function" title="ete4.PhyloTree.set_species_naming_function"><code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.set_species_naming_function()</span></code></a> method or by using the
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">sp_naming_function</span></code> argument of the <a class="reference internal" href="../reference/reference_phylo.html#ete4.PhyloTree" title="ete4.PhyloTree"><code class="xref py py-class docutils literal notranslate"><span class="pre">PhyloTree</span></code></a> class.</p>
 <p>Note that, using the <code class="xref py py-attr docutils literal notranslate"><span class="pre">sp_naming_function</span></code> argument, the whole
 tree structure will be initialized to use the provided parsing
 function to obtain species name information.
-<code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.set_species_naming_function()</span></code> (present in all tree
+<a class="reference internal" href="../reference/reference_phylo.html#ete4.PhyloTree.set_species_naming_function" title="ete4.PhyloTree.set_species_naming_function"><code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.set_species_naming_function()</span></code></a> (present in all tree
 nodes) can be used to change the behavior in a previously loaded tree,
 or to set different parsing functions to different parts of the tree.</p>
 <p>Example:</p>
@@ -364,7 +364,7 @@ or to set different parsing functions to different parts of the tree.</p>
 <h3><a class="toc-backref" href="#id8" role="doc-backlink">Manual control of the species info</a><a class="headerlink" href="#manual-control-of-the-species-info" title="Link to this heading">¶</a></h3>
 <p>To disable the automatic generation of species names based on node
 names, a <code class="docutils literal notranslate"><span class="pre">None</span></code> value can be passed to the
-<code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.set_species_naming_function()</span></code> function. From then on,
+<a class="reference internal" href="../reference/reference_phylo.html#ete4.PhyloTree.set_species_naming_function" title="ete4.PhyloTree.set_species_naming_function"><code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.set_species_naming_function()</span></code></a> function. From then on,
 the species attribute will not be automatically updated based on the name
 of nodes and it could be controlled manually.</p>
 <p>Example:</p>
@@ -412,9 +412,9 @@ sequences can also be inferred.</p>
 <section id="species-overlap-so-algorithm">
 <span id="spoverlap"></span><h3><a class="toc-backref" href="#id10" role="doc-backlink">Species Overlap (SO) algorithm</a><a class="headerlink" href="#species-overlap-so-algorithm" title="Link to this heading">¶</a></h3>
 <p>In order to apply the SO algorithm, you can use the
-<code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.get_descendant_evol_events()</span></code> method (it will detect
+<a class="reference internal" href="../reference/reference_phylo.html#ete4.PhyloTree.get_descendant_evol_events" title="ete4.PhyloTree.get_descendant_evol_events"><code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.get_descendant_evol_events()</span></code></a> method (it will detect
 all evolutionary events under the current node) or the
-<code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.get_my_evol_events()</span></code> method (it will detect only the
+<a class="reference internal" href="../reference/reference_phylo.html#ete4.PhyloTree.get_my_evol_events" title="ete4.PhyloTree.get_my_evol_events"><code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.get_my_evol_events()</span></code></a> method (it will detect only the
 evolutionary events in which the current node, a leaf, is involved).</p>
 <p>By default the <strong>species overlap score (SOS) threshold</strong> is set to
 0.0, which means that a single species in common between two node
@@ -512,16 +512,16 @@ infer all the necessary gene losses that explain a given gene tree
 topology. Consequently, duplication and separation nodes will strictly
 follow the species tree topology.</p>
 <p>To perform a tree reconciliation analysis over a given node in a
-molecular phylogeny you can use the <code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.reconcile()</span></code>
-method, which requires a species <code class="xref py py-class docutils literal notranslate"><span class="pre">PhyloTree</span></code> as its first
+molecular phylogeny you can use the <a class="reference internal" href="../reference/reference_phylo.html#ete4.PhyloTree.reconcile" title="ete4.PhyloTree.reconcile"><code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.reconcile()</span></code></a>
+method, which requires a species <a class="reference internal" href="../reference/reference_phylo.html#ete4.PhyloTree" title="ete4.PhyloTree"><code class="xref py py-class docutils literal notranslate"><span class="pre">PhyloTree</span></code></a> as its first
 argument. Leaf node names in the the species are expected to be the
 same species codes in the gene tree (see <a class="reference internal" href="#taxonomic-info">taxonomic_info</a>). All
 species codes present in the gene tree should appear in the species
 tree.</p>
-<p>As a result, the <code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.reconcile()</span></code> method will label the
+<p>As a result, the <a class="reference internal" href="../reference/reference_phylo.html#ete4.PhyloTree.reconcile" title="ete4.PhyloTree.reconcile"><code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.reconcile()</span></code></a> method will label the
 original gene tree nodes as duplication or speciation, will return the
 list of inferred events, and will return a new <strong>reconcilied tree</strong>
-(<code class="xref py py-class docutils literal notranslate"><span class="pre">PhyloTree</span></code> instance), in which inferred gene losses are
+(<a class="reference internal" href="../reference/reference_phylo.html#ete4.PhyloTree" title="ete4.PhyloTree"><code class="xref py py-class docutils literal notranslate"><span class="pre">PhyloTree</span></code></a> instance), in which inferred gene losses are
 present and labeled.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">PhyloTree</span>
 
@@ -614,7 +614,7 @@ label each tree node as a duplication or speciation event. Thus, the
 of the following states: <code class="docutils literal notranslate"><span class="pre">D</span></code> (Duplication), <code class="docutils literal notranslate"><span class="pre">S</span></code> (Speciation) or
 <code class="docutils literal notranslate"><span class="pre">L</span></code> gene loss.</p>
 <p>Additionally, a list of all the detected events is returned. Each
-event is a python object of type <code class="xref py py-class docutils literal notranslate"><span class="pre">phylo.EvolEvent</span></code>, containing
+event is a python object of type <a class="reference internal" href="../reference/reference_phylo.html#ete4.phylo.EvolEvent" title="ete4.phylo.EvolEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">phylo.EvolEvent</span></code></a>, containing
 some basic information about each event (<code class="xref py py-attr docutils literal notranslate"><span class="pre">etype</span></code>,
 <code class="xref py py-attr docutils literal notranslate"><span class="pre">in_seqs</span></code>, <code class="xref py py-attr docutils literal notranslate"><span class="pre">out_seqs</span></code>, <code class="xref py py-attr docutils literal notranslate"><span class="pre">node</span></code>).</p>
 <p>If an event represents a duplication, <code class="docutils literal notranslate"><span class="pre">in_seqs</span></code> <em>are all paralogous</em>
@@ -666,7 +666,7 @@ gradient of species ages as a dictionary:</p>
 </pre></div>
 </div>
 <p>Once done, ETE can check the relative age of any tree node. The
-<code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.get_age()</span></code> method can be used to that purpose.</p>
+<a class="reference internal" href="../reference/reference_phylo.html#ete4.PhyloTree.get_age" title="ete4.PhyloTree.get_age"><code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.get_age()</span></code></a> method can be used to that purpose.</p>
 <p>For example, let’s consider the following gene tree:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>                         ╭╴humanA
                      ╭╴⊗╶┤
@@ -777,8 +777,8 @@ phylogenetic trees. Since tree nodes contain relative age information
 (based on the species code autodetection), the same relative age
 dictionaries can be used to detect the farthest and oldest node in a
 tree to given sequences.</p>
-<p><code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.get_farthest_oldest_node()</span></code> and
-<code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.get_farthest_oldest_leaf()</span></code> can be used for that
+<p><a class="reference internal" href="../reference/reference_phylo.html#ete4.PhyloTree.get_farthest_oldest_node" title="ete4.PhyloTree.get_farthest_oldest_node"><code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.get_farthest_oldest_node()</span></code></a> and
+<a class="reference internal" href="../reference/reference_phylo.html#ete4.PhyloTree.get_farthest_oldest_leaf" title="ete4.PhyloTree.get_farthest_oldest_leaf"><code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.get_farthest_oldest_leaf()</span></code></a> can be used for that
 purpose.</p>
 </section>
 <section id="working-with-duplicated-gene-families">
@@ -795,7 +795,7 @@ and therefore most tree comparison methods are rendered useless.</p>
 <p>Although TreeKO is available as a standalone package, it uses ETE to
 generate all possible species tree topologies within a duplicated gene
 family tree.</p>
-<p>Thus, the ETE method <code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.get_speciation_trees()</span></code> is
+<p>Thus, the ETE method <a class="reference internal" href="../reference/reference_phylo.html#ete4.PhyloTree.get_speciation_trees" title="ete4.PhyloTree.get_speciation_trees"><code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.get_speciation_trees()</span></code></a> is
 expected to provide the core functionality required to perform a
 TreeKO analysis. It returns a list of all possible species trees
 observed after combining the different non-duplicated subparts under a
@@ -886,7 +886,7 @@ be processed or dumped into a file.</p>
 <span id="split-by-dup"></span><h3><a class="toc-backref" href="#id18" role="doc-backlink">Splitting gene trees by duplication events</a><a class="headerlink" href="#splitting-gene-trees-by-duplication-events" title="Link to this heading">¶</a></h3>
 <p>A much simpler approach to separate duplicates within the same gene
 family tree is to split the topology by their duplication nodes. For
-this, the method <code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.split_by_dups()</span></code> is provided.</p>
+this, the method <a class="reference internal" href="../reference/reference_phylo.html#ete4.PhyloTree.split_by_dups" title="ete4.PhyloTree.split_by_dups"><code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.split_by_dups()</span></code></a> is provided.</p>
 <p>Example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">PhyloTree</span>
 
@@ -938,7 +938,7 @@ this, the method <code class="xref py py-func docutils literal notranslate"><spa
 </section>
 <section id="collapse-species-specific-duplications">
 <span id="collapse-expansions"></span><h3><a class="toc-backref" href="#id19" role="doc-backlink">Collapse species specific duplications</a><a class="headerlink" href="#collapse-species-specific-duplications" title="Link to this heading">¶</a></h3>
-<p>The method <code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.collapse_lineage_specific_expansions()</span></code>
+<p>The method <a class="reference internal" href="../reference/reference_phylo.html#ete4.PhyloTree.collapse_lineage_specific_expansions" title="ete4.PhyloTree.collapse_lineage_specific_expansions"><code class="xref py py-func docutils literal notranslate"><span class="pre">PhyloTree.collapse_lineage_specific_expansions()</span></code></a>
 returns a pruned version of a tree, where nodes representing lineage
 specific expansions are converted into a single leaf node.</p>
 <p>From the previous examples, the lineage specific duplication of

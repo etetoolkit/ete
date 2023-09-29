@@ -1,3 +1,5 @@
+.. currentmodule:: ete4
+
 Phylogenetic trees
 ==================
 
