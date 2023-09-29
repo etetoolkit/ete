@@ -265,8 +265,6 @@ You can find a comparison of both methods in
 `Marcet-Houben and Gabaldon (2009) <http://www.plosone.org/article/info:doi%2F10.1371%2Fjournal.pone.0004357>`_.
 
 
-.. _spoverlap:
-
 Species Overlap (SO) algorithm
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
