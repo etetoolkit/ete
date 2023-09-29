@@ -654,9 +654,11 @@ def generate_table(t):
 
             n_up_name = n.up.name if n.up else ""
 
-            print('\t'.join([n.name, n_up_name, n.props.get('taxname'),
+            row = '\t'.join([n.name, n_up_name, n.props.get('taxname'),
                              n.props.get("common_name", ''), n.props.get("rank"),
-                             ','.join(track)]), file=out)
+                             ','.join(track)])
+
+            print(row, file=out)
 
 def update_db(dbfile, targz_file=None):
     basepath = os.path.split(dbfile)[0]
