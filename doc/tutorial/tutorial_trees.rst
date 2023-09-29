@@ -1,3 +1,5 @@
+.. currentmodule:: ete4
+
 Working with the Tree structure
 ===============================
 
@@ -317,12 +319,12 @@ Available methods are self explanatory:
 
 .. autosummary::
 
-   ete4.Tree.descendants
-   ete4.Tree.ancestors
-   ete4.Tree.leaves
-   ete4.Tree.leaf_names
-   ete4.Tree.get_children
-   ete4.Tree.get_sisters
+   Tree.descendants
+   Tree.ancestors
+   Tree.leaves
+   Tree.leaf_names
+   Tree.get_children
+   Tree.get_sisters
 
 
 Traversing (browsing) trees
@@ -352,9 +354,9 @@ include the root node in the iteration.
 
 .. autosummary::
 
-   ete4.Tree.traverse
-   ete4.Tree.descendants
-   ete4.Tree.leaves
+   Tree.traverse
+   Tree.descendants
+   Tree.leaves
 
 where :attr:`strategy` can take the values "preorder", "postorder", or
 "levelorder"::
@@ -1071,10 +1073,10 @@ manipulate the topology of a tree:
 
 .. autosummary::
 
-   ete4.Tree.populate
-   ete4.Tree.add_child
-   ete4.Tree.delete
-   ete4.Tree.detach
+   Tree.populate
+   Tree.add_child
+   Tree.delete
+   Tree.detach
 
 As an example of how to use them::
 
