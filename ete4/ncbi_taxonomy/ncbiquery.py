@@ -642,22 +642,21 @@ def load_ncbi_tree_from_dump(tar):
     return t, synonyms
 
 def generate_table(t):
-    OUT = open("taxa.tab", "w")
-    for j, n in enumerate(t.traverse()):
-        if j % 1000 == 0:
-            print("\r",j,"generating entries...", end=' ')
-        temp_node = n
-        track = []
-        while temp_node:
-            track.append(temp_node.name)
-            temp_node = temp_node.up
+    with open("taxa.tab", "w") as out:
+        for j, n in enumerate(t.traverse()):
+            if j % 1000 == 0:
+                print("\r",j,"generating entries...", end=' ')
+            temp_node = n
+            track = []
+            while temp_node:
+                track.append(temp_node.name)
+                temp_node = temp_node.up
 
-        n_up_name = n.up.name if n.up else ""
+            n_up_name = n.up.name if n.up else ""
 
-        print('\t'.join([n.name, n_up_name, n.props.get('taxname'),
-                         n.props.get("common_name", ''), n.props.get("rank"),
-                         ','.join(track)]), file=OUT)
-    OUT.close()
+            print('\t'.join([n.name, n_up_name, n.props.get('taxname'),
+                             n.props.get("common_name", ''), n.props.get("rank"),
+                             ','.join(track)]), file=out)
 
 def update_db(dbfile, targz_file=None):
     basepath = os.path.split(dbfile)[0]
