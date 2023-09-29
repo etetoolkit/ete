@@ -652,13 +652,13 @@ def generate_table(t):
             track.append(temp_node.name)
             temp_node = temp_node.up
         if n.up:
-            print('\t'.join(n.name, n.up.name, n.props.get('taxname'),
-                            n.props.get("common_name", ''), n.props.get("rank"),
-                            ','.join(track)), file=OUT)
+            print('\t'.join([n.name, n.up.name, n.props.get('taxname'),
+                             n.props.get("common_name", ''), n.props.get("rank"),
+                             ','.join(track)]), file=OUT)
         else:
-            print('\t'.join(n.name, "", n.props.get('taxname'),
-                            n.props.get("common_name", ''), n.props.get("rank"),
-                            ','.join(track)), file=OUT)
+            print('\t'.join([n.name, "", n.props.get('taxname'),
+                             n.props.get("common_name", ''), n.props.get("rank"),
+                             ','.join(track)]), file=OUT)
     OUT.close()
 
 def update_db(dbfile, targz_file=None):
