@@ -1,5 +1,7 @@
-Treeview (graphics)
-===================
+.. currentmodule:: ete4
+
+Treeview (qt graphics)
+======================
 
 .. contents::
 
@@ -7,65 +9,65 @@ Treeview (graphics)
 TreeStyle
 ---------
 
-.. autoclass:: ete4.TreeStyle
+.. autoclass:: TreeStyle
 
-.. autoclass:: ete4.FaceContainer
+.. autoclass:: FaceContainer
    :members:
 
 
 NodeStyle
 ---------
 
-.. autoclass:: ete4.NodeStyle
+.. autoclass:: NodeStyle
    :members:
 
 
 Faces
 -----
 
-.. autofunction:: ete4.add_face_to_node
+.. autofunction:: add_face_to_node
 
-.. autoclass:: ete4.Face
+.. autoclass:: Face
    :members:
 
-.. autoclass:: ete4.TextFace
+.. autoclass:: TextFace
    :members:
 
-.. autoclass:: ete4.AttrFace
+.. autoclass:: AttrFace
    :members:
 
-.. autoclass:: ete4.ImgFace
+.. autoclass:: ImgFace
    :members:
 
-.. autoclass:: ete4.CircleFace
+.. autoclass:: CircleFace
    :members:
 
-.. autoclass:: ete4.RectFace
+.. autoclass:: RectFace
    :members:
 
-.. autoclass:: ete4.StackedBarFace
+.. autoclass:: StackedBarFace
    :members:
 
-.. autoclass:: ete4.SequenceFace
+.. autoclass:: SequenceFace
    :members:
 
-.. autoclass:: ete4.SeqMotifFace
+.. autoclass:: SeqMotifFace
    :members:
 
-.. autoclass:: ete4.BarChartFace
+.. autoclass:: BarChartFace
    :members:
 
-.. autoclass:: ete4.PieChartFace
+.. autoclass:: PieChartFace
    :members:
 
-.. autoclass:: ete4.ProfileFace
+.. autoclass:: ProfileFace
    :members:
 
-.. autoclass:: ete4.TreeFace
+.. autoclass:: TreeFace
    :members:
 
-.. autoclass:: ete4.StaticItemFace
+.. autoclass:: StaticItemFace
    :members:
 
-.. autoclass:: ete4.DynamicItemFace
+.. autoclass:: DynamicItemFace
    :members:
