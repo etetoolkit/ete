@@ -1,7 +1,7 @@
 import unittest
 
 from ete4 import SeqGroup
-from .datasets import *
+from ..datasets import *
 
 
 class Test_Coretype_SeqGroup(unittest.TestCase):
