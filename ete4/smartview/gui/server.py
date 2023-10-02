@@ -542,6 +542,28 @@ def callback(tree_id):
     except AssertionError as e:
         abort(400, f'cannot remove {node_id}: {e}')
 
+@put('/trees/<tree_id>/rename')
+def callback(tree_id):
+    try:
+        tree, subtree = touch_and_get(tree_id)
+        node_id, name = req_json()
+        tree.tree[subtree][node_id].name = name
+        return {'message': 'ok'}
+    except AssertionError as e:
+        abort(400, f'cannot rename {node_id}: {e}')
+
+@put('/trees/<tree_id>/edit')
+def callback(tree_id):
+    try:
+        tree, subtree = touch_and_get(tree_id)
+        node_id, content = req_json()
+        node = tree.tree[subtree][node_id]
+        node.props = newick.get_props(content, is_leaf=True)
+        gdn.update_sizes_all(tree.tree)
+        return {'message': 'ok'}
+    except (AssertionError, newick.NewickError) as e:
+        abort(400, f'cannot edit {node_id}: {e}')
+
 @put('/trees/<tree_id>/update_props')
 def callback(tree_id):
     tree, subtree = touch_and_get(tree_id)

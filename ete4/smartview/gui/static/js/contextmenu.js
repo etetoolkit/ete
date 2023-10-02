@@ -268,6 +268,32 @@ async function add_node_modifying_options(properties, nodestyle, node_id) {
         add_json_editor(nid, nodestyle, "update_nodestyle", false, "style", html)},
        "Edit the style of this node. Changes the tree structure.",
        "edit", false);
+    add_button("Rename node", async () => {
+        const result = await Swal.fire({
+            input: "text",
+            inputPlaceholder: "Enter new name",
+            preConfirm: async name => {
+                return await tree_command("rename", [node_id, name]);
+            },
+        });
+        if (result.isConfirmed)
+            update();
+    }, "Change the name of this node. Changes the tree structure.",
+       "edit", true);
+    add_button("Edit node", async () => {
+        const result = await Swal.fire({
+            input: "text",
+            inputPlaceholder: "Enter content (in newick format)",
+            preConfirm: async content => {
+                return await tree_command("edit", [node_id, content]);
+            },
+        });
+        if (result.isConfirmed) {
+            draw_minimap();
+            update();
+        }
+    }, "Edit the content of this node. Changes the tree structure.",
+       "edit", true);
     if (!view.subtree) {
         add_button("Root on this node", async () => {
             await tree_command("root_at", node_id);
