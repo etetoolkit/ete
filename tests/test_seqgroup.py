@@ -1,101 +1,107 @@
-import unittest
+"""
+Tests of core functionality of Alignmnets objects.
+"""
+
+from tempfile import NamedTemporaryFile
 
 from ete4 import SeqGroup
-from .datasets import *
+from . import datasets as ds
 
 
-class Test_Coretype_SeqGroup(unittest.TestCase):
-    """Tests of core functionality of Alignmnets objects."""
+def test_fasta_parser():
+    """Test fasta read an write."""
+    # FASTA IO.
+    SEQS = SeqGroup(ds.fasta_example)  # reading from string
 
-    def test_fasta_parser(self):
-        """Test fasta read an write."""
-        # FASTA IO
-        with open("/tmp/ete_test_fasta.txt", "w") as fp:
-            fp.write(fasta_example)
+    with NamedTemporaryFile('wt') as f_fasta:
+        f_fasta.write(ds.fasta_example)
+        f_fasta.flush()
 
-        # Test reading from file and from string
-        SEQS = SeqGroup(fasta_example)
-        SEQS2 = SeqGroup("/tmp/ete_test_fasta.txt")
+        SEQS2 = SeqGroup(f_fasta.name)  # reading from file
 
-        # Compare the result is the same
-        self.assertEqual(SEQS.write(), SEQS2.write())
+    # Assert the results are the same.
+    assert SEQS.write() == SEQS2.write() == ds.fasta_example_output
 
-        # Test writing into file
-        SEQS.write(format="fasta", outfile="/tmp/ete_fastaIO")
-        self.assertEqual(SEQS.write(), fasta_example_output)
+    # Test writing into file.
+    with NamedTemporaryFile('wt') as f_fastaio:
+        SEQS.write(format="fasta", outfile=f_fastaio.name)
+        assert open(f_fastaio.name).read() == ds.fasta_example_output
 
-        # Test SeqGroup obj integrity
-        self.assertEqual(SEQS.get_seq("Ago0000003"), Ago0000003)
-        self.assertEqual(SEQS2.get_seq("Ago0000003"), Ago0000003)
-        self.assertEqual(len(SEQS), len(SEQS.id2seq))
-        self.assertEqual("Ago0000003" in SEQS, True)
-        self.assertEqual("Ago" in SEQS, False)
-        self.assertEqual(SEQS.get_entries(), [e for e in SEQS])
+    # Test SeqGroup obj integrity
+    assert SEQS.get_seq("Ago0000003") == ds.Ago0000003
+    assert SEQS2.get_seq("Ago0000003") == ds.Ago0000003
+    assert len(SEQS) == len(SEQS.id2seq)
+    assert "Ago0000003" in SEQS
+    assert "Ago" not in SEQS
+    assert SEQS.get_entries() == [e for e in SEQS]
 
-        # Check that the default  write format is FASTA
-        self.assertEqual(SEQS.__str__(), SEQS.write(format="fasta"))
-
-
-    def test_phylip_parser(self):
-        """Test phylip read and write."""
-        # PHYLIP INTERLEAVED
-        with open("/tmp/ete_test_iphylip.txt", "w") as fp:
-            fp.write(phylip_interleaved)
-
-        SEQS = SeqGroup("/tmp/ete_test_iphylip.txt", format="iphylip")
-        SEQS2 = SeqGroup(phylip_interleaved, format="iphylip")
-        self.assertEqual(SEQS.write(), SEQS2.write())
-        SEQS.write(format="iphylip",  outfile="/tmp/ete_write_file")
-        self.assertEqual(SEQS.write(format="iphylip"), phylip_interleaved)
-
-        # Test SeqGroup obj integrity
-        self.assertEqual(SEQS.get_seq("CYS1_DICDI"), CYS1_DICDI)
-        self.assertEqual(SEQS2.get_seq("CYS1_DICDI"), CYS1_DICDI)
-        self.assertEqual(len(SEQS), len(SEQS.id2seq))
-        self.assertEqual("CYS1_DICDI" in SEQS, True)
-        self.assertEqual(SEQS.get_entries(), [e for e in SEQS])
-
-        # PHYLIP SEQUENCIAL FORMAT
-        with open("/tmp/ete_test_phylip.txt", "w") as fp:
-            fp.write(phylip_sequencial)
-
-        SEQS = SeqGroup("/tmp/ete_test_phylip.txt", format="phylip")
-        SEQS2 = SeqGroup(phylip_sequencial, format="phylip")
-        self.assertEqual(SEQS.write(), SEQS2.write())
-        SEQS.write(format="phylip",  outfile="/tmp/ete_write_file")
-        self.assertEqual(SEQS.write(format="phylip"), phylip_sequencial)
-
-        # Test SeqGroup obj integrity
-        self.assertEqual(SEQS.get_seq("CYS1_DICDI"), CYS1_DICDI)
-        self.assertEqual(SEQS2.get_seq("CYS1_DICDI"), CYS1_DICDI)
-        self.assertEqual(len(SEQS), len(SEQS.id2seq))
-        self.assertEqual("CYS1_DICDI" in SEQS, True)
-        self.assertEqual("CYS1" in SEQS, False)
-        self.assertEqual(SEQS.get_entries(), [e for e in SEQS])
-
-        # test write speed
-        #SEQS = SeqGroup()
-        #for i in xrange(25):
-        #    SEQS.set_seq("seq%s" %i, "A"*500000)
-        #SEQS.write(outfile="/tmp/iphylip_write_test.phy", format="iphylip")
-        #SEQS.write(outfile="/tmp/iphylip_write_test.phy", format="phylip")
-
-    def test_alg_from_scratch(self):
-
-        alg = SeqGroup(phylip_sequencial, format="phylip")
-
-        random_seq = alg.get_seq("CATH_HUMAN")
-
-        # Add a new sequence to the alg
-        alg.set_seq("randomseq", random_seq.replace("A","X"))
-
-        self.assertEqual(alg.get_seq("randomseq"), random_seq.replace("A","X"))
-
-        # Exports the alignment to different formats
-        alg.write(format ="fasta")
-        alg.write(format ="iphylip")
-        alg.write(format ="phylip")
+    # Check that the default write format is FASTA.
+    assert str(SEQS) == SEQS.write(format="fasta")
 
 
-if __name__ == '__main__':
-    unittest.main()
+def test_phylip_parser():
+    """Test phylip read and write."""
+    # PHYLIP INTERLEAVED.
+    SEQS2 = SeqGroup(ds.phylip_interleaved, format="iphylip")  # from string
+
+    with NamedTemporaryFile('wt') as f_iphylip:
+        f_iphylip.write(ds.phylip_interleaved)
+        f_iphylip.flush()
+
+        SEQS = SeqGroup(f_iphylip.name, format="iphylip")  # from file
+
+    assert SEQS.write() == SEQS2.write()
+
+    # Test writing into file.
+    with NamedTemporaryFile('wt') as f_iphylipio:
+        SEQS.write(format="iphylip",  outfile=f_iphylipio.name)
+        assert open(f_iphylipio.name).read() == ds.phylip_interleaved
+
+    assert SEQS.write(format="iphylip") == ds.phylip_interleaved
+
+    # Test SeqGroup obj integrity.
+    assert SEQS.get_seq("CYS1_DICDI") == ds.CYS1_DICDI
+    assert SEQS2.get_seq("CYS1_DICDI") == ds.CYS1_DICDI
+    assert len(SEQS) == len(SEQS.id2seq)
+    assert "CYS1_DICDI" in SEQS
+    assert SEQS.get_entries() == [e for e in SEQS]
+
+    # PHYLIP SEQUENCIAL FORMAT.
+    SEQS2 = SeqGroup(ds.phylip_sequencial, format="phylip")
+
+    with NamedTemporaryFile('wt') as f_sphylip:
+        f_sphylip.write(ds.phylip_sequencial)
+        f_sphylip.flush()
+
+        SEQS = SeqGroup(f_sphylip.name, format="phylip")  # from file
+
+    assert SEQS.write() == SEQS2.write()
+
+    # Test writing into file.
+    with NamedTemporaryFile('wt') as f_sphylipio:
+        SEQS.write(format="phylip",  outfile=f_sphylipio.name)
+        assert open(f_sphylipio.name).read() == ds.phylip_sequencial
+
+    # Test SeqGroup obj integrity
+    assert SEQS.get_seq("CYS1_DICDI") == ds.CYS1_DICDI
+    assert SEQS2.get_seq("CYS1_DICDI") == ds.CYS1_DICDI
+    assert len(SEQS) == len(SEQS.id2seq)
+    assert "CYS1_DICDI" in SEQS
+    assert "CYS1" not in SEQS
+    assert SEQS.get_entries() == [e for e in SEQS]
+
+
+def test_alg_from_scratch():
+    alg = SeqGroup(ds.phylip_sequencial, format="phylip")
+
+    random_seq = alg.get_seq("CATH_HUMAN")
+
+    # Add a new sequence to the alg
+    alg.set_seq("randomseq", random_seq.replace("A", "X"))
+
+    assert alg.get_seq("randomseq") == random_seq.replace("A", "X")
+
+    # Exports the alignment to different formats
+    assert alg.write(format="fasta").startswith('>CYS1_DICDI\n-----MKVILL')
+    assert alg.write(format="iphylip").startswith(' 4 384\nCYS1_DICDI   -----MKVIL L')
+    assert alg.write(format="phylip").startswith(' 4 384\nCYS1_DICDI   -----MKVILL')
