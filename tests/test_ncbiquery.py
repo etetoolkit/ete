@@ -1,11 +1,10 @@
 import os
 import unittest
 
-from ete4 import PhyloTree, NCBITaxa
+from ete4 import PhyloTree, NCBITaxa, ETE_DATA_HOME
 from ete4.ncbi_taxonomy import ncbiquery
 
-DATABASE_PATH = "test_tmp/testdb.sqlite"
-
+DATABASE_PATH = ETE_DATA_HOME + '/tests/test_ncbiquery.taxa.sqlite'
 
 class Test_ncbiquery(unittest.TestCase):
 

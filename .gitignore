@@ -15,11 +15,9 @@ dist/
 doc/_build/
 
 # Test files
-tests.log
 test.png
 test.pdf
 test.svg
-test_tmp/
 
 # MacOSX
 .DS_Store
