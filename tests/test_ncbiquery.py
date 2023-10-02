@@ -51,24 +51,16 @@ class Test_ncbiquery(unittest.TestCase):
     self.assertEqual(name2id['homo sapiens'], [9606])
 
     name2id = ncbi.get_name_translator(['Bacteria'])
-    #self.assertEqual(set(name2id['Bacteria']), set([2, 629395]))
-    # Recent versions of NCBI seem to have removed the name Bacteria from 629395
-    self.assertEqual(set(name2id['Bacteria']), set([2]))
+    self.assertEqual(set(name2id['Bacteria']), {2})
 
     out = ncbi.get_descendant_taxa("9605", intermediate_nodes=True)
-
-    print(out)
-    #Out[9]: [9606, 63221, 741158, 2665952, 2665953, 1425170]
-    # New Taxonomies of Homo in NCBI, {2665952: 'environmental samples', 2665953: 'Homo sapiens environmental sample'}
-    self.assertEqual(set(out), set([9606, 63221, 741158, 1425170, 2665952, 2665953, 2813598, 2813599]))
+    self.assertEqual(set(out), {9606, 63221, 741158, 1425170, 2665952, 2665953, 2813598, 2813599})
 
     out = ncbi.get_descendant_taxa("9605", intermediate_nodes=False)
-    #Out[10]: [63221, 741158, 2665953, 1425170]
-    self.assertEqual(set(out), set([63221, 741158, 2665953, 1425170, 2813599]))
+    self.assertEqual(set(out), {63221, 741158, 2665953, 1425170, 2813599})
 
     out = ncbi.get_descendant_taxa("9596", intermediate_nodes=False, rank_limit="species")
-    #Out[11]: [9597, 9598]
-    self.assertEqual(set(out), set([9597, 9598]))
+    self.assertEqual(set(out), {9597, 9598})
 
   def test_get_topology(self):
     ncbi = NCBITaxa(dbfile=DATABASE_PATH)
@@ -102,9 +94,9 @@ class Test_ncbiquery(unittest.TestCase):
 
   def test_merged_id(self):
     ncbi = NCBITaxa(dbfile=DATABASE_PATH)
-    t1 = ncbi.get_lineage(245018)
+    t1 = ncbi.get_lineage(649756)
     self.assertEqual(t1, [1, 131567, 2, 1783272, 1239, 186801, 186802, 186803, 207244, 649756])
-    t2 = ncbi.get_lineage("245018")
+    t2 = ncbi.get_lineage("649756")
     self.assertEqual(t2, [1, 131567, 2, 1783272, 1239, 186801, 186802, 186803, 207244, 649756])
 
 if __name__ == '__main__':
