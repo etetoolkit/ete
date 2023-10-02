@@ -762,7 +762,7 @@ def update_db(dbfile, targz_file=None):
     try:
         tar = tarfile.open(targz_file, 'r')
     except:
-        raise  ValueError("Please provide taxa dump tar.gz file")
+        raise ValueError("Please provide taxa dump tar.gz file")
 
     t, synonyms = load_gtdb_tree_from_dump(tar)
 
@@ -774,23 +774,12 @@ def update_db(dbfile, targz_file=None):
     print("Updating database: %s ..." %dbfile)
     generate_table(t)
 
-    # with open("syn.tab", "w") as SYN:
-    #     SYN.write('\n'.join(["%s\t%s" %(v[0],v[1]) for v in synonyms]))
+    upload_data(dbfile)
 
-    # with open("merged.tab", "w") as merged:
-    #     for line in tar.extractfile("merged.dmp"):
-    #         line = str(line.decode())
-    #         out_line = '\t'.join([_f.strip() for _f in line.split('|')[:2]])
-    #         merged.write(out_line+'\n')
-    try:
-        upload_data(dbfile)
-    except:
-        raise
-    else:
-        os.system("rm taxa.tab")
-        # remove only downloaded taxdump file
-        if not targz_file:
-            os.system("rm gtdbtaxdump.tar.gz")
+    os.system("rm taxa.tab")
+    # remove only downloaded taxdump file
+    if not targz_file:
+        os.system("rm gtdbtaxdump.tar.gz")
 
 def upload_data(dbfile):
     print()
