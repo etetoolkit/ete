@@ -45,6 +45,12 @@ class NCBITaxa(object):
 
     def __init__(self, dbfile=None, taxdump_file=None,
                  memory=False, update=True):
+        """Open and keep a connection to the NCBI taxonomy database.
+
+        If it is not present in the system, it will download the
+        database from the NCBI site first, and convert it to ete's
+        format.
+        """
         self.dbfile = dbfile or DEFAULT_TAXADB
 
         if taxdump_file:
