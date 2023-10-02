@@ -85,6 +85,12 @@
 <a class="viewcode-back" href="../../../reference/reference_ncbi.html#ete4.ncbi_taxonomy.ncbiquery.NCBITaxa.__init__">[docs]</a>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dbfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">taxdump_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">memory</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Open and keep a connection to the NCBI taxonomy database.</span>
+
+<span class="sd">        If it is not present in the system, it will download the</span>
+<span class="sd">        database from the NCBI site first, and convert it to ete&#39;s</span>
+<span class="sd">        format.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dbfile</span> <span class="o">=</span> <span class="n">dbfile</span> <span class="ow">or</span> <span class="n">DEFAULT_TAXADB</span>
 
         <span class="k">if</span> <span class="n">taxdump_file</span><span class="p">:</span>
