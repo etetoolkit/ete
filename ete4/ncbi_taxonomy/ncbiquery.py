@@ -82,9 +82,9 @@ class NCBITaxa(object):
         """Update the ncbi taxonomy database.
 
         It does it by downloading and parsing the latest
-        taxdump.tar.gz file from the NCBI FTP site (via HTTP).
+        taxdump.tar.gz file from the NCBI site.
 
-        :param None taxdump_file: Alternative location of the
+        :param taxdump_file: Alternative location of the
             taxdump.tax.gz file.
         """
         update_db(self.dbfile, taxdump_file)
@@ -585,7 +585,6 @@ class NCBITaxa(object):
 
 def load_ncbi_tree_from_dump(tar):
     from .. import Tree
-    # Download: http://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz
     parent2child = {}
     name2node = {}
     node2taxname = {}
