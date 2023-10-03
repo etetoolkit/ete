@@ -27,7 +27,7 @@ def init_scene(t, layout, ts):
     if not _QApp:
         _QApp = QApplication(["ETE"])
 
-    scene  = _TreeScene()
+    scene = _TreeScene()
 
     return scene, ts
 

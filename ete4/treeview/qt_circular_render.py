@@ -199,7 +199,7 @@ def render_circular(root_node, n2i, rot_step):
 
             # If applies, it sets the length of the extra branch length
             if item.extra_branch_line:
-                xtra =  item.extra_branch_line.line().dx()
+                xtra = item.extra_branch_line.line().dx()
                 if xtra > 0:
                     xtra = xoffset + xtra
                 else:
@@ -267,7 +267,7 @@ def get_effective_height(n, n2i, n2f):
     center = fullR.height()/2
     return max(up_h, down_h)*2
 
-#@tracktime
+
 def calculate_optimal_scale(root_node, n2i, rot_step, img):
     """ Note: Seems to be fast. 0.5s from a tree of 10.000 leaves"""
 
@@ -349,14 +349,5 @@ def calculate_optimal_scale(root_node, n2i, rot_step, img):
         n2i[root_node].nodeRegion.adjust(root_opening, 0, root_opening, 0)
         n2i[root_node].fullRegion.adjust(root_opening, 0, root_opening, 0)
         n2i[root_node].xoff = root_opening
-        #n2i[root_node].widths[0] += root_opening
 
-    #for node in visited_nodes:
-    #    item = n2i[node]
-    #    h = item.effective_height
-    #    a = n2sumdist[node] * best_scale + n2sumwidth.get(node)
-    #    b = h/2
-    #    item.radius = math.sqrt(a**2 + b**2)
-    #print "root opening", root_opening
-    #best_scale = max(best_scale, min_scale)
     return best_scale

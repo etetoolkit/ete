@@ -50,7 +50,7 @@ TREE_STYLE_CHECKER = {
 # _faces and faces are registered to allow deepcopy to work on nodes
 VALID_NODE_STYLE_KEYS = {i[0] for i in NODE_STYLE_DEFAULT} | {"_faces"}
 
-class _Border(object):
+class _Border:
     def __init__(self):
         self.width = None
         self.type = 0
@@ -73,15 +73,16 @@ class _Border(object):
         else:
             return None
 
-class _Background(object):
+class _Background:
     """
-    Set the background of the object
-
-    :param color: RGB color code or :data:`SVG_COLORS`
-
+    Background of the object.
     """
-    def __init__(self):
-        self.color = None
+
+    def __init__(self, color=None):
+        """
+        :param color: color code as RGB or from :data:`SVG_COLORS`.
+        """
+        self.color = color
 
     def apply(self, item):
         if self.color:
@@ -98,7 +99,7 @@ class _Background(object):
             return None
 
 
-class _ActionDelegator(object):
+class _ActionDelegator:
     """ Used to associate GUI Functions to nodes and faces """
 
     def get_delegate(self):
@@ -166,7 +167,7 @@ class NodeStyle(dict):
         super().__setitem__(i, v)
 
 
-class TreeStyle(object):
+class TreeStyle:
     """Image properties used to render a tree.
 
     **-- About tree design --**
@@ -445,7 +446,7 @@ class TreeStyle(object):
         else:
             raise ValueError("[%s] option is not supported" % attr)
 
-class _FaceAreas(object):
+class _FaceAreas:
     def __init__(self):
         for a in FACE_POSITIONS:
             setattr(self, a, FaceContainer())
