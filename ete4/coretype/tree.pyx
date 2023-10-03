@@ -2114,7 +2114,7 @@ cdef class Tree(object):
         :param column: An integer number starting from 0
         :param position: Position to place the face in the node. Posible
             values are: "branch-right", "branch-top", "branch-bottom", "float",
-            "aligned".
+            "float-behind", "aligned".
         """
         from ..treeview.main import _FaceAreas, FaceContainer, FACE_POSITIONS
 
