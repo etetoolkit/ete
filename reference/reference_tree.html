@@ -880,19 +880,20 @@ and returned.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.Tree.render">
 <span class="sig-name descname"><span class="pre">render</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'px'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dpi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">90</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.render" title="Link to this definition">¶</a></dt>
-<dd><p>Renders the node structure as an image.</p>
+<dd><p>Render the tree as an image.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Variables<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>file_name</strong> – path to the output image file. valid
-extensions are .SVG, .PDF, .PNG</p></li>
-<li><p><strong>layout</strong> – a layout function or a valid layout function name</p></li>
-<li><p><strong>tree_style</strong> – a <cite>TreeStyle</cite> instance containing the image
-properties</p></li>
-<li><p><strong>units</strong> (<em>px</em>) – “px”: pixels, “mm”: millimeters, “in”: inches</p></li>
-<li><p><strong>h</strong> (<em>None</em>) – height of the image in <code class="xref py py-attr docutils literal notranslate"><span class="pre">units</span></code></p></li>
-<li><p><strong>w</strong> (<em>None</em>) – width of the image in <code class="xref py py-attr docutils literal notranslate"><span class="pre">units</span></code></p></li>
-<li><p><strong>dpi</strong> (<em>90</em>) – dots per inches.</p></li>
+<li><p><strong>file_name</strong> – Name of the output image. Valid extensions
+are “svg”, “pdf”, and “png”.</p></li>
+<li><p><strong>layout</strong> – Layout function or layout function name to use.</p></li>
+<li><p><strong>tree_style</strong> – A <cite>TreeStyle</cite> instance containing the image
+properties.</p></li>
+<li><p><strong>units</strong> – Units for height (h) or width (w). They can be
+“px” for pixels, “mm” for millimeters, “in” for inches.</p></li>
+<li><p><strong>h</strong> – Height of the image in <code class="xref py py-attr docutils literal notranslate"><span class="pre">units</span></code>.</p></li>
+<li><p><strong>w</strong> – Width of the image in <code class="xref py py-attr docutils literal notranslate"><span class="pre">units</span></code>.</p></li>
+<li><p><strong>dpi</strong> – Resolution in dots per inch.</p></li>
 </ul>
 </dd>
 </dl>
