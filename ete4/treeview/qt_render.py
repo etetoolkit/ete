@@ -261,9 +261,17 @@ def render(root_node, img, hide_root=False):
     # Adjust content to rect or circular layout
     mainRect = parent.rect()
 
-    if mode == "c":
-        tree_radius = crender.render_circular(root_node, n2i, rot_step)
-        mainRect.adjust(-tree_radius, -tree_radius, tree_radius, tree_radius)
+    if mode == 'c':
+        tree_radius, min_y, max_y, min_x, max_x = crender.render_circular(root_node, n2i, rot_step, img.pack_leaves)
+
+        # If semicircle and cropping removes at least 25% of mainRect's area, crop
+        full_circle_area = (tree_radius * 2) ** 2
+        cropped_area = (max_x - min_x) * (max_y - min_y)
+
+        if arc_span < 359 and (cropped_area / full_circle_area) < 0.75:
+            mainRect.adjust(min_x, min_y, max_x, max_y)
+        else:
+            mainRect.adjust(-tree_radius, -tree_radius, tree_radius, tree_radius)
     else:
         iwidth = n2i[root_node].fullRegion.width()
         iheight = n2i[root_node].fullRegion.height()
@@ -644,6 +652,7 @@ def render_node_content(node, n2i, n2f, img):
         extra_line.setPen(pen)
     else:
         extra_line = None
+        item.extra_branch_line = extra_line
 
     # Attach branch-right faces to child
     fblock_r = n2f[node]["branch-right"]
