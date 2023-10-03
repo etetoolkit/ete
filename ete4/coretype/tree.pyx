@@ -1210,32 +1210,30 @@ cdef class Tree(object):
                          tree_style=tree_style, win_name=name)
 
     def render(self, file_name, layout=None, w=None, h=None,
-               tree_style=None, units="px", dpi=90):
-        """
-        Renders the node structure as an image.
+               tree_style=None, units='px', dpi=90):
+        """Render the tree as an image.
 
-        :var file_name: path to the output image file. valid
-          extensions are .SVG, .PDF, .PNG
-
-        :var layout: a layout function or a valid layout function name
-
-        :var tree_style: a `TreeStyle` instance containing the image
-          properties
-
-        :var px units: "px": pixels, "mm": millimeters, "in": inches
-        :var None h: height of the image in :attr:`units`
-        :var None w: width of the image in :attr:`units`
-        :var 90 dpi: dots per inches.
+        :param file_name: Name of the output image. Valid extensions
+            are "svg", "pdf", and "png".
+        :param layout: Layout function or layout function name to use.
+        :param tree_style: A `TreeStyle` instance containing the image
+            properties.
+        :param units: Units for height (h) or width (w). They can be
+            "px" for pixels, "mm" for millimeters, "in" for inches.
+        :param h: Height of the image in :attr:`units`.
+        :param w: Width of the image in :attr:`units`.
+        :param dpi: Resolution in dots per inch.
         """
         from ..treeview import drawer
-        if file_name.startswith('%%return'):
+
+        if file_name.startswith('%%return'):  # generate img_map (for webplugin)
             return drawer.get_img(self, w=w, h=h,
                                   layout=layout, tree_style=tree_style,
                                   units=units, dpi=dpi, return_format=file_name)
         else:
-            return drawer.render_tree(self, file_name, w=w, h=h,
-                                    layout=layout, tree_style=tree_style,
-                                      units=units, dpi=dpi)
+            drawer.render_tree(self, file_name, w=w, h=h,
+                               layout=layout, tree_style=tree_style,
+                               units=units, dpi=dpi)
 
     def explore(self, name=None, layouts=[], show_leaf_name=True,
                 show_branch_length=True, show_branch_support=True,
