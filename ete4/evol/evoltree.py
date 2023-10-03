@@ -305,41 +305,34 @@ class EvolNode(PhyloTree):
 
     def render(self, file_name, layout=None, w=None, h=None,
                tree_style=None, header=None, histfaces=None):
-        '''
-        call super show adding up and down faces
+        """Add up and down faces and render the tree representation to a file.
 
-        :argument layout: a layout function
-        :argument None tree_style: tree_style object
-        :argument Nonehistface: an histogram face function. This is only to plot selective pressure among sites
-
-        '''
-        if TREEVIEW:
-            if not tree_style:
-                ts = TreeStyle()
-            else:
-                ts = tree_style
-            if histfaces:
-                for hist in histfaces:
-                    try:
-                        mdl = self.get_evol_model(hist)
-                    except AttributeError:
-                        warn('model %s not computed' % (hist))
-                    if not 'histface' in mdl.properties:
-                        if len(histfaces) > 1 and histfaces.index(hist) != 0:
-                            mdl.set_histface(up=False)
-                        else:
-                            mdl.set_histface()
-                    if mdl.properties['histface'].up:
-                        ts.aligned_header.add_face(
-                            mdl.properties['histface'], 1)
-                    else:
-                        ts.aligned_foot.add_face(
-                            mdl.properties['histface'], 1)
-            return super(EvolTree, self).render(file_name, layout=layout,
-                                                tree_style=ts,
-                                                w=w, h=h)
-        else:
+        :param histface: A histogram face function. This is only to
+            plot selective pressure among sites.
+        """
+        if not TREEVIEW:
             raise ValueError("Treeview module is disabled")
+
+        ts = tree_style or TreeStyle()
+
+        for hist in (histfaces or []):
+            try:
+                mdl = self.get_evol_model(hist)
+            except AttributeError:
+                warn('model %s not computed' % (hist))
+
+            if not 'histface' in mdl.properties:
+                if len(histfaces) > 1 and histfaces.index(hist) != 0:
+                    mdl.set_histface(up=False)
+                else:
+                    mdl.set_histface()
+
+            if mdl.properties['histface'].up:
+                ts.aligned_header.add_face(mdl.properties['histface'], 1)
+            else:
+                ts.aligned_foot.add_face(mdl.properties['histface'], 1)
+
+        return super().render(file_name, layout=layout, tree_style=ts, w=w, h=h)
 
     def mark_tree(self, node_ids, verbose=False, **kargs):
         '''
