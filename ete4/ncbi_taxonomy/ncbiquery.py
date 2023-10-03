@@ -4,7 +4,7 @@ import sys
 import os
 import pickle
 from collections import defaultdict, Counter
-
+import requests
 from hashlib import md5
 
 import sqlite3
@@ -19,6 +19,7 @@ __all__ = ["NCBITaxa", "is_taxadb_up_to_date"]
 
 DB_VERSION = 2
 DEFAULT_TAXADB = ETE_DATA_HOME + '/taxa.sqlite'
+DEFAULT_TAXDUMP = ETE_DATA_HOME + '/taxdump.tar.gz'
 
 
 def is_taxadb_up_to_date(dbfile=DEFAULT_TAXADB):
@@ -669,34 +670,11 @@ def generate_table(t):
 def update_db(dbfile, targz_file=None):
     basepath = os.path.split(dbfile)[0]
     if basepath and not os.path.exists(basepath):
-        os.mkdir(basepath)
+        os.makedirs(basepath)
 
     if not targz_file:
-        try:
-            from urllib import urlretrieve
-        except ImportError:
-            from urllib.request import urlretrieve
-
-        (md5_filename, _) = urlretrieve("https://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz.md5")
-        with open(md5_filename, "r") as md5_file:
-            md5_check = md5_file.readline().split()[0]
-        targz_file = "taxdump.tar.gz"
-        do_download = False
-
-        if os.path.exists("taxdump.tar.gz"):
-            local_md5 = md5(open("taxdump.tar.gz", "rb").read()).hexdigest()
-            if local_md5 != md5_check:
-                do_download = True
-                print('Updating taxdump.tar.gz from NCBI FTP site (via HTTP)...', file=sys.stderr)
-                urlretrieve("http://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz", targz_file)
-                print('Done. Parsing...', file=sys.stderr)
-            else:
-                print('Local taxdump.tar.gz seems up-to-date', file=sys.stderr)
-        else:
-            do_download = True
-            print('Downloading taxdump.tar.gz from NCBI FTP site (via HTTP)...', file=sys.stderr)
-            urlretrieve("http://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz", targz_file)
-            print('Done. Parsing...', file=sys.stderr)
+        update_local_taxdump(DEFAULT_TAXDUMP)
+        targz_file = DEFAULT_TAXDUMP
 
     tar = tarfile.open(targz_file, 'r')
     t, synonyms = load_ncbi_tree_from_dump(tar)
@@ -714,15 +692,31 @@ def update_db(dbfile, targz_file=None):
             line = str(line.decode())
             out_line = '\t'.join([_f.strip() for _f in line.split('|')[:2]])
             merged.write(out_line+'\n')
-    try:
-        upload_data(dbfile)
-    except:
-        raise
+
+    upload_data(dbfile)
+
+    os.system("rm syn.tab merged.tab taxa.tab")
+
+
+def update_local_taxdump(fname=DEFAULT_TAXDUMP):
+    """Update contents of file fname with taxdump.tar.gz from the NCBI site."""
+    url = 'https://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz'
+
+    if not os.path.exists(fname):
+        print(f'Downloading {fname} from {url} ...')
+        with open(fname, 'wb') as f:
+            f.write(requests.get(url).content)
     else:
-        os.system("rm syn.tab merged.tab taxa.tab")
-        # remove only downloaded taxdump file
-        if not targz_file:
-            os.system("rm taxdump.tar.gz")
+        md5_local = md5(open(fname, 'rb').read()).hexdigest()
+        md5_remote = requests.get(url + '.md5').text.split()[0]
+
+        if md5_local != md5_remote:
+            print(f'Updating {fname} from {url} ...')
+            with open(fname, 'wb') as f:
+                f.write(requests.get(url).content)
+        else:
+            print(f'File {fname} is already up-to-date with {url} .')
+
 
 def upload_data(dbfile):
     print()
