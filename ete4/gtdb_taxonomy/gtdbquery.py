@@ -46,7 +46,7 @@ def is_taxadb_up_to_date(dbfile=DEFAULT_GTDBTAXADB):
     return True
 
 
-class GTDBTaxa(object):
+class GTDBTaxa:
     """
     versionadded: 2.3
     Provides a local transparent connector to the GTDB taxonomy database.

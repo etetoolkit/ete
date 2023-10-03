@@ -8,7 +8,7 @@ from ..parser.text_arraytable import write_arraytable, read_arraytable
 
 __all__ = ["ArrayTable"]
 
-class ArrayTable(object):
+class ArrayTable:
     """This object is thought to work with matrix datasets (like
     microarrays). It allows to load the matrix an access easily to row
     and column vectors. """

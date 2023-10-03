@@ -6,7 +6,7 @@
 # WARNING! All changes made in this file will be lost!
 from .qt import QtCore, QtGui
 
-class Ui_OpenNewick(object):
+class Ui_OpenNewick:
     def setupUi(self, OpenNewick):
         OpenNewick.setObjectName("OpenNewick")
         OpenNewick.resize(569, 353)

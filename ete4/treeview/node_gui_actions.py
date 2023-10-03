@@ -45,7 +45,7 @@ class NewickDialog(QDialog):
 
 
 
-class _NodeActions(object):
+class _NodeActions:
     """ Used to extend QGraphicsItem features """
     def __init__(self):
         self.setCursor(Qt.CursorShape.PointingHandCursor)

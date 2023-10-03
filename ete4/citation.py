@@ -4,7 +4,7 @@ import textwrap as twrap
 __all__ = ["Citator"]
 
 
-class Citator(object):
+class Citator:
     REFERENCES = {
         'ETE': u"""Huerta-Cepas J, Serra F, Bork P. ETE 3: Reconstruction, analysis and
         visualization of phylogenomic data. Mol Biol Evol (2016) doi:

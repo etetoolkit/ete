@@ -6,7 +6,7 @@
 # WARNING! All changes made in this file will be lost!
 from .qt import *
 
-class Ui_About(object):
+class Ui_About:
     def setupUi(self, About):
         About.setObjectName("About")
         About.resize(462, 249)

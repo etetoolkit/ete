@@ -8,7 +8,7 @@ from ..utils import InvalidUsage
 from .nodestyle import NodeStyle
 
 
-class TreeStyle(object):
+class TreeStyle:
     def __init__(self):
         self.aligned_grid = True
         self.aligned_grid_dxs = defaultdict(lambda: 0)

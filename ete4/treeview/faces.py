@@ -111,7 +111,7 @@ __all__ = ["Face", "TextFace", "AttrFace", "ImgFace",
            "CircleFace", "PieChartFace", "BarChartFace", "SeqMotifFace",
            "RectFace", "StackedBarFace", "SVGFace", "DiamondFace"]
 
-class Face(object):
+class Face:
     """Base Face object. All Face types (i.e. TextFace, SeqMotifFace,
     etc.) inherit the following options:
 

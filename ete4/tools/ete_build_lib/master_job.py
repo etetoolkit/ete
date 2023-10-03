@@ -10,7 +10,7 @@ log = logging.getLogger("main")
 from .utils import (md5, basename, pid_up, HOSTNAME,
                     GLOBALS, TIME_FORMAT, pjoin)
 
-class Job(object):
+class Job:
     ''' A generic program launcher.
 
     A job is executed and monitored. Execution time, standard output

@@ -60,7 +60,7 @@ GLOBALS = {
                          # used them within the same get_status cycle
 }
 
-class _DataTypes(object):
+class _DataTypes:
     def __init__(self):
         self.msf = 100
         self.alg_fasta = 200

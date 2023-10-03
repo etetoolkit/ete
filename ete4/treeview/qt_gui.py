@@ -894,7 +894,7 @@ class _TreeView(QGraphicsView):
         QGraphicsView.mouseMoveEvent(self, e)
 
 
-class _BasicNodeActions(object):
+class _BasicNodeActions:
     """ Should be added as ActionDelegator """
 
     @staticmethod

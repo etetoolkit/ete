@@ -6,7 +6,7 @@
 # WARNING! All changes made in this file will be lost!
 from .qt import QtCore, QtGui
 
-class Ui_Codeml(object):
+class Ui_Codeml:
     def setupUi(self, Codeml):
         Codeml.setObjectName("Codeml")
         Codeml.resize(594, 397)

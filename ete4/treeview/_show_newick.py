@@ -6,7 +6,7 @@
 # WARNING! All changes made in this file will be lost!
 from .qt import *
 
-class Ui_Newick(object):
+class Ui_Newick:
     def setupUi(self, Newick):
         Newick.setObjectName("Newick")
         Newick.resize(594, 397)

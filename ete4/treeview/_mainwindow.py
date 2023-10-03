@@ -7,7 +7,7 @@
 #from .qt import QtCore, QtGui
 from .qt import *
 
-class Ui_MainWindow(object):
+class Ui_MainWindow:
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(673, 493)

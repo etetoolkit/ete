@@ -39,7 +39,7 @@ def is_taxadb_up_to_date(dbfile=DEFAULT_TAXADB):
     return version == DB_VERSION
 
 
-class NCBITaxa(object):
+class NCBITaxa:
     """
     A local transparent connector to the NCBI taxonomy database.
     """

@@ -14,7 +14,7 @@ class ArgError(ValueError):
     pass
 
 
-class Logger(object):
+class Logger:
     def __init__(self, buff):
         self.out = buff
 

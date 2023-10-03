@@ -62,7 +62,7 @@ def generic_class_repr(cls, cls_name):
          "", #(getattr(cls, "taskid", None) or "?")[:6],
          thread_name(cls))
 
-class Task(object):
+class Task:
     def _get_max_cores(self):
         return max([j.cores for j in self.jobs]) or 1
 

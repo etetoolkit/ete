@@ -152,7 +152,7 @@ class UnknownType(Exception):
     pass
 
 
-class Builder(object):
+class Builder:
 
     def build(self, o):
         m = getattr(self, 'build_' + o.__class__.__name__, None)
@@ -296,7 +296,7 @@ class UnreprError(ConfigObjError):
 
 
 
-class InterpolationEngine(object):
+class InterpolationEngine:
     """
     A helper class to help perform string interpolation.
 
@@ -2370,7 +2370,7 @@ class ConfigObj(Section):
 
 
 
-class SimpleVal(object):
+class SimpleVal:
     """
     A simple validator.
     Can be used to check that all members expected are present.
