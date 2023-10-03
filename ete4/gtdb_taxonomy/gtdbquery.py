@@ -777,9 +777,6 @@ def update_db(dbfile, targz_file=None):
     upload_data(dbfile)
 
     os.system("rm taxa.tab")
-    # remove only downloaded taxdump file
-    if not targz_file:
-        os.system("rm gtdbtaxdump.tar.gz")
 
 def upload_data(dbfile):
     print()
