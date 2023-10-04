@@ -1230,10 +1230,15 @@ cdef class Tree(object):
             return drawer.get_img(self, w=w, h=h,
                                   layout=layout, tree_style=tree_style,
                                   units=units, dpi=dpi, return_format=file_name)
-        else:
+        elif file_name.startswith('%%inline'):  # also return data (for jupyter)
+            return drawer.render_tree(self, file_name, w=w, h=h,
+                                      layout=layout, tree_style=tree_style,
+                                      units=units, dpi=dpi)
+        else:  # just generate the file
             drawer.render_tree(self, file_name, w=w, h=h,
                                layout=layout, tree_style=tree_style,
                                units=units, dpi=dpi)
+            print('Wrote file:', file_name)
 
     def explore(self, name=None, layouts=[], show_leaf_name=True,
                 show_branch_length=True, show_branch_support=True,
