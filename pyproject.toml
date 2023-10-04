@@ -37,5 +37,6 @@ dependencies = ["bottle", "brotli", "numpy", "scipy", "requests"]
 
 [project.optional-dependencies]
 treeview = ["pyqt6"]
+treediff = ["lap"]
 test = ["pytest>=6.0"]
 doc = ["sphinx"]
