@@ -16,7 +16,7 @@ from . import spoverlap
 __all__ = ["PhyloTree"]
 
 def _parse_species(name):
-    return name[:3]
+    return name[:3] if name is not None else ''
 
 def is_dup(n):
     return n.props.get("evoltype") == "D"
