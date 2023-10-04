@@ -1240,7 +1240,7 @@ cdef class Tree(object):
                                units=units, dpi=dpi)
             print('Wrote file:', file_name)
 
-    def explore(self, name=None, layouts=[], show_leaf_name=True,
+    def explore(self, name=None, layouts=None, show_leaf_name=True,
                 show_branch_length=True, show_branch_support=True,
                 include_props=None, exclude_props=None,
                 host='localhost', port=5000, quiet=True,
@@ -1275,7 +1275,7 @@ cdef class Tree(object):
             default_layouts.append(layout)
 
         run_smartview(tree=self, name=name,
-                      layouts=list(default_layouts + layouts),
+                      layouts=list(default_layouts + (layouts or [])),
                       include_props=include_props, exclude_props=exclude_props,
                       host=host, port=port, quiet=quiet,
                       compress=compress, keep_server=keep_server,
