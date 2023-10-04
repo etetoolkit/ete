@@ -55,12 +55,14 @@ class TestTreematcher(unittest.TestCase):
         "(len(name) < 3 or name == 'accept') and d >= 0.5"
         """)
 
-        for (newick, expected_result) in [
-                ('((hello:1,(1:1,2:1,3:1)xx:1)accept:1, NODE):0;', True),
-                ('((hello:1,(1:1,2:1,3:1)xx:1)accept:0.4, NODE):0;', False),
-                ('(hello:1,(1:1,2:1,3:1)xx:1)accept:1;', True),
-                ('((bye:1,(1:1,2:1,3:1)xx:1)none:1, NODE):0;', False),
-                ('((bye:1,(1:1,2:1,3:1)xx:1)y:1, NODE):0;', True)]:
+        for newick, expected_result in [
+                ('((hello:1,(1:1,2:1,3:1)xx:1)accept:1, NODE):0;', ['accept']),
+                ('((hello:1,(1:1,2:1,3:1)xx:1)accept:0.4, NODE):0;', []),
+                ('(hello:1,(1:1,2:1,3:1)xx:1)accept:1;', ['accept']),
+                ('((bye:1,(1:1,2:1,3:1)xx:1)none:1, NODE):0;', []),
+                ('((bye:1,(1:1,2:1,3:1)xx:1)y:1, NODE):0;', ['y']),
+                ('((bye,(,,))x:1,((,,),bye)y:1):0;', ['x', 'y'])]:
             tree = Tree(newick)
 
-            self.assertEqual(bool(tm.search(pattern, tree)), expected_result)
+            self.assertEqual([n.name for n in tm.search(pattern, tree)],
+                             expected_result)

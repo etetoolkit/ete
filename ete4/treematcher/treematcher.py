@@ -40,20 +40,21 @@ class TreePattern(Tree):
         return search(self, tree)
 
 
-def match(pattern, tree):
-    """Return True if the pattern matches the given tree."""
-    if pattern.children and len(tree.children) != len(pattern.children):
+def match(pattern, node):
+    """Return True if the pattern matches the given node."""
+    if pattern.children and len(node.children) != len(pattern.children):
         return False  # no match if there's not the same number of children
 
     context = {
-        'tree': tree, 'node': tree,
-        'name': tree.props.get('name', ''),
-        'up': tree.up, 'is_leaf': tree.is_leaf, 'is_root': tree.is_root,
-        'dist': tree.dist, 'd': tree.dist,
-        'props': tree.props, 'p': tree.props,
+        'node': node,
+        'name': node.props.get('name', ''),
+        'up': node.up, 'is_leaf': node.is_leaf, 'is_root': node.is_root,
+        'dist': node.dist, 'd': node.dist,
+        'props': node.props, 'p': node.props,
+        'species': getattr(node, 'species', None),  # for PhyloTree
         'get': dict.get,
-        'children': tree.children, 'ch': tree.children,
-        'size': tree.size, 'dx': tree.size[0], 'dy': tree.size[1],
+        'children': node.children, 'ch': node.children,
+        'size': node.size, 'dx': node.size[0], 'dy': node.size[1],
         'regex': re.search,
         'startswith': str.startswith, 'endswith': str.endswith,
         'upper': str.upper, 'lower': str.lower, 'split': str.split,
@@ -66,9 +67,9 @@ def match(pattern, tree):
     if not pattern.children:
         return True  # if the condition was true and pattern ends here, we match
 
-    # Check all possible comparisons between pattern children and tree children.
+    # Check all possible comparisons between pattern children and node children.
     for ch_perm in permutations(pattern.children):
-        if all(match(sub_pattern, tree.children[i])
+        if all(match(sub_pattern, node.children[i])
                for i, sub_pattern in enumerate(ch_perm)):
             return True
 
@@ -76,9 +77,10 @@ def match(pattern, tree):
 
 
 def search(pattern, tree):
-    """Return the first node that matches the given pattern, or None."""
-    return next((node for node in tree.traverse("preorder")
-                 if match(pattern, node)), None)
+    """Yield nodes that match the given pattern."""
+    for node in tree.traverse("preorder"):
+        if match(pattern, node):
+            yield node
 
 
 def safer_eval(code, context):
