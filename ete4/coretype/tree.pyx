@@ -1242,7 +1242,7 @@ cdef class Tree(object):
 
     def explore(self, name=None, layouts=None, show_leaf_name=True,
                 show_branch_length=True, show_branch_support=True,
-                include_props=None, exclude_props=None,
+                include_props=('name', 'dist'), exclude_props=None,
                 host='localhost', port=5000, quiet=True,
                 compress=False, keep_server=False, open_browser=True):
         """Launch an interactive smartview session to visualize the tree.
