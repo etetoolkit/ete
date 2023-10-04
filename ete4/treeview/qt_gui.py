@@ -562,15 +562,14 @@ class _PropertiesDialog(QWidget):
         self.style2values = {}
 
         for n in nodes:
-            for pname in n.features:
-                pvalue = getattr(n,pname)
+            for pname, pvalue in n.props.items():
                 if type(pvalue) == int or \
                    type(pvalue) == float or \
                    type(pvalue) == str :
                     self.prop2nodes.setdefault(pname,[]).append(n)
                     self.prop2values.setdefault(pname,[]).append(pvalue)
 
-            for pname,pvalue in n.img_style.items():
+            for pname,pvalue in n._img_style.items():
                 if type(pvalue) == int or \
                    type(pvalue) == float or \
                    type(pvalue) == str :
@@ -638,9 +637,9 @@ class _PropertiesDialog(QWidget):
                 value = str(value)
 
             for n in self.style2nodes[name]:
-                typedvalue = type(n.img_style[name])(value)
+                typedvalue = type(n._img_style[name])(value)
                 try:
-                    n.img_style[name] = typedvalue
+                    n._img_style[name] = typedvalue
                 except:
                     #logger(-1, "Wrong format for attribute:", name)
                     break

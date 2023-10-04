@@ -644,7 +644,7 @@ def save(scene, imgName, w=None, h=None, dpi=90,\
         if ipython_inline:
             ba = QByteArray()
             buf = QBuffer(ba)
-            buf.open(QIODevice.WriteOnly)
+            buf.open(QIODevice.OpenModeFlag.WriteOnly)
             ii.save(buf, "PNG")
             from IPython.core.display import Image
             return Image(ba.data())
