@@ -869,24 +869,30 @@ class Test_Coretype_Tree(unittest.TestCase):
         #self.assertEqual(cache_name_lof[t], [t.name])
 
     def test_rooting_branch_support(self):
-        """Test branch support and distances after rooting."""
-        import numpy as np
-        # Test branch support and distances after rooting
+        """Test that branch support, distances and custom branch properties are correctly handled after re-rooting."""
+
+        # GEnerate a random tree Test branch support and distances after rooting
         t = Tree()
-        t.populate(35)
+        t.populate(50, random_branches=True, support_range=(0,100))
         t.unroot()
 
-        for n in t.descendants():
-            if n is not t:
-                n.support = random.random()
-                n.dist = random.random()
-        for n in t.children:
-            n.support = 0.999
-        t2 = t.copy()
+        # generate a random branch property
+        t.props['bprop'] = None
+        rand_value = random.random()
+        for ch in t.children:
+            ch.props['bprop'] = rand_value
 
+        for n in t.descendants():
+            if n.up is not t:
+                n.props['bprop'] = random.random()
+
+        print(t.to_str(props=["name", "support", "bprop"], compact=True))
+
+        # Record the distance and support value of all clades, based on its content
         names = set(t.leaf_names())
         cluster_id2support = {}
         cluster_id2dist = {}
+        cluster_id2bprop = {}
         for n in t.traverse():
             cluster_names = set(n.leaf_names())
             cluster_names2 = names - cluster_names
@@ -897,20 +903,32 @@ class Test_Coretype_Tree(unittest.TestCase):
 
             cluster_id2dist[cluster_id] = n.dist
             cluster_id2dist[cluster_id2] = n.dist
+            cluster_id2bprop[cluster_id] = n.props["bprop"]
+            cluster_id2bprop[cluster_id2] = n.props["bprop"]
 
 
-        for i in range(100):
-            outgroup = random.sample(list(t2.descendants()), 1)[0]
-            t2.set_outgroup(outgroup)
-            for n in t2.traverse():
+
+        # Root to every single node in the tree and test whether all partitions conserve their properties
+        for outgroup in t.descendants():
+            t.set_outgroup(outgroup, branch_properties=["bprop"])
+            print(t.to_str(props=["name", "support", "bprop"], compact=True))
+            for n in t.descendants():
                 cluster_names = set(n.leaf_names())
                 cluster_names2 = names - cluster_names
                 cluster_id = '_'.join(sorted(cluster_names))
                 cluster_id2 = '_'.join(sorted(cluster_names2))
+
+                print(n.to_str(props=["name", "support", "bprop"], compact=True))
+
                 self.assertEqual(cluster_id2support.get(cluster_id, None), n.support)
                 self.assertEqual(cluster_id2support.get(cluster_id2, None), n.support)
+
+                self.assertEqual(cluster_id2bprop.get(cluster_id, None), n.props.get("bprop", None))
+                self.assertEqual(cluster_id2bprop.get(cluster_id2, None), n.props.get("bprop", None))
+
                 if n.up and n.up.up:
                     self.assertEqual(cluster_id2dist.get(cluster_id, None), n.dist)
+
 
     def test_describe(self):
         self.assertEqual(Tree().describe(),

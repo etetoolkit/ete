@@ -24,7 +24,18 @@ def root_at(outgroup, bprops=None):
     assert outgroup != t, 'cannot set the absolute tree root as an outgroup'
 
     if len(t.children) > 2:
-        t.resolve_polytomy(recursive=False)
+        new_node = t.__class__()
+        for ch in list(t.children[1:]):
+            t.children.remove(ch)
+            new_node.children.append(ch)
+            ch.up = new_node
+
+        for bprop in ['support'] + (bprops or []):
+            if t.children[0].props.get(bprop, None) is not None:
+                new_node.props[bprop] = t.children[0].props[bprop]
+        t.children.append(new_node)
+        new_node.up = t
+
 
     # if node is already a direct child of the root node, we  just make sure the
     # outgroup is the "first" child and branch distances are balanced
@@ -55,10 +66,10 @@ def root_at(outgroup, bprops=None):
     # transfer branch properties from the original root node to the new
     # intermediate node We just want those props to be transferred, the rest
     # should stay in tree node.
-    if bprops:
-        for p in bprops:
-            if p in t.props:
-                intermediate_node.props[p] = copy.deepcopy(t.props[p])
+    #if bprops:
+    #    for p in bprops:
+    #        if p in t.props:
+    #            intermediate_node.props[p] = copy.deepcopy(t.props[p])
 
     # Now, let's place the original absolute tree root instance in the branch
     # that will become the new root, spliting the branch into two
