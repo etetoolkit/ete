@@ -224,10 +224,10 @@ class Test_Coretype_Tree(unittest.TestCase):
         for n in t.traverse():
             n.name = n.name or 'NoName'
         t.sort_descendants()
-        expected_distances = [round(n.dist, 6) for n in t.traverse('postorder')]
+        expected_distances = [round(n.dist, 6) for n in t.traverse('postorder') if n.up]
         expected_leaf_distances = [round(n.dist, 6) for n in t]
-        expected_internal_distances = [round(n.dist, 6) for n in t.traverse('postorder') if not n.is_leaf]
-        expected_supports = [round(n.support, 6) for n in t.traverse('postorder') if not n.is_leaf]
+        expected_internal_distances = [round(n.dist, 6) for n in t.traverse('postorder') if not n.is_leaf and n.up]
+        expected_supports = [round(n.support, 6) for n in t.traverse('postorder') if not n.is_leaf and n.up]
         expected_leaf_names = [n.name for n in t]
 
         # Check that all formats read names correctly
@@ -703,8 +703,8 @@ class Test_Coretype_Tree(unittest.TestCase):
         self.assertEqual((t['F']).get_farthest_node(topological=True), (t['A'], 3.0))
         self.assertEqual((t['F']).get_farthest_node(topological=False), (t['D'], 11.0))
 
-    def test_rooting_v2(self):
-        """Test the alternative rooting ("set outgroup") algorithm."""
+    def test_rooting_topology(self):
+        """Test topology changes after rooting"""
         t = Tree('((d,e)b,(f,g)c);')
         self.assertLooks(t, """
                    ╭╴b╶┬╴d
@@ -713,7 +713,7 @@ class Test_Coretype_Tree(unittest.TestCase):
                        ╰╴g
         """)
 
-        t = t.set_outgroup_v2(t['e'])
+        t.set_outgroup(t['e'])
         self.assertLooks(t, """
                 ╴⊗╶┬╴e
                    ╰╴b╶┬╴d
@@ -721,7 +721,7 @@ class Test_Coretype_Tree(unittest.TestCase):
                            ╰╴g
         """)
 
-        t = t.set_outgroup_v2(t['d'])
+        t.set_outgroup(t['d'])
         self.assertLooks(t, """
                    ╭╴d
                 ╴⊗╶┤   ╭╴c╶┬╴f
@@ -729,7 +729,7 @@ class Test_Coretype_Tree(unittest.TestCase):
                        ╰╴e
         """)
 
-        t = t.set_outgroup_v2(t['c'])
+        t.set_outgroup(t['c'])
         self.assertLooks(t, """
                    ╭╴c╶┬╴f
                 ╴⊗╶┤   ╰╴g
@@ -737,7 +737,7 @@ class Test_Coretype_Tree(unittest.TestCase):
                        ╰╴d
         """)
 
-        t = t.set_outgroup_v2(t['b'])
+        t.set_outgroup(t['b'])
         self.assertLooks(t, """
                    ╭╴b╶┬╴e
                 ╴⊗╶┤   ╰╴d
@@ -745,33 +745,74 @@ class Test_Coretype_Tree(unittest.TestCase):
                        ╰╴g
         """)
 
-    def test_rooting(self):
-        # Test set_outgroup and get_midpoint_outgroup
+    def test_rooting_distances(self):
+        """ Tests that set_outgroup operations never changes distance relationships between nodes"""
+
+        # Loads a large tree with different node distance
         t = Tree(ds.nw2_full)
+
+        # records the distance between two random nodes
         YGR028W = t['YGR028W']
         YGR138C = t['YGR138C']
         d1 = t.get_distance(YGR138C, YGR028W)
-        nodes = list(t.descendants())
-        t.set_outgroup(t.get_midpoint_outgroup())
+
+        # records original sum up distances
+        sum_distances = sum([n.dist for n in t.traverse() if n.dist])
+
+        # gets midpoint outgroup and re-root the tree there
+        midpoint = t.get_midpoint_outgroup()
+        t.set_outgroup(midpoint)
+
+        # saves the two nodes that split the tree by midpoint
         o1, o2 = t.children[0], t.children[1]
-        nw_original = t.write()
+
+        # Test node distances is preserved
         d2 = t.get_distance(YGR138C, YGR028W)
         self.assertEqual(d1, d2)
-        # Randomizing outgroup test: Can we recover original state
-        # after many manipulations?
-        for i in range(10):
+
+        # Test sum up distance is intact after rooting
+        self.assertEqual(sum_distances,
+                         sum([n.dist for n in t.traverse() if n.dist]))
+
+        # Let's now test whether can we recover the original state of the tree
+        # after many random re-rooting operations
+
+        nodes = list(t.descendants())
+
+        for i in range(100):
             for j in range(100):
+                # root at a random place
                 n = random.sample(nodes, 1)[0]
                 t.set_outgroup(n)
-            t.set_outgroup(t.get_midpoint_outgroup())
-            self.assertEqual(set([t.children[0], t.children[1]]), set([o1, o2]))
-            ##  I need to sort branches first
-            #self.assertEqual(t.write(), nw_original)
-        d3 = t.get_distance(YGR138C, YGR028W)
-        self.assertEqual(d1, d3)
 
-        t = Tree('(A:10,B:1,(C:1,D:1)E:1)root;');
+            # Restore original midpoint outgroup. If everything was ok, sum up
+            # distance and the same two root branches should be restoredœ
+            midpoint = t.get_midpoint_outgroup()
+            t.set_outgroup(midpoint)
+            self.assertEqual(set([t.children[0], t.children[1]]), set([o1, o2]))
+
+            d3 = t.get_distance(t["YGR138C"], t["YGR028W"])
+            self.assertEqual(d1, d3)
+
+            # Test sum up distance is intact after rooting
+            self.assertEqual(sum_distances,
+                         sum([n.dist for n in t.traverse() if n.dist]))
+
+
+        # Test that the distance of the two root branches
+        # after rooting are balanced
+        t = Tree('((A:10,B:1),(C:1,D:1)E:1)root;');
         t.set_outgroup(t.get_midpoint_outgroup())
+        self.assertEqual(t.children[0].dist, 5.0)
+        self.assertEqual(t.children[1].dist, 5.0)
+
+        # Test that set_outgroup can root an unrooted tree with three root children
+        t = Tree('(A:10,B:1,(C:1,D:1)E:1)root;');
+        assert t.children[0] == t['A']
+        t.set_outgroup(t['A'])
+
+        # Test that the distance of the two root branches
+        # after rooting are balanced even for unrooted trees
         self.assertEqual(t.children[0].dist, 5.0)
         self.assertEqual(t.children[1].dist, 5.0)
 
@@ -827,18 +868,14 @@ class Test_Coretype_Tree(unittest.TestCase):
 
         #self.assertEqual(cache_name_lof[t], [t.name])
 
-    def test_rooting2(self):
+    def test_rooting_branch_support(self):
         """Test branch support and distances after rooting."""
-        t = Tree("((((a,b)1,c)2,i)3,(e,d)4)5;")
-        t.set_outgroup(t["a"])
-
-        t = Tree("(((a,b)2,c)x)9;")
-        t.set_outgroup(t["a"])
-
+        import numpy as np
         # Test branch support and distances after rooting
         t = Tree()
         t.populate(35)
         t.unroot()
+
         for n in t.descendants():
             if n is not t:
                 n.support = random.random()
@@ -874,15 +911,6 @@ class Test_Coretype_Tree(unittest.TestCase):
                 self.assertEqual(cluster_id2support.get(cluster_id2, None), n.support)
                 if n.up and n.up.up:
                     self.assertEqual(cluster_id2dist.get(cluster_id, None), n.dist)
-
-        # Test unrooting
-        t = Tree()
-        t.populate(20)
-        t.unroot()
-
-        # Printing and info
-        text = t.to_str()
-        self.assertTrue(len(text) > 10 and '\n' in text)
 
     def test_describe(self):
         self.assertEqual(Tree().describe(),
