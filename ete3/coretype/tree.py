@@ -1193,49 +1193,47 @@ class TreeNode(object):
         NewNode = self.__class__
 
         if len(self.children) > 1:
+            # add `connector` node between current node `self` and its children
             connector = NewNode()
-            for ch in self.get_children():
+            for ch in self.children:
                 ch.detach()
                 connector.add_child(child = ch)
-            root = NewNode()
             self.add_child(child = connector)
+            # add new `root` under `self` where additional nodes will populate a subtree
+            root = NewNode()
             self.add_child(child = root)
         else:
             root = self
 
-        next_deq = deque([root])
-        for i in range(size-1):
-            # choose a random leaf
-            p = random.choice(next_deq)
-            # remove chosen leaf
-            next_deq.remove(p)
+        new_leaves = [root]
+        for _ in range(size - 1):
+            # choose random leaf and remove it from `new_leaves` list
+            p = random.choice(new_leaves)
+            new_leaves.remove(p)
 
             # add two children to chosen leaf
             c1 = p.add_child()
             c2 = p.add_child()
-            # add new children to leaf deque
-            next_deq.extend([c1, c2])
+            # add new children to `new_leaves`
+            new_leaves.extend([c1, c2])
             if random_branches:
                 c1.dist = random.uniform(*branch_range)
                 c2.dist = random.uniform(*branch_range)
-                c1.support = random.uniform(*branch_range)
-                c2.support = random.uniform(*branch_range)
-            else:
-                c1.dist = 1.0
-                c2.dist = 1.0
-                c1.support = 1.0
-                c2.support = 1.0
+                c1.support = random.uniform(*support_range)
+                c2.support = random.uniform(*support_range)
+            # else: DEFAULT_DIST and DEFAULT_SUPPORT values will be used
 
         # next contains leaf nodes
         charset =  "abcdefghijklmnopqrstuvwxyz"
-        if names_library:
+        if names_library is not None:
             names_library = deque(names_library)
         else:
             avail_names = itertools.combinations_with_replacement(charset, 10)
-        # rearrange leaves in random order
-        next_deq = random.sample(next_deq, len(next_deq))
-        for n in next_deq:
-            if names_library:
+        # shuffle leaves in random order
+        random.shuffle(new_leaves)
+        # grow_leaves = random.sample(grow_leaves, len(grow_leaves))
+        for n in new_leaves:
+            if names_library is not None:
                 if reuse_names:
                     tname = names_library.pop()
                     names_library.appendleft(tname)
