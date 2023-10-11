@@ -1250,13 +1250,12 @@ class TreeNode(object):
                 new_node = NewNode()
                 new_leaf = NewNode()
                 ## debugging
-                new_node.name = str(i) + "-node"
-                new_leaf.name = str(i) + "-leaf"
+                # new_node.name = str(i) + "-node"
+                # new_leaf.name = str(i) + "-leaf"
                 if sister.up is not None:
                     ## debug
-                    print("step", i, ": sister below root")
+                    # print("step", i, ": sister below root")
                     parent = sister.up
-                    assert parent is not None, (f"error: node={sister} has no parent")
                     parent.add_child(child=new_node)
                     sister.detach()
                     new_node.add_child(child=sister)
@@ -1264,18 +1263,18 @@ class TreeNode(object):
                     new_node.add_child(child=new_leaf)
                 else:
                     ## debug
-                    print("step", i, ": sister at root")
+                    # print("step", i, ": sister at root")
                     # sister is the root; sister has no parent
                     if len(sister.children) == 0:
                         new_leaves.append(new_node)
                         new_leaves.remove(sister)
                     else:
                         ## debug
-                        print("  current sister.children:", [x.name for x in sister.children])
+                        # print("  current sister.children:", [x.name for x in sister.children])
                         for child in sister.get_children():
                             child.detach()
                             new_node.add_child(child=child)
-                            print("  detached child", child.name)
+                            # print("  detached child", child.name)
                     sister.add_child(child=new_node)
                     sister.add_child(child=new_leaf)
                 
@@ -1287,9 +1286,9 @@ class TreeNode(object):
                         c.dist = random.uniform(*branch_range)
                         c.support = random.uniform(*support_range)
                 ## debug
-                print("current leaves:", [x.name for x in new_leaves])
-                print("current nodes:", [x.name for x in new_nodes])
-                print("current tree:", self.get_ascii())
+                # print("current leaves:", [x.name for x in new_leaves])
+                # print("current nodes:", [x.name for x in new_nodes])
+                # print("current tree:", self.get_ascii())
         else:
             raise ValueError(f"parameter topology={topology} not recognized")
 
