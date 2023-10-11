@@ -1168,7 +1168,7 @@ class TreeNode(object):
     def populate(self, size, names_library=None, reuse_names=False,
                  random_branches=False, branch_range=(0,1),
                  support_range=(0,1),
-                 topology="fast"):
+                 distribution="fast"):
         """
         Generates a random topology by populating current node.
 
@@ -1189,9 +1189,9 @@ class TreeNode(object):
           this range of values will be used to generate random branch
           support values.
 
-        :argument "fast" topology: Determines the algorithm used to place leaves which 
-          controls the resulting distribution over possible topologies. Parameter can be
-          "fast" (original implementation), "yule", or "pda" aka "uniform"
+        :argument "fast" distrubtion: Determines the algorithm used to place leaves,
+          which controls the resulting distribution over possible topologies. Parameter 
+          can be "fast" (original implementation), "yule", or "pda" aka "uniform"
         """
         print("using NEW VERSION")
         NewNode = self.__class__
@@ -1209,7 +1209,7 @@ class TreeNode(object):
         else:
             root = self
 
-        if topology == "fast":
+        if distribution == "fast":
             new_leaves = deque([root])
             for _ in range(size - 1):
                 if random.randint(0, 1):
@@ -1225,7 +1225,7 @@ class TreeNode(object):
                         c.dist = random.uniform(*branch_range)
                         c.support = random.uniform(*support_range)
                 # else: DEFAULT_DIST and DEFAULT_SUPPORT values will be used
-        elif topology == "yule":
+        elif distribution == "yule":
             new_leaves = [root]
             for _ in range(size - 1):
                 # choose random leaf and remove it from `new_leaves` list
@@ -1241,7 +1241,7 @@ class TreeNode(object):
                     for c in [c1, c2]:
                         c.dist = random.uniform(*branch_range)
                         c.support = random.uniform(*support_range)
-        elif topology == "pda" or topology == "uniform":
+        elif distribution == "pda" or distribution == "uniform":
             new_leaves = [root]
             new_nodes = [root]
             for i in range(size - 1):
@@ -1290,7 +1290,7 @@ class TreeNode(object):
                 # print("current nodes:", [x.name for x in new_nodes])
                 # print("current tree:", self.get_ascii())
         else:
-            raise ValueError(f"parameter topology={topology} not recognized")
+            raise ValueError(f"parameter topology={distribution} not recognized")
 
         # next contains leaf nodes
         charset =  "abcdefghijklmnopqrstuvwxyz"
