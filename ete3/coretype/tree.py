@@ -1168,7 +1168,7 @@ class TreeNode(object):
     def populate(self, size, names_library=None, reuse_names=False,
                  random_branches=False, branch_range=(0,1),
                  support_range=(0,1),
-                 distribution="fast"):
+                 distribution="fast", ladderize=True):
         """
         Generates a random topology by populating current node.
 
@@ -1192,6 +1192,8 @@ class TreeNode(object):
         :argument "fast" distrubtion: Determines the algorithm used to place leaves,
           which controls the resulting distribution over possible topologies. Parameter 
           can be "fast" (original implementation), "yule", or "pda" aka "uniform"
+
+        :argument True ladderize: If True, resulting tree is ladderized
         """
         print("using NEW VERSION")
         NewNode = self.__class__
@@ -1249,12 +1251,7 @@ class TreeNode(object):
                 sister = random.choice(new_nodes)
                 new_node = NewNode()
                 new_leaf = NewNode()
-                ## debugging
-                # new_node.name = str(i) + "-node"
-                # new_leaf.name = str(i) + "-leaf"
                 if sister.up is not None:
-                    ## debug
-                    # print("step", i, ": sister below root")
                     parent = sister.up
                     parent.add_child(child=new_node)
                     sister.detach()
@@ -1262,19 +1259,14 @@ class TreeNode(object):
                     # add child to new_node
                     new_node.add_child(child=new_leaf)
                 else:
-                    ## debug
-                    # print("step", i, ": sister at root")
                     # sister is the root; sister has no parent
                     if len(sister.children) == 0:
                         new_leaves.append(new_node)
                         new_leaves.remove(sister)
                     else:
-                        ## debug
-                        # print("  current sister.children:", [x.name for x in sister.children])
                         for child in sister.get_children():
                             child.detach()
                             new_node.add_child(child=child)
-                            # print("  detached child", child.name)
                     sister.add_child(child=new_node)
                     sister.add_child(child=new_leaf)
                 
@@ -1285,14 +1277,10 @@ class TreeNode(object):
                     for c in [new_node, new_leaf]:
                         c.dist = random.uniform(*branch_range)
                         c.support = random.uniform(*support_range)
-                ## debug
-                # print("current leaves:", [x.name for x in new_leaves])
-                # print("current nodes:", [x.name for x in new_nodes])
-                # print("current tree:", self.get_ascii())
         else:
             raise ValueError(f"parameter topology={distribution} not recognized")
 
-        # next contains leaf nodes
+        # new_leaves contains leaf nodes which need names
         charset =  "abcdefghijklmnopqrstuvwxyz"
         if names_library is not None:
             names_library = deque(names_library)
@@ -1309,6 +1297,8 @@ class TreeNode(object):
             else:
                 tname = ''.join(next(avail_names))
             n.name = tname
+        if ladderize:
+            self.ladderize()
 
     def set_outgroup(self, outgroup):
         """
