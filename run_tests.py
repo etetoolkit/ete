@@ -5,7 +5,7 @@ A simple program to coordinate which tests to run.
 """
 
 import os
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter as fmt
+from argparse import ArgumentParser
 
 
 # Test files to run.
@@ -40,7 +40,7 @@ def run_pytest(tfiles, verbose):
 
 
 def get_args():
-    parser = ArgumentParser(description=__doc__, formatter_class=fmt)
+    parser = ArgumentParser(description=__doc__)
 
     add = parser.add_argument  # shortcut
     add('-i', '--include-interactive', action='store_true',
