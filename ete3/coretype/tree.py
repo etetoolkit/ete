@@ -1167,7 +1167,8 @@ class TreeNode(object):
 
     def populate(self, size, names_library=None, reuse_names=False,
                  random_branches=False, branch_range=(0,1),
-                 support_range=(0,1)):
+                 support_range=(0,1),
+                 topology="fast"):
         """
         Generates a random topology by populating current node.
 
@@ -1188,6 +1189,9 @@ class TreeNode(object):
           this range of values will be used to generate random branch
           support values.
 
+        :argument "fast" topology: Determines the algorithm used to place leaves which 
+          controls the resulting distribution over possible topologies. Parameter can be
+          "fast" (original implementation), "yule", or "pda" aka "uniform"
         """
         print("using NEW VERSION")
         NewNode = self.__class__
@@ -1195,33 +1199,99 @@ class TreeNode(object):
         if len(self.children) > 1:
             # add `connector` node between current node `self` and its children
             connector = NewNode()
-            for ch in self.children:
+            for ch in self.get_children():
                 ch.detach()
-                connector.add_child(child = ch)
-            self.add_child(child = connector)
+                connector.add_child(child=ch)
+            self.add_child(child=connector)
             # add new `root` under `self` where additional nodes will populate a subtree
             root = NewNode()
             self.add_child(child = root)
         else:
             root = self
 
-        new_leaves = [root]
-        for _ in range(size - 1):
-            # choose random leaf and remove it from `new_leaves` list
-            p = random.choice(new_leaves)
-            new_leaves.remove(p)
+        if topology == "fast":
+            new_leaves = deque([root])
+            for _ in range(size - 1):
+                if random.randint(0, 1):
+                    p = new_leaves.pop()
+                else:
+                    p = new_leaves.popleft()
 
-            # add two children to chosen leaf
-            c1 = p.add_child()
-            c2 = p.add_child()
-            # add new children to `new_leaves`
-            new_leaves.extend([c1, c2])
-            if random_branches:
-                c1.dist = random.uniform(*branch_range)
-                c2.dist = random.uniform(*branch_range)
-                c1.support = random.uniform(*support_range)
-                c2.support = random.uniform(*support_range)
-            # else: DEFAULT_DIST and DEFAULT_SUPPORT values will be used
+                c1 = p.add_child()
+                c2 = p.add_child()
+                new_leaves.extend([c1, c2])
+                if random_branches:
+                    for c in [c1, c2]:
+                        c.dist = random.uniform(*branch_range)
+                        c.support = random.uniform(*support_range)
+                # else: DEFAULT_DIST and DEFAULT_SUPPORT values will be used
+        elif topology == "yule":
+            new_leaves = [root]
+            for _ in range(size - 1):
+                # choose random leaf and remove it from `new_leaves` list
+                p = random.choice(new_leaves)
+                new_leaves.remove(p)
+
+                # add two children to chosen leaf
+                c1 = p.add_child()
+                c2 = p.add_child()
+                # add new children to `new_leaves`
+                new_leaves.extend([c1, c2])
+                if random_branches:
+                    for c in [c1, c2]:
+                        c.dist = random.uniform(*branch_range)
+                        c.support = random.uniform(*support_range)
+        elif topology == "pda" or topology == "uniform":
+            new_leaves = [root]
+            new_nodes = [root]
+            for i in range(size - 1):
+                # choose random node to add new leaf as sister
+                sister = random.choice(new_nodes)
+                new_node = NewNode()
+                new_leaf = NewNode()
+                ## debugging
+                new_node.name = str(i) + "-node"
+                new_leaf.name = str(i) + "-leaf"
+                if sister.up is not None:
+                    ## debug
+                    print("step", i, ": sister below root")
+                    parent = sister.up
+                    assert parent is not None, (f"error: node={sister} has no parent")
+                    parent.add_child(child=new_node)
+                    sister.detach()
+                    new_node.add_child(child=sister)
+                    # add child to new_node
+                    new_node.add_child(child=new_leaf)
+                else:
+                    ## debug
+                    print("step", i, ": sister at root")
+                    # sister is the root; sister has no parent
+                    if len(sister.children) == 0:
+                        new_leaves.append(new_node)
+                        new_leaves.remove(sister)
+                    else:
+                        ## debug
+                        print("  current sister.children:", [x.name for x in sister.children])
+                        for child in sister.get_children():
+                            child.detach()
+                            new_node.add_child(child=child)
+                            print("  detached child", child.name)
+                    sister.add_child(child=new_node)
+                    sister.add_child(child=new_leaf)
+                
+                # add new node / leaf to `new_nodes` / `new_leaves`
+                new_leaves.append(new_leaf)
+                new_nodes.extend([new_node, new_leaf])
+                if random_branches:
+                    for c in [new_node, new_leaf]:
+                        c.dist = random.uniform(*branch_range)
+                        c.support = random.uniform(*support_range)
+                ## debug
+                print("current leaves:", [x.name for x in new_leaves])
+                print("current nodes:", [x.name for x in new_nodes])
+                print("current tree:", self.get_ascii())
+        else:
+            raise ValueError(f"parameter topology={topology} not recognized")
 
         # next contains leaf nodes
         charset =  "abcdefghijklmnopqrstuvwxyz"
@@ -1229,17 +1299,14 @@ class TreeNode(object):
             names_library = deque(names_library)
         else:
             avail_names = itertools.combinations_with_replacement(charset, 10)
-        # shuffle leaves in random order
+        # shuffle `new_leaves` in random order
         random.shuffle(new_leaves)
-        # grow_leaves = random.sample(grow_leaves, len(grow_leaves))
         for n in new_leaves:
             if names_library is not None:
+                # choose next name
+                tname = names_library.pop()
                 if reuse_names:
-                    tname = names_library.pop()
                     names_library.appendleft(tname)
-                else:
-                    # choose next name
-                    tname = names_library.pop()
             else:
                 tname = ''.join(next(avail_names))
             n.name = tname
