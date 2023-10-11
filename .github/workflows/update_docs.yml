@@ -40,5 +40,4 @@ jobs:
       # Run tests
       - name: Run Tests
         run: |
-            cd tests
-            pytest test_tree.py
+          ./run_tests.py

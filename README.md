@@ -132,6 +132,15 @@ For any other inquiries (collaborations, sponsoring, etc), please
 contact jhcepas@gmail.com.
 
 
+# Tests
+
+You can launch some tests by running:
+
+```sh
+./run_tests.py
+```
+
+
 # Contributing and bug reporting
 
 https://github.com/etetoolkit/ete/wiki/Contributing
