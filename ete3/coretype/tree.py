@@ -1192,10 +1192,20 @@ class TreeNode(object):
         :argument "fast" distrubtion: Determines the algorithm used to place leaves,
           which controls the resulting distribution over possible topologies. Parameter 
           can be "fast" (original implementation), "yule", or "pda" aka "uniform"
+            "fast": newly added leaves are stored in a deque (two-sided linked list), in
+              each step a leaf is chosen from one end randomly, and the chosen leaf grows
+              two new children.
+            "yule": newly added leaves are stored in a list; in each step a leaf is 
+              chosen randomly from anywhere in the list, and the chosen leaf grows two
+              new children. The leaf names are shuffled before assigning names to leaves
+            "uniform" or "pda": newly added leaves and interior nodes are stored in a
+              list; in each step a node (interior or tip) is chosen randomly from 
+              anywhere in the list, and the chosen node grows a new sister leaf. The
+              leaf names are shuffled before assigning names to leaves.
 
-        :argument True ladderize: If True, resulting tree is ladderized
+        :argument True ladderize: If True, newly populated subtree is ladderized before
+          returning
         """
-        print("using NEW VERSION")
         NewNode = self.__class__
 
         if len(self.children) > 1:
@@ -1230,15 +1240,26 @@ class TreeNode(object):
         elif distribution == "yule":
             new_leaves = [root]
             for _ in range(size - 1):
-                # choose random leaf and remove it from `new_leaves` list
-                p = random.choice(new_leaves)
-                new_leaves.remove(p)
+                # choose random leaf
+                prev_leaf = random.choice(new_leaves)
 
-                # add two children to chosen leaf
-                c1 = p.add_child()
-                c2 = p.add_child()
-                # add new children to `new_leaves`
-                new_leaves.extend([c1, c2])
+                if prev_leaf.up is None:
+                    new_leaves.remove(prev_leaf)
+                    # add two children to chosen leaf
+                    c1 = prev_leaf.add_child()
+                    c2 = prev_leaf.add_child()
+                    # add new children to `new_leaves`
+                    new_leaves.extend([c1, c2])
+                else:
+                    old_parent = prev_leaf.up
+                    # new internal node above prev_leaf
+                    new_parent = NewNode()
+                    new_leaf = new_parent.add_child()
+                    prev_leaf.detach()
+                    new_parent.add_child(child=prev_leaf)
+                    old_parent.add_child(child=new_parent)
+                    new_leaves.append(new_leaf)
+                    c1, c2 = new_leaf, new_parent
                 if random_branches:
                     for c in [c1, c2]:
                         c.dist = random.uniform(*branch_range)
@@ -1246,35 +1267,36 @@ class TreeNode(object):
         elif distribution == "pda" or distribution == "uniform":
             new_leaves = [root]
             new_nodes = [root]
-            for i in range(size - 1):
+            for _ in range(size - 1):
                 # choose random node to add new leaf as sister
                 sister = random.choice(new_nodes)
-                new_node = NewNode()
-                new_leaf = NewNode()
+                new_parent = NewNode()
+                # new_leaf = NewNode()
                 if sister.up is not None:
-                    parent = sister.up
-                    parent.add_child(child=new_node)
+                    # sister has a parent node
+                    old_parent = sister.up
+                    old_parent.add_child(child=new_parent)
                     sister.detach()
-                    new_node.add_child(child=sister)
+                    new_parent.add_child(child=sister)
                     # add child to new_node
-                    new_node.add_child(child=new_leaf)
+                    new_leaf = new_parent.add_child()
                 else:
                     # sister is the root; sister has no parent
                     if len(sister.children) == 0:
-                        new_leaves.append(new_node)
+                        new_leaves.append(new_parent)
                         new_leaves.remove(sister)
                     else:
                         for child in sister.get_children():
                             child.detach()
-                            new_node.add_child(child=child)
-                    sister.add_child(child=new_node)
-                    sister.add_child(child=new_leaf)
+                            new_parent.add_child(child=child)
+                    sister.add_child(child=new_parent)
+                    new_leaf = sister.add_child()
                 
-                # add new node / leaf to `new_nodes` / `new_leaves`
+                # add new node, leaf to `new_nodes`, `new_leaves`
                 new_leaves.append(new_leaf)
-                new_nodes.extend([new_node, new_leaf])
+                new_nodes.extend([new_parent, new_leaf])
                 if random_branches:
-                    for c in [new_node, new_leaf]:
+                    for c in [new_parent, new_leaf]:
                         c.dist = random.uniform(*branch_range)
                         c.support = random.uniform(*support_range)
         else:
@@ -1286,8 +1308,9 @@ class TreeNode(object):
             names_library = deque(names_library)
         else:
             avail_names = itertools.combinations_with_replacement(charset, 10)
-        # shuffle `new_leaves` in random order
-        random.shuffle(new_leaves)
+        if distribution != "fast":
+            # shuffle `new_leaves` in random order
+            random.shuffle(new_leaves)
         for n in new_leaves:
             if names_library is not None:
                 # choose next name
@@ -1298,7 +1321,7 @@ class TreeNode(object):
                 tname = ''.join(next(avail_names))
             n.name = tname
         if ladderize:
-            self.ladderize()
+            root.ladderize()
 
     def set_outgroup(self, outgroup):
         """
