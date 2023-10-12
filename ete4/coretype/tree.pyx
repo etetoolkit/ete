@@ -393,8 +393,11 @@ cdef class Tree(object):
 
     def pop_child(self, child_idx=-1):
         try:
-            child = self.children.pop(child_idx)
-            child.up = None
+            child = self.children.pop(child_idx)  # parent removes child
+
+            if child.up == self:  # (it may point to another already!)
+                child.up = None  # child removes parent
+
             return child
         except ValueError as e:
             raise TreeError(f'Cannot pop child: not found ({e})')
@@ -406,8 +409,11 @@ cdef class Tree(object):
         but are no longer connected.
         """
         try:
-            self.children.remove(child)  # parent will not know about child
-            child.up = None  # child will not know about parent
+            self.children.remove(child)  # parent removes child
+
+            if child.up == self:  # (it may point to another already!)
+                child.up = None  # child removes parent
+
             return child
         except ValueError as e:
             raise TreeError(f'Cannot remove child: not found ({e})')

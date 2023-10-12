@@ -479,6 +479,64 @@ class Test_Coretype_Tree(unittest.TestCase):
         self.assertEqual(set([n.name for n in t1.traverse()]),
                          set(['A', 'B', 'C', 'I', 'root']))
 
+    def test_remove_child(self):
+        """Test removing children."""
+        t = Tree()
+        t.populate(20)
+
+        # Removed node loses its parent.
+        node1 = t[1]
+        self.assertEqual(node1.up, t)  # no surprise here
+
+        node1_returned = t.remove_child(t[1])
+        self.assertEqual(node1_returned, node1)
+        self.assertEqual(node1.up, None)  # node1 lost its parent
+
+        t.add_child(node1)  # ok, let's put it back
+
+        # A node that was already "stolen" does not lose its parent.
+        node0 = t[0]  # first child from t, node that we will be moving around
+
+        t2 = Tree()
+        t2.add_child(node0)  # "steals" the first child from t
+
+        self.assertEqual(t[0], t2[0])  # they should be the same node
+
+        t.remove_child(node0)
+        self.assertTrue(t[0] != node0)  # node is no longer a child of t
+
+        self.assertEqual(node0.up, t2)  # but has not lost track of its parent
+        self.assertEqual(t2[0], node0)
+
+    def test_pop_child(self):
+        """Test popping children."""
+        t = Tree()
+        t.populate(20)
+
+        # Removed node loses its parent.
+        node1 = t[1]
+        self.assertEqual(node1.up, t)  # no surprise here
+
+        node1_returned = t.pop_child()
+        self.assertEqual(node1_returned, node1)
+        self.assertEqual(node1.up, None)  # node1 lost its parent
+
+        t.add_child(node1)  # ok, let's put it back
+
+        # A node that was already "stolen" does not lose its parent.
+        node0 = t[0]  # first child from t, node that we will be moving around
+
+        t2 = Tree()
+        t2.add_child(node0)  # "steals" the first child from t
+
+        self.assertEqual(t[0], t2[0])  # they should be the same node
+
+        t.pop_child(0)
+        self.assertTrue(t[0] != node0)  # node is no longer a child of t
+
+        self.assertEqual(node0.up, t2)  # but has not lost track of its parent
+        self.assertEqual(t2[0], node0)
+
     def test_pruning(self):
         # test prune preserving distances
         for i in range(3):  # NOTE: each iteration is quite slow
