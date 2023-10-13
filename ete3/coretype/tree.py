@@ -1165,12 +1165,13 @@ class TreeNode(object):
 
         return current
 
-    def populate(self, size, names_library=None, reuse_names=False,
-                 random_branches=False, branch_range=(0,1),
-                 support_range=(0,1),
-                 distribution="fast", ladderize=True):
+    def populate(self, size, names_library=None, reuse_names=False, seed=None,
+                 distribution="fast", ladderize=True, random_branches=False,
+                 branch_range=(0,1), support_range=(0,1)):
         """
         Generates a random topology by populating current node.
+
+        :argument size: int, number of leaves to add under current node
 
         :argument None names_library: If provided, names library
           (list, set, dict, etc.) will be used to name nodes.
@@ -1178,6 +1179,28 @@ class TreeNode(object):
         :argument False reuse_names: If True, node names will not be
           necessarily unique, which makes the process a bit more
           efficient.
+
+        :argument None seed: If provided, seed for random number generator
+
+        :argument "fast" distrubtion: Determines the algorithm used to place
+          leaves, which controls the resulting distribution over possible
+          topologies. Parameter can be "fast" (original implementation), 
+          "yule", or "pda" aka "uniform".
+            "fast": newly added leaves are stored in a deque (two-sided linked
+              list), in each step a leaf is chosen from one end randomly, and
+              the chosen leaf grows two new children.
+            "yule": newly added leaves are stored in a list; in each step a
+              leaf is chosen randomly from anywhere in the list, and the chosen
+              leaf grows two new children. The leaf names are shuffled before
+              assigning names to leaves.
+            "uniform" or "pda": newly added leaves and interior nodes are
+              stored in a list; in each step a node (interior or tip) is chosen
+              randomly from anywhere in the list, and the chosen node grows a
+              new sister leaf. The leaf names are shuffled before assigning
+              names to leaves.
+
+        :argument True ladderize: If True, newly populated subtree is
+          ladderized before returning.
 
         :argument False random_branches: If True, branch distances and support
           values will be randomized.
@@ -1188,26 +1211,15 @@ class TreeNode(object):
         :argument (0,1) support_range: If random_branches is True,
           this range of values will be used to generate random branch
           support values.
-
-        :argument "fast" distrubtion: Determines the algorithm used to place leaves,
-          which controls the resulting distribution over possible topologies. Parameter 
-          can be "fast" (original implementation), "yule", or "pda" aka "uniform"
-            "fast": newly added leaves are stored in a deque (two-sided linked list), in
-              each step a leaf is chosen from one end randomly, and the chosen leaf grows
-              two new children.
-            "yule": newly added leaves are stored in a list; in each step a leaf is 
-              chosen randomly from anywhere in the list, and the chosen leaf grows two
-              new children. The leaf names are shuffled before assigning names to leaves
-            "uniform" or "pda": newly added leaves and interior nodes are stored in a
-              list; in each step a node (interior or tip) is chosen randomly from 
-              anywhere in the list, and the chosen node grows a new sister leaf. The
-              leaf names are shuffled before assigning names to leaves.
-
-        :argument True ladderize: If True, newly populated subtree is ladderized before
-          returning
         """
         NewNode = self.__class__
 
+        if size <= 0:
+            return
+        if not reuse_names and names_library is not None:
+            if size > len(names_library):
+                raise ValueError("not enough names provided in names_library")
+        random.seed(seed)
         if len(self.children) > 1:
             # add `connector` node between current node `self` and its children
             connector = NewNode()
@@ -1215,9 +1227,12 @@ class TreeNode(object):
                 ch.detach()
                 connector.add_child(child=ch)
             self.add_child(child=connector)
-            # add new `root` under `self` where additional nodes will populate a subtree
+            # add new `root` under `self` where additional nodes will populate
+            # a subtree
             root = NewNode()
             self.add_child(child = root)
+        # elif len(self.children) == 1:
+        #     root = self.children[0]
         else:
             root = self
 
@@ -1302,15 +1317,19 @@ class TreeNode(object):
         else:
             raise ValueError(f"parameter topology={distribution} not recognized")
 
-        # new_leaves contains leaf nodes which need names
-        charset =  "abcdefghijklmnopqrstuvwxyz"
+        # assign names to leaf nodes in `new_leaves`
         if names_library is not None:
             names_library = deque(names_library)
         else:
+            charset =  "abcdefghijklmnopqrstuvwxyz"
             avail_names = itertools.combinations_with_replacement(charset, 10)
+        # ## debug
+        # print("new leaves:", new_leaves)
         if distribution != "fast":
             # shuffle `new_leaves` in random order
             random.shuffle(new_leaves)
+        # ## debug
+        # print("shuffled leaves:", new_leaves)
         for n in new_leaves:
             if names_library is not None:
                 # choose next name
