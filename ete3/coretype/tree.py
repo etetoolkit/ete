@@ -1334,9 +1334,9 @@ class TreeNode(object):
         for n in new_leaves:
             if names_library is not None:
                 # choose next name
-                tname = names_library.pop()
+                tname = names_library.popleft()
                 if reuse_names:
-                    names_library.appendleft(tname)
+                    names_library.append(tname)
             else:
                 tname = ''.join(next(avail_names))
             n.name = tname
