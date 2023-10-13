@@ -1220,6 +1220,7 @@ class TreeNode(object):
             if size > len(names_library):
                 raise ValueError("not enough names provided in names_library")
         random.seed(seed)
+
         if len(self.children) > 1:
             # add `connector` node between current node `self` and its children
             connector = NewNode()
@@ -1227,12 +1228,10 @@ class TreeNode(object):
                 ch.detach()
                 connector.add_child(child=ch)
             self.add_child(child=connector)
+        if len(self.children) > 0:
             # add new `root` under `self` where additional nodes will populate
             # a subtree
-            root = NewNode()
-            self.add_child(child = root)
-        # elif len(self.children) == 1:
-        #     root = self.children[0]
+            root = self.add_child()
         else:
             root = self
 
@@ -1267,12 +1266,11 @@ class TreeNode(object):
                     new_leaves.extend([c1, c2])
                 else:
                     old_parent = prev_leaf.up
-                    # new internal node above prev_leaf
-                    new_parent = NewNode()
+                    # new internal node below `old_parent`
+                    new_parent = old_parent.add_child()
                     new_leaf = new_parent.add_child()
                     prev_leaf.detach()
                     new_parent.add_child(child=prev_leaf)
-                    old_parent.add_child(child=new_parent)
                     new_leaves.append(new_leaf)
                     c1, c2 = new_leaf, new_parent
                 if random_branches:
@@ -1284,28 +1282,29 @@ class TreeNode(object):
             new_nodes = [root]
             for _ in range(size - 1):
                 # choose random node to add new leaf as sister
-                sister = random.choice(new_nodes)
-                new_parent = NewNode()
-                # new_leaf = NewNode()
-                if sister.up is not None:
-                    # sister has a parent node
-                    old_parent = sister.up
-                    old_parent.add_child(child=new_parent)
-                    sister.detach()
-                    new_parent.add_child(child=sister)
+                grow_node = random.choice(new_nodes)
+                if grow_node.up is not None:
+                    # `grow_node` has a parent node
+                    old_parent = grow_node.up
+                    new_parent = old_parent.add_child()
+                    grow_node.detach()
+                    new_parent.add_child(child=grow_node)
                     # add child to new_node
                     new_leaf = new_parent.add_child()
+                    # reassign root if necessary
+                    if grow_node == root:
+                        root = new_parent
                 else:
-                    # sister is the root; sister has no parent
-                    if len(sister.children) == 0:
+                    # `grow_node` is the root; sister has no parent
+                    new_parent = NewNode()
+                    if grow_node.is_leaf():
                         new_leaves.append(new_parent)
-                        new_leaves.remove(sister)
-                    else:
-                        for child in sister.get_children():
-                            child.detach()
-                            new_parent.add_child(child=child)
-                    sister.add_child(child=new_parent)
-                    new_leaf = sister.add_child()
+                        new_leaves.remove(grow_node)
+                    for child in grow_node.get_children():
+                        child.detach()
+                        new_parent.add_child(child=child)
+                    grow_node.add_child(child=new_parent)
+                    new_leaf = grow_node.add_child()
                 
                 # add new node, leaf to `new_nodes`, `new_leaves`
                 new_leaves.append(new_leaf)
@@ -1316,6 +1315,8 @@ class TreeNode(object):
                         c.support = random.uniform(*support_range)
         else:
             raise ValueError(f"parameter topology={distribution} not recognized")
+        if ladderize:
+            root.ladderize()
 
         # assign names to leaf nodes in `new_leaves`
         if names_library is not None:
@@ -1339,8 +1340,6 @@ class TreeNode(object):
             else:
                 tname = ''.join(next(avail_names))
             n.name = tname
-        if ladderize:
-            root.ladderize()
 
     def set_outgroup(self, outgroup):
         """
