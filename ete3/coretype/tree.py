@@ -1234,8 +1234,6 @@ class TreeNode(object):
             root = self.add_child()
         else:
             root = self
-        ## debug
-        root.name = "root"
 
         if distribution == "fast":
             new_leaves = deque([root])
@@ -1264,23 +1262,14 @@ class TreeNode(object):
                 # choose random leaf
                 prev_leaf = random.choice(new_leaves)
 
-                if prev_leaf.up is None:
-                    "yule dist: leaf chosen with no parent!!!"
-                    new_leaves.remove(prev_leaf)
-                    # add two children to chosen leaf
-                    c1 = prev_leaf.add_child()
-                    c2 = prev_leaf.add_child()
-                    # add new children to `new_leaves`
-                    new_leaves.extend([c1, c2])
-                else:
-                    old_parent = prev_leaf.up
-                    # new internal node below `old_parent`
-                    new_parent = old_parent.add_child()
-                    new_leaf = new_parent.add_child()
-                    prev_leaf.detach()
-                    new_parent.add_child(child=prev_leaf)
-                    new_leaves.append(new_leaf)
-                    c1, c2 = new_leaf, new_parent
+                old_parent = prev_leaf.up
+                # new internal node below `old_parent`
+                new_parent = old_parent.add_child()
+                new_leaf = new_parent.add_child()
+                prev_leaf.detach()
+                new_parent.add_child(child=prev_leaf)
+                new_leaves.append(new_leaf)
+                c1, c2 = new_leaf, new_parent
                 if random_branches:
                     for c in [c1, c2]:
                         c.dist = random.uniform(*branch_range)
@@ -1299,12 +1288,6 @@ class TreeNode(object):
                     new_parent.add_child(child=grow_node)
                     # add child to new_node
                     new_leaf = new_parent.add_child()
-                    # reassign root if necessary
-                    if grow_node == root:
-                        ## debug
-                        print("Root reassignment triggered", grow_node)
-                        root = new_parent
-                        root.name = "new root!"
                 else:
                     # `grow_node` is the root; sister has no parent
                     new_parent = NewNode()
@@ -1335,13 +1318,9 @@ class TreeNode(object):
         else:
             charset =  "abcdefghijklmnopqrstuvwxyz"
             avail_names = itertools.combinations_with_replacement(charset, 10)
-        # ## debug
-        # print("new leaves:", new_leaves)
         if distribution != "fast":
             # shuffle `new_leaves` in random order
             random.shuffle(new_leaves)
-        # ## debug
-        # print("shuffled leaves:", new_leaves)
         for n in new_leaves:
             if names_library is not None:
                 # choose next name
@@ -1350,8 +1329,6 @@ class TreeNode(object):
                     names_library.append(tname)
             else:
                 tname = ''.join(next(avail_names))
-            ## debug
-            if n.name != "": print(f"old leaf name {n.name} changed to {tname}")
             n.name = tname
 
     def set_outgroup(self, outgroup):
