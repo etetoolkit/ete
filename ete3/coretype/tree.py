@@ -1234,6 +1234,8 @@ class TreeNode(object):
             root = self.add_child()
         else:
             root = self
+        ## debug
+        root.name = "root"
 
         if distribution == "fast":
             new_leaves = deque([root])
@@ -1252,12 +1254,18 @@ class TreeNode(object):
                         c.support = random.uniform(*support_range)
                 # else: DEFAULT_DIST and DEFAULT_SUPPORT values will be used
         elif distribution == "yule":
-            new_leaves = [root]
-            for _ in range(size - 1):
+            if size == 1:
+                new_leaves = [root]
+            elif size >= 2:
+                c1 = root.add_child()
+                c2 = root.add_child()
+                new_leaves = [c1, c2]
+            for _ in range(size - 2):
                 # choose random leaf
                 prev_leaf = random.choice(new_leaves)
 
                 if prev_leaf.up is None:
+                    "yule dist: leaf chosen with no parent!!!"
                     new_leaves.remove(prev_leaf)
                     # add two children to chosen leaf
                     c1 = prev_leaf.add_child()
@@ -1283,7 +1291,7 @@ class TreeNode(object):
             for _ in range(size - 1):
                 # choose random node to add new leaf as sister
                 grow_node = random.choice(new_nodes)
-                if grow_node.up is not None:
+                if grow_node != root:
                     # `grow_node` has a parent node
                     old_parent = grow_node.up
                     new_parent = old_parent.add_child()
@@ -1293,13 +1301,16 @@ class TreeNode(object):
                     new_leaf = new_parent.add_child()
                     # reassign root if necessary
                     if grow_node == root:
+                        ## debug
+                        print("Root reassignment triggered", grow_node)
                         root = new_parent
+                        root.name = "new root!"
                 else:
                     # `grow_node` is the root; sister has no parent
                     new_parent = NewNode()
                     if grow_node.is_leaf():
-                        new_leaves.append(new_parent)
                         new_leaves.remove(grow_node)
+                        new_leaves.append(new_parent)
                     for child in grow_node.get_children():
                         child.detach()
                         new_parent.add_child(child=child)
@@ -1339,6 +1350,8 @@ class TreeNode(object):
                     names_library.append(tname)
             else:
                 tname = ''.join(next(avail_names))
+            ## debug
+            if n.name != "": print(f"old leaf name {n.name} changed to {tname}")
             n.name = tname
 
     def set_outgroup(self, outgroup):
