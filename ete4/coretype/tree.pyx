@@ -617,10 +617,11 @@ cdef class Tree(object):
 
         for n in self.descendants('postorder'):
             if n not in to_keep:
-                if preserve_branch_length:
+                if preserve_branch_length and n.dist is not None:
                     if len(n.children) == 1:
-                        n.children[0].dist += n.dist
-                    elif len(n.children) > 1 and n.up and n.up.dist:
+                        if n.children[0].dist is not None:
+                            n.children[0].dist += n.dist
+                    elif n.up and n.up.dist is not None:
                         n.up.dist += n.dist
 
                 n.delete(prevent_nondicotomic=False)
