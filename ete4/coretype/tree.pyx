@@ -620,7 +620,7 @@ cdef class Tree(object):
                 if preserve_branch_length:
                     if len(n.children) == 1:
                         n.children[0].dist += n.dist
-                    elif len(n.children) > 1 and n.up:
+                    elif len(n.children) > 1 and n.up and n.up.dist:
                         n.up.dist += n.dist
 
                 n.delete(prevent_nondicotomic=False)
@@ -888,7 +888,7 @@ cdef class Tree(object):
         :param topological: If True, distance will refer to the number of
             nodes between target and target2.
         """
-        d = (lambda node: 1) if topological else (lambda node: node.dist)
+        d = (lambda node: 1) if topological else (lambda node: node.dist or 0.0)
 
         node1, node2 = self._translate_nodes([node1, node2])
 
@@ -1042,8 +1042,8 @@ cdef class Tree(object):
         else:
             root = self
 
-        root.dist = root.dist or 0
-        root.support = root.support or 1
+        #root.dist = root.dist or 0
+        #root.support = root.support or 1
 
         next_deq = deque([root])  # will contain the current leaves
         for i in range(size - 1):
@@ -1082,7 +1082,7 @@ cdef class Tree(object):
 
                 node.name = name
 
-    def set_outgroup_v2(self, outgroup, branch_properties=None):
+    def set_outgroup(self, outgroup, branch_properties=None):
         """Set the given outgroup node at the root and return it.
 
         :param outgroup: The node too use as future root.
@@ -1091,7 +1091,7 @@ cdef class Tree(object):
         from ..smartview.renderer.gardening import root_at
         return root_at(outgroup, branch_properties)
 
-    def set_outgroup(self, outgroup):
+    def set_outgroup_old(self, outgroup):
         """
         Sets a descendant node as the outgroup of a tree.  This function
         can be used to root a tree or even an internal node.
