@@ -1043,9 +1043,6 @@ cdef class Tree(object):
         else:
             root = self
 
-        #root.dist = root.dist or 0
-        #root.support = root.support or 1
-
         next_deq = deque([root])  # will contain the current leaves
         for i in range(size - 1):
             p = next_deq.popleft() if random.randint(0, 1) else next_deq.pop()
