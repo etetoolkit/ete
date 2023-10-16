@@ -889,7 +889,7 @@ cdef class Tree(object):
         :param topological: If True, distance will refer to the number of
             nodes between target and target2.
         """
-        d = (lambda node: 1) if topological else (lambda node: node.dist or 0.0)
+        d = (lambda node: 1) if topological else (lambda node: node.dist)
 
         node1, node2 = self._translate_nodes([node1, node2])
 
