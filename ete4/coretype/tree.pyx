@@ -747,19 +747,17 @@ cdef class Tree(object):
         """Yield all ancestor nodes of this node (up to the root if given)."""
         node = self
 
-        if node == root:
+        if node == root or (not include_root and node.up == root):
             return  # node is not an ancestor of itself
 
         while node.up:
             node = node.up
 
-            if not include_root and node.up == root:
-                break
-
             yield node
 
-            if node == root:
-                break  # by now, we already yielded root too
+            if ((include_root and node == root) or
+                (not include_root and node.up == root)):
+                break  # we already yielded all the nodes we want
 
         if root is not None and ((include_root and node != root) or
                                  (not include_root and node.up != root)):
