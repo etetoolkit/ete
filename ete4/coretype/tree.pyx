@@ -743,7 +743,7 @@ cdef class Tree(object):
             except:
                 node = None
 
-    def ancestors(self, root=None):
+    def ancestors(self, root=None, include_root=True):
         """Yield all ancestor nodes of this node (up to the root if given)."""
         node = self
 
@@ -752,18 +752,27 @@ cdef class Tree(object):
 
         while node.up:
             node = node.up
+
+            if not include_root and node.up == root:
+                break
+
             yield node
+
             if node == root:
                 break  # by now, we already yielded root too
 
-        if root is not None and node != root:
+        if root is not None and ((include_root and node != root) or
+                                 (not include_root and node.up != root)):
             raise TreeError('node is no descendant from given root: %r' % root)
 
-    def lineage(self, root=None):
+    def lineage(self, root=None, include_root=True):
         """Yield all nodes in the lineage of this node (up to root if given)."""
+        if not include_root and self == root:
+            return  # the node itself would not be in its lineage
+
         # Same as ancestors() but also yielding itself first.
         yield self
-        yield from self.ancestors(root)
+        yield from self.ancestors(root, include_root)
 
     def _translate_nodes(self, nodes):
         """Return a list of nodes that correspond to the given names or nodes."""
@@ -889,16 +898,14 @@ cdef class Tree(object):
         :param topological: If True, distance will refer to the number of
             nodes between target and target2.
         """
-        d = ((lambda node: 1) if topological else
-             (lambda node: node.dist if not node.is_root else 0))
+        d = (lambda node: 1) if topological else (lambda node: node.dist)
 
         node1, node2 = self._translate_nodes([node1, node2])
 
         root = self.root.common_ancestor([node1, node2])  # common root
-        assert root is not None, 'nodes do not belong to the same tree'
 
-        return (sum(d(n) for n in node1.lineage(root)) - d(root) +
-                sum(d(n) for n in node2.lineage(root)) - d(root))
+        return (sum(d(n) for n in node1.lineage(root, include_root=False)) +
+                sum(d(n) for n in node2.lineage(root, include_root=False)))
 
     def get_farthest_node(self, topological=False):
         """Returns the farthest descendant or ancestor node, and its distance.
