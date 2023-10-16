@@ -165,7 +165,7 @@ values are: “branch-right”, “branch-top”, “branch-bottom”, “float�
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.Tree.ancestors">
-<span class="sig-name descname"><span class="pre">ancestors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.ancestors" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">ancestors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.ancestors" title="Link to this definition">¶</a></dt>
 <dd><p>Yield all ancestor nodes of this node (up to the root if given).</p>
 </dd></dl>
 
@@ -734,7 +734,7 @@ in postorder) and a node instance.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.Tree.lineage">
-<span class="sig-name descname"><span class="pre">lineage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.lineage" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">lineage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.lineage" title="Link to this definition">¶</a></dt>
 <dd><p>Yield all nodes in the lineage of this node (up to root if given).</p>
 </dd></dl>
 
@@ -987,27 +987,18 @@ value will be returned. See also <code class="xref py py-func docutils literal n
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.Tree.set_outgroup">
-<span class="sig-name descname"><span class="pre">set_outgroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outgroup</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">branch_properties</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.set_outgroup" title="Link to this definition">¶</a></dt>
-<dd><p>Set the given outgroup node at the root and return it.</p>
+<span class="sig-name descname"><span class="pre">set_outgroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outgroup</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bprops</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.set_outgroup" title="Link to this definition">¶</a></dt>
+<dd><p>Reroot the tree at the given outgroup node.</p>
+<p>The outgroup node will become the first child of the root. The
+original root node will be used as the new root node, so any
+reference to it in the code will still be valid.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>outgroup</strong> – The node too use as future root.</p></li>
-<li><p><strong>branch_properties</strong> – List of branch properties (other than “support”).</p></li>
+<li><p><strong>outgroup</strong> – Future first child of the root.</p></li>
+<li><p><strong>bprops</strong> – List of branch properties (other than “dist”
+and “support”).</p></li>
 </ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.set_outgroup_old">
-<span class="sig-name descname"><span class="pre">set_outgroup_old</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outgroup</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.set_outgroup_old" title="Link to this definition">¶</a></dt>
-<dd><p>Sets a descendant node as the outgroup of a tree.  This function
-can be used to root a tree or even an internal node.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>outgroup</strong> – a node instance within the same tree
-structure that will be used as a basal node.</p>
 </dd>
 </dl>
 </dd></dl>
