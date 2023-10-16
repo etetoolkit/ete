@@ -16,113 +16,50 @@ def sort(tree, key=None, reverse=False):
     tree.children.sort(key=key, reverse=reverse)
 
 
-def root_at(outgroup, bprops=None):
-    """ set the node "outgroup" as the first child of its current tree root """
-    import copy
+def root_at(node, bprops=None):
+    """Reroot the tree where node is, so it becomes the first child of the root.
 
-    t = outgroup.root
-    assert outgroup != t, 'cannot set the absolute tree root as an outgroup'
+    The original root node will be used as the new root node, so any
+    reference to it in the code will still be valid.
 
-    if len(t.children) > 2:
-        new_node = t.__class__()
-        for ch in list(t.children[1:]):
-            t.children.remove(ch)
-            new_node.children.append(ch)
-            ch.up = new_node
-
-        for bprop in ['support'] + (bprops or []):
-            if t.children[0].props.get(bprop, None) is not None:
-                new_node.props[bprop] = t.children[0].props[bprop]
-        t.children.append(new_node)
-        new_node.up = t
-
-
-    # if node is already a direct child of the root node, we  just make sure the
-    # outgroup is the "first" child and branch distances are balanced
-    if outgroup.up == t:
-        t.children.remove(outgroup)
-        t.children.insert(0, outgroup)
-
-        # balance distances
-        total_dist = (t.children[0].dist or 0.0) + (t.children[1].dist or 0.0)
-        t.children[0].dist = total_dist / 2.0
-        t.children[1].dist = total_dist / 2.0
-
-        return t
-
-    # if the outgroup is somewhere down in the tree structure, we want to rehang
-    # all branches but keep keep the original absolute tree root instance
-    # intact.
-    #
-    # So let's first detach current tree root from the tree and create another node
-    # instance (intermediate) that replaces it in the topology
-    intermediate_node = t.__class__()
-    intermediate_node.name = "inter"
-    for ch in t.children:
-        intermediate_node.add_child(ch)
-    t.children = []
-    t.up = None
-
-    # transfer branch properties from the original root node to the new
-    # intermediate node We just want those props to be transferred, the rest
-    # should stay in tree node.
-    #if bprops:
-    #    for p in bprops:
-    #        if p in t.props:
-    #            intermediate_node.props[p] = copy.deepcopy(t.props[p])
-
-    # Now, let's place the original absolute tree root instance in the branch
-    # that will become the new root, spliting the branch into two
-    split_branch(outgroup, bprops, t)
-
-    # and then rehang all nodes above the new outgroup, tranferring bprops
-    # appropriately
-    old_root, node_id = get_root_id(t)
-    root = old_root  # current root, which will change in each iteration
-    for child_pos in node_id:
-        root = rehang(root, child_pos, bprops)
-
-    # clean up topology to avoid a single-child node derived from the old root
-    if len(old_root.children) == 1:
-        join_branch(old_root)
-
-    return root
-
-def root_at_orig(node, bprops=None):
-    """Return the tree of which node is part of, rerooted at the given node.
-
-    :param node: Node where to set root (future first child of the new root).
+    :param node: Node where to set root (future first child of the root).
     :param bprops: List of branch properties (other than "dist" and "support").
     """
     old_root, node_id = get_root_id(node)
 
-    assert_consistency(old_root)
-    assert node != old_root, 'cannot root on root node'
+    assert_consistency(old_root, bprops)
+    assert node != old_root, 'cannot set the absolute tree root as outgroup'
 
     if node.up == old_root:  # node is a direct child of the root node
         old_root.children.remove(node)      # the "node in which we root" is
         old_root.children.insert(0, node)   # the 1st child of the root node
-        return old_root  # keep the same root node as before
+        return
 
-    inter = split_branch(node, bprops)
+    # Make a new node to replace the old root.
+    replacement = old_root.__class__()
+    replacement.props = old_root.props  # take its props
+    old_root.props = {}
 
-    root = old_root  # current root, which will change in each iteration
+    children = old_root.remove_children()
+    replacement.add_children(children)  # take its children
+
+    # Now we can insert the old root, which is empty, as an intermediate node.
+    insert_intermediate(node, old_root, bprops)
+
+    root = replacement  # current root, which will change in each iteration
     for child_pos in node_id:
         root = rehang(root, child_pos, bprops)
 
-    if len(old_root.children) == 1:
-        join_branch(old_root)
-
-    print(inter ==  root)
-
-    return root
+    if len(replacement.children) == 1:
+        join_branch(replacement)
 
 
-def assert_consistency(root):
+def assert_consistency(root, bprops=None):
     """Raise AssertionError if the root node of a tree looks inconsistent."""
-    assert not root.name, 'root has a name'
-
     assert root.dist in [0, None], 'root has a distance'
+
+    for pname in ['support'] + (bprops or []):
+        assert pname not in root.props, f'root has branch property: {pname}'
 
     if len(root.children) == 2:
         ch1, ch2 = root.children
@@ -165,32 +102,25 @@ def swap_props(n1, n2, props):
             n1.props[pname] = p2
 
 
-def split_branch(node, bprops=None, intermediate=None):
-    """Add an intermediate parent to the given node and return it."""
+def insert_intermediate(node, intermediate, bprops=None):
+    """Insert, between node and its parent, an intermediate node."""
     # == up ======= node  ->  == up === intermediate === node
     up = node.up
 
     pos_in_parent = up.children.index(node)  # save its position in parent
     up.children.pop(pos_in_parent)  # detach from parent
 
-    if intermediate is None:
-        intermediate = node.__class__()  # create intermediate node (of same type)
     intermediate.add_child(node)
 
     if 'dist' in node.props:  # split dist between the new and old nodes
         node.dist = intermediate.dist = node.dist / 2
 
-    if 'support' in node.props:  # copy support if it has it
-        intermediate.support = node.support
-
-    for prop in (bprops or []):  # and copy other branch props if any
+    for prop in ['support'] + (bprops or []):  # copy other branch props if any
         if prop in node.props:
             intermediate.props[prop] = node.props[prop]
 
     up.children.insert(pos_in_parent, intermediate)  # put new where old was
     intermediate.up = up
-
-    return intermediate
 
 
 def join_branch(node):

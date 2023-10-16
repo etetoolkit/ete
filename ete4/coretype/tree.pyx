@@ -1086,106 +1086,19 @@ cdef class Tree(object):
 
                 node.name = name
 
-    def set_outgroup(self, outgroup, branch_properties=None):
-        """Set the given outgroup node at the root and return it.
+    def set_outgroup(self, outgroup, bprops=None):
+        """Reroot the tree at the given outgroup node.
 
-        :param outgroup: The node too use as future root.
-        :param branch_properties: List of branch properties (other than "support").
+        The outgroup node will become the first child of the root. The
+        original root node will be used as the new root node, so any
+        reference to it in the code will still be valid.
+
+        :param outgroup: Future first child of the root.
+        :param bprops: List of branch properties (other than "dist"
+            and "support").
         """
         from ..smartview.renderer.gardening import root_at
-        return root_at(outgroup, branch_properties)
-
-    def set_outgroup_old(self, outgroup):
-        """
-        Sets a descendant node as the outgroup of a tree.  This function
-        can be used to root a tree or even an internal node.
-
-        :argument outgroup: a node instance within the same tree
-          structure that will be used as a basal node.
-
-        """
-        outgroup = self._translate_nodes([outgroup])[0]
-
-        if self == outgroup:
-            raise TreeError("Cannot set the tree root as outgroup")
-
-        parent_outgroup = outgroup.up
-
-        # Detects (sub)tree root
-        n = outgroup
-        while n.up is not self:
-            n = n.up
-
-        # If outgroup is a child from root, but with more than one
-        # sister nodes, creates a new node to group them
-        self.children.remove(n)
-        if len(self.children) != 1:
-            down_branch_connector = self.__class__()
-            down_branch_connector.dist = 0.0
-            if n.support is not None:
-                down_branch_connector.support = n.support
-            for ch in self.get_children():
-                down_branch_connector.children.append(ch)
-                ch.up = down_branch_connector
-                self.children.remove(ch)
-        else:
-            down_branch_connector = self.children[0]
-
-        # Connects down branch to myself or to outgroup
-        quien_va_ser_padre = parent_outgroup
-        if quien_va_ser_padre is not self:
-            # Parent-child swapping
-            quien_va_ser_hijo = quien_va_ser_padre.up
-            quien_fue_padre = None
-            buffered_dist = quien_va_ser_padre.dist
-            buffered_support = quien_va_ser_padre.support
-
-            while quien_va_ser_hijo is not self:
-                quien_va_ser_padre.children.append(quien_va_ser_hijo)
-                quien_va_ser_hijo.children.remove(quien_va_ser_padre)
-
-                buffered_dist2 = quien_va_ser_hijo.dist
-                buffered_support2 = quien_va_ser_hijo.support
-                if buffered_dist is not None:
-                    quien_va_ser_hijo.dist = buffered_dist
-                if buffered_support is not None:
-                    quien_va_ser_hijo.support = buffered_support
-                buffered_dist = buffered_dist2
-                if buffered_support2 is not None:
-                    buffered_support = buffered_support2
-
-                quien_va_ser_padre.up = quien_fue_padre
-                quien_fue_padre = quien_va_ser_padre
-
-                quien_va_ser_padre = quien_va_ser_hijo
-                quien_va_ser_hijo = quien_va_ser_padre.up
-
-            quien_va_ser_padre.children.append(down_branch_connector)
-            down_branch_connector.up = quien_va_ser_padre
-            quien_va_ser_padre.up = quien_fue_padre
-
-            if (down_branch_connector.dist is not None and
-                buffered_dist is not None):
-                down_branch_connector.dist += buffered_dist
-            outgroup2 = parent_outgroup
-            parent_outgroup.children.remove(outgroup)
-            outgroup2.dist = 0
-
-        else:
-            outgroup2 = down_branch_connector
-
-        outgroup.up = self
-        outgroup2.up = self
-        # outgroup is always the first children. Some function my
-        # trust on this fact, so do no change this.
-        self.children = [outgroup,outgroup2]
-        if outgroup2.dist is not None and outgroup.dist is not None:
-            middist = (outgroup2.dist + outgroup.dist)/2
-            outgroup.dist = middist
-            outgroup2.dist = middist
-
-        if outgroup.support is not None:
-            outgroup2.support = outgroup.support
+        root_at(outgroup, bprops)
 
     def unroot(self, mode='legacy'):
         """Unroot current node.
