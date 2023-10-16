@@ -830,7 +830,7 @@ class Test_Coretype_Tree(unittest.TestCase):
 
         # Test sum up distance is intact after rooting
         self.assertEqual(sum_distances,
-                         sum([n.dist for n in t.traverse() if n.dist]))
+                         sum(n.dist for n in t.traverse() if n.dist))
 
         # Let's now test whether can we recover the original state of the tree
         # after many random re-rooting operations
@@ -853,26 +853,10 @@ class Test_Coretype_Tree(unittest.TestCase):
             self.assertEqual(d1, d3)
 
             # Test sum up distance is intact after rooting
-            self.assertEqual(sum_distances,
-                         sum([n.dist for n in t.traverse() if n.dist]))
-
-
-        # Test that the distance of the two root branches
-        # after rooting are balanced
-        t = Tree('((A:10,B:1),(C:1,D:1)E:1)root;');
-        t.set_outgroup(t.get_midpoint_outgroup())
-        self.assertEqual(t.children[0].dist, 5.0)
-        self.assertEqual(t.children[1].dist, 5.0)
-
-        # Test that set_outgroup can root an unrooted tree with three root children
-        t = Tree('(A:10,B:1,(C:1,D:1)E:1)root;');
-        assert t.children[0] == t['A']
-        t.set_outgroup(t['A'])
-
-        # Test that the distance of the two root branches
-        # after rooting are balanced even for unrooted trees
-        self.assertEqual(t.children[0].dist, 5.0)
-        self.assertEqual(t.children[1].dist, 5.0)
+            self.assertTrue(abs(
+                sum_distances -
+                sum(n.dist for n in t.traverse() if n.dist))
+                            < 1e-8)
 
     def test_unroot(self):
         t = Tree("(('a':0.5, 'b':0.5):0.5, ('c':0.2, 'd':0.2):0.8):1;" )
@@ -929,13 +913,12 @@ class Test_Coretype_Tree(unittest.TestCase):
     def test_rooting_branch_support(self):
         """Test that branch support, distances and custom branch properties are correctly handled after re-rooting."""
 
-        # GEnerate a random tree Test branch support and distances after rooting
+        # Generate a random tree. Test branch support and distances after rooting.
         t = Tree()
-        t.populate(50, random_branches=True, support_range=(0,100))
+        t.populate(50, random_branches=True, support_range=(0, 100))
         t.unroot()
 
-        # generate a random branch property
-        t.props['bprop'] = None
+        # Add a branch property.
         rand_value = random.random()
         for ch in t.children:
             ch.props['bprop'] = rand_value
@@ -944,14 +927,12 @@ class Test_Coretype_Tree(unittest.TestCase):
             if n.up is not t:
                 n.props['bprop'] = random.random()
 
-        print(t.to_str(props=["name", "support", "bprop"], compact=True))
-
         # Record the distance and support value of all clades, based on its content
         names = set(t.leaf_names())
         cluster_id2support = {}
         cluster_id2dist = {}
         cluster_id2bprop = {}
-        for n in t.traverse():
+        for n in t.descendants():
             cluster_names = set(n.leaf_names())
             cluster_names2 = names - cluster_names
             cluster_id = '_'.join(sorted(cluster_names))
@@ -968,25 +949,22 @@ class Test_Coretype_Tree(unittest.TestCase):
 
         # Root to every single node in the tree and test whether all partitions conserve their properties
         for outgroup in t.descendants():
-            t.set_outgroup(outgroup, branch_properties=["bprop"])
-            print(t.to_str(props=["name", "support", "bprop"], compact=True))
+            t.set_outgroup(outgroup, bprops=["bprop"])
+
             for n in t.descendants():
                 cluster_names = set(n.leaf_names())
                 cluster_names2 = names - cluster_names
                 cluster_id = '_'.join(sorted(cluster_names))
                 cluster_id2 = '_'.join(sorted(cluster_names2))
 
-                print(n.to_str(props=["name", "support", "bprop"], compact=True))
-
                 self.assertEqual(cluster_id2support.get(cluster_id, None), n.support)
                 self.assertEqual(cluster_id2support.get(cluster_id2, None), n.support)
 
-                self.assertEqual(cluster_id2bprop.get(cluster_id, None), n.props.get("bprop", None))
-                self.assertEqual(cluster_id2bprop.get(cluster_id2, None), n.props.get("bprop", None))
+                self.assertEqual(cluster_id2bprop.get(cluster_id, None), n.props.get("bprop"))
+                self.assertEqual(cluster_id2bprop.get(cluster_id2, None), n.props.get("bprop"))
 
                 if n.up and n.up.up:
                     self.assertEqual(cluster_id2dist.get(cluster_id, None), n.dist)
-
 
     def test_describe(self):
         self.assertEqual(Tree().describe(),

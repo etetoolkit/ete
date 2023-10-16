@@ -33,7 +33,7 @@ def get_depth(node):
 
 def run_preanalysis(tree, taxonomy_db):
     """Manipulate and annotate the tree, and return all node properties."""
-    tree.resolve_polytomy(defaults={'dist': 0, 'support': 0})
+    tree.resolve_polytomy(defaults={'dist': 0, 'support': None})
 
     root_mid = tree.get_midpoint_outgroup()
     tree.set_outgroup(root_mid)
