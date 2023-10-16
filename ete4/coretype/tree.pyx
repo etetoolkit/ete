@@ -621,7 +621,7 @@ cdef class Tree(object):
                     if len(n.children) == 1:
                         if n.children[0].dist is not None:
                             n.children[0].dist += n.dist
-                    elif n.up and n.up.dist is not None:
+                    elif len(n.children) > 1 and n.up and n.up.dist is not None:
                         n.up.dist += n.dist
 
                 n.delete(prevent_nondicotomic=False)
