@@ -987,20 +987,7 @@ value will be returned. See also <code class="xref py py-func docutils literal n
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.Tree.set_outgroup">
-<span class="sig-name descname"><span class="pre">set_outgroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outgroup</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.set_outgroup" title="Link to this definition">¶</a></dt>
-<dd><p>Sets a descendant node as the outgroup of a tree.  This function
-can be used to root a tree or even an internal node.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>outgroup</strong> – a node instance within the same tree
-structure that will be used as a basal node.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.set_outgroup_v2">
-<span class="sig-name descname"><span class="pre">set_outgroup_v2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outgroup</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">branch_properties</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.set_outgroup_v2" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">set_outgroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outgroup</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">branch_properties</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.set_outgroup" title="Link to this definition">¶</a></dt>
 <dd><p>Set the given outgroup node at the root and return it.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1008,6 +995,19 @@ structure that will be used as a basal node.</p>
 <li><p><strong>outgroup</strong> – The node too use as future root.</p></li>
 <li><p><strong>branch_properties</strong> – List of branch properties (other than “support”).</p></li>
 </ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.Tree.set_outgroup_old">
+<span class="sig-name descname"><span class="pre">set_outgroup_old</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outgroup</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.set_outgroup_old" title="Link to this definition">¶</a></dt>
+<dd><p>Sets a descendant node as the outgroup of a tree.  This function
+can be used to root a tree or even an internal node.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>outgroup</strong> – a node instance within the same tree
+structure that will be used as a basal node.</p>
 </dd>
 </dl>
 </dd></dl>
