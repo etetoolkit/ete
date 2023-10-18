@@ -315,7 +315,8 @@ class AttrFace(TextFace):
 
     def get_text(self):
         if self.attr_formatter:
-            text = self.attr_formatter % getattr(self.node, self.attr)
+            value = getattr(self.node, self.attr)
+            text = (self.attr_formatter % value) if value is not None else ' '
         else:
             text = str(getattr(self.node, self.attr))
         text = ''.join(map(str, [self.text_prefix, \
