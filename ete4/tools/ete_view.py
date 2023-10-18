@@ -4,8 +4,9 @@ import colorsys
 from collections import defaultdict
 
 from .common import log, POSNAMES, node_matcher, src_tree_iterator
-from .. import (Tree, PhyloTree, TextFace, RectFace, faces, TreeStyle, CircleFace, AttrFace,
-                random_color)
+from ete4 import Tree, PhyloTree
+from ete4.utils import random_color
+from ete4.treeview import TextFace, RectFace, faces, TreeStyle, CircleFace, AttrFace
 
 DESC = ""
 FACES = []

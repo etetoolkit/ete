@@ -11,7 +11,9 @@ from warnings import warn
 
 from .utils import which, colorify
 from ..evol.control import PARAMS, AVAIL, PARAMS_DESCRIPTION
-from .. import EvolTree, random_color, TextFace, TreeStyle
+from ete4 import EvolTree
+from ete4.utils import random_color
+from ete4.treeview import TextFace, TreeStyle
 
 try:
     from ..treeview.layouts import evol_clean_layout
