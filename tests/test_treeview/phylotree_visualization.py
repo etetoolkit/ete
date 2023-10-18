@@ -42,4 +42,3 @@ if __name__ == "__main__":
     t, ts = get_example_tree()
     t.show(tree_style=ts)
     #recon_tree.render("phylotree.png", w=750)
-
