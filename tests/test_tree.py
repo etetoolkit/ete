@@ -858,6 +858,24 @@ class Test_Coretype_Tree(unittest.TestCase):
                 sum(n.dist for n in t.traverse() if n.dist))
                             < 1e-8)
 
+        # Test that the distance of the two root branches after
+        # rooting are balanced.
+        t = Tree('((A:10,B:1),(C:1,D:1)E:1)root;');
+        t.set_outgroup(t.get_midpoint_outgroup())
+        self.assertEqual(t.children[0].dist, 5.0)
+        self.assertEqual(t.children[1].dist, 5.0)
+
+        # Test that set_outgroup can root an unrooted tree with three.
+        # root children
+        t = Tree('(A:10,B:1,(C:1,D:1)E:1)root;');
+        self.assertEqual(t.children[0], t['A'])
+        t.set_outgroup(t['A'])
+
+        # Test that the distance of the two root branches
+        # after rooting are balanced even for unrooted trees
+        self.assertEqual(t.children[0].dist, 5.0)
+        self.assertEqual(t.children[1].dist, 5.0)
+
     def test_unroot(self):
         t = Tree("(('a':0.5, 'b':0.5):0.5, ('c':0.2, 'd':0.2):0.8):1;" )
         t2 = Tree("(('a':0.5, 'b':0.5):0.5, ('c':0.2, 'd':0.2):0.8):1;" )

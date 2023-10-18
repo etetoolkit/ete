@@ -30,20 +30,13 @@ def root_at(node, bprops=None):
     assert_consistency(old_root, bprops)
     assert node != old_root, 'cannot set the absolute tree root as outgroup'
 
-    if node.up == old_root:  # node is a direct child of the root node
-        old_root.children.remove(node)      # the "node in which we root" is
-        old_root.children.insert(0, node)   # the 1st child of the root node
-        return
-
     # Make a new node to replace the old root.
     replacement = old_root.__class__()
-    replacement.props = old_root.props  # take its props
-    old_root.props = {}
 
     children = old_root.remove_children()
     replacement.add_children(children)  # take its children
 
-    # Now we can insert the old root, which is empty, as an intermediate node.
+    # Now we can insert the old root, which has no children, in its new place.
     insert_intermediate(node, old_root, bprops)
 
     root = replacement  # current root, which will change in each iteration
