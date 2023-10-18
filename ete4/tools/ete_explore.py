@@ -1,21 +1,16 @@
-import random
-import re
-import colorsys
-from collections import defaultdict
+from .common import src_tree_iterator
 
-from .common import log, POSNAMES, node_matcher, src_tree_iterator
-# from .. import (Tree, PhyloTree, TextFace, RectFace, faces, TreeStyle, CircleFace, AttrFace,
-#                 add_face_to_node, random_color)
-from .. import PhyloTree
-from ..smartview import TreeStyle
-from ..smartview.gui.server import run_smartview
+from ete4 import PhyloTree
+from ete4.smartview import TreeStyle
+from ete4.smartview.gui.server import run_smartview
 
 DESC = "Launches an instance of the ETE smartview tree explorer server."
 
 def populate_args(explore_args_p):
-    explore_args_p.add_argument("--face", action="append",
-                             help="adds a face to the selected nodes. In example --face 'value:@dist, pos:b-top, color:red, size:10, if:@dist>0.9' ")
-    return
+    explore_args_p.add_argument(
+        "--face", action="append",
+        help=("adds a face to the selected nodes; example: --face "
+              "'value:@dist, pos:b-top, color:red, size:10, if:@dist>0.9'"))
 
 
 
@@ -32,4 +27,7 @@ def run(args):
     else:
         t = PhyloTree(open(tfile), parser=args.src_newick_format)
         t.explore(name=tfile)
-        input('Running ete explorer. Press enter to finish the session.\n')
+        try:
+            input('Running ete explorer. Press enter to finish the session.\n')
+        except KeyboardInterrupt:
+            pass  # it's okay if the user exits with Ctrl+C too
