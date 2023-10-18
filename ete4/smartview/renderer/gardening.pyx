@@ -201,26 +201,8 @@ cdef (double, double) get_size(nodes):
     return sumdists, nleaves
 
 
-def get_node(tree, node_id):
-    "Return the node that matches the given node_id, or None"
-    if callable(node_id):       # node_id can be a True/False function
-        return next((node for node in tree.traverse() if node_id(node)), None)
-    elif type(node_id) == str:  # or the name of a node
-        return next((node for node in tree.traverse() if node.name == node_id), None)
-    elif type(node_id) == int:  # or the index of a child
-        return tree.children[node_id]
-    else:                       # or a list/tuple of the (sub-sub-...)child
-        node = tree
-        for i in node_id:
-            node = node.children[i]
-        return node
-
-
 def standardize(tree):
-    "Transform from a tree not following strict newick conventions"
-    if tree.dist == -1:
-        tree.dist = 0
-
+    """Transform from a tree not following strict newick conventions."""
     update_sizes_all(tree)
 
     for node in tree.traverse():

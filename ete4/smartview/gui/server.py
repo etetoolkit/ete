@@ -860,8 +860,8 @@ def find_node(tree, args):
 def get_selections(tree_id):
     tid, subtree = get_tid(tree_id)
     tree = app.trees[tid]
-    node = gdn.get_node(tree.tree, subtree)
-    return [ name for name, (results, _) in tree.selected.items() if node in results ]
+    node = tree.tree[subtree]
+    return [name for name, (results, _) in tree.selected.items() if node in results]
 
 
 def update_node_props(node, args):
@@ -958,13 +958,13 @@ def change_selection_name(tid, args):
 def unselect_node(tree_id, args):
     tid, subtree = get_tid(tree_id)
     tree = app.trees[tid]
-    node = gdn.get_node(tree.tree, subtree)
+    node = tree.tree[subtree]
     name = args.pop('text', '').strip()
 
     if name in tree.selected.keys():
-        selections = { name: tree.selected[name] }
+        selections = {name: tree.selected[name]}
     else:
-        selections = dict(tree.selected)
+        selections = dict(tree.selected)  # copy all
 
     removed = False
     for name, (results, parents) in selections.items():
@@ -1067,7 +1067,7 @@ def store_selection(tree_id, args):
 def activate_node(tree_id):
     tid, subtree = get_tid(tree_id)
     tree = app.trees[int(tid)]
-    node = gdn.get_node(tree.tree, subtree)
+    node = tree.tree[subtree]
     tree.active.nodes.results.add(node)
     tree.active.nodes.parents.clear()
     tree.active.nodes.parents.update(get_parents(tree.active.nodes.results))
@@ -1119,7 +1119,7 @@ def get_active_clades(results, parents):
 def activate_clade(tree_id):
     tid, subtree = get_tid(tree_id)
     tree = app.trees[int(tid)]
-    node = gdn.get_node(tree.tree, subtree)
+    node = tree.tree[subtree]
     tree.active.clades.results.add(node)
     for n in node.descendants():
         tree.active.clades.results.discard(n)
@@ -1151,7 +1151,7 @@ def remove_active_clade(node, active):
 def deactivate_clade(tree_id):
     tid, subtree = get_tid(tree_id)
     tree = app.trees[int(tid)]
-    node = gdn.get_node(tree.tree, subtree)
+    node = tree.tree[subtree]
     remove_active_clade(node, tree.active.clades.results)
     tree.active.clades.parents.clear()
     tree.active.clades.parents.update(get_parents(tree.active.clades.results))
@@ -1283,7 +1283,7 @@ def sort(tree_id, node_id, key_text, reverse):
             'children': node.children, 'ch': node.children,
             'len': len, 'sum': sum, 'abs': abs})
 
-    gdn.sort(gdn.get_node(t, node_id), key, reverse)
+    gdn.sort(t[node_id], key, reverse)
 
 
 def add_trees_from_request():
