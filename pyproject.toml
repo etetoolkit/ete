@@ -35,6 +35,9 @@ dependencies = ["bottle", "brotli", "numpy", "scipy", "requests"]
 [project.urls]
 "Homepage" = "http://etetoolkit.org"
 
+[project.scripts]
+ete4 = "ete4.tools.ete:main"
+
 [project.optional-dependencies]
 treeview = ["pyqt6"]
 treediff = ["lap"]
