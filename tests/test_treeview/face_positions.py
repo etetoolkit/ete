@@ -1,4 +1,5 @@
-from ete4 import Tree, faces, TreeStyle, NodeStyle
+from ete4 import Tree
+from ete4.treeview import faces, TreeStyle, NodeStyle
 
 def get_example_tree():
     t = Tree()

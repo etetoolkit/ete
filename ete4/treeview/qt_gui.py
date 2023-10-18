@@ -1,7 +1,8 @@
 import re
 import time
 
-from ete4 import Tree, TreeStyle
+from ete4 import Tree
+from ete4.treeview import TreeStyle
 
 from .qt import *
 from . import _mainwindow, _search_dialog, _show_newick, _open_newick, _about

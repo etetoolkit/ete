@@ -15,15 +15,5 @@ from .evol import EvolTree
 from .coretype.arraytable import *
 from .clustering.clustertree import *
 from .utils import SVG_COLORS, COLOR_SCHEMES, random_color
-from .smartview import *
-from .smartview.renderer import faces
-
-try:
-    from .treeview.main import *
-    from .treeview.faces import *
-    from .treeview import faces
-    from .treeview import layouts
-except ImportError as e:
-    pass
 
 from .version import __version__

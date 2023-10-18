@@ -22,7 +22,7 @@ try:
 except ImportError:
     TREEVIEW = False
 
-from ..smartview import Face as smartFace
+from ..smartview.renderer.faces import Face as smartFace
 from ..smartview.renderer.nodestyle import NodeStyle as smNodeStyle
 from ..smartview.renderer.face_positions import Faces, make_faces
 from ..smartview.renderer.layouts.default_layouts import (

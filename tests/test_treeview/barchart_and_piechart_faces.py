@@ -1,6 +1,8 @@
 import sys
 import random
-from ete4 import Tree, faces, TreeStyle, COLOR_SCHEMES
+
+from ete4 import Tree
+from ete4.treeview import faces, TreeStyle, COLOR_SCHEMES
 
 schema_names = sorted(COLOR_SCHEMES.keys())
 

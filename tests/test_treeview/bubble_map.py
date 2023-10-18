@@ -1,5 +1,6 @@
 import random
-from ete4 import Tree, TreeStyle, NodeStyle, faces, AttrFace, CircleFace
+from ete4 import Tree
+from ete4.treeview import TreeStyle, NodeStyle, faces, AttrFace, CircleFace
 
 def layout(node):
     if node.is_leaf:

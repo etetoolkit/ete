@@ -2,7 +2,8 @@
 import colorsys
 import random
 
-from ete4 import Tree, faces, TreeStyle, NodeStyle, Face
+from ete4 import Tree
+from ete4.treeview import faces, TreeStyle, NodeStyle, Face
 
 # We will need to create Qt4 items
 from ete4.treeview.qt import QtCore, Qt
