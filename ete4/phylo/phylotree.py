@@ -1,11 +1,10 @@
 """
-This module defines the PhyloTree class to manage phylogenetic
-trees. It inherits the coretype Tree and adds some special
-features to the the node instances.
+This module defines the PhyloTree class to manage phylogenetic trees.
+It inherits from Tree and adds some special features to the the node
+instances.
 """
 
 import sys
-import os
 import re
 import itertools
 from collections import defaultdict
