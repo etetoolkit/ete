@@ -22,7 +22,7 @@ except ImportError:  # when run with unittest or pytest
 
 
 CONT = 0
-class Test_Coretype_Treeview(unittest.TestCase):
+class Test_Core_Treeview(unittest.TestCase):
     """ Tests tree basics. """
     def test_renderer(self):
 

@@ -94,10 +94,10 @@ from collections import OrderedDict
 
 # ete3 should be added to the python path by the npr script
 from ...phylo import PhyloTree
-from ...coretype.tree import Tree
-from ...coretype.seqgroup import SeqGroup
+from ete4.core.tree import Tree
+from ete4.core.seqgroup import SeqGroup
 from ...parser.fasta import read_fasta
-from ...coretype import tree
+from ete4.core import tree
 from ...ncbi_taxonomy import ncbiquery as ncbi
 
 # This default values in trees are Very important for outgroup

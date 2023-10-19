@@ -1,6 +1,6 @@
 import unittest
 
-from ete4.coretype.tree import Tree
+from ete4.core.tree import Tree
 from ete4.tools import ete_diff as ediff
 
 

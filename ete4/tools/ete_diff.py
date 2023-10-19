@@ -8,8 +8,8 @@ from scipy.cluster import hierarchy as hcluster
 import random
 import itertools
 import multiprocessing as mp
-from ..coretype.tree import Tree
-from ..utils import print_table, color
+from ete4.core.tree import Tree
+from ete4.utils import print_table, color
 
 try:
     from lap import lapjv

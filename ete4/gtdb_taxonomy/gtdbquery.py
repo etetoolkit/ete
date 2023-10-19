@@ -15,11 +15,6 @@ import warnings
 
 from ete4 import ETE_DATA_HOME, update_ete_data
 
-# from ..coretype.tree  import Tree
-# from ..phylo.phylotree  import Tree
-
-
-#import gtdb_to_taxdump
 
 __all__ = ["GTDBTaxa", "is_taxadb_up_to_date"]
 

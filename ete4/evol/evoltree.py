@@ -2,8 +2,8 @@
 
 """
 This module defines the EvolNode dataytype to manage evolutionary
-variables and integrate them within phylogenetic trees. It inheritates
-the coretype PhyloTree and add some speciall features to the the node
+variables and integrate them within phylogenetic trees. It inherits
+the PhyloTree and add some speciall features to the the node
 instances.
 """
 from __future__ import absolute_import

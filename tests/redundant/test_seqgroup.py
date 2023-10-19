@@ -4,7 +4,7 @@ from ete4 import SeqGroup
 from ..datasets import *
 
 
-class Test_Coretype_SeqGroup(unittest.TestCase):
+class Test_Core_SeqGroup(unittest.TestCase):
     """Tests of core functionality of Alignmnets objects."""
 
     def test_fasta_parser(self):

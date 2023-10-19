@@ -2,13 +2,15 @@ import re
 from sys import stderr
 import numpy
 
+from ete4.core import arraytable
+
 __all__ = ['read_arraytable', 'write_arraytable']
+
 
 def read_arraytable(matrix_file, mtype="float", arraytable_object = None):
     """ Reads a text tab-delimited matrix from file """
 
     if arraytable_object is None:
-        from ..coretype import arraytable
         A = arraytable.ArrayTable()
     else:
         A = arraytable_object

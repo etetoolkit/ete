@@ -6,7 +6,7 @@ from ete4 import ArrayTable
 from . import datasets as ds
 
 
-class Test_Coretype_ArrayTable(unittest.TestCase):
+class Test_Core_ArrayTable(unittest.TestCase):
     """Tests reading clustering or phylogenetic profile data."""
 
     def test_arraytable_parser(self):

@@ -1,4 +1,4 @@
-from ....coretype.seqgroup import SeqGroup
+from ete4.core.seqgroup import SeqGroup
 from ..treelayout import TreeLayout
 from ..faces import AlignmentFace, SeqMotifFace, ScaleFace
 

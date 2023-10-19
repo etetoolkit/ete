@@ -6,7 +6,7 @@ from tempfile import NamedTemporaryFile
 import unittest
 
 from ete4 import Tree, PhyloTree
-from ete4.coretype.tree import TreeError
+from ete4.core.tree import TreeError
 from ete4.parser.newick import NewickError
 from ete4.parser import newick
 
@@ -22,7 +22,7 @@ def strip(text):
         for line in text.splitlines() if line.strip())
 
 
-class Test_Coretype_Tree(unittest.TestCase):
+class Test_Core_Tree(unittest.TestCase):
     """Test the basic Tree class."""
 
     def assertLooks(self, tree, text):

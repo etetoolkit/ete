@@ -3,6 +3,8 @@ import string
 from sys import stderr as STDERR
 from re import search
 
+from ete4.core import seqgroup
+
 def read_paml (source, obj=None, header_delimiter="\t", fix_duplicates=True):
     """ Reads a collection of sequences econded in PAML format... that is, something between PHYLIP and fasta
 
@@ -36,7 +38,6 @@ def read_paml (source, obj=None, header_delimiter="\t", fix_duplicates=True):
     """
 
     if obj is None:
-        from ..coretype import seqgroup
         SC = seqgroup.SeqGroup()
     else:
         SC = obj

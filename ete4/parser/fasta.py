@@ -2,12 +2,13 @@ import os
 import textwrap
 from sys import stderr as STDERR
 
+from ete4.core import seqgroup
+
 
 def read_fasta(source, obj=None, header_delimiter="\t", fix_duplicates=True):
     """ Reads a collection of sequences econded in FASTA format."""
 
     if obj is None:
-        from ..coretype import seqgroup
         SC = seqgroup.SeqGroup()
     else:
         SC = obj

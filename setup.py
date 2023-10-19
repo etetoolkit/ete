@@ -10,7 +10,7 @@ setup(
     name='ete4',
     packages=['ete4',
               'ete4/clustering',
-              'ete4/coretype',
+              'ete4/core',
               'ete4/evol',
               'ete4/evol/parser',
               'ete4/gtdb_taxonomy',
@@ -28,7 +28,7 @@ setup(
               'ete4/treematcher',
               'ete4/treeview'],
     ext_modules=cythonize([
-        'ete4/coretype/tree.pyx',
+        'ete4/core/tree.pyx',
         'ete4/parser/newick.pyx',
         'ete4/smartview/renderer/gardening.pyx',
         'ete4/smartview/renderer/face_positions.pyx'], language_level=3),
