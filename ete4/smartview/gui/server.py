@@ -591,8 +591,11 @@ def callback(tree_id):
 def callback(tree_id):
     tree, subtree = touch_and_get(tree_id)
 
-    gdn.standardize(tree.tree)
     tree.initialized = False
+
+    gdn.maybe_convert_internal_nodes_to_support(tree.tree)
+    gdn.update_sizes_all(tree.tree)
+
     return {'message': 'ok'}
 
 @put('/trees/<tree_id>/reload')
@@ -648,7 +651,7 @@ def load_tree(tree_id):
 
             if tree.style.ultrametric:
                 tree.tree.to_ultrametric()
-                gdn.standardize(tree.tree)
+                gdn.update_sizes_all(tree.tree)
 
             initialize_tree_style(tree)
 
@@ -664,7 +667,9 @@ def load_tree_from_newick(tid, nw):
     if app.trees[int(tid)].style.ultrametric:
         t.to_ultrametric()
 
-    gdn.standardize(t)
+    gdn.maybe_convert_internal_nodes_to_support(t)
+    gdn.update_sizes_all(t)
+
     return t
 
 def retrieve_layouts(layouts):
@@ -776,7 +781,7 @@ def get_drawer(tree_id, args):
         ultrametric = args.get('ultrametric') == '1'  # asked for ultrametric?
         if ultrametric and not tree.style.ultrametric:  # change to on
             tree.tree.to_ultrametric()
-            gdn.standardize(tree.tree)
+            gdn.update_sizes_all(tree.tree)
             initialize_tree_style(tree, ultrametric=True)
         elif not ultrametric and tree.style.ultrametric:  # change to off
             app.trees.pop(tid, None)  # delete from memory
@@ -1015,7 +1020,7 @@ def prune_by_selection(tid, args):
 
     tree.tree.prune(selected)
 
-    gdn.standardize(tree.tree)
+    gdn.update_sizes_all(tree.tree)
 
     tree.initialized = False
 
@@ -1398,7 +1403,8 @@ def add_tree(data):
         tree = load_tree_from_newick(tid, nw)
     elif bpickle is not None:
         tree = ete_format.loads(bpickle, unpack=True)
-        gdn.standardize(tree)
+        gdn.maybe_convert_internal_nodes_to_support(tree)
+        gdn.update_sizes_all(tree)
     else:
         tree = data.get('tree')
         if not tree:
@@ -1610,7 +1616,9 @@ def run_smartview(tree=None, name=None, layouts=[],
     # TODO: Create app.recent_trees with paths to recently viewed trees
 
     if tree:
-        gdn.standardize(tree)
+        gdn.maybe_convert_internal_nodes_to_support(tree)
+        gdn.update_sizes_all(tree)
+
         tree_data = {
             'id': 0,  # id to be replaced by actual hash
             'name': name,

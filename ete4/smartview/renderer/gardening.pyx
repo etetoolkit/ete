@@ -184,21 +184,15 @@ cdef (double, double) get_size(nodes):
     return sumdists, nleaves
 
 
-def standardize(tree):
-    """Transform from a tree not following strict newick conventions."""
-    update_sizes_all(tree)
-
+def maybe_convert_internal_nodes_to_support(tree):
+    """Convert if possible the values in internal nodes to support values."""
+    # Often someone loads a newick looking like  ((a,b)s1,(c,d)s2,...)
+    # where s1, s2, etc. are support values, not names. But they use the
+    # wrong newick parser. Well, this function tries to hackishly fix that.
     for node in tree.traverse():
-        if not node.is_leaf and node.name is not None:
-            name_split = node.name.rsplit(":", 1)
-            if len(name_split) > 1:
-                # Whether node name contains the support value
-                name, support = name_split
-            else:
-                # Whether node name is the support value
-                name, support = ('', node.name)
+        if not node.is_leaf:
             try:
-                node.support = float(support)
-                node.name = name
+                node.support = float(node.name)
+                node.name = ''
             except ValueError:
                 pass
