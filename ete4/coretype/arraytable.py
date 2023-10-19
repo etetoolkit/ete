@@ -1,9 +1,4 @@
-import sys
-import re
-import math
-from os import path
-
-import numpy
+import numpy as np
 from ..parser.text_arraytable import write_arraytable, read_arraytable
 
 __all__ = ["ArrayTable"]
@@ -14,46 +9,44 @@ class ArrayTable:
     and column vectors. """
 
     def __repr__(self):
-        return "ArrayTable (%s)" %hex(self.__hash__())
+        return "ArrayTable (%s)" % hex(self.__hash__())
 
     def __str__(self):
         return str(self.matrix)
 
     def __init__(self, matrix_file=None, mtype="float"):
-        self.colNames  = []
-        self.rowNames  = []
+        self.colNames = []
+        self.rowNames = []
         self.colValues = {}
         self.rowValues = {}
-        self.matrix   = None
+        self.matrix = None
         self.mtype = None
 
-        # If matrix file is supplied
+        # If matrix file is supplied:
         if matrix_file is not None:
-            read_arraytable(matrix_file, \
-                            mtype=mtype, \
-                            arraytable_object = self)
+            read_arraytable(matrix_file, mtype=mtype, arraytable_object=self)
 
-    def get_row_vector(self,rowname):
+    def get_row_vector(self, rowname):
         """ Returns the vector associated to the given row name """
-        return self.rowValues.get(rowname,None)
+        return self.rowValues.get(rowname)
 
 
-    def get_column_vector(self,colname):
+    def get_column_vector(self, colname):
         """ Returns the vector associated to the given column name """
-        return self.colValues.get(colname,None)
+        return self.colValues.get(colname)
 
 
-    def get_several_column_vectors(self,colnames):
+    def get_several_column_vectors(self, colnames):
         """ Returns a list of vectors associated to several column names """
         vectors = [self.colValues[cname] for cname in colnames]
-        return numpy.array(vectors)
+        return np.array(vectors)
 
-    def get_several_row_vectors(self,rownames):
+    def get_several_row_vectors(self, rownames):
         """ Returns a list vectors associated to several row names """
         vectors = [self.rowValues[rname] for rname in rownames]
-        return numpy.array(vectors)
+        return np.array(vectors)
 
-    def remove_column(self,colname):
+    def remove_column(self, colname):
         """Removes the given column form the current dataset """
         col_value = self.colValues.pop(colname, None)
         if col_value is not None:
@@ -117,7 +110,7 @@ class ArrayTable:
 
         grouped_array.rowNames= self.rowNames
         grouped_array.colNames= colNames
-        vmatrix = numpy.array(grouped_matrix).transpose()
+        vmatrix = np.array(grouped_matrix).transpose()
         grouped_array._link_names2matrix(vmatrix)
         return grouped_array
 
@@ -164,33 +157,33 @@ class ArrayTable:
 
 
 
-def get_centroid_dist(vcenter,vlist,fdist):
+def get_centroid_dist(vcenter, vlist, fdist):
     d = 0.0
     for v in vlist:
-        d += fdist(v,vcenter)
-    return 2*(d / len(vlist))
+        d += fdist(v, vcenter)
+    return 2 * (d / len(vlist))
 
-def get_average_centroid_linkage_dist(vcenter1,vlist1,vcenter2,vlist2,fdist):
-    d1,d2 = 0.0, 0.0
+def get_average_centroid_linkage_dist(vcenter1, vlist1, vcenter2, vlist2, fdist):
+    d1, d2 = 0.0, 0.0
     for v in vlist1:
-        d1 += fdist(v,vcenter2)
+        d1 += fdist(v, vcenter2)
     for v in vlist2:
-        d2 += fdist(v,vcenter1)
-    return (d1+d2) / (len(vlist1)+len(vlist2))
+        d2 += fdist(v, vcenter1)
+    return (d1 + d2) / (len(vlist1) + len(vlist2))
 
 def safe_mean(values):
     """ Returns mean value discarding non finite values """
     valid_values = []
     for v in values:
-        if numpy.isfinite(v):
+        if np.isfinite(v):
             valid_values.append(v)
-    return numpy.mean(valid_values), numpy.std(valid_values)
+    return np.mean(valid_values), np.std(valid_values)
 
 def safe_mean_vector(vectors):
     """ Returns mean profile discarding non finite values """
     # if only one vector, avg = itself
     if len(vectors)==1:
-        return vectors[0], numpy.zeros(len(vectors[0]))
+        return vectors[0], np.zeros(len(vectors[0]))
     # Takes the vector length form the first item
     length = len(vectors[0])
 
@@ -200,24 +193,20 @@ def safe_mean_vector(vectors):
     for pos in range(length):
         pos_mean = []
         for v in vectors:
-            if numpy.isfinite(v[pos]):
+            if np.isfinite(v[pos]):
                 pos_mean.append(v[pos])
-        safe_mean.append(numpy.mean(pos_mean))
-        safe_std.append(numpy.std(pos_mean))
+        safe_mean.append(np.mean(pos_mean))
+        safe_std.append(np.std(pos_mean))
     return safe_mean, safe_std
 
 def get_mean_vector(vlist):
-    a = numpy.array(vlist)
-    return numpy.mean(a,0)
+    return np.mean(vlist, 0)
 
 def get_median_vector(vlist):
-    a = numpy.array(vlist)
-    return numpy.median(a)
+    return np.median(vlist)
 
 def get_max_vector(vlist):
-    a = numpy.array(vlist)
-    return numpy.max(a,0)
+    return np.max(vlist, 0)
 
 def get_min_vector(vlist):
-    a = numpy.array(vlist)
-    return numpy.min(a,0)
+    return np.min(vlist, 0)
