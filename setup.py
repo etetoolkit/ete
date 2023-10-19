@@ -29,8 +29,8 @@ setup(
               'ete4/treeview'],
     ext_modules=cythonize([
         'ete4/core/tree.pyx',
+        'ete4/core/operations.pyx',
         'ete4/parser/newick.pyx',
-        'ete4/smartview/renderer/gardening.pyx',
         'ete4/smartview/renderer/face_positions.pyx'], language_level=3),
     data_files=[
         ('share/ete4/static',

@@ -9,6 +9,7 @@ import logging
 import math
 
 from . import text_viz
+from . import operations as ops
 from .. import utils
 from ete4.parser import newick
 from ..parser import ete_format
@@ -1097,8 +1098,7 @@ cdef class Tree(object):
         :param bprops: List of branch properties (other than "dist"
             and "support").
         """
-        from ..smartview.renderer.gardening import root_at
-        root_at(outgroup, bprops)
+        ops.set_outgroup(outgroup, bprops)
 
     def unroot(self, mode='legacy'):
         """Unroot current node.
@@ -1742,12 +1742,10 @@ cdef class Tree(object):
         return md5(str(sorted(edge_keys)).encode('utf-8')).hexdigest()
 
     def to_ultrametric(self, topological=False):
-        """Convert tree to ultrametric (all leaves equally distant from root)."""
-        from ..smartview.renderer.gardening import update_sizes_all
-
+        """Convert tree to ultrametric (all leaves equidistant from root)."""
         self.dist = self.dist or 0  # covers common case of not having dist set
 
-        update_sizes_all(self)  # so node.size[0] are distances to leaves
+        ops.update_sizes_all(self)  # so node.size[0] are distances to leaves
 
         dist_full = self.size[0]  # original distance from root to furthest leaf
 
@@ -1756,7 +1754,7 @@ cdef class Tree(object):
             # Ignore original distances and just use the tree topology.
             for node in self.traverse():
                 node.dist = 1 if node.up else 0
-            update_sizes_all(self)
+            ops.update_sizes_all(self)
             dist_full = dist_full if dist_full > 0 else self.size[0]
 
         for node in self.traverse():

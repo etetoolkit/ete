@@ -4,8 +4,6 @@ Tree-related operations.
 Sorting, changing the root to a node, moving branches, removing (prunning)...
 """
 
-# "Arboriculture" may be more precise than "gardening", but it's a mouthful :)
-
 def sort(tree, key=None, reverse=False):
     """Sort the tree in-place."""
     key = key or (lambda node: (node.size[1], node.size[0], node.name))
@@ -16,7 +14,7 @@ def sort(tree, key=None, reverse=False):
     tree.children.sort(key=key, reverse=reverse)
 
 
-def root_at(node, bprops=None):
+def set_outgroup(node, bprops=None):
     """Reroot the tree where node is, so it becomes the first child of the root.
 
     The original root node will be used as the new root node, so any
@@ -28,7 +26,7 @@ def root_at(node, bprops=None):
     old_root = node.root
     positions = node.id  # child positions from root to node (like [1, 0, ...])
 
-    assert_consistency(old_root, bprops)
+    assert_root_consistency(old_root, bprops)
     assert node != old_root, 'cannot set the absolute tree root as outgroup'
 
     # Make a new node to replace the old root.
@@ -48,7 +46,7 @@ def root_at(node, bprops=None):
         join_branch(replacement)
 
 
-def assert_consistency(root, bprops=None):
+def assert_root_consistency(root, bprops=None):
     """Raise AssertionError if the root node of a tree looks inconsistent."""
     assert root.dist in [0, None], 'root has a distance'
 
@@ -148,6 +146,8 @@ def remove(node):
     parent.remove_child(node)
 
 
+# Size-related functions.
+
 def update_sizes_all(tree):
     """Update sizes of all the nodes in the tree."""
     for node in tree.children:
@@ -183,6 +183,8 @@ cdef (double, double) get_size(nodes):
 
     return sumdists, nleaves
 
+
+# Convenience (hackish) functions.
 
 def maybe_convert_internal_nodes_to_support(tree):
     """Convert if possible the values in internal nodes to support values."""

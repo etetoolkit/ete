@@ -42,7 +42,7 @@ from ete4 import Tree
 from ete4.parser import newick
 from ete4.smartview import TreeStyle, layout_modules
 from ete4.parser import ete_format, nexus
-from ete4.smartview.renderer import gardening as gdn
+from ete4.core import operations as ops
 from ete4.smartview.renderer import drawer as drawer_module
 from ete4 import treematcher as tm
 
@@ -516,7 +516,7 @@ def callback(tree_id):
 
     node_id = req_json()
     tree.tree.set_outgroup(tree.tree[node_id])
-    gdn.update_sizes_all(tree.tree)
+    ops.update_sizes_all(tree.tree)
     return {'message': 'ok'}
 
 @put('/trees/<tree_id>/move')
@@ -525,7 +525,7 @@ def callback(tree_id):
 
     try:
         node_id, shift = req_json()
-        gdn.move(tree.tree[subtree][node_id], shift)
+        ops.move(tree.tree[subtree][node_id], shift)
         return {'message': 'ok'}
     except AssertionError as e:
         abort(400, f'cannot move {node_id}: {e}')
@@ -536,8 +536,8 @@ def callback(tree_id):
 
     try:
         node_id = req_json()
-        gdn.remove(tree.tree[subtree][node_id])
-        gdn.update_sizes_all(tree.tree)
+        ops.remove(tree.tree[subtree][node_id])
+        ops.update_sizes_all(tree.tree)
         return {'message': 'ok'}
     except AssertionError as e:
         abort(400, f'cannot remove {node_id}: {e}')
@@ -559,7 +559,7 @@ def callback(tree_id):
         node_id, content = req_json()
         node = tree.tree[subtree][node_id]
         node.props = newick.get_props(content, is_leaf=True)
-        gdn.update_sizes_all(tree.tree)
+        ops.update_sizes_all(tree.tree)
         return {'message': 'ok'}
     except (AssertionError, newick.NewickError) as e:
         abort(400, f'cannot edit {node_id}: {e}')
@@ -593,8 +593,8 @@ def callback(tree_id):
 
     tree.initialized = False
 
-    gdn.maybe_convert_internal_nodes_to_support(tree.tree)
-    gdn.update_sizes_all(tree.tree)
+    ops.maybe_convert_internal_nodes_to_support(tree.tree)
+    ops.update_sizes_all(tree.tree)
 
     return {'message': 'ok'}
 
@@ -651,7 +651,7 @@ def load_tree(tree_id):
 
             if tree.style.ultrametric:
                 tree.tree.to_ultrametric()
-                gdn.update_sizes_all(tree.tree)
+                ops.update_sizes_all(tree.tree)
 
             initialize_tree_style(tree)
 
@@ -667,8 +667,8 @@ def load_tree_from_newick(tid, nw):
     if app.trees[int(tid)].style.ultrametric:
         t.to_ultrametric()
 
-    gdn.maybe_convert_internal_nodes_to_support(t)
-    gdn.update_sizes_all(t)
+    ops.maybe_convert_internal_nodes_to_support(t)
+    ops.update_sizes_all(t)
 
     return t
 
@@ -781,7 +781,7 @@ def get_drawer(tree_id, args):
         ultrametric = args.get('ultrametric') == '1'  # asked for ultrametric?
         if ultrametric and not tree.style.ultrametric:  # change to on
             tree.tree.to_ultrametric()
-            gdn.update_sizes_all(tree.tree)
+            ops.update_sizes_all(tree.tree)
             initialize_tree_style(tree, ultrametric=True)
         elif not ultrametric and tree.style.ultrametric:  # change to off
             app.trees.pop(tid, None)  # delete from memory
@@ -1020,7 +1020,7 @@ def prune_by_selection(tid, args):
 
     tree.tree.prune(selected)
 
-    gdn.update_sizes_all(tree.tree)
+    ops.update_sizes_all(tree.tree)
 
     tree.initialized = False
 
@@ -1288,7 +1288,7 @@ def sort(tree_id, node_id, key_text, reverse):
             'children': node.children, 'ch': node.children,
             'len': len, 'sum': sum, 'abs': abs})
 
-    gdn.sort(t[node_id], key, reverse)
+    ops.sort(t[node_id], key, reverse)
 
 
 def add_trees_from_request():
@@ -1403,15 +1403,15 @@ def add_tree(data):
         tree = load_tree_from_newick(tid, nw)
     elif bpickle is not None:
         tree = ete_format.loads(bpickle, unpack=True)
-        gdn.maybe_convert_internal_nodes_to_support(tree)
-        gdn.update_sizes_all(tree)
+        ops.maybe_convert_internal_nodes_to_support(tree)
+        ops.update_sizes_all(tree)
     else:
         tree = data.get('tree')
         if not tree:
             abort(400, 'Either Newick or Tree object has to be provided.')
 
     # TODO: Do we need to do this? (Maybe for the trees uploaded with a POST)
-    # gdn.update_sizes_all(t)
+    # ops.update_sizes_all(t)
 
     app_tree = app.trees[tid]
     app_tree.name = name
@@ -1616,8 +1616,8 @@ def run_smartview(tree=None, name=None, layouts=[],
     # TODO: Create app.recent_trees with paths to recently viewed trees
 
     if tree:
-        gdn.maybe_convert_internal_nodes_to_support(tree)
-        gdn.update_sizes_all(tree)
+        ops.maybe_convert_internal_nodes_to_support(tree)
+        ops.update_sizes_all(tree)
 
         tree_data = {
             'id': 0,  # id to be replaced by actual hash
