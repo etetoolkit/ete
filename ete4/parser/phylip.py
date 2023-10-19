@@ -2,12 +2,13 @@ import os
 import re
 from sys import stderr as STDERR
 
+from ete4.core import seqgroup
+
+
 def read_phylip(source, interleaved=True, obj=None,
                 relaxed=False, fix_duplicates=True):
     if obj is None:
-        # SeqGroup imported here to avoid ImportError from circular import.
-        from ete4.core.seqgroup import SeqGroup
-        SG = SeqGroup()
+        SG = seqgroup.SeqGroup()
     else:
         SG = obj
 
