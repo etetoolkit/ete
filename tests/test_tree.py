@@ -710,7 +710,7 @@ class Test_Core_Tree(unittest.TestCase):
 
         # Swap childs
         n = t.get_children()
-        t.swap_children()
+        t.reverse_children()
         n.reverse()
         self.assertEqual(n, t.get_children())
 
@@ -1011,7 +1011,7 @@ class Test_Core_Tree(unittest.TestCase):
         nodes = list(t.descendants())
         for i in range(20):
             for n in random.sample(nodes, 10):
-                n.swap_children()
+                n.reverse_children()
                 self.assertEqual(t.get_topology_id(), orig_id)
 
     def test_node_id(self):

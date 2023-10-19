@@ -627,8 +627,8 @@ cdef class Tree(object):
 
                 n.delete(prevent_nondicotomic=False)
 
-    def swap_children(self):
-        """Swap current children order (reversing it)."""
+    def reverse_children(self):
+        """Reverse current children order."""
         self.children.reverse()
 
     # #####################

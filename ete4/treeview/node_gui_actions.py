@@ -121,7 +121,7 @@ class _NodeActions:
         contextMenu.addAction( "Delete partition", self.detach_node)
         contextMenu.addAction( "Populate subtree", self.populate_partition)
         contextMenu.addAction( "Add children", self.add_children)
-        contextMenu.addAction( "Swap branches", self.swap_branches)
+        contextMenu.addAction( "Reverse branches", self.reverse_branches)
         if self.node.img_style["draw_descendants"] == False:
             contextMenu.addAction( "Open", self.toggle_collapse)
         else:
@@ -202,8 +202,8 @@ class _NodeActions:
         self.node.detach()
         self.scene().GUI.redraw()
 
-    def swap_branches(self):
-        self.node.swap_children()
+    def reverse_branches(self):
+        self.node.reverse_children()
         self.scene().GUI.redraw()
 
     def add_children(self):

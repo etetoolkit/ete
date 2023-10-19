@@ -142,7 +142,7 @@ def draw_tree(tree, conf, outfile):
         tree.set_species_naming_function(spname)
         annotate_tree_with_ncbi(tree)
         tree.set_outgroup(out)
-        tree.swap_children()
+        tree.reverse_children()
     except Exception:
         pass
 

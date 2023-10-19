@@ -20,7 +20,7 @@ def random_swap(tree):
     '''
     for node in tree.descendants():
         if int (rnd()*100)%3:
-            node.swap_children()
+            node.reverse_children()
 
 def check_annotation (tree):
     '''
