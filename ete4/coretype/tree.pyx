@@ -2152,7 +2152,7 @@ cdef class Tree(object):
 
         Example::
 
-          t = Tree.from_skibio(skbioTree, map_attributes=['value'])
+            t = Tree.from_skibio(skbioTree, map_attributes=['value'])
         """
         from skbio import TreeNode as skbioTreeNode
 
