@@ -192,7 +192,7 @@ def maybe_convert_internal_nodes_to_support(tree):
     # where s1, s2, etc. are support values, not names. But they use the
     # wrong newick parser. Well, this function tries to hackishly fix that.
     for node in tree.traverse():
-        if not node.is_leaf:
+        if not node.is_leaf and node.name:
             try:
                 node.support = float(node.name)
                 node.name = ''
