@@ -1,7 +1,6 @@
-import random
 import copy
 import itertools
-from collections import deque, namedtuple
+from collections import deque
 from hashlib import md5
 from functools import cmp_to_key
 import pickle
@@ -1034,58 +1033,8 @@ cdef class Tree(object):
         :param support_range: Range (tuple with min and max) of distances
             used to generate branch supports if random_branches is True.
         """
-        assert names_library is None or len(names_library) >= size, \
-            f'names_library too small ({len(names_library)}) for size {size}'
-
-        NewNode = self.__class__
-
-        if len(self.children) > 1:
-            connector = NewNode()
-            for ch in self.get_children():
-                ch.detach()
-                connector.add_child(ch)
-            root = NewNode()
-            self.add_child(connector)
-            self.add_child(root)
-        else:
-            root = self
-
-        next_deq = deque([root])  # will contain the current leaves
-        for i in range(size - 1):
-            p = next_deq.popleft() if random.randint(0, 1) else next_deq.pop()
-
-            c1 = p.add_child()
-            c2 = p.add_child()
-
-            next_deq.extend([c1, c2])
-
-            if random_branches:
-                c1.dist = random.uniform(*dist_range)
-                c2.dist = random.uniform(*dist_range)
-                c1.support = random.uniform(*support_range)
-                c2.support = random.uniform(*support_range)
-            else:
-                c1.dist = 1.0
-                c2.dist = 1.0
-                c1.support = 1.0
-                c2.support = 1.0
-
-        # Give names to leaves.
-        if names_library is not None:
-            for node, name in zip(next_deq, names_library):
-                node.name = name
-        else:
-            chars = 'abcdefghijklmnopqrstuvwxyz'
-
-            for i, node in enumerate(next_deq):
-                # Create a short name corresponding to the index i.
-                # 0: 'a', 1: 'b', ..., 25: 'z', 26: 'aa', 27: 'ab', ...
-                name = ''
-                while i >= 0:
-                    name = chars[i % len(chars)] + name
-                    i = i // len(chars) - 1
-
-                node.name = name
+        ops.populate(self, size, names_library, random_branches,
+                     dist_range, support_range)
 
     def set_outgroup(self, outgroup, bprops=None):
         """Reroot the tree at the given outgroup node.

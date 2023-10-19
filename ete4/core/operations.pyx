@@ -4,7 +4,8 @@ Tree-related operations.
 Sorting, changing the root to a node, moving branches, removing (prunning)...
 """
 
-from collections import namedtuple
+import random
+from collections import namedtuple, deque
 
 
 def sort(tree, key=None, reverse=False):
@@ -147,6 +148,79 @@ def remove(node):
 
     parent = node.up
     parent.remove_child(node)
+
+
+# Functions that used to be defined inside tree.pyx.
+
+def populate(tree, size, names_library=None, random_branches=False,
+             dist_range=(0, 1), support_range=(0, 1)):
+    """Populate tree with branches generating a random topology.
+
+    All the nodes added will either be leaves or have two branches.
+
+    :param size: Number of leaves to add. The necessary
+        intermediate nodes will be created too.
+    :param names_library: Collection (list or set) used to name leaves.
+        If None, leaves will be named using short letter sequences.
+    :param random_branches: If True, branch distances and support
+        values will be randomized.
+    :param dist_range: Range (tuple with min and max) of distances
+        used to generate branch distances if random_branches is True.
+    :param support_range: Range (tuple with min and max) of distances
+        used to generate branch supports if random_branches is True.
+    """
+    assert names_library is None or len(names_library) >= size, \
+        f'names_library too small ({len(names_library)}) for size {size}'
+
+    NewNode = tree.__class__
+
+    if len(tree.children) > 1:
+        connector = NewNode()
+        for ch in tree.get_children():
+            ch.detach()
+            connector.add_child(ch)
+        root = NewNode()
+        tree.add_child(connector)
+        tree.add_child(root)
+    else:
+        root = tree
+
+    next_deq = deque([root])  # will contain the current leaves
+    for i in range(size - 1):
+        p = next_deq.popleft() if random.randint(0, 1) else next_deq.pop()
+
+        c1 = p.add_child()
+        c2 = p.add_child()
+
+        next_deq.extend([c1, c2])
+
+        if random_branches:
+            c1.dist = random.uniform(*dist_range)
+            c2.dist = random.uniform(*dist_range)
+            c1.support = random.uniform(*support_range)
+            c2.support = random.uniform(*support_range)
+        else:
+            c1.dist = 1.0
+            c2.dist = 1.0
+            c1.support = 1.0
+            c2.support = 1.0
+
+    # Give names to leaves.
+    if names_library is not None:
+        for node, name in zip(next_deq, names_library):
+            node.name = name
+    else:
+        chars = 'abcdefghijklmnopqrstuvwxyz'
+
+        for i, node in enumerate(next_deq):
+            # Create a short name corresponding to the index i.
+            # 0: 'a', 1: 'b', ..., 25: 'z', 26: 'aa', 27: 'ab', ...
+            name = ''
+            while i >= 0:
+                name = chars[i % len(chars)] + name
+                i = i // len(chars) - 1
+
+            node.name = name
 
 
 # Traversing the tree.
