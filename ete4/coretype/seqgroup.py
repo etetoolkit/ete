@@ -59,7 +59,7 @@ class SeqGroup:
                 args = self.parsers[format][2]
                 read(sequences, obj=self, fix_duplicates=fix_duplicates, **args)
             else:
-                raise ValueError('Unsupported format: [%s]' % format)
+                raise ValueError(f'Unsupported format: {format}')
 
     def __len__(self):
         return len(self.id2seq)
@@ -93,7 +93,8 @@ class SeqGroup:
     def iter_entries(self):
         """Return an iterator over all sequences in the collection.
 
-        Each item is a tuple with the sequence name, sequence, and sequence comments.
+        Each item is a tuple with the sequence name, sequence, and
+        sequence comments.
         """
         for i, seq in self.id2seq.items():
             yield self.id2name[i], seq, self.id2comment.get(i, [])
@@ -112,8 +113,6 @@ class SeqGroup:
 
     def set_seq(self, name, seq, comments=None):
         """Add or update a sequence."""
-        comments = comments or []
-
         name = name.strip()
 
         for c in ' \t\n\r':
@@ -123,5 +122,5 @@ class SeqGroup:
 
         self.name2id[name] = seqid
         self.id2name[seqid] = name
-        self.id2comment[seqid] = comments
+        self.id2comment[seqid] = comments or []
         self.id2seq[seqid] = seq
