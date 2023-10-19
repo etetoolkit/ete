@@ -149,13 +149,14 @@ def remove(node):
 
 
 def update_sizes_all(tree):
+    """Update sizes of all the nodes in the tree."""
     for node in tree.children:
         update_sizes_all(node)
     update_size(tree)
 
 
 def update_sizes_from(node):
-    "Update the sizes from the given node to the root of the tree"
+    """Update the sizes from the given node to the root of the tree."""
     while node:
         update_size(node)
         node = node.up
