@@ -197,9 +197,6 @@ def safe_mean_vector(vectors):
 def get_mean_vector(vlist):
     return np.mean(vlist, 0)
 
-def get_median_vector(vlist):
-    return np.median(vlist)
-
 def get_max_vector(vlist):
     return np.max(vlist, 0)
 
