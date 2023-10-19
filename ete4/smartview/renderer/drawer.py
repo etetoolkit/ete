@@ -8,7 +8,7 @@ import random
 
 from time import time
 
-from .walk import walk
+from ete4.core import operations as ops
 from .. import TreeStyle
 from .face_positions import FACE_POSITIONS, make_faces
 from . import draw_helpers as dh
@@ -111,7 +111,7 @@ class Drawer:
             yield from self.tree_style.get_legend()
         else:
             point = self.xmin, self.ymin
-            for it in walk(self.tree):
+            for it in ops.walk(self.tree):
                 graphics = []
                 if it.first_visit:
                     point = self.on_first_visit(point, it, graphics)
