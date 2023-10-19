@@ -25,13 +25,14 @@ def root_at(node, bprops=None):
     :param node: Node where to set root (future first child of the root).
     :param bprops: List of branch properties (other than "dist" and "support").
     """
-    old_root, node_id = get_root_id(node)
+    old_root = node.root
+    positions = node.id  # child positions from root to node (like [1, 0, ...])
 
     assert_consistency(old_root, bprops)
     assert node != old_root, 'cannot set the absolute tree root as outgroup'
 
     # Make a new node to replace the old root.
-    replacement = old_root.__class__()
+    replacement = old_root.__class__()  # could be Tree() or PhyloTree(), etc.
 
     children = old_root.remove_children()
     replacement.add_children(children)  # take its children
@@ -40,7 +41,7 @@ def root_at(node, bprops=None):
     insert_intermediate(node, old_root, bprops)
 
     root = replacement  # current root, which will change in each iteration
-    for child_pos in node_id:
+    for child_pos in positions:
         root = rehang(root, child_pos, bprops)
 
     if len(replacement.children) == 1:
@@ -60,23 +61,11 @@ def assert_consistency(root, bprops=None):
         assert s1 == s2, 'inconsistent support at the root: %r != %r' % (s1, s2)
 
 
-def get_root_id(node):
-    """Return the root of the tree of which node is part of, and its node_id."""
-    # For the returned  (root, node_id)  we have  root[node_id] == node
-    positions = []
-    current, parent = node, node.up
-    while parent:
-        positions.append(parent.children.index(current))
-        current, parent = parent, parent.up
-    return current, positions[::-1]
-
-
 def rehang(root, child_pos, bprops):
     """Rehang node on its child at position child_pos and return it."""
     # root === child  ->  child === root
     child = root.pop_child(child_pos)
 
-    child.up = root.up
     child.add_child(root)
 
     swap_props(root, child, ['dist', 'support'] + (bprops or []))
