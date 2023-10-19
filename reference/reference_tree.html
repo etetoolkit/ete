@@ -922,6 +922,12 @@ checked and fixed.</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="ete4.Tree.reverse_children">
+<span class="sig-name descname"><span class="pre">reverse_children</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.reverse_children" title="Link to this definition">¶</a></dt>
+<dd><p>Reverse current children order.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ete4.Tree.robinson_foulds">
 <span class="sig-name descname"><span class="pre">robinson_foulds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prop_t1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'name'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prop_t2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'name'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unrooted_trees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expand_polytomies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polytomy_size_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_large_polytomies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">correct_by_polytomy_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_support_t1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_support_t2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.robinson_foulds" title="Link to this definition">¶</a></dt>
 <dd><p>Return the Robinson-Foulds distance to the tree, and related info.</p>
@@ -1048,12 +1054,6 @@ and multifurcations are automatically resolved.</p>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.swap_children">
-<span class="sig-name descname"><span class="pre">swap_children</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.swap_children" title="Link to this definition">¶</a></dt>
-<dd><p>Swap current children order (reversing it).</p>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="ete4.Tree.to_str">
 <span class="sig-name descname"><span class="pre">to_str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">show_internal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">props</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">px</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">py</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">px0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">waterfall</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.to_str" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -1061,7 +1061,7 @@ and multifurcations are automatically resolved.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.Tree.to_ultrametric">
 <span class="sig-name descname"><span class="pre">to_ultrametric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.to_ultrametric" title="Link to this definition">¶</a></dt>
-<dd><p>Convert tree to ultrametric (all leaves equally distant from root).</p>
+<dd><p>Convert tree to ultrametric (all leaves equidistant from root).</p>
 </dd></dl>
 
 <dl class="py method">

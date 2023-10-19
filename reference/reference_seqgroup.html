@@ -33,19 +33,19 @@
 
           <div class="body" role="main">
             
-  <section id="module-ete4.coretype.seqgroup">
-<span id="multiple-sequence-alignments-seqgroup"></span><h1>Multiple Sequence Alignments (SeqGroup)<a class="headerlink" href="#module-ete4.coretype.seqgroup" title="Link to this heading">¶</a></h1>
+  <section id="module-ete4.core.seqgroup">
+<span id="multiple-sequence-alignments-seqgroup"></span><h1>Multiple Sequence Alignments (SeqGroup)<a class="headerlink" href="#module-ete4.core.seqgroup" title="Link to this heading">¶</a></h1>
 <p>This module provides the SeqGroup class with methods to operate with
 Multiple Sequence Files, including Multiple Sequence Alignments.</p>
 <p>Currently, Fasta, Phylip sequencial and Phylip interleaved formats are
 supported.</p>
 <dl class="py class">
-<dt class="sig sig-object py" id="ete4.coretype.seqgroup.SeqGroup">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SeqGroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequences</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fasta'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fix_duplicates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/coretype/seqgroup.html#SeqGroup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.coretype.seqgroup.SeqGroup" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.seqgroup.SeqGroup">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SeqGroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequences</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fasta'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fix_duplicates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/core/seqgroup.html#SeqGroup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.core.seqgroup.SeqGroup" title="Link to this definition">¶</a></dt>
 <dd><p>Class to store a set of sequences (aligned or not).</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.coretype.seqgroup.SeqGroup.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequences</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fasta'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fix_duplicates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/coretype/seqgroup.html#SeqGroup.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.coretype.seqgroup.SeqGroup.__init__" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.seqgroup.SeqGroup.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequences</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fasta'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fix_duplicates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/core/seqgroup.html#SeqGroup.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.core.seqgroup.SeqGroup.__init__" title="Link to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -72,34 +72,34 @@ effect, you can use the relaxed phylip format:
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.coretype.seqgroup.SeqGroup.get_entries">
-<span class="sig-name descname"><span class="pre">get_entries</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/coretype/seqgroup.html#SeqGroup.get_entries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.coretype.seqgroup.SeqGroup.get_entries" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.seqgroup.SeqGroup.get_entries">
+<span class="sig-name descname"><span class="pre">get_entries</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/core/seqgroup.html#SeqGroup.get_entries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.core.seqgroup.SeqGroup.get_entries" title="Link to this definition">¶</a></dt>
 <dd><p>Return the list of entries currently stored.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.coretype.seqgroup.SeqGroup.get_seq">
-<span class="sig-name descname"><span class="pre">get_seq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/coretype/seqgroup.html#SeqGroup.get_seq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.coretype.seqgroup.SeqGroup.get_seq" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.seqgroup.SeqGroup.get_seq">
+<span class="sig-name descname"><span class="pre">get_seq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/core/seqgroup.html#SeqGroup.get_seq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.core.seqgroup.SeqGroup.get_seq" title="Link to this definition">¶</a></dt>
 <dd><p>Return the sequence associated to a given entry name.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.coretype.seqgroup.SeqGroup.iter_entries">
-<span class="sig-name descname"><span class="pre">iter_entries</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/coretype/seqgroup.html#SeqGroup.iter_entries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.coretype.seqgroup.SeqGroup.iter_entries" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.seqgroup.SeqGroup.iter_entries">
+<span class="sig-name descname"><span class="pre">iter_entries</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/core/seqgroup.html#SeqGroup.iter_entries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.core.seqgroup.SeqGroup.iter_entries" title="Link to this definition">¶</a></dt>
 <dd><p>Return an iterator over all sequences in the collection.</p>
 <p>Each item is a tuple with the sequence name, sequence, and
 sequence comments.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.coretype.seqgroup.SeqGroup.set_seq">
-<span class="sig-name descname"><span class="pre">set_seq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comments</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/coretype/seqgroup.html#SeqGroup.set_seq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.coretype.seqgroup.SeqGroup.set_seq" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.seqgroup.SeqGroup.set_seq">
+<span class="sig-name descname"><span class="pre">set_seq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comments</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/core/seqgroup.html#SeqGroup.set_seq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.core.seqgroup.SeqGroup.set_seq" title="Link to this definition">¶</a></dt>
 <dd><p>Add or update a sequence.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.coretype.seqgroup.SeqGroup.write">
-<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fasta'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/coretype/seqgroup.html#SeqGroup.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.coretype.seqgroup.SeqGroup.write" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.seqgroup.SeqGroup.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fasta'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/core/seqgroup.html#SeqGroup.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.core.seqgroup.SeqGroup.write" title="Link to this definition">¶</a></dt>
 <dd><p>Return the text representation of the sequences.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
