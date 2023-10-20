@@ -630,6 +630,13 @@ cdef class Tree(object):
         """Reverse current children order."""
         self.children.reverse()
 
+    def swap_children(self):
+        """Like reverse, but if there are only two children."""
+        n = len(self.children)
+        assert n == 2, f'Node has {n} children. Use reverse_children() instead?'
+
+        self.children.reverse()
+
     # #####################
     # Tree traversing
     # #####################
