@@ -1204,7 +1204,7 @@ cdef class Tree(object):
 
         return new_node
 
-    def ladderize(self, direction=0):
+    def ladderize(self, reverse=False):
         """Sort branches according to the size of each partition.
 
         Example::
@@ -1230,12 +1230,10 @@ cdef class Tree(object):
         if not self.is_leaf:
             n2s = {}
             for n in self.get_children():
-                s = n.ladderize(direction=direction)
+                s = n.ladderize(reverse=reverse)
                 n2s[n] = s
 
-            self.children.sort(key=lambda x: n2s[x])
-            if direction == 1:
-                self.children.reverse()
+            self.children.sort(key=lambda x: n2s[x], reverse=reverse)
             size = sum(n2s.values())
         else:
             size = 1
