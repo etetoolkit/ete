@@ -12,10 +12,8 @@ def sort(tree, key=None, reverse=False):
     """Sort the tree in-place."""
     key = key or (lambda node: (node.size[1], node.size[0], node.name))
 
-    for node in tree.children:
-        sort(node, key, reverse)
-
-    tree.children.sort(key=key, reverse=reverse)
+    for node in tree.traverse('postorder'):
+        node.children.sort(key=key, reverse=reverse)
 
 
 def set_outgroup(node, bprops=None):
