@@ -692,35 +692,6 @@ in postorder) and a node instance.</p>
 <dt class="sig sig-object py" id="ete4.Tree.ladderize">
 <span class="sig-name descname"><span class="pre">ladderize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.ladderize" title="Link to this definition">¶</a></dt>
 <dd><p>Sort branches according to the size of each partition.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>topological</strong> – If True, the distance between nodes will be the
-number of nodes between them (instead of the sum of branch lenghts).</p></li>
-<li><p><strong>reverse</strong> – If True, sort with biggest partitions first.</p></li>
-</ul>
-</dd>
-</dl>
-<p>Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(f,((d,((a,b),c)),e));&#39;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
-<span class="c1">#   ╭╴f</span>
-<span class="c1"># ──┤     ╭╴d</span>
-<span class="c1">#   │  ╭──┤  ╭──┬╴a</span>
-<span class="c1">#   ╰──┤  ╰──┤  ╰╴b</span>
-<span class="c1">#      │     ╰╴c</span>
-<span class="c1">#      ╰╴e</span>
-
-<span class="n">t</span><span class="o">.</span><span class="n">ladderize</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
-<span class="c1"># ──┬╴f</span>
-<span class="c1">#   ╰──┬╴e</span>
-<span class="c1">#      ╰──┬╴d</span>
-<span class="c1">#         ╰──┬╴c</span>
-<span class="c1">#            ╰──┬╴a</span>
-<span class="c1">#               ╰╴b</span>
-</pre></div>
-</div>
 </dd></dl>
 
 <dl class="py method">
@@ -766,23 +737,6 @@ number of nodes between them (instead of the sum of branch lenghts).</p></li>
 <dt class="sig sig-object py" id="ete4.Tree.populate">
 <span class="sig-name descname"><span class="pre">populate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names_library</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_branches</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">support_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">1)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.populate" title="Link to this definition">¶</a></dt>
 <dd><p>Populate current node with branches generating a random topology.</p>
-<p>All the nodes added will either be leaves or have two branches.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>size</strong> – Number of leaves to add. The necessary
-intermediate nodes will be created too.</p></li>
-<li><p><strong>names_library</strong> – Collection (list or set) used to name leaves.
-If None, leaves will be named using short letter sequences.</p></li>
-<li><p><strong>random_branches</strong> – If True, branch distances and support
-values will be randomized.</p></li>
-<li><p><strong>dist_range</strong> – Range (tuple with min and max) of distances
-used to generate branch distances if random_branches is True.</p></li>
-<li><p><strong>support_range</strong> – Range (tuple with min and max) of distances
-used to generate branch supports if random_branches is True.</p></li>
-</ul>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py attribute">
@@ -1002,20 +956,8 @@ value will be returned. See also <code class="xref py py-func docutils literal n
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.Tree.set_outgroup">
-<span class="sig-name descname"><span class="pre">set_outgroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outgroup</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bprops</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.set_outgroup" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">set_outgroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bprops</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.set_outgroup" title="Link to this definition">¶</a></dt>
 <dd><p>Reroot the tree at the given outgroup node.</p>
-<p>The outgroup node will become the first child of the root. The
-original root node will be used as the new root node, so any
-reference to it in the code will still be valid.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>outgroup</strong> – Future first child of the root.</p></li>
-<li><p><strong>bprops</strong> – List of branch properties (other than “dist”
-and “support”).</p></li>
-</ul>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py method">
