@@ -690,8 +690,17 @@ in postorder) and a node instance.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.Tree.ladderize">
-<span class="sig-name descname"><span class="pre">ladderize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.ladderize" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">ladderize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.ladderize" title="Link to this definition">¶</a></dt>
 <dd><p>Sort branches according to the size of each partition.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>topological</strong> – If True, the distance between nodes will be the
+number of nodes between them (instead of the sum of branch lenghts).</p></li>
+<li><p><strong>reverse</strong> – If True, sort with biggest partitions first.</p></li>
+</ul>
+</dd>
+</dl>
 <p>Example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(f,((d,((a,b),c)),e));&#39;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
@@ -1074,19 +1083,20 @@ and multifurcations are automatically resolved.</p>
 <dt class="sig sig-object py" id="ete4.Tree.traverse">
 <span class="sig-name descname"><span class="pre">traverse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strategy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'levelorder'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.traverse" title="Link to this definition">¶</a></dt>
 <dd><p>Traverse the tree structure under this node and yield the nodes.</p>
+<p>There are three possible strategies. There is a breadth-first
+search (BFS) named “levelorder”, and two depth-first searches
+(DFS) named “preorder” and “postorder”.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>strategy</strong> (<em>str</em>) – Set the way in which tree
-will be traversed. Possible values are: “preorder” (first
-parent and then children) “postorder” (first children and
-the parent) and “levelorder” (nodes are visited in order
-from root to leaves).</p></li>
-<li><p><strong>is_leaf_fn</strong> (<em>function</em>) – Function used to interrogate nodes about if
-they are terminal or internal. The function should
-receive a node instance as first argument and return True
-or False. Use this argument to traverse a tree by
-dynamically collapsing internal nodes matching <cite>is_leaf_fn</cite>.</p></li>
+<li><p><strong>strategy</strong> – Way in which the tree will be traversed. Can
+be: “preorder” (first parent and then children),
+“postorder” (first children and the parent), and
+“levelorder” (nodes visited in order from root to leaves).</p></li>
+<li><p><strong>is_leaf_fn</strong> – Function to check if a node is terminal (a
+“leaf”). The function should receive a node and return
+True/False. Use this to traverse a tree by dynamically
+collapsing internal nodes.</p></li>
 </ul>
 </dd>
 </dl>
