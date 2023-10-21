@@ -1202,8 +1202,12 @@ cdef class Tree(object):
 
         return new_node
 
-    def ladderize(self, reverse=False):
+    def ladderize(self, topological=False, reverse=False):
         """Sort branches according to the size of each partition.
+
+        :param topological: If True, the distance between nodes will be the
+            number of nodes between them (instead of the sum of branch lenghts).
+        :param reverse: If True, sort with biggest partitions first.
 
         Example::
 
@@ -1225,18 +1229,25 @@ cdef class Tree(object):
           #            ╰──┬╴a
           #               ╰╴b
         """
-        if not self.is_leaf:
-            n2s = {}
-            for n in self.get_children():
-                s = n.ladderize(reverse=reverse)
-                n2s[n] = s
+        sizes = {}  # sizes of the nodes
 
-            self.children.sort(key=lambda x: n2s[x], reverse=reverse)
-            size = sum(n2s.values())
-        else:
-            size = 1
+        # Key function for the sort order. Sort by size, then by # of children.
+        key = lambda node: (sizes[node], len(node.children))
 
-        return size
+        # Distance function (branch length to consider for each node).
+        dist = ((lambda node: 1) if topological else
+                (lambda node: float(node.props.get('dist', 1))))
+
+        for node in self.traverse('postorder'):
+            if node.is_leaf:
+                sizes[node] = dist(node)
+            else:
+                node.children.sort(key=key, reverse=reverse)  # time to sort!
+
+                sizes[node] = dist(node) + max(sizes[n] for n in node.children)
+
+                for n in node.children:
+                    sizes.pop(n)  # free memory, no need to keep all the sizes
 
     def sort_descendants(self, prop='name'):
         """Sort branches by node names.

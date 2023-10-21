@@ -440,8 +440,8 @@ class Test_Core_Tree(unittest.TestCase):
         t1 = Tree('((A,B),(C,D,E,F), (G,H,I));')
         t1.ladderize()
         self.assertEqual(list(t1.leaf_names()), [_ for _ in 'ABGHICDEF'])
-        t1.ladderize(direction=1)
-        self.assertEqual(list(t1.leaf_names()), [_ for _ in 'FEDCIHGBA'])
+        t1.ladderize(reverse=True)
+        self.assertEqual(list(t1.leaf_names()), [_ for _ in 'CDEFGHIAB'])
         t1.sort_descendants()
         self.assertEqual(list(t1.leaf_names()), [_ for _ in 'ABCDEFGHI'])
 
