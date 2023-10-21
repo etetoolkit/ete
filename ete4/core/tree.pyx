@@ -647,10 +647,7 @@ cdef class Tree(object):
 
     def get_sisters(self):
         """Return an independent list of sister nodes."""
-        if self.up is not None:
-            return [ch for ch in self.up.children if ch != self]
-        else:
-            return []
+        return [n for n in self.up.children if n != self] if self.up else []
 
     def leaves(self, is_leaf_fn=None):
         """Yield the terminal nodes (leaves) under this node."""
