@@ -465,21 +465,21 @@ cdef class Tree(object):
 
         Example::
 
-            t = Tree('(C,(B,A)H)root;')
-            print(t.to_str(props=['name']))
-            #       ╭╴C
-            # ╴root╶┤
-            #       │   ╭╴B
-            #       ╰╴H╶┤
-            #           ╰╴A
+          t = Tree('(C,(B,A)H)root;')
+          print(t.to_str(props=['name']))
+          #       ╭╴C
+          # ╴root╶┤
+          #       │   ╭╴B
+          #       ╰╴H╶┤
+          #           ╰╴A
 
-            t['H'].delete()  # delete the "H" node
-            print(t.to_str(props=['name']))
-            #       ╭╴C
-            #       │
-            # ╴root╶┼╴B
-            #       │
-            #       ╰╴A
+          t['H'].delete()  # delete the "H" node
+          print(t.to_str(props=['name']))
+          #       ╭╴C
+          #       │
+          # ╴root╶┼╴B
+          #       │
+          #       ╰╴A
         """
         parent = self.up
         if not parent:
@@ -828,7 +828,7 @@ cdef class Tree(object):
 
         Example::
 
-            t.write(props=['species', 'sci_name'])
+          t.write(props=['species', 'sci_name'])
         """
         parser = newick.INT_PARSERS[parser] if type(parser) == int else parser
 
@@ -857,8 +857,8 @@ cdef class Tree(object):
 
         Example::
 
-            for node in tree.search_nodes(dist=0.0, name='human'):
-                print(node.prop['support'])
+          for node in tree.search_nodes(dist=0.0, name='human'):
+              print(node.prop['support'])
         """
         for n in self.traverse():
             if all(n.props.get(key) == value or getattr(n, key, None) == value
@@ -2023,7 +2023,7 @@ cdef class Tree(object):
 
         Example::
 
-            t = Tree.from_skibio(skbioTree, map_attributes=['value'])
+          t = Tree.from_skibio(skbioTree, map_attributes=['value'])
         """
         from skbio import TreeNode as skbioTreeNode
 

@@ -78,8 +78,8 @@ class ArrayTable:
 
         Example::
 
-           my_groups = {'NewColumn': ['column5', 'column6']}
-           new_Array = Array.merge_columns(my_groups, 'max')
+          my_groups = {'NewColumn': ['column5', 'column6']}
+          new_Array = Array.merge_columns(my_groups, 'max')
         """
         groupings = {'max': get_max_vector,
                      'min': get_min_vector,
