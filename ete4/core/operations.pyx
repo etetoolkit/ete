@@ -17,7 +17,7 @@ def sort(tree, key=None, reverse=False):
 
 
 def set_outgroup(node, bprops=None):
-    """Reroot the tree where node is, so it becomes the first child of the root.
+    """Reroot the tree at the given outgroup node.
 
     The original root node will be used as the new root node, so any
     reference to it in the code will still be valid.
@@ -150,6 +150,20 @@ def remove(node):
 
 # Functions that used to be defined inside tree.pyx.
 
+def common_ancestor(nodes):
+    """Return the last node common to the lineages of the given nodes."""
+    if not nodes:
+        return None
+
+    curr = nodes[0]  # current node being the last common ancestor
+
+    for node in nodes[1:]:
+        lin_node = set(node.lineage())
+        curr = next((n for n in curr.lineage() if n in lin_node), None)
+
+    return curr  # which is now the last common ancestor of all nodes
+
+
 def populate(tree, size, names_library=None, random_branches=False,
              dist_range=(0, 1), support_range=(0, 1)):
     """Populate tree with branches generating a random topology.
@@ -219,6 +233,76 @@ def populate(tree, size, names_library=None, random_branches=False,
                 i = i // len(chars) - 1
 
             node.name = name
+
+
+def ladderize(tree, topological=False, reverse=False):
+    """Sort branches according to the size of each partition.
+
+    :param topological: If True, the distance between nodes will be the
+        number of nodes between them (instead of the sum of branch lenghts).
+    :param reverse: If True, sort with biggest partitions first.
+
+    Example::
+
+      t = Tree('(f,((d,((a,b),c)),e));')
+      print(t)
+      #   ╭╴f
+      # ──┤     ╭╴d
+      #   │  ╭──┤  ╭──┬╴a
+      #   ╰──┤  ╰──┤  ╰╴b
+      #      │     ╰╴c
+      #      ╰╴e
+
+      t.ladderize()
+      print(t)
+      # ──┬╴f
+      #   ╰──┬╴e
+      #      ╰──┬╴d
+      #         ╰──┬╴c
+      #            ╰──┬╴a
+      #               ╰╴b
+    """
+    sizes = {}  # sizes of the nodes
+
+    # Key function for the sort order. Sort by size, then by # of children.
+    key = lambda node: (sizes[node], len(node.children))
+
+    # Distance function (branch length to consider for each node).
+    dist = ((lambda node: 1) if topological else
+            (lambda node: float(node.props.get('dist', 1))))
+
+    for node in tree.traverse('postorder'):
+        if node.is_leaf:
+            sizes[node] = dist(node)
+        else:
+            node.children.sort(key=key, reverse=reverse)  # time to sort!
+
+            sizes[node] = dist(node) + max(sizes[n] for n in node.children)
+
+            for n in node.children:
+                sizes.pop(n)  # free memory, no need to keep all the sizes
+
+
+def to_ultrametric(tree, topological=False):
+    """Convert tree to ultrametric (all leaves equidistant from root)."""
+    tree.dist = tree.dist or 0  # covers common case of not having dist set
+
+    update_sizes_all(tree)  # so node.size[0] are distances to leaves
+
+    dist_full = tree.size[0]  # original distance from root to furthest leaf
+
+    if (topological or dist_full <= 0 or
+        any(node.dist is None for node in tree.traverse())):
+        # Ignore original distances and just use the tree topology.
+        for node in tree.traverse():
+            node.dist = 1 if node.up else 0
+        update_sizes_all(tree)
+        dist_full = dist_full if dist_full > 0 else tree.size[0]
+
+    for node in tree.traverse():
+        if node.dist > 0:
+            d = sum(n.dist for n in node.ancestors())
+            node.dist *= (dist_full - d) / node.size[0]
 
 
 # Traversing the tree.

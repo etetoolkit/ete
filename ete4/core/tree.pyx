@@ -843,21 +843,14 @@ cdef class Tree(object):
 
         All the nodes should have self as an ancestor, or an error is raised.
         """
-        if not nodes:
-            return None
-
         nodes = self._translate_nodes(nodes)
 
-        curr = nodes[0]  # current node being the last common ancestor
+        root = ops.common_ancestor(nodes)
 
-        for node in nodes:  # NOTE: not  nodes[1:]  in case self is no root of node[0]
-            lin_node = set(node.lineage(self))
-            curr = next((n for n in curr.lineage(self) if n in lin_node), None)
-
-        if curr is not None:
-            return curr  # which is now the last common ancestor of all nodes
-        else:
+        if root is None or self not in root.lineage():
             raise TreeError(f'No common ancestor for nodes: {nodes}')
+
+        return root
 
     def search_nodes(self, **conditions):
         """Yield nodes matching the given conditions.
@@ -1023,36 +1016,13 @@ cdef class Tree(object):
 
     def populate(self, size, names_library=None, random_branches=False,
                  dist_range=(0, 1), support_range=(0, 1)):
-        """Populate current node with branches generating a random topology.
-
-        All the nodes added will either be leaves or have two branches.
-
-        :param size: Number of leaves to add. The necessary
-            intermediate nodes will be created too.
-        :param names_library: Collection (list or set) used to name leaves.
-            If None, leaves will be named using short letter sequences.
-        :param random_branches: If True, branch distances and support
-            values will be randomized.
-        :param dist_range: Range (tuple with min and max) of distances
-            used to generate branch distances if random_branches is True.
-        :param support_range: Range (tuple with min and max) of distances
-            used to generate branch supports if random_branches is True.
-        """
+        """Populate current node with branches generating a random topology."""
         ops.populate(self, size, names_library, random_branches,
                      dist_range, support_range)
 
-    def set_outgroup(self, outgroup, bprops=None):
-        """Reroot the tree at the given outgroup node.
-
-        The outgroup node will become the first child of the root. The
-        original root node will be used as the new root node, so any
-        reference to it in the code will still be valid.
-
-        :param outgroup: Future first child of the root.
-        :param bprops: List of branch properties (other than "dist"
-            and "support").
-        """
-        ops.set_outgroup(outgroup, bprops)
+    def set_outgroup(self, node, bprops=None):
+        """Reroot the tree at the given outgroup node."""
+        ops.set_outgroup(node, bprops)
 
     def unroot(self, mode='legacy'):
         """Unroot current node.
@@ -1203,51 +1173,8 @@ cdef class Tree(object):
         return new_node
 
     def ladderize(self, topological=False, reverse=False):
-        """Sort branches according to the size of each partition.
-
-        :param topological: If True, the distance between nodes will be the
-            number of nodes between them (instead of the sum of branch lenghts).
-        :param reverse: If True, sort with biggest partitions first.
-
-        Example::
-
-          t = Tree('(f,((d,((a,b),c)),e));')
-          print(t)
-          #   ╭╴f
-          # ──┤     ╭╴d
-          #   │  ╭──┤  ╭──┬╴a
-          #   ╰──┤  ╰──┤  ╰╴b
-          #      │     ╰╴c
-          #      ╰╴e
-
-          t.ladderize()
-          print(t)
-          # ──┬╴f
-          #   ╰──┬╴e
-          #      ╰──┬╴d
-          #         ╰──┬╴c
-          #            ╰──┬╴a
-          #               ╰╴b
-        """
-        sizes = {}  # sizes of the nodes
-
-        # Key function for the sort order. Sort by size, then by # of children.
-        key = lambda node: (sizes[node], len(node.children))
-
-        # Distance function (branch length to consider for each node).
-        dist = ((lambda node: 1) if topological else
-                (lambda node: float(node.props.get('dist', 1))))
-
-        for node in self.traverse('postorder'):
-            if node.is_leaf:
-                sizes[node] = dist(node)
-            else:
-                node.children.sort(key=key, reverse=reverse)  # time to sort!
-
-                sizes[node] = dist(node) + max(sizes[n] for n in node.children)
-
-                for n in node.children:
-                    sizes.pop(n)  # free memory, no need to keep all the sizes
+        """Sort branches according to the size of each partition."""
+        ops.ladderize(self, topological, reverse)
 
     def sort_descendants(self, prop='name'):
         """Sort branches by node names.
@@ -1706,24 +1633,7 @@ cdef class Tree(object):
 
     def to_ultrametric(self, topological=False):
         """Convert tree to ultrametric (all leaves equidistant from root)."""
-        self.dist = self.dist or 0  # covers common case of not having dist set
-
-        ops.update_sizes_all(self)  # so node.size[0] are distances to leaves
-
-        dist_full = self.size[0]  # original distance from root to furthest leaf
-
-        if (topological or dist_full <= 0 or
-            any(node.dist is None for node in self.traverse())):
-            # Ignore original distances and just use the tree topology.
-            for node in self.traverse():
-                node.dist = 1 if node.up else 0
-            ops.update_sizes_all(self)
-            dist_full = dist_full if dist_full > 0 else self.size[0]
-
-        for node in self.traverse():
-            if node.dist > 0:
-                d = sum(n.dist for n in node.ancestors())
-                node.dist *= (dist_full - d) / node.size[0]
+        ops.to_ultrametric(self, topological)
 
     def is_monophyletic(self, nodes):
         """Return True if the nodes form a monophyletic group."""
