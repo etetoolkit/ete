@@ -2,10 +2,12 @@
 # the __all__ variable.
 from warnings import warn
 
-from .config import ETE_DATA_HOME, ETE_CONFIG_HOME, ETE_CACHE_HOME, update_ete_data
+from .core.tree import *
+from .core import operations
+from .config import (ETE_DATA_HOME, ETE_CONFIG_HOME, ETE_CACHE_HOME,
+                     update_ete_data)
 from .ncbi_taxonomy import *
 from .gtdb_taxonomy import *
-from .core.tree import *
 from .core.seqgroup import *
 from .phylo.phylotree import *
 from .evol.evoltree import *
