@@ -5,8 +5,9 @@ Reference Guide
    :maxdepth: 2
 
    reference_tree
+   reference_operations
    reference_phylo
    reference_clustering
    reference_seqgroup
-   reference_treeview
    reference_ncbi
+   reference_treeview

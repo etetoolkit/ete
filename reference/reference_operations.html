@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Tree operations &#8212; ETE Toolkit 4.0.0-beta documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=039e1c02" />
+    <script src="../_static/documentation_options.js?v=f03ed5e5"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Phylogenetic trees" href="reference_phylo.html" />
+    <link rel="prev" title="Tree (main class)" href="reference_tree.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-ete4.core.operations">
+<span id="tree-operations"></span><h1>Tree operations<a class="headerlink" href="#module-ete4.core.operations" title="Link to this heading">¶</a></h1>
+<p>Tree-related operations.</p>
+<p>Sorting, changing the root to a node, moving branches, removing (prunning)…</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="ete4.core.operations.Walker">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Walker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.Walker" title="Link to this definition">¶</a></dt>
+<dd><p>Represents the position when traversing a tree.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.core.operations.Walker.add_next_branch">
+<span class="sig-name descname"><span class="pre">add_next_branch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.Walker.add_next_branch" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ete4.core.operations.Walker.first_visit">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">first_visit</span></span><a class="headerlink" href="#ete4.core.operations.Walker.first_visit" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.core.operations.Walker.go_back">
+<span class="sig-name descname"><span class="pre">go_back</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.Walker.go_back" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ete4.core.operations.Walker.has_unvisited_branches">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">has_unvisited_branches</span></span><a class="headerlink" href="#ete4.core.operations.Walker.has_unvisited_branches" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ete4.core.operations.Walker.node">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">node</span></span><a class="headerlink" href="#ete4.core.operations.Walker.node" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ete4.core.operations.Walker.node_id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">node_id</span></span><a class="headerlink" href="#ete4.core.operations.Walker.node_id" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.assert_root_consistency">
+<span class="sig-name descname"><span class="pre">assert_root_consistency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bprops</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.assert_root_consistency" title="Link to this definition">¶</a></dt>
+<dd><p>Raise AssertionError if the root node of a tree looks inconsistent.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.common_ancestor">
+<span class="sig-name descname"><span class="pre">common_ancestor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.common_ancestor" title="Link to this definition">¶</a></dt>
+<dd><p>Return the last node common to the lineages of the given nodes.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.insert_intermediate">
+<span class="sig-name descname"><span class="pre">insert_intermediate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bprops</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.insert_intermediate" title="Link to this definition">¶</a></dt>
+<dd><p>Insert, between node and its parent, an intermediate node.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.join_branch">
+<span class="sig-name descname"><span class="pre">join_branch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.join_branch" title="Link to this definition">¶</a></dt>
+<dd><p>Substitute node for its only child.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.ladderize">
+<span class="sig-name descname"><span class="pre">ladderize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.ladderize" title="Link to this definition">¶</a></dt>
+<dd><p>Sort branches according to the size of each partition.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>topological</strong> – If True, the distance between nodes will be the
+number of nodes between them (instead of the sum of branch lenghts).</p></li>
+<li><p><strong>reverse</strong> – If True, sort with biggest partitions first.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(f,((d,((a,b),c)),e));&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+<span class="c1">#   ╭╴f</span>
+<span class="c1"># ──┤     ╭╴d</span>
+<span class="c1">#   │  ╭──┤  ╭──┬╴a</span>
+<span class="c1">#   ╰──┤  ╰──┤  ╰╴b</span>
+<span class="c1">#      │     ╰╴c</span>
+<span class="c1">#      ╰╴e</span>
+
+<span class="n">t</span><span class="o">.</span><span class="n">ladderize</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+<span class="c1"># ──┬╴f</span>
+<span class="c1">#   ╰──┬╴e</span>
+<span class="c1">#      ╰──┬╴d</span>
+<span class="c1">#         ╰──┬╴c</span>
+<span class="c1">#            ╰──┬╴a</span>
+<span class="c1">#               ╰╴b</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.maybe_convert_internal_nodes_to_support">
+<span class="sig-name descname"><span class="pre">maybe_convert_internal_nodes_to_support</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.maybe_convert_internal_nodes_to_support" title="Link to this definition">¶</a></dt>
+<dd><p>Convert if possible the values in internal nodes to support values.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.move">
+<span class="sig-name descname"><span class="pre">move</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shift</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.move" title="Link to this definition">¶</a></dt>
+<dd><p>Change the position of the current node with respect to its parent.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.populate">
+<span class="sig-name descname"><span class="pre">populate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names_library</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_branches</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">support_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">1)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.populate" title="Link to this definition">¶</a></dt>
+<dd><p>Populate tree with branches generating a random topology.</p>
+<p>All the nodes added will either be leaves or have two branches.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>size</strong> – Number of leaves to add. The necessary
+intermediate nodes will be created too.</p></li>
+<li><p><strong>names_library</strong> – Collection (list or set) used to name leaves.
+If None, leaves will be named using short letter sequences.</p></li>
+<li><p><strong>random_branches</strong> – If True, branch distances and support
+values will be randomized.</p></li>
+<li><p><strong>dist_range</strong> – Range (tuple with min and max) of distances
+used to generate branch distances if random_branches is True.</p></li>
+<li><p><strong>support_range</strong> – Range (tuple with min and max) of distances
+used to generate branch supports if random_branches is True.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.rehang">
+<span class="sig-name descname"><span class="pre">rehang</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">child_pos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bprops</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.rehang" title="Link to this definition">¶</a></dt>
+<dd><p>Rehang node on its child at position child_pos and return it.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.remove">
+<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.remove" title="Link to this definition">¶</a></dt>
+<dd><p>Remove the given node from its tree.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.set_outgroup">
+<span class="sig-name descname"><span class="pre">set_outgroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bprops</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.set_outgroup" title="Link to this definition">¶</a></dt>
+<dd><p>Reroot the tree at the given outgroup node.</p>
+<p>The original root node will be used as the new root node, so any
+reference to it in the code will still be valid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>node</strong> – Node where to set root (future first child of the root).</p></li>
+<li><p><strong>bprops</strong> – List of branch properties (other than “dist” and “support”).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.sort">
+<span class="sig-name descname"><span class="pre">sort</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.sort" title="Link to this definition">¶</a></dt>
+<dd><p>Sort the tree in-place.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.swap_props">
+<span class="sig-name descname"><span class="pre">swap_props</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">props</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.swap_props" title="Link to this definition">¶</a></dt>
+<dd><p>Swap properties between nodes n1 and n2.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.to_ultrametric">
+<span class="sig-name descname"><span class="pre">to_ultrametric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.to_ultrametric" title="Link to this definition">¶</a></dt>
+<dd><p>Convert tree to ultrametric (all leaves equidistant from root).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.update_size">
+<span class="sig-name descname"><span class="pre">update_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.update_size" title="Link to this definition">¶</a></dt>
+<dd><p>Update the size of the given node.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.update_sizes_all">
+<span class="sig-name descname"><span class="pre">update_sizes_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.update_sizes_all" title="Link to this definition">¶</a></dt>
+<dd><p>Update sizes of all the nodes in the tree.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.update_sizes_from">
+<span class="sig-name descname"><span class="pre">update_sizes_from</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.update_sizes_from" title="Link to this definition">¶</a></dt>
+<dd><p>Update the sizes from the given node to the root of the tree.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.walk">
+<span class="sig-name descname"><span class="pre">walk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.walk" title="Link to this definition">¶</a></dt>
+<dd><p>Yield an iterator as it traverses the tree.</p>
+</dd></dl>
+
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">ETE Toolkit</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs.html">Frequently Asked Questions (FAQs)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/index.html">ETE Tutorial</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Reference Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="reference_tree.html">Tree (main class)</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Tree operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_phylo.html">Phylogenetic trees</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_clustering.html">Clustering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_seqgroup.html">Multiple Sequence Alignments (SeqGroup)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_ncbi.html">NCBITaxa</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference_treeview.html">Treeview (qt graphics)</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Reference Guide</a><ul>
+      <li>Previous: <a href="reference_tree.html" title="previous chapter">Tree (main class)</a></li>
+      <li>Next: <a href="reference_phylo.html" title="next chapter">Phylogenetic trees</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2008 - 2023, The ETE Toolkit Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+      |
+      <a href="../_sources/reference/reference_operations.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

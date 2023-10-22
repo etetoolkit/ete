@@ -445,22 +445,22 @@ hierarchical structure of a tree.</p>
 Available methods are self explanatory:</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.descendants" title="ete4.Tree.descendants"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Tree.descendants</span></code></a>([strategy, is_leaf_fn])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.descendants" title="ete4.Tree.descendants"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Tree.descendants</span></code></a>(self[, strategy, is_leaf_fn])</p></td>
 <td><p>Yield all descendant nodes.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.ancestors" title="ete4.Tree.ancestors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Tree.ancestors</span></code></a>([root, include_root])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.ancestors" title="ete4.Tree.ancestors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Tree.ancestors</span></code></a>(self[, root, include_root])</p></td>
 <td><p>Yield all ancestor nodes of this node (up to the root if given).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.leaves" title="ete4.Tree.leaves"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Tree.leaves</span></code></a>([is_leaf_fn])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.leaves" title="ete4.Tree.leaves"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Tree.leaves</span></code></a>(self[, is_leaf_fn])</p></td>
 <td><p>Yield the terminal nodes (leaves) under this node.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.leaf_names" title="ete4.Tree.leaf_names"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Tree.leaf_names</span></code></a>([is_leaf_fn])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.leaf_names" title="ete4.Tree.leaf_names"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Tree.leaf_names</span></code></a>(self[, is_leaf_fn])</p></td>
 <td><p>Yield the leaf names under this node.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.get_children" title="ete4.Tree.get_children"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Tree.get_children</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.get_children" title="ete4.Tree.get_children"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Tree.get_children</span></code></a>(self)</p></td>
 <td><p>Return an independent list of the node's children.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.get_sisters" title="ete4.Tree.get_sisters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Tree.get_sisters</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.get_sisters" title="ete4.Tree.get_sisters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Tree.get_sisters</span></code></a>(self)</p></td>
 <td><p>Return an independent list of sister nodes.</p></td>
 </tr>
 </tbody>
@@ -491,13 +491,13 @@ use either a post- or a preorder strategy. The only difference between
 include the root node in the iteration.</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.traverse" title="ete4.Tree.traverse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Tree.traverse</span></code></a>([strategy, is_leaf_fn])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.traverse" title="ete4.Tree.traverse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Tree.traverse</span></code></a>(self[, strategy, is_leaf_fn])</p></td>
 <td><p>Traverse the tree structure under this node and yield the nodes.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.descendants" title="ete4.Tree.descendants"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Tree.descendants</span></code></a>([strategy, is_leaf_fn])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.descendants" title="ete4.Tree.descendants"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Tree.descendants</span></code></a>(self[, strategy, is_leaf_fn])</p></td>
 <td><p>Yield all descendant nodes.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.leaves" title="ete4.Tree.leaves"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Tree.leaves</span></code></a>([is_leaf_fn])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.leaves" title="ete4.Tree.leaves"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Tree.leaves</span></code></a>(self[, is_leaf_fn])</p></td>
 <td><p>Yield the terminal nodes (leaves) under this node.</p></td>
 </tr>
 </tbody>
@@ -1173,16 +1173,16 @@ it is strictly necessary). Instead, several methods exist to
 manipulate the topology of a tree:</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.populate" title="ete4.Tree.populate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Tree.populate</span></code></a>(size[, names_library, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.populate" title="ete4.Tree.populate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Tree.populate</span></code></a>(self, size[, names_library, ...])</p></td>
 <td><p>Populate current node with branches generating a random topology.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.add_child" title="ete4.Tree.add_child"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Tree.add_child</span></code></a>([child, name, dist, support])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.add_child" title="ete4.Tree.add_child"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Tree.add_child</span></code></a>(self[, child, name, dist, ...])</p></td>
 <td><p>Add a new child to this node and return it.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.delete" title="ete4.Tree.delete"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Tree.delete</span></code></a>([prevent_nondicotomic, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.delete" title="ete4.Tree.delete"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Tree.delete</span></code></a>(self[, prevent_nondicotomic, ...])</p></td>
 <td><p>Delete node from the tree structure, keeping its children.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.detach" title="ete4.Tree.detach"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Tree.detach</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.detach" title="ete4.Tree.detach"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Tree.detach</span></code></a>(self)</p></td>
 <td><p>Detach this node (and descendants) from its parent and return itself.</p></td>
 </tr>
 </tbody>
