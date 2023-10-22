@@ -1,4 +1,4 @@
-.. currentmodule:: ete4
+.. currentmodule:: ete4.treeview
 
 Treeview (qt graphics)
 ======================
