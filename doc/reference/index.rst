@@ -6,6 +6,7 @@ Reference Guide
 
    reference_tree
    reference_operations
+   reference_parsers
    reference_phylo
    reference_clustering
    reference_seqgroup
