@@ -10,4 +10,5 @@ Reference Guide
    reference_clustering
    reference_seqgroup
    reference_ncbi
+   reference_smartview
    reference_treeview

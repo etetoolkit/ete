@@ -52,15 +52,6 @@ Face positions
    :special-members: __init__
 
 
-Nexus
-~~~~~
-
-.. automodule:: ete4.smartview.renderer.nexus
-   :members:
-   :undoc-members:
-   :special-members: __init__
-
-
 NodeStyle
 ~~~~~~~~~
 
