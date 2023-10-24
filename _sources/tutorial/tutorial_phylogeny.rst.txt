@@ -439,8 +439,6 @@ purpose.
 Working with duplicated gene families
 -------------------------------------
 
-.. _treeko_trees:
-
 TreeKO (splitting gene trees into species trees)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -544,8 +542,6 @@ Here is a basic example on how to use it::
   be processed or dumped into a file.
 
 
-.. _split_by_dup:
-
 Splitting gene trees by duplication events
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -601,8 +597,6 @@ Example::
   #
   # ╴Yeast_1
 
-
-.. _collapse_expansions:
 
 Collapse species specific duplications
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
