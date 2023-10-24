@@ -11,11 +11,8 @@ _FLOAT_CHECKER = lambda x: isinstance(x, float) or isinstance(x, int)
 
 NODE_STYLE_DEFAULT = [
     ["fgcolor",            "#0030c1",     _COLOR_CHECKER],
-    ["bgcolor",            "transparent", _COLOR_CHECKER], # #FFFFFF
+    ["bgcolor",            "transparent", _COLOR_CHECKER],
     ["fgopacity",          1,             _FLOAT_CHECKER],
-    #["node_bgcolor",       "#FFFFFF",     _COLOR_CHECKER],
-    #["partition_bgcolor",  "#FFFFFF",     _COLOR_CHECKER],
-    #["faces_bgcolor",      "#FFFFFF",     _COLOR_CHECKER],
     ["outline_line_color", "#000000",     _COLOR_CHECKER],
     ["outline_line_width", 0.5,           _SIZE_CHECKER],
     ["outline_color",      "#e5e5e5",     _COLOR_CHECKER],

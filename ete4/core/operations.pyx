@@ -151,7 +151,12 @@ def remove(node):
 # Functions that used to be defined inside tree.pyx.
 
 def common_ancestor(nodes):
-    """Return the last node common to the lineages of the given nodes."""
+    """Return the last node common to the lineages of the given nodes.
+
+    If the given nodes don't have a common ancestor, it will return None.
+
+    :param nodes: List of nodes whose common ancestor we want to find.
+    """
     if not nodes:
         return None
 
