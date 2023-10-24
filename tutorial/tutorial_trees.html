@@ -229,8 +229,8 @@ calling <a class="reference internal" href="../reference/reference_tree.html#ete
 </pre></div>
 </div>
 <p>Or you can call it with a dictionary specifying the properties of that
-single node. You can also use the <code class="xref py py-func docutils literal notranslate"><span class="pre">populate()</span></code> method to populate
-a tree with a random topology:</p>
+single node. You can also use the <a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.populate" title="ete4.Tree.populate"><code class="xref py py-func docutils literal notranslate"><span class="pre">populate</span></code></a>
+method to populate a tree with a random topology:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
 
 <span class="c1"># Also a single node, but with some properties.</span>
@@ -243,11 +243,11 @@ a tree with a random topology:</p>
 <p>(In all the examples we will want to write <code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">ete4</span> <span class="pre">import</span> <span class="pre">Tree</span></code>
 first to use the <a class="reference internal" href="../reference/reference_tree.html#ete4.Tree" title="ete4.Tree"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tree</span></code></a> class, as we did above. In the
 remaining examples we will assume that you have already imported it.)</p>
-<p>The properties of a node are stored in its <code class="xref py py-attr docutils literal notranslate"><span class="pre">props</span></code> dictionary.
-With the previous example, writing <code class="docutils literal notranslate"><span class="pre">print(t.props)</span></code> will show us a
-dictionary that should look familiar. And if you <code class="xref py py-func docutils literal notranslate"><span class="pre">print()</span></code> a tree,
-you will see a simple visualization. For our example of the previously
-populated tree:</p>
+<p>The properties of a node are stored in its <a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.props" title="ete4.Tree.props"><code class="xref py py-attr docutils literal notranslate"><span class="pre">props</span></code></a>
+dictionary. With the previous example, writing <code class="docutils literal notranslate"><span class="pre">print(t.props)</span></code> will
+show us a dictionary that should look familiar. And if you
+<code class="docutils literal notranslate"><span class="pre">print(t)</span></code> a tree, you will see a simple visualization. For our
+example of the previously populated tree:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">props</span><span class="p">)</span>  <span class="c1"># where the properties of a node are stored</span>
 <span class="c1"># {&#39;name&#39;: &#39;root&#39;, &#39;dist&#39;: 1.0, &#39;support&#39;: 0.5, &#39;coolness&#39;: &#39;high&#39;}</span>
 
@@ -325,12 +325,12 @@ single structure.</p>
 <section id="basic-tree-attributes">
 <h2><a class="toc-backref" href="#id8" role="doc-backlink">Basic tree attributes</a><a class="headerlink" href="#basic-tree-attributes" title="Link to this heading">¶</a></h2>
 <p>Each tree node has two basic attributes used to establish its position
-in the tree: <a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.up" title="ete4.Tree.up"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Tree.up</span></code></a> and <a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.children" title="ete4.Tree.children"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Tree.children</span></code></a>. The first is a
-pointer to its parent’s node, while the latter is a list of children
-nodes. Although it is possible to modify the structure of a tree by
-changing these attributes, it is strongly recommend not to do it.
-Several methods are provided to manipulate each node’s connections in
-a safe way (see <a class="reference internal" href="#sec-modifying-tree-topology"><span class="std std-ref">Comparing trees</span></a>).</p>
+in the tree: <a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.up" title="ete4.Tree.up"><code class="xref py py-attr docutils literal notranslate"><span class="pre">up</span></code></a> and <a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.children" title="ete4.Tree.children"><code class="xref py py-attr docutils literal notranslate"><span class="pre">children</span></code></a>. The first is a pointer to its parent’s node, while
+the latter is a list of children nodes. Although it is possible to
+modify the structure of a tree by changing these attributes, it is
+strongly recommend not to do it. Several methods are provided to
+manipulate each node’s connections in a safe way (see
+<a class="reference internal" href="#sec-modifying-tree-topology"><span class="std std-ref">Modifying tree topology</span></a>).</p>
 <p>In addition, three other basic attributes are always present in any
 tree node instance (let’s call it <code class="docutils literal notranslate"><span class="pre">node</span></code>):</p>
 <table class="docutils align-default">
@@ -483,12 +483,11 @@ subtree, 3) visit the root.</p></li>
 <li><p><em>levelorder</em> (default): every node on a level is visited before going
 to a lower level.</p></li>
 </ul>
-<p>Every node in a tree includes a <code class="xref py py-func docutils literal notranslate"><span class="pre">traverse()</span></code> method, which can be
-used to visit, one by one, every node node under the current
-partition. In addition, the <code class="xref py py-func docutils literal notranslate"><span class="pre">descendants()</span></code> method can be set to
-use either a post- or a preorder strategy. The only difference between
-<code class="xref py py-func docutils literal notranslate"><span class="pre">traverse()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">descendants()</span></code> is that the first will
-include the root node in the iteration.</p>
+<p>Every node in a tree includes a <a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.traverse" title="ete4.Tree.traverse"><code class="xref py py-func docutils literal notranslate"><span class="pre">traverse</span></code></a>
+method, which can be used to visit, one by one, every node node under
+the current partition. In addition, the <a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.descendants" title="ete4.Tree.descendants"><code class="xref py py-func docutils literal notranslate"><span class="pre">descendants</span></code></a> method can be set to use either a post- or a
+preorder strategy. The only difference between <a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.traverse" title="ete4.Tree.traverse"><code class="xref py py-func docutils literal notranslate"><span class="pre">traverse</span></code></a> and <a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.descendants" title="ete4.Tree.descendants"><code class="xref py py-func docutils literal notranslate"><span class="pre">descendants</span></code></a> is that
+the first will include the root node in the iteration.</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.traverse" title="ete4.Tree.traverse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Tree.traverse</span></code></a>(self[, strategy, is_leaf_fn])</p></td>
@@ -502,8 +501,8 @@ include the root node in the iteration.</p>
 </tr>
 </tbody>
 </table>
-<p>where <code class="xref py py-attr docutils literal notranslate"><span class="pre">strategy</span></code> can take the values “preorder”, “postorder”, or
-“levelorder”:</p>
+<p>The argument <code class="xref py py-attr docutils literal notranslate"><span class="pre">strategy</span></code> can take the values “levelorder”,
+“preorder”, or “postorder”:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Make a tree.</span>
 <span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((((H,K)D,(F,I)G)B,E)A,((L,(N,Q)O)J,(P,S)M)C);&#39;</span><span class="p">)</span>
 
@@ -1049,7 +1048,7 @@ the node’s data into the newick string.</p>
 </div>
 </section>
 <section id="comparing-trees">
-<span id="robinson-foulds"></span><span id="sec-modifying-tree-topology"></span><h2><a class="toc-backref" href="#id25" role="doc-backlink">Comparing trees</a><a class="headerlink" href="#comparing-trees" title="Link to this heading">¶</a></h2>
+<span id="robinson-foulds"></span><h2><a class="toc-backref" href="#id25" role="doc-backlink">Comparing trees</a><a class="headerlink" href="#comparing-trees" title="Link to this heading">¶</a></h2>
 <section id="distances-between-trees">
 <h3><a class="toc-backref" href="#id26" role="doc-backlink">Distances between trees</a><a class="headerlink" href="#distances-between-trees" title="Link to this heading">¶</a></h3>
 <p>The <a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.compare" title="ete4.Tree.compare"><code class="xref py py-func docutils literal notranslate"><span class="pre">Tree.compare()</span></code></a> function allows to calculate distances
@@ -1162,7 +1161,7 @@ target trees.</p></li>
 </section>
 </section>
 <section id="modifying-tree-topology">
-<h2><a class="toc-backref" href="#id28" role="doc-backlink">Modifying tree topology</a><a class="headerlink" href="#modifying-tree-topology" title="Link to this heading">¶</a></h2>
+<span id="sec-modifying-tree-topology"></span><h2><a class="toc-backref" href="#id28" role="doc-backlink">Modifying tree topology</a><a class="headerlink" href="#modifying-tree-topology" title="Link to this heading">¶</a></h2>
 <section id="creating-trees-from-scratch">
 <h3><a class="toc-backref" href="#id29" role="doc-backlink">Creating trees from scratch</a><a class="headerlink" href="#creating-trees-from-scratch" title="Link to this heading">¶</a></h3>
 <p>If no arguments are passed to the <a class="reference internal" href="../reference/reference_tree.html#ete4.Tree" title="ete4.Tree"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tree</span></code></a> class constructor,
@@ -1792,6 +1791,7 @@ terms of node distances.</p>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">ETE Tutorial</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Working with the Tree structure</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_phylogeny.html">Phylogenetic trees</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_drawing.html">Programmable tree drawing</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference Guide</a></li>

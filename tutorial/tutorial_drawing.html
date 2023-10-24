@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Programmable tree drawing &#8212; ETE Toolkit 4.0.0-beta documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=039e1c02" />
+    <script src="../_static/documentation_options.js?v=f03ed5e5"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Reference Guide" href="../reference/index.html" />
+    <link rel="prev" title="Phylogenetic trees" href="tutorial_phylogeny.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="programmable-tree-drawing">
+<h1><a class="toc-backref" href="#id1" role="doc-backlink">Programmable tree drawing</a><a class="headerlink" href="#programmable-tree-drawing" title="Link to this heading">¶</a></h1>
+<nav class="contents" id="contents">
+<p class="topic-title">Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#programmable-tree-drawing" id="id1">Programmable tree drawing</a></p>
+<ul>
+<li><p><a class="reference internal" href="#overview" id="id2">Overview</a></p></li>
+<li><p><a class="reference internal" href="#interactive-visualization-of-trees" id="id3">Interactive visualization of trees</a></p></li>
+<li><p><a class="reference internal" href="#rendering-trees-as-images" id="id4">Rendering trees as images</a></p></li>
+<li><p><a class="reference internal" href="#customizing-the-aspect-of-trees" id="id5">Customizing the aspect of trees</a></p>
+<ul>
+<li><p><a class="reference internal" href="#tree-style" id="id6">Tree style</a></p>
+<ul>
+<li><p><a class="reference internal" href="#show-leaf-node-names-branch-length-and-branch-support" id="id7">Show leaf node names, branch length and branch support</a></p></li>
+<li><p><a class="reference internal" href="#change-branch-length-scale-zoom-in-x" id="id8">Change branch length scale (zoom in x)</a></p></li>
+<li><p><a class="reference internal" href="#change-branch-separation-between-nodes-zoom-in-y" id="id9">Change branch separation between nodes (zoom in y)</a></p></li>
+<li><p><a class="reference internal" href="#rotate-a-tree" id="id10">Rotate a tree</a></p></li>
+<li><p><a class="reference internal" href="#circular-tree-in-180-degrees" id="id11">Circular tree in 180 degrees</a></p></li>
+<li><p><a class="reference internal" href="#add-legend-and-title" id="id12">Add legend and title</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#node-style" id="id13">Node style</a></p></li>
+<li><p><a class="reference internal" href="#node-faces" id="id14">Node faces</a></p>
+<ul>
+<li><p><a class="reference internal" href="#faces-position" id="id15">Faces position</a></p></li>
+<li><p><a class="reference internal" href="#face-properties" id="id16">Face properties</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#layout-functions" id="id17">Layout functions</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#combining-styles-faces-and-layouts" id="id18">Combining styles, faces and layouts</a></p>
+<ul>
+<li><p><a class="reference internal" href="#fixed-node-styles" id="id19">Fixed node styles</a></p></li>
+<li><p><a class="reference internal" href="#node-backgrounds" id="id20">Node backgrounds</a></p></li>
+<li><p><a class="reference internal" href="#img-faces" id="id21">Img faces</a></p></li>
+<li><p><a class="reference internal" href="#bubble-tree-maps" id="id22">Bubble tree maps</a></p></li>
+<li><p><a class="reference internal" href="#trees-within-trees" id="id23">Trees within trees</a></p></li>
+<li><p><a class="reference internal" href="#phylogenetic-trees-and-sequence-domains" id="id24">Phylogenetic trees and sequence domains</a></p></li>
+<li><p><a class="reference internal" href="#creating-your-custom-interactive-faces" id="id25">Creating your custom interactive faces</a></p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+<section id="overview">
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">Overview</a><a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
+<p>ETE’s treeview extension provides a highly programmable drawing system
+to render any hierarchical tree structure as png, svg or pdf images.</p>
+<p>Although several predefined visualization layouts are included with
+the default installation, custom styles can be easily created from
+scratch.</p>
+<p>Image customization is performed through four elements:</p>
+<ul class="simple">
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">TreeStyle</span></code>, sets general options about the image (shape,
+rotation, etc.)</p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">NodeStyle</span></code>, defines the specific aspect of each node (size,
+color, background, line type, etc.)</p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">faces</span></code>, small pieces of extra graphical information that
+can be added to nodes (text labels, images, graphs, etc.)</p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">layout</span></code> functions, normal python functions that controls how
+node styles and faces are dynamically added to nodes</p></li>
+</ul>
+<p>Images can be rendered using the <a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.render" title="ete4.Tree.render"><code class="xref py py-func docutils literal notranslate"><span class="pre">render</span></code></a>
+method, or interactively visualized using a built-in GUI invoked by
+the <a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.show" title="ete4.Tree.show"><code class="xref py py-func docutils literal notranslate"><span class="pre">show</span></code></a> method.</p>
+</section>
+<section id="interactive-visualization-of-trees">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Interactive visualization of trees</a><a class="headerlink" href="#interactive-visualization-of-trees" title="Link to this heading">¶</a></h2>
+<p>ETE’s tree drawing engine is fully integrated with a built-in
+graphical user interface (GUI) which allows to explore and manipulate
+node’s properties and tree topology. To start the visualization of a
+node (tree or subtree), you can simply call the <a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.show" title="ete4.Tree.show"><code class="xref py py-func docutils literal notranslate"><span class="pre">show</span></code></a> method.</p>
+<p>One of the advantages of this visualization is that you can use it to
+interrupt a given program/analysis, explore the tree, manipulate it,
+and continue with the execution. Note that <strong>changes made using the
+GUI will be kept after quiting the GUI</strong>. This feature is specially
+useful during python sessions, where analyses are performed
+interactively.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((a,b),c);&#39;</span><span class="p">)</span>
+<span class="n">t</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The GUI allows many operations to be performed graphically. However it
+does not implement all the possibilities of the programming toolkit.</p>
+</section>
+<section id="rendering-trees-as-images">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Rendering trees as images</a><a class="headerlink" href="#rendering-trees-as-images" title="Link to this heading">¶</a></h2>
+<p>Tree images can be directly written as image files. Supported formats
+are png, svg, and pdf. Note that while png images are raster images,
+pdf and svg pictures are rendered as <a class="reference external" href="http://en.wikipedia.org/wiki/Vector_graphics">vector graphics</a>, thus allowing their
+later modification and scaling.</p>
+<p>To generate an image, the <a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.render" title="ete4.Tree.render"><code class="xref py py-func docutils literal notranslate"><span class="pre">render</span></code></a> method
+should be used instead of <a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.show" title="ete4.Tree.show"><code class="xref py py-func docutils literal notranslate"><span class="pre">show</span></code></a>. The only
+required argument is the file name, whose extension will determine the
+image format (png, svg, or pdf). Several parameters regarding the
+image size and resolution can be adjusted:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Argument</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">units</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">px</span></code>: pixels, <code class="docutils literal notranslate"><span class="pre">mm</span></code>: millimeters, <code class="docutils literal notranslate"><span class="pre">in</span></code>: inches</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">h</span></code></p></td>
+<td><p>height of the image in <code class="xref py py-attr docutils literal notranslate"><span class="pre">units</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">w</span></code></p></td>
+<td><p>width of the image in <code class="xref py py-attr docutils literal notranslate"><span class="pre">units</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">dpi</span></code></p></td>
+<td><p>dots per inch</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If <code class="xref py py-attr docutils literal notranslate"><span class="pre">h</span></code> and <code class="xref py py-attr docutils literal notranslate"><span class="pre">w</span></code> values are both provided, image size
+will be adjusted even if it requires breaking the original aspect
+ratio of the image. If only one value (<code class="xref py py-attr docutils literal notranslate"><span class="pre">h</span></code> or <code class="xref py py-attr docutils literal notranslate"><span class="pre">w</span></code>) is
+provided, the other will be estimated to maintain the aspect ratio.
+If no sizing values are provided, the image will be adjusted to A4.</p>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((a,b),c);&#39;</span><span class="p">)</span>
+<span class="n">t</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="s1">&#39;mytree.png&#39;</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="mi">183</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;mm&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="customizing-the-aspect-of-trees">
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">Customizing the aspect of trees</a><a class="headerlink" href="#customizing-the-aspect-of-trees" title="Link to this heading">¶</a></h2>
+<p>Image customization is performed through four main elements: <em>tree
+style</em>, <em>node style</em>, <em>faces</em>, and <em>layouts</em>.</p>
+<section id="tree-style">
+<h3><a class="toc-backref" href="#id6" role="doc-backlink">Tree style</a><a class="headerlink" href="#tree-style" title="Link to this heading">¶</a></h3>
+<p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">TreeStyle</span></code> class can be used to create a custom set of
+options that control the general aspect of the tree image. Tree styles
+can be passed to the <a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.show" title="ete4.Tree.show"><code class="xref py py-func docutils literal notranslate"><span class="pre">show</span></code></a> and <a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.render" title="ete4.Tree.render"><code class="xref py py-func docutils literal notranslate"><span class="pre">render</span></code></a> methods. For instance, <code class="xref py py-class docutils literal notranslate"><span class="pre">TreeStyle</span></code> allows
+to modify the scale used to render tree branches or choose between
+circular or rectangular tree drawing modes.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
+<span class="kn">from</span> <span class="nn">ete4.treeview</span> <span class="kn">import</span> <span class="n">TreeStyle</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((a,b),c);&#39;</span><span class="p">)</span>
+<span class="n">circular_style</span> <span class="o">=</span> <span class="n">TreeStyle</span><span class="p">()</span>
+<span class="n">circular_style</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="s1">&#39;c&#39;</span>  <span class="c1"># draw tree in circular mode</span>
+<span class="n">circular_style</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">t</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="s1">&#39;mytree.png&#39;</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="mi">183</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;mm&#39;</span><span class="p">,</span> <span class="n">tree_style</span><span class="o">=</span><span class="n">circular_style</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A number of parameters can be controlled through custom tree style
+objects. Check the <code class="xref py py-class docutils literal notranslate"><span class="pre">TreeStyle</span></code> documentation for a complete
+list of accepted values.</p>
+<p>In the following, se show some common cases.</p>
+<section id="show-leaf-node-names-branch-length-and-branch-support">
+<h4><a class="toc-backref" href="#id7" role="doc-backlink">Show leaf node names, branch length and branch support</a><a class="headerlink" href="#show-leaf-node-names-branch-length-and-branch-support" title="Link to this heading">¶</a></h4>
+<p>Automatically add node names and branch information to the tree
+image:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
+<span class="kn">from</span> <span class="nn">ete4.treeview</span> <span class="kn">import</span> <span class="n">TreeStyle</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">()</span>
+<span class="n">t</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">random_branches</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ts</span> <span class="o">=</span> <span class="n">TreeStyle</span><span class="p">()</span>
+<span class="n">ts</span><span class="o">.</span><span class="n">show_leaf_name</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">ts</span><span class="o">.</span><span class="n">show_branch_length</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">ts</span><span class="o">.</span><span class="n">show_branch_support</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">t</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">tree_style</span><span class="o">=</span><span class="n">ts</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-default">
+<img alt="../_images/show_info.png" src="../_images/show_info.png" />
+</figure>
+</section>
+<section id="change-branch-length-scale-zoom-in-x">
+<h4><a class="toc-backref" href="#id8" role="doc-backlink">Change branch length scale (zoom in x)</a><a class="headerlink" href="#change-branch-length-scale-zoom-in-x" title="Link to this heading">¶</a></h4>
+<p>Increases the length of the tree by changing the scale:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
+<span class="kn">from</span> <span class="nn">ete4.treeview</span> <span class="kn">import</span> <span class="n">TreeStyle</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">()</span>
+<span class="n">t</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">random_branches</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ts</span> <span class="o">=</span> <span class="n">TreeStyle</span><span class="p">()</span>
+<span class="n">ts</span><span class="o">.</span><span class="n">show_leaf_name</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">ts</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="mi">120</span>  <span class="c1"># 120 pixels per branch length unit</span>
+<span class="n">t</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">tree_style</span><span class="o">=</span><span class="n">ts</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-default">
+<img alt="../_images/scale_x.png" src="../_images/scale_x.png" />
+</figure>
+</section>
+<section id="change-branch-separation-between-nodes-zoom-in-y">
+<h4><a class="toc-backref" href="#id9" role="doc-backlink">Change branch separation between nodes (zoom in y)</a><a class="headerlink" href="#change-branch-separation-between-nodes-zoom-in-y" title="Link to this heading">¶</a></h4>
+<p>Increases the separation between leaf branches:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
+<span class="kn">from</span> <span class="nn">ete4.treeview</span> <span class="kn">import</span> <span class="n">TreeStyle</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">()</span>
+<span class="n">t</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">random_branches</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ts</span> <span class="o">=</span> <span class="n">TreeStyle</span><span class="p">()</span>
+<span class="n">ts</span><span class="o">.</span><span class="n">show_leaf_name</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">ts</span><span class="o">.</span><span class="n">branch_vertical_margin</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># 10 pixels between adjacent branches</span>
+<span class="n">t</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">tree_style</span><span class="o">=</span><span class="n">ts</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-default">
+<img alt="../_images/scale_y.png" src="../_images/scale_y.png" />
+</figure>
+</section>
+<section id="rotate-a-tree">
+<h4><a class="toc-backref" href="#id10" role="doc-backlink">Rotate a tree</a><a class="headerlink" href="#rotate-a-tree" title="Link to this heading">¶</a></h4>
+<p>Draws a rectangular tree from top to bottom:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
+<span class="kn">from</span> <span class="nn">ete4.treeview</span> <span class="kn">import</span> <span class="n">TreeStyle</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">()</span>
+<span class="n">t</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">ts</span> <span class="o">=</span> <span class="n">TreeStyle</span><span class="p">()</span>
+<span class="n">ts</span><span class="o">.</span><span class="n">show_leaf_name</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">ts</span><span class="o">.</span><span class="n">rotation</span> <span class="o">=</span> <span class="mi">90</span>
+<span class="n">t</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">tree_style</span><span class="o">=</span><span class="n">ts</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-default">
+<img alt="../_images/rotated_tree.png" src="../_images/rotated_tree.png" />
+</figure>
+</section>
+<section id="circular-tree-in-180-degrees">
+<h4><a class="toc-backref" href="#id11" role="doc-backlink">Circular tree in 180 degrees</a><a class="headerlink" href="#circular-tree-in-180-degrees" title="Link to this heading">¶</a></h4>
+<p>Draws a circular tree using a semi-circumference:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
+<span class="kn">from</span> <span class="nn">ete4.treeview</span> <span class="kn">import</span> <span class="n">TreeStyle</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">()</span>
+<span class="n">t</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>
+<span class="n">ts</span> <span class="o">=</span> <span class="n">TreeStyle</span><span class="p">()</span>
+<span class="n">ts</span><span class="o">.</span><span class="n">show_leaf_name</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">ts</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="s1">&#39;c&#39;</span>
+<span class="n">ts</span><span class="o">.</span><span class="n">arc_start</span> <span class="o">=</span> <span class="o">-</span><span class="mi">180</span>  <span class="c1"># 0 degrees = 3 o&#39;clock</span>
+<span class="n">ts</span><span class="o">.</span><span class="n">arc_span</span> <span class="o">=</span> <span class="mi">180</span>
+<span class="n">t</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">tree_style</span><span class="o">=</span><span class="n">ts</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-default">
+<img alt="../_images/semi_circular_tree.png" src="../_images/semi_circular_tree.png" />
+</figure>
+</section>
+<section id="add-legend-and-title">
+<h4><a class="toc-backref" href="#id12" role="doc-backlink">Add legend and title</a><a class="headerlink" href="#add-legend-and-title" title="Link to this heading">¶</a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
+<span class="kn">from</span> <span class="nn">ete4.treeview</span> <span class="kn">import</span> <span class="n">TreeStyle</span><span class="p">,</span> <span class="n">TextFace</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((a,b),c);&#39;</span><span class="p">)</span>
+<span class="n">ts</span> <span class="o">=</span> <span class="n">TreeStyle</span><span class="p">()</span>
+<span class="n">ts</span><span class="o">.</span><span class="n">show_leaf_name</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">ts</span><span class="o">.</span><span class="n">title</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;Hello ETE&#39;</span><span class="p">,</span> <span class="n">fsize</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">t</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">tree_style</span><span class="o">=</span><span class="n">ts</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="node-style">
+<h3><a class="toc-backref" href="#id13" role="doc-backlink">Node style</a><a class="headerlink" href="#node-style" title="Link to this heading">¶</a></h3>
+<p>Through the <code class="xref py py-class docutils literal notranslate"><span class="pre">NodeStyle</span></code> class the aspect of each single node
+can be controlled, including its size, color, background and branch
+type.</p>
+<p>A node style can be defined statically and attached to several nodes.</p>
+<p>Simple tree in which the same style is applied to all nodes:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
+<span class="kn">from</span> <span class="nn">ete4.treeview</span> <span class="kn">import</span> <span class="n">NodeStyle</span><span class="p">,</span> <span class="n">TreeStyle</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((a,b),c);&#39;</span><span class="p">)</span>
+
+<span class="c1"># Basic tree style.</span>
+<span class="n">ts</span> <span class="o">=</span> <span class="n">TreeStyle</span><span class="p">()</span>
+<span class="n">ts</span><span class="o">.</span><span class="n">show_leaf_name</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="c1"># Draw nodes as small red spheres of diameter equal to 10 pixels.</span>
+<span class="n">nstyle</span> <span class="o">=</span> <span class="n">NodeStyle</span><span class="p">()</span>
+<span class="n">nstyle</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;sphere&#39;</span>
+<span class="n">nstyle</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">nstyle</span><span class="p">[</span><span class="s1">&#39;fgcolor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;darkred&#39;</span>
+
+<span class="c1"># Gray dashed branch lines</span>
+<span class="n">nstyle</span><span class="p">[</span><span class="s1">&#39;hz_line_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">nstyle</span><span class="p">[</span><span class="s1">&#39;hz_line_color&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;#cccccc&#39;</span>
+
+<span class="c1"># Apply the same static style to all nodes in the tree. Note that</span>
+<span class="c1"># if &#39;nstyle&#39; is modified, changes will affect all nodes.</span>
+<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">traverse</span><span class="p">():</span>
+    <span class="n">n</span><span class="o">.</span><span class="n">set_style</span><span class="p">(</span><span class="n">nstyle</span><span class="p">)</span>
+
+<span class="n">t</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">tree_style</span><span class="o">=</span><span class="n">ts</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-default">
+<img alt="../_images/node_style_red_nodes.png" src="../_images/node_style_red_nodes.png" />
+</figure>
+<p>If you want to draw nodes with different styles, an independent
+<code class="xref py py-class docutils literal notranslate"><span class="pre">NodeStyle</span></code> instance must be created for each node. Note that
+node styles can be modified at any moment by accessing the
+<a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.img_style" title="ete4.Tree.img_style"><code class="xref py py-attr docutils literal notranslate"><span class="pre">img_style</span></code></a> attribute.</p>
+<p>Simple tree in which the different styles are applied to each node:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
+<span class="kn">from</span> <span class="nn">ete4.treeview</span> <span class="kn">import</span> <span class="n">NodeStyle</span><span class="p">,</span> <span class="n">TreeStyle</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((a,b),c);&#39;</span><span class="p">)</span>
+
+<span class="c1"># Basic tree style.</span>
+<span class="n">ts</span> <span class="o">=</span> <span class="n">TreeStyle</span><span class="p">()</span>
+<span class="n">ts</span><span class="o">.</span><span class="n">show_leaf_name</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="c1"># Create an independent node style for each node, which is</span>
+<span class="c1"># initialized with a red foreground color.</span>
+<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">traverse</span><span class="p">():</span>
+    <span class="n">nstyle</span> <span class="o">=</span> <span class="n">NodeStyle</span><span class="p">()</span>
+    <span class="n">nstyle</span><span class="p">[</span><span class="s1">&#39;fgcolor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;red&#39;</span>
+    <span class="n">nstyle</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">15</span>
+    <span class="n">n</span><span class="o">.</span><span class="n">set_style</span><span class="p">(</span><span class="n">nstyle</span><span class="p">)</span>
+
+<span class="c1"># Let&#39;s now modify the aspect of the root node</span>
+<span class="n">t</span><span class="o">.</span><span class="n">img_style</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">30</span>
+<span class="n">t</span><span class="o">.</span><span class="n">img_style</span><span class="p">[</span><span class="s1">&#39;fgcolor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;blue&#39;</span>
+
+<span class="n">t</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">tree_style</span><span class="o">=</span><span class="n">ts</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-default">
+<img alt="../_images/node_style_red_and_blue_nodes.png" src="../_images/node_style_red_and_blue_nodes.png" />
+</figure>
+<p>Static node styles, set through the <a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.set_style" title="ete4.Tree.set_style"><code class="xref py py-func docutils literal notranslate"><span class="pre">set_style</span></code></a> method, will be attached to the nodes and
+exported as part of their information. For instance, <a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.copy" title="ete4.Tree.copy"><code class="xref py py-func docutils literal notranslate"><span class="pre">copy</span></code></a> will replicate all node styles in the replicate
+tree. Note that node styles can also be modified on the fly through
+<a class="reference internal" href="#sec-layout-functions"><span class="std std-ref">layout functions</span></a>.</p>
+</section>
+<section id="node-faces">
+<h3><a class="toc-backref" href="#id14" role="doc-backlink">Node faces</a><a class="headerlink" href="#node-faces" title="Link to this heading">¶</a></h3>
+<p>Node faces are small pieces of graphical information that can be
+linked to nodes. For instance, text labels or external images could be
+linked to nodes and they will be plotted within the tree image.</p>
+<p>Several types of node faces are provided by the main <a class="reference internal" href="../reference/reference_treeview.html#module-treeview" title="treeview"><code class="xref py py-mod docutils literal notranslate"><span class="pre">treeview</span></code></a>
+module, ranging from simple text (<code class="xref py py-class docutils literal notranslate"><span class="pre">TextFace</span></code>) and geometric
+shapes (<code class="xref py py-class docutils literal notranslate"><span class="pre">CircleFace</span></code>), to molecular sequence representations
+(<code class="xref py py-class docutils literal notranslate"><span class="pre">SequenceFace</span></code>), heatmaps and profile plots
+(<code class="xref py py-class docutils literal notranslate"><span class="pre">ProfileFace</span></code>).</p>
+<p>A complete list of available faces can be found at the <a class="reference internal" href="../reference/reference_treeview.html#module-treeview" title="treeview"><code class="xref py py-mod docutils literal notranslate"><span class="pre">treeview</span></code></a>
+reference page.</p>
+<section id="faces-position">
+<h4><a class="toc-backref" href="#id15" role="doc-backlink">Faces position</a><a class="headerlink" href="#faces-position" title="Link to this heading">¶</a></h4>
+<p>Faces can be added to different areas around the node, namely
+<strong>branch-right</strong>, <strong>branch-top</strong>, <strong>branch-bottom</strong> or <strong>aligned</strong>.
+Each area represents a table in which faces can be added through the
+<a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.add_face" title="ete4.Tree.add_face"><code class="xref py py-func docutils literal notranslate"><span class="pre">add_face</span></code></a> method. For instance, if you
+want two text labels drawn below the branch line of a given node, a
+pair of <code class="xref py py-class docutils literal notranslate"><span class="pre">TextFace</span></code> faces can be created and added to the
+columns 0 and 1 of the <strong>branch-bottom</strong> area:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
+<span class="kn">from</span> <span class="nn">ete4.treeview</span> <span class="kn">import</span> <span class="n">TreeStyle</span><span class="p">,</span> <span class="n">TextFace</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((a,b),c);&#39;</span><span class="p">)</span>
+
+<span class="c1"># Basic tree style.</span>
+<span class="n">ts</span> <span class="o">=</span> <span class="n">TreeStyle</span><span class="p">()</span>
+<span class="n">ts</span><span class="o">.</span><span class="n">show_leaf_name</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="c1"># Add two text faces to different columns.</span>
+<span class="n">t</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;hola &#39;</span><span class="p">),</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;branch-bottom&#39;</span><span class="p">)</span>
+<span class="n">t</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;mundo!&#39;</span><span class="p">),</span> <span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;branch-bottom&#39;</span><span class="p">)</span>
+<span class="n">t</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">tree_style</span><span class="o">=</span><span class="n">ts</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If you add more than one face to the same area and column, they will
+be piled up. See the following image as an example of face positions:</p>
+<figure class="align-default">
+<img alt="possible face positions" src="../_images/face_positions.png" />
+</figure>
+<p>(Source code to generate the above image: <a class="reference download internal" download="" href="../_downloads/bc1817f3d307e2a23fa20cef8d72a5e0/face_grid_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">face_grid_tutorial.py</span></code></a>)</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Once a face object is created, it can be linked to one or more
+nodes. For instance, the same text label can be recycled and added
+to several nodes.</p>
+</div>
+</section>
+<section id="face-properties">
+<h4><a class="toc-backref" href="#id16" role="doc-backlink">Face properties</a><a class="headerlink" href="#face-properties" title="Link to this heading">¶</a></h4>
+<p>Apart from the specific config values of each face type, all face
+instances contain the same basic attributes that permit to modify
+general aspects such as margins, background colors, border, etc. A
+complete list of face attributes can be found in the general
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Face</span></code> class documentation. Here is a very simple example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
+<span class="kn">from</span> <span class="nn">ete4.treeview</span> <span class="kn">import</span> <span class="n">TreeStyle</span><span class="p">,</span> <span class="n">TextFace</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(a,b);&#39;</span><span class="p">)</span>
+
+<span class="c1"># Basic tree style.</span>
+<span class="n">ts</span> <span class="o">=</span> <span class="n">TreeStyle</span><span class="p">()</span>
+<span class="n">ts</span><span class="o">.</span><span class="n">show_leaf_name</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="c1"># Create two faces.</span>
+<span class="n">hola</span> <span class="o">=</span> <span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;hola&#39;</span><span class="p">)</span>
+<span class="n">mundo</span> <span class="o">=</span> <span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;mundo&#39;</span><span class="p">)</span>
+
+<span class="c1"># Set some attributes.</span>
+<span class="n">hola</span><span class="o">.</span><span class="n">margin_top</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">hola</span><span class="o">.</span><span class="n">margin_right</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">hola</span><span class="o">.</span><span class="n">margin_left</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">hola</span><span class="o">.</span><span class="n">margin_bottom</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">hola</span><span class="o">.</span><span class="n">opacity</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="c1"># from 0 to 1</span>
+<span class="n">hola</span><span class="o">.</span><span class="n">inner_border</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># 1 pixel border</span>
+<span class="n">hola</span><span class="o">.</span><span class="n">inner_border</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># dashed line</span>
+<span class="n">hola</span><span class="o">.</span><span class="n">border</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">hola</span><span class="o">.</span><span class="n">background</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;LightGreen&#39;</span>
+
+<span class="n">t</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">hola</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;branch-top&#39;</span><span class="p">)</span>
+<span class="n">t</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">mundo</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;branch-bottom&#39;</span><span class="p">)</span>
+
+<span class="n">t</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">tree_style</span><span class="o">=</span><span class="n">ts</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-default">
+<img alt="../_images/face_borders.png" src="../_images/face_borders.png" />
+</figure>
+</section>
+</section>
+<section id="layout-functions">
+<span id="sec-layout-functions"></span><h3><a class="toc-backref" href="#id17" role="doc-backlink">Layout functions</a><a class="headerlink" href="#layout-functions" title="Link to this heading">¶</a></h3>
+<p>Layout functions act as pre-drawing <a class="reference external" href="http://en.wikipedia.org/wiki/Hooking">hooking functions</a>. This means that, before a
+node is drawn, it is first sent to a layout function. Node properties,
+style and faces can be then modified on the fly and returned to the
+drawing engine. Thus, layout functions can be understood as a
+collection of rules controlling how different nodes should be drawn.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((((a,b),c),d),e);&#39;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">abc_layout</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+    <span class="n">vowels</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;e&#39;</span><span class="p">,</span> <span class="s1">&#39;i&#39;</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="s1">&#39;u&#39;</span><span class="p">}</span>
+
+    <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">vowels</span><span class="p">:</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">img_style</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">15</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">img_style</span><span class="p">[</span><span class="s1">&#39;fgcolor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;red&#39;</span>
+        <span class="c1"># Note that the node style was already initialized with the</span>
+        <span class="c1"># default values.</span>
+
+<span class="c1"># Tree style.</span>
+<span class="n">ts</span> <span class="o">=</span> <span class="n">TreeStyle</span><span class="p">()</span>
+<span class="n">ts</span><span class="o">.</span><span class="n">show_leaf_name</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">ts</span><span class="o">.</span><span class="n">layout_fn</span> <span class="o">=</span> <span class="n">abc_layout</span>
+
+<span class="c1"># Add two text faces to different columns.</span>
+<span class="n">t</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;hola &#39;</span><span class="p">),</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;branch-right&#39;</span><span class="p">)</span>
+<span class="n">t</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;mundo!&#39;</span><span class="p">),</span> <span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;branch-right&#39;</span><span class="p">)</span>
+
+<span class="n">t</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">tree_style</span><span class="o">=</span><span class="n">ts</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-default">
+<img alt="../_images/example_layout_functions.png" src="../_images/example_layout_functions.png" />
+</figure>
+</section>
+</section>
+<section id="combining-styles-faces-and-layouts">
+<h2><a class="toc-backref" href="#id18" role="doc-backlink">Combining styles, faces and layouts</a><a class="headerlink" href="#combining-styles-faces-and-layouts" title="Link to this heading">¶</a></h2>
+<p>Examples are probably the best way to show how ETE works:</p>
+<section id="fixed-node-styles">
+<h3><a class="toc-backref" href="#id19" role="doc-backlink">Fixed node styles</a><a class="headerlink" href="#fixed-node-styles" title="Link to this heading">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
+<span class="kn">from</span> <span class="nn">ete4.treeview</span> <span class="kn">import</span> <span class="n">faces</span><span class="p">,</span> <span class="n">AttrFace</span><span class="p">,</span> <span class="n">TreeStyle</span><span class="p">,</span> <span class="n">NodeStyle</span>
+
+
+<span class="k">def</span> <span class="nf">layout</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+    <span class="c1"># If node is a leaf, add the nodes name and a its scientific name.</span>
+    <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">:</span>
+        <span class="n">faces</span><span class="o">.</span><span class="n">add_face_to_node</span><span class="p">(</span><span class="n">AttrFace</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">),</span> <span class="n">node</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">get_example_tree</span><span class="p">():</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">()</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
+
+    <span class="c1"># Node style handling is no longer limited to layout functions. You</span>
+    <span class="c1"># can now create fixed node styles and use them many times, save them</span>
+    <span class="c1"># or even add them to nodes before drawing (this allows to save and</span>
+    <span class="c1"># reproduce an tree image design).</span>
+
+    <span class="c1"># Set bold red branch to the root node.</span>
+    <span class="n">style</span> <span class="o">=</span> <span class="n">NodeStyle</span><span class="p">()</span>
+    <span class="n">style</span><span class="p">[</span><span class="s1">&#39;fgcolor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;#0f0f0f&#39;</span>
+    <span class="n">style</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">style</span><span class="p">[</span><span class="s1">&#39;vt_line_color&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;#ff0000&#39;</span>
+    <span class="n">style</span><span class="p">[</span><span class="s1">&#39;hz_line_color&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;#ff0000&#39;</span>
+    <span class="n">style</span><span class="p">[</span><span class="s1">&#39;vt_line_width&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">8</span>
+    <span class="n">style</span><span class="p">[</span><span class="s1">&#39;hz_line_width&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">8</span>
+    <span class="n">style</span><span class="p">[</span><span class="s1">&#39;vt_line_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># 0 solid, 1 dashed, 2 dotted</span>
+    <span class="n">style</span><span class="p">[</span><span class="s1">&#39;hz_line_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">set_style</span><span class="p">(</span><span class="n">style</span><span class="p">)</span>
+
+    <span class="c1"># Set dotted red lines to the first two branches.</span>
+    <span class="n">style1</span> <span class="o">=</span> <span class="n">NodeStyle</span><span class="p">()</span>
+    <span class="n">style1</span><span class="p">[</span><span class="s1">&#39;fgcolor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;#0f0f0f&#39;</span>
+    <span class="n">style1</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">style1</span><span class="p">[</span><span class="s1">&#39;vt_line_color&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;#ff0000&#39;</span>
+    <span class="n">style1</span><span class="p">[</span><span class="s1">&#39;hz_line_color&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;#ff0000&#39;</span>
+    <span class="n">style1</span><span class="p">[</span><span class="s1">&#39;vt_line_width&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">style1</span><span class="p">[</span><span class="s1">&#39;hz_line_width&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">style1</span><span class="p">[</span><span class="s1">&#39;vt_line_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1"># 0 solid, 1 dashed, 2 dotted</span>
+    <span class="n">style1</span><span class="p">[</span><span class="s1">&#39;hz_line_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">children</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">img_style</span> <span class="o">=</span> <span class="n">style1</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">children</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">img_style</span> <span class="o">=</span> <span class="n">style1</span>
+
+    <span class="c1"># Set dashed blue lines in all leaves.</span>
+    <span class="n">style2</span> <span class="o">=</span> <span class="n">NodeStyle</span><span class="p">()</span>
+    <span class="n">style2</span><span class="p">[</span><span class="s1">&#39;fgcolor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;#000000&#39;</span>
+    <span class="n">style2</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;circle&#39;</span>
+    <span class="n">style2</span><span class="p">[</span><span class="s1">&#39;vt_line_color&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;#0000aa&#39;</span>
+    <span class="n">style2</span><span class="p">[</span><span class="s1">&#39;hz_line_color&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;#0000aa&#39;</span>
+    <span class="n">style2</span><span class="p">[</span><span class="s1">&#39;vt_line_width&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">style2</span><span class="p">[</span><span class="s1">&#39;hz_line_width&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">style2</span><span class="p">[</span><span class="s1">&#39;vt_line_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># 0 solid, 1 dashed, 2 dotted</span>
+    <span class="n">style2</span><span class="p">[</span><span class="s1">&#39;hz_line_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">leaves</span><span class="p">():</span>
+        <span class="n">l</span><span class="o">.</span><span class="n">img_style</span> <span class="o">=</span> <span class="n">style2</span>
+
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">TreeStyle</span><span class="p">()</span>
+    <span class="n">ts</span><span class="o">.</span><span class="n">layout_fn</span> <span class="o">=</span> <span class="n">layout</span>
+    <span class="n">ts</span><span class="o">.</span><span class="n">show_leaf_name</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">return</span> <span class="n">t</span><span class="p">,</span> <span class="n">ts</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">t</span><span class="p">,</span> <span class="n">ts</span> <span class="o">=</span> <span class="n">get_example_tree</span><span class="p">()</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">tree_style</span><span class="o">=</span><span class="n">ts</span><span class="p">)</span>
+    <span class="c1"># Or save it with, for example:</span>
+    <span class="c1">#   t.render(&#39;node_style.png&#39;, w=400, tree_style=ts)</span>
+</pre></div>
+</div>
+<figure class="align-default">
+<img alt="../_images/node_style.png" src="../_images/node_style.png" />
+</figure>
+</section>
+<section id="node-backgrounds">
+<h3><a class="toc-backref" href="#id20" role="doc-backlink">Node backgrounds</a><a class="headerlink" href="#node-backgrounds" title="Link to this heading">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
+<span class="kn">from</span> <span class="nn">ete4.treeview</span> <span class="kn">import</span> <span class="n">faces</span><span class="p">,</span> <span class="n">AttrFace</span><span class="p">,</span> <span class="n">TreeStyle</span><span class="p">,</span> <span class="n">NodeStyle</span>
+
+
+<span class="k">def</span> <span class="nf">layout</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">:</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="n">AttrFace</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">fsize</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+        <span class="n">faces</span><span class="o">.</span><span class="n">add_face_to_node</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;aligned&#39;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">get_example_tree</span><span class="p">():</span>
+    <span class="c1"># Set dashed blue lines in all leaves</span>
+    <span class="n">nst1</span> <span class="o">=</span> <span class="n">NodeStyle</span><span class="p">()</span>
+    <span class="n">nst1</span><span class="p">[</span><span class="s1">&#39;bgcolor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;LightSteelBlue&#39;</span>
+    <span class="n">nst2</span> <span class="o">=</span> <span class="n">NodeStyle</span><span class="p">()</span>
+    <span class="n">nst2</span><span class="p">[</span><span class="s1">&#39;bgcolor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Moccasin&#39;</span>
+    <span class="n">nst3</span> <span class="o">=</span> <span class="n">NodeStyle</span><span class="p">()</span>
+    <span class="n">nst3</span><span class="p">[</span><span class="s1">&#39;bgcolor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;DarkSeaGreen&#39;</span>
+    <span class="n">nst4</span> <span class="o">=</span> <span class="n">NodeStyle</span><span class="p">()</span>
+    <span class="n">nst4</span><span class="p">[</span><span class="s1">&#39;bgcolor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Khaki&#39;</span>
+
+    <span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((((a1,a2),a3), ((b1,b2),(b3,b4))), ((c1,c2),c3));&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">traverse</span><span class="p">():</span>
+        <span class="n">n</span><span class="o">.</span><span class="n">dist</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">n1</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">common_ancestor</span><span class="p">([</span><span class="s1">&#39;a1&#39;</span><span class="p">,</span> <span class="s1">&#39;a2&#39;</span><span class="p">,</span> <span class="s1">&#39;a3&#39;</span><span class="p">])</span>
+    <span class="n">n1</span><span class="o">.</span><span class="n">set_style</span><span class="p">(</span><span class="n">nst1</span><span class="p">)</span>
+    <span class="n">n2</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">common_ancestor</span><span class="p">([</span><span class="s1">&#39;b1&#39;</span><span class="p">,</span> <span class="s1">&#39;b2&#39;</span><span class="p">,</span> <span class="s1">&#39;b3&#39;</span><span class="p">,</span> <span class="s1">&#39;b4&#39;</span><span class="p">])</span>
+    <span class="n">n2</span><span class="o">.</span><span class="n">set_style</span><span class="p">(</span><span class="n">nst2</span><span class="p">)</span>
+    <span class="n">n3</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">common_ancestor</span><span class="p">([</span><span class="s1">&#39;c1&#39;</span><span class="p">,</span> <span class="s1">&#39;c2&#39;</span><span class="p">,</span> <span class="s1">&#39;c3&#39;</span><span class="p">])</span>
+    <span class="n">n3</span><span class="o">.</span><span class="n">set_style</span><span class="p">(</span><span class="n">nst3</span><span class="p">)</span>
+    <span class="n">n4</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">common_ancestor</span><span class="p">([</span><span class="s1">&#39;b3&#39;</span><span class="p">,</span> <span class="s1">&#39;b4&#39;</span><span class="p">])</span>
+    <span class="n">n4</span><span class="o">.</span><span class="n">set_style</span><span class="p">(</span><span class="n">nst4</span><span class="p">)</span>
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">TreeStyle</span><span class="p">()</span>
+    <span class="n">ts</span><span class="o">.</span><span class="n">layout_fn</span> <span class="o">=</span> <span class="n">layout</span>
+    <span class="n">ts</span><span class="o">.</span><span class="n">show_leaf_name</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="n">ts</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="s1">&#39;c&#39;</span>
+    <span class="n">ts</span><span class="o">.</span><span class="n">root_opening_factor</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">t</span><span class="p">,</span> <span class="n">ts</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">t</span><span class="p">,</span> <span class="n">ts</span> <span class="o">=</span> <span class="n">get_example_tree</span><span class="p">()</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">tree_style</span><span class="o">=</span><span class="n">ts</span><span class="p">)</span>
+    <span class="c1"># Or save it with:</span>
+    <span class="c1">#   t.render(&#39;node_background.png&#39;, w=400, tree_style=ts)</span>
+</pre></div>
+</div>
+<figure class="align-default">
+<img alt="../_images/node_background.png" src="../_images/node_background.png" />
+</figure>
+</section>
+<section id="img-faces">
+<h3><a class="toc-backref" href="#id21" role="doc-backlink">Img faces</a><a class="headerlink" href="#img-faces" title="Link to this heading">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Import Tree instance and faces module.</span>
+<span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
+<span class="kn">from</span> <span class="nn">ete4.treeview</span> <span class="kn">import</span> <span class="n">faces</span><span class="p">,</span> <span class="n">TreeStyle</span>
+
+<span class="c1"># Load an example tree.</span>
+<span class="n">nw</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">(((Dre:0.008339,Dme:0.300613)1.000000:0.596401,</span>
+<span class="s2">(Cfa:0.640858,Hsa:0.753230)1.000000:0.182035)1.000000:0.106234,</span>
+<span class="s2">((Dre:0.271621,Cfa:0.046042)1.000000:0.953250,</span>
+<span class="s2">(Hsa:0.061813,Mms:0.110769)1.000000:0.204419)1.000000:0.973467);</span>
+<span class="s2">&quot;&quot;&quot;</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="n">nw</span><span class="p">)</span>
+
+<span class="c1"># You can create any random tree containing the same leaf names, and</span>
+<span class="c1"># layout will work equally. For example, creating a random tree with 6</span>
+<span class="c1"># leaves using a given set of names:</span>
+<span class="c1">#   t = Tree()</span>
+<span class="c1">#   t.populate(6, [&#39;Dme&#39;, &#39;Dre&#39;, &#39;Hsa&#39;, &#39;Ptr&#39;, &#39;Cfa&#39;, &#39;Mms&#39;])</span>
+
+<span class="c1"># Set the path where images are located.</span>
+<span class="n">img_path</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
+
+<span class="c1"># Create faces based on external images.</span>
+<span class="n">humanFace</span> <span class="o">=</span> <span class="n">faces</span><span class="o">.</span><span class="n">ImgFace</span><span class="p">(</span><span class="n">img_path</span><span class="o">+</span><span class="s1">&#39;human.png&#39;</span><span class="p">)</span>
+<span class="n">mouseFace</span> <span class="o">=</span> <span class="n">faces</span><span class="o">.</span><span class="n">ImgFace</span><span class="p">(</span><span class="n">img_path</span><span class="o">+</span><span class="s1">&#39;mouse.png&#39;</span><span class="p">)</span>
+<span class="n">dogFace</span> <span class="o">=</span> <span class="n">faces</span><span class="o">.</span><span class="n">ImgFace</span><span class="p">(</span><span class="n">img_path</span><span class="o">+</span><span class="s1">&#39;dog.png&#39;</span><span class="p">)</span>
+<span class="n">chimpFace</span> <span class="o">=</span> <span class="n">faces</span><span class="o">.</span><span class="n">ImgFace</span><span class="p">(</span><span class="n">img_path</span><span class="o">+</span><span class="s1">&#39;chimp.png&#39;</span><span class="p">)</span>
+<span class="n">fishFace</span> <span class="o">=</span> <span class="n">faces</span><span class="o">.</span><span class="n">ImgFace</span><span class="p">(</span><span class="n">img_path</span><span class="o">+</span><span class="s1">&#39;fish.png&#39;</span><span class="p">)</span>
+<span class="n">flyFace</span> <span class="o">=</span> <span class="n">faces</span><span class="o">.</span><span class="n">ImgFace</span><span class="p">(</span><span class="n">img_path</span><span class="o">+</span><span class="s1">&#39;fly.png&#39;</span><span class="p">)</span>
+
+<span class="c1"># Create a face ready to read the name attribute of nodes.</span>
+<span class="n">nameFace</span> <span class="o">=</span> <span class="n">faces</span><span class="o">.</span><span class="n">AttrFace</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">fsize</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">fgcolor</span><span class="o">=</span><span class="s1">&#39;#009000&#39;</span><span class="p">)</span>
+
+<span class="c1"># Create a conversion between leaf names and real names.</span>
+<span class="n">code2name</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;Dre&#39;</span><span class="p">:</span> <span class="s1">&#39;Drosophila melanogaster&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Dme&#39;</span><span class="p">:</span> <span class="s1">&#39;Danio rerio&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Hsa&#39;</span><span class="p">:</span> <span class="s1">&#39;Homo sapiens&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Ptr&#39;</span><span class="p">:</span> <span class="s1">&#39;Pan troglodytes&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Mms&#39;</span><span class="p">:</span> <span class="s1">&#39;Mus musculus&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Cfa&#39;</span><span class="p">:</span> <span class="s1">&#39;Canis familiaris&#39;</span><span class="p">}</span>
+
+<span class="c1"># Create a dictionary with the descriptions of each leaf name.</span>
+<span class="n">code2desc</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;Dre&#39;</span><span class="p">:</span> <span class="s2">&quot;&quot;&quot;The zebrafish, also known as Danio rerio,</span>
+<span class="s2">is a tropical freshwater fish belonging to the</span>
+<span class="s2">minnow family (Cyprinidae).&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="s1">&#39;Dme&#39;</span><span class="p">:</span> <span class="s2">&quot;&quot;&quot;True flies are insects of the order Diptera,</span>
+<span class="s2">possessing a single pair of wings on the</span>
+<span class="s2">mesothorax and a pair of halteres, derived from</span>
+<span class="s2">the hind wings, on the metathorax&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="s1">&#39;Hsa&#39;</span><span class="p">:</span> <span class="s2">&quot;&quot;&quot;A human is a member of a species</span>
+<span class="s2">of bipedal primates in the family Hominidae.&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="s1">&#39;Ptr&#39;</span><span class="p">:</span> <span class="s2">&quot;&quot;&quot;Chimpanzee, sometimes colloquially</span>
+<span class="s2">chimp, is the common name for the</span>
+<span class="s2">two extant species of ape in the genus Pan.&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="s1">&#39;Mms&#39;</span><span class="p">:</span> <span class="s2">&quot;&quot;&quot;A mouse is a small mammal belonging to the</span>
+<span class="s2">order of rodents.&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="s1">&#39;Cfa&#39;</span><span class="p">:</span> <span class="s2">&quot;&quot;&quot;The dog (Canis lupus familiaris) is a</span>
+<span class="s2">domesticated subspecies of the Gray Wolf,</span>
+<span class="s2">a member of the Canidae family of the</span>
+<span class="s2">orderCarnivora.&quot;&quot;&quot;</span><span class="p">}</span>
+
+<span class="c1"># Create a layout function. We will use all previously created faces</span>
+<span class="c1"># and will set different node styles depending on the type of node.</span>
+<span class="k">def</span> <span class="nf">mylayout</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+    <span class="c1"># If node is a leaf, add the node names and their scientific names.</span>
+    <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">:</span>
+        <span class="c1"># Add an static face that handles the node name.</span>
+        <span class="n">faces</span><span class="o">.</span><span class="n">add_face_to_node</span><span class="p">(</span><span class="n">nameFace</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># We can also create faces on the fly.</span>
+        <span class="n">longNameFace</span> <span class="o">=</span> <span class="n">faces</span><span class="o">.</span><span class="n">TextFace</span><span class="p">(</span><span class="n">code2name</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">])</span>
+        <span class="n">faces</span><span class="o">.</span><span class="n">add_face_to_node</span><span class="p">(</span><span class="n">longNameFace</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># Text faces support multiline. We add a text face with the</span>
+        <span class="c1"># whole description of each leaf.</span>
+        <span class="n">descFace</span> <span class="o">=</span> <span class="n">faces</span><span class="o">.</span><span class="n">TextFace</span><span class="p">(</span><span class="n">code2desc</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">],</span> <span class="n">fsize</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+        <span class="n">descFace</span><span class="o">.</span><span class="n">margin_top</span> <span class="o">=</span> <span class="mi">10</span>
+        <span class="n">descFace</span><span class="o">.</span><span class="n">margin_bottom</span> <span class="o">=</span> <span class="mi">10</span>
+        <span class="n">descFace</span><span class="o">.</span><span class="n">border</span><span class="o">.</span><span class="n">margin</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="c1"># Note that this faces are added in &quot;aligned&quot; mode.</span>
+        <span class="n">faces</span><span class="o">.</span><span class="n">add_face_to_node</span><span class="p">(</span><span class="n">descFace</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">aligned</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Set the style of leaf nodes.</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">img_style</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">12</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">img_style</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;circle&#39;</span>
+    <span class="k">else</span><span class="p">:</span>  <span class="c1"># for internal nodes</span>
+        <span class="c1"># Set the style of internal nodes.</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">img_style</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">6</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">img_style</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;circle&#39;</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">img_style</span><span class="p">[</span><span class="s1">&#39;fgcolor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;#000000&#39;</span>
+
+    <span class="c1"># If an internal node contains more than 4 leaves, add the images</span>
+    <span class="c1"># of the represented species sorted in columns of 2 images max.</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">node</span><span class="p">)</span><span class="o">&gt;=</span><span class="mi">4</span><span class="p">:</span>
+        <span class="n">col</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">leaf_names</span><span class="p">())):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">col</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="c1"># Add the corresponding face to the node</span>
+            <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;Dme&#39;</span><span class="p">):</span>
+                <span class="n">faces</span><span class="o">.</span><span class="n">add_face_to_node</span><span class="p">(</span><span class="n">flyFace</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="n">col</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;Dre&#39;</span><span class="p">):</span>
+                <span class="n">faces</span><span class="o">.</span><span class="n">add_face_to_node</span><span class="p">(</span><span class="n">fishFace</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="n">col</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;Mms&#39;</span><span class="p">):</span>
+                <span class="n">faces</span><span class="o">.</span><span class="n">add_face_to_node</span><span class="p">(</span><span class="n">mouseFace</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="n">col</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;Ptr&#39;</span><span class="p">):</span>
+                <span class="n">faces</span><span class="o">.</span><span class="n">add_face_to_node</span><span class="p">(</span><span class="n">chimpFace</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="n">col</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;Hsa&#39;</span><span class="p">):</span>
+                <span class="n">faces</span><span class="o">.</span><span class="n">add_face_to_node</span><span class="p">(</span><span class="n">humanFace</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="n">col</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;Cfa&#39;</span><span class="p">):</span>
+                <span class="n">faces</span><span class="o">.</span><span class="n">add_face_to_node</span><span class="p">(</span><span class="n">dogFace</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="n">col</span><span class="p">)</span>
+
+            <span class="c1"># Modifies this node&#39;s style</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">img_style</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">16</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">img_style</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;sphere&#39;</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">img_style</span><span class="p">[</span><span class="s1">&#39;fgcolor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;#AA0000&#39;</span>
+
+    <span class="c1"># If leaf is &#39;Hsa&#39; (homo sapiens), highlight it using a different</span>
+    <span class="c1"># background.</span>
+    <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">is_leaf</span> <span class="ow">and</span> <span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;Hsa&#39;</span><span class="p">):</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">img_style</span><span class="p">[</span><span class="s1">&#39;bgcolor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;#9db0cf&#39;</span>
+
+<span class="c1"># And, finally, visualize the tree using our own layout function.</span>
+<span class="n">ts</span> <span class="o">=</span> <span class="n">TreeStyle</span><span class="p">()</span>
+<span class="n">ts</span><span class="o">.</span><span class="n">layout_fn</span> <span class="o">=</span> <span class="n">mylayout</span>
+
+<span class="n">t</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="s1">&#39;img_faces.png&#39;</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span> <span class="n">tree_style</span><span class="o">=</span><span class="n">ts</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-default">
+<img alt="../_images/img_faces.png" src="../_images/img_faces.png" />
+</figure>
+<p>Note that images are attached to terminal and internal nodes.</p>
+</section>
+<section id="bubble-tree-maps">
+<h3><a class="toc-backref" href="#id22" role="doc-backlink">Bubble tree maps</a><a class="headerlink" href="#bubble-tree-maps" title="Link to this heading">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">random</span>
+
+<span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
+<span class="kn">from</span> <span class="nn">ete4.treeview</span> <span class="kn">import</span> <span class="n">TreeStyle</span><span class="p">,</span> <span class="n">NodeStyle</span><span class="p">,</span> <span class="n">faces</span><span class="p">,</span> <span class="n">AttrFace</span><span class="p">,</span> <span class="n">CircleFace</span>
+
+
+<span class="k">def</span> <span class="nf">layout</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">:</span>
+        <span class="c1"># Add node name to leaf nodes.</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="n">AttrFace</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">fsize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">fgcolor</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">)</span>
+        <span class="n">faces</span><span class="o">.</span><span class="n">add_face_to_node</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s1">&#39;weight&#39;</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">props</span><span class="p">:</span>
+        <span class="c1"># Create a sphere face whose size is proportional to the node&#39;s  &#39;weight&#39;.</span>
+        <span class="n">C</span> <span class="o">=</span> <span class="n">CircleFace</span><span class="p">(</span><span class="n">radius</span><span class="o">=</span><span class="n">node</span><span class="o">.</span><span class="n">props</span><span class="p">[</span><span class="s1">&#39;weight&#39;</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;RoyalBlue&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s1">&#39;sphere&#39;</span><span class="p">)</span>
+        <span class="c1"># Let&#39;s make the sphere transparent.</span>
+        <span class="n">C</span><span class="o">.</span><span class="n">opacity</span> <span class="o">=</span> <span class="mf">0.3</span>
+        <span class="c1"># And place it as a float face over the tree.</span>
+        <span class="n">faces</span><span class="o">.</span><span class="n">add_face_to_node</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">get_example_tree</span><span class="p">():</span>
+    <span class="c1"># Make a random tree.</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">()</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="n">random_branches</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Add some random weight to all nodes.</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">traverse</span><span class="p">():</span>
+        <span class="n">n</span><span class="o">.</span><span class="n">add_props</span><span class="p">(</span><span class="n">weight</span><span class="o">=</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">))</span>
+
+    <span class="c1"># Create an empty TreeStyle.</span>
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">TreeStyle</span><span class="p">()</span>
+
+    <span class="c1"># Set our custom layout function.</span>
+    <span class="n">ts</span><span class="o">.</span><span class="n">layout_fn</span> <span class="o">=</span> <span class="n">layout</span>
+
+    <span class="c1"># Draw a circular tree.</span>
+    <span class="n">ts</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="s1">&#39;c&#39;</span>
+
+    <span class="c1"># We will add node names manually.</span>
+    <span class="n">ts</span><span class="o">.</span><span class="n">show_leaf_name</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="c1"># Show branch data.</span>
+    <span class="n">ts</span><span class="o">.</span><span class="n">show_branch_length</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">ts</span><span class="o">.</span><span class="n">show_branch_support</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">return</span> <span class="n">t</span><span class="p">,</span> <span class="n">ts</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">t</span><span class="p">,</span> <span class="n">ts</span> <span class="o">=</span> <span class="n">get_example_tree</span><span class="p">()</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">tree_style</span><span class="o">=</span><span class="n">ts</span><span class="p">)</span>
+    <span class="c1"># If we want to save it, we can do:</span>
+    <span class="c1">#   t.render(&#39;bubble_map.png&#39;, w=600, dpi=300, tree_style=ts)</span>
+</pre></div>
+</div>
+<figure class="align-default">
+<img alt="../_images/bubble_map.png" src="../_images/bubble_map.png" />
+</figure>
+</section>
+<section id="trees-within-trees">
+<h3><a class="toc-backref" href="#id23" role="doc-backlink">Trees within trees</a><a class="headerlink" href="#trees-within-trees" title="Link to this heading">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">from</span> <span class="nn">ete3</span> <span class="kn">import</span> <span class="n">Tree</span><span class="p">,</span> <span class="n">TreeStyle</span><span class="p">,</span> <span class="n">NodeStyle</span><span class="p">,</span> <span class="n">faces</span><span class="p">,</span> <span class="n">AttrFace</span><span class="p">,</span> <span class="n">TreeFace</span>
+
+<span class="c1"># Tree Style used to render small trees used as leaf faces</span>
+<span class="n">small_ts</span> <span class="o">=</span> <span class="n">TreeStyle</span><span class="p">()</span>
+<span class="n">small_ts</span><span class="o">.</span><span class="n">show_leaf_name</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">small_ts</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="mi">10</span>
+
+<span class="k">def</span> <span class="nf">layout</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">:</span>
+        <span class="c1"># Add node name to laef nodes</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="n">AttrFace</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">fsize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">fgcolor</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">)</span>
+        <span class="n">faces</span><span class="o">.</span><span class="n">add_face_to_node</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">()</span>
+        <span class="n">t</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+        <span class="n">T</span> <span class="o">=</span> <span class="n">TreeFace</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">small_ts</span><span class="p">)</span>
+        <span class="c1"># Let&#39;s make the sphere transparent</span>
+        <span class="n">T</span><span class="o">.</span><span class="n">opacity</span> <span class="o">=</span> <span class="mf">0.8</span>
+        <span class="c1"># And place as a float face over the tree</span>
+        <span class="n">faces</span><span class="o">.</span><span class="n">add_face_to_node</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s2">&quot;aligned&quot;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">get_example_tree</span><span class="p">():</span>
+    <span class="c1"># Random tree</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">()</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="n">random_branches</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Some random features in all nodes</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">traverse</span><span class="p">():</span>
+        <span class="n">n</span><span class="o">.</span><span class="n">add_props</span><span class="p">(</span><span class="n">weight</span><span class="o">=</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">))</span>
+
+    <span class="c1"># Create an empty TreeStyle</span>
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">TreeStyle</span><span class="p">()</span>
+
+    <span class="c1"># Set our custom layout function</span>
+    <span class="n">ts</span><span class="o">.</span><span class="n">layout_fn</span> <span class="o">=</span> <span class="n">layout</span>
+
+    <span class="c1"># Draw a tree</span>
+    <span class="n">ts</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;c&quot;</span>
+
+    <span class="c1"># We will add node names manually</span>
+    <span class="n">ts</span><span class="o">.</span><span class="n">show_leaf_name</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="c1"># Show branch data</span>
+    <span class="n">ts</span><span class="o">.</span><span class="n">show_branch_length</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">ts</span><span class="o">.</span><span class="n">show_branch_support</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="n">t</span><span class="p">,</span> <span class="n">ts</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">t</span><span class="p">,</span> <span class="n">ts</span> <span class="o">=</span> <span class="n">get_example_tree</span><span class="p">()</span>
+    <span class="c1">#t.render(&quot;tree_faces.png&quot;, w=600, dpi=300, tree_style=ts)</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">tree_style</span><span class="o">=</span><span class="n">ts</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-default">
+<img alt="../_images/tree_faces.png" src="../_images/tree_faces.png" />
+</figure>
+</section>
+<section id="phylogenetic-trees-and-sequence-domains">
+<h3><a class="toc-backref" href="#id24" role="doc-backlink">Phylogenetic trees and sequence domains</a><a class="headerlink" href="#phylogenetic-trees-and-sequence-domains" title="Link to this heading">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">ete3</span> <span class="kn">import</span> <span class="n">Tree</span><span class="p">,</span> <span class="n">SeqMotifFace</span><span class="p">,</span> <span class="n">TreeStyle</span><span class="p">,</span> <span class="n">add_face_to_node</span>
+
+<span class="n">seq</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;-----------------------------------------------AQAK---IKGSKKAIKVFSSA---&quot;</span>
+      <span class="s2">&quot;APERLQEYGSIFTDA---GLQRRPRHRIQSK-------ALQEKLKDFPVCVSTKPEPEDDAEEGLGGLPSN&quot;</span>
+      <span class="s2">&quot;ISSVSSLLLFNTTENLYKKYVFLDPLAG----THVMLGAETEEKLFDAPLSISKREQLEQQVPENYFYVPD&quot;</span>
+      <span class="s2">&quot;LGQVPEIDVPSYLPDLPGIANDLMYIADLGPGIAPSAPGTIPELPTFHTEVAEPLKVGELGSGMGAGPGTP&quot;</span>
+      <span class="s2">&quot;AHTPSSLDTPHFVFQTYKMGAPPLPPSTAAPVGQGARQDDSSSSASPSVQGAPREVVDPSGGWATLLESIR&quot;</span>
+      <span class="s2">&quot;QAGGIGKAKLRSMKERKLEKQQQKEQEQVRATSQGGHL--MSDLFNKLVMRRKGISGKGPGAGDGPGGAFA&quot;</span>
+      <span class="s2">&quot;RVSDSIPPLPPPQQPQAEDED----&quot;</span><span class="p">)</span>
+
+<span class="n">mixed_motifs</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="c1"># seq.start, seq.end, shape, width, height, fgcolor, bgcolor</span>
+        <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="s2">&quot;[]&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;rgradient:blue&quot;</span><span class="p">,</span> <span class="s2">&quot;arial|8|white|long text clipped long text clipped&quot;</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">101</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="s2">&quot;o&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="s2">&quot;pink&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">155</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="s2">&quot;()&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="s2">&quot;rgradient:purple&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">160</span><span class="p">,</span> <span class="mi">190</span><span class="p">,</span> <span class="s2">&quot;^&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;yellow&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">191</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="s2">&quot;&lt;&gt;&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;rgradient:orange&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">201</span><span class="p">,</span> <span class="mi">250</span><span class="p">,</span> <span class="s2">&quot;o&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;brown&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">351</span><span class="p">,</span> <span class="mi">370</span><span class="p">,</span> <span class="s2">&quot;v&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;rgradient:gold&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">370</span><span class="p">,</span> <span class="mi">420</span><span class="p">,</span> <span class="s2">&quot;compactseq&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
+<span class="p">]</span>
+
+<span class="n">simple_motifs</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="c1"># seq.start, seq.end, shape, width, height, fgcolor, bgcolor</span>
+        <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="s2">&quot;[]&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;rgradient:blue&quot;</span><span class="p">,</span> <span class="s2">&quot;arial|8|white|long text clipped long text clipped&quot;</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">120</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="s2">&quot;o&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="s2">&quot;pink&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="s2">&quot;()&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="s2">&quot;arial|8|white|hello&quot;</span><span class="p">],</span>
+<span class="p">]</span>
+
+<span class="n">box_motifs</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="c1"># seq.start, seq.end, shape, width, height, fgcolor, bgcolor</span>
+        <span class="p">[</span><span class="mi">0</span><span class="p">,</span>  <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;[]&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;rgradient:blue&quot;</span><span class="p">,</span> <span class="s2">&quot;arial|8|white|10&quot;</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="s2">&quot;[]&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;rgradient:ref&quot;</span><span class="p">,</span> <span class="s2">&quot;arial|8|white|10&quot;</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">30</span><span class="p">,</span> <span class="mi">45</span><span class="p">,</span> <span class="s2">&quot;[]&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;rgradient:orange&quot;</span><span class="p">,</span> <span class="s2">&quot;arial|8|white|20&quot;</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">50</span><span class="p">,</span> <span class="mi">65</span><span class="p">,</span> <span class="s2">&quot;[]&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;rgradient:pink&quot;</span><span class="p">,</span> <span class="s2">&quot;arial|8|white|20&quot;</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">70</span><span class="p">,</span> <span class="mi">85</span><span class="p">,</span> <span class="s2">&quot;[]&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;rgradient:green&quot;</span><span class="p">,</span> <span class="s2">&quot;arial|8|white|20&quot;</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">90</span><span class="p">,</span> <span class="mi">105</span><span class="p">,</span> <span class="s2">&quot;[]&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;rgradient:brown&quot;</span><span class="p">,</span> <span class="s2">&quot;arial|8|white|20&quot;</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">110</span><span class="p">,</span> <span class="mi">125</span><span class="p">,</span> <span class="s2">&quot;[]&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;rgradient:yellow&quot;</span><span class="p">,</span> <span class="s2">&quot;arial|8|white|20&quot;</span><span class="p">],</span>
+<span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">get_example_tree</span><span class="p">():</span>
+        <span class="c1"># Create a random tree and add to each leaf a random set of motifs</span>
+        <span class="c1"># from the original set</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s2">&quot;( (A, B, C, D, E, F, G), H, I);&quot;</span><span class="p">)</span>
+
+        <span class="n">seqFace</span> <span class="o">=</span> <span class="n">SeqMotifFace</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">gapcolor</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">t</span> <span class="o">&amp;</span> <span class="s2">&quot;A&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">seqFace</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;aligned&quot;</span><span class="p">)</span>
+
+        <span class="n">seqFace</span> <span class="o">=</span> <span class="n">SeqMotifFace</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">seq_format</span><span class="o">=</span><span class="s2">&quot;line&quot;</span><span class="p">,</span> <span class="n">gap_format</span><span class="o">=</span><span class="s2">&quot;blank&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">t</span> <span class="o">&amp;</span> <span class="s2">&quot;B&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">seqFace</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;aligned&quot;</span><span class="p">)</span>
+
+        <span class="n">seqFace</span> <span class="o">=</span> <span class="n">SeqMotifFace</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">seq_format</span><span class="o">=</span><span class="s2">&quot;line&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">t</span> <span class="o">&amp;</span> <span class="s2">&quot;C&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">seqFace</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;aligned&quot;</span><span class="p">)</span>
+        
+        <span class="n">seqFace</span> <span class="o">=</span> <span class="n">SeqMotifFace</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">seq_format</span><span class="o">=</span><span class="s2">&quot;()&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">t</span> <span class="o">&amp;</span> <span class="s2">&quot;D&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">seqFace</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;aligned&quot;</span><span class="p">)</span>
+
+        <span class="n">seqFace</span> <span class="o">=</span> <span class="n">SeqMotifFace</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">motifs</span><span class="o">=</span><span class="n">simple_motifs</span><span class="p">,</span> <span class="n">seq_format</span><span class="o">=</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">t</span> <span class="o">&amp;</span> <span class="s2">&quot;E&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">seqFace</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;aligned&quot;</span><span class="p">)</span>
+
+        <span class="n">seqFace</span> <span class="o">=</span> <span class="n">SeqMotifFace</span><span class="p">(</span><span class="n">seq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">motifs</span><span class="o">=</span><span class="n">simple_motifs</span><span class="p">,</span> <span class="n">gap_format</span><span class="o">=</span><span class="s2">&quot;blank&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">t</span> <span class="o">&amp;</span> <span class="s2">&quot;F&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">seqFace</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;aligned&quot;</span><span class="p">)</span>
+
+        <span class="n">seqFace</span> <span class="o">=</span> <span class="n">SeqMotifFace</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">motifs</span><span class="o">=</span><span class="n">mixed_motifs</span><span class="p">,</span> <span class="n">seq_format</span><span class="o">=</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">t</span> <span class="o">&amp;</span> <span class="s2">&quot;G&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">seqFace</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;aligned&quot;</span><span class="p">)</span>
+
+        
+        <span class="n">seqFace</span> <span class="o">=</span> <span class="n">SeqMotifFace</span><span class="p">(</span><span class="n">seq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">motifs</span><span class="o">=</span><span class="n">box_motifs</span><span class="p">,</span> <span class="n">gap_format</span><span class="o">=</span><span class="s2">&quot;line&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">t</span> <span class="o">&amp;</span> <span class="s2">&quot;H&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">seqFace</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;aligned&quot;</span><span class="p">)</span>
+
+
+        <span class="n">seqFace</span> <span class="o">=</span> <span class="n">SeqMotifFace</span><span class="p">(</span><span class="n">seq</span><span class="p">[</span><span class="mi">30</span><span class="p">:</span><span class="mi">60</span><span class="p">],</span> <span class="n">seq_format</span><span class="o">=</span><span class="s2">&quot;seq&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">t</span> <span class="o">&amp;</span> <span class="s2">&quot;I&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">seqFace</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;aligned&quot;</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">t</span>
+        
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">get_example_tree</span><span class="p">()</span>
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">TreeStyle</span><span class="p">()</span>
+    <span class="n">ts</span><span class="o">.</span><span class="n">tree_width</span> <span class="o">=</span> <span class="mi">50</span>
+    <span class="c1">#t.show(tree_style=ts)</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="s2">&quot;seq_motif_faces.png&quot;</span><span class="p">,</span> <span class="n">tree_style</span><span class="o">=</span><span class="n">ts</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-default">
+<img alt="../_images/seq_motif_faces.png" src="../_images/seq_motif_faces.png" />
+</figure>
+</section>
+<section id="creating-your-custom-interactive-faces">
+<h3><a class="toc-backref" href="#id25" role="doc-backlink">Creating your custom interactive faces</a><a class="headerlink" href="#creating-your-custom-interactive-faces" title="Link to this heading">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># We will need to create Qt4 items</span>
+<span class="kn">from</span> <span class="nn">PyQt4</span> <span class="kn">import</span> <span class="n">QtCore</span>
+<span class="kn">from</span> <span class="nn">PyQt4.QtGui</span> <span class="kn">import</span> <span class="n">QGraphicsRectItem</span><span class="p">,</span> <span class="n">QGraphicsSimpleTextItem</span><span class="p">,</span> \
+    <span class="n">QGraphicsEllipseItem</span><span class="p">,</span> <span class="n">QColor</span><span class="p">,</span> <span class="n">QPen</span><span class="p">,</span> <span class="n">QBrush</span>
+
+<span class="kn">from</span> <span class="nn">ete3</span> <span class="kn">import</span> <span class="n">Tree</span><span class="p">,</span> <span class="n">faces</span><span class="p">,</span> <span class="n">TreeStyle</span><span class="p">,</span> <span class="n">NodeStyle</span>
+
+<span class="c1"># To play with random colors</span>
+<span class="kn">import</span> <span class="nn">colorsys</span>
+<span class="kn">import</span> <span class="nn">random</span>
+
+<span class="k">class</span> <span class="nc">InteractiveItem</span><span class="p">(</span><span class="n">QGraphicsRectItem</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">arg</span><span class="p">,</span> <span class="o">**</span><span class="n">karg</span><span class="p">):</span>
+        <span class="n">QGraphicsRectItem</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">arg</span><span class="p">,</span> <span class="o">**</span><span class="n">karg</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setCursor</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">PointingHandCursor</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setAcceptsHoverEvents</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">hoverEnterEvent</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="c1"># There are many ways of adding interactive elements. With the</span>
+        <span class="c1"># following code, I show/hide a text item over my custom</span>
+        <span class="c1"># DynamicItemFace</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="n">QGraphicsRectItem</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">setParentItem</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="c1"># This is to ensure that the label is rendered over the</span>
+            <span class="c1"># rest of item children (default ZValue for items is 0)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">setZValue</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">setBrush</span><span class="p">(</span><span class="n">QBrush</span><span class="p">(</span><span class="n">QColor</span><span class="p">(</span><span class="s2">&quot;white&quot;</span><span class="p">)))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">QGraphicsSimpleTextItem</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">setParentItem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">setRect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">boundingRect</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">setVisible</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">hoverLeaveEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">setVisible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">random_color</span><span class="p">(</span><span class="n">h</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generates a random color in RGB format.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">h</span><span class="p">:</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="mf">0.5</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="mf">0.5</span>
+    <span class="k">return</span> <span class="n">_hls2hex</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_hls2hex</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+    <span class="k">return</span> <span class="s1">&#39;#</span><span class="si">%02x%02x%02x</span><span class="s1">&#39;</span> <span class="o">%</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="mi">255</span><span class="p">),</span>
+                                      <span class="n">colorsys</span><span class="o">.</span><span class="n">hls_to_rgb</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">s</span><span class="p">)))</span>
+
+<span class="k">def</span> <span class="nf">ugly_name_face</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; This is my item generator. It must receive a node object, and</span>
+<span class="sd">    returns a Qt4 graphics item that can be used as a node face.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># receive an arbitrary number of arguments, in this case width and</span>
+    <span class="c1"># height of the faces</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">height</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1">## Creates a main master Item that will contain all other elements</span>
+    <span class="c1">## Items can be standard QGraphicsItem</span>
+    <span class="c1"># masterItem = QGraphicsRectItem(0, 0, width, height)</span>
+
+    <span class="c1"># Or your custom Items, in which you can re-implement interactive</span>
+    <span class="c1"># functions, etc. Check QGraphicsItem doc for details.</span>
+    <span class="n">masterItem</span> <span class="o">=</span> <span class="n">InteractiveItem</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">)</span>
+
+    <span class="c1"># Keep a link within the item to access node info</span>
+    <span class="n">masterItem</span><span class="o">.</span><span class="n">node</span> <span class="o">=</span> <span class="n">node</span>
+
+    <span class="c1"># I dont want a border around the masterItem</span>
+    <span class="n">masterItem</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="n">QPen</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">NoPen</span><span class="p">))</span>
+
+    <span class="c1"># Add ellipse around text</span>
+    <span class="n">ellipse</span> <span class="o">=</span> <span class="n">QGraphicsEllipseItem</span><span class="p">(</span><span class="n">masterItem</span><span class="o">.</span><span class="n">rect</span><span class="p">())</span>
+    <span class="n">ellipse</span><span class="o">.</span><span class="n">setParentItem</span><span class="p">(</span><span class="n">masterItem</span><span class="p">)</span>
+    <span class="c1"># Change ellipse color</span>
+    <span class="n">ellipse</span><span class="o">.</span><span class="n">setBrush</span><span class="p">(</span><span class="n">QBrush</span><span class="p">(</span><span class="n">QColor</span><span class="p">(</span> <span class="n">random_color</span><span class="p">())))</span>
+
+    <span class="c1"># Add node name within the ellipse</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">QGraphicsSimpleTextItem</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">text</span><span class="o">.</span><span class="n">setParentItem</span><span class="p">(</span><span class="n">ellipse</span><span class="p">)</span>
+    <span class="n">text</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="n">QPen</span><span class="p">(</span><span class="n">QPen</span><span class="p">(</span><span class="n">QColor</span><span class="p">(</span><span class="s2">&quot;white&quot;</span><span class="p">))))</span>
+
+    <span class="c1"># Center text according to masterItem size</span>
+    <span class="n">tw</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">boundingRect</span><span class="p">()</span><span class="o">.</span><span class="n">width</span><span class="p">()</span>
+    <span class="n">th</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">boundingRect</span><span class="p">()</span><span class="o">.</span><span class="n">height</span><span class="p">()</span>
+    <span class="n">center</span> <span class="o">=</span> <span class="n">masterItem</span><span class="o">.</span><span class="n">boundingRect</span><span class="p">()</span><span class="o">.</span><span class="n">center</span><span class="p">()</span>
+    <span class="n">text</span><span class="o">.</span><span class="n">setPos</span><span class="p">(</span><span class="n">center</span><span class="o">.</span><span class="n">x</span><span class="p">()</span><span class="o">-</span><span class="n">tw</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">center</span><span class="o">.</span><span class="n">y</span><span class="p">()</span><span class="o">-</span><span class="n">th</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">masterItem</span>
+
+<span class="k">def</span> <span class="nf">master_ly</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">:</span>
+        <span class="c1"># Create an ItemFAce. First argument must be the pointer to</span>
+        <span class="c1"># the constructor function that returns a QGraphicsItem. It</span>
+        <span class="c1"># will be used to draw the Face. Next arguments are arbitrary,</span>
+        <span class="c1"># and they will be forwarded to the constructor Face function.</span>
+        <span class="n">F</span> <span class="o">=</span> <span class="n">faces</span><span class="o">.</span><span class="n">DynamicItemFace</span><span class="p">(</span><span class="n">ugly_name_face</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
+        <span class="n">faces</span><span class="o">.</span><span class="n">add_face_to_node</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s2">&quot;aligned&quot;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">get_example_tree</span><span class="p">():</span>
+
+    <span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">()</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
+
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">TreeStyle</span><span class="p">()</span>
+    <span class="n">ts</span><span class="o">.</span><span class="n">layout_fn</span> <span class="o">=</span> <span class="n">master_ly</span>
+    <span class="n">ts</span><span class="o">.</span><span class="n">title</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">faces</span><span class="o">.</span><span class="n">TextFace</span><span class="p">(</span><span class="s2">&quot;Drawing your own Qt Faces&quot;</span><span class="p">,</span> <span class="n">fsize</span><span class="o">=</span><span class="mi">15</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">t</span><span class="p">,</span> <span class="n">ts</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">t</span><span class="p">,</span> <span class="n">ts</span> <span class="o">=</span> <span class="n">get_example_tree</span><span class="p">()</span>
+
+    <span class="c1">#t.render(&quot;item_faces.png&quot;, h=400, tree_style=ts)</span>
+    <span class="c1"># The interactive features are only available using the GUI</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">tree_style</span><span class="o">=</span><span class="n">ts</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-default">
+<img alt="../_images/item_faces.png" src="../_images/item_faces.png" />
+</figure>
+<p>Note that the faces shown in this image are not static. When the tree
+is viewed using the tree.show() method, you can interact with items.</p>
+</section>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">ETE Toolkit</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs.html">Frequently Asked Questions (FAQs)</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">ETE Tutorial</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="tutorial_trees.html">Working with the Tree structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_phylogeny.html">Phylogenetic trees</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Programmable tree drawing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference Guide</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">ETE Tutorial</a><ul>
+      <li>Previous: <a href="tutorial_phylogeny.html" title="previous chapter">Phylogenetic trees</a></li>
+      <li>Next: <a href="../reference/index.html" title="next chapter">Reference Guide</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2008 - 2023, The ETE Toolkit Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+      |
+      <a href="../_sources/tutorial/tutorial_drawing.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

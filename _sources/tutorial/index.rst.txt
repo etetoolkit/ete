@@ -8,3 +8,4 @@ Contents:
 
    tutorial_trees
    tutorial_phylogeny
+   tutorial_drawing
