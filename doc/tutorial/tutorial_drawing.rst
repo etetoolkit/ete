@@ -1,6 +1,6 @@
 .. currentmodule:: ete4.treeview
 
-Programmable Tree Drawing
+Programmable tree drawing
 =========================
 
 .. contents::
