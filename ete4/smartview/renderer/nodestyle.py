@@ -54,7 +54,7 @@ class NodeStyle(dict):
         :param 3 size: integer number
         :param "circle" shape: "circle", "square" or "sphere"
         :param True draw_descendants: Mark an internal node as a leaf.
-                :param 0 hz_line_width: integer number representing the width
+        :param 0 hz_line_width: integer number representing the width
             of the line in pixels. A line width of zero indicates a
             cosmetic pen. This means that the pen width is always
             drawn one pixel wide, independent of the transformation
