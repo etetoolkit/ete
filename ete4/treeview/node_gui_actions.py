@@ -207,7 +207,8 @@ class _NodeActions:
         self.scene().GUI.redraw()
 
     def add_children(self):
-        n,ok = QInputDialog.getInteger(None,"Add childs","Number of childs to add:",1,1)
+        n, ok = QInputDialog.getInt(None, "Add childs",
+                                    "Number of childs to add:", 1, 1)
         if ok:
             for i in range(n):
                 ch = self.node.add_child()
@@ -239,10 +240,10 @@ class _NodeActions:
             self.scene().GUI.redraw()
 
     def populate_partition(self):
-        n, ok = QInputDialog.getInteger(None,"Populate partition","Number of nodes to add:",2,1)
+        n, ok = QInputDialog.getInt(None, "Populate partition",
+                                    "Number of nodes to add:", 2, 1)
         if ok:
             self.node.populate(n)
-            #self.scene().set_style_from(self.scene().tree,self.scene().layout_func)
             self.scene().GUI.redraw()
 
     def set_start_node(self):

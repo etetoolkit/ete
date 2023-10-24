@@ -705,7 +705,7 @@ class _TreeView(QGraphicsView):
         QGraphicsView.resizeEvent(self, e)
 
     def safe_scale(self, xfactor, yfactor):
-        self.setTransformationAnchor(self.AnchorUnderMouse)
+        self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
         xscale = self.transform().m11()
         yscale = self.transform().m22()
         srect = self.sceneRect()
