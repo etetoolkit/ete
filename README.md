@@ -105,7 +105,7 @@ directory, and is available at https://etetoolkit.github.io/ete/ .
 
 # Gallery of examples
 
-![](https://raw.githubusercontent.com/etetoolkit/ete/ete4/doc/gallery.png)
+![](https://raw.githubusercontent.com/etetoolkit/ete/ete4/doc/images/gallery.png)
 
 
 # Getting support
