@@ -107,8 +107,8 @@ calling :func:`Tree` without any arguments::
   t = Tree()
 
 Or you can call it with a dictionary specifying the properties of that
-single node. You can also use the :func:`populate` method to populate
-a tree with a random topology::
+single node. You can also use the :func:`populate <Tree.populate>`
+method to populate a tree with a random topology::
 
   from ete4 import Tree
 
@@ -122,11 +122,11 @@ a tree with a random topology::
 first to use the :class:`Tree` class, as we did above. In the
 remaining examples we will assume that you have already imported it.)
 
-The properties of a node are stored in its :attr:`props` dictionary.
-With the previous example, writing ``print(t.props)`` will show us a
-dictionary that should look familiar. And if you :func:`print` a tree,
-you will see a simple visualization. For our example of the previously
-populated tree::
+The properties of a node are stored in its :attr:`props <Tree.props>`
+dictionary. With the previous example, writing ``print(t.props)`` will
+show us a dictionary that should look familiar. And if you
+``print(t)`` a tree, you will see a simple visualization. For our
+example of the previously populated tree::
 
   print(t.props)  # where the properties of a node are stored
   # {'name': 'root', 'dist': 1.0, 'support': 0.5, 'coolness': 'high'}
@@ -213,12 +213,13 @@ Basic tree attributes
 ---------------------
 
 Each tree node has two basic attributes used to establish its position
-in the tree: :attr:`Tree.up` and :attr:`Tree.children`. The first is a
-pointer to its parent's node, while the latter is a list of children
-nodes. Although it is possible to modify the structure of a tree by
-changing these attributes, it is strongly recommend not to do it.
-Several methods are provided to manipulate each node's connections in
-a safe way (see :ref:`sec:modifying-tree-topology`).
+in the tree: :attr:`up <Tree.up>` and :attr:`children
+<Tree.children>`. The first is a pointer to its parent's node, while
+the latter is a list of children nodes. Although it is possible to
+modify the structure of a tree by changing these attributes, it is
+strongly recommend not to do it. Several methods are provided to
+manipulate each node's connections in a safe way (see
+:ref:`sec:modifying-tree-topology`).
 
 In addition, three other basic attributes are always present in any
 tree node instance (let's call it ``node``):
@@ -345,12 +346,13 @@ the whole tree is browsed):
 * *levelorder* (default): every node on a level is visited before going
   to a lower level.
 
-Every node in a tree includes a :func:`traverse` method, which can be
-used to visit, one by one, every node node under the current
-partition. In addition, the :func:`descendants` method can be set to
-use either a post- or a preorder strategy. The only difference between
-:func:`traverse` and :func:`descendants` is that the first will
-include the root node in the iteration.
+Every node in a tree includes a :func:`traverse <Tree.traverse>`
+method, which can be used to visit, one by one, every node node under
+the current partition. In addition, the :func:`descendants
+<Tree.descendants>` method can be set to use either a post- or a
+preorder strategy. The only difference between :func:`traverse
+<Tree.traverse>` and :func:`descendants <Tree.descendants>` is that
+the first will include the root node in the iteration.
 
 .. autosummary::
 
@@ -358,8 +360,8 @@ include the root node in the iteration.
    Tree.descendants
    Tree.leaves
 
-where :attr:`strategy` can take the values "preorder", "postorder", or
-"levelorder"::
+The argument :attr:`strategy` can take the values "levelorder",
+"preorder", or "postorder"::
 
   # Make a tree.
   t = Tree('((((H,K)D,(F,I)G)B,E)A,((L,(N,Q)O)J,(P,S)M)C);')
@@ -937,8 +939,6 @@ To read NHX notation you can just read it as a normal newick::
   #   ADH1: human
 
 
-.. _sec:modifying-tree-topology:
-
 .. _robinson_foulds:
 
 Comparing trees
@@ -1057,6 +1057,8 @@ We can also compare trees sharing only part of their labels::
   # Partitions in tree2 that were not found in tree1: {('a', 'b')}
   # Partitions in tree1 that were not found in tree2: {('a', 'c')}
 
+
+.. _sec:modifying-tree-topology:
 
 Modifying tree topology
 -----------------------
