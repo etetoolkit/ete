@@ -587,7 +587,7 @@ collection of rules controlling how different nodes should be drawn.</p>
 
 
 <span class="k">def</span> <span class="nf">get_example_tree</span><span class="p">():</span>
-    <span class="c1"># Set dashed blue lines in all leaves</span>
+    <span class="c1"># Set dashed blue lines in all leaves.</span>
     <span class="n">nst1</span> <span class="o">=</span> <span class="n">NodeStyle</span><span class="p">()</span>
     <span class="n">nst1</span><span class="p">[</span><span class="s1">&#39;bgcolor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;LightSteelBlue&#39;</span>
     <span class="n">nst2</span> <span class="o">=</span> <span class="n">NodeStyle</span><span class="p">()</span>
@@ -831,30 +831,37 @@ collection of rules controlling how different nodes should be drawn.</p>
 <section id="trees-within-trees">
 <h3><a class="toc-backref" href="#id23" role="doc-backlink">Trees within trees</a><a class="headerlink" href="#trees-within-trees" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">random</span>
-<span class="kn">from</span> <span class="nn">ete3</span> <span class="kn">import</span> <span class="n">Tree</span><span class="p">,</span> <span class="n">TreeStyle</span><span class="p">,</span> <span class="n">NodeStyle</span><span class="p">,</span> <span class="n">faces</span><span class="p">,</span> <span class="n">AttrFace</span><span class="p">,</span> <span class="n">TreeFace</span>
 
-<span class="c1"># Tree Style used to render small trees used as leaf faces</span>
+<span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
+<span class="kn">from</span> <span class="nn">ete4.treeview</span> <span class="kn">import</span> <span class="n">TreeStyle</span><span class="p">,</span> <span class="n">NodeStyle</span><span class="p">,</span> <span class="n">faces</span><span class="p">,</span> <span class="n">AttrFace</span><span class="p">,</span> <span class="n">TreeFace</span>
+
+
+<span class="c1"># Tree Style used to render small trees used as leaf faces.</span>
 <span class="n">small_ts</span> <span class="o">=</span> <span class="n">TreeStyle</span><span class="p">()</span>
 <span class="n">small_ts</span><span class="o">.</span><span class="n">show_leaf_name</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="n">small_ts</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="mi">10</span>
 
+
 <span class="k">def</span> <span class="nf">layout</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">:</span>
-        <span class="c1"># Add node name to laef nodes</span>
-        <span class="n">N</span> <span class="o">=</span> <span class="n">AttrFace</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">fsize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">fgcolor</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">)</span>
-        <span class="n">faces</span><span class="o">.</span><span class="n">add_face_to_node</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">node</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">:</span>
+        <span class="k">return</span>
 
-        <span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">()</span>
-        <span class="n">t</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+    <span class="c1"># Add node name to laef nodes</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">AttrFace</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">fsize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">fgcolor</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">)</span>
+    <span class="n">faces</span><span class="o">.</span><span class="n">add_face_to_node</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
-        <span class="n">T</span> <span class="o">=</span> <span class="n">TreeFace</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">small_ts</span><span class="p">)</span>
-        <span class="c1"># Let&#39;s make the sphere transparent</span>
-        <span class="n">T</span><span class="o">.</span><span class="n">opacity</span> <span class="o">=</span> <span class="mf">0.8</span>
-        <span class="c1"># And place as a float face over the tree</span>
-        <span class="n">faces</span><span class="o">.</span><span class="n">add_face_to_node</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s2">&quot;aligned&quot;</span><span class="p">)</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">()</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+    <span class="n">T</span> <span class="o">=</span> <span class="n">TreeFace</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">small_ts</span><span class="p">)</span>
+    <span class="c1"># Let&#39;s make the sphere transparent</span>
+    <span class="n">T</span><span class="o">.</span><span class="n">opacity</span> <span class="o">=</span> <span class="mf">0.8</span>
+    <span class="c1"># And place as a float face over the tree</span>
+    <span class="n">faces</span><span class="o">.</span><span class="n">add_face_to_node</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;aligned&#39;</span><span class="p">)</span>
+
 
 <span class="k">def</span> <span class="nf">get_example_tree</span><span class="p">():</span>
-    <span class="c1"># Random tree</span>
+    <span class="c1"># Random tree.</span>
     <span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">()</span>
     <span class="n">t</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="n">random_branches</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
@@ -869,19 +876,22 @@ collection of rules controlling how different nodes should be drawn.</p>
     <span class="n">ts</span><span class="o">.</span><span class="n">layout_fn</span> <span class="o">=</span> <span class="n">layout</span>
 
     <span class="c1"># Draw a tree</span>
-    <span class="n">ts</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;c&quot;</span>
+    <span class="n">ts</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="s1">&#39;c&#39;</span>
 
-    <span class="c1"># We will add node names manually</span>
+    <span class="c1"># We will add node names manually.</span>
     <span class="n">ts</span><span class="o">.</span><span class="n">show_leaf_name</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="c1"># Show branch data</span>
+    <span class="c1"># Show branch data.</span>
     <span class="n">ts</span><span class="o">.</span><span class="n">show_branch_length</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="n">ts</span><span class="o">.</span><span class="n">show_branch_support</span> <span class="o">=</span> <span class="kc">True</span>
+
     <span class="k">return</span> <span class="n">t</span><span class="p">,</span> <span class="n">ts</span>
 
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
     <span class="n">t</span><span class="p">,</span> <span class="n">ts</span> <span class="o">=</span> <span class="n">get_example_tree</span><span class="p">()</span>
-    <span class="c1">#t.render(&quot;tree_faces.png&quot;, w=600, dpi=300, tree_style=ts)</span>
     <span class="n">t</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">tree_style</span><span class="o">=</span><span class="n">ts</span><span class="p">)</span>
+    <span class="c1"># Or save with:</span>
+    <span class="c1">#   t.render(&#39;tree_faces.png&#39;, w=600, dpi=300, tree_style=ts)</span>
 </pre></div>
 </div>
 <figure class="align-default">
@@ -890,89 +900,89 @@ collection of rules controlling how different nodes should be drawn.</p>
 </section>
 <section id="phylogenetic-trees-and-sequence-domains">
 <h3><a class="toc-backref" href="#id24" role="doc-backlink">Phylogenetic trees and sequence domains</a><a class="headerlink" href="#phylogenetic-trees-and-sequence-domains" title="Link to this heading">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">from</span> <span class="nn">ete3</span> <span class="kn">import</span> <span class="n">Tree</span><span class="p">,</span> <span class="n">SeqMotifFace</span><span class="p">,</span> <span class="n">TreeStyle</span><span class="p">,</span> <span class="n">add_face_to_node</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
+<span class="kn">from</span> <span class="nn">ete4.treeview</span> <span class="kn">import</span> <span class="n">SeqMotifFace</span><span class="p">,</span> <span class="n">TreeStyle</span><span class="p">,</span> <span class="n">add_face_to_node</span>
 
-<span class="n">seq</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;-----------------------------------------------AQAK---IKGSKKAIKVFSSA---&quot;</span>
-      <span class="s2">&quot;APERLQEYGSIFTDA---GLQRRPRHRIQSK-------ALQEKLKDFPVCVSTKPEPEDDAEEGLGGLPSN&quot;</span>
-      <span class="s2">&quot;ISSVSSLLLFNTTENLYKKYVFLDPLAG----THVMLGAETEEKLFDAPLSISKREQLEQQVPENYFYVPD&quot;</span>
-      <span class="s2">&quot;LGQVPEIDVPSYLPDLPGIANDLMYIADLGPGIAPSAPGTIPELPTFHTEVAEPLKVGELGSGMGAGPGTP&quot;</span>
-      <span class="s2">&quot;AHTPSSLDTPHFVFQTYKMGAPPLPPSTAAPVGQGARQDDSSSSASPSVQGAPREVVDPSGGWATLLESIR&quot;</span>
-      <span class="s2">&quot;QAGGIGKAKLRSMKERKLEKQQQKEQEQVRATSQGGHL--MSDLFNKLVMRRKGISGKGPGAGDGPGGAFA&quot;</span>
-      <span class="s2">&quot;RVSDSIPPLPPPQQPQAEDED----&quot;</span><span class="p">)</span>
+
+<span class="n">seq</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;-----------------------------------------------AQAK---IKGSKKAIKVFSSA---&#39;</span>
+       <span class="s1">&#39;APERLQEYGSIFTDA---GLQRRPRHRIQSK-------ALQEKLKDFPVCVSTKPEPEDDAEEGLGGLPSN&#39;</span>
+       <span class="s1">&#39;ISSVSSLLLFNTTENLYKKYVFLDPLAG----THVMLGAETEEKLFDAPLSISKREQLEQQVPENYFYVPD&#39;</span>
+       <span class="s1">&#39;LGQVPEIDVPSYLPDLPGIANDLMYIADLGPGIAPSAPGTIPELPTFHTEVAEPLKVGELGSGMGAGPGTP&#39;</span>
+       <span class="s1">&#39;AHTPSSLDTPHFVFQTYKMGAPPLPPSTAAPVGQGARQDDSSSSASPSVQGAPREVVDPSGGWATLLESIR&#39;</span>
+       <span class="s1">&#39;QAGGIGKAKLRSMKERKLEKQQQKEQEQVRATSQGGHL--MSDLFNKLVMRRKGISGKGPGAGDGPGGAFA&#39;</span>
+       <span class="s1">&#39;RVSDSIPPLPPPQQPQAEDED----&#39;</span><span class="p">)</span>
 
 <span class="n">mixed_motifs</span> <span class="o">=</span> <span class="p">[</span>
         <span class="c1"># seq.start, seq.end, shape, width, height, fgcolor, bgcolor</span>
-        <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="s2">&quot;[]&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;rgradient:blue&quot;</span><span class="p">,</span> <span class="s2">&quot;arial|8|white|long text clipped long text clipped&quot;</span><span class="p">],</span>
-        <span class="p">[</span><span class="mi">101</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="s2">&quot;o&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="s2">&quot;pink&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
-        <span class="p">[</span><span class="mi">155</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="s2">&quot;()&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="s2">&quot;rgradient:purple&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
-        <span class="p">[</span><span class="mi">160</span><span class="p">,</span> <span class="mi">190</span><span class="p">,</span> <span class="s2">&quot;^&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;yellow&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
-        <span class="p">[</span><span class="mi">191</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="s2">&quot;&lt;&gt;&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;rgradient:orange&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
-        <span class="p">[</span><span class="mi">201</span><span class="p">,</span> <span class="mi">250</span><span class="p">,</span> <span class="s2">&quot;o&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;brown&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
-        <span class="p">[</span><span class="mi">351</span><span class="p">,</span> <span class="mi">370</span><span class="p">,</span> <span class="s2">&quot;v&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;rgradient:gold&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
-        <span class="p">[</span><span class="mi">370</span><span class="p">,</span> <span class="mi">420</span><span class="p">,</span> <span class="s2">&quot;compactseq&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="s1">&#39;[]&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="s1">&#39;rgradient:blue&#39;</span><span class="p">,</span> <span class="s1">&#39;arial|8|white|long text clipped long text clipped&#39;</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">101</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;pink&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">155</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="s1">&#39;()&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;rgradient:purple&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">160</span><span class="p">,</span> <span class="mi">190</span><span class="p">,</span> <span class="s1">&#39;^&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="s1">&#39;yellow&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">191</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="s1">&#39;&lt;&gt;&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="s1">&#39;rgradient:orange&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">201</span><span class="p">,</span> <span class="mi">250</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="s1">&#39;brown&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">351</span><span class="p">,</span> <span class="mi">370</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="s1">&#39;rgradient:gold&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">370</span><span class="p">,</span> <span class="mi">420</span><span class="p">,</span> <span class="s1">&#39;compactseq&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
 <span class="p">]</span>
 
 <span class="n">simple_motifs</span> <span class="o">=</span> <span class="p">[</span>
         <span class="c1"># seq.start, seq.end, shape, width, height, fgcolor, bgcolor</span>
-        <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="s2">&quot;[]&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;rgradient:blue&quot;</span><span class="p">,</span> <span class="s2">&quot;arial|8|white|long text clipped long text clipped&quot;</span><span class="p">],</span>
-        <span class="p">[</span><span class="mi">120</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="s2">&quot;o&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="s2">&quot;pink&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
-        <span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="s2">&quot;()&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="s2">&quot;arial|8|white|hello&quot;</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="s1">&#39;[]&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="s1">&#39;rgradient:blue&#39;</span><span class="p">,</span> <span class="s1">&#39;arial|8|white|long text clipped long text clipped&#39;</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">120</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;pink&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="s1">&#39;()&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;arial|8|white|hello&#39;</span><span class="p">],</span>
 <span class="p">]</span>
 
 <span class="n">box_motifs</span> <span class="o">=</span> <span class="p">[</span>
         <span class="c1"># seq.start, seq.end, shape, width, height, fgcolor, bgcolor</span>
-        <span class="p">[</span><span class="mi">0</span><span class="p">,</span>  <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;[]&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;rgradient:blue&quot;</span><span class="p">,</span> <span class="s2">&quot;arial|8|white|10&quot;</span><span class="p">],</span>
-        <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="s2">&quot;[]&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;rgradient:ref&quot;</span><span class="p">,</span> <span class="s2">&quot;arial|8|white|10&quot;</span><span class="p">],</span>
-        <span class="p">[</span><span class="mi">30</span><span class="p">,</span> <span class="mi">45</span><span class="p">,</span> <span class="s2">&quot;[]&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;rgradient:orange&quot;</span><span class="p">,</span> <span class="s2">&quot;arial|8|white|20&quot;</span><span class="p">],</span>
-        <span class="p">[</span><span class="mi">50</span><span class="p">,</span> <span class="mi">65</span><span class="p">,</span> <span class="s2">&quot;[]&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;rgradient:pink&quot;</span><span class="p">,</span> <span class="s2">&quot;arial|8|white|20&quot;</span><span class="p">],</span>
-        <span class="p">[</span><span class="mi">70</span><span class="p">,</span> <span class="mi">85</span><span class="p">,</span> <span class="s2">&quot;[]&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;rgradient:green&quot;</span><span class="p">,</span> <span class="s2">&quot;arial|8|white|20&quot;</span><span class="p">],</span>
-        <span class="p">[</span><span class="mi">90</span><span class="p">,</span> <span class="mi">105</span><span class="p">,</span> <span class="s2">&quot;[]&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;rgradient:brown&quot;</span><span class="p">,</span> <span class="s2">&quot;arial|8|white|20&quot;</span><span class="p">],</span>
-        <span class="p">[</span><span class="mi">110</span><span class="p">,</span> <span class="mi">125</span><span class="p">,</span> <span class="s2">&quot;[]&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;rgradient:yellow&quot;</span><span class="p">,</span> <span class="s2">&quot;arial|8|white|20&quot;</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">0</span><span class="p">,</span>  <span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;[]&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="s1">&#39;rgradient:blue&#39;</span><span class="p">,</span> <span class="s1">&#39;arial|8|white|10&#39;</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="s1">&#39;[]&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="s1">&#39;rgradient:ref&#39;</span><span class="p">,</span> <span class="s1">&#39;arial|8|white|10&#39;</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">30</span><span class="p">,</span> <span class="mi">45</span><span class="p">,</span> <span class="s1">&#39;[]&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="s1">&#39;rgradient:orange&#39;</span><span class="p">,</span> <span class="s1">&#39;arial|8|white|20&#39;</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">50</span><span class="p">,</span> <span class="mi">65</span><span class="p">,</span> <span class="s1">&#39;[]&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="s1">&#39;rgradient:pink&#39;</span><span class="p">,</span> <span class="s1">&#39;arial|8|white|20&#39;</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">70</span><span class="p">,</span> <span class="mi">85</span><span class="p">,</span> <span class="s1">&#39;[]&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="s1">&#39;rgradient:green&#39;</span><span class="p">,</span> <span class="s1">&#39;arial|8|white|20&#39;</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">90</span><span class="p">,</span> <span class="mi">105</span><span class="p">,</span> <span class="s1">&#39;[]&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="s1">&#39;rgradient:brown&#39;</span><span class="p">,</span> <span class="s1">&#39;arial|8|white|20&#39;</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">110</span><span class="p">,</span> <span class="mi">125</span><span class="p">,</span> <span class="s1">&#39;[]&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="s1">&#39;rgradient:yellow&#39;</span><span class="p">,</span> <span class="s1">&#39;arial|8|white|20&#39;</span><span class="p">],</span>
 <span class="p">]</span>
+
 
 <span class="k">def</span> <span class="nf">get_example_tree</span><span class="p">():</span>
         <span class="c1"># Create a random tree and add to each leaf a random set of motifs</span>
         <span class="c1"># from the original set</span>
-        <span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s2">&quot;( (A, B, C, D, E, F, G), H, I);&quot;</span><span class="p">)</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;( (A, B, C, D, E, F, G), H, I);&#39;</span><span class="p">)</span>
 
-        <span class="n">seqFace</span> <span class="o">=</span> <span class="n">SeqMotifFace</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">gapcolor</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">)</span>
-        <span class="p">(</span><span class="n">t</span> <span class="o">&amp;</span> <span class="s2">&quot;A&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">seqFace</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;aligned&quot;</span><span class="p">)</span>
+        <span class="n">seqFace</span> <span class="o">=</span> <span class="n">SeqMotifFace</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">gapcolor</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+        <span class="n">t</span><span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">seqFace</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;aligned&#39;</span><span class="p">)</span>
 
-        <span class="n">seqFace</span> <span class="o">=</span> <span class="n">SeqMotifFace</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">seq_format</span><span class="o">=</span><span class="s2">&quot;line&quot;</span><span class="p">,</span> <span class="n">gap_format</span><span class="o">=</span><span class="s2">&quot;blank&quot;</span><span class="p">)</span>
-        <span class="p">(</span><span class="n">t</span> <span class="o">&amp;</span> <span class="s2">&quot;B&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">seqFace</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;aligned&quot;</span><span class="p">)</span>
+        <span class="n">seqFace</span> <span class="o">=</span> <span class="n">SeqMotifFace</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">seq_format</span><span class="o">=</span><span class="s1">&#39;line&#39;</span><span class="p">,</span> <span class="n">gap_format</span><span class="o">=</span><span class="s1">&#39;blank&#39;</span><span class="p">)</span>
+        <span class="n">t</span><span class="p">[</span><span class="s1">&#39;B&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">seqFace</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;aligned&#39;</span><span class="p">)</span>
 
-        <span class="n">seqFace</span> <span class="o">=</span> <span class="n">SeqMotifFace</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">seq_format</span><span class="o">=</span><span class="s2">&quot;line&quot;</span><span class="p">)</span>
-        <span class="p">(</span><span class="n">t</span> <span class="o">&amp;</span> <span class="s2">&quot;C&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">seqFace</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;aligned&quot;</span><span class="p">)</span>
-        
-        <span class="n">seqFace</span> <span class="o">=</span> <span class="n">SeqMotifFace</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">seq_format</span><span class="o">=</span><span class="s2">&quot;()&quot;</span><span class="p">)</span>
-        <span class="p">(</span><span class="n">t</span> <span class="o">&amp;</span> <span class="s2">&quot;D&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">seqFace</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;aligned&quot;</span><span class="p">)</span>
+        <span class="n">seqFace</span> <span class="o">=</span> <span class="n">SeqMotifFace</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">seq_format</span><span class="o">=</span><span class="s1">&#39;line&#39;</span><span class="p">)</span>
+        <span class="n">t</span><span class="p">[</span><span class="s1">&#39;C&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">seqFace</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;aligned&#39;</span><span class="p">)</span>
 
-        <span class="n">seqFace</span> <span class="o">=</span> <span class="n">SeqMotifFace</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">motifs</span><span class="o">=</span><span class="n">simple_motifs</span><span class="p">,</span> <span class="n">seq_format</span><span class="o">=</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
-        <span class="p">(</span><span class="n">t</span> <span class="o">&amp;</span> <span class="s2">&quot;E&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">seqFace</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;aligned&quot;</span><span class="p">)</span>
+        <span class="n">seqFace</span> <span class="o">=</span> <span class="n">SeqMotifFace</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">seq_format</span><span class="o">=</span><span class="s1">&#39;()&#39;</span><span class="p">)</span>
+        <span class="n">t</span><span class="p">[</span><span class="s1">&#39;D&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">seqFace</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;aligned&#39;</span><span class="p">)</span>
 
-        <span class="n">seqFace</span> <span class="o">=</span> <span class="n">SeqMotifFace</span><span class="p">(</span><span class="n">seq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">motifs</span><span class="o">=</span><span class="n">simple_motifs</span><span class="p">,</span> <span class="n">gap_format</span><span class="o">=</span><span class="s2">&quot;blank&quot;</span><span class="p">)</span>
-        <span class="p">(</span><span class="n">t</span> <span class="o">&amp;</span> <span class="s2">&quot;F&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">seqFace</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;aligned&quot;</span><span class="p">)</span>
+        <span class="n">seqFace</span> <span class="o">=</span> <span class="n">SeqMotifFace</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">motifs</span><span class="o">=</span><span class="n">simple_motifs</span><span class="p">,</span> <span class="n">seq_format</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>
+        <span class="n">t</span><span class="p">[</span><span class="s1">&#39;E&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">seqFace</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;aligned&#39;</span><span class="p">)</span>
 
-        <span class="n">seqFace</span> <span class="o">=</span> <span class="n">SeqMotifFace</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">motifs</span><span class="o">=</span><span class="n">mixed_motifs</span><span class="p">,</span> <span class="n">seq_format</span><span class="o">=</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
-        <span class="p">(</span><span class="n">t</span> <span class="o">&amp;</span> <span class="s2">&quot;G&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">seqFace</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;aligned&quot;</span><span class="p">)</span>
+        <span class="n">seqFace</span> <span class="o">=</span> <span class="n">SeqMotifFace</span><span class="p">(</span><span class="n">seq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">motifs</span><span class="o">=</span><span class="n">simple_motifs</span><span class="p">,</span> <span class="n">gap_format</span><span class="o">=</span><span class="s1">&#39;blank&#39;</span><span class="p">)</span>
+        <span class="n">t</span><span class="p">[</span><span class="s1">&#39;F&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">seqFace</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;aligned&#39;</span><span class="p">)</span>
 
-        
-        <span class="n">seqFace</span> <span class="o">=</span> <span class="n">SeqMotifFace</span><span class="p">(</span><span class="n">seq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">motifs</span><span class="o">=</span><span class="n">box_motifs</span><span class="p">,</span> <span class="n">gap_format</span><span class="o">=</span><span class="s2">&quot;line&quot;</span><span class="p">)</span>
-        <span class="p">(</span><span class="n">t</span> <span class="o">&amp;</span> <span class="s2">&quot;H&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">seqFace</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;aligned&quot;</span><span class="p">)</span>
+        <span class="n">seqFace</span> <span class="o">=</span> <span class="n">SeqMotifFace</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">motifs</span><span class="o">=</span><span class="n">mixed_motifs</span><span class="p">,</span> <span class="n">seq_format</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>
+        <span class="n">t</span><span class="p">[</span><span class="s1">&#39;G&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">seqFace</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;aligned&#39;</span><span class="p">)</span>
 
+        <span class="n">seqFace</span> <span class="o">=</span> <span class="n">SeqMotifFace</span><span class="p">(</span><span class="n">seq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">motifs</span><span class="o">=</span><span class="n">box_motifs</span><span class="p">,</span> <span class="n">gap_format</span><span class="o">=</span><span class="s1">&#39;line&#39;</span><span class="p">)</span>
+        <span class="n">t</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">seqFace</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;aligned&#39;</span><span class="p">)</span>
 
-        <span class="n">seqFace</span> <span class="o">=</span> <span class="n">SeqMotifFace</span><span class="p">(</span><span class="n">seq</span><span class="p">[</span><span class="mi">30</span><span class="p">:</span><span class="mi">60</span><span class="p">],</span> <span class="n">seq_format</span><span class="o">=</span><span class="s2">&quot;seq&quot;</span><span class="p">)</span>
-        <span class="p">(</span><span class="n">t</span> <span class="o">&amp;</span> <span class="s2">&quot;I&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">seqFace</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;aligned&quot;</span><span class="p">)</span>
-        
+        <span class="n">seqFace</span> <span class="o">=</span> <span class="n">SeqMotifFace</span><span class="p">(</span><span class="n">seq</span><span class="p">[</span><span class="mi">30</span><span class="p">:</span><span class="mi">60</span><span class="p">],</span> <span class="n">seq_format</span><span class="o">=</span><span class="s1">&#39;seq&#39;</span><span class="p">)</span>
+        <span class="n">t</span><span class="p">[</span><span class="s1">&#39;I&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">seqFace</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;aligned&#39;</span><span class="p">)</span>
+
         <span class="k">return</span> <span class="n">t</span>
-        
+
+
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
     <span class="n">t</span> <span class="o">=</span> <span class="n">get_example_tree</span><span class="p">()</span>
     <span class="n">ts</span> <span class="o">=</span> <span class="n">TreeStyle</span><span class="p">()</span>
     <span class="n">ts</span><span class="o">.</span><span class="n">tree_width</span> <span class="o">=</span> <span class="mi">50</span>
-    <span class="c1">#t.show(tree_style=ts)</span>
-    <span class="n">t</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="s2">&quot;seq_motif_faces.png&quot;</span><span class="p">,</span> <span class="n">tree_style</span><span class="o">=</span><span class="n">ts</span><span class="p">)</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="s1">&#39;seq_motif_faces.png&#39;</span><span class="p">,</span> <span class="n">tree_style</span><span class="o">=</span><span class="n">ts</span><span class="p">)</span>
 </pre></div>
 </div>
 <figure class="align-default">
@@ -981,26 +991,28 @@ collection of rules controlling how different nodes should be drawn.</p>
 </section>
 <section id="creating-your-custom-interactive-faces">
 <h3><a class="toc-backref" href="#id25" role="doc-backlink">Creating your custom interactive faces</a><a class="headerlink" href="#creating-your-custom-interactive-faces" title="Link to this heading">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># We will need to create Qt4 items</span>
-<span class="kn">from</span> <span class="nn">PyQt4</span> <span class="kn">import</span> <span class="n">QtCore</span>
-<span class="kn">from</span> <span class="nn">PyQt4.QtGui</span> <span class="kn">import</span> <span class="n">QGraphicsRectItem</span><span class="p">,</span> <span class="n">QGraphicsSimpleTextItem</span><span class="p">,</span> \
-    <span class="n">QGraphicsEllipseItem</span><span class="p">,</span> <span class="n">QColor</span><span class="p">,</span> <span class="n">QPen</span><span class="p">,</span> <span class="n">QBrush</span>
-
-<span class="kn">from</span> <span class="nn">ete3</span> <span class="kn">import</span> <span class="n">Tree</span><span class="p">,</span> <span class="n">faces</span><span class="p">,</span> <span class="n">TreeStyle</span><span class="p">,</span> <span class="n">NodeStyle</span>
-
-<span class="c1"># To play with random colors</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># To play with random colors.</span>
 <span class="kn">import</span> <span class="nn">colorsys</span>
 <span class="kn">import</span> <span class="nn">random</span>
 
+<span class="c1"># We will need to create Qt items.</span>
+<span class="kn">from</span> <span class="nn">PyQt6</span> <span class="kn">import</span> <span class="n">QtCore</span>
+<span class="kn">from</span> <span class="nn">PyQt6.QtGui</span> <span class="kn">import</span> <span class="n">QColor</span><span class="p">,</span> <span class="n">QPen</span><span class="p">,</span> <span class="n">QBrush</span>
+<span class="kn">from</span> <span class="nn">PyQt6.QtWidgets</span> <span class="kn">import</span> <span class="n">QGraphicsRectItem</span><span class="p">,</span> <span class="n">QGraphicsSimpleTextItem</span><span class="p">,</span> <span class="n">QGraphicsEllipseItem</span>
+
+<span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
+<span class="kn">from</span> <span class="nn">ete4.treeview</span> <span class="kn">import</span> <span class="n">faces</span><span class="p">,</span> <span class="n">TreeStyle</span><span class="p">,</span> <span class="n">NodeStyle</span>
+
+
 <span class="k">class</span> <span class="nc">InteractiveItem</span><span class="p">(</span><span class="n">QGraphicsRectItem</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">arg</span><span class="p">,</span> <span class="o">**</span><span class="n">karg</span><span class="p">):</span>
-        <span class="n">QGraphicsRectItem</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">arg</span><span class="p">,</span> <span class="o">**</span><span class="n">karg</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">arg</span><span class="p">,</span> <span class="o">**</span><span class="n">karg</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">node</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">setCursor</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">PointingHandCursor</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">setAcceptsHoverEvents</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">hoverEnterEvent</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">hoverEnterEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
         <span class="c1"># There are many ways of adding interactive elements. With the</span>
         <span class="c1"># following code, I show/hide a text item over my custom</span>
         <span class="c1"># DynamicItemFace</span>
@@ -1010,7 +1022,7 @@ collection of rules controlling how different nodes should be drawn.</p>
             <span class="c1"># This is to ensure that the label is rendered over the</span>
             <span class="c1"># rest of item children (default ZValue for items is 0)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">setZValue</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">setBrush</span><span class="p">(</span><span class="n">QBrush</span><span class="p">(</span><span class="n">QColor</span><span class="p">(</span><span class="s2">&quot;white&quot;</span><span class="p">)))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">setBrush</span><span class="p">(</span><span class="n">QBrush</span><span class="p">(</span><span class="n">QColor</span><span class="p">(</span><span class="s1">&#39;white&#39;</span><span class="p">)))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">QGraphicsSimpleTextItem</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">setParentItem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>
 
@@ -1022,21 +1034,22 @@ collection of rules controlling how different nodes should be drawn.</p>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">setVisible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">random_color</span><span class="p">(</span><span class="n">h</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generates a random color in RGB format.&quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">h</span><span class="p">:</span>
-        <span class="n">h</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span>
-    <span class="n">s</span> <span class="o">=</span> <span class="mf">0.5</span>
-    <span class="n">l</span> <span class="o">=</span> <span class="mf">0.5</span>
-    <span class="k">return</span> <span class="n">_hls2hex</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">_hls2hex</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
-    <span class="k">return</span> <span class="s1">&#39;#</span><span class="si">%02x%02x%02x</span><span class="s1">&#39;</span> <span class="o">%</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="mi">255</span><span class="p">),</span>
-                                      <span class="n">colorsys</span><span class="o">.</span><span class="n">hls_to_rgb</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">s</span><span class="p">)))</span>
+<span class="k">def</span> <span class="nf">random_color</span><span class="p">(</span><span class="n">hue</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a random color in RGB format.&quot;&quot;&quot;</span>
+    <span class="n">hue</span> <span class="o">=</span> <span class="n">hue</span> <span class="k">if</span> <span class="n">hue</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span>
+
+    <span class="n">luminosity</span> <span class="o">=</span> <span class="mf">0.5</span>
+    <span class="n">saturation</span> <span class="o">=</span> <span class="mf">0.5</span>
+
+    <span class="n">rgb</span> <span class="o">=</span> <span class="n">colorsys</span><span class="o">.</span><span class="n">hls_to_rgb</span><span class="p">(</span><span class="n">hue</span><span class="p">,</span> <span class="n">luminosity</span><span class="p">,</span> <span class="n">saturation</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="s1">&#39;#</span><span class="si">%02x%02x%02x</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="nb">tuple</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="mi">255</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">rgb</span><span class="p">])</span>
+
 
 <span class="k">def</span> <span class="nf">ugly_name_face</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kargs</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; This is my item generator. It must receive a node object, and</span>
-<span class="sd">    returns a Qt4 graphics item that can be used as a node face.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Item generator. It must receive a node object, and return a Qt</span>
+<span class="sd">    graphics item that can be used as a node face.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># receive an arbitrary number of arguments, in this case width and</span>
@@ -1052,30 +1065,31 @@ collection of rules controlling how different nodes should be drawn.</p>
     <span class="c1"># functions, etc. Check QGraphicsItem doc for details.</span>
     <span class="n">masterItem</span> <span class="o">=</span> <span class="n">InteractiveItem</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">)</span>
 
-    <span class="c1"># Keep a link within the item to access node info</span>
+    <span class="c1"># Keep a link within the item to access node info.</span>
     <span class="n">masterItem</span><span class="o">.</span><span class="n">node</span> <span class="o">=</span> <span class="n">node</span>
 
-    <span class="c1"># I dont want a border around the masterItem</span>
+    <span class="c1"># No border around the masterItem.</span>
     <span class="n">masterItem</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="n">QPen</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">NoPen</span><span class="p">))</span>
 
-    <span class="c1"># Add ellipse around text</span>
+    <span class="c1"># Add ellipse around text.</span>
     <span class="n">ellipse</span> <span class="o">=</span> <span class="n">QGraphicsEllipseItem</span><span class="p">(</span><span class="n">masterItem</span><span class="o">.</span><span class="n">rect</span><span class="p">())</span>
     <span class="n">ellipse</span><span class="o">.</span><span class="n">setParentItem</span><span class="p">(</span><span class="n">masterItem</span><span class="p">)</span>
-    <span class="c1"># Change ellipse color</span>
+    <span class="c1"># Change ellipse color.</span>
     <span class="n">ellipse</span><span class="o">.</span><span class="n">setBrush</span><span class="p">(</span><span class="n">QBrush</span><span class="p">(</span><span class="n">QColor</span><span class="p">(</span> <span class="n">random_color</span><span class="p">())))</span>
 
-    <span class="c1"># Add node name within the ellipse</span>
+    <span class="c1"># Add node name within the ellipse.</span>
     <span class="n">text</span> <span class="o">=</span> <span class="n">QGraphicsSimpleTextItem</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
     <span class="n">text</span><span class="o">.</span><span class="n">setParentItem</span><span class="p">(</span><span class="n">ellipse</span><span class="p">)</span>
-    <span class="n">text</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="n">QPen</span><span class="p">(</span><span class="n">QPen</span><span class="p">(</span><span class="n">QColor</span><span class="p">(</span><span class="s2">&quot;white&quot;</span><span class="p">))))</span>
+    <span class="n">text</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="n">QPen</span><span class="p">(</span><span class="n">QPen</span><span class="p">(</span><span class="n">QColor</span><span class="p">(</span><span class="s1">&#39;white&#39;</span><span class="p">))))</span>
 
-    <span class="c1"># Center text according to masterItem size</span>
+    <span class="c1"># Center text according to masterItem size.</span>
     <span class="n">tw</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">boundingRect</span><span class="p">()</span><span class="o">.</span><span class="n">width</span><span class="p">()</span>
     <span class="n">th</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">boundingRect</span><span class="p">()</span><span class="o">.</span><span class="n">height</span><span class="p">()</span>
     <span class="n">center</span> <span class="o">=</span> <span class="n">masterItem</span><span class="o">.</span><span class="n">boundingRect</span><span class="p">()</span><span class="o">.</span><span class="n">center</span><span class="p">()</span>
     <span class="n">text</span><span class="o">.</span><span class="n">setPos</span><span class="p">(</span><span class="n">center</span><span class="o">.</span><span class="n">x</span><span class="p">()</span><span class="o">-</span><span class="n">tw</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">center</span><span class="o">.</span><span class="n">y</span><span class="p">()</span><span class="o">-</span><span class="n">th</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">masterItem</span>
+
 
 <span class="k">def</span> <span class="nf">master_ly</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">:</span>
@@ -1084,23 +1098,24 @@ collection of rules controlling how different nodes should be drawn.</p>
         <span class="c1"># will be used to draw the Face. Next arguments are arbitrary,</span>
         <span class="c1"># and they will be forwarded to the constructor Face function.</span>
         <span class="n">F</span> <span class="o">=</span> <span class="n">faces</span><span class="o">.</span><span class="n">DynamicItemFace</span><span class="p">(</span><span class="n">ugly_name_face</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
-        <span class="n">faces</span><span class="o">.</span><span class="n">add_face_to_node</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s2">&quot;aligned&quot;</span><span class="p">)</span>
+        <span class="n">faces</span><span class="o">.</span><span class="n">add_face_to_node</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;aligned&#39;</span><span class="p">)</span>
+
 
 <span class="k">def</span> <span class="nf">get_example_tree</span><span class="p">():</span>
-
     <span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">()</span>
     <span class="n">t</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
 
     <span class="n">ts</span> <span class="o">=</span> <span class="n">TreeStyle</span><span class="p">()</span>
     <span class="n">ts</span><span class="o">.</span><span class="n">layout_fn</span> <span class="o">=</span> <span class="n">master_ly</span>
-    <span class="n">ts</span><span class="o">.</span><span class="n">title</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">faces</span><span class="o">.</span><span class="n">TextFace</span><span class="p">(</span><span class="s2">&quot;Drawing your own Qt Faces&quot;</span><span class="p">,</span> <span class="n">fsize</span><span class="o">=</span><span class="mi">15</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">ts</span><span class="o">.</span><span class="n">title</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">faces</span><span class="o">.</span><span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;Drawing your own Qt Faces&#39;</span><span class="p">,</span> <span class="n">fsize</span><span class="o">=</span><span class="mi">15</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+
     <span class="k">return</span> <span class="n">t</span><span class="p">,</span> <span class="n">ts</span>
 
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
     <span class="n">t</span><span class="p">,</span> <span class="n">ts</span> <span class="o">=</span> <span class="n">get_example_tree</span><span class="p">()</span>
 
-    <span class="c1">#t.render(&quot;item_faces.png&quot;, h=400, tree_style=ts)</span>
-    <span class="c1"># The interactive features are only available using the GUI</span>
+    <span class="c1"># The interactive features are only available using the GUI.</span>
     <span class="n">t</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">tree_style</span><span class="o">=</span><span class="n">ts</span><span class="p">)</span>
 </pre></div>
 </div>
