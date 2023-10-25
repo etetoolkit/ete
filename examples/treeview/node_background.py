@@ -9,7 +9,7 @@ def layout(node):
 
 
 def get_example_tree():
-    # Set dashed blue lines in all leaves
+    # Set dashed blue lines in all leaves.
     nst1 = NodeStyle()
     nst1['bgcolor'] = 'LightSteelBlue'
     nst2 = NodeStyle()
