@@ -122,5 +122,5 @@ def get_example_tree():
 if __name__ == '__main__':
     t, ts = get_example_tree()
 
-    # The interactive features are only available using the GUI,
+    # The interactive features are only available using the GUI.
     t.show(tree_style=ts)
