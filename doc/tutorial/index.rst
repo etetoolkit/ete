@@ -1,5 +1,5 @@
-ETE Tutorial
-============
+Tutorial
+========
 
 Contents:
 
