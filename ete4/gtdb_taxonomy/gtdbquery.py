@@ -12,6 +12,7 @@ import sqlite3
 import math
 import tarfile
 import warnings
+import requests
 
 from ete4 import ETE_DATA_HOME, update_ete_data
 
@@ -20,7 +21,7 @@ __all__ = ["GTDBTaxa", "is_taxadb_up_to_date"]
 
 DB_VERSION = 2
 DEFAULT_GTDBTAXADB = ETE_DATA_HOME + '/gtdbtaxa.sqlite'
-DEFAULT_GTDBTAXADUMP = ETE_DATA_HOME + '/gtdb202dump.tar.gz'
+DEFAULT_GTDBTAXADUMP = ETE_DATA_HOME + '/gtdbdump.tar.gz' # latest
 
 
 def is_taxadb_up_to_date(dbfile=DEFAULT_GTDBTAXADB):
@@ -60,9 +61,10 @@ class GTDBTaxa:
         if dbfile != DEFAULT_GTDBTAXADB and not os.path.exists(self.dbfile):
             print('GTDB database not present yet (first time used?)', file=sys.stderr)
             urlbase = ('https://github.com/etetoolkit/ete-data/raw/main'
-                       '/gtdb_taxonomy/gtdb202')
-            update_ete_data(f'{DEFAULT_GTDBTAXADB}.traverse.pkl', f'{urlbase}/gtdbtaxa.sqlite.traverse.pkl')
-            update_ete_data(f'{DEFAULT_GTDBTAXADUMP}', f'{urlbase}/gtdb202dump.tar.gz')
+                       '/gtdb_taxonomy/gtdblatest')
+            
+            #update_ete_data(f'{DEFAULT_GTDBTAXADB}.traverse.pkl', f'{urlbase}/gtdbtaxa.sqlite.traverse.pkl')
+            update_ete_data(f'{DEFAULT_GTDBTAXADUMP}', f'{urlbase}/gtdbdump.tar.gz')
 
             self.update_taxonomy_database(taxdump_file=DEFAULT_GTDBTAXADUMP)
 
@@ -754,11 +756,16 @@ def update_db(dbfile, targz_file=None):
     if basepath and not os.path.exists(basepath):
         os.mkdir(basepath)
 
-    try:
-        tar = tarfile.open(targz_file, 'r')
-    except:
-        raise ValueError("Please provide taxa dump tar.gz file")
+    # try:
+    #     tar = tarfile.open(targz_file, 'r')
+    # except:
+    #     raise ValueError("Please provide taxa dump tar.gz file")
 
+    if not targz_file:
+        update_local_taxdump(DEFAULT_GTDBTAXADUMP)
+        targz_file = DEFAULT_GTDBTAXADUMP
+    
+    tar = tarfile.open(targz_file, 'r')
     t, synonyms = load_gtdb_tree_from_dump(tar)
 
     prepostorder = [int(node.name) for post, node in t.iter_prepostorder()]
@@ -772,6 +779,24 @@ def update_db(dbfile, targz_file=None):
     upload_data(dbfile)
 
     os.system("rm taxa.tab")
+
+def update_local_taxdump(fname=DEFAULT_GTDBTAXADUMP):
+    url = "https://github.com/etetoolkit/ete-data/raw/main/gtdb_taxonomy/gtdblatest/gtdbdump.tar.gz"
+
+    if not os.path.exists(fname):
+        print(f'Downloading {fname} from {url} ...')
+        with open(fname, 'wb') as f:
+            f.write(requests.get(url).content)
+    else:
+        md5_local = md5(open(fname, 'rb').read()).hexdigest()
+        md5_remote = requests.get(url + '.md5').text.split()[0]
+
+        if md5_local != md5_remote:
+            print(f'Updating {fname} from {url} ...')
+            with open(fname, 'wb') as f:
+                f.write(requests.get(url).content)
+        else:
+            print(f'File {fname} is already up-to-date with {url} .')
 
 def upload_data(dbfile):
     print()
