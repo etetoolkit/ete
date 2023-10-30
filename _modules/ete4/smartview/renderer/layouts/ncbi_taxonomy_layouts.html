@@ -42,16 +42,6 @@
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span> <span class="s2">&quot;LayoutLastCommonAncestor&quot;</span> <span class="p">]</span>
 
 
-<span class="n">taxid2color_file</span> <span class="o">=</span> <span class="n">ETE_DATA_HOME</span> <span class="o">+</span> <span class="s1">&#39;/taxid2color.json&#39;</span>
-
-<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">taxid2color_file</span><span class="p">):</span>
-    <span class="n">url</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;https://github.com/etetoolkit/ete-data/raw/main&#39;</span>
-           <span class="s1">&#39;/layouts/taxid2color.json&#39;</span><span class="p">)</span>
-    <span class="n">update_ete_data</span><span class="p">(</span><span class="n">taxid2color_file</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
-
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">taxid2color_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">handle</span><span class="p">:</span>
-    <span class="n">_taxid2color</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>
-
 <span class="k">def</span> <span class="nf">get_level</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">is_root</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">level</span>
@@ -83,16 +73,24 @@
 <div class="viewcode-block" id="LayoutLastCommonAncestor.get_color">
 <a class="viewcode-back" href="../../../../../reference/reference_smartview.html#ete4.smartview.renderer.layouts.eggnog6_layouts.LayoutLastCommonAncestor.get_color">[docs]</a>
     <span class="k">def</span> <span class="nf">get_color</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
-        <span class="n">color</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">props</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sci_name_color&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">color</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">props</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sci_name_color&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">color</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">color</span>
 
-        <span class="n">taxid</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">props</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;taxid&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="n">color</span> <span class="o">=</span> <span class="n">_taxid2color</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">taxid</span><span class="p">))</span>
-        <span class="k">if</span> <span class="n">color</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">color</span>
+        <span class="c1"># Make sure we have the big file with all the colors.</span>
+        <span class="n">taxid2color_file</span> <span class="o">=</span> <span class="n">ETE_DATA_HOME</span> <span class="o">+</span> <span class="s1">&#39;/taxid2color.json&#39;</span>
 
-        <span class="k">return</span> <span class="s1">&#39;lightgray&#39;</span></div>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">taxid2color_file</span><span class="p">):</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;https://github.com/etetoolkit/ete-data/raw/main&#39;</span>
+                   <span class="s1">&#39;/layouts/taxid2color.json&#39;</span><span class="p">)</span>
+            <span class="n">update_ete_data</span><span class="p">(</span><span class="n">taxid2color_file</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">taxid2color_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">handle</span><span class="p">:</span>
+            <span class="n">_taxid2color</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>
+
+        <span class="c1"># Use it to colorize according to taxid.</span>
+        <span class="n">taxid</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">props</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;taxid&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_taxid2color</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">taxid</span><span class="p">,</span> <span class="s1">&#39;lightgray&#39;</span><span class="p">)</span></div>
 
 
 
