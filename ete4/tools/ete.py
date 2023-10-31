@@ -7,9 +7,19 @@ import errno
 TOOLSPATH = os.path.realpath(os.path.split(os.path.realpath(__file__))[0])
 
 import argparse
-from . import (ete_split, ete_expand, ete_annotate, ete_ncbiquery, ete_view,
+from . import (ete_split, ete_expand, ete_annotate, ete_ncbiquery,
                ete_generate, ete_mod, ete_extract, ete_compare, ete_evol,
                ete_maptrees, ete_diff, ete_explore)
+try:
+    from . import ete_view
+except ImportError:
+    class DummyNamespace:
+        pass
+    ete_view = DummyNamespace()
+    ete_view.DESC = "Treeview module not available. It requires Qt."
+    ete_view.populate_args = lambda view_args_p: None
+    ete_view.run = lambda args: None
+
 from . import common
 from .common import log
 from .utils import colorify, which
