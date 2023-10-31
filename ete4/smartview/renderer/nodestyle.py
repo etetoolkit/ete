@@ -49,7 +49,7 @@ class NodeStyle(dict):
         :param 0 hz_line_type: integer number
         :param 0 vt_line_type: integer number
         :param 3 size: integer number
-        :param "circle" shape: "circle", "square" or "sphere"
+        :param "circle" shape: "circle", "square" or "traingle"
         :param True draw_descendants: Mark an internal node as a leaf.
         :param 0 hz_line_width: integer number representing the width
             of the line in pixels. A line width of zero indicates a
