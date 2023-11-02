@@ -592,7 +592,11 @@ Wrap in function::
   layouts.append(tree_layout)
   t.explore(keep_server=True, layouts=layouts)
 
-.. figure:: ../images/example_layout_functions.png
+.. image:: https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/advance_layout_1.png?raw=true
+   :alt: alternative text
+   :align: center
+
+Source code can be found in in ETE4 here: `advance_layout.py example <https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/advance_layout.py>`_.
 
 
 Combining styles, faces and layouts
@@ -625,6 +629,9 @@ example ::
           if node.name in vowels:
               node.sm_style['size'] = 5
               node.sm_style['fgcolor'] = 'red'
+              # here to add text face to node in aligned position
+              node.add_face(TextFace('vowel!', color="red"), column=0, position='aligned')
+
           else:
               node.sm_style['size'] = 5
               node.sm_style['fgcolor'] = 'blue'   
@@ -637,17 +644,21 @@ example ::
   tree_layout = TreeLayout(name="MyTreeLayout", 
       ts=vowel_tree_style, 
       ns=vowel_node_layout,
-      active=False, 
+      active=True, 
       aligned_faces=True)
 
 
   layouts = []
   layouts.append(tree_layout)
   t.explore(keep_server=True, layouts=layouts)
-.. literalinclude:: ../../examples/smartview/node_style.py
 
-.. figure:: ../../examples/smartview/node_style.png
+Combined node styles, faces and tree style into one TreeLayout:
 
+.. image:: https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/combinedlayout_basic.png?raw=true
+   :alt: alternative text
+   :align: center
+
+Source code can be found in in ETE4 here: `combinedlayout_basic.py example <https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/combinedlayout_basic.py>`_.
 
 
 Define Layout objects
@@ -734,24 +745,5 @@ Example::
   layouts.append(tree_layout)
   t.explore(keep_server=True, layouts=layouts)
 
-Node backgrounds
-~~~~~~~~~~~~~~~~
+Source code can be found in in ETE4 here: `combinedlayout_object.py example <https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/combinedlayout_object.py>`_.
 
-You can find an example of a circle face in ETE4 here: `ete4_circleface.py example <https://github.com/dengzq1234/ete4_gallery/blob/master/ete4_circleface.py>`_.
-
-.. literalinclude:: ../../examples/smartview/node_background.py
-
-.. figure:: ../../examples/smartview/node_background.png
-
-
-Phylogenetic trees and sequence domains
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. literalinclude:: ../../examples/smartview/seq_motif_faces.py
-
-.. figure:: ../../examples/smartview/seq_motif_faces.png
-
-
-
-Note that the faces shown in this image are not static. When the tree
-is viewed using the tree.show() method, you can interact with items.
