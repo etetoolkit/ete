@@ -1505,67 +1505,57 @@ class TreeNode(object):
 
 
     def ladderize(self, direction=0):
+        """Sort branches according to the size of each partition.
+
+        :param direction: choose whether to sort children in order small-to-
+          large (directon=0) or large-to-small (direction=1).
+
+        Example::
+
+          t = Tree('(f,((d,((a,b),c)),e));')
+          print(t)
+          #
+          #      /-f
+          #     |
+          #     |          /-d
+          # ----|         |
+          #     |     /---|          /-a
+          #     |    |    |     /---|
+          #     |    |     \---|     \-b
+          #      \---|         |
+          #          |          \-c
+          #          |
+          #           \-e
+
+          t.ladderize()
+          print(t)
+          #      /-f
+          # ----|
+          #     |     /-e
+          #      \---|
+          #          |     /-d
+          #           \---|
+          #               |     /-c
+          #                \---|
+          #                    |     /-a
+          #                     \---|
+          #                          \-b
         """
-        .. versionadded: 2.1
+        sizes = {}  # sizes of the nodes
 
-        Sort the branches of a given tree (swapping children nodes)
-        according to the size of each partition.
+        # Key function for the sort order. Sort by size, then by # of children.
+        key = lambda node: (sizes[node], len(node.children))
 
-        Returns the number of leaves in the given tree.
-
-        :argument direction: choose whether to sort children in order small-to-
-          large (directon=0) or large-to-small (direction=1)
-        ::
-
-           t =  Tree("(f,((d, ((a,b),c)),e));")
-
-           print t
-
-           #
-           #      /-f
-           #     |
-           #     |          /-d
-           # ----|         |
-           #     |     /---|          /-a
-           #     |    |    |     /---|
-           #     |    |     \---|     \-b
-           #      \---|         |
-           #          |          \-c
-           #          |
-           #           \-e
-
-           t.ladderize()
-           print t
-
-           #      /-f
-           # ----|
-           #     |     /-e
-           #      \---|
-           #          |     /-d
-           #           \---|
-           #               |     /-c
-           #                \---|
-           #                    |     /-a
-           #                     \---|
-           #                          \-b
-
-        """
-
-        node2size = {}
-        for n in self.traverse(strategy="postorder"):
-            if n.is_leaf():
-                node2size[n] = 1
+        for node in self.traverse('postorder'):
+            if node.is_leaf():
+                sizes[node] = node.dist
             else:
-                child2size = {c: node2size[c] for c in n.children}
-                node2size[n] = sum(child2size.values())
+                node.children.sort(key=key, reverse=(direction==1))
 
-                if direction == 1:
-                    n.children.sort(key=lambda x: - child2size[x])
-                    # n.children.reverse()
-                else:
-                    n.children.sort(key=lambda x: child2size[x])
+                sizes[node] = node.dist + max(sizes[n] for n in node.children)
 
-        return node2size[self]
+                for n in node.children:
+                    sizes.pop(n)  # free memory, no need to keep all the sizes
 
     def sort_descendants(self, attr="name"):
         """
