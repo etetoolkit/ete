@@ -43,8 +43,7 @@ def is_taxadb_up_to_date(dbfile=DEFAULT_GTDBTAXADB):
 
 class GTDBTaxa:
     """
-    versionadded: 2.3
-    Provides a local transparent connector to the GTDB taxonomy database.
+    Local transparent connector to the GTDB taxonomy database.
     """
 
     def __init__(self, dbfile=None, taxdump_file=None, memory=False):
@@ -82,14 +81,14 @@ class GTDBTaxa:
             filedb.backup(self.db)
 
     def update_taxonomy_database(self, taxdump_file=None):
-        """Updates the GTDB taxonomy database by downloading and parsing the latest
-        gtdbtaxdump.tar.gz file from gtdbdump folder.
-        :param None taxdump_file: an alternative location of the gtdbtaxdump.tar.gz file.
+        """Update the GTDB taxonomy database.
+
+        It updates it by downloading and parsing the latest
+        gtdbtaxdump.tar.gz file.
+
+        :param taxdump_file: Alternative location of gtdbtaxdump.tar.gz.
         """
-        if not taxdump_file:
-            update_db(self.dbfile)
-        else:
-            update_db(self.dbfile, targz_file=taxdump_file)
+        update_db(self.dbfile, targz_file=taxdump_file)
 
     def _connect(self):
         self.db = sqlite3.connect(self.dbfile)
@@ -148,18 +147,10 @@ class GTDBTaxa:
     #     return taxid, spname, norm_score
 
     def get_rank(self, taxids):
-        'return a dictionary converting a list of taxids into their corresponding GTDB taxonomy rank'
-
-        all_ids = set(taxids)
-        all_ids.discard(None)
-        all_ids.discard("")
-        query = ','.join(['"%s"' %v for v in all_ids])
-        cmd = "select taxid, rank FROM species WHERE taxid IN (%s);" %query
-        result = self.db.execute(cmd)
-        id2rank = {}
-        for tax, spname in result.fetchall():
-            id2rank[tax] = spname
-        return id2rank
+        """Return dictionary converting taxids to their GTDB taxonomy rank."""
+        ids = ','.join('"%s"' % v for v in set(taxids) - {None, ''})
+        result = self.db.execute('SELECT taxid, rank FROM species WHERE taxid IN (%s)' % ids)
+        return {tax: spname for tax, spname in result.fetchall()}
 
     def get_lineage_translator(self, taxids):
         """Given a valid taxid number, return its corresponding lineage track as a
@@ -347,18 +338,19 @@ class GTDBTaxa:
             self.translate_to_names([tid for tid, count in descendants.items() if count == 1])
             return self.translate_to_names([tid for tid, count in descendants.items() if count == 1])
 
-    def get_topology(self, taxnames, intermediate_nodes=False, rank_limit=None, collapse_subspecies=False, annotate=True):
-        """Given a list of taxid numbers, return the minimal pruned GTDB taxonomy tree
-        containing all of them.
-        :param False intermediate_nodes: If True, single child nodes
+    def get_topology(self, taxnames, intermediate_nodes=False, rank_limit=None,
+                     collapse_subspecies=False, annotate=True):
+        """Return minimal pruned GTDB taxonomy tree containing all given taxids.
+
+        :param intermediate_nodes: If True, single child nodes
             representing the complete lineage of leaf nodes are kept.
             Otherwise, the tree is pruned to contain the first common
             ancestor of each group.
-        :param None rank_limit: If valid NCBI rank name is provided,
-            the tree is pruned at that given level. For instance, use
+        :param rank_limit: If valid NCBI rank name is provided, the
+            tree is pruned at that given level. For instance, use
             rank="species" to get rid of sub-species or strain leaf
             nodes.
-        :param False collapse_subspecies: If True, any item under the
+        :param collapse_subspecies: If True, any item under the
             species rank will be collapsed into the species upper
             node.
         """
@@ -366,11 +358,6 @@ class GTDBTaxa:
         #taxids, merged_conversion = self._translate_merged(taxids)
         tax2id = self.get_name_translator(taxnames) #{'f__Korarchaeaceae': [2174], 'o__Peptococcales': [205487], 'p__Huberarchaeota': [610]}
         taxids = [i[0] for i in tax2id.values()]
-
-        try:
-            PhyloTree()
-        except:
-            from .. import PhyloTree
 
         if len(taxids) == 1:
             root_taxid = int(list(taxids)[0])
@@ -459,7 +446,7 @@ class GTDBTaxa:
         if collapse_subspecies:
             to_detach = []
             for node in tree.traverse():
-                if node.props.get('rank') == "species":
+                if node.props.get('rank') == 'species':
                     to_detach.extend(node.children)
             for n in to_detach:
                 n.detach()
@@ -469,19 +456,21 @@ class GTDBTaxa:
 
         return tree
 
+    def annotate_tree(self, t, taxid_attr='name',
+                      tax2name=None, tax2track=None, tax2rank=None):
+        """Annotate a tree containing taxids as leaf names.
 
-    def annotate_tree(self, t, taxid_attr="name", tax2name=None, tax2track=None, tax2rank=None):
-        """Annotate a tree containing taxids as leaf names by adding the  'taxid',
-        'sci_name', 'lineage', 'named_lineage' and 'rank' additional attributes.
-        :param t: a Tree (or Tree derived) instance.
-        :param name taxid_attr: Allows to set a custom node attribute
-            containing the taxid number associated to each node (i.e.
-            species in PhyloTree instances).
-        :param tax2name,tax2track,tax2rank: Use these arguments to
-            provide pre-calculated dictionaries providing translation
-            from taxid number and names,track lineages and ranks.
+        It annotates by adding the properties 'taxid', 'sci_name',
+        'lineage', 'named_lineage' and 'rank'.
+
+        :param t: Tree to annotate.
+        :param taxid_attr: Node attribute (property) containing the
+            taxid number associated to each node (i.e. species in
+            PhyloTree instances).
+        :param tax2name, tax2track, tax2rank: Pre-calculated
+            dictionaries with translations from taxid number to names,
+            track lineages and ranks.
         """
-
         taxids = set()
         if taxid_attr == "taxid":
             for n in t.traverse():
@@ -490,12 +479,12 @@ class GTDBTaxa:
         else:
             for n in t.traverse():
                 try:
+                    # translate gtdb name -> id
                     taxaname = n.props.get(taxid_attr)
-                    tid = self.get_name_translator([taxaname])[taxaname][0] # translate gtdb name -> id
+                    tid = self.get_name_translator([taxaname])[taxaname][0]
+                    taxids.add(tid)
                 except (KeyError, ValueError, AttributeError):
                     pass
-                else:
-                    taxids.add(tid)
         merged_conversion = {}
 
         taxids, merged_conversion = self._translate_merged(taxids)
