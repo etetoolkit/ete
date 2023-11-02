@@ -23,7 +23,6 @@ DB_VERSION = 2
 DEFAULT_GTDBTAXADB = ETE_DATA_HOME + '/gtdbtaxa.sqlite'
 DEFAULT_GTDBTAXADUMP = ETE_DATA_HOME + '/gtdbdump.tar.gz'
 
-
 def is_taxadb_up_to_date(dbfile=DEFAULT_GTDBTAXADB):
     """Check if a valid and up-to-date gtdbtaxa.sqlite database exists
     If dbfile= is not specified, DEFAULT_TAXADB is assumed
@@ -63,7 +62,7 @@ class GTDBTaxa:
             urlbase = ('https://github.com/etetoolkit/ete-data/raw/main'
                        '/gtdb_taxonomy/gtdblatest')
             
-            update_ete_data(f'{DEFAULT_GTDBTAXADUMP}', f'{urlbase}/gtdbdump.tar.gz')
+            update_ete_data(f'{DEFAULT_GTDBTAXADUMP}', f'{urlbase}/gtdb_latest_dump.tar.gz')
 
             self.update_taxonomy_database(taxdump_file=DEFAULT_GTDBTAXADUMP)
 
@@ -776,8 +775,9 @@ def update_db(dbfile, targz_file=None):
     os.system("rm taxa.tab")
 
 def update_local_taxdump(fname=DEFAULT_GTDBTAXADUMP):
-    url = "https://github.com/etetoolkit/ete-data/raw/main/gtdb_taxonomy/gtdblatest/gtdbdump.tar.gz"
-
+    # latest version of gtdb taxonomy dump
+    url = "https://github.com/etetoolkit/ete-data/raw/main/gtdb_taxonomy/gtdblatest/gtdb_latest_dump.tar.gz"
+    
     if not os.path.exists(fname):
         print(f'Downloading {fname} from {url} ...')
         with open(fname, 'wb') as f:
