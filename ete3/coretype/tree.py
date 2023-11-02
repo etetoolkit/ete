@@ -1511,6 +1511,10 @@ class TreeNode(object):
         Sort the branches of a given tree (swapping children nodes)
         according to the size of each partition.
 
+        Returns the number of leaves in the given tree.
+
+        :argument direction: choose whether to sort children in order small-to-
+          large (directon=0) or large-to-small (direction=1)
         ::
 
            t =  Tree("(f,((d, ((a,b),c)),e));")
@@ -1547,20 +1551,21 @@ class TreeNode(object):
 
         """
 
-        if not self.is_leaf():
-            n2s = {}
-            for n in self.get_children():
-                s = n.ladderize(direction=direction)
-                n2s[n] = s
+        node2size = {}
+        for n in self.traverse(strategy="postorder"):
+            if n.is_leaf():
+                node2size[n] = 1
+            else:
+                child2size = {c: node2size[c] for c in n.children}
+                node2size[n] = sum(child2size.values())
 
-            self.children.sort(key=lambda x: n2s[x])
-            if direction == 1:
-                self.children.reverse()
-            size = sum(n2s.values())
-        else:
-            size = 1
+                if direction == 1:
+                    n.children.sort(key=lambda x: - child2size[x])
+                    # n.children.reverse()
+                else:
+                    n.children.sort(key=lambda x: child2size[x])
 
-        return size
+        return node2size[self]
 
     def sort_descendants(self, attr="name"):
         """
