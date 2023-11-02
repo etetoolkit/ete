@@ -55,8 +55,6 @@
 <span class="n">DEFAULT_TAXDUMP</span> <span class="o">=</span> <span class="n">ETE_DATA_HOME</span> <span class="o">+</span> <span class="s1">&#39;/taxdump.tar.gz&#39;</span>
 
 
-<div class="viewcode-block" id="is_taxadb_up_to_date">
-<a class="viewcode-back" href="../../../reference/reference_ncbi.html#ete4.ncbi_taxonomy.ncbiquery.is_taxadb_up_to_date">[docs]</a>
 <span class="k">def</span> <span class="nf">is_taxadb_up_to_date</span><span class="p">(</span><span class="n">dbfile</span><span class="o">=</span><span class="n">DEFAULT_TAXADB</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return True if a valid and up-to-date taxa.sqlite database exists.</span>
 
@@ -71,19 +69,18 @@
 
     <span class="n">db</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
-    <span class="k">return</span> <span class="n">version</span> <span class="o">==</span> <span class="n">DB_VERSION</span></div>
-
+    <span class="k">return</span> <span class="n">version</span> <span class="o">==</span> <span class="n">DB_VERSION</span>
 
 
 <div class="viewcode-block" id="NCBITaxa">
-<a class="viewcode-back" href="../../../reference/reference_ncbi.html#ete4.ncbi_taxonomy.ncbiquery.NCBITaxa">[docs]</a>
+<a class="viewcode-back" href="../../../reference/reference_taxonomy.html#ete4.NCBITaxa">[docs]</a>
 <span class="k">class</span> <span class="nc">NCBITaxa</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A local transparent connector to the NCBI taxonomy database.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="NCBITaxa.__init__">
-<a class="viewcode-back" href="../../../reference/reference_ncbi.html#ete4.ncbi_taxonomy.ncbiquery.NCBITaxa.__init__">[docs]</a>
+<a class="viewcode-back" href="../../../reference/reference_taxonomy.html#ete4.NCBITaxa.__init__">[docs]</a>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dbfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">taxdump_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">memory</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Open and keep a connection to the NCBI taxonomy database.</span>
@@ -120,7 +117,7 @@
 
 
 <div class="viewcode-block" id="NCBITaxa.update_taxonomy_database">
-<a class="viewcode-back" href="../../../reference/reference_ncbi.html#ete4.ncbi_taxonomy.ncbiquery.NCBITaxa.update_taxonomy_database">[docs]</a>
+<a class="viewcode-back" href="../../../reference/reference_taxonomy.html#ete4.NCBITaxa.update_taxonomy_database">[docs]</a>
     <span class="k">def</span> <span class="nf">update_taxonomy_database</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">taxdump_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Update the ncbi taxonomy database.</span>
 
@@ -154,7 +151,7 @@
         <span class="k">return</span> <span class="n">conv_all_taxids</span><span class="p">,</span> <span class="n">conversion</span>
 
 <div class="viewcode-block" id="NCBITaxa.get_fuzzy_name_translation">
-<a class="viewcode-back" href="../../../reference/reference_ncbi.html#ete4.ncbi_taxonomy.ncbiquery.NCBITaxa.get_fuzzy_name_translation">[docs]</a>
+<a class="viewcode-back" href="../../../reference/reference_taxonomy.html#ete4.NCBITaxa.get_fuzzy_name_translation">[docs]</a>
     <span class="k">def</span> <span class="nf">get_fuzzy_name_translation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">sim</span><span class="o">=</span><span class="mf">0.9</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return taxid, species name and match score from the NCBI database.</span>
 
@@ -203,7 +200,7 @@
 
 
 <div class="viewcode-block" id="NCBITaxa.get_rank">
-<a class="viewcode-back" href="../../../reference/reference_ncbi.html#ete4.ncbi_taxonomy.ncbiquery.NCBITaxa.get_rank">[docs]</a>
+<a class="viewcode-back" href="../../../reference/reference_taxonomy.html#ete4.NCBITaxa.get_rank">[docs]</a>
     <span class="k">def</span> <span class="nf">get_rank</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">taxids</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return dict with NCBI taxonomy ranks for each list of taxids.&quot;&quot;&quot;</span>
         <span class="n">all_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">taxids</span><span class="p">)</span>
@@ -222,7 +219,7 @@
 
 
 <div class="viewcode-block" id="NCBITaxa.get_lineage_translator">
-<a class="viewcode-back" href="../../../reference/reference_ncbi.html#ete4.ncbi_taxonomy.ncbiquery.NCBITaxa.get_lineage_translator">[docs]</a>
+<a class="viewcode-back" href="../../../reference/reference_taxonomy.html#ete4.NCBITaxa.get_lineage_translator">[docs]</a>
     <span class="k">def</span> <span class="nf">get_lineage_translator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">taxids</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return dict with lineage tracks corresponding to the given taxids.</span>
 
@@ -244,7 +241,7 @@
 
 
 <div class="viewcode-block" id="NCBITaxa.get_lineage">
-<a class="viewcode-back" href="../../../reference/reference_ncbi.html#ete4.ncbi_taxonomy.ncbiquery.NCBITaxa.get_lineage">[docs]</a>
+<a class="viewcode-back" href="../../../reference/reference_taxonomy.html#ete4.NCBITaxa.get_lineage">[docs]</a>
     <span class="k">def</span> <span class="nf">get_lineage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">taxid</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return lineage track corresponding to the given taxid.</span>
 
@@ -276,7 +273,7 @@
 
 
 <div class="viewcode-block" id="NCBITaxa.get_common_names">
-<a class="viewcode-back" href="../../../reference/reference_ncbi.html#ete4.ncbi_taxonomy.ncbiquery.NCBITaxa.get_common_names">[docs]</a>
+<a class="viewcode-back" href="../../../reference/reference_taxonomy.html#ete4.NCBITaxa.get_common_names">[docs]</a>
     <span class="k">def</span> <span class="nf">get_common_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">taxids</span><span class="p">):</span>
         <span class="n">query</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;&quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">taxids</span><span class="p">)</span>
         <span class="n">cmd</span> <span class="o">=</span> <span class="s1">&#39;SELECT taxid, common FROM species WHERE taxid IN (</span><span class="si">%s</span><span class="s1">);&#39;</span> <span class="o">%</span> <span class="n">query</span>
@@ -291,7 +288,7 @@
 
 
 <div class="viewcode-block" id="NCBITaxa.get_taxid_translator">
-<a class="viewcode-back" href="../../../reference/reference_ncbi.html#ete4.ncbi_taxonomy.ncbiquery.NCBITaxa.get_taxid_translator">[docs]</a>
+<a class="viewcode-back" href="../../../reference/reference_taxonomy.html#ete4.NCBITaxa.get_taxid_translator">[docs]</a>
     <span class="k">def</span> <span class="nf">get_taxid_translator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">taxids</span><span class="p">,</span> <span class="n">try_synonyms</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return dict with the scientific names corresponding to the taxids.&quot;&quot;&quot;</span>
         <span class="n">all_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">taxids</span><span class="p">))</span>
@@ -323,7 +320,7 @@
 
 
 <div class="viewcode-block" id="NCBITaxa.get_name_translator">
-<a class="viewcode-back" href="../../../reference/reference_ncbi.html#ete4.ncbi_taxonomy.ncbiquery.NCBITaxa.get_name_translator">[docs]</a>
+<a class="viewcode-back" href="../../../reference/reference_taxonomy.html#ete4.NCBITaxa.get_name_translator">[docs]</a>
     <span class="k">def</span> <span class="nf">get_name_translator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">names</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return dict with taxids corresponding to the given scientific names.</span>
 
@@ -357,7 +354,7 @@
 
 
 <div class="viewcode-block" id="NCBITaxa.translate_to_names">
-<a class="viewcode-back" href="../../../reference/reference_ncbi.html#ete4.ncbi_taxonomy.ncbiquery.NCBITaxa.translate_to_names">[docs]</a>
+<a class="viewcode-back" href="../../../reference/reference_taxonomy.html#ete4.NCBITaxa.translate_to_names">[docs]</a>
     <span class="k">def</span> <span class="nf">translate_to_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">taxids</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return list of scientific names corresponding to taxids.&quot;&quot;&quot;</span>
         <span class="n">id2name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_taxid_translator</span><span class="p">(</span><span class="n">taxids</span><span class="p">)</span>
@@ -368,7 +365,7 @@
 
 
 <div class="viewcode-block" id="NCBITaxa.get_descendant_taxa">
-<a class="viewcode-back" href="../../../reference/reference_ncbi.html#ete4.ncbi_taxonomy.ncbiquery.NCBITaxa.get_descendant_taxa">[docs]</a>
+<a class="viewcode-back" href="../../../reference/reference_taxonomy.html#ete4.NCBITaxa.get_descendant_taxa">[docs]</a>
     <span class="k">def</span> <span class="nf">get_descendant_taxa</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">intermediate_nodes</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                             <span class="n">rank_limit</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">collapse_subspecies</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                             <span class="n">return_tree</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
@@ -424,7 +421,7 @@
 
 
 <div class="viewcode-block" id="NCBITaxa.get_topology">
-<a class="viewcode-back" href="../../../reference/reference_ncbi.html#ete4.ncbi_taxonomy.ncbiquery.NCBITaxa.get_topology">[docs]</a>
+<a class="viewcode-back" href="../../../reference/reference_taxonomy.html#ete4.NCBITaxa.get_topology">[docs]</a>
     <span class="k">def</span> <span class="nf">get_topology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">taxids</span><span class="p">,</span> <span class="n">intermediate_nodes</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">rank_limit</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                      <span class="n">collapse_subspecies</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">annotate</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the minimal pruned NCBI taxonomy tree containing taxids.</span>
@@ -532,7 +529,7 @@
 
 
 <div class="viewcode-block" id="NCBITaxa.annotate_tree">
-<a class="viewcode-back" href="../../../reference/reference_ncbi.html#ete4.ncbi_taxonomy.ncbiquery.NCBITaxa.annotate_tree">[docs]</a>
+<a class="viewcode-back" href="../../../reference/reference_taxonomy.html#ete4.NCBITaxa.annotate_tree">[docs]</a>
     <span class="k">def</span> <span class="nf">annotate_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">taxid_attr</span><span class="o">=</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">tax2name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                       <span class="n">tax2track</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tax2rank</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Annotate a tree containing taxids as leaf names.</span>
@@ -625,7 +622,7 @@
             <span class="k">return</span> <span class="n">sorted_lineage</span>
 
 <div class="viewcode-block" id="NCBITaxa.get_broken_branches">
-<a class="viewcode-back" href="../../../reference/reference_ncbi.html#ete4.ncbi_taxonomy.ncbiquery.NCBITaxa.get_broken_branches">[docs]</a>
+<a class="viewcode-back" href="../../../reference/reference_taxonomy.html#ete4.NCBITaxa.get_broken_branches">[docs]</a>
     <span class="k">def</span> <span class="nf">get_broken_branches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">taxa_lineages</span><span class="p">,</span> <span class="n">n2content</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a list of NCBI lineage names that are not monophyletic in the</span>
 <span class="sd">        provided tree, as well as the list of affected branches and their size.</span>
