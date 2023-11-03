@@ -111,6 +111,102 @@ will be printed in the terminal.
   127.0.0.1 - - [02/Nov/2023 11:19:15] "GET /drawers/RectFaces/0 HTTP/1.1" 200 30
   127.0.0.1 - - [02/Nov/2023 11:19:15] "GET /trees/0/draw?drawer=RectFaces&min_size=10&zx=555.9&zy=284.40000000000003&za=1&x=-0.33333333333333337&y=-0.16666666666666666&w=3.3333333333333335&h=3.333333333333333&collapsed_ids=%5B%5D&layouts=%5B%22default%3ABranch+length%22%2C%22default%3ABranch+support%22%2C%22default%3ALeaf+name%22%5D&ultrametric=0&panel=-1 HTTP/1.1" 200 2
 
+Control Panel
+~~~~~~~~~~~~~
+When exploring the tree, a control panel will be shown in the left side of the tree panel.
+
+.. image:: https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/control_panel.png?raw=true
+
+It consists of the three major tabs:
+
+- **Layout**: overrall setting of the tree layout including tree representation, collapse level, available TreeLayouts, etc.
+- **Search & Selection**: to customize search and select nodes in the tree.
+- **Advanced**: to control the advanced options of the tree visualization setting.
+
+1) Layout Tab
+^^^^^^^^^^^^^
+Layout tab contains most of the general settings of the tree visualization. It includes:
+
+- **tree**, name of the tree.
+
+- **drawer**, drawer of the tree representation, *Rectangular* or *Circular*.
+
+- **collapse**, the threshold of the vertical size in pixel, when the node's vertical size is smaller than the threshold, the node will be collapsed, default value is *10*.
+
+- **ultrametric**, whether to draw ultrametric tree with edge lengths where all leaves are equidistant from the root, default *False*.
+
+- **Layouts**, all available TreeLayouts in the tree, users can choose to activate or deactivate the TreeLayouts.
+
+- **show minimap**, whether to show minimap in the tree interface(bottom-right), default *False*.
+
+- **show tree scale legend**, whether to show tree scale legend in the tree interface(bottom-left), default *True*.
+
+- **tooltip on hover**, whether to show tooltip when mouse hover on the node. If *False*, tooltip will be shown on left-click. Default *False*.
+
+- **zoom around node**, If set to True, SmartView restricts the zoom-out level to maintain the node as the focal point, ensuring it remains clearly visible. The default setting is **True**.
+
+- **zoom in aligned panel**, If set to True, users can zoom in the aligned panel for aligned node faces. The default setting is **False**.
+
+- **select text**, whether is able to select text with cursor in the tree interface, default *False*.
+
+- **Download**, users can download the tree information in **newick**, **svg** or **pdf** file in the tree interface by clicking the download tab from Control Panel.
+
+- **Help**, help page for SmartView, including shortcuts.
+
+2) Search & Selection Tab
+^^^^^^^^^^^^^^^^^^^^^^^^^
+Search & Selection tab contains the search and selection functions of the tree visualization. 
+Users can start query with clicking *new search* button, then input the query in the search box. 
+Each query will be saved in the search history, users can choose to modtify the visualizing setting for matching nodes or clades.
+
+Simple search
+"""""""""""""
+Put a text in the search box to find all the nodes whose name matches it.
+The search will be case-insensitive if the text is all in lower case, and case-sensitive otherwise.
+
+Regular expression search
+""""""""""""""""""""""""""
+To search for names mathing a given regular expression, you can prefix your text with the command **/r** (the regexp command) and follow it with the regular expression.
+
+Expression search 
+"""""""""""""""""
+When prefixing your text with /e (the eval command), you can use a quite general Python expression to search for nodes. This is the most powerful search method available (and the most complex to use).
+
+The expression will be evaluated for every node, and will select those that satisfy it. In the expression you can use (among others) the following variables, with their straightforward interpretation: **node**, **parent**, **is_leaf**, **length** / **dist** / **d**, **properties** / **p**, **children** / **ch**, **size**, **dx**, **dy**, **regex**.
+
+Topological search
+""""""""""""""""""
+Similar to the expression search, if you prefix your text with **/t** (the topological command), you can write a newick tree with quoted names in each node containing an eval command. This will select the nodes that satisfy the full subtree of expressions that you passed.
+
+Examples of searches and possible matches
+"""""""""""""""""""""""""""""""""""""""""
+
+::
+
+  citrobacter		will match nodes named "Citrobacter werkmanii" and "Citrobacter youngae"
+      
+  UBA		will match "spx UBA2009" but not "Rokubacteriales"
+      
+  /r sp\d\d		will match any name that contains "sp" followed by (at least) two digits, like "Escherichia sp002965065" and "Citrobacter sp005281345"
+      
+  /e d > 1		will match nodes with a length > 1
+      
+  /e is_leaf and p['species'] == 'Homo'		will match leaf nodes with property "species" equal to "Homo"
+      
+  /t ("is_leaf","d > 1")"name=='AB'"		will match nodes named "AB" that have two children, one that is a leaf and another that has a length > 1
+
+
+3) Advanced Tab
+^^^^^^^^^^^^^^^
+For more advance set up for visualization.
+
+Download 
+~~~~~~~~
+Users can download the tree information in **newick**, **svg** or **pdf** file in the tree interface by clicking the download tab from Control Panel.
+
+Node Panel
+~~~~~~~~~~
+
 
 Show leaf node names, branch length and branch support
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -135,8 +231,7 @@ Source code can be found in in ETE4 here: `explore_show.py example <https://gith
 Customizing the aspect of trees
 -------------------------------
 
-Image customization is performed through four main elements: *tree
-style*, *node style*, *faces*, and *layouts*.
+Visualization customization is performed through four main elements: *TreeStyle*, *NodeStyle*, *Face*, and *TreeLayout*.
 
 Tree Layout
 ~~~~~~~~~~~
