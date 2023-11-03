@@ -16,7 +16,7 @@ class Test_gtdbquery(unittest.TestCase):
 
         url = ('https://github.com/etetoolkit/ete-data/raw/main'
                    '/gtdb_taxonomy/gtdb202/gtdb202dump.tar.gz')
-        
+
         print(f'Downloading GTDB database release 202 to {DEFAULT_GTDBTAXADUMP} from {url}')
 
         with open(DEFAULT_GTDBTAXADUMP, 'wb') as f:
@@ -85,6 +85,7 @@ class Test_gtdbquery(unittest.TestCase):
 
         self.assertEqual(out[0]['o__Peptococcales'],
                          ['root', 'd__Bacteria', 'p__Firmicutes_B', 'c__Peptococcia', 'o__Peptococcales'])
+
 
 if __name__ == '__main__':
     unittest.main()
