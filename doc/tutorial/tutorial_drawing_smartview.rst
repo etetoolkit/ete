@@ -57,8 +57,8 @@ Source code can be found in in ETE4 here: `explore_standalone.py example <https:
 
 Interactive sessions
 ~~~~~~~~~~~~~~~~~~~~
-When running in interactive sessions such as IPython or Jupyter Notebooks, *keep_server* 
-should be set as *False*
+When running in interactive sessions such as IPython or Jupyter Notebooks, 
+leave *keep_server* as default *False*.
 
 ::
 
@@ -285,7 +285,7 @@ Simple tree in which the same style is applied to all nodes::
   def modify_node_style(node):
     # Draw nodes as small red square of diameter equal fo 10 pixels
     node.sm_style["fgcolor"] = "red"
-    node.sm_style["shape"] = "traingle"
+    node.sm_style["shape"] = "triangle"
     node.sm_style["size"] = 10
 
     # brown dashed branch lines with width equal to 2 pixels
@@ -305,7 +305,7 @@ Simple tree in which the same style is applied to all nodes::
    :align: center
 Now in legend of the layout shows in top-right corner of the tree panel.
 
-Source code can be found in in ETE4 here: `nodestyle_traingle.py example <https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/nodestyle_traingle.py>`_.
+Source code can be found in in ETE4 here: `nodestyle_triangle.py example <https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/nodestyle_triangle.py>`_.
 
 
 If you want to draw nodes with different styles, an independent

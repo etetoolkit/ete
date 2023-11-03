@@ -542,7 +542,7 @@ class DrawerRect(Drawer):
                 dx, dy = 2 * size / zx, 2 * size / zy
                 box = (x - dx/2, y - dy/2, dx, dy)
                 yield dh.draw_rect(box, rect_type='nodedot ' + active_node, style=nodedot_style)
-            elif style['shape'] == "traingle":
+            elif style['shape'] == "triangle":
                 x, y = center
                 zx, zy, _ = self.zoom
                 dx, dy = 2 * size / zx, 2 * size / zy
