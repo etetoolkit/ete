@@ -113,7 +113,7 @@ will be printed in the terminal.
 
 
 Show leaf node names, branch length and branch support
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Users can choose to show leaf node names, branch length and branch support in the 
 tree explore method.
 
@@ -364,7 +364,9 @@ shapes (:class:`CircleFace`) or (:class:`RectFace`), to molecular sequence repre
 (:class:`SeqFace`), and specific faces for collapsed clade (:class:`OutlinedFace`), etc.
 
 A complete list of available faces can be found at the :mod:`smartview`
-reference page.
+reference page. All node faces example with demonstration code can be found in 
+https://github.com/dengzq1234/ete4_gallery. 
+
 
 
 Faces position
@@ -506,6 +508,13 @@ For node faces in collapsed clades, modify *collapsed_only* argument to True in 
    
 Source code can be found in in ETE4 here: `faceposition_collapsed.py example <https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/faceposition_collapsed.py>`_.
 
+Example of all face positions
+
+.. image:: https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/faceposition_all.png?raw=true
+   :alt: alternative text
+   :align: center
+Source code can be found in in ETE4 here: `faceposition_all.py example <https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/faceposition_all.py>`_.
+
 
 Face properties
 ^^^^^^^^^^^^^^^
@@ -555,7 +564,6 @@ Here is a very simple example::
    :align: center
 
 Source code can be found in in ETE4 here: `faceproperties_textface.py example <https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/faceproperties_textface.py>`_.
-
 
 
 Advanced Layout functions
