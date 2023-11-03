@@ -45,6 +45,7 @@
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">tarfile</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">requests</span>
 
 <span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">ETE_DATA_HOME</span><span class="p">,</span> <span class="n">update_ete_data</span>
 
@@ -53,8 +54,7 @@
 
 <span class="n">DB_VERSION</span> <span class="o">=</span> <span class="mi">2</span>
 <span class="n">DEFAULT_GTDBTAXADB</span> <span class="o">=</span> <span class="n">ETE_DATA_HOME</span> <span class="o">+</span> <span class="s1">&#39;/gtdbtaxa.sqlite&#39;</span>
-<span class="n">DEFAULT_GTDBTAXADUMP</span> <span class="o">=</span> <span class="n">ETE_DATA_HOME</span> <span class="o">+</span> <span class="s1">&#39;/gtdb202dump.tar.gz&#39;</span>
-
+<span class="n">DEFAULT_GTDBTAXADUMP</span> <span class="o">=</span> <span class="n">ETE_DATA_HOME</span> <span class="o">+</span> <span class="s1">&#39;/gtdbdump.tar.gz&#39;</span>
 
 <span class="k">def</span> <span class="nf">is_taxadb_up_to_date</span><span class="p">(</span><span class="n">dbfile</span><span class="o">=</span><span class="n">DEFAULT_GTDBTAXADB</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if a valid and up-to-date gtdbtaxa.sqlite database exists</span>
@@ -96,9 +96,9 @@
         <span class="k">if</span> <span class="n">dbfile</span> <span class="o">!=</span> <span class="n">DEFAULT_GTDBTAXADB</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dbfile</span><span class="p">):</span>
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;GTDB database not present yet (first time used?)&#39;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
             <span class="n">urlbase</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;https://github.com/etetoolkit/ete-data/raw/main&#39;</span>
-                       <span class="s1">&#39;/gtdb_taxonomy/gtdb202&#39;</span><span class="p">)</span>
-            <span class="n">update_ete_data</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">DEFAULT_GTDBTAXADB</span><span class="si">}</span><span class="s1">.traverse.pkl&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">urlbase</span><span class="si">}</span><span class="s1">/gtdbtaxa.sqlite.traverse.pkl&#39;</span><span class="p">)</span>
-            <span class="n">update_ete_data</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">DEFAULT_GTDBTAXADUMP</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">urlbase</span><span class="si">}</span><span class="s1">/gtdb202dump.tar.gz&#39;</span><span class="p">)</span>
+                       <span class="s1">&#39;/gtdb_taxonomy/gtdblatest&#39;</span><span class="p">)</span>
+            
+            <span class="n">update_ete_data</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">DEFAULT_GTDBTAXADUMP</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">urlbase</span><span class="si">}</span><span class="s1">/gtdb_latest_dump.tar.gz&#39;</span><span class="p">)</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">update_taxonomy_database</span><span class="p">(</span><span class="n">taxdump_file</span><span class="o">=</span><span class="n">DEFAULT_GTDBTAXADUMP</span><span class="p">)</span>
 
@@ -820,12 +820,13 @@
     <span class="n">basepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">dbfile</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">basepath</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">basepath</span><span class="p">):</span>
         <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">basepath</span><span class="p">)</span>
-
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">tar</span> <span class="o">=</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">targz_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
-    <span class="k">except</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Please provide taxa dump tar.gz file&quot;</span><span class="p">)</span>
-
+    
+    <span class="c1"># if users don&#39;t provie targz_file, update the latest version from ete-data </span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">targz_file</span><span class="p">:</span>
+        <span class="n">update_local_taxdump</span><span class="p">(</span><span class="n">DEFAULT_GTDBTAXADUMP</span><span class="p">)</span>
+        <span class="n">targz_file</span> <span class="o">=</span> <span class="n">DEFAULT_GTDBTAXADUMP</span>
+    
+    <span class="n">tar</span> <span class="o">=</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">targz_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
     <span class="n">t</span><span class="p">,</span> <span class="n">synonyms</span> <span class="o">=</span> <span class="n">load_gtdb_tree_from_dump</span><span class="p">(</span><span class="n">tar</span><span class="p">)</span>
 
     <span class="n">prepostorder</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">post</span><span class="p">,</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">iter_prepostorder</span><span class="p">()]</span>
@@ -839,6 +840,25 @@
     <span class="n">upload_data</span><span class="p">(</span><span class="n">dbfile</span><span class="p">)</span>
 
     <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;rm taxa.tab&quot;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">update_local_taxdump</span><span class="p">(</span><span class="n">fname</span><span class="o">=</span><span class="n">DEFAULT_GTDBTAXADUMP</span><span class="p">):</span>
+    <span class="c1"># latest version of gtdb taxonomy dump</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://github.com/etetoolkit/ete-data/raw/main/gtdb_taxonomy/gtdblatest/gtdb_latest_dump.tar.gz&quot;</span>
+    
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Downloading </span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s1"> from </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s1"> ...&#39;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">md5_local</span> <span class="o">=</span> <span class="n">md5</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">())</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+        <span class="n">md5_remote</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span> <span class="o">+</span> <span class="s1">&#39;.md5&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">md5_local</span> <span class="o">!=</span> <span class="n">md5_remote</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Updating </span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s1"> from </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s1"> ...&#39;</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;File </span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s1"> is already up-to-date with </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s1"> .&#39;</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">upload_data</span><span class="p">(</span><span class="n">dbfile</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">()</span>
