@@ -24,7 +24,7 @@ Scheme of fundamental components in ETE4's programmable tree drawing engine
    :alt: alternative text
    :align: center
 
-Explore interactive isualization of trees 
+Explore interactive visualization of trees 
 -----------------------------------------
 
 ETE's tree drawing engine is fully integrated with a built-in
