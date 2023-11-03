@@ -33,11 +33,11 @@
   <h1>Source code for ete4.smartview.renderer.nodestyle</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">re</span>
 
-<span class="n">_LINE_TYPE_CHECKER</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">_LINE_TYPE_CHECKER</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># 0 solid, 1 dashed, 2 dotted</span>
 <span class="n">_SIZE_CHECKER</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
 <span class="n">_COLOR_MATCH</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;^#[A-Fa-f\d]</span><span class="si">{6}</span><span class="s2">$&quot;</span><span class="p">)</span>
 <span class="n">_COLOR_CHECKER</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">SVG_COLORS</span> <span class="ow">or</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">_COLOR_MATCH</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
-<span class="n">_NODE_TYPE_CHECKER</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;sphere&quot;</span><span class="p">,</span> <span class="s2">&quot;circle&quot;</span><span class="p">,</span> <span class="s2">&quot;square&quot;</span><span class="p">]</span>
+<span class="n">_NODE_TYPE_CHECKER</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;triangle&quot;</span><span class="p">,</span> <span class="s2">&quot;circle&quot;</span><span class="p">,</span> <span class="s2">&quot;square&quot;</span><span class="p">]</span>
 <span class="n">_BOOL_CHECKER</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="n">_FLOAT_CHECKER</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
 
@@ -52,8 +52,8 @@
     <span class="p">[</span><span class="s2">&quot;outline_opacity&quot;</span><span class="p">,</span>    <span class="mf">0.3</span><span class="p">,</span>           <span class="n">_FLOAT_CHECKER</span><span class="p">],</span>
     <span class="p">[</span><span class="s2">&quot;vt_line_color&quot;</span><span class="p">,</span>      <span class="s2">&quot;#000000&quot;</span><span class="p">,</span>     <span class="n">_COLOR_CHECKER</span><span class="p">],</span>
     <span class="p">[</span><span class="s2">&quot;hz_line_color&quot;</span><span class="p">,</span>      <span class="s2">&quot;#000000&quot;</span><span class="p">,</span>     <span class="n">_COLOR_CHECKER</span><span class="p">],</span>
-    <span class="p">[</span><span class="s2">&quot;hz_line_type&quot;</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span>             <span class="n">_LINE_TYPE_CHECKER</span><span class="p">],</span> <span class="c1"># 0 solid, 1 dashed, 2 dotted</span>
-    <span class="p">[</span><span class="s2">&quot;vt_line_type&quot;</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span>             <span class="n">_LINE_TYPE_CHECKER</span><span class="p">],</span> <span class="c1"># 0 solid, 1 dashed, 2 dotted</span>
+    <span class="p">[</span><span class="s2">&quot;hz_line_type&quot;</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span>             <span class="n">_LINE_TYPE_CHECKER</span><span class="p">],</span>
+    <span class="p">[</span><span class="s2">&quot;vt_line_type&quot;</span><span class="p">,</span>       <span class="mi">0</span><span class="p">,</span>             <span class="n">_LINE_TYPE_CHECKER</span><span class="p">],</span>
     <span class="p">[</span><span class="s2">&quot;size&quot;</span><span class="p">,</span>               <span class="mi">0</span><span class="p">,</span>             <span class="n">_SIZE_CHECKER</span><span class="p">],</span> <span class="c1"># node circle size</span>
     <span class="p">[</span><span class="s2">&quot;shape&quot;</span><span class="p">,</span>              <span class="s2">&quot;circle&quot;</span><span class="p">,</span>      <span class="n">_NODE_TYPE_CHECKER</span><span class="p">],</span>
     <span class="p">[</span><span class="s2">&quot;draw_descendants&quot;</span><span class="p">,</span>   <span class="kc">True</span><span class="p">,</span>          <span class="n">_BOOL_CHECKER</span><span class="p">],</span>
@@ -76,28 +76,13 @@
 <a class="viewcode-back" href="../../../../reference/reference_smartview.html#ete4.smartview.renderer.nodestyle.NodeStyle.__init__">[docs]</a>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param #0030c1 fgcolor: RGB code or name in :data:`SVG_COLORS`</span>
-<span class="sd">        :param #FFFFFF bgcolor: RGB code or name in :data:`SVG_COLORS`</span>
-<span class="sd">        :param #FFFFFF node_bgcolor: RGB code or name in :data:`SVG_COLORS`</span>
-<span class="sd">        :param #FFFFFF partition_bgcolor: RGB code or name in :data:`SVG_COLORS`</span>
-<span class="sd">        :param #FFFFFF faces_bgcolor: RGB code or name in :data:`SVG_COLORS`</span>
-<span class="sd">        :param #000000 vt_line_color: RGB code or name in :data:`SVG_COLORS`</span>
-<span class="sd">        :param #000000 hz_line_color: RGB code or name in :data:`SVG_COLORS`</span>
-<span class="sd">        :param 0 hz_line_type: integer number</span>
-<span class="sd">        :param 0 vt_line_type: integer number</span>
-<span class="sd">        :param 3 size: integer number</span>
-<span class="sd">        :param &quot;circle&quot; shape: &quot;circle&quot;, &quot;square&quot; or &quot;sphere&quot;</span>
+<span class="sd">        For all possible parameters, see NODE_STYLE_DEFAULT. Some descriptions:</span>
+
 <span class="sd">        :param True draw_descendants: Mark an internal node as a leaf.</span>
-<span class="sd">        :param 0 hz_line_width: integer number representing the width</span>
-<span class="sd">            of the line in pixels. A line width of zero indicates a</span>
-<span class="sd">            cosmetic pen. This means that the pen width is always</span>
-<span class="sd">            drawn one pixel wide, independent of the transformation</span>
-<span class="sd">            set on the painter.</span>
-<span class="sd">        :param 0 vt_line_width: integer number representing the width</span>
-<span class="sd">            of the line in pixels. A line width of zero indicates a</span>
-<span class="sd">            cosmetic pen. This means that the pen width is always</span>
-<span class="sd">            drawn one pixel wide, independent of the transformation</span>
-<span class="sd">            set on the painter.</span>
+<span class="sd">        :param 0 hz_line_width: Horizontal line width in pixels. If 0</span>
+<span class="sd">            it is automatic (normally 1 pixel).</span>
+<span class="sd">        :param 0 vt_line_width: Vertical line width in pixels. If 0 it</span>
+<span class="sd">            is automatic (normally 1 pixel).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">init</span><span class="p">()</span></div>
