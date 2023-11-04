@@ -116,6 +116,8 @@ Control Panel
 When exploring the tree, a control panel will be shown in the left side of the tree panel.
 
 .. image:: https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/control_panel.png?raw=true
+   :alt: alternative text
+   :align: center
 
 It consists of the three major tabs:
 
@@ -125,6 +127,8 @@ It consists of the three major tabs:
 
 1) Layout Tab
 ^^^^^^^^^^^^^
+Overrall
+""""""""
 Layout tab contains most of the general settings of the tree visualization. It includes:
 
 - **tree**, name of the tree.
@@ -152,6 +156,11 @@ Layout tab contains most of the general settings of the tree visualization. It i
 - **Download**, users can download the tree information in **newick**, **svg** or **pdf** file in the tree interface by clicking the download tab from Control Panel.
 
 - **Help**, help page for SmartView, including shortcuts.
+
+Download 
+""""""""
+Users can download the tree information in **newick**, **svg** or **pdf** file in the tree interface by clicking the download tab from Control Panel.
+
 
 2) Search & Selection Tab
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -200,12 +209,16 @@ Examples of searches and possible matches
 ^^^^^^^^^^^^^^^
 For more advance set up for visualization.
 
-Download 
-~~~~~~~~
-Users can download the tree information in **newick**, **svg** or **pdf** file in the tree interface by clicking the download tab from Control Panel.
 
 Node Panel
 ~~~~~~~~~~
+Interactive tree explorer allows users to perform various editing options on specific node. Once right-click on target node, it trigger node panel for selecting editing options.
+
+.. image:: https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/nodepanel.png?raw=true
+   :alt: alternative text
+   :align: center
+
+The node editor panel provides access to node-specific actions, such as creating subtrees, collapsing, pruning, rooting and more.
 
 
 Show leaf node names, branch length and branch support
