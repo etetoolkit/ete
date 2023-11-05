@@ -1958,7 +1958,7 @@ cdef class Tree(object):
 
         Set 'node_style' as the fixed style for the current node.
         """
-        if isinstance(node_style, NodeStyle):
+        if TREEVIEW and isinstance(node_style, NodeStyle):
             self._img_style = node_style
         elif isinstance(node_style, smNodeStyle):
             self._sm_style = node_style
