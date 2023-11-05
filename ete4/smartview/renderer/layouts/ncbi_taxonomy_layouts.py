@@ -9,16 +9,6 @@ from ete4.config import ETE_DATA_HOME, update_ete_data
 __all__ = [ "LayoutLastCommonAncestor" ]
 
 
-taxid2color_file = ETE_DATA_HOME + '/taxid2color.json'
-
-if not os.path.exists(taxid2color_file):
-    url = ('https://github.com/etetoolkit/ete-data/raw/main'
-           '/layouts/taxid2color.json')
-    update_ete_data(taxid2color_file, url)
-
-with open(taxid2color_file) as handle:
-    _taxid2color = json.load(handle)
-
 def get_level(node, level=0):
     if node.is_root:
         return level
@@ -43,16 +33,24 @@ class LayoutLastCommonAncestor(TreeLayout):
         self.column = column
 
     def get_color(self, node):
-        color = node.props.get('sci_name_color', None)
+        color = node.props.get('sci_name_color')
         if color:
             return color
 
-        taxid = node.props.get('taxid', None)
-        color = _taxid2color.get(str(taxid))
-        if color:
-            return color
+        # Make sure we have the big file with all the colors.
+        taxid2color_file = ETE_DATA_HOME + '/taxid2color.json'
 
-        return 'lightgray'
+        if not os.path.exists(taxid2color_file):
+            url = ('https://github.com/etetoolkit/ete-data/raw/main'
+                   '/layouts/taxid2color.json')
+            update_ete_data(taxid2color_file, url)
+
+        with open(taxid2color_file) as handle:
+            _taxid2color = json.load(handle)
+
+        # Use it to colorize according to taxid.
+        taxid = node.props.get('taxid')
+        return _taxid2color.get(taxid, 'lightgray')
 
 
     def set_node_style(self, node):

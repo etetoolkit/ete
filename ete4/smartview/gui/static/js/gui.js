@@ -752,7 +752,7 @@ async function on_box_click(event, box, node_id, properties) {
             activate_node(node_id, properties, "nodes")
     }
     else if (event.shiftKey && node_id.length) {
-        const nid = get_tid() + "," + node_id;
+        const nid = get_tid() + (node_id.length > 0 ? ("," + node_id) : "");
         const active = await api(`/trees/${nid}/active`);
         if (active === "active_clade")
             deactivate_node(node_id, "clades")

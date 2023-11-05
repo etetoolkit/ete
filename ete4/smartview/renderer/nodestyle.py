@@ -1,6 +1,6 @@
 import re
 
-_LINE_TYPE_CHECKER = lambda x: x in (0, 1, 2)
+_LINE_TYPE_CHECKER = lambda x: x in (0, 1, 2)  # 0 solid, 1 dashed, 2 dotted
 _SIZE_CHECKER = lambda x: isinstance(x, int)
 _COLOR_MATCH = re.compile("^#[A-Fa-f\d]{6}$")
 _COLOR_CHECKER = lambda x: x.lower() in SVG_COLORS or re.match(_COLOR_MATCH, x)
@@ -19,8 +19,8 @@ NODE_STYLE_DEFAULT = [
     ["outline_opacity",    0.3,           _FLOAT_CHECKER],
     ["vt_line_color",      "#000000",     _COLOR_CHECKER],
     ["hz_line_color",      "#000000",     _COLOR_CHECKER],
-    ["hz_line_type",       0,             _LINE_TYPE_CHECKER], # 0 solid, 1 dashed, 2 dotted
-    ["vt_line_type",       0,             _LINE_TYPE_CHECKER], # 0 solid, 1 dashed, 2 dotted
+    ["hz_line_type",       0,             _LINE_TYPE_CHECKER],
+    ["vt_line_type",       0,             _LINE_TYPE_CHECKER],
     ["size",               0,             _SIZE_CHECKER], # node circle size
     ["shape",              "circle",      _NODE_TYPE_CHECKER], # circle, square, triangle
     ["draw_descendants",   True,          _BOOL_CHECKER],
@@ -39,28 +39,13 @@ class NodeStyle(dict):
 
     def __init__(self, *args, **kargs):
         """
-        :param #0030c1 fgcolor: RGB code or name in :data:`SVG_COLORS`
-        :param #FFFFFF bgcolor: RGB code or name in :data:`SVG_COLORS`
-        :param #FFFFFF node_bgcolor: RGB code or name in :data:`SVG_COLORS`
-        :param #FFFFFF partition_bgcolor: RGB code or name in :data:`SVG_COLORS`
-        :param #FFFFFF faces_bgcolor: RGB code or name in :data:`SVG_COLORS`
-        :param #000000 vt_line_color: RGB code or name in :data:`SVG_COLORS`
-        :param #000000 hz_line_color: RGB code or name in :data:`SVG_COLORS`
-        :param 0 hz_line_type: integer number
-        :param 0 vt_line_type: integer number
-        :param 3 size: integer number
-        :param "circle" shape: "circle", "square" or "triangle"
+        For all possible parameters, see NODE_STYLE_DEFAULT. Some descriptions:
+
         :param True draw_descendants: Mark an internal node as a leaf.
-        :param 0 hz_line_width: integer number representing the width
-            of the line in pixels. A line width of zero indicates a
-            cosmetic pen. This means that the pen width is always
-            drawn one pixel wide, independent of the transformation
-            set on the painter.
-        :param 0 vt_line_width: integer number representing the width
-            of the line in pixels. A line width of zero indicates a
-            cosmetic pen. This means that the pen width is always
-            drawn one pixel wide, independent of the transformation
-            set on the painter.
+        :param 0 hz_line_width: Horizontal line width in pixels. If 0
+            it is automatic (normally 1 pixel).
+        :param 0 vt_line_width: Vertical line width in pixels. If 0 it
+            is automatic (normally 1 pixel).
         """
         super().__init__(*args, **kargs)
         self.init()

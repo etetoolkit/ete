@@ -1022,6 +1022,7 @@ cdef class Tree(object):
 
     def set_outgroup(self, node, bprops=None):
         """Reroot the tree at the given outgroup node."""
+        node = self[node] if type(node) == str else node  # translates if needed
         ops.set_outgroup(node, bprops)
 
     def unroot(self, mode='legacy'):

@@ -10,6 +10,6 @@ Reference Guide
    reference_phylo
    reference_clustering
    reference_seqgroup
-   reference_ncbi
+   reference_taxonomy
    reference_smartview
    reference_treeview

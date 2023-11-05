@@ -79,7 +79,7 @@ async function add_node_options(box, name, properties, node_id) {
     add_button("Download branch as newick", () => download_newick(node_id),
                "Download subtree starting at this node as a newick file.",
                "download", false);
-    const nid = get_tid() + "," + node_id;
+    const nid = get_tid() + (node_id.length > 0 ? ("," + node_id) : "");
     const nseq = Number(await api(`/trees/${nid}/nseq`));
     if (nseq > 0)
         add_button("Download " + (nseq === 1 ? "sequence" : `leaf sequences (${nseq})`),
