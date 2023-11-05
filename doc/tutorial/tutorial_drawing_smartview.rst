@@ -111,8 +111,51 @@ will be printed in the terminal.
   127.0.0.1 - - [02/Nov/2023 11:19:15] "GET /drawers/RectFaces/0 HTTP/1.1" 200 30
   127.0.0.1 - - [02/Nov/2023 11:19:15] "GET /trees/0/draw?drawer=RectFaces&min_size=10&zx=555.9&zy=284.40000000000003&za=1&x=-0.33333333333333337&y=-0.16666666666666666&w=3.3333333333333335&h=3.333333333333333&collapsed_ids=%5B%5D&layouts=%5B%22default%3ABranch+length%22%2C%22default%3ABranch+support%22%2C%22default%3ALeaf+name%22%5D&ultrametric=0&panel=-1 HTTP/1.1" 200 2
 
+Show leaf node names, branch length and branch support
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Users can choose to show leaf node names, branch length and branch support in the 
+tree explore method.
+
+Example::
+  
+   from ete4 import Tree
+   t = Tree()
+   t.populate(10, random_branches=True)
+   t.explore(show_leaf_name=True, show_branch_length=True, \
+   show_branch_support=True, keep_server=True)
+
+.. image:: https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/explore_show.png?raw=true
+   :alt: alternative text
+   :align: center
+
+Source code can be found in in ETE4 here: `explore_show.py example <https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/explore_show.py>`_.
+
+Showing node's properties in pop up
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Users can choose to show node's properties in pop up when mouse left-click on the node. 
+By setting arguments in *include_props* and *exclude_props* `explore()` method, users can choose to show node's 
+properties in pop up when mouse left-click on the node, uses can decide what 
+properties to show in interface.
+
+Example using *include_props*::
+  
+   from ete4 import Tree
+   t = Tree()
+   t.populate(10, random_branches=True)
+   # includes node's properties "name", "dist" and "support" in pop up
+   t.explore(include_props=("name", "dist", "support"), keep_server=True)
+
+Or *exclude_props*::
+
+  from ete4 import Tree
+   t = Tree()
+   t.populate(10, random_branches=True)
+   # not showing node's properties "dist" and "support" in pop up
+   t.explore(exclude_props=("dist", "support"), keep_server=True)
+
 Control Panel
 ~~~~~~~~~~~~~
+After trigging explore() method on target tree, a local browser will be activated where users can visualize targer tree.
 When exploring the tree, a control panel will be shown in the left side of the tree panel.
 
 .. image:: https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/control_panel.png?raw=true
@@ -219,26 +262,6 @@ Interactive tree explorer allows users to perform various editing options on spe
    :align: center
 
 The node editor panel provides access to node-specific actions, such as creating subtrees, collapsing, pruning, rooting and more.
-
-
-Show leaf node names, branch length and branch support
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Users can choose to show leaf node names, branch length and branch support in the 
-tree explore method.
-
-Example::
-  
-   from ete4 import Tree
-   t = Tree()
-   t.populate(10, random_branches=True)
-   t.explore(show_leaf_name=True, show_branch_length=True, \
-   show_branch_support=True, keep_server=True)
-
-.. image:: https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/explore_show.png?raw=true
-   :alt: alternative text
-   :align: center
-
-Source code can be found in in ETE4 here: `explore_show.py example <https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/explore_show.py>`_.
 
 
 Customizing the aspect of trees
@@ -876,10 +899,19 @@ Example::
   layouts.append(tree_layout)
   t.explore(keep_server=True, layouts=layouts)
 
+.. image:: https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/combinedlayout_basic.png?raw=true
+   :alt: alternative text
+   :align: center
+
 Source code can be found in in ETE4 here: `combinedlayout_object.py example <https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/combinedlayout_object.py>`_.
 
 Node Backgrounds
 ~~~~~~~~~~~~~~~~
+
+.. image:: https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/node_backgrounds.png?raw=true
+   :alt: alternative text
+   :align: center
+
 
 ::
 
@@ -904,12 +936,26 @@ Node Backgrounds
   n3 = t.common_ancestor(["c1", "c2", "c3"])
   n4 = t.common_ancestor(["b3", "b4"])
 
+  # set color map dictionary
+  colormap = {
+      "ancestor_a": "LightSteelBlue",
+      "ancestor_b": "Moccasin",
+      "ancestor_c": "DarkSeaGreen",
+      "ancestor_d": "Khaki"
+  }
+
+  def get_tree_style(colormap):
+      def add_legend(tree_style):
+          tree_style.add_legend(
+              title = "MyLegend", 
+              variable = "discrete", 
+              colormap = colormap
+              )
+      return add_legend
 
   def get_background(node):
-
       # make node name with bigger text
       node.add_face(TextFace(node.name, min_fsize=6, max_fsize=25), column=0, position="branch_right")
-
       # set node style
       if node == n1:
           node.set_style(nst1)
@@ -922,27 +968,540 @@ Node Backgrounds
       return 
 
   # Create a TreeLayout object, passing in the function
-  tree_layout = TreeLayout(name="MyTreeLayout", ns=get_background)
+  tree_layout = TreeLayout(
+      name="MyTreeLayout", 
+      ns=get_background, 
+      ts=get_tree_style(colormap),
+      active=True)
+
   layouts = []
   layouts.append(tree_layout)
   t.explore(keep_server=True, layouts=layouts)
 
 Source code can be found in in ETE4 here: `node_backgrounds.py example <https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/node_backgrounds.py>`_.
 
-Bar Plot
-~~~~~~~~
-
-Heatmap
-~~~~~~~
 
 Color Strip
 ~~~~~~~~~~~
 
-Pie Chart and Stack Bar Chart
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. image:: https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/colorstrip.png?raw=true
+   :alt: alternative text
+   :align: center
+
+::
+
+  from ete4 import Tree
+  from ete4.smartview import TreeLayout, RectFace, TextFace
+  import random
+
+  t = Tree('((((a1,a2),a3), ((b1,b2),(d1,d2))), ((c1,c2),c3));')
+
+  # find common ancestors and annotate them
+  n1 = t.common_ancestor(["a1", "a2", "a3"])
+  n2 = t.common_ancestor(["b1", "b2"])
+  n3 = t.common_ancestor(["c1", "c2", "c3"])
+  n4 = t.common_ancestor(["d1", "d2"])
+  n1.name = "ancestor_a"
+  n2.name = "ancestor_b"
+  n3.name = "ancestor_c"
+  n4.name = "ancestor_d"
+
+  # set color map dictionary
+  colormap = {
+      "ancestor_a": "LightSteelBlue",
+      "ancestor_b": "Moccasin",
+      "ancestor_c": "DarkSeaGreen",
+      "ancestor_d": "Brown"
+  }
+
+  def get_tree_style(colormap):
+      def add_legend(tree_style):
+          tree_style.add_legend(
+              title = "MyLegend", 
+              variable = "discrete", 
+              colormap = colormap
+              )
+          return
+      return add_legend
+
+  def get_node_face(colormap):
+      def get_background(node):
+          # make rectangle face
+          if node.name in colormap:
+              lca_face = RectFace(
+                  width=20, 
+                  height=None, # circular  
+                  color=colormap.get(node.name),
+                  opacity=0.7, 
+                  text=node.name, 
+                  fgcolor='white',
+                  min_fsize=6, 
+                  max_fsize=15, 
+                  ftype='sans-serif',
+                  padding_x=1, 
+                  padding_y=1,
+                  tooltip=None)
+              lca_face.rotate_text = True
+              node.add_face(lca_face, position='aligned', column=0)
+              
+          return
+      return get_background
+      
+
+  # Create a TreeLayout object, passing in the function
+  tree_layout = TreeLayout(
+      name="MyTreeLayout", 
+      ns=get_node_face(colormap), 
+      ts=get_tree_style(colormap),
+      active=True,
+      aligned_faces=True)
+
+  layouts = []
+  layouts.append(tree_layout)
+  t.explore(keep_server=True, layouts=layouts)
+
+Source code can be found in in ETE4 here: `colorstrip.py example <https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/colorstrip.py>`_.
+
+
+Outlined Collapsed Clade 
+~~~~~~~~~~~~~~~~~~~~~~~~
+.. image:: https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/outline.png?raw=true
+   :alt: alternative text
+   :align: center
+
+::
+
+  from ete4 import Tree
+  from ete4.smartview import TreeLayout, RectFace, TextFace
+  import random
+
+  t = Tree('((((a1,a2),a3), ((b1,b2),(d1,d2))), ((c1,c2),c3));')
+
+  # find common ancestors and annotate them
+  n1 = t.common_ancestor(["a1", "a2", "a3"])
+  n2 = t.common_ancestor(["b1", "b2"])
+  n3 = t.common_ancestor(["c1", "c2", "c3"])
+  n4 = t.common_ancestor(["d1", "d2"])
+  n1.name = "ancestor_a"
+  n2.name = "ancestor_b"
+  n3.name = "ancestor_c"
+  n4.name = "ancestor_d"
+
+  # set color map dictionary
+  colormap = {
+      "ancestor_a": "LightSteelBlue",
+      "ancestor_b": "Moccasin",
+      "ancestor_c": "DarkSeaGreen",
+      "ancestor_d": "Brown"
+  }
+
+  def get_tree_style(colormap):
+      def add_legend(tree_style):
+          tree_style.add_legend(
+              title = "MyLegend", 
+              variable = "discrete", 
+              colormap = colormap
+              )
+          return
+      return add_legend
+
+  def get_node_face(colormap):
+      def get_background(node):
+          # make outline face
+          if node.name in colormap:
+              lca_face = RectFace(
+                  width=20, 
+                  height=None, # circular  
+                  color=colormap.get(node.name),
+                  opacity=0.7, 
+                  text=node.name, 
+                  fgcolor='white',
+                  min_fsize=6, 
+                  max_fsize=15, 
+                  ftype='sans-serif',
+                  padding_x=1, 
+                  padding_y=1,
+                  tooltip=None)
+              lca_face.rotate_text = True
+
+              # collapsed nodes
+              node.sm_style["draw_descendants"] = False
+              node.sm_style["outline_color"] = colormap.get(node.name)
+
+              # show text face
+              node.add_face(lca_face, position='aligned', column=0)
+              # show text face even for collapsed nodes
+              node.add_face(lca_face, position='aligned', collapsed_only=True)
+              
+          return 
+      return get_background
+      
+
+  # Create a TreeLayout object, passing in the function
+  tree_layout = TreeLayout(
+      name="MyTreeLayout", 
+      ns=get_node_face(colormap), 
+      ts=get_tree_style(colormap),
+      active=True,
+      aligned_faces=True)
+
+  layouts = []
+  layouts.append(tree_layout)
+  t.explore(keep_server=True, layouts=layouts)
+
+Source code can be found in in ETE4 here: `outline.py example <https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/outline.py>`_.
+
+
+Bar Plot
+~~~~~~~~
+
+.. image:: https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/barplot.png?raw=true
+   :alt: alternative text
+   :align: center
+
+
+Example ::
+
+  from ete4 import Tree
+  from ete4.smartview import TreeLayout, RectFace, TextFace, ScaleFace
+  import random
+
+  t = Tree()
+  t.populate(20, random_branches=True)
+
+  # annotate numerical values to each leaf
+  for node in t.leaves():
+      node.add_prop('count', random.randint(1, 100))
+
+  # define tree style function
+  def layout_tree_style(tree_style):
+      # add scale bar to footer
+      scaleface = ScaleFace(
+          name='sample1', 
+          width=150, 
+          color='black',
+          scale_range=(0, 100), 
+          tick_width=80, 
+          line_width=1,
+          formatter='%.0f',
+          min_fsize=6, 
+          max_fsize=12, 
+          ftype='sans-serif',
+          padding_x=0, 
+          padding_y=0)
+
+      tree_style.aligned_panel_header.add_face(scaleface, column=0)
+      tree_style.aligned_panel_footer.add_face(scaleface, column=0)
+
+      # add title to header and footer
+      text = TextFace("Count", min_fsize=5, max_fsize=12, width=50, rotation=0)
+      tree_style.aligned_panel_header.add_face(text, column=0)    
+      return 
+
+  # define node Face layout function
+  def layout_barplot(node):
+      if node.is_leaf:
+          width = node.props.get('count') * 1.5
+          rect_face = RectFace(
+              width=width, height=70, color='skyblue',
+              opacity=0.7, text=None, fgcolor='black',
+              min_fsize=6, max_fsize=15, ftype='sans-serif',
+              padding_x=0, padding_y=0,
+              tooltip=None)
+          node.add_face(rect_face, position='aligned', column=0)
+          return 
+
+  # Create a TreeLayout object, passing in the function
+  barplot_layout = TreeLayout(
+      name='BarPlot',
+      ns=layout_barplot, 
+      ts=layout_tree_style,
+      aligned_faces=True)
+
+  # add layout to layouts list
+  layouts = []
+  layouts.append(barplot_layout)
+  t.explore(
+      layouts=layouts, 
+      include_props=("name", "dist", "length"),
+      keep_server=True)
+
+
+
+Source code can be found in in ETE4 here: `barplot.py example <https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/barplot.py>`_.
+
+Heatmap
+~~~~~~~
+
+
+.. image:: https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/heatmap.png?raw=true
+   :alt: alternative text
+   :align: center
+
+
+Example ::
+
+  import matplotlib as mpl
+  import numpy as np
+
+  from ete4 import Tree
+  from ete4.smartview import TreeLayout, RectFace, TextFace
+  import random
+
+
+  t = Tree()
+  t.populate(20, random_branches=True)
+
+  # annotate numerical values to each leaf
+  for node in t.leaves():
+      node.add_prop('frequence', random.random())
+
+  # define tree style function
+  def layout_tree_style(tree_style):
+      # add title to header and footer
+      text = TextFace("Frequence", min_fsize=5, max_fsize=12, width=50, rotation=0)
+      tree_style.aligned_panel_header.add_face(text, column=0)
+      
+      tree_style.add_legend(
+              title = "Frequence", 
+              variable='continuous', 
+              value_range=[0, 1],
+              color_range=["darkred", "white"]
+              )    
+      return 
+
+  # define node Face layout function
+  def layout_heatmap(mincolor, maxcolor):
+      #maxval = max(node.props.get('frequence') for node in t.leaves())
+      maxval = 1
+      minval = 0
+
+      def color_gradient(c1, c2, mix=0):
+          """ Fade (linear interpolate) from color c1 (at mix=0) to c2 (mix=1) """
+          c1 = np.array(mpl.colors.to_rgb(c1))
+          c2 = np.array(mpl.colors.to_rgb(c2))
+          return mpl.colors.to_hex((1-mix)*c1 + mix*c2)
+
+      def get_heatmapface(node):
+          if node.is_leaf:
+              ratio = float(node.props.get('frequence')) / maxval
+              gradient_color = color_gradient(mincolor, maxcolor, mix=ratio)
+              print_frequnce = f"{node.props.get('frequence'):.2%}"
+              rect_face = RectFace(
+                  width=50, height=70, color=gradient_color,
+                  opacity=0.7, text=print_frequnce, fgcolor='black',
+                  min_fsize=6, max_fsize=15, ftype='sans-serif',
+                  padding_x=0, padding_y=0,
+                  tooltip=None)
+              node.add_face(rect_face, position='aligned', column=0)
+          return 
+      return get_heatmapface
+
+  # Create a TreeLayout object, passing in the function
+  barplot_layout = TreeLayout(
+      name='HeatMap',
+      ns=layout_heatmap(mincolor='white', maxcolor='darkred'), 
+      ts=layout_tree_style,
+      aligned_faces=True)
+
+  # add layout to layouts list
+  layouts = []
+  layouts.append(barplot_layout)
+  t.explore(
+      layouts=layouts, 
+      include_props=("name", "dist", "frequence"),
+      keep_server=True)
+
+Source code can be found in in ETE4 here: `heatmap.py example <https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/heatmap.py>`_.
 
 Visualize Multiple Sequence Alignment and Domain
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Outlined Collapsed Clade 
-~~~~~~~~~~~~~~~~~~~~~~~~
+Link to Multiple Sequence Alignment
+
+.. image:: https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/msa_layout.png?raw=true
+
+::
+
+
+  from ete4 import Tree
+  from ete4.smartview import TreeLayout, SeqFace, AlignmentFace
+
+
+  TREEFILE = 'data/tree.nw'
+  MSA = 'data/tree.aln.faa'
+
+
+  t = Tree(open(TREEFILE))
+
+
+  def get_seqs(fastafile):
+      """Read a fasta file and return a dict with d[description] = sequence.
+
+      Example output: {'Phy003I7ZJ_CHICK': 'TMSQFNFSSAPAGGGFSFSTPKT...', ...}
+      """
+      name2seq = {}
+      seq = ''
+      for line in open(fastafile):
+          if line.startswith('>'):
+              if seq:
+                  name2seq[head] = seq
+                  seq = ''
+                  head = line.lstrip('>').rstrip()
+              else:
+                  head = line.lstrip('>').rstrip()
+          else:
+              seq += line.rstrip()
+      name2seq[head] = seq
+      return name2seq
+
+
+
+  # get information alignment 
+  name2seq = get_seqs(MSA)
+
+
+  for leaf in t:
+      leaf.add_prop('seq', name2seq[leaf.name])
+
+
+  def layout_alnface_gray(node):
+      if node.is_leaf:
+          seq_face = AlignmentFace(
+              node.props.get('seq'),
+              seqtype='aa', gap_format='line', seq_format='[]',
+              width=800, height=None,
+              fgcolor='black', bgcolor='#bcc3d0', gapcolor='gray',
+              gap_linewidth=0.2,
+              max_fsize=12, ftype='sans-serif',
+              padding_x=0, padding_y=0)
+
+          node.add_face(seq_face, position='aligned')
+      return
+
+  def layout_alnface_compact(node):
+      if node.is_leaf:
+          seq_face = AlignmentFace(
+              node.props.get('seq'),
+              seqtype='aa', gap_format='line', seq_format='compactseq',
+              width=800, height=None,
+              fgcolor='black', bgcolor='#bcc3d0', gapcolor='gray',
+              gap_linewidth=0.2,
+              max_fsize=12, ftype='sans-serif',
+              padding_x=0, padding_y=0)
+
+          node.add_face(seq_face, position='aligned')
+      return
+
+  def layout_seqface(node):
+      if node.is_leaf:
+        
+          seq_face = SeqFace(
+              node.props.get('seq'),
+              seqtype='aa', poswidth=1, 
+              draw_text=True, max_fsize=15, ftype='sans-serif',
+              padding_x=0, padding_y=0)
+
+          node.add_face(seq_face, position='aligned')
+      return
+
+
+  layouts = [
+      TreeLayout(name='compact_aln', ns=layout_alnface_compact, aligned_faces=True),
+      TreeLayout(name='gray_aln', ns=layout_alnface_gray, aligned_faces=True, active=False),
+      TreeLayout(name='seq', ns=layout_seqface, aligned_faces=True,  active=False),
+      
+  ]
+
+  t.explore(layouts=layouts, keep_server=True)
+
+Source code can be found in in ETE4 here: `msa_layout.py example <https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/msa_layout.py>`_.
+
+Domain annotation
+~~~~~~~~~~~~~~~~~
+
+.. image:: https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/domain_layout.png?raw=true
+
+::
+
+  from ete4 import Tree
+  from ete4.smartview import TreeLayout, SeqFace, SeqMotifFace, AlignmentFace
+
+  # Create a random tree and add to each leaf a random set of motifs
+  # from the original set
+  t = Tree("((A, B, C, D, E, F, G), H, I);")
+
+  seq = ("-----------------------------------------------AQAK---IKGSKKAIKVFSSA---"
+        "APERLQEYGSIFTDA---GLQRRPRHRIQSK-------ALQEKLKDFPVCVSTKPEPEDDAEEGLGGLPSN"
+        "ISSVSSLLLFNTTENLYKKYVFLDPLAG----THVMLGAETEEKLFDAPLSISKREQLEQQVPENYFYVPD"
+        "LGQVPEIDVPSYLPDLPGIANDLMYIADLGPGIAPSAPGTIPELPTFHTEVAEPLKVGELGSGMGAGPGTP"
+        "AHTPSSLDTPHFVFQTYKMGAPPLPPSTAAPVGQGARQDDSSSSASPSVQGAPREVVDPSGGWATLLESIR"
+        "QAGGIGKAKLRSMKERKLEKQQQKEQEQVRATSQGGHL--MSDLFNKLVMRRKGISGKGPGAGDGPGGAFA"
+        "RVSDSIPPLPPPQQPQAEDED----")
+
+  mixed_motifs = [
+          # seq.start, seq.end, shape, width, height, fgcolor, bgcolor
+          [10, 100, "[]", None, 20, "black", "rgradient:blue", "arial|8|white|long text clipped long text clipped"],
+          [101, 150, "o", None, 20, "blue", "pink", None],
+          [155, 180, "()", None, 20, "blue", "rgradient:purple", None],
+          [160, 190, "^", None, 24, "black", "yellow", None],
+          [191, 200, "<>", None, 22, "black", "rgradient:orange", None],
+          [201, 250, "o", None, 22, "black", "brown", None],
+          [351, 370, "v", None, 25, "black", "rgradient:gold", None],
+          [370, 420, "compactseq", 5, 10, None, None, None],
+  ]
+
+  simple_motifs = [
+          # seq.start, seq.end, shape, width, height, fgcolor, bgcolor
+          [10, 60, "[]", None, 20, "black", "rgradient:blue", "arial|8|white|long text clipped long text clipped"],
+          [120, 150, "o", None, 20, "blue", "pink", None],
+          [200, 300, "()", None, 20, "blue", "red", "arial|8|white|hello"],
+  ]
+
+  box_motifs = [
+          # seq.start, seq.end, shape, width, height, fgcolor, bgcolor
+          [0,  5, "[]", None, 20, "black", "rgradient:blue", "arial|8|white|10"],
+          [10, 25, "[]", None, 20, "black", "rgradient:ref", "arial|8|white|10"],
+          [30, 45, "[]", None, 20, "black", "rgradient:orange", "arial|8|white|20"],
+          [50, 65, "[]", None, 20, "black", "rgradient:pink", "arial|8|white|20"],
+          [70, 85, "[]", None, 20, "black", "rgradient:green", "arial|8|white|20"],
+          [90, 105, "[]", None, 20, "black", "rgradient:brown", "arial|8|white|20"],
+          [110, 125, "[]", None, 20, "black", "rgradient:yellow", "arial|8|white|20"],
+  ]
+
+  def layout_domain(node):
+      if node.name == 'A':
+          seq_face = SeqMotifFace(seq, width=1000, gapcolor="red")
+          node.add_face(seq_face, position='aligned')
+      elif node.name == 'B':
+          seq_face = SeqMotifFace(seq, seq_format="line", width=1000, gap_format="blank")
+          node.add_face(seq_face, position='aligned')
+      elif node.name == 'C':
+          seq_face = SeqMotifFace(seq, seq_format="line", width=1000)
+          node.add_face(seq_face, position='aligned')
+      elif node.name == 'D':
+          seq_face = SeqMotifFace(seq, seq_format="()", width=1000)
+          node.add_face(seq_face, position='aligned')
+      elif node.name == 'E':
+          seq_face = SeqMotifFace(seq, motifs=simple_motifs, seq_format="-", width=1000)
+          node.add_face(seq_face, position='aligned')
+      elif node.name == 'F':
+          seq_face = SeqMotifFace(seq, motifs=simple_motifs, gap_format="blank", width=1000)
+          node.add_face(seq_face, position='aligned')
+      elif node.name == 'G':
+          seq_face = SeqMotifFace(seq, motifs=mixed_motifs, seq_format="-", width=1000)
+          node.add_face(seq_face, position='aligned')
+      elif node.name == 'H':
+          seq_face = SeqMotifFace(seq=None, motifs=box_motifs, gap_format="line", width=1000)
+          node.add_face(seq_face, position='aligned')
+      elif node.name == 'I':
+          seq_face = SeqMotifFace(seq[30:60], seq_format="seq")
+          node.add_face(seq_face, position='aligned')
+      return
+
+  layouts = [
+      TreeLayout(name='layout_domain', ns=layout_domain, aligned_faces=True),    
+  ]
+  t.explore(layouts=layouts, keep_server=True)
+
+Source code can be found in in ETE4 here: `domain_layout.py example <https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/domain_layout.py>`_.
