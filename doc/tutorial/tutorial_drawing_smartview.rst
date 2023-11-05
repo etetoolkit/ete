@@ -935,10 +935,14 @@ Bar Plot
 Heatmap
 ~~~~~~~
 
-Color strip
+Color Strip
 ~~~~~~~~~~~
 
-Visulize Multiple Sequence Alignment
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Pie Chart and Stack Bar Chart
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Visualize Multiple Sequence Alignment and Domain
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Outlined Collapsed Clade 
+~~~~~~~~~~~~~~~~~~~~~~~~
