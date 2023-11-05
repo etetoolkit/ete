@@ -364,7 +364,7 @@ can be controlled, including its size, color, background and branch
 type.
 
 A node style can be defined statically and attached to several nodes.
-Here is the full list of attributtes that can be modified of node style:
+Here is the full list of attributtes that can be modified of node style, which is stored in `node.sm_style` :
 
 - *fgcolor*, foreground color, color thats appear in node, i.e. *red* or #ff0000 in hex code, default *#0030c1*. 
 - *bgcolor*, background color, background color of node, default *transparent*.
@@ -382,31 +382,37 @@ Here is the full list of attributtes that can be modified of node style:
 - *shape*, shape of node, default *circle*, options are *circle*, *square*, *triangle*.
 - *draw_descendants*, whether to draw descendants of node or collapse node, default *True*.
 
+Using `set_style()` method can add the node style of a node. 
+
 Simple tree in which the same style is applied to all nodes::
 
   from ete4 import Tree
-  from ete4.smartview import NodeStyle, TreeStyle
+  from ete4.smartview import TreeLayout, NodeStyle
 
-  t = Tree('((a,b),c);')
+  t = Tree('((A,B),C);')
 
-  # modtify node style in function
+  # Draw nodes as small red square of diameter equal fo 10 pixels
+  triangle_node_style = NodeStyle()
+  triangle_node_style["shape"] = "triangle"
+  triangle_node_style["size"] = 10
+  triangle_node_style["fgcolor"] = "red"
+
+  # brown dashed branch lines with width equal to 2 pixels
+  triangle_node_style["hz_line_type"] = 1
+  triangle_node_style["hz_line_width"] = 2
+  triangle_node_style["hz_line_color"] = "#964B00"
+
+  # Applies the same static style to all nodes in the tree. Note that,
   def modify_node_style(node):
-    # Draw nodes as small red square of diameter equal fo 10 pixels
-    node.sm_style["fgcolor"] = "red"
-    node.sm_style["shape"] = "triangle"
-    node.sm_style["size"] = 10
-
-    # brown dashed branch lines with width equal to 2 pixels
-    node.sm_style["hz_line_type"] = 1
-    node.sm_style["hz_line_width"] = 2
-    node.sm_style["hz_line_color"] = "#964B00"
-    return
+      node.set_style(triangle_node_style)
+      return
 
   # Create a TreeLayout object, passing in the function
   tree_layout = TreeLayout(name="MyTreeLayout", ns=modify_node_style)
   layouts = []
   layouts.append(tree_layout)
   t.explore(keep_server=True, layouts=layouts)
+
 
 .. image:: https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/nodestyle_triangle.png?raw=true
    :alt: alternative text
@@ -422,29 +428,37 @@ If you want to draw nodes with different styles, an independent
 Simple tree in which the different styles are applied to each node::
 
   from ete4 import Tree
-  from ete4.smartview import TreeLayout
+  from ete4.smartview import TreeLayout, NodeStyle
 
   t = Tree('((a,b),c);')
 
   # Draw nodes as small red square of diameter equal fo 10 pixels
-  def modify_node_style(node):
-      # Draw nodes as small red square of diameter equal fo 10 pixels
-      # Create an independent node style for each node, which is
-      # initialized with a red foreground color.
-      node.sm_style["fgcolor"] = "red"
-      node.sm_style["shape"] = "circle"
-      node.sm_style["size"] = 10
+  # Create an independent node style for each node, which is
+  # initialized with a red foreground color.
+  leaf_style = NodeStyle()
+  leaf_style["shape"] = "square"
+  leaf_style["size"] = 10
+  leaf_style["fgcolor"] = "red"
 
+  # we set the foreground color to blue and the size to 30 for the root node
+  root_style = NodeStyle()
+  root_style["fgcolor"] = "blue"
+  root_style["size"] = 30
+  root_style["vt_line_type"] = 2
+  root_style["vt_line_width"] = 10
+  root_style["vt_line_color"] = "#964B00"
+
+  # Draw nodes as small red square of diameter equal fo 10 pixels
+  def modify_node_style(node):
+      # Let's now modify the aspect of the leaf nodes
+      if node.is_leaf:
+          node.set_style(leaf_style)
       # Let's now modify the aspect of the root node
-      # we set the foreground color to blue and the size to 30 for the root node with different verticle line style
-      
       # Check if the node is the root node
-      if node.is_root:
-          node.sm_style["fgcolor"] = "blue"
-          node.sm_style["size"] = 30
-          node.sm_style["vt_line_type"] = 2
-          node.sm_style["vt_line_width"] = 10
-          node.sm_style["vt_line_color"] = "#964B00"
+      elif node.is_root:
+          node.set_style(root_style)
+      else:
+          pass
       return
 
   # Create a TreeLayout object, passing in the function
@@ -452,6 +466,7 @@ Simple tree in which the different styles are applied to each node::
   layouts = []
   layouts.append(tree_layout)
   t.explore(keep_server=True, layouts=layouts)
+
 
 .. image:: https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/nodestyle_different.png?raw=true
    :alt: alternative text
@@ -691,7 +706,7 @@ Wrap in function::
 
   t = Tree('((((a,b),c),d),e);')
 
-
+  # here to modfiy node style directly inside the function
   def vowel_node_layout(node):
       vowels = {'a', 'e', 'i', 'o', 'u'}
 
@@ -862,4 +877,68 @@ Example::
   t.explore(keep_server=True, layouts=layouts)
 
 Source code can be found in in ETE4 here: `combinedlayout_object.py example <https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/combinedlayout_object.py>`_.
+
+Node Backgrounds
+~~~~~~~~~~~~~~~~
+
+::
+
+  from ete4 import Tree
+  from ete4.smartview import TreeLayout, NodeStyle, TextFace
+
+  t = Tree('((((a1,a2),a3), ((b1,b2),(b3,b4))), ((c1,c2),c3));')
+
+  # set background color for difference node style
+  nst1 = NodeStyle()
+  nst1["bgcolor"] = "LightSteelBlue"
+  nst2 = NodeStyle()
+  nst2["bgcolor"] = "Moccasin"
+  nst3 = NodeStyle()
+  nst3["bgcolor"] = "DarkSeaGreen"
+  nst4 = NodeStyle()
+  nst4["bgcolor"] = "Khaki"
+
+  # find common ancestors
+  n1 = t.common_ancestor(["a1", "a2", "a3"])
+  n2 = t.common_ancestor(["b1", "b2", "b3", "b4"])
+  n3 = t.common_ancestor(["c1", "c2", "c3"])
+  n4 = t.common_ancestor(["b3", "b4"])
+
+
+  def get_background(node):
+
+      # make node name with bigger text
+      node.add_face(TextFace(node.name, min_fsize=6, max_fsize=25), column=0, position="branch_right")
+
+      # set node style
+      if node == n1:
+          node.set_style(nst1)
+      elif node == n2:
+          node.set_style(nst2)
+      elif node == n3:
+          node.set_style(nst3)
+      elif node == n4:
+          node.set_style(nst4)
+      return 
+
+  # Create a TreeLayout object, passing in the function
+  tree_layout = TreeLayout(name="MyTreeLayout", ns=get_background)
+  layouts = []
+  layouts.append(tree_layout)
+  t.explore(keep_server=True, layouts=layouts)
+
+Source code can be found in in ETE4 here: `node_backgrounds.py example <https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/node_backgrounds.py>`_.
+
+Bar Plot
+~~~~~~~~
+
+Heatmap
+~~~~~~~
+
+Color strip
+~~~~~~~~~~~
+
+Visulize Multiple Sequence Alignment
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
