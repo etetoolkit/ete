@@ -86,6 +86,7 @@ def _get_layout_branch_attr(attr, pos, name=None,
                            ftype='sans-serif',
                            min_fsize=6, max_fsize=15,
                            padding_x=0, padding_y=0):
+                           
     branch_attr_face = AttrFace(attr,
             formatter=formatter,
             name=name or f'branch_{attr}',
@@ -95,7 +96,7 @@ def _get_layout_branch_attr(attr, pos, name=None,
             padding_y=padding_y)
 
     def layout_fn(node):
-        if not node.is_leaf and (node.dist is None or node.dist > 0):
+        if (node.dist is None or node.dist > 0):
             node.add_face(branch_attr_face, position=pos, column=0)
             node.add_face(branch_attr_face, position=pos, column=0,
                     collapsed_only=True)
