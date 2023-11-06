@@ -28,10 +28,7 @@ setup(
               'ete4/smartview/renderer/layouts',
               'ete4/treeview'],
     ext_modules=cythonize(
-        ['ete4/core/tree.pyx',
-         'ete4/core/operations.pyx',
-         'ete4/parser/newick.pyx',
-         'ete4/smartview/renderer/face_positions.pyx'],
+        glob('**/*.pyx', recursive=True),
         language_level=3,  # so it compiles for python3 (and not python2)
         compiler_directives={'embedsignature': True}),  # for call signatures
     data_files=[
