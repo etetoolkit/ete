@@ -95,10 +95,16 @@ def _get_layout_branch_attr(attr, pos, name=None,
             padding_y=padding_y)
 
     def layout_fn(node):
-        if not node.is_leaf and (node.dist is None or node.dist > 0):
-            node.add_face(branch_attr_face, position=pos, column=0)
-            node.add_face(branch_attr_face, position=pos, column=0,
-                    collapsed_only=True)
+        # Skip adding faces in the following cases:
+        if (attr not in node.props or  # missing property
+            node.dist == 0 or  # no space for drawing
+            node.is_leaf and attr == 'support'):  # should be 1
+            return  # do not add faces
+
+        node.add_face(branch_attr_face, position=pos, column=0)
+        node.add_face(branch_attr_face, position=pos, column=0,
+                      collapsed_only=True)
+
     return layout_fn
 
 
