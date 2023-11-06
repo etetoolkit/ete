@@ -22,7 +22,7 @@ NODE_STYLE_DEFAULT = [
     ["hz_line_type",       0,             _LINE_TYPE_CHECKER],
     ["vt_line_type",       0,             _LINE_TYPE_CHECKER],
     ["size",               0,             _SIZE_CHECKER], # node circle size
-    ["shape",              "circle",      _NODE_TYPE_CHECKER],
+    ["shape",              "circle",      _NODE_TYPE_CHECKER], # circle, square, triangle
     ["draw_descendants",   True,          _BOOL_CHECKER],
     ["hz_line_width",      0.5,           _SIZE_CHECKER],
     ["vt_line_width",      0.5,           _SIZE_CHECKER]

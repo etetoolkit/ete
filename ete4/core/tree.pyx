@@ -1895,7 +1895,7 @@ cdef class Tree(object):
                     output[i].append(leaf_distances[n][m])
         return output, allleaves
 
-    def add_face(self, face, column=0, position='branch-right',
+    def add_face(self, face, column=0, position='branch_right',
                  collapsed_only=False):
         if TREEVIEW and isinstance(face, Face):
             self.add_face_treeview(face, column, position)
@@ -1929,7 +1929,7 @@ cdef class Tree(object):
         else:
             raise ValueError("not a Face instance")
 
-    def add_face_smartview(self, face, column, position='branch-right',
+    def add_face_smartview(self, face, column, position='branch_right',
                            collapsed_only=False):
         """Add a fixed face to the node.
 
@@ -1939,7 +1939,7 @@ cdef class Tree(object):
         :param face: Face to add.
         :param column: Column number where the face will go. Starts at 0.
         :param position: Position to place the face in the node. Posible
-            values are: "branch-right", "branch-top", "branch-bottom", "aligned".
+            values are: "branch_right", "branch_top", "branch_bottom", "aligned".
         """
         # TODO: Is it true that "This type of faces will be always attached
         # to nodes, independently of the layout function"? And why?

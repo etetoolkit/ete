@@ -542,6 +542,12 @@ class DrawerRect(Drawer):
                 dx, dy = 2 * size / zx, 2 * size / zy
                 box = (x - dx/2, y - dy/2, dx, dy)
                 yield dh.draw_rect(box, rect_type='nodedot ' + active_node, style=nodedot_style)
+            elif style['shape'] == "triangle":
+                x, y = center
+                zx, zy, _ = self.zoom
+                dx, dy = 2 * size / zx, 2 * size / zy
+                box = (x - dx/2, y - dy/2, dx, dy)
+                yield dh.draw_triangle(box, "top", triangle_type='nodedot ' + active_node, style=nodedot_style)
 
     def draw_nodebox(self, node, node_id, box, searched_by, style=None):
         yield dh.draw_nodebox(box, node.name, self.get_popup_props(node),
