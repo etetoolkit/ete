@@ -146,10 +146,16 @@
             <span class="n">padding_y</span><span class="o">=</span><span class="n">padding_y</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">layout_fn</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">node</span><span class="o">.</span><span class="n">is_leaf</span> <span class="ow">and</span> <span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">dist</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">node</span><span class="o">.</span><span class="n">dist</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
-            <span class="n">node</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">branch_attr_face</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="n">pos</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-            <span class="n">node</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">branch_attr_face</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="n">pos</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-                    <span class="n">collapsed_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># Skip adding faces in the following cases:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">attr</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">props</span> <span class="ow">or</span>  <span class="c1"># missing property</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">dist</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span>  <span class="c1"># no space for drawing</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">is_leaf</span> <span class="ow">and</span> <span class="n">attr</span> <span class="o">==</span> <span class="s1">&#39;support&#39;</span><span class="p">):</span>  <span class="c1"># should be 1</span>
+            <span class="k">return</span>  <span class="c1"># do not add faces</span>
+
+        <span class="n">node</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">branch_attr_face</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="n">pos</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">add_face</span><span class="p">(</span><span class="n">branch_attr_face</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="n">pos</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                      <span class="n">collapsed_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
     <span class="k">return</span> <span class="n">layout_fn</span>
 
 
