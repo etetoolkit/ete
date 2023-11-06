@@ -779,13 +779,16 @@ def get_drawer(tree_id, args):
             for node_id in json.loads(args.get('collapsed_ids', '[]')))
 
         ultrametric = args.get('ultrametric') == '1'  # asked for ultrametric?
-        if ultrametric and not tree.style.ultrametric:  # change to on
+
+        if ultrametric:
+            # If we want ultrametric and the tree is not already ultrametric, change to on
             tree.tree.to_ultrametric()
             ops.update_sizes_all(tree.tree)
             initialize_tree_style(tree, ultrametric=True)
-        elif not ultrametric and tree.style.ultrametric:  # change to off
+        else:
+            # If we do not want ultrametric, regardless of the current state of the tree, delete from memory.
             app.trees.pop(tid, None)  # delete from memory
-            # Forces it to be reloaded from disk next time it is accessed.
+            # If the tree was ultrametric, this also forces it to be reloaded from disk next time it is accessed.
 
         active = tree.active
         selected = tree.selected
