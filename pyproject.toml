@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "ete4"
 description = "A Python Environment for (phylogenetic) Tree Exploration"
-version = "4.0.0-beta"
+version = "4.0.0-beta2"
 authors = [
   { name="Jaime Huerta-Cepas", email="jhcepas@gmail.com" },
   { name="Jordi Burguet-Castell", email="jordi.burguet.castell@gmail.com" },
