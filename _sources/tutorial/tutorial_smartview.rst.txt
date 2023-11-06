@@ -1,22 +1,49 @@
 .. currentmodule:: ete4.smartview
 
-Programmable tree drawing
-=========================
+Tree drawing and exploration (web)
+==================================
 
 .. contents::
 
 Overview
 --------
 
-Before exploring the novel features and enhancements introduced in ETE v4, it is essential to understand the foundational elements of ETE’s programmable tree drawing engine. Inherited from ETE v3, the following fundamental components form a highly adaptable backbone, enabling the various customization and structuring of visualizations: 
+Before exploring the novel features and enhancements introduced in ETE
+v4, it is essential to understand the foundational elements of ETE’s
+programmable tree drawing engine. Inherited from ETE v3, the following
+fundamental components form a highly adaptable backbone, enabling the
+various customization and structuring of visualizations:
 
-a) TreeStyle, a class can be used to create a custom set of options that control the general aspect of the tree image. For example, users can modify the scale used to render tree branches or choose between circular or rectangular tree drawing, and customize general settings for tree visualizing such as title, footer, legend, etc.
+a) TreeStyle, a class can be used to create a custom set of options
+   that control the general aspect of the tree image. For example,
+   users can modify the scale used to render tree branches or choose
+   between circular or rectangular tree drawing, and customize general
+   settings for tree visualizing such as title, footer, legend, etc.
 
-b) NodeStyle, defines the specific aspect of each node (size, color, background, line type, etc.). A node style can be defined statically and attached to several nodes, or customized the conditions so different NodeStyle applied for nodes in different conditions. NodeStyle can even dynamically change on the fly to adapt ETE4’s zooming algorithm, which can be set through a TreeLayout.
+b) NodeStyle, defines the specific aspect of each node (size, color,
+   background, line type, etc.). A node style can be defined
+   statically and attached to several nodes, or customized the
+   conditions so different NodeStyle applied for nodes in different
+   conditions. NodeStyle can even dynamically change on the fly to
+   adapt ETE4’s zooming algorithm, which can be set through a
+   TreeLayout.
 
-c) Face, as called as node faces, are small pieces of extra graphical information that can be linked to nodes (text labels, images, graphs, etc.). Several types of node faces are provided by the previous ETE3 module, ranging from simple text (TextFace) and geometric shapes (CircleFace), to molecular sequence representations (SequenceFace), etc. These faces are upgraded in ETE4 to adapt the large tree drawing engine.
+c) Face, as called as node faces, are small pieces of extra graphical
+   information that can be linked to nodes (text labels, images,
+   graphs, etc.). Several types of node faces are provided by the
+   previous ETE3 module, ranging from simple text (TextFace) and
+   geometric shapes (CircleFace), to molecular sequence
+   representations (SequenceFace), etc. These faces are upgraded in
+   ETE4 to adapt the large tree drawing engine.
 
-d) TreeLayout, is a class which defines a foundational layout for trees to set specific styles for both the entire tree and individual nodes, acting as a pre-drawing hooking framework. When a tree is about to be drawn, the above elements such as TreeStyle, NodeStyle, Face of nodes can be then set up and modified on the fly and returned to the drawer engine. Hence TreeLayout class can be understood as a suite of rules tree’s basic setting and how different nodes should be drawn. 
+d) TreeLayout, is a class which defines a foundational layout for
+   trees to set specific styles for both the entire tree and
+   individual nodes, acting as a pre-drawing hooking framework. When a
+   tree is about to be drawn, the above elements such as TreeStyle,
+   NodeStyle, Face of nodes can be then set up and modified on the fly
+   and returned to the drawer engine. Hence TreeLayout class can be
+   understood as a suite of rules tree’s basic setting and how
+   different nodes should be drawn.
 
 Scheme of fundamental components in ETE4's programmable tree drawing engine
 
@@ -24,8 +51,9 @@ Scheme of fundamental components in ETE4's programmable tree drawing engine
    :alt: alternative text
    :align: center
 
-Explore interactive visualization of trees 
------------------------------------------
+
+Explore interactive visualization of trees
+------------------------------------------
 
 ETE's tree drawing engine is fully integrated with a built-in
 graphical user interface (GUI) which allows to explore and manipulate
@@ -37,14 +65,15 @@ One of the advantages of this visualization is that you can use it to
 interrupt a given program/analysis, explore the tree, manipulate it,
 and continue with the execution. Note that **changes made using the
 GUI will be kept after quiting the GUI**. This feature is specially
-useful during python sessions, and it can be utilized in various environments 
-by modifying argument *keep_server*, including standalone scripts and interactive 
-sessions such as IPython or Jupyter Notebooks. Below are examples demonstrating 
+useful during python sessions, and it can be utilized in various environments
+by modifying argument *keep_server*, including standalone scripts and interactive
+sessions such as IPython or Jupyter Notebooks. Below are examples demonstrating
 the method's usage in each context.
+
 
 Standalone scripts
 ~~~~~~~~~~~~~~~~~~
-When running a standalone script, *keep_server* should be set as *True* to keep 
+When running a standalone script, *keep_server* should be set as *True* to keep
 the server running.
 
 ::
@@ -53,16 +82,19 @@ the server running.
   t = Tree('((a,b),c);')
   t.explore(keep_server=True)
 
-Source code can be found in in ETE4 here: `explore_standalone.py example <https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/explore_standalone.py>`_.
+Source code can be found in in ETE4 here: `explore_standalone.py
+example
+<https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/explore_standalone.py>`_.
+
 
 Interactive sessions
 ~~~~~~~~~~~~~~~~~~~~
-When running in interactive sessions such as IPython or Jupyter Notebooks, 
+When running in interactive sessions such as IPython or Jupyter Notebooks,
 leave *keep_server* as default *False*.
 
 ::
 
-  Python 3.9.7 (default, Sep 16 2021, 13:09:58) 
+  Python 3.9.7 (default, Sep 16 2021, 13:09:58)
   Type 'copyright', 'credits' or 'license' for more information
   IPython 7.29.0 -- An enhanced Interactive Python. Type '?' for help.
 
@@ -75,12 +107,12 @@ leave *keep_server* as default *False*.
 
 Verbose mode
 ~~~~~~~~~~~~
-When running in verbose mode by setting *quiet* argument, every actions 
+When running in verbose mode by setting *quiet* argument, every actions
 will be printed in the terminal.
 
 ::
 
-  Python 3.9.7 (default, Sep 16 2021, 13:09:58) 
+  Python 3.9.7 (default, Sep 16 2021, 13:09:58)
   Type 'copyright', 'credits' or 'license' for more information
   IPython 7.29.0 -- An enhanced Interactive Python. Type '?' for help.
 
@@ -113,11 +145,11 @@ will be printed in the terminal.
 
 Show leaf node names, branch length and branch support
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Users can choose to show leaf node names, branch length and branch support in the 
+Users can choose to show leaf node names, branch length and branch support in the
 tree explore method.
 
 Example::
-  
+
    from ete4 import Tree
    t = Tree()
    t.populate(10, random_branches=True)
@@ -132,13 +164,13 @@ Source code can be found in in ETE4 here: `explore_show.py example <https://gith
 
 Showing node's properties in pop up
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Users can choose to show node's properties in pop up when mouse left-click on the node. 
-By setting arguments in *include_props* and *exclude_props* `explore()` method, users can choose to show node's 
-properties in pop up when mouse left-click on the node, uses can decide what 
+Users can choose to show node's properties in pop up when mouse left-click on the node.
+By setting arguments in *include_props* and *exclude_props* `explore()` method, users can choose to show node's
+properties in pop up when mouse left-click on the node, uses can decide what
 properties to show in interface.
 
 Example using *include_props*::
-  
+
    from ete4 import Tree
    t = Tree()
    t.populate(10, random_branches=True)
@@ -200,15 +232,15 @@ Layout tab contains most of the general settings of the tree visualization. It i
 
 - **Help**, help page for SmartView, including shortcuts.
 
-Download 
+Download
 """"""""
 Users can download the tree information in **newick**, **svg** or **pdf** file in the tree interface by clicking the download tab from Control Panel.
 
 
 2) Search & Selection Tab
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-Search & Selection tab contains the search and selection functions of the tree visualization. 
-Users can start query with clicking *new search* button, then input the query in the search box. 
+Search & Selection tab contains the search and selection functions of the tree visualization.
+Users can start query with clicking *new search* button, then input the query in the search box.
 Each query will be saved in the search history, users can choose to modtify the visualizing setting for matching nodes or clades.
 
 Simple search
@@ -220,7 +252,7 @@ Regular expression search
 """"""""""""""""""""""""""
 To search for names mathing a given regular expression, you can prefix your text with the command **/r** (the regexp command) and follow it with the regular expression.
 
-Expression search 
+Expression search
 """""""""""""""""
 When prefixing your text with /e (the eval command), you can use a quite general Python expression to search for nodes. This is the most powerful search method available (and the most complex to use).
 
@@ -236,15 +268,15 @@ Examples of searches and possible matches
 ::
 
   citrobacter		will match nodes named "Citrobacter werkmanii" and "Citrobacter youngae"
-      
+
   UBA		will match "spx UBA2009" but not "Rokubacteriales"
-      
+
   /r sp\d\d		will match any name that contains "sp" followed by (at least) two digits, like "Escherichia sp002965065" and "Citrobacter sp005281345"
-      
+
   /e d > 1		will match nodes with a length > 1
-      
+
   /e is_leaf and p['species'] == 'Homo'		will match leaf nodes with property "species" equal to "Homo"
-      
+
   /t ("is_leaf","d > 1")"name=='AB'"		will match nodes named "AB" that have two children, one that is a leaf and another that has a length > 1
 
 
@@ -271,9 +303,9 @@ Visualization customization is performed through four main elements: *TreeStyle*
 
 Tree Layout
 ~~~~~~~~~~~
-As shown in scheme of fundamental components from the previous section, TreeLayout contains element of 
-tree style, node style and faces. Therefore, TreeLayout is the most important element in ETE4's drawing engine 
-in regards to visualize information other than pure tree topology. TreeLayout can be called from :class:`TreeLayout` 
+As shown in scheme of fundamental components from the previous section, TreeLayout contains element of
+tree style, node style and faces. Therefore, TreeLayout is the most important element in ETE4's drawing engine
+in regards to visualize information other than pure tree topology. TreeLayout can be called from :class:`TreeLayout`
 from :class:`ete4.smartview:`. It contains the following arguments:
 
 - *name*: name of the TreeLayout object, obligatory field.
@@ -305,7 +337,7 @@ Here we demonstrate the basic usage of TreeLayout::
    :alt: alternative text
    :align: center
 
-As the red frame highlighted the TreeLayout name, which is defined as "MyTreeLayout" is shown 
+As the red frame highlighted the TreeLayout name, which is defined as "MyTreeLayout" is shown
 and activated in tree panel.
 
 Source code can be found in in ETE4 here: `treelayout_1.py example <https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/treelayout_1.py>`_.
@@ -313,16 +345,16 @@ Source code can be found in in ETE4 here: `treelayout_1.py example <https://gith
 Tree Style
 ~~~~~~~~~~
 
-a class can be used to create a custom set of options that control the general aspect of 
-the tree image. For example, users can modify the scale used to render tree branches or 
-choose between circular or rectangular tree drawing, and customize general settings for 
+a class can be used to create a custom set of options that control the general aspect of
+the tree image. For example, users can modify the scale used to render tree branches or
+choose between circular or rectangular tree drawing, and customize general settings for
 tree visualizing such as title, footer, legend, etc
 
 A number of parameters can be controlled through custom tree style
 objects. Check the :class:`TreeStyle` documentation for a complete
 list of accepted values.
 
-As we described in the previous section, to modify tree style, we could define a function 
+As we described in the previous section, to modify tree style, we could define a function
 and pass it to the TreeLayout class which defined as custom layout for futher explore.
 
 In the following, we show some common cases to modify tree style.
@@ -338,10 +370,10 @@ Customizing tree style
 
   def modify_tree_style(tree_style):
       tree_style.collapse_size = 70
-      
+
   # Create a TreeLayout object, passing in the function
   tree_layout = TreeLayout(name="MyTreeLayout", ts=modify_tree_style)
-  
+
   layouts.append(tree_layout)
   t.explore(keep_server=True, layouts=layouts)
 
@@ -356,11 +388,11 @@ Add legend
 
   t = Tree('((a,b),c);')
   def modify_tree_style(tree_style):
-      
+
       # add legend
       tree_style.add_legend(
-          title="MyLegend", 
-          variable="discrete", 
+          title="MyLegend",
+          variable="discrete",
           colormap={"a":"red", "b":"blue", "c":"green"}
           )
 
@@ -389,13 +421,13 @@ type.
 A node style can be defined statically and attached to several nodes.
 Here is the full list of attributtes that can be modified of node style, which is stored in `node.sm_style` :
 
-- *fgcolor*, foreground color, color thats appear in node, i.e. *red* or #ff0000 in hex code, default *#0030c1*. 
+- *fgcolor*, foreground color, color thats appear in node, i.e. *red* or #ff0000 in hex code, default *#0030c1*.
 - *bgcolor*, background color, background color of node, default *transparent*.
 - *outline_line_color*, border color of the triangle when node is collapsed, default *#000000*.
 - *outline_line_width*, border width of the triangle when node is collapsed, default *0.5*.
 - *outline_color*, color of the triangle when node is collapsed, default *#e5e5e5*.
 - *outline_opacity*, opacity of the triangle when node is collapsed, default *0.3*.
-- *vt_line_color*, color of verticle line of node, default *#000000*. 
+- *vt_line_color*, color of verticle line of node, default *#000000*.
 - *hz_line_color*, color of horizontal line of node, default *#000000*.
 - *hz_line_type*, type of horizontal line of node, default *0*, options are 0 solid, 1 dashed, 2 dotted.
 - *vt_line_type*, type pf verticle line of node, default *0*, options are 0 solid, 1 dashed, 2 dotted.
@@ -405,7 +437,7 @@ Here is the full list of attributtes that can be modified of node style, which i
 - *shape*, shape of node, default *circle*, options are *circle*, *square*, *triangle*.
 - *draw_descendants*, whether to draw descendants of node or collapse node, default *True*.
 
-Using `set_style()` method can add the node style of a node. 
+Using `set_style()` method can add the node style of a node.
 
 Simple tree in which the same style is applied to all nodes::
 
@@ -440,13 +472,14 @@ Simple tree in which the same style is applied to all nodes::
 .. image:: https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/nodestyle_triangle.png?raw=true
    :alt: alternative text
    :align: center
+
 Now in legend of the layout shows in top-right corner of the tree panel.
 
 Source code can be found in in ETE4 here: `nodestyle_triangle.py example <https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/nodestyle_triangle.py>`_.
 
 
 If you want to draw nodes with different styles, an independent
-:class:`NodeStyle` instance must be created for each node. 
+:class:`NodeStyle` instance must be created for each node.
 
 Simple tree in which the different styles are applied to each node::
 
@@ -510,8 +543,8 @@ shapes (:class:`CircleFace`) or (:class:`RectFace`), to molecular sequence repre
 (:class:`SeqFace`), and specific faces for collapsed clade (:class:`OutlinedFace`), etc.
 
 A complete list of available faces can be found at the :mod:`smartview`
-reference page. All node faces example with demonstration code can be found in 
-https://github.com/dengzq1234/ete4_gallery. 
+reference page. All node faces example with demonstration code can be found in
+https://github.com/dengzq1234/ete4_gallery.
 
 
 
@@ -607,14 +640,14 @@ Source code can be found in in ETE4 here: `faceposition_aligned.py example <http
   nodes. For instance, the same text label can be recycled and added
   to several nodes.
 
-Face for collapsed clades 
+Face for collapsed clades
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-A notable feature in smartview in ete4 is able to collapse clades in the tree. 
+A notable feature in smartview in ete4 is able to collapse clades in the tree.
 When a clade is collapsed, a triangle will be drawn as default in the node. Therefore,
-a face can be added to the collapsed clade to show more information. 
+a face can be added to the collapsed clade to show more information.
 
-For node faces in collapsed clades, modify *collapsed_only* argument to True in method 
-:func:`add_face <ete4.Tree.add_face>` 
+For node faces in collapsed clades, modify *collapsed_only* argument to True in method
+:func:`add_face <ete4.Tree.add_face>`
 
 **collapsed_only** example::
 
@@ -651,7 +684,7 @@ For node faces in collapsed clades, modify *collapsed_only* argument to True in 
    :alt: alternative text
    :align: center
 
-   
+
 Source code can be found in in ETE4 here: `faceposition_collapsed.py example <https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/faceposition_collapsed.py>`_.
 
 Example of all face positions
@@ -659,6 +692,7 @@ Example of all face positions
 .. image:: https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/faceposition_all.png?raw=true
    :alt: alternative text
    :align: center
+
 Source code can be found in in ETE4 here: `faceposition_all.py example <https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/faceposition_all.py>`_.
 
 
@@ -668,8 +702,8 @@ Face properties
 Each face instance has its specific config values, although all face
 instances contain the same basic attributes that permit to modify
 general aspects such as padding, etc.  In order to explore the properties of each face,
-a complete list of face attributes can be found in 
-each :class:`Face` class documentation, such as :class:`TextFace`, :class:`RectFace`, etc. 
+a complete list of face attributes can be found in
+each :class:`Face` class documentation, such as :class:`TextFace`, :class:`RectFace`, etc.
 Here is a very simple example::
 
   from ete4 import Tree
@@ -770,8 +804,8 @@ example ::
       text = TextFace("Vowel title", min_fsize=5, max_fsize=12, width=50, rotation=0)
       tree_style.aligned_panel_header.add_face(text, column=0)
       tree_style.add_legend(
-          title="MyLegend", 
-          variable="discrete", 
+          title="MyLegend",
+          variable="discrete",
           colormap={"vowel":"red", "conostant":"blue"}
           )
 
@@ -788,17 +822,17 @@ example ::
 
           else:
               node.sm_style['size'] = 5
-              node.sm_style['fgcolor'] = 'blue'   
-              
+              node.sm_style['fgcolor'] = 'blue'
+
               # here to add text face to node in aligned position
               node.add_face(TextFace('not vowel!', color="blue"), column=0, position='aligned')
 
 
   # Create a TreeLayout object, passing in the function
-  tree_layout = TreeLayout(name="MyTreeLayout", 
-      ts=vowel_tree_style, 
+  tree_layout = TreeLayout(name="MyTreeLayout",
+      ts=vowel_tree_style,
       ns=vowel_node_layout,
-      active=True, 
+      active=True,
       aligned_faces=True)
 
 
@@ -816,9 +850,11 @@ Source code can be found in in ETE4 here: `combinedlayout_basic.py example <http
 
 
 Define Layout objects
-~~~~~~~~~~~~~~
-As we showed above, layout functions can be passed to the TreeLayout class to 
-create a TreeLayout object. Therefore we can defined our own customized layout
+~~~~~~~~~~~~~~~~~~~~~
+
+As we showed above, layout functions can be passed to the TreeLayout
+class to create a TreeLayout object. Therefore we can define our own
+customized layout.
 
 Example::
 
@@ -829,14 +865,14 @@ Example::
 
 
   class MyTreeLayout(TreeLayout):
-      def __init__(self, name="My First TreeLayout", min_fsize=5, max_fsize=12, 
-              width=50, rotation=0, vowel_color="red", conostant_color="blue", 
+      def __init__(self, name="My First TreeLayout", min_fsize=5, max_fsize=12,
+              width=50, rotation=0, vowel_color="red", conostant_color="blue",
               vowel_node_size=5, conostant_node_size=5, aligned_faces=True,
               column=0):
-          
-          # Ensuring that any initialization that TreeLayout needs to do is done, 
-          # before MyTreeLayout goes on to do its own additional initialization. 
-          super().__init__(name, aligned_faces=True) 
+
+          # Ensuring that any initialization that TreeLayout needs to do is done,
+          # before MyTreeLayout goes on to do its own additional initialization.
+          super().__init__(name, aligned_faces=True)
 
           self.name = name
           self.min_fsize = min_fsize
@@ -853,26 +889,26 @@ Example::
 
 
       def set_tree_style(self, tree, style):
-          text = TextFace(self.name, min_fsize=self.min_fsize, 
+          text = TextFace(self.name, min_fsize=self.min_fsize,
               max_fsize=self.max_fsize, width=self.width, rotation=self.rotation)
 
           style.aligned_panel_header.add_face(text, column=self.column)
           style.add_legend(
-              title=self.name,  
-              variable="discrete", 
+              title=self.name,
+              variable="discrete",
               colormap={"vowel":"red", "conostant":"blue"}
               )
 
       def set_node_style(self, node):
           vowels = {'a', 'e', 'i', 'o', 'u'}
           vowel_textface = TextFace(
-              text="vowel", color=self.vowel_color, 
+              text="vowel", color=self.vowel_color,
               min_fsize=self.min_fsize, max_fsize=self.max_fsize,
               width=self.width, rotation=self.rotation
           )
 
           conostant_textface = TextFace(
-              text="not vowel!", color=self.conostant_color, 
+              text="not vowel!", color=self.conostant_color,
               min_fsize=self.min_fsize, max_fsize=self.max_fsize,
               width=self.width, rotation=self.rotation
           )
@@ -888,7 +924,7 @@ Example::
               else:
                   node.sm_style['size'] = self.conostant_node_size
                   node.sm_style['fgcolor'] = self.conostant_color
-                  
+
                   # here to add text face to node in aligned position
                   node.add_face(conostant_textface, column=self.column, position='aligned')
 
@@ -947,8 +983,8 @@ Node Backgrounds
   def get_tree_style(colormap):
       def add_legend(tree_style):
           tree_style.add_legend(
-              title = "MyLegend", 
-              variable = "discrete", 
+              title = "MyLegend",
+              variable = "discrete",
               colormap = colormap
               )
       return add_legend
@@ -965,12 +1001,12 @@ Node Backgrounds
           node.set_style(nst3)
       elif node == n4:
           node.set_style(nst4)
-      return 
+      return
 
   # Create a TreeLayout object, passing in the function
   tree_layout = TreeLayout(
-      name="MyTreeLayout", 
-      ns=get_background, 
+      name="MyTreeLayout",
+      ns=get_background,
       ts=get_tree_style(colormap),
       active=True)
 
@@ -1017,8 +1053,8 @@ Color Strip
   def get_tree_style(colormap):
       def add_legend(tree_style):
           tree_style.add_legend(
-              title = "MyLegend", 
-              variable = "discrete", 
+              title = "MyLegend",
+              variable = "discrete",
               colormap = colormap
               )
           return
@@ -1029,29 +1065,29 @@ Color Strip
           # make rectangle face
           if node.name in colormap:
               lca_face = RectFace(
-                  width=20, 
-                  height=None, # circular  
+                  width=20,
+                  height=None, # circular
                   color=colormap.get(node.name),
-                  opacity=0.7, 
-                  text=node.name, 
+                  opacity=0.7,
+                  text=node.name,
                   fgcolor='white',
-                  min_fsize=6, 
-                  max_fsize=15, 
+                  min_fsize=6,
+                  max_fsize=15,
                   ftype='sans-serif',
-                  padding_x=1, 
+                  padding_x=1,
                   padding_y=1,
                   tooltip=None)
               lca_face.rotate_text = True
               node.add_face(lca_face, position='aligned', column=0)
-              
+
           return
       return get_background
-      
+
 
   # Create a TreeLayout object, passing in the function
   tree_layout = TreeLayout(
-      name="MyTreeLayout", 
-      ns=get_node_face(colormap), 
+      name="MyTreeLayout",
+      ns=get_node_face(colormap),
       ts=get_tree_style(colormap),
       active=True,
       aligned_faces=True)
@@ -1063,7 +1099,7 @@ Color Strip
 Source code can be found in in ETE4 here: `colorstrip.py example <https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/colorstrip.py>`_.
 
 
-Outlined Collapsed Clade 
+Outlined Collapsed Clade
 ~~~~~~~~~~~~~~~~~~~~~~~~
 .. image:: https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/outline.png?raw=true
    :alt: alternative text
@@ -1098,8 +1134,8 @@ Outlined Collapsed Clade
   def get_tree_style(colormap):
       def add_legend(tree_style):
           tree_style.add_legend(
-              title = "MyLegend", 
-              variable = "discrete", 
+              title = "MyLegend",
+              variable = "discrete",
               colormap = colormap
               )
           return
@@ -1110,16 +1146,16 @@ Outlined Collapsed Clade
           # make outline face
           if node.name in colormap:
               lca_face = RectFace(
-                  width=20, 
-                  height=None, # circular  
+                  width=20,
+                  height=None, # circular
                   color=colormap.get(node.name),
-                  opacity=0.7, 
-                  text=node.name, 
+                  opacity=0.7,
+                  text=node.name,
                   fgcolor='white',
-                  min_fsize=6, 
-                  max_fsize=15, 
+                  min_fsize=6,
+                  max_fsize=15,
                   ftype='sans-serif',
-                  padding_x=1, 
+                  padding_x=1,
                   padding_y=1,
                   tooltip=None)
               lca_face.rotate_text = True
@@ -1132,15 +1168,15 @@ Outlined Collapsed Clade
               node.add_face(lca_face, position='aligned', column=0)
               # show text face even for collapsed nodes
               node.add_face(lca_face, position='aligned', collapsed_only=True)
-              
-          return 
+
+          return
       return get_background
-      
+
 
   # Create a TreeLayout object, passing in the function
   tree_layout = TreeLayout(
-      name="MyTreeLayout", 
-      ns=get_node_face(colormap), 
+      name="MyTreeLayout",
+      ns=get_node_face(colormap),
       ts=get_tree_style(colormap),
       active=True,
       aligned_faces=True)
@@ -1177,17 +1213,17 @@ Example ::
   def layout_tree_style(tree_style):
       # add scale bar to footer
       scaleface = ScaleFace(
-          name='sample1', 
-          width=150, 
+          name='sample1',
+          width=150,
           color='black',
-          scale_range=(0, 100), 
-          tick_width=80, 
+          scale_range=(0, 100),
+          tick_width=80,
           line_width=1,
           formatter='%.0f',
-          min_fsize=6, 
-          max_fsize=12, 
+          min_fsize=6,
+          max_fsize=12,
           ftype='sans-serif',
-          padding_x=0, 
+          padding_x=0,
           padding_y=0)
 
       tree_style.aligned_panel_header.add_face(scaleface, column=0)
@@ -1195,8 +1231,8 @@ Example ::
 
       # add title to header and footer
       text = TextFace("Count", min_fsize=5, max_fsize=12, width=50, rotation=0)
-      tree_style.aligned_panel_header.add_face(text, column=0)    
-      return 
+      tree_style.aligned_panel_header.add_face(text, column=0)
+      return
 
   # define node Face layout function
   def layout_barplot(node):
@@ -1209,12 +1245,12 @@ Example ::
               padding_x=0, padding_y=0,
               tooltip=None)
           node.add_face(rect_face, position='aligned', column=0)
-          return 
+          return
 
   # Create a TreeLayout object, passing in the function
   barplot_layout = TreeLayout(
       name='BarPlot',
-      ns=layout_barplot, 
+      ns=layout_barplot,
       ts=layout_tree_style,
       aligned_faces=True)
 
@@ -1222,7 +1258,7 @@ Example ::
   layouts = []
   layouts.append(barplot_layout)
   t.explore(
-      layouts=layouts, 
+      layouts=layouts,
       include_props=("name", "dist", "length"),
       keep_server=True)
 
@@ -1261,14 +1297,14 @@ Example ::
       # add title to header and footer
       text = TextFace("Frequence", min_fsize=5, max_fsize=12, width=50, rotation=0)
       tree_style.aligned_panel_header.add_face(text, column=0)
-      
+
       tree_style.add_legend(
-              title = "Frequence", 
-              variable='continuous', 
+              title = "Frequence",
+              variable='continuous',
               value_range=[0, 1],
               color_range=["darkred", "white"]
-              )    
-      return 
+              )
+      return
 
   # define node Face layout function
   def layout_heatmap(mincolor, maxcolor):
@@ -1294,13 +1330,13 @@ Example ::
                   padding_x=0, padding_y=0,
                   tooltip=None)
               node.add_face(rect_face, position='aligned', column=0)
-          return 
+          return
       return get_heatmapface
 
   # Create a TreeLayout object, passing in the function
   barplot_layout = TreeLayout(
       name='HeatMap',
-      ns=layout_heatmap(mincolor='white', maxcolor='darkred'), 
+      ns=layout_heatmap(mincolor='white', maxcolor='darkred'),
       ts=layout_tree_style,
       aligned_faces=True)
 
@@ -1308,7 +1344,7 @@ Example ::
   layouts = []
   layouts.append(barplot_layout)
   t.explore(
-      layouts=layouts, 
+      layouts=layouts,
       include_props=("name", "dist", "frequence"),
       keep_server=True)
 
@@ -1357,7 +1393,7 @@ Link to Multiple Sequence Alignment
 
 
 
-  # get information alignment 
+  # get information alignment
   name2seq = get_seqs(MSA)
 
 
@@ -1395,10 +1431,10 @@ Link to Multiple Sequence Alignment
 
   def layout_seqface(node):
       if node.is_leaf:
-        
+
           seq_face = SeqFace(
               node.props.get('seq'),
-              seqtype='aa', poswidth=1, 
+              seqtype='aa', poswidth=1,
               draw_text=True, max_fsize=15, ftype='sans-serif',
               padding_x=0, padding_y=0)
 
@@ -1410,7 +1446,7 @@ Link to Multiple Sequence Alignment
       TreeLayout(name='compact_aln', ns=layout_alnface_compact, aligned_faces=True),
       TreeLayout(name='gray_aln', ns=layout_alnface_gray, aligned_faces=True, active=False),
       TreeLayout(name='seq', ns=layout_seqface, aligned_faces=True,  active=False),
-      
+
   ]
 
   t.explore(layouts=layouts, keep_server=True)
@@ -1500,7 +1536,7 @@ Domain annotation
       return
 
   layouts = [
-      TreeLayout(name='layout_domain', ns=layout_domain, aligned_faces=True),    
+      TreeLayout(name='layout_domain', ns=layout_domain, aligned_faces=True),
   ]
   t.explore(layouts=layouts, keep_server=True)
 

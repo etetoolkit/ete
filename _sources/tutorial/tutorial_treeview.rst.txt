@@ -1,7 +1,7 @@
 .. currentmodule:: ete4.treeview
 
-Programmable tree drawing
-=========================
+Tree drawing (Qt)
+=================
 
 .. contents::
 

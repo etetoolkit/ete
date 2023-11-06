@@ -9,6 +9,5 @@ Contents:
    tutorial_trees
    tutorial_phylogeny
    tutorial_smartview
-   tutorial_drawing
+   tutorial_treeview
    tutorial_taxonomy
-   

@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Programmable tree drawing &#8212; ETE Toolkit 4.0.0-beta2 documentation</title>
+    <title>Tree drawing and exploration (web) &#8212; ETE Toolkit 4.0.0-beta2 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=4f649999" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=039e1c02" />
     <script src="../_static/documentation_options.js?v=382e6e0c"></script>
@@ -15,7 +15,7 @@
     <link rel="author" title="About these documents" href="../about.html" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Programmable tree drawing" href="tutorial_drawing.html" />
+    <link rel="next" title="Tree drawing (Qt)" href="tutorial_treeview.html" />
     <link rel="prev" title="Phylogenetic trees" href="tutorial_phylogeny.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
@@ -33,12 +33,12 @@
 
           <div class="body" role="main">
             
-  <section id="programmable-tree-drawing">
-<h1><a class="toc-backref" href="#id1" role="doc-backlink">Programmable tree drawing</a><a class="headerlink" href="#programmable-tree-drawing" title="Link to this heading">¶</a></h1>
+  <section id="tree-drawing-and-exploration-web">
+<h1><a class="toc-backref" href="#id1" role="doc-backlink">Tree drawing and exploration (web)</a><a class="headerlink" href="#tree-drawing-and-exploration-web" title="Link to this heading">¶</a></h1>
 <nav class="contents" id="contents">
 <p class="topic-title">Contents</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="#programmable-tree-drawing" id="id1">Programmable tree drawing</a></p>
+<li><p><a class="reference internal" href="#tree-drawing-and-exploration-web" id="id1">Tree drawing and exploration (web)</a></p>
 <ul>
 <li><p><a class="reference internal" href="#overview" id="id2">Overview</a></p></li>
 <li><p><a class="reference internal" href="#explore-interactive-visualization-of-trees" id="id3">Explore interactive visualization of trees</a></p>
@@ -110,12 +110,39 @@
 </nav>
 <section id="overview">
 <h2><a class="toc-backref" href="#id2" role="doc-backlink">Overview</a><a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
-<p>Before exploring the novel features and enhancements introduced in ETE v4, it is essential to understand the foundational elements of ETE’s programmable tree drawing engine. Inherited from ETE v3, the following fundamental components form a highly adaptable backbone, enabling the various customization and structuring of visualizations:</p>
+<p>Before exploring the novel features and enhancements introduced in ETE
+v4, it is essential to understand the foundational elements of ETE’s
+programmable tree drawing engine. Inherited from ETE v3, the following
+fundamental components form a highly adaptable backbone, enabling the
+various customization and structuring of visualizations:</p>
 <ol class="loweralpha simple">
-<li><p>TreeStyle, a class can be used to create a custom set of options that control the general aspect of the tree image. For example, users can modify the scale used to render tree branches or choose between circular or rectangular tree drawing, and customize general settings for tree visualizing such as title, footer, legend, etc.</p></li>
-<li><p>NodeStyle, defines the specific aspect of each node (size, color, background, line type, etc.). A node style can be defined statically and attached to several nodes, or customized the conditions so different NodeStyle applied for nodes in different conditions. NodeStyle can even dynamically change on the fly to adapt ETE4’s zooming algorithm, which can be set through a TreeLayout.</p></li>
-<li><p>Face, as called as node faces, are small pieces of extra graphical information that can be linked to nodes (text labels, images, graphs, etc.). Several types of node faces are provided by the previous ETE3 module, ranging from simple text (TextFace) and geometric shapes (CircleFace), to molecular sequence representations (SequenceFace), etc. These faces are upgraded in ETE4 to adapt the large tree drawing engine.</p></li>
-<li><p>TreeLayout, is a class which defines a foundational layout for trees to set specific styles for both the entire tree and individual nodes, acting as a pre-drawing hooking framework. When a tree is about to be drawn, the above elements such as TreeStyle, NodeStyle, Face of nodes can be then set up and modified on the fly and returned to the drawer engine. Hence TreeLayout class can be understood as a suite of rules tree’s basic setting and how different nodes should be drawn.</p></li>
+<li><p>TreeStyle, a class can be used to create a custom set of options
+that control the general aspect of the tree image. For example,
+users can modify the scale used to render tree branches or choose
+between circular or rectangular tree drawing, and customize general
+settings for tree visualizing such as title, footer, legend, etc.</p></li>
+<li><p>NodeStyle, defines the specific aspect of each node (size, color,
+background, line type, etc.). A node style can be defined
+statically and attached to several nodes, or customized the
+conditions so different NodeStyle applied for nodes in different
+conditions. NodeStyle can even dynamically change on the fly to
+adapt ETE4’s zooming algorithm, which can be set through a
+TreeLayout.</p></li>
+<li><p>Face, as called as node faces, are small pieces of extra graphical
+information that can be linked to nodes (text labels, images,
+graphs, etc.). Several types of node faces are provided by the
+previous ETE3 module, ranging from simple text (TextFace) and
+geometric shapes (CircleFace), to molecular sequence
+representations (SequenceFace), etc. These faces are upgraded in
+ETE4 to adapt the large tree drawing engine.</p></li>
+<li><p>TreeLayout, is a class which defines a foundational layout for
+trees to set specific styles for both the entire tree and
+individual nodes, acting as a pre-drawing hooking framework. When a
+tree is about to be drawn, the above elements such as TreeStyle,
+NodeStyle, Face of nodes can be then set up and modified on the fly
+and returned to the drawer engine. Hence TreeLayout class can be
+understood as a suite of rules tree’s basic setting and how
+different nodes should be drawn.</p></li>
 </ol>
 <p>Scheme of fundamental components in ETE4’s programmable tree drawing engine</p>
 <img alt="alternative text" class="align-center" src="https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/fundamental_ete4.jpg?raw=true" />
@@ -143,7 +170,8 @@ the server running.</p>
 <span class="n">t</span><span class="o">.</span><span class="n">explore</span><span class="p">(</span><span class="n">keep_server</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Source code can be found in in ETE4 here: <a class="reference external" href="https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/explore_standalone.py">explore_standalone.py example</a>.</p>
+<p>Source code can be found in in ETE4 here: <a class="reference external" href="https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/explore_standalone.py">explore_standalone.py
+example</a>.</p>
 </section>
 <section id="interactive-sessions">
 <h3><a class="toc-backref" href="#id5" role="doc-backlink">Interactive sessions</a><a class="headerlink" href="#interactive-sessions" title="Link to this heading">¶</a></h3>
@@ -791,8 +819,9 @@ collection of rules controlling how different nodes should be drawn.</p>
 </section>
 <section id="define-layout-objects">
 <h3><a class="toc-backref" href="#id34" role="doc-backlink">Define Layout objects</a><a class="headerlink" href="#define-layout-objects" title="Link to this heading">¶</a></h3>
-<p>As we showed above, layout functions can be passed to the TreeLayout class to
-create a TreeLayout object. Therefore we can defined our own customized layout</p>
+<p>As we showed above, layout functions can be passed to the TreeLayout
+class to create a TreeLayout object. Therefore we can define our own
+customized layout.</p>
 <p>Example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
 <span class="kn">from</span> <span class="nn">ete4.smartview</span> <span class="kn">import</span> <span class="n">TreeLayout</span><span class="p">,</span> <span class="n">TextFace</span>
@@ -1464,8 +1493,8 @@ create a TreeLayout object. Therefore we can defined our own customized layout</
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorial</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="tutorial_trees.html">Working with the Tree structure</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_phylogeny.html">Phylogenetic trees</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Programmable tree drawing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial_drawing.html">Programmable tree drawing</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Tree drawing and exploration (web)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_treeview.html">Tree drawing (Qt)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_taxonomy.html">Taxonomy databases</a></li>
 </ul>
 </li>
@@ -1478,7 +1507,7 @@ create a TreeLayout object. Therefore we can defined our own customized layout</
   <li><a href="../index.html">Documentation overview</a><ul>
   <li><a href="index.html">Tutorial</a><ul>
       <li>Previous: <a href="tutorial_phylogeny.html" title="previous chapter">Phylogenetic trees</a></li>
-      <li>Next: <a href="tutorial_drawing.html" title="next chapter">Programmable tree drawing</a></li>
+      <li>Next: <a href="tutorial_treeview.html" title="next chapter">Tree drawing (Qt)</a></li>
   </ul></li>
   </ul></li>
 </ul>
