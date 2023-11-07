@@ -85,79 +85,84 @@ DELETE /trees/{id}  Delete tree by “id”</p>
 </dd>
 </dl>
 <dl class="py class">
-<dt class="sig sig-object py" id="ete4.smartview.gui.server.AppTree">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">AppTree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree:</span> <span class="pre">ete4.core.tree.Tree</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style:</span> <span class="pre">ete4.smartview.renderer.treestyle.TreeStyle</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodestyles:</span> <span class="pre">dict</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_props:</span> <span class="pre">list</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_props:</span> <span class="pre">list</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layouts:</span> <span class="pre">list</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timer:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initialized:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selected:</span> <span class="pre">dict</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">active:</span> <span class="pre">&lt;function</span> <span class="pre">namedtuple</span> <span class="pre">at</span> <span class="pre">0x7ff960d47e20&gt;</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">searches:</span> <span class="pre">dict</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/gui/server.html#AppTree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.gui.server.AppTree" title="Link to this definition">¶</a></dt>
-<dd><dl class="py method">
-<dt class="sig sig-object py" id="ete4.smartview.gui.server.AppTree.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="reference_tree.html#ete4.Tree" title="ete4.core.tree.Tree"><span class="pre">Tree</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ete4.smartview.renderer.treestyle.TreeStyle" title="ete4.smartview.renderer.treestyle.TreeStyle"><span class="pre">TreeStyle</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodestyles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_props</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_props</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layouts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initialized</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selected</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">active</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">namedtuple</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">searches</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#ete4.smartview.gui.server.AppTree.__init__" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ete4.smartview.gui.server.AppTree.active">
-<span class="sig-name descname"><span class="pre">active</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">namedtuple</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ete4.smartview.gui.server.AppTree.active" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ete4.smartview.gui.server.AppTree.exclude_props">
-<span class="sig-name descname"><span class="pre">exclude_props</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ete4.smartview.gui.server.AppTree.exclude_props" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ete4.smartview.gui.server.AppTree.include_props">
-<span class="sig-name descname"><span class="pre">include_props</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ete4.smartview.gui.server.AppTree.include_props" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ete4.smartview.gui.server.AppTree.initialized">
-<span class="sig-name descname"><span class="pre">initialized</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#ete4.smartview.gui.server.AppTree.initialized" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ete4.smartview.gui.server.AppTree.layouts">
-<span class="sig-name descname"><span class="pre">layouts</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ete4.smartview.gui.server.AppTree.layouts" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ete4.smartview.gui.server.AppTree.name">
-<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ete4.smartview.gui.server.AppTree.name" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ete4.smartview.gui.server.AppTree.nodestyles">
-<span class="sig-name descname"><span class="pre">nodestyles</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ete4.smartview.gui.server.AppTree.nodestyles" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ete4.smartview.gui.server.AppTree.searches">
-<span class="sig-name descname"><span class="pre">searches</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ete4.smartview.gui.server.AppTree.searches" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ete4.smartview.gui.server.AppTree.selected">
-<span class="sig-name descname"><span class="pre">selected</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ete4.smartview.gui.server.AppTree.selected" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ete4.smartview.gui.server.AppTree.style">
-<span class="sig-name descname"><span class="pre">style</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ete4.smartview.renderer.treestyle.TreeStyle" title="ete4.smartview.renderer.treestyle.TreeStyle"><span class="pre">TreeStyle</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ete4.smartview.gui.server.AppTree.style" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ete4.smartview.gui.server.AppTree.timer">
-<span class="sig-name descname"><span class="pre">timer</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ete4.smartview.gui.server.AppTree.timer" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ete4.smartview.gui.server.AppTree.tree">
-<span class="sig-name descname"><span class="pre">tree</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="reference_tree.html#ete4.Tree" title="ete4.core.tree.Tree"><span class="pre">Tree</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ete4.smartview.gui.server.AppTree.tree" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
 <dt class="sig sig-object py" id="ete4.smartview.gui.server.GlobalStuff">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">GlobalStuff</span></span><a class="reference internal" href="../_modules/ete4/smartview/gui/server.html#GlobalStuff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.gui.server.GlobalStuff" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ete4.smartview.gui.server.TreeData">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">TreeData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree:</span> <span class="pre">ete4.core.tree.Tree</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style:</span> <span class="pre">ete4.smartview.renderer.treestyle.TreeStyle</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodestyles:</span> <span class="pre">dict</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_props:</span> <span class="pre">list</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_props:</span> <span class="pre">list</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layouts:</span> <span class="pre">list</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timer:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ultrametric:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initialized:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selected:</span> <span class="pre">dict</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">active:</span> <span class="pre">&lt;function</span> <span class="pre">namedtuple</span> <span class="pre">at</span> <span class="pre">0x7f3ed9d4be20&gt;</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">searches:</span> <span class="pre">dict</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/gui/server.html#TreeData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.gui.server.TreeData" title="Link to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="ete4.smartview.gui.server.TreeData.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="reference_tree.html#ete4.Tree" title="ete4.core.tree.Tree"><span class="pre">Tree</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ete4.smartview.renderer.treestyle.TreeStyle" title="ete4.smartview.renderer.treestyle.TreeStyle"><span class="pre">TreeStyle</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodestyles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_props</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_props</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layouts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ultrametric</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initialized</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selected</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">active</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">namedtuple</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">searches</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#ete4.smartview.gui.server.TreeData.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ete4.smartview.gui.server.TreeData.active">
+<span class="sig-name descname"><span class="pre">active</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">namedtuple</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ete4.smartview.gui.server.TreeData.active" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ete4.smartview.gui.server.TreeData.exclude_props">
+<span class="sig-name descname"><span class="pre">exclude_props</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ete4.smartview.gui.server.TreeData.exclude_props" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ete4.smartview.gui.server.TreeData.include_props">
+<span class="sig-name descname"><span class="pre">include_props</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ete4.smartview.gui.server.TreeData.include_props" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ete4.smartview.gui.server.TreeData.initialized">
+<span class="sig-name descname"><span class="pre">initialized</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#ete4.smartview.gui.server.TreeData.initialized" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ete4.smartview.gui.server.TreeData.layouts">
+<span class="sig-name descname"><span class="pre">layouts</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ete4.smartview.gui.server.TreeData.layouts" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ete4.smartview.gui.server.TreeData.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ete4.smartview.gui.server.TreeData.name" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ete4.smartview.gui.server.TreeData.nodestyles">
+<span class="sig-name descname"><span class="pre">nodestyles</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ete4.smartview.gui.server.TreeData.nodestyles" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ete4.smartview.gui.server.TreeData.searches">
+<span class="sig-name descname"><span class="pre">searches</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ete4.smartview.gui.server.TreeData.searches" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ete4.smartview.gui.server.TreeData.selected">
+<span class="sig-name descname"><span class="pre">selected</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ete4.smartview.gui.server.TreeData.selected" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ete4.smartview.gui.server.TreeData.style">
+<span class="sig-name descname"><span class="pre">style</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ete4.smartview.renderer.treestyle.TreeStyle" title="ete4.smartview.renderer.treestyle.TreeStyle"><span class="pre">TreeStyle</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ete4.smartview.gui.server.TreeData.style" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ete4.smartview.gui.server.TreeData.timer">
+<span class="sig-name descname"><span class="pre">timer</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ete4.smartview.gui.server.TreeData.timer" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ete4.smartview.gui.server.TreeData.tree">
+<span class="sig-name descname"><span class="pre">tree</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="reference_tree.html#ete4.Tree" title="ete4.core.tree.Tree"><span class="pre">Tree</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ete4.smartview.gui.server.TreeData.tree" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ete4.smartview.gui.server.TreeData.ultrametric">
+<span class="sig-name descname"><span class="pre">ultrametric</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#ete4.smartview.gui.server.TreeData.ultrametric" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ete4.smartview.gui.server.activate_clade">
@@ -270,7 +275,7 @@ DELETE /trees/{id}  Delete tree by “id”</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ete4.smartview.gui.server.get_nodes_info">
-<span class="sig-name descname"><span class="pre">get_nodes_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">props</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/gui/server.html#get_nodes_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.gui.server.get_nodes_info" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_nodes_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">props</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/gui/server.html#get_nodes_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.gui.server.get_nodes_info" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -293,7 +298,7 @@ DELETE /trees/{id}  Delete tree by “id”</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ete4.smartview.gui.server.get_selection_info">
-<span class="sig-name descname"><span class="pre">get_selection_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/gui/server.html#get_selection_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.gui.server.get_selection_info" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_selection_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/gui/server.html#get_selection_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.gui.server.get_selection_info" title="Link to this definition">¶</a></dt>
 <dd><p>Get selection info from their nodes</p>
 </dd></dl>
 
@@ -346,7 +351,7 @@ DELETE /trees/{id}  Delete tree by “id”</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ete4.smartview.gui.server.initialize_tree_style">
-<span class="sig-name descname"><span class="pre">initialize_tree_style</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ultrametric</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/gui/server.html#initialize_tree_style"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.gui.server.initialize_tree_style" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">initialize_tree_style</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/gui/server.html#initialize_tree_style"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.gui.server.initialize_tree_style" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -403,7 +408,7 @@ DELETE /trees/{id}  Delete tree by “id”</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ete4.smartview.gui.server.remove_active">
-<span class="sig-name descname"><span class="pre">remove_active</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/gui/server.html#remove_active"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.gui.server.remove_active" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">remove_active</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/gui/server.html#remove_active"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.gui.server.remove_active" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -466,7 +471,7 @@ DELETE /trees/{id}  Delete tree by “id”</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ete4.smartview.gui.server.store_active">
-<span class="sig-name descname"><span class="pre">store_active</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/gui/server.html#store_active"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.gui.server.store_active" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">store_active</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/gui/server.html#store_active"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.gui.server.store_active" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -484,7 +489,7 @@ DELETE /trees/{id}  Delete tree by “id”</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="ete4.smartview.gui.server.touch_and_get">
 <span class="sig-name descname"><span class="pre">touch_and_get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/gui/server.html#touch_and_get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.gui.server.touch_and_get" title="Link to this definition">¶</a></dt>
-<dd><p>Load tree, update its timer, and return the tree object and subtree.</p>
+<dd><p>Load tree, update its timer, and return the tree data object and subtree.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -515,7 +520,7 @@ DELETE /trees/{id}  Delete tree by “id”</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ete4.smartview.gui.server.update_selection">
-<span class="sig-name descname"><span class="pre">update_selection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parents</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/gui/server.html#update_selection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.gui.server.update_selection" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">update_selection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parents</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/gui/server.html#update_selection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.gui.server.update_selection" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </section>
