@@ -339,8 +339,8 @@ class AttrFace(TextFace):
             raise Exception(f'An associated **node** must be provided to compute **content**.')
 
     def get_content(self):
-        content = str(getattr(self.node, self._attr, None)\
-                or self.node.props.get(self._attr))
+        content = str(getattr(self.node, self._attr, None)
+                      or self.node.props.get(self._attr))
         self._content = self.formatter % content if self.formatter else content
         return self._content
 
