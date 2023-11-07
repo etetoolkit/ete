@@ -13,8 +13,6 @@ class TreeStyle:
         self.aligned_grid = True
         self.aligned_grid_dxs = defaultdict(lambda: 0)
 
-        self.ultrametric = False
-
         self.collapse_size = 10
 
         # Selected face
