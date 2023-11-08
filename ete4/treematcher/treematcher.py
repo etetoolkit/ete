@@ -17,18 +17,20 @@ class TreePattern(Tree):
     It stores in the node names the constraints for that node.
     """
 
-    def __init__(self, pattern='', children=None, parser=None):
+    def __init__(self, pattern='', children=None, parser=None, safer=False):
         if type(pattern) == str:
             # We expect a newick tree whose names will be the conditions
             # to check for in each node. No need to end with ";".
             newick = pattern.strip().rstrip(';') + ';'
-            Tree.__init__(self, newick)
+            super().__init__(newick)
         else:  # we are being recursively called, and were passed a dict
             data = {'name': pattern.get('name', '').strip()}
-            Tree.__init__(self, data, children)
+            super().__init__(data, children)
 
         # Add the "code" property with its compiled condition.
         self.props['code'] = compile(self.name or 'True', '<string>', 'eval')
+
+        self.safer = safer  # will use to know if to use eval or safer_eval
 
     def __str__(self):
         return self.to_str(show_internal=True, props=['name'])
@@ -61,7 +63,8 @@ def match(pattern, node):
         'any': any, 'all': all, 'len': len,
         'sum': sum, 'abs': abs, 'float': float}
 
-    if not safer_eval(pattern.props['code'], context):
+    evaluate = safer_eval if pattern.root.safer else eval  # risky business
+    if not evaluate(pattern.props['code'], context):
         return False  # no match if the condition for this node if false
 
     if not pattern.children:
@@ -83,6 +86,8 @@ def search(pattern, tree):
             yield node
 
 
+# Calling eval() directly in match() can be a security problem. Specially for
+# web services, we are better off using this following function:
 def safer_eval(code, context):
     """Return a safer version of eval(code, context)."""
     for name in code.co_names:
