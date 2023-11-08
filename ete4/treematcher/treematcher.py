@@ -33,10 +33,10 @@ class TreePattern(Tree):
     def __str__(self):
         return self.to_str(show_internal=True, props=['name'])
 
-    def match(tree):
+    def match(self, tree):
         return match(self, tree)
 
-    def search(tree):
+    def search(self, tree):
         return search(self, tree)
 
 

@@ -66,3 +66,5 @@ class TestTreematcher(unittest.TestCase):
 
             self.assertEqual([n.name for n in tm.search(pattern, tree)],
                              expected_result)
+            self.assertEqual([n.name for n in pattern.search(tree)],
+                             expected_result)
