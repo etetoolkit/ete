@@ -165,13 +165,13 @@ cdef class Tree(object):
     @property
     def is_root(self):
         """Return True if the current node has no parent."""
-        return not self.up
+        return self.up is None
 
     @property
     def root(self):
         """Return the absolute root node of the current tree structure."""
         node = self
-        while node.up:
+        while node.up is not None:
             node = node.up
         return node
 
@@ -180,7 +180,7 @@ cdef class Tree(object):
         """Return node_id (list of relative hops from root to node)."""
         reversed_id = []
         node = self
-        while node.up:
+        while node.up is not None:
             reversed_id.append(node.up.children.index(node))
             node = node.up
         return reversed_id[::-1]  # will look like  [0, 0, 1, 0]
@@ -190,7 +190,7 @@ cdef class Tree(object):
         """Return the number of nodes between this node and the root."""
         n = 0
         node = self.up
-        while node:
+        while node is not None:
             n += 1
             node = node.up
         return n
@@ -752,10 +752,10 @@ cdef class Tree(object):
         """Yield all ancestor nodes of this node (up to the root if given)."""
         node = self
 
-        if node == root or (not include_root and node.up == root):
+        if node is root or (not include_root and node.up is root):
             return  # node is not an ancestor of itself
 
-        while node.up:
+        while node.up is not None:
             node = node.up
 
             yield node
@@ -1004,7 +1004,7 @@ cdef class Tree(object):
         _, diameter = current.get_farthest_node(topological=topological)
 
         dist = 0
-        while current.up:
+        while current.up is not None:
             dist += 1 if topological else current.dist
 
             if dist > diameter / 2:
