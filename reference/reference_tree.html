@@ -740,6 +740,23 @@ in postorder) and a node instance.</p>
 <dt class="sig sig-object py" id="ete4.Tree.populate">
 <span class="sig-name descname"><span class="pre">populate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names_library</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_branches</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">support_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">1)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.populate" title="Link to this definition">¶</a></dt>
 <dd><p>Populate current node with branches generating a random topology.</p>
+<p>All the nodes added will either be leaves or have two branches.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>size</strong> – Number of leaves to add. The necessary
+intermediate nodes will be created too.</p></li>
+<li><p><strong>names_library</strong> – Collection (list or set) used to name leaves.
+If None, leaves will be named using short letter sequences.</p></li>
+<li><p><strong>random_branches</strong> – If True, branch distances and support
+values will be randomized.</p></li>
+<li><p><strong>dist_range</strong> – Range (tuple with min and max) of distances
+used to generate branch distances if random_branches is True.</p></li>
+<li><p><strong>support_range</strong> – Range (tuple with min and max) of distances
+used to generate branch supports if random_branches is True.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">

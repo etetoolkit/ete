@@ -568,7 +568,7 @@
         <span class="n">abort</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s1">&#39;operation not allowed with subtree&#39;</span><span class="p">)</span>
 
     <span class="n">node_id</span> <span class="o">=</span> <span class="n">req_json</span><span class="p">()</span>
-    <span class="n">tree_data</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">set_outgroup</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">tree</span><span class="p">[</span><span class="n">node_id</span><span class="p">])</span>
+    <span class="n">tree_data</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">set_outgroup</span><span class="p">(</span><span class="n">tree_data</span><span class="o">.</span><span class="n">tree</span><span class="p">[</span><span class="n">node_id</span><span class="p">])</span>
     <span class="n">ops</span><span class="o">.</span><span class="n">update_sizes_all</span><span class="p">(</span><span class="n">tree_data</span><span class="o">.</span><span class="n">tree</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;ok&#39;</span><span class="p">}</span>
 
