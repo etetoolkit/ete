@@ -6,6 +6,7 @@ instances.
 
 import sys
 import re
+import warnings
 import itertools
 from collections import defaultdict
 from ete4 import Tree, SeqGroup, NCBITaxa, GTDBTaxa
@@ -300,6 +301,9 @@ class PhyloTree(Tree):
     @property
     def species(self):
         if self.props.get('_speciesFunction'):
+            if 'species' in self.props:
+                warnings.warn('Ambiguous species: both species and _speciesFunction'
+                             'defined. You can remove "species" from this node.')
             try:
                 return self.props.get('_speciesFunction')(self.name)
             except:
