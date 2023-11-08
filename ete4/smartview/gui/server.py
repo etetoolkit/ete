@@ -517,7 +517,7 @@ def callback(tree_id):
         abort(400, 'operation not allowed with subtree')
 
     node_id = req_json()
-    tree_data.tree.set_outgroup(tree.tree[node_id])
+    tree_data.tree.set_outgroup(tree_data.tree[node_id])
     ops.update_sizes_all(tree_data.tree)
     return {'message': 'ok'}
 
