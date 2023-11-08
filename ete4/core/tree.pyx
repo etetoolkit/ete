@@ -1016,7 +1016,21 @@ cdef class Tree(object):
 
     def populate(self, size, names_library=None, random_branches=False,
                  dist_range=(0, 1), support_range=(0, 1)):
-        """Populate current node with branches generating a random topology."""
+        """Populate current node with branches generating a random topology.
+
+        All the nodes added will either be leaves or have two branches.
+
+        :param size: Number of leaves to add. The necessary
+            intermediate nodes will be created too.
+        :param names_library: Collection (list or set) used to name leaves.
+            If None, leaves will be named using short letter sequences.
+        :param random_branches: If True, branch distances and support
+            values will be randomized.
+        :param dist_range: Range (tuple with min and max) of distances
+            used to generate branch distances if random_branches is True.
+        :param support_range: Range (tuple with min and max) of distances
+            used to generate branch supports if random_branches is True.
+        """
         ops.populate(self, size, names_library, random_branches,
                      dist_range, support_range)
 
