@@ -382,14 +382,13 @@ def walk(tree):
 
 def update_sizes_all(tree):
     """Update sizes of all the nodes in the tree."""
-    for node in tree.children:
-        update_sizes_all(node)
-    update_size(tree)
+    for node in tree.traverse('postorder'):
+        update_size(node)
 
 
 def update_sizes_from(node):
     """Update the sizes from the given node to the root of the tree."""
-    while node:
+    while node is not None:
         update_size(node)
         node = node.up
 
