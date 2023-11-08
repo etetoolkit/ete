@@ -378,14 +378,14 @@ class GTDBTaxa:
             leaves = set([v for v, count in Counter(subtree).items() if count == 1])
             tax2name = self.get_taxid_translator(list(subtree))
             name2tax ={spname:taxid for taxid,spname in tax2name.items()}
-            nodes[root_taxid] = PhyloTree(name=root_taxid)
+            nodes[root_taxid] = PhyloTree({'name': str(root_taxid)})
             current_parent = nodes[root_taxid]
             for tid in subtree:
                 if tid in visited:
                     current_parent = nodes[tid].up
                 else:
                     visited.add(tid)
-                    nodes[tid] = PhyloTree(name=tax2name.get(tid, ''))
+                    nodes[tid] = PhyloTree({'name': tax2name.get(tid, '')})
                     current_parent.add_child(nodes[tid])
                     if tid not in leaves:
                         current_parent = nodes[tid]
@@ -480,7 +480,7 @@ class GTDBTaxa:
             for n in t.traverse():
                 try:
                     # translate gtdb name -> id
-                    taxaname = n.props.get(taxid_attr)
+                    taxaname = getattr(n, taxid_attr, n.props.get(taxid_attr))
                     tid = self.get_name_translator([taxaname])[taxaname][0]
                     taxids.add(tid)
                 except (KeyError, ValueError, AttributeError):
@@ -507,8 +507,7 @@ class GTDBTaxa:
         n2leaves = t.get_cached_content()
 
         for node in t.traverse('postorder'):
-            node_taxid = node.props.get(taxid_attr)
-
+            node_taxid = getattr(n, taxid_attr, n.props.get(taxid_attr))
             node.add_prop('taxid', node_taxid)
 
             if node_taxid:
@@ -531,7 +530,7 @@ class GTDBTaxa:
                                rank = tax2rank.get(tmp_taxid, 'Unknown'),
                                named_lineage = [tax2name.get(tax, str(tax)) for tax in tax2track.get(tmp_taxid, [])])
             elif node.is_leaf:
-                node.add_props(sci_name = node.props.get(taxid_attr, 'NA'),
+                node.add_props(sci_name = getattr(n, taxid_attr, n.props.get(taxid_attr, 'NA')),
                                common_name = '',
                                lineage = [],
                                rank = 'Unknown',
