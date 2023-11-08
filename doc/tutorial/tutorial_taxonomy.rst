@@ -371,15 +371,32 @@ used name, lineage and rank translators.
 
 Remember that species names in PhyloTree instances are automatically
 extracted from leaf names. The parsing method can be easily adapted to
-any formatting:
+any formatting
 
-NCBI taxonomy example::
+Here are some examples using the NCBI taxonomic annotation.
 
+1)Using the whole leaf name as taxonomic identifier::
+  
   from ete4 import PhyloTree
+  tree = PhyloTree('((9606, 9598), 10090);')
 
-  # Load the whole leaf name as species taxid.
+  # pass name as taxid identifier to annotate_ncbi_taxa
+  tax2names, tax2lineages, tax2rank = tree.annotate_ncbi_taxa(taxid_attr="name")
+  print(tree.to_str(props=["name", "sci_name", "taxid"]))
+  #                                            ╭╴9606,Bacteriovorax stolpii,960
+  #               ╭╴⊗,Bdellovibrionota,3018035╶┤
+  # ╴⊗,Bacteria,2╶┤                            ╰╴9598,Bdellovibrio bacteriovorus,959
+  #               │
+  #               ╰╴10090,Ancylobacter aquaticus,100
+
+2)Using `sp_naming_function` to define `species` attribute for each node::
+  
+  from ete4 import PhyloTree
+  # a) Load the whole leaf name as species attribute of each node.
   tree = PhyloTree('((9606, 9598), 10090);', sp_naming_function=lambda name: name)
-  tax2names, tax2lineages, tax2rank = tree.annotate_ncbi_taxa(taxid_attr="species") # as default
+
+  # pass `species` as taxid identifier to annotate_ncbi_taxa
+  tax2names, tax2lineages, tax2rank = tree.annotate_ncbi_taxa(taxid_attr="species") 
 
   # Or annotate using only the name as taxid identifier.
   tree = PhyloTree('((9606, 9598), 10090);')
@@ -391,11 +408,16 @@ NCBI taxonomy example::
   #               │
   #               ╰╴10090,Ancylobacter aquaticus,100
 
+
+  # b) Only take part of the leaf name as species attribute of each node.
   # Split names by '|' and return the first part as the species taxid.
   tree = PhyloTree('((9606|protA, 9598|protA), 10090|protB);', sp_naming_function=lambda name: name.split('|')[0])
   tax2names, tax2lineages, tax2rank = tree.annotate_ncbi_taxa(taxid_attr="species")
 
-  # using custom property as taxid identifier
+3)Using custom property as taxid identifier::
+
+  from ete4 import PhyloTree
+
   tree = PhyloTree('((9606|protA, 9598|protA), 10090|protB);')
 
   # add custom property with namespace "spcode" to each node
@@ -403,9 +425,9 @@ NCBI taxonomy example::
   tree['9598|protA'].add_prop("spcode", 9598)
   tree['10090|protB'].add_prop("spcode", 10090)
 
+  # passing the custom property name as taxid identifier to annotate_ncbi_taxa
   tax2names, tax2lineages, tax2rank = tree.annotate_ncbi_taxa(taxid_attr="spcode")
-
-  print(tree.to_str(props=["name", "sci_name", "taxid"]))
+  print(tree.to_str(props=["name", "sci_name", "spcode"]))
   #                                                             ╭╴9606|protA,Homo sapiens,9606
   #                                  ╭╴(empty),Homininae,207598╶┤
   # ╴(empty),Euarchontoglires,314146╶┤                          ╰╴9598|protA,Pan troglodytes,9598
