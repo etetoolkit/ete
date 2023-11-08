@@ -222,6 +222,14 @@ def populate(tree, size, names_library=None, random_branches=False,
             c1.support = 1.0
             c2.support = 1.0
 
+    # Make sure the children of the root have the same support, and
+    # that the leaves have no support.
+    for node in root.children:
+        node.support = root.children[0].support
+
+    for node in root.leaves():
+        node.props.pop('support', None)
+
     # Give names to leaves.
     if names_library is not None:
         for node, name in zip(next_deq, names_library):
