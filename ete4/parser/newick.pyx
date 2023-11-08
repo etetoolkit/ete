@@ -327,3 +327,4 @@ def dumps(tree, props=None, parser=None, format_root_node=True, is_leaf_fn=None)
 
 def dump(tree, fp, props=None, parser=None, format_root_node=True, is_leaf_fn=None):
     fp.write(dumps(tree, props, parser, format_root_node, is_leaf_fn))
+    fp.write('\n')
