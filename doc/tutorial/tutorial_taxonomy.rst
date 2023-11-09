@@ -383,11 +383,11 @@ Here are some examples using the NCBI taxonomic annotation.
   # pass name as taxid identifier to annotate_ncbi_taxa
   tax2names, tax2lineages, tax2rank = tree.annotate_ncbi_taxa(taxid_attr="name")
   print(tree.to_str(props=["name", "sci_name", "taxid"]))
-  #                                            ╭╴9606,Bacteriovorax stolpii,960
+  #                                            ╭╴9606,Bacteriovorax stolpii,9606
   #               ╭╴⊗,Bdellovibrionota,3018035╶┤
-  # ╴⊗,Bacteria,2╶┤                            ╰╴9598,Bdellovibrio bacteriovorus,959
+  # ╴⊗,Bacteria,2╶┤                            ╰╴9598,Bdellovibrio bacteriovorus,9598
   #               │
-  #               ╰╴10090,Ancylobacter aquaticus,100
+  #               ╰╴10090,Ancylobacter aquaticus,10090
 
 2)Using `sp_naming_function` to define `species` attribute for each node::
   
@@ -402,17 +402,24 @@ Here are some examples using the NCBI taxonomic annotation.
   tree = PhyloTree('((9606, 9598), 10090);')
   tax2names, tax2lineages, tax2rank = tree.annotate_ncbi_taxa(taxid_attr="name")
   print(tree.to_str(props=["name", "sci_name", "taxid"]))
-  #                                            ╭╴9606,Bacteriovorax stolpii,960
+  #                                            ╭╴9606,Bacteriovorax stolpii,9606
   #               ╭╴⊗,Bdellovibrionota,3018035╶┤
-  # ╴⊗,Bacteria,2╶┤                            ╰╴9598,Bdellovibrio bacteriovorus,959
+  # ╴⊗,Bacteria,2╶┤                            ╰╴9598,Bdellovibrio bacteriovorus,9598
   #               │
-  #               ╰╴10090,Ancylobacter aquaticus,100
+  #               ╰╴10090,Ancylobacter aquaticus,10090
 
 
   # b) Only take part of the leaf name as species attribute of each node.
   # Split names by '|' and return the first part as the species taxid.
   tree = PhyloTree('((9606|protA, 9598|protA), 10090|protB);', sp_naming_function=lambda name: name.split('|')[0])
   tax2names, tax2lineages, tax2rank = tree.annotate_ncbi_taxa(taxid_attr="species")
+
+  print(tree.to_str(props=["name", "sci_name", "taxid"]))
+  #                                                 ╭╴9606|protA,Homo sapiens,9606
+  #                            ╭╴⊗,Homininae,207598╶┤
+  # ╴⊗,Euarchontoglires,314146╶┤                    ╰╴9598|protA,Pan troglodytes,9598
+  #                            │
+  #                            ╰╴10090|protB,Mus musculus,10090
 
 3)Using custom property as taxid identifier::
 
