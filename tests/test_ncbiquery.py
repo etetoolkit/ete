@@ -15,6 +15,7 @@ class Test_ncbiquery(unittest.TestCase):
 
 
   def test_01tree_annotation(self):
+    # using name as species attribute
     t = PhyloTree( "((9598, 9606), 10090);", sp_naming_function=lambda name: name)
     t.annotate_ncbi_taxa(dbfile=DATABASE_PATH)
     self.assertEqual(t.props.get('sci_name'), 'Euarchontoglires')
@@ -27,6 +28,48 @@ class Test_ncbiquery(unittest.TestCase):
     self.assertEqual(homi.props.get('lineage'), [1, 131567, 2759, 33154, 33208, 6072, 33213, 33511, 7711, 89593, 7742, 7776, 117570, 117571, 8287, 1338369, 32523, 32524, 40674, 32525, 9347, 1437010, 314146, 9443, 376913, 314293, 9526, 314295, 9604, 207598] )
 
     human = t['9606']
+    self.assertEqual(human.props.get('sci_name'), 'Homo sapiens')
+    self.assertEqual(human.props.get('taxid'), 9606)
+    self.assertEqual(human.props.get('rank'), 'species')
+    self.assertEqual(human.props.get('named_lineage'), [u'root', u'cellular organisms', u'Eukaryota', u'Opisthokonta', u'Metazoa', u'Eumetazoa', u'Bilateria', u'Deuterostomia', u'Chordata', u'Craniata', u'Vertebrata', u'Gnathostomata', u'Teleostomi', u'Euteleostomi', u'Sarcopterygii', u'Dipnotetrapodomorpha', u'Tetrapoda', u'Amniota', u'Mammalia', u'Theria', u'Eutheria', u'Boreoeutheria', u'Euarchontoglires', u'Primates', u'Haplorrhini', u'Simiiformes', u'Catarrhini', u'Hominoidea', u'Hominidae', u'Homininae', u'Homo', u'Homo sapiens'])
+    self.assertEqual(human.props.get('lineage'), [1, 131567, 2759, 33154, 33208, 6072, 33213, 33511, 7711, 89593, 7742, 7776, 117570, 117571, 8287, 1338369, 32523, 32524, 40674, 32525, 9347, 1437010, 314146, 9443, 376913, 314293, 9526, 314295, 9604, 207598, 9605, 9606])
+
+  def test_02tree_annotation(self):
+    # assign species attribute via sp_naming_function
+    t = PhyloTree( "((9598|protA, 9606|protB), 10090|propC);", sp_naming_function=lambda name: name.split('|')[0])
+    t.annotate_ncbi_taxa(dbfile=DATABASE_PATH, taxid_attr='species')
+    
+    homi = t['9606|protB'].up
+    self.assertEqual(homi.props.get('sci_name'), 'Homininae')
+    self.assertEqual(homi.props.get('taxid'), 207598)
+    self.assertEqual(homi.props.get('rank'), 'subfamily')
+    self.assertEqual(homi.props.get('named_lineage'), [u'root', u'cellular organisms', u'Eukaryota', u'Opisthokonta', u'Metazoa', u'Eumetazoa', u'Bilateria', u'Deuterostomia', u'Chordata', u'Craniata', u'Vertebrata', u'Gnathostomata', u'Teleostomi', u'Euteleostomi', u'Sarcopterygii', u'Dipnotetrapodomorpha', u'Tetrapoda', u'Amniota', u'Mammalia', u'Theria', u'Eutheria', u'Boreoeutheria', u'Euarchontoglires', u'Primates', u'Haplorrhini', u'Simiiformes', u'Catarrhini', u'Hominoidea', u'Hominidae', u'Homininae'])
+    self.assertEqual(homi.props.get('lineage'), [1, 131567, 2759, 33154, 33208, 6072, 33213, 33511, 7711, 89593, 7742, 7776, 117570, 117571, 8287, 1338369, 32523, 32524, 40674, 32525, 9347, 1437010, 314146, 9443, 376913, 314293, 9526, 314295, 9604, 207598] )
+
+    human = t['9606|protB']
+    self.assertEqual(human.props.get('sci_name'), 'Homo sapiens')
+    self.assertEqual(human.props.get('taxid'), 9606)
+    self.assertEqual(human.props.get('rank'), 'species')
+    self.assertEqual(human.props.get('named_lineage'), [u'root', u'cellular organisms', u'Eukaryota', u'Opisthokonta', u'Metazoa', u'Eumetazoa', u'Bilateria', u'Deuterostomia', u'Chordata', u'Craniata', u'Vertebrata', u'Gnathostomata', u'Teleostomi', u'Euteleostomi', u'Sarcopterygii', u'Dipnotetrapodomorpha', u'Tetrapoda', u'Amniota', u'Mammalia', u'Theria', u'Eutheria', u'Boreoeutheria', u'Euarchontoglires', u'Primates', u'Haplorrhini', u'Simiiformes', u'Catarrhini', u'Hominoidea', u'Hominidae', u'Homininae', u'Homo', u'Homo sapiens'])
+    self.assertEqual(human.props.get('lineage'), [1, 131567, 2759, 33154, 33208, 6072, 33213, 33511, 7711, 89593, 7742, 7776, 117570, 117571, 8287, 1338369, 32523, 32524, 40674, 32525, 9347, 1437010, 314146, 9443, 376913, 314293, 9526, 314295, 9604, 207598, 9605, 9606])
+
+  def test_03tree_annotation(self):
+    # Using custom property as taxonomic identifier 
+    t = PhyloTree( "((protA, protB), propC);")
+    # add property called "spcode"
+    t['protA'].add_prop('spcode', 9598)
+    t['protB'].add_prop('spcode', 9606)
+    t['propC'].add_prop('spcode', 10090)
+    t.annotate_ncbi_taxa(dbfile=DATABASE_PATH, taxid_attr='spcode')
+    
+    homi = t['protB'].up
+    self.assertEqual(homi.props.get('sci_name'), 'Homininae')
+    self.assertEqual(homi.props.get('taxid'), 207598)
+    self.assertEqual(homi.props.get('rank'), 'subfamily')
+    self.assertEqual(homi.props.get('named_lineage'), [u'root', u'cellular organisms', u'Eukaryota', u'Opisthokonta', u'Metazoa', u'Eumetazoa', u'Bilateria', u'Deuterostomia', u'Chordata', u'Craniata', u'Vertebrata', u'Gnathostomata', u'Teleostomi', u'Euteleostomi', u'Sarcopterygii', u'Dipnotetrapodomorpha', u'Tetrapoda', u'Amniota', u'Mammalia', u'Theria', u'Eutheria', u'Boreoeutheria', u'Euarchontoglires', u'Primates', u'Haplorrhini', u'Simiiformes', u'Catarrhini', u'Hominoidea', u'Hominidae', u'Homininae'])
+    self.assertEqual(homi.props.get('lineage'), [1, 131567, 2759, 33154, 33208, 6072, 33213, 33511, 7711, 89593, 7742, 7776, 117570, 117571, 8287, 1338369, 32523, 32524, 40674, 32525, 9347, 1437010, 314146, 9443, 376913, 314293, 9526, 314295, 9604, 207598] )
+
+    human = t['protB']
     self.assertEqual(human.props.get('sci_name'), 'Homo sapiens')
     self.assertEqual(human.props.get('taxid'), 9606)
     self.assertEqual(human.props.get('rank'), 'species')
@@ -95,3 +138,4 @@ class Test_ncbiquery(unittest.TestCase):
 
 if __name__ == '__main__':
   unittest.main()
+
