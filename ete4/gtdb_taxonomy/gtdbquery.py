@@ -507,7 +507,7 @@ class GTDBTaxa:
         n2leaves = t.get_cached_content()
 
         for node in t.traverse('postorder'):
-            node_taxid = getattr(n, taxid_attr, n.props.get(taxid_attr))
+            node_taxid = getattr(node, taxid_attr, node.props.get(taxid_attr))
             node.add_prop('taxid', node_taxid)
 
             if node_taxid:
@@ -530,7 +530,7 @@ class GTDBTaxa:
                                rank = tax2rank.get(tmp_taxid, 'Unknown'),
                                named_lineage = [tax2name.get(tax, str(tax)) for tax in tax2track.get(tmp_taxid, [])])
             elif node.is_leaf:
-                node.add_props(sci_name = getattr(n, taxid_attr, n.props.get(taxid_attr, 'NA')),
+                node.add_props(sci_name = getattr(node, taxid_attr, node.props.get(taxid_attr, 'NA')),
                                common_name = '',
                                lineage = [],
                                rank = 'Unknown',
