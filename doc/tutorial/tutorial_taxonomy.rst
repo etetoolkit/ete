@@ -80,8 +80,9 @@ GTDB Example::
   from ete4 import GTDBTaxa
   gtdb = GTDBTaxa()
 
-  # latest release updated in https://github.com/dengzq1234/ete-data/tree/main/gtdb_taxonomy
+  # Default latest release updated in https://github.com/dengzq1234/ete-data/tree/main/gtdb_taxonomy
   gtdb.update_taxonomy_database()
+
   # or
   gtdb.update_taxonomy_database("gtdbdump.tar.gz")
 
@@ -442,7 +443,12 @@ Here are some examples using the NCBI taxonomic annotation.
 Similar to above examples but using the GTDB taxonomic annotation::
 
   from ete4 import PhyloTree
-
+  from ete4 import GTDBTaxa
+  
+  # update gtdb taxonomy database 
+  gtdb = GTDBTaxa()
+  gtdb.update_taxonomy_database()
+  
   # Load the whole leaf name as species taxid.
   newick = '((p__Huberarchaeota,f__Korarchaeaceae)d__Archaea,o__Peptococcales);'
   tree = PhyloTree(newick)
