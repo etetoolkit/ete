@@ -62,12 +62,14 @@ a parsed version of it in `~/.local/share/ete/` by default. All future
 imports of NCBITaxa or GTDBTaxa will detect the local database and
 will skip this step.
 
-Example::
+NCBI Example::
 
   # Load NCBI module
   from ete4 import NCBITaxa
   ncbi = NCBITaxa()
   ncbi.update_taxonomy_database()
+
+GTDB Example::
 
   # Load GTDB module
   from ete4 import GTDBTaxa
@@ -96,13 +98,12 @@ NCBI taxonomy
 You can fetch species names, ranks and linage track information for
 your taxids using the following methods:
 
-.. autosummary::
 
-   NCBITaxa.get_rank
-   NCBITaxa.get_lineage
-   NCBITaxa.get_taxid_translator
-   NCBITaxa.get_name_translator
-   NCBITaxa.translate_to_names
+- NCBITaxa.get_rank()
+- NCBITaxa.get_lineage()
+- NCBITaxa.get_taxid_translator()
+- NCBITaxa.get_name_translator()
+- NCBITaxa.translate_to_names()
 
 The so called get-translator functions will return a dictionary
 converting between taxids and species names. Either species or linage
@@ -183,15 +184,12 @@ fetch and relate taxonomic information.
 
 Like NCBITaxa, GTDBTaxa contains similar methods:
 
-.. autosummary::
-
-   GTDBTaxa.get_rank
-   GTDBTaxa.get_lineage
-   GTDBTaxa.get_taxid_translator
-   GTDBTaxa.get_name_translator
-   GTDBTaxa.translate_to_names
-   GTDBTaxa.get_name_lineage
-
+- GTDBTaxa.get_rank()
+- GTDBTaxa.get_lineage()
+- GTDBTaxa.get_taxid_translator()
+- GTDBTaxa.get_name_translator()
+- GTDBTaxa.translate_to_names()
+- GTDBTaxa.get_name_lineage()
 
 Getting descendant taxa
 -----------------------
@@ -402,11 +400,11 @@ Here are some examples using the NCBI taxonomic annotation.
   tree = PhyloTree('((9606, 9598), 10090);')
   tax2names, tax2lineages, tax2rank = tree.annotate_ncbi_taxa(taxid_attr="name")
   print(tree.to_str(props=["name", "sci_name", "taxid"]))
-  #                                            ╭╴9606,Bacteriovorax stolpii,9606
-  #               ╭╴⊗,Bdellovibrionota,3018035╶┤
-  # ╴⊗,Bacteria,2╶┤                            ╰╴9598,Bdellovibrio bacteriovorus,9598
-  #               │
-  #               ╰╴10090,Ancylobacter aquaticus,10090
+  #                                                 ╭╴9606,Homo sapiens,9606
+  #                            ╭╴⊗,Homininae,207598╶┤
+  # ╴⊗,Euarchontoglires,314146╶┤                    ╰╴9598,Pan troglodytes,9598
+  #                            │
+  #                            ╰╴10090,Mus musculus,10090
 
 
   # b) Only take part of the leaf name as species attribute of each node.
@@ -441,7 +439,7 @@ Here are some examples using the NCBI taxonomic annotation.
   #                                  │
   #                                  ╰╴10090|protB,Mus musculus,10090
 
-Examples using the GTDB taxonomic annotation::
+Similar to above examples but using the GTDB taxonomic annotation::
 
   from ete4 import PhyloTree
 
