@@ -2,8 +2,10 @@
 Tests related to the treematcher module.
 """
 
-from ete4 import Tree
+from ete4 import Tree, PhyloTree
 import ete4.treematcher as tm
+
+import pytest
 
 
 def strip(text):
@@ -62,3 +64,16 @@ def test_search():
         assert ([n.name for n in tm.search(pattern, tree)] ==
                 [n.name for n in pattern.search(tree)] ==
                 expected_result)
+
+
+def test_safer():
+    t = PhyloTree('(a,(b,c));')
+
+    tp_unsafe = tm.TreePattern('("node.get_species()=={\'c\'}",'
+                               '  node.species=="b")')
+    assert list(tp_unsafe.search(t)) == [t.common_ancestor(['b', 'c'])]
+
+    tp_safer = tm.TreePattern('("node.get_species()=={\'c\'}",'
+                              '  node.species=="b")', safer=True)
+    with pytest.raises(ValueError):
+        list(tp_safer.search(t))  # asked for unknown function get_species()

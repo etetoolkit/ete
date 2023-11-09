@@ -30,7 +30,8 @@ class TreePattern(Tree):
         # Add the "code" property with its compiled condition.
         self.props['code'] = compile(self.name or 'True', '<string>', 'eval')
 
-        self.safer = safer  # will use to know if to use eval or safer_eval
+        for node in self.traverse():  # after init, needs to go to every node
+            node.safer = safer  # will use to know if to use eval or safer_eval
 
     def __str__(self):
         return self.to_str(show_internal=True, props=['name'])
@@ -63,7 +64,7 @@ def match(pattern, node):
         'any': any, 'all': all, 'len': len,
         'sum': sum, 'abs': abs, 'float': float}
 
-    evaluate = safer_eval if pattern.root.safer else eval  # risky business
+    evaluate = safer_eval if pattern.safer else eval  # risky business
     if not evaluate(pattern.props['code'], context):
         return False  # no match if the condition for this node if false
 
