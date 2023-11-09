@@ -441,7 +441,7 @@ Here are some examples using the NCBI taxonomic annotation.
   #                                  │
   #                                  ╰╴10090|protB,Mus musculus,10090
 
-Examples using the NCBI taxonomic annotation::
+Examples using the GTDB taxonomic annotation::
 
   from ete4 import PhyloTree
 
