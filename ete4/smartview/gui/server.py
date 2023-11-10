@@ -595,7 +595,6 @@ def callback(tree_id):
 
     tree_data.initialized = False
 
-    ops.maybe_convert_internal_nodes_to_support(tree_data.tree)
     ops.update_sizes_all(tree_data.tree)
 
     return {'message': 'ok'}
@@ -669,7 +668,6 @@ def load_tree_from_newick(tid, nw):
     """Load tree into memory from newick"""
     t = Tree(nw)
 
-    ops.maybe_convert_internal_nodes_to_support(t)
     ops.update_sizes_all(t)
 
     return t
@@ -1406,7 +1404,6 @@ def add_tree(data):
         tree = load_tree_from_newick(tid, nw)
     elif bpickle is not None:
         tree = ete_format.loads(bpickle, unpack=True)
-        ops.maybe_convert_internal_nodes_to_support(tree)
         ops.update_sizes_all(tree)
     else:
         tree = data.get('tree')
@@ -1619,7 +1616,6 @@ def run_smartview(tree=None, name=None, layouts=[],
     # TODO: Create app.recent_trees with paths to recently viewed trees
 
     if tree:
-        ops.maybe_convert_internal_nodes_to_support(tree)
         ops.update_sizes_all(tree)
 
         tree_data = {

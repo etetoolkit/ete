@@ -413,19 +413,3 @@ cdef (double, double) get_size(nodes):
         nleaves += node.size[1]
 
     return sumdists, nleaves
-
-
-# Convenience (hackish) functions.
-
-def maybe_convert_internal_nodes_to_support(tree):
-    """Convert if possible the values in internal nodes to support values."""
-    # Often someone loads a newick looking like  ((a,b)s1,(c,d)s2,...)
-    # where s1, s2, etc. are support values, not names. But they use the
-    # wrong newick parser. Well, this function tries to hackishly fix that.
-    for node in tree.traverse():
-        if not node.is_leaf and node.name:
-            try:
-                node.support = float(node.name)
-                node.name = ''
-            except ValueError:
-                pass
