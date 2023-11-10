@@ -1457,7 +1457,8 @@ class Test_Core_Tree(unittest.TestCase):
         self.assertEqual(monotype, 'paraphyletic')
 
         # Now with unrooted trees, and using species instead of names.
-        t = PhyloTree('(aaa1, (aaa3, (aaa4, (bbb1, bbb2))));')
+        t = PhyloTree('(aaa1, (aaa3, (aaa4, (bbb1, bbb2))));',
+                      sp_naming_function=lambda name: name[:3])
         # ─┬╴aaa1        # the species will be 'aaa' for this node, etc.
         #  ╰─┬╴aaa3
         #    ╰─┬╴aaa4
@@ -1469,50 +1470,57 @@ class Test_Core_Tree(unittest.TestCase):
                          (True, 'monophyletic', set()))
 
         # Variations on that tree.
-        t = PhyloTree('(aaa1, (bbb3, (aaa4, (bbb1, bbb2))));')
+        t = PhyloTree('(aaa1, (bbb3, (aaa4, (bbb1, bbb2))));',
+                      sp_naming_function=lambda name: name[:3])
         is_mono, _, extra = t.check_monophyly(values={'aaa'},
                                               prop='species', unrooted=True)
         self.assertFalse(is_mono)
         self.assertEqual(extra, {t['bbb3']})
 
-        t = PhyloTree('(aaa1, (aaa3, (aaa4, (bbb1, bbb2))));')
+        t = PhyloTree('(aaa1, (aaa3, (aaa4, (bbb1, bbb2))));',
+                      sp_naming_function=lambda name: name[:3])
         is_mono, _, extra = t.check_monophyly(values={'bbb'},
                                               prop='species', unrooted=True)
         self.assertTrue(is_mono)
         self.assertEqual(extra, set())
 
-        t = PhyloTree('(aaa1, (aaa3, (aaa4, (bbb1, ccc2))));')
+        t = PhyloTree('(aaa1, (aaa3, (aaa4, (bbb1, ccc2))));',
+                      sp_naming_function=lambda name: name[:3])
         is_mono, _, extra = t.check_monophyly(values={'bbb', 'ccc'},
                                               prop='species', unrooted=True)
         self.assertTrue(is_mono)
         self.assertEqual(extra, set())
 
-        t = PhyloTree('(aaa1, (aaa3, (bbb4, (bbb1, bbb2))));')
+        t = PhyloTree('(aaa1, (aaa3, (bbb4, (bbb1, bbb2))));',
+                      sp_naming_function=lambda name: name[:3])
         is_mono, _, extra = t.check_monophyly(values={'bbb4', 'bbb2'},
                                               prop='name', unrooted=True)
         self.assertFalse(is_mono)
         self.assertEqual(extra, {t['bbb1']})
 
-        t = PhyloTree('(aaa1, (aaa3, (bbb4, (bbb1, bbb2))));')
+        t = PhyloTree('(aaa1, (aaa3, (bbb4, (bbb1, bbb2))));',
+                      sp_naming_function=lambda name: name[:3])
         is_mono, _, extra = t.check_monophyly(values={'bbb1', 'bbb2'},
                                               prop='name', unrooted=True)
         self.assertTrue(is_mono)
         self.assertEqual(extra, set())
 
-        t = PhyloTree('(aaa1, aaa3, (aaa4, (bbb1, bbb2)));')
+        t = PhyloTree('(aaa1, aaa3, (aaa4, (bbb1, bbb2)));',
+                      sp_naming_function=lambda name: name[:3])
         is_mono, _, extra = t.check_monophyly(values={'aaa'},
                                               prop='species', unrooted=True)
         self.assertTrue(is_mono)
         self.assertEqual(extra, set())
 
-        t = PhyloTree('(aaa1, bbb3, (aaa4, (bbb1, bbb2)));')
+        t = PhyloTree('(aaa1, bbb3, (aaa4, (bbb1, bbb2)));',
+                      sp_naming_function=lambda name: name[:3])
         is_mono, _, extra = t.check_monophyly(values={'aaa'},
                                               prop='species', unrooted=True)
         self.assertFalse(is_mono)
         self.assertEqual(extra, {t['bbb3']})
 
         # # Check monophyly randomization test
-        # t = PhyloTree()
+        # t = PhyloTree(,
         # t.populate(100)
         # ancestor = t.common_ancestor(['aaaaaaaaaa', 'aaaaaaaaab', 'aaaaaaaaac'])
         # all_nodes = list(t.descendants())

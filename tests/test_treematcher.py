@@ -67,7 +67,7 @@ def test_search():
 
 
 def test_safer():
-    t = PhyloTree('(a,(b,c));')
+    t = PhyloTree('(a,(b,c));', sp_naming_function=lambda name: name)
 
     tp_unsafe = tm.TreePattern('("node.get_species()=={\'c\'}",'
                                '  node.species=="b")')

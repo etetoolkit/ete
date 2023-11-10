@@ -54,7 +54,8 @@ class Test_phylo_module(unittest.TestCase):
         alg1 = SeqGroup(fasta)
         alg2 = SeqGroup(iphylip, format="iphylip")
 
-        t = PhyloTree("(((seqA,seqB),seqC),seqD);", alignment=fasta, alg_format="fasta")
+        t = PhyloTree("(((seqA,seqB),seqC),seqD);", alignment=fasta, alg_format="fasta",
+                      sp_naming_function=lambda name: name[:3])
 
         for l in t.leaves():
             self.assertEqual(l.props.get('sequence'), alg1.get_seq(l.name))
@@ -69,7 +70,8 @@ class Test_phylo_module(unittest.TestCase):
         """ Tests ortholgy prediction using the sp overlap"""
         # Creates a gene phylogeny with several duplication events at
         # different levels.
-        t = PhyloTree(example_tree)
+        t = PhyloTree(example_tree,
+                      sp_naming_function=lambda name: name[:3])
 
         # Scans the tree using the species overlap algorithm and detect all
         # speciation and duplication events
@@ -158,19 +160,22 @@ class Test_phylo_module(unittest.TestCase):
         self.assertEqual(expected_orthologs, orthologs)
 
         # Test different sos_thr
-        t = PhyloTree('(((SP1_a, SP2_a), (SP3_a, SP1_b)), (SP1_c, SP2_c));')
+        t = PhyloTree('(((SP1_a, SP2_a), (SP3_a, SP1_b)), (SP1_c, SP2_c));',
+                      sp_naming_function=lambda name: name[:3])
         seed = t['SP1_a']
         events = t.get_descendant_evol_events(0.1)
         self.assertEqual(t.common_ancestor([seed, 'SP3_a']).props.get('evoltype'), 'D')
         self.assertEqual(t.common_ancestor([seed, 'SP1_c']).props.get('evoltype'), 'D')
 
-        t = PhyloTree('(((SP1_a, SP2_a), (SP3_a, SP1_b)), (SP1_c, SP2_c));')
+        t = PhyloTree('(((SP1_a, SP2_a), (SP3_a, SP1_b)), (SP1_c, SP2_c));',
+                      sp_naming_function=lambda name: name[:3])
         seed = t['SP1_a']
         events = t.get_descendant_evol_events(0.5)
         self.assertEqual(t.common_ancestor([seed, 'SP3_a']).props.get('evoltype'), 'S')
         self.assertEqual(t.common_ancestor([seed, 'SP1_c']).props.get('evoltype'), 'D')
 
-        t = PhyloTree('(((SP1_a:1, SP2_a:1):1, (SP3_a:1, SP1_b:1):1):1, (SP1_c:1, SP2_c:1):1):0;')
+        t = PhyloTree('(((SP1_a:1, SP2_a:1):1, (SP3_a:1, SP1_b:1):1):1, (SP1_c:1, SP2_c:1):1):0;',
+                      sp_naming_function=lambda name: name[:3])
         seed = t['SP1_a']
         events = seed.get_my_evol_events(0.75)
         self.assertEqual(t.common_ancestor([seed, 'SP3_a']).props.get('evoltype'), 'S')
@@ -180,7 +185,8 @@ class Test_phylo_module(unittest.TestCase):
         """ Tests ortholgy prediction using sp overlap"""
         # Creates a gene phylogeny with several duplication events at
         # different levels.
-        t = PhyloTree(example_tree)
+        t = PhyloTree(example_tree,
+                      sp_naming_function=lambda name: name[:3])
 
         # Scans the tree using the species overlap algorithm
         seed = t['Hsa_001']
@@ -261,19 +267,22 @@ class Test_phylo_module(unittest.TestCase):
         self.assertEqual(expected_orthologs, orthologs)
 
         # Test different sos_thr
-        t = PhyloTree('(((SP1_a:1, SP2_a:1):1, (SP3_a:1, SP1_b:1):1):1, (SP1_c:1, SP2_c:1):1):0;')
+        t = PhyloTree('(((SP1_a:1, SP2_a:1):1, (SP3_a:1, SP1_b:1):1):1, (SP1_c:1, SP2_c:1):1):0;',
+                      sp_naming_function=lambda name: name[:3])
         seed = t['SP1_a']
         events = seed.get_my_evol_events(0.1)
         self.assertEqual(t.common_ancestor([seed, 'SP3_a']).props.get('evoltype'), 'D')
         self.assertEqual(t.common_ancestor([seed, 'SP1_c']).props.get('evoltype'), 'D')
 
-        t = PhyloTree('(((SP1_a:1, SP2_a:1):1, (SP3_a:1, SP1_b:1):1):1, (SP1_c:1, SP2_c:1):1):0;')
+        t = PhyloTree('(((SP1_a:1, SP2_a:1):1, (SP3_a:1, SP1_b:1):1):1, (SP1_c:1, SP2_c:1):1):0;',
+                      sp_naming_function=lambda name: name[:3])
         seed = t['SP1_a']
         events = seed.get_my_evol_events(0.50)
         self.assertEqual(t.common_ancestor([seed, 'SP3_a']).props.get('evoltype'), 'S')
         self.assertEqual(t.common_ancestor([seed, 'SP1_c']).props.get('evoltype'), 'D')
 
-        t = PhyloTree('(((SP1_a:1, SP2_a:1):1, (SP3_a:1, SP1_b:1):1):1, (SP1_c:1, SP2_c:1):1):0;')
+        t = PhyloTree('(((SP1_a:1, SP2_a:1):1, (SP3_a:1, SP1_b:1):1):1, (SP1_c:1, SP2_c:1):1):0;',
+                      sp_naming_function=lambda name: name[:3])
         seed = t['SP1_a']
         events = seed.get_my_evol_events(0.75)
         self.assertEqual(t.common_ancestor([seed, 'SP3_a']).props.get('evoltype'), 'S')
@@ -284,8 +293,10 @@ class Test_phylo_module(unittest.TestCase):
         gene_tree_nw = '((Dme_001,Dme_002),(((Cfa_001,Mms_001),((Hsa_001,Ptr_001),Mmu_001)),(Ptr_002,(Hsa_002,Mmu_002))));'
         species_tree_nw = "((((Hsa, Ptr), Mmu), (Mms, Cfa)), Dme);"
 
-        genetree = PhyloTree(gene_tree_nw)
-        sptree = PhyloTree(species_tree_nw)
+        genetree = PhyloTree(gene_tree_nw,
+                             sp_naming_function=lambda name: name[:3])
+        sptree = PhyloTree(species_tree_nw,
+                           sp_naming_function=lambda name: name[:3])
 
         recon_tree, events = genetree.reconcile(sptree)
         # Check that reconcilied tree nodes have the correct lables:
@@ -299,7 +310,8 @@ class Test_phylo_module(unittest.TestCase):
         """ Test several things """
         # Creates a gene phylogeny with several duplication events at
         # different levels.
-        t = PhyloTree(example_tree)
+        t = PhyloTree(example_tree,
+                      sp_naming_function=lambda name: name[:3])
 
         # Create a dictionary with relative ages for the species present in
         # the phylogenetic tree.  Note that ages are only relative numbers to
@@ -337,7 +349,8 @@ class Test_phylo_module(unittest.TestCase):
         self.assertEqual(set([sp for sp in t.iter_species()]), set(sp2age.keys()))
 
     def test_collapse(self):
-        t = PhyloTree('((Dme_001,Dme_002),(((Cfa_001,Mms_001),((((Hsa_001,Hsa_001),Ptr_001),Mmu_001),((Hsa_004,Ptr_004),Mmu_004))),(Ptr_002,(Hsa_002,Mmu_002))));')
+        t = PhyloTree('((Dme_001,Dme_002),(((Cfa_001,Mms_001),((((Hsa_001,Hsa_001),Ptr_001),Mmu_001),((Hsa_004,Ptr_004),Mmu_004))),(Ptr_002,(Hsa_002,Mmu_002))));',
+                      sp_naming_function=lambda name: name[:3])
         for n in t.traverse():
             n.dist = 1
             n.support = 1

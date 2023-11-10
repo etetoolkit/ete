@@ -15,8 +15,6 @@ from . import spoverlap
 
 __all__ = ["PhyloTree"]
 
-def _parse_species(name):
-    return name[:3] if name is not None else ''
 
 def is_dup(n):
     return n.props.get("evoltype") == "D"
@@ -272,7 +270,7 @@ class PhyloTree(Tree):
     """
 
     def __init__(self, newick=None, children=None, alignment=None,
-                 alg_format="fasta", sp_naming_function=_parse_species,
+                 alg_format="fasta", sp_naming_function=None,
                  parser=None):
         """
         :param newick: If not None, initializes the tree from a newick,
