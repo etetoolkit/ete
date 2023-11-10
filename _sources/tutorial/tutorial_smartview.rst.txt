@@ -678,7 +678,7 @@ For node faces in collapsed clades, modify *collapsed_only* argument to True in 
    :alt: alternative text
    :align: center
 
-"mundo" TextFace shown in branch_right of node "n1" only when node is collapsed with argument **collapsed_only=False**
+"mundo" TextFace shown in branch_right of node "n1" only when node is collapsed with argument **collapsed_only=True**
 
 .. image:: https://github.com/dengzq1234/ete4_gallery/blob/master/smartview/faceposition_collapsed_after.png?raw=true
    :alt: alternative text
