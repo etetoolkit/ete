@@ -66,8 +66,8 @@
 <li><p><a class="reference internal" href="#iterators-or-lists" id="id15">Iterators or lists?</a></p></li>
 <li><p><a class="reference internal" href="#finding-nodes-by-their-properties" id="id16">Finding nodes by their properties</a></p>
 <ul>
-<li><p><a class="reference internal" href="#search-all-nodes-matching-a-given-criteria" id="id17">Search_all nodes matching a given criteria</a></p></li>
-<li><p><a class="reference internal" href="#search-nodes-matching-a-given-criteria-iteration" id="id18">Search nodes matching a given criteria (iteration)</a></p></li>
+<li><p><a class="reference internal" href="#search-all-nodes-matching-a-given-criteria" id="id17">Search all nodes matching a given criteria</a></p></li>
+<li><p><a class="reference internal" href="#search-nodes-matching-a-given-criteria" id="id18">Search nodes matching a given criteria</a></p></li>
 <li><p><a class="reference internal" href="#find-the-first-common-ancestor" id="id19">Find the first common ancestor</a></p></li>
 <li><p><a class="reference internal" href="#custom-searching-functions" id="id20">Custom searching functions</a></p></li>
 <li><p><a class="reference internal" href="#shortcuts" id="id21">Shortcuts</a></p></li>
@@ -652,7 +652,7 @@ tree structure. Several methods are available:</p>
 </tbody>
 </table>
 <section id="search-all-nodes-matching-a-given-criteria">
-<h4><a class="toc-backref" href="#id17" role="doc-backlink">Search_all nodes matching a given criteria</a><a class="headerlink" href="#search-all-nodes-matching-a-given-criteria" title="Link to this heading">¶</a></h4>
+<h4><a class="toc-backref" href="#id17" role="doc-backlink">Search all nodes matching a given criteria</a><a class="headerlink" href="#search-all-nodes-matching-a-given-criteria" title="Link to this heading">¶</a></h4>
 <p>A custom list of nodes matching a given name can be easily obtained
 through the <a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.search_nodes" title="ete4.Tree.search_nodes"><code class="xref py py-func docutils literal notranslate"><span class="pre">Tree.search_nodes()</span></code></a> function.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((H:1,I:1):0.5,A:1,(B:1,(C:1,D:1):0.5):0.5);&#39;</span><span class="p">)</span>
@@ -677,8 +677,8 @@ through the <a class="reference internal" href="../reference/reference_tree.html
 </pre></div>
 </div>
 </section>
-<section id="search-nodes-matching-a-given-criteria-iteration">
-<h4><a class="toc-backref" href="#id18" role="doc-backlink">Search nodes matching a given criteria (iteration)</a><a class="headerlink" href="#search-nodes-matching-a-given-criteria-iteration" title="Link to this heading">¶</a></h4>
+<section id="search-nodes-matching-a-given-criteria">
+<h4><a class="toc-backref" href="#id18" role="doc-backlink">Search nodes matching a given criteria</a><a class="headerlink" href="#search-nodes-matching-a-given-criteria" title="Link to this heading">¶</a></h4>
 <p>A limitation of the <a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.search_nodes" title="ete4.Tree.search_nodes"><code class="xref py py-func docutils literal notranslate"><span class="pre">Tree.search_nodes()</span></code></a> method is that you
 cannot use complex conditional statements to find specific nodes. When
 the search criteria is too complex, you may want to create your own search
@@ -1319,7 +1319,7 @@ while keeping original distances among remaining nodes.</p>
 <span class="c1">#    ╰╴P</span>
 </pre></div>
 </div>
-<p>In the next section we will see hot to re-create the same tree again.</p>
+<p>In the next section we will see how to re-create the same tree again.</p>
 </section>
 <section id="concatenating-trees">
 <h2><a class="toc-backref" href="#id32" role="doc-backlink">Concatenating trees</a><a class="headerlink" href="#concatenating-trees" title="Link to this heading">¶</a></h2>

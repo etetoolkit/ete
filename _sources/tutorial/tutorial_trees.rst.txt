@@ -510,7 +510,7 @@ tree structure. Several methods are available:
   ========================================= =========================================================================
 
 
-Search_all nodes matching a given criteria
+Search all nodes matching a given criteria
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A custom list of nodes matching a given name can be easily obtained
@@ -539,8 +539,8 @@ through the :func:`Tree.search_nodes` function.
   print(n1 == n2)  # True
 
 
-Search nodes matching a given criteria (iteration)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Search nodes matching a given criteria
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A limitation of the :func:`Tree.search_nodes` method is that you
 cannot use complex conditional statements to find specific nodes. When
@@ -1219,7 +1219,7 @@ Example::
   #  ╰─┬╴Q
   #    ╰╴P
 
-In the next section we will see hot to re-create the same tree again.
+In the next section we will see how to re-create the same tree again.
 
 
 Concatenating trees
