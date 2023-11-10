@@ -1178,7 +1178,8 @@ cdef class Tree(object):
         """
         method = method.lower()
         if method=="newick":
-            new_node = self.__class__(self.write(format_root_node=True))
+            new_node = self.__class__(self.write(format_root_node=True,
+                                                 parser=1), parser=1)
         elif method=="newick-extended":
             new_node = self.__class__(self.write(props=None))
         elif method == "deepcopy":

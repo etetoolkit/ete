@@ -62,7 +62,7 @@ class TestTreematcher(unittest.TestCase):
                 ('((bye:1,(1:1,2:1,3:1)xx:1)none:1, NODE):0;', []),
                 ('((bye:1,(1:1,2:1,3:1)xx:1)y:1, NODE):0;', ['y']),
                 ('((bye,(,,))x:1,((,,),bye)y:1):0;', ['x', 'y'])]:
-            tree = Tree(newick)
+            tree = Tree(newick, parser=1)
 
             self.assertEqual([n.name for n in tm.search(pattern, tree)],
                              expected_result)

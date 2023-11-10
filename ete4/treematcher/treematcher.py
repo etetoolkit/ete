@@ -17,12 +17,12 @@ class TreePattern(Tree):
     It stores in the node names the constraints for that node.
     """
 
-    def __init__(self, pattern='', children=None, parser=None, safer=False):
+    def __init__(self, pattern='', children=None, parser=1, safer=False):
         if type(pattern) == str:
             # We expect a newick tree whose names will be the conditions
             # to check for in each node. No need to end with ";".
             newick = pattern.strip().rstrip(';') + ';'
-            super().__init__(newick)
+            super().__init__(newick, parser=1)
         else:  # we are being recursively called, and were passed a dict
             data = {'name': pattern.get('name', '').strip()}
             super().__init__(data, children)

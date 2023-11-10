@@ -50,8 +50,8 @@ SUPPORT = dict(NUMBER_IO, pname='support')
 # (which properties they are, including how to read and write them).
 
 PARSER_DEFAULT = {
-    'leaf':     [NAME, DIST],  # ((name:dist)x:y);
-    'internal': [NAME, DIST],  # ((x:y)name:dist);
+    'leaf':     [NAME,    DIST],  # ((name:dist)x:y);
+    'internal': [SUPPORT, DIST],  # ((x:y)support:dist);
 }
 
 # This part is only used to read the old-fashioned int formats.

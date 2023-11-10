@@ -151,7 +151,7 @@ To load a tree from a newick text string you can pass to :func:`Tree`
 the text string containing the newick structure. Alternatively, you
 can pass a file object that contains the newick string. And
 optionally, you can also specify the format that should be used to
-parse it (1 by default, see :ref:`sec:newick-formats`).
+parse it (0 by default, see :ref:`sec:newick-formats`).
 
 ::
 
@@ -162,8 +162,9 @@ parse it (1 by default, see :ref:`sec:newick-formats`).
   t2 = Tree(open('genes_tree.nw'))
 
   # You can also specify how to parse the newick. For instance,
-  # for internal nodes with support we will use parser=0.
-  t3 = Tree('(A:1,(B:1,(E:1,D:1)0.4:0.5)0.9:0.5);', parser=0)
+  # internal nodes by default are interpreted as support values
+  # (parser=0), but we can interpret them as names with parser=1.
+  t3 = Tree('(A:1,(B:1,(E:1,D:1)E:0.5)F:0.5);', parser=1)
 
 
 Writing newick trees
@@ -175,17 +176,17 @@ can use the same function to convert between newick formats.
 
 ::
 
-  # Load a tree with internal support values.
-  t = Tree('(A:1,(B:1,(E:1,D:1)0.4:0.5)0.9:0.5);', parser=0)
+  # Load a tree with internal names.
+  t = Tree('(A:1,(B:1,(E:1,D:1)E:0.5)F:0.5);', parser=1)
 
   # Print its newick using the default parser.
   print(t.write())  # (A:1,(B:1,(E:1,D:1):0.5):0.5);
 
-  # To print the internal support values you can change the parser.
-  print(t.write(parser=0))  # (A:1,(B:1,(E:1,D:1)0.4:0.5)0.9:0.5);
+  # To print the internal names you can change the parser.
+  print(t.write(parser=1))  # (A:1,(B:1,(E:1,D:1)E:0.5)F:0.5);
 
   # We can also write into a file.
-  t.write(parser=0, outfile='new_tree.nw')
+  t.write(parser=1, outfile='new_tree.nw')
 
 
 Understanding ETE trees
@@ -364,7 +365,7 @@ The argument :attr:`strategy` can take the values "levelorder",
 "preorder", or "postorder"::
 
   # Make a tree.
-  t = Tree('((((H,K)D,(F,I)G)B,E)A,((L,(N,Q)O)J,(P,S)M)C);')
+  t = Tree('((((H,K)D,(F,I)G)B,E)A,((L,(N,Q)O)J,(P,S)M)C);', parser=1)
 
   # Traverse the nodes in postorder.
   for node in t.traverse('postorder'):
@@ -411,7 +412,7 @@ For instance, given a large tree structure, the following code will
 export the newick of the pruned version of the topology, where nodes
 grouping the same tip labels are collapsed::
 
-  t = Tree('((((a,a,a)a,a)aa,(b,b)b)ab,(c,(d,d)d)cd);')
+  t = Tree('((((a,a,a)a,a)aa,(b,b)b)ab,(c,(d,d)d)cd);', parser=1)
 
   print(t.to_str(props=['name'], compact=True))  # show internal names too
   #                  ╭╴a
@@ -430,11 +431,11 @@ grouping the same tip labels are collapsed::
   def collapsed_leaf(node):
       return len(node2labels[node]) == 1
 
-  print(t.write(is_leaf_fn=collapsed_leaf))
+  print(t.write(parser=1, is_leaf_fn=collapsed_leaf))
   # ((aa,b)ab,(c,d)cd);
 
   # We can even load the collapsed version as a new tree.
-  t2 = Tree( t.write(is_leaf_fn=collapsed_leaf) )
+  t2 = Tree(t.write(parser=1, is_leaf_fn=collapsed_leaf), parser=1)
 
   print(t2.to_str(props=['name'], compact=True))
   #    ╭╴ab╶┬╴aa
@@ -449,7 +450,7 @@ browsing the whole tree structure.
 Let's say we want to get all deepest nodes in a tree whose branch
 length is defined and larger than one::
 
-  t = Tree('(((a,b)ab:2,(c,d)cd:2)abcd:2,((e,f):2,g)efg:2);')
+  t = Tree('(((a,b)ab:2,(c,d)cd:2)abcd:2,((e,f):2,g)efg:2);', parser=1)
 
   print(t.to_str(props=['name', 'dist'], compact=True))  # name and distance
   #                 ╭╴ab,2.0╶┬╴a,⊗
@@ -566,7 +567,7 @@ Find the first common ancestor
 Searching for the first common ancestor of a given set of nodes is a
 handy way of finding internal nodes::
 
-  t = Tree('(((a,b)ab,(c,d)cd:2)abcd,((e,f)ef,g)efg)root;')
+  t = Tree('(((a,b)ab,(c,d)cd:2)abcd,((e,f)ef,g)efg)root;', parser=1)
 
   print(t.to_str(props=['name'], compact=True))
   #              ╭╴ab╶┬╴a
@@ -900,8 +901,8 @@ To read NHX notation you can just read it as a normal newick::
 
   # Load the NHX example from https://www.phylosoft.org/NHX/
   nw = """
-  (((ADH2:0.1[&&NHX:S=human:E=1.1.1.1], ADH1:0.11[&&NHX:S=human:E=1.1.1.1])
-  :0.05[&&NHX:S=Primates:E=1.1.1.1:D=Y:B=100], ADHY:0.1[&&NHX:S=nematode:
+  (((ADH2:0.1[&&NHX:S=human:E=1.1.1.1], ADH1:0.11[&&NHX:S=human:E=1.1.1.1]):0.05
+  [&&NHX:S=Primates:E=1.1.1.1:D=Y:B=100], ADHY:0.1[&&NHX:S=nematode:
   E=1.1.1.1],ADHX:0.12[&&NHX:S=insect:E=1.1.1.1]):0.1[&&NHX:S=Metazoa:
   E=1.1.1.1:D=N], (ADH4:0.09[&&NHX:S=yeast:E=1.1.1.1],ADH3:0.13[&&NHX:S=yeast:
   E=1.1.1.1], ADH2:0.12[&&NHX:S=yeast:E=1.1.1.1],ADH1:0.11[&&NHX:S=yeast:E=1.1.1.1]):0.1
@@ -1131,7 +1132,7 @@ automatically connected to the next possible parent.
 
 This is better understood with the following example::
 
-  t = Tree('((((H,K)D,(F,I)G)B,E)A,((L,(N,Q)O)J,(P,S)M)C);')
+  t = Tree('((((H,K)D,(F,I)G)B,E)A,((L,(N,Q)O)J,(P,S)M)C);', parser=1)
 
   print(t.to_str(props=['name'], compact=True))
   #            ╭╴D╶┬╴H
@@ -1194,7 +1195,7 @@ while keeping original distances among remaining nodes.
 
 Example::
 
-  t = Tree('((((H,K),(F,I)G),E),((L,(N,Q)O),(P,S)));')
+  t = Tree('((((H,K),(F,I)G),E),((L,(N,Q)O),(P,S)));', parser=1)
 
   print(t)
   #      ╭─┬╴H
@@ -1322,7 +1323,7 @@ copy:
 
 Example::
 
-   t = Tree('((A,B)Internal_1:0.7,(C,D)Internal_2:0.5)root:1.3;')
+   t = Tree('((A,B)Internal_1:0.7,(C,D)Internal_2:0.5)root:1.3;', parser=1)
 
    # Add a custom annotation to the node named A.
    t['A'].add_props(label='custom value')
