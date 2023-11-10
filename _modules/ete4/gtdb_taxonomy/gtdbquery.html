@@ -546,11 +546,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">taxids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">taxid_attr</span> <span class="o">==</span> <span class="s2">&quot;taxid&quot;</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">traverse</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">leaves</span><span class="p">():</span>
                 <span class="k">if</span> <span class="n">taxid_attr</span> <span class="ow">in</span> <span class="n">n</span><span class="o">.</span><span class="n">props</span><span class="p">:</span>
                     <span class="n">taxids</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">props</span><span class="p">[</span><span class="n">taxid_attr</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">traverse</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">leaves</span><span class="p">():</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="c1"># translate gtdb name -&gt; id</span>
                     <span class="n">taxaname</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">taxid_attr</span><span class="p">,</span> <span class="n">n</span><span class="o">.</span><span class="n">props</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">taxid_attr</span><span class="p">))</span>
@@ -580,7 +580,10 @@
         <span class="n">n2leaves</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">get_cached_content</span><span class="p">()</span>
 
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">traverse</span><span class="p">(</span><span class="s1">&#39;postorder&#39;</span><span class="p">):</span>
-            <span class="n">node_taxid</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">taxid_attr</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">props</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">taxid_attr</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">:</span>
+                <span class="n">node_taxid</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">taxid_attr</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">props</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">taxid_attr</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">node_taxid</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="n">node</span><span class="o">.</span><span class="n">add_prop</span><span class="p">(</span><span class="s1">&#39;taxid&#39;</span><span class="p">,</span> <span class="n">node_taxid</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">node_taxid</span><span class="p">:</span>
