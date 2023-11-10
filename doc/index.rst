@@ -11,9 +11,9 @@ Welcome to ETE's documentation!
    :caption: Contents:
 
    about
-   faqs
    tutorial/index
    reference/index
+   faqs
 
 
 Indices and tables
