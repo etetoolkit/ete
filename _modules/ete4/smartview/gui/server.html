@@ -646,7 +646,6 @@
 
     <span class="n">tree_data</span><span class="o">.</span><span class="n">initialized</span> <span class="o">=</span> <span class="kc">False</span>
 
-    <span class="n">ops</span><span class="o">.</span><span class="n">maybe_convert_internal_nodes_to_support</span><span class="p">(</span><span class="n">tree_data</span><span class="o">.</span><span class="n">tree</span><span class="p">)</span>
     <span class="n">ops</span><span class="o">.</span><span class="n">update_sizes_all</span><span class="p">(</span><span class="n">tree_data</span><span class="o">.</span><span class="n">tree</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;ok&#39;</span><span class="p">}</span>
@@ -731,7 +730,6 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Load tree into memory from newick&quot;&quot;&quot;</span>
     <span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="n">nw</span><span class="p">)</span>
 
-    <span class="n">ops</span><span class="o">.</span><span class="n">maybe_convert_internal_nodes_to_support</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
     <span class="n">ops</span><span class="o">.</span><span class="n">update_sizes_all</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">t</span></div>
@@ -1594,7 +1592,6 @@
         <span class="n">tree</span> <span class="o">=</span> <span class="n">load_tree_from_newick</span><span class="p">(</span><span class="n">tid</span><span class="p">,</span> <span class="n">nw</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">bpickle</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">tree</span> <span class="o">=</span> <span class="n">ete_format</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">bpickle</span><span class="p">,</span> <span class="n">unpack</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">ops</span><span class="o">.</span><span class="n">maybe_convert_internal_nodes_to_support</span><span class="p">(</span><span class="n">tree</span><span class="p">)</span>
         <span class="n">ops</span><span class="o">.</span><span class="n">update_sizes_all</span><span class="p">(</span><span class="n">tree</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">tree</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;tree&#39;</span><span class="p">)</span>
@@ -1840,7 +1837,6 @@
     <span class="c1"># TODO: Create app.recent_trees with paths to recently viewed trees</span>
 
     <span class="k">if</span> <span class="n">tree</span><span class="p">:</span>
-        <span class="n">ops</span><span class="o">.</span><span class="n">maybe_convert_internal_nodes_to_support</span><span class="p">(</span><span class="n">tree</span><span class="p">)</span>
         <span class="n">ops</span><span class="o">.</span><span class="n">update_sizes_all</span><span class="p">(</span><span class="n">tree</span><span class="p">)</span>
 
         <span class="n">tree_data</span> <span class="o">=</span> <span class="p">{</span>

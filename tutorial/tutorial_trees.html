@@ -271,7 +271,7 @@ example of the previously populated tree:</p>
 the text string containing the newick structure. Alternatively, you
 can pass a file object that contains the newick string. And
 optionally, you can also specify the format that should be used to
-parse it (1 by default, see <a class="reference internal" href="#sec-newick-formats"><span class="std std-ref">Reading and writing newick trees</span></a>).</p>
+parse it (0 by default, see <a class="reference internal" href="#sec-newick-formats"><span class="std std-ref">Reading and writing newick trees</span></a>).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load a tree structure from a newick string. It returns the root node.</span>
 <span class="n">t1</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(A:1,(B:1,(E:1,D:1):0.5):0.5);&#39;</span><span class="p">)</span>
 
@@ -279,8 +279,9 @@ parse it (1 by default, see <a class="reference internal" href="#sec-newick-form
 <span class="n">t2</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s1">&#39;genes_tree.nw&#39;</span><span class="p">))</span>
 
 <span class="c1"># You can also specify how to parse the newick. For instance,</span>
-<span class="c1"># for internal nodes with support we will use parser=0.</span>
-<span class="n">t3</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(A:1,(B:1,(E:1,D:1)0.4:0.5)0.9:0.5);&#39;</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="c1"># internal nodes by default are interpreted as support values</span>
+<span class="c1"># (parser=0), but we can interpret them as names with parser=1.</span>
+<span class="n">t3</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(A:1,(B:1,(E:1,D:1)E:0.5)F:0.5);&#39;</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -289,17 +290,17 @@ parse it (1 by default, see <a class="reference internal" href="#sec-newick-form
 <p>Any ETE tree instance can be exported using newick notation using the
 <a class="reference internal" href="../reference/reference_tree.html#ete4.Tree.write" title="ete4.Tree.write"><code class="xref py py-func docutils literal notranslate"><span class="pre">Tree.write()</span></code></a> method. It also allows for parser selection, so you
 can use the same function to convert between newick formats.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load a tree with internal support values.</span>
-<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(A:1,(B:1,(E:1,D:1)0.4:0.5)0.9:0.5);&#39;</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load a tree with internal names.</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(A:1,(B:1,(E:1,D:1)E:0.5)F:0.5);&#39;</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
 <span class="c1"># Print its newick using the default parser.</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">write</span><span class="p">())</span>  <span class="c1"># (A:1,(B:1,(E:1,D:1):0.5):0.5);</span>
 
-<span class="c1"># To print the internal support values you can change the parser.</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">parser</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>  <span class="c1"># (A:1,(B:1,(E:1,D:1)0.4:0.5)0.9:0.5);</span>
+<span class="c1"># To print the internal names you can change the parser.</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">parser</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>  <span class="c1"># (A:1,(B:1,(E:1,D:1)E:0.5)F:0.5);</span>
 
 <span class="c1"># We can also write into a file.</span>
-<span class="n">t</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">parser</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="s1">&#39;new_tree.nw&#39;</span><span class="p">)</span>
+<span class="n">t</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">parser</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="s1">&#39;new_tree.nw&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -504,7 +505,7 @@ the first will include the root node in the iteration.</p>
 <p>The argument <code class="xref py py-attr docutils literal notranslate"><span class="pre">strategy</span></code> can take the values “levelorder”,
 “preorder”, or “postorder”:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Make a tree.</span>
-<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((((H,K)D,(F,I)G)B,E)A,((L,(N,Q)O)J,(P,S)M)C);&#39;</span><span class="p">)</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((((H,K)D,(F,I)G)B,E)A,((L,(N,Q)O)J,(P,S)M)C);&#39;</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
 <span class="c1"># Traverse the nodes in postorder.</span>
 <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">traverse</span><span class="p">(</span><span class="s1">&#39;postorder&#39;</span><span class="p">):</span>
@@ -545,7 +546,7 @@ many different ways.</p>
 <p>For instance, given a large tree structure, the following code will
 export the newick of the pruned version of the topology, where nodes
 grouping the same tip labels are collapsed:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((((a,a,a)a,a)aa,(b,b)b)ab,(c,(d,d)d)cd);&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((((a,a,a)a,a)aa,(b,b)b)ab,(c,(d,d)d)cd);&#39;</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">compact</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>  <span class="c1"># show internal names too</span>
 <span class="c1">#                  ╭╴a</span>
@@ -564,11 +565,11 @@ grouping the same tip labels are collapsed:</p>
 <span class="k">def</span> <span class="nf">collapsed_leaf</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
     <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">node2labels</span><span class="p">[</span><span class="n">node</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">is_leaf_fn</span><span class="o">=</span><span class="n">collapsed_leaf</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">parser</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">is_leaf_fn</span><span class="o">=</span><span class="n">collapsed_leaf</span><span class="p">))</span>
 <span class="c1"># ((aa,b)ab,(c,d)cd);</span>
 
 <span class="c1"># We can even load the collapsed version as a new tree.</span>
-<span class="n">t2</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span> <span class="n">t</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">is_leaf_fn</span><span class="o">=</span><span class="n">collapsed_leaf</span><span class="p">)</span> <span class="p">)</span>
+<span class="n">t2</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">parser</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">is_leaf_fn</span><span class="o">=</span><span class="n">collapsed_leaf</span><span class="p">),</span> <span class="n">parser</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">t2</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">compact</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 <span class="c1">#    ╭╴ab╶┬╴aa</span>
@@ -582,7 +583,7 @@ nodes in a given tree that match a custom set of criteria, without
 browsing the whole tree structure.</p>
 <p>Let’s say we want to get all deepest nodes in a tree whose branch
 length is defined and larger than one:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(((a,b)ab:2,(c,d)cd:2)abcd:2,((e,f):2,g)efg:2);&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(((a,b)ab:2,(c,d)cd:2)abcd:2,((e,f):2,g)efg:2);&#39;</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;dist&#39;</span><span class="p">],</span> <span class="n">compact</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>  <span class="c1"># name and distance</span>
 <span class="c1">#                 ╭╴ab,2.0╶┬╴a,⊗</span>
@@ -701,7 +702,7 @@ function. For example:</p>
 <h4><a class="toc-backref" href="#id19" role="doc-backlink">Find the first common ancestor</a><a class="headerlink" href="#find-the-first-common-ancestor" title="Link to this heading">¶</a></h4>
 <p>Searching for the first common ancestor of a given set of nodes is a
 handy way of finding internal nodes:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(((a,b)ab,(c,d)cd:2)abcd,((e,f)ef,g)efg)root;&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(((a,b)ab,(c,d)cd:2)abcd,((e,f)ef,g)efg)root;&#39;</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">compact</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 <span class="c1">#              ╭╴ab╶┬╴a</span>
@@ -1007,8 +1008,8 @@ the node’s data into the newick string.</p>
 <p>To read NHX notation you can just read it as a normal newick:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load the NHX example from https://www.phylosoft.org/NHX/</span>
 <span class="n">nw</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">(((ADH2:0.1[&amp;&amp;NHX:S=human:E=1.1.1.1], ADH1:0.11[&amp;&amp;NHX:S=human:E=1.1.1.1])</span>
-<span class="s2">:0.05[&amp;&amp;NHX:S=Primates:E=1.1.1.1:D=Y:B=100], ADHY:0.1[&amp;&amp;NHX:S=nematode:</span>
+<span class="s2">(((ADH2:0.1[&amp;&amp;NHX:S=human:E=1.1.1.1], ADH1:0.11[&amp;&amp;NHX:S=human:E=1.1.1.1]):0.05</span>
+<span class="s2">[&amp;&amp;NHX:S=Primates:E=1.1.1.1:D=Y:B=100], ADHY:0.1[&amp;&amp;NHX:S=nematode:</span>
 <span class="s2">E=1.1.1.1],ADHX:0.12[&amp;&amp;NHX:S=insect:E=1.1.1.1]):0.1[&amp;&amp;NHX:S=Metazoa:</span>
 <span class="s2">E=1.1.1.1:D=N], (ADH4:0.09[&amp;&amp;NHX:S=yeast:E=1.1.1.1],ADH3:0.13[&amp;&amp;NHX:S=yeast:</span>
 <span class="s2">E=1.1.1.1], ADH2:0.12[&amp;&amp;NHX:S=yeast:E=1.1.1.1],ADH1:0.11[&amp;&amp;NHX:S=yeast:E=1.1.1.1]):0.1</span>
@@ -1232,7 +1233,7 @@ methods to perform this action: <a class="reference internal" href="../reference
 affecting its descendants. Children from the deleted node are
 automatically connected to the next possible parent.</p>
 <p>This is better understood with the following example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((((H,K)D,(F,I)G)B,E)A,((L,(N,Q)O)J,(P,S)M)C);&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((((H,K)D,(F,I)G)B,E)A,((L,(N,Q)O)J,(P,S)M)C);&#39;</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">compact</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 <span class="c1">#            ╭╴D╶┬╴H</span>
@@ -1293,7 +1294,7 @@ kept in the tree.</p>
 <p>The <cite>preserve_branch_length</cite> flag allows to remove nodes from a tree
 while keeping original distances among remaining nodes.</p>
 <p>Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((((H,K),(F,I)G),E),((L,(N,Q)O),(P,S)));&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((((H,K),(F,I)G),E),((L,(N,Q)O),(P,S)));&#39;</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
 <span class="c1">#      ╭─┬╴H</span>
@@ -1411,7 +1412,7 @@ when attributes point to lambda functions.</p></li>
 </ul>
 </div></blockquote>
 <p>Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((A,B)Internal_1:0.7,(C,D)Internal_2:0.5)root:1.3;&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((A,B)Internal_1:0.7,(C,D)Internal_2:0.5)root:1.3;&#39;</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
 <span class="c1"># Add a custom annotation to the node named A.</span>
 <span class="n">t</span><span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_props</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;custom value&#39;</span><span class="p">)</span>
