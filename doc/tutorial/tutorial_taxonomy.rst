@@ -188,12 +188,12 @@ Like NCBITaxa, GTDBTaxa contains similar methods:
 
 .. autosummary::
 
-  GTDBTaxa.get_rank
-  GTDBTaxa.get_lineage
-  GTDBTaxa.get_taxid_translator
-  GTDBTaxa.get_name_translator
-  GTDBTaxa.translate_to_names
-  GTDBTaxa.get_name_lineage
+   GTDBTaxa.get_rank
+   GTDBTaxa.get_lineage
+   GTDBTaxa.get_taxid_translator
+   GTDBTaxa.get_name_translator
+   GTDBTaxa.translate_to_names
+   GTDBTaxa.get_name_lineage
 
 Getting descendant taxa
 -----------------------
