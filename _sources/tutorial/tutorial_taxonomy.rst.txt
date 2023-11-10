@@ -64,30 +64,23 @@ will skip this step.
 
 NCBI Example::
 
-  # Load NCBI module
+  # Load NCBI module and update the taxonomy database.
   from ete4 import NCBITaxa
   ncbi = NCBITaxa()
   ncbi.update_taxonomy_database()
 
 GTDB Example::
 
-  # Load GTDB module
-  from ete4 import GTDBTaxa
-  gtdb = GTDBTaxa()
-  gtdb.update_taxonomy_database()
-
-  # Load GTDB module with specific release version
+  # Load GTDB module and update the taxonomy database.
   from ete4 import GTDBTaxa
   gtdb = GTDBTaxa()
 
-  # Default latest release updated in https://github.com/dengzq1234/ete-data/tree/main/gtdb_taxonomy
-  gtdb.update_taxonomy_database()
-
-  # or
-  gtdb.update_taxonomy_database("gtdbdump.tar.gz")
-
-  # update with custom release 202
-  gtdb.update_taxonomy_database('gtdb202dump.tar.gz')
+  answer = input('Which version? [file name or "latest"]: ')
+  if answer == 'latest':  # downloads the latest from the internet
+      gtdb.update_taxonomy_database()  # this is the default
+  else:
+      fname = answer  # it will be a file name like 'gtdb202dump.tar.gz'
+      gtdb.update_taxonomy_database(fname)
 
 
 Getting taxid information
@@ -115,6 +108,7 @@ Example::
 
   from ete4 import NCBITaxa
   ncbi = NCBITaxa()
+
   taxid2name = ncbi.get_taxid_translator([9606, 9443])
   print(taxid2name)
   # {9443: 'Primates', 9606: 'Homo sapiens'}
@@ -123,7 +117,7 @@ Example::
   print(name2taxid)
   # {'Homo sapiens': [9606], 'primates': [9443]}
 
-  # when the same name points to several taxa, all taxids are returned
+  # When the same name points to several taxa, all taxids are returned.
   name2taxid = ncbi.get_name_translator(['Bacteria'])
   print(name2taxid)
   # {'Bacteria': [2, 629395]}
@@ -141,9 +135,9 @@ Example::
 
   print(ncbi.get_lineage(9606))
   # [1, 131567, 2759, 33154, 33208, 6072, 33213, 33511, 7711, 89593, 7742,
-  # 7776, 117570, 117571, 8287, 1338369, 32523, 32524, 40674, 32525, 9347,
-  # 1437010, 314146, 9443, 376913, 314293, 9526, 314295, 9604, 207598, 9605,
-  # 9606]
+  #  7776, 117570, 117571, 8287, 1338369, 32523, 32524, 40674, 32525, 9347,
+  #  1437010, 314146, 9443, 376913, 314293, 9526, 314295, 9604, 207598, 9605,
+  #  9606]
 
 Example combining all at once::
 
@@ -162,12 +156,12 @@ Example combining all at once::
   print([names[taxid] for taxid in lineage])
 
   # ['root', 'cellular organisms', 'Eukaryota', 'Opisthokonta', 'Metazoa',
-  # 'Eumetazoa', 'Bilateria', 'Deuterostomia', 'Chordata', 'Craniata',
-  # 'Vertebrata', 'Gnathostomata', 'Teleostomi', 'Euteleostomi',
-  # 'Sarcopterygii', 'Dipnotetrapodomorpha', 'Tetrapoda', 'Amniota',
-  # 'Mammalia', 'Theria', 'Eutheria', 'Boreoeutheria', 'Euarchontoglires',
-  # 'Primates', 'Haplorrhini', 'Simiiformes', 'Catarrhini', 'Hominoidea',
-  # 'Hominidae', 'Homininae', 'Homo', 'Homo sapiens']
+  #  'Eumetazoa', 'Bilateria', 'Deuterostomia', 'Chordata', 'Craniata',
+  #  'Vertebrata', 'Gnathostomata', 'Teleostomi', 'Euteleostomi',
+  #  'Sarcopterygii', 'Dipnotetrapodomorpha', 'Tetrapoda', 'Amniota',
+  #  'Mammalia', 'Theria', 'Eutheria', 'Boreoeutheria', 'Euarchontoglires',
+  #  'Primates', 'Haplorrhini', 'Simiiformes', 'Catarrhini', 'Hominoidea',
+  #  'Hominidae', 'Homininae', 'Homo', 'Homo sapiens']
 
 
 GTDB taxonomy
@@ -307,7 +301,7 @@ NCBI taxonomy example::
 
   tree = ncbi.get_topology([9606, 9598, 10090, 7707, 8782])
 
-  print(tree.to_str(props=["sci_name", "rank"]))
+  print(tree.to_str(props=['sci_name', 'rank']))
   #                      ╭╴Dendrochirotida,order
   #                      │
   #                      │                                                                   ╭╴Homo sapiens,species
@@ -320,7 +314,7 @@ NCBI taxonomy example::
 
   # All intermediate nodes connecting the species can also be kept in the tree.
   tree = ncbi.get_topology([2, 33208], intermediate_nodes=True)
-  print(tree.to_str(props=["sci_name"]))
+  print(tree.to_str(props=['sci_name']))
   #                     ╭╴Eukaryota╶╌╴Opisthokonta╶╌╴Metazoa
   # ╴cellular organisms╶┤
   #                     ╰╴Bacteria
@@ -330,7 +324,7 @@ GTDB taxonomy example::
   from ete4 import GTDBTaxa
   gtdb = GTDBTaxa()
 
-  tree = gtdb.get_topology(["p__Huberarchaeota", "o__Peptococcales", "f__Korarchaeaceae"])
+  tree = gtdb.get_topology(['p__Huberarchaeota', 'o__Peptococcales', 'f__Korarchaeaceae'])
   print(tree.to_str(props=['sci_name', 'rank']))
   #                                         ╭╴p__Huberarchaeota,phylum
   #               ╭╴d__Archaea,superkingdom╶┤
@@ -339,7 +333,7 @@ GTDB taxonomy example::
   #               ╰╴o__Peptococcales,order
 
   # All intermediate nodes connecting the species can also be kept in the tree.
-  tree = gtdb.get_topology(["p__Huberarchaeota", "o__Peptococcales", "f__Korarchaeaceae"], intermediate_nodes=True, collapse_subspecies=True, annotate=True)
+  tree = gtdb.get_topology(['p__Huberarchaeota', 'o__Peptococcales', 'f__Korarchaeaceae'], intermediate_nodes=True, collapse_subspecies=True, annotate=True)
   print(tree.to_str(props=['sci_name', 'rank']))
   #                                         ╭╴p__Huberarchaeota,phylum
   #               ╭╴d__Archaea,superkingdom╶┤
@@ -377,21 +371,21 @@ any formatting
 
 Here are some examples using the NCBI taxonomic annotation.
 
-1) Using the whole leaf name as taxonomic identifier::
+Using the whole leaf name as taxonomic identifier::
 
   from ete4 import PhyloTree
   tree = PhyloTree('((9606, 9598), 10090);')
 
   # pass name as taxid identifier to annotate_ncbi_taxa
-  tax2names, tax2lineages, tax2rank = tree.annotate_ncbi_taxa(taxid_attr="name")
-  print(tree.to_str(props=["name", "sci_name", "taxid"]))
+  tax2names, tax2lineages, tax2rank = tree.annotate_ncbi_taxa(taxid_attr='name')
+  print(tree.to_str(props=['name', 'sci_name', 'taxid']))
   #                                            ╭╴9606,Bacteriovorax stolpii,9606
   #               ╭╴⊗,Bdellovibrionota,3018035╶┤
   # ╴⊗,Bacteria,2╶┤                            ╰╴9598,Bdellovibrio bacteriovorus,9598
   #               │
   #               ╰╴10090,Ancylobacter aquaticus,10090
 
-2) Using `sp_naming_function` to define the `species` attribute for each node::
+Using `sp_naming_function` to define the `species` attribute for each node::
 
   from ete4 import PhyloTree
 
@@ -399,12 +393,12 @@ Here are some examples using the NCBI taxonomic annotation.
   tree = PhyloTree('((9606, 9598), 10090);', sp_naming_function=lambda name: name)
 
   # Pass `species` as taxid identifier to annotate_ncbi_taxa.
-  tax2names, tax2lineages, tax2rank = tree.annotate_ncbi_taxa(taxid_attr="species")
+  tax2names, tax2lineages, tax2rank = tree.annotate_ncbi_taxa(taxid_attr='species')
 
   # Or annotate using only the name as taxid identifier.
   tree = PhyloTree('((9606, 9598), 10090);')
-  tax2names, tax2lineages, tax2rank = tree.annotate_ncbi_taxa(taxid_attr="name")
-  print(tree.to_str(props=["name", "sci_name", "taxid"]))
+  tax2names, tax2lineages, tax2rank = tree.annotate_ncbi_taxa(taxid_attr='name')
+  print(tree.to_str(props=['name', 'sci_name', 'taxid']))
   #                                                 ╭╴9606,Homo sapiens,9606
   #                            ╭╴⊗,Homininae,207598╶┤
   # ╴⊗,Euarchontoglires,314146╶┤                    ╰╴9598,Pan troglodytes,9598
@@ -415,29 +409,29 @@ Here are some examples using the NCBI taxonomic annotation.
   # b) Only take part of the leaf name as species attribute of each node.
   # Split names by '|' and return the first part as the species taxid.
   tree = PhyloTree('((9606|protA, 9598|protA), 10090|protB);', sp_naming_function=lambda name: name.split('|')[0])
-  tax2names, tax2lineages, tax2rank = tree.annotate_ncbi_taxa(taxid_attr="species")
+  tax2names, tax2lineages, tax2rank = tree.annotate_ncbi_taxa(taxid_attr='species')
 
-  print(tree.to_str(props=["name", "sci_name", "taxid"]))
+  print(tree.to_str(props=['name', 'sci_name', 'taxid']))
   #                                                 ╭╴9606|protA,Homo sapiens,9606
   #                            ╭╴⊗,Homininae,207598╶┤
   # ╴⊗,Euarchontoglires,314146╶┤                    ╰╴9598|protA,Pan troglodytes,9598
   #                            │
   #                            ╰╴10090|protB,Mus musculus,10090
 
-3) Using custom property as taxid identifier::
+Using custom property as taxid identifier::
 
   from ete4 import PhyloTree
 
   tree = PhyloTree('((9606|protA, 9598|protA), 10090|protB);')
 
-  # add custom property with namespace "spcode" to each node
-  tree['9606|protA'].add_prop("spcode", 9606)
-  tree['9598|protA'].add_prop("spcode", 9598)
-  tree['10090|protB'].add_prop("spcode", 10090)
+  # Add custom property with namespace "spcode" to each node.
+  tree['9606|protA'].add_prop('spcode', 9606)
+  tree['9598|protA'].add_prop('spcode', 9598)
+  tree['10090|protB'].add_prop('spcode', 10090)
 
   # passing the custom property name as taxid identifier to annotate_ncbi_taxa
-  tax2names, tax2lineages, tax2rank = tree.annotate_ncbi_taxa(taxid_attr="spcode")
-  print(tree.to_str(props=["name", "sci_name", "spcode"]))
+  tax2names, tax2lineages, tax2rank = tree.annotate_ncbi_taxa(taxid_attr='spcode')
+  print(tree.to_str(props=['name', 'sci_name', 'spcode']))
   #                                                             ╭╴9606|protA,Homo sapiens,9606
   #                                  ╭╴(empty),Homininae,207598╶┤
   # ╴(empty),Euarchontoglires,314146╶┤                          ╰╴9598|protA,Pan troglodytes,9598
@@ -457,7 +451,7 @@ annotation::
   # Load the whole leaf name as species taxid.
   newick = '((p__Huberarchaeota,f__Korarchaeaceae)d__Archaea,o__Peptococcales);'
   tree = PhyloTree(newick)
-  tax2name, tax2track, tax2rank = tree.annotate_gtdb_taxa(taxid_attr="name")
+  tax2name, tax2track, tax2rank = tree.annotate_gtdb_taxa(taxid_attr='name')
 
   print(tree.to_str(props=['sci_name', 'rank']))
   #                                         ╭╴p__Huberarchaeota,phylum
@@ -469,7 +463,7 @@ annotation::
   # Load the whole leaf name(representing genome) as species taxid.
   newick = '((GB_GCA_020833055.1),(GB_GCA_003344655.1),(RS_GCF_000019605.1,RS_GCF_003948265.1));'
   tree = PhyloTree(newick,  sp_naming_function=lambda name: name)
-  tax2name, tax2track, tax2rank = tree.annotate_gtdb_taxa(taxid_attr="species")
+  tax2name, tax2track, tax2rank = tree.annotate_gtdb_taxa(taxid_attr='species')
 
   print(tree.to_str(props=['name', 'sci_name', 'rank']))
   #                         ╭╴⊗,GB_GCA_020833055.1,subspecies╶╌╴GB_GCA_020833055.1,s__Korarchaeum sp020833055,subspecies
@@ -484,7 +478,7 @@ annotation::
   # Split names by '|' and return the first part as the species taxid.
   newick = '((GB_GCA_020833055.1|protA:1):1,(GB_GCA_003344655.1|protB:1):1,(RS_GCF_000019605.1|protC:1,RS_GCF_003948265.1|protD:1):1):1;'
   tree = PhyloTree(newick,  sp_naming_function=lambda name: name.split('|')[0])
-  tax2name, tax2track, tax2rank = tree.annotate_gtdb_taxa(taxid_attr="species")
+  tax2name, tax2track, tax2rank = tree.annotate_gtdb_taxa(taxid_attr='species')
   print(tree.to_str(props=['name', 'sci_name', 'rank']))
   #                         ╭╴⊗,GB_GCA_020833055.1,subspecies╶╌╴GB_GCA_020833055.1|protA,s__Korarchaeum sp020833055,subspecies
   #                         │
@@ -507,7 +501,7 @@ annotation::
   for key, value in annotate_dict.items():
       tree[key].add_prop('gtdb_spcode', value)
 
-  tax2name, tax2track, tax2rank = tree.annotate_gtdb_taxa(taxid_attr="gtdb_spcode")
+  tax2name, tax2track, tax2rank = tree.annotate_gtdb_taxa(taxid_attr='gtdb_spcode')
   print(tree.to_str(props=['name', 'sci_name', 'rank']))
   #                         ╭╴⊗,GB_GCA_020833055.1,subspecies╶╌╴protA,s__Korarchaeum sp020833055,subspecies
   #                         │
