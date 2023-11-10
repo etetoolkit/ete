@@ -1036,7 +1036,20 @@ and multifurcations are automatically resolved.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.Tree.to_str">
 <span class="sig-name descname"><span class="pre">to_str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_internal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">props</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">px</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">py</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">px0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">waterfall</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.to_str" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return a string containing an ascii drawing of the tree.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>show_internal</strong> – If True, show the internal nodes too.</p></li>
+<li><p><strong>compact</strong> – If True, use exactly one line per tip.</p></li>
+<li><p><strong>props</strong> – List of node properties to show. If None, show all.</p></li>
+<li><p><strong>px0</strong> (<em>px</em><em>, </em><em>py</em><em>,</em>) – Paddings (x, y, x for leaves). Overrides <cite>compact</cite>.</p></li>
+<li><p><strong>waterfall</strong> – Use a waterfall representation. Overrides
+<cite>show_internal</cite>, <cite>compact</cite>, <cite>px</cite>, <cite>py</cite>, <cite>px0</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.Tree.to_ultrametric">
@@ -1150,7 +1163,7 @@ too. For compatibility reasons, this is False by default.</p></li>
 <li class="toctree-l2"><a class="reference internal" href="reference_treeview.html">Treeview (qt graphics)</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../faqs.html">Frequently Asked Questions (FAQs)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs.html">Frequently Asked Questions</a></li>
 </ul>
 
 <div class="relations">
