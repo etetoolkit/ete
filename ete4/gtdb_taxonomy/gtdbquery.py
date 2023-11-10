@@ -473,11 +473,11 @@ class GTDBTaxa:
         """
         taxids = set()
         if taxid_attr == "taxid":
-            for n in t.traverse():
+            for n in t.leaves():
                 if taxid_attr in n.props:
                     taxids.add(n.props[taxid_attr])
         else:
-            for n in t.traverse():
+            for n in t.leaves():
                 try:
                     # translate gtdb name -> id
                     taxaname = getattr(n, taxid_attr, n.props.get(taxid_attr))
@@ -507,7 +507,10 @@ class GTDBTaxa:
         n2leaves = t.get_cached_content()
 
         for node in t.traverse('postorder'):
-            node_taxid = getattr(node, taxid_attr, node.props.get(taxid_attr))
+            if node.is_leaf:
+                node_taxid = getattr(node, taxid_attr, node.props.get(taxid_attr))
+            else:
+                node_taxid = None
             node.add_prop('taxid', node_taxid)
 
             if node_taxid:
