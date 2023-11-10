@@ -222,7 +222,7 @@ Layout tab contains most of the general settings of the tree visualization. It i
 
 - **tooltip on hover**, whether to show tooltip when mouse hover on the node. If *False*, tooltip will be shown on left-click. Default *False*.
 
-- **zoom around node**, If set to True, SmartView restricts the zoom-out level to maintain the node as the focal point, ensuring it remains clearly visible. The default setting is **True**.
+- **smart zoom**, If set to True, SmartView will adjust the horizontal and vertical zoom so that the current node under the cursor tends to occupy the full area. The default setting is **True**.
 
 - **zoom in aligned panel**, If set to True, users can zoom in the aligned panel for aligned node faces. The default setting is **False**.
 

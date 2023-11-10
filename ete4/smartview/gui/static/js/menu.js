@@ -84,7 +84,7 @@ function create_menu_basic(menu, trees) {
     menu.addInput(view.tooltip, "auto", { label: "tooltip on hover" });
 
     // zooms
-    menu.addInput(view, "smart_zoom", { label: "zoom around node" });
+    menu.addInput(view, "smart_zoom", { label: "smart zoom" });
 
     menu.addInput(view.aligned, "zoom", { label: "zoom in aligned panel" });
 
