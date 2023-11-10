@@ -262,17 +262,15 @@ their descendants can be retrieved as follows:</p>
 
 <span class="n">descendants</span> <span class="o">=</span> <span class="n">ncbi</span><span class="o">.</span><span class="n">get_descendant_taxa</span><span class="p">(</span><span class="s1">&#39;Homo&#39;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">ncbi</span><span class="o">.</span><span class="n">translate_to_names</span><span class="p">(</span><span class="n">descendants</span><span class="p">))</span>
-
-<span class="c1"># [&#39;Homo heidelbergensis&#39;, &#39;Homo sapiens ssp. Denisova&#39;,</span>
-<span class="c1"># &#39;Homo sapiens neanderthalensis&#39;]</span>
+<span class="c1"># [&#39;Homo sapiens neanderthalensis&#39;, &quot;Homo sapiens subsp. &#39;Denisova&#39;&quot;,</span>
+<span class="c1">#  &#39;Homo heidelbergensis&#39;, &#39;Homo sapiens environmental sample&#39;, &#39;Homo sp.&#39;]</span>
 
 <span class="c1"># You can easily ignore subspecies, so only taxa labeled as &quot;species&quot; will be reported:</span>
 <span class="n">descendants</span> <span class="o">=</span> <span class="n">ncbi</span><span class="o">.</span><span class="n">get_descendant_taxa</span><span class="p">(</span><span class="s1">&#39;Homo&#39;</span><span class="p">,</span> <span class="n">collapse_subspecies</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">ncbi</span><span class="o">.</span><span class="n">translate_to_names</span><span class="p">(</span><span class="n">descendants</span><span class="p">))</span>
+<span class="c1"># [&#39;Homo sapiens environmental sample&#39;, &#39;Homo sapiens&#39;, &#39;Homo heidelbergensis&#39;, &#39;Homo sp.&#39;]</span>
 
-<span class="c1"># [&#39;Homo sapiens&#39;, &#39;Homo heidelbergensis&#39;]</span>
-
-<span class="c1"># or even returned as an annotated tree</span>
+<span class="c1"># Or even returned as an annotated tree</span>
 <span class="n">tree</span> <span class="o">=</span> <span class="n">ncbi</span><span class="o">.</span><span class="n">get_descendant_taxa</span><span class="p">(</span><span class="s1">&#39;Homo&#39;</span><span class="p">,</span> <span class="n">collapse_subspecies</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">return_tree</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;sci_name&#39;</span><span class="p">,</span><span class="s1">&#39;taxid&#39;</span><span class="p">]))</span>
@@ -288,6 +286,7 @@ their descendants can be retrieved as follows:</p>
 <p>GTDB taxonomy example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">GTDBTaxa</span>
 <span class="n">gtdb</span> <span class="o">=</span> <span class="n">GTDBTaxa</span><span class="p">()</span>
+
 <span class="n">descendants</span> <span class="o">=</span> <span class="n">gtdb</span><span class="o">.</span><span class="n">get_descendant_taxa</span><span class="p">(</span><span class="s1">&#39;f__Thorarchaeaceae&#39;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">descendants</span><span class="p">)</span>
 <span class="c1"># [&#39;GB_GCA_003662765.1&#39;, &#39;GB_GCA_003662805.1&#39;, ..., &#39;GB_GCA_013138615.1&#39;]</span>
@@ -426,77 +425,75 @@ used name, lineage and rank translators.</p>
 extracted from leaf names. The parsing method can be easily adapted to
 any formatting</p>
 <p>Here are some examples using the NCBI taxonomic annotation.</p>
-<p>1)Using the whole leaf name as taxonomic identifier:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">PhyloTree</span>
-<span class="n">tree</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="s1">&#39;((9606, 9598), 10090);&#39;</span><span class="p">)</span>
-
-<span class="c1"># pass name as taxid identifier to annotate_ncbi_taxa</span>
-<span class="n">tax2names</span><span class="p">,</span> <span class="n">tax2lineages</span><span class="p">,</span> <span class="n">tax2rank</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">annotate_ncbi_taxa</span><span class="p">(</span><span class="n">taxid_attr</span><span class="o">=</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;sci_name&quot;</span><span class="p">,</span> <span class="s2">&quot;taxid&quot;</span><span class="p">]))</span>
-<span class="c1">#                                            ╭╴9606,Bacteriovorax stolpii,9606</span>
-<span class="c1">#               ╭╴⊗,Bdellovibrionota,3018035╶┤</span>
-<span class="c1"># ╴⊗,Bacteria,2╶┤                            ╰╴9598,Bdellovibrio bacteriovorus,9598</span>
-<span class="c1">#               │</span>
-<span class="c1">#               ╰╴10090,Ancylobacter aquaticus,10090</span>
-</pre></div>
-</div>
-<p>2)Using <cite>sp_naming_function</cite> to define <cite>species</cite> attribute for each node:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">PhyloTree</span>
-<span class="c1"># a) Load the whole leaf name as species attribute of each node.</span>
-<span class="n">tree</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="s1">&#39;((9606, 9598), 10090);&#39;</span><span class="p">,</span> <span class="n">sp_naming_function</span><span class="o">=</span><span class="k">lambda</span> <span class="n">name</span><span class="p">:</span> <span class="n">name</span><span class="p">)</span>
-
-<span class="c1"># pass `species` as taxid identifier to annotate_ncbi_taxa</span>
-<span class="n">tax2names</span><span class="p">,</span> <span class="n">tax2lineages</span><span class="p">,</span> <span class="n">tax2rank</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">annotate_ncbi_taxa</span><span class="p">(</span><span class="n">taxid_attr</span><span class="o">=</span><span class="s2">&quot;species&quot;</span><span class="p">)</span>
-
-<span class="c1"># Or annotate using only the name as taxid identifier.</span>
-<span class="n">tree</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="s1">&#39;((9606, 9598), 10090);&#39;</span><span class="p">)</span>
-<span class="n">tax2names</span><span class="p">,</span> <span class="n">tax2lineages</span><span class="p">,</span> <span class="n">tax2rank</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">annotate_ncbi_taxa</span><span class="p">(</span><span class="n">taxid_attr</span><span class="o">=</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;sci_name&quot;</span><span class="p">,</span> <span class="s2">&quot;taxid&quot;</span><span class="p">]))</span>
-<span class="c1">#                                                 ╭╴9606,Homo sapiens,9606</span>
-<span class="c1">#                            ╭╴⊗,Homininae,207598╶┤</span>
-<span class="c1"># ╴⊗,Euarchontoglires,314146╶┤                    ╰╴9598,Pan troglodytes,9598</span>
-<span class="c1">#                            │</span>
-<span class="c1">#                            ╰╴10090,Mus musculus,10090</span>
-
-
-<span class="c1"># b) Only take part of the leaf name as species attribute of each node.</span>
-<span class="c1"># Split names by &#39;|&#39; and return the first part as the species taxid.</span>
-<span class="n">tree</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="s1">&#39;((9606|protA, 9598|protA), 10090|protB);&#39;</span><span class="p">,</span> <span class="n">sp_naming_function</span><span class="o">=</span><span class="k">lambda</span> <span class="n">name</span><span class="p">:</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
-<span class="n">tax2names</span><span class="p">,</span> <span class="n">tax2lineages</span><span class="p">,</span> <span class="n">tax2rank</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">annotate_ncbi_taxa</span><span class="p">(</span><span class="n">taxid_attr</span><span class="o">=</span><span class="s2">&quot;species&quot;</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;sci_name&quot;</span><span class="p">,</span> <span class="s2">&quot;taxid&quot;</span><span class="p">]))</span>
-<span class="c1">#                                                 ╭╴9606|protA,Homo sapiens,9606</span>
-<span class="c1">#                            ╭╴⊗,Homininae,207598╶┤</span>
-<span class="c1"># ╴⊗,Euarchontoglires,314146╶┤                    ╰╴9598|protA,Pan troglodytes,9598</span>
-<span class="c1">#                            │</span>
-<span class="c1">#                            ╰╴10090|protB,Mus musculus,10090</span>
-</pre></div>
-</div>
-<p>3)Using custom property as taxid identifier:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">PhyloTree</span>
-
-<span class="n">tree</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="s1">&#39;((9606|protA, 9598|protA), 10090|protB);&#39;</span><span class="p">)</span>
-
-<span class="c1"># add custom property with namespace &quot;spcode&quot; to each node</span>
-<span class="n">tree</span><span class="p">[</span><span class="s1">&#39;9606|protA&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_prop</span><span class="p">(</span><span class="s2">&quot;spcode&quot;</span><span class="p">,</span> <span class="mi">9606</span><span class="p">)</span>
-<span class="n">tree</span><span class="p">[</span><span class="s1">&#39;9598|protA&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_prop</span><span class="p">(</span><span class="s2">&quot;spcode&quot;</span><span class="p">,</span> <span class="mi">9598</span><span class="p">)</span>
-<span class="n">tree</span><span class="p">[</span><span class="s1">&#39;10090|protB&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add_prop</span><span class="p">(</span><span class="s2">&quot;spcode&quot;</span><span class="p">,</span> <span class="mi">10090</span><span class="p">)</span>
-
-<span class="c1"># passing the custom property name as taxid identifier to annotate_ncbi_taxa</span>
-<span class="n">tax2names</span><span class="p">,</span> <span class="n">tax2lineages</span><span class="p">,</span> <span class="n">tax2rank</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">annotate_ncbi_taxa</span><span class="p">(</span><span class="n">taxid_attr</span><span class="o">=</span><span class="s2">&quot;spcode&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;sci_name&quot;</span><span class="p">,</span> <span class="s2">&quot;spcode&quot;</span><span class="p">]))</span>
-<span class="c1">#                                                             ╭╴9606|protA,Homo sapiens,9606</span>
-<span class="c1">#                                  ╭╴(empty),Homininae,207598╶┤</span>
-<span class="c1"># ╴(empty),Euarchontoglires,314146╶┤                          ╰╴9598|protA,Pan troglodytes,9598</span>
-<span class="c1">#                                  │</span>
-<span class="c1">#                                  ╰╴10090|protB,Mus musculus,10090</span>
-</pre></div>
-</div>
-<p>Similar to above examples but using the GTDB taxonomic annotation:</p>
+<ol class="arabic simple">
+<li><p>Using the whole leaf name as taxonomic identifier:</p></li>
+</ol>
+<blockquote>
+<div><p>from ete4 import PhyloTree
+tree = PhyloTree(‘((9606, 9598), 10090);’)</p>
+<p># pass name as taxid identifier to annotate_ncbi_taxa
+tax2names, tax2lineages, tax2rank = tree.annotate_ncbi_taxa(taxid_attr=”name”)
+print(tree.to_str(props=[“name”, “sci_name”, “taxid”]))
+#                                            ╭╴9606,Bacteriovorax stolpii,9606
+#               ╭╴⊗,Bdellovibrionota,3018035╶┤
+# ╴⊗,Bacteria,2╶┤                            ╰╴9598,Bdellovibrio bacteriovorus,9598
+#               │
+#               ╰╴10090,Ancylobacter aquaticus,10090</p>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li><p>Using <cite>sp_naming_function</cite> to define the <cite>species</cite> attribute for each node:</p></li>
+</ol>
+<blockquote>
+<div><p>from ete4 import PhyloTree</p>
+<p># a) Load the whole leaf name as species attribute of each node.
+tree = PhyloTree(‘((9606, 9598), 10090);’, sp_naming_function=lambda name: name)</p>
+<p># Pass <cite>species</cite> as taxid identifier to annotate_ncbi_taxa.
+tax2names, tax2lineages, tax2rank = tree.annotate_ncbi_taxa(taxid_attr=”species”)</p>
+<p># Or annotate using only the name as taxid identifier.
+tree = PhyloTree(‘((9606, 9598), 10090);’)
+tax2names, tax2lineages, tax2rank = tree.annotate_ncbi_taxa(taxid_attr=”name”)
+print(tree.to_str(props=[“name”, “sci_name”, “taxid”]))
+#                                                 ╭╴9606,Homo sapiens,9606
+#                            ╭╴⊗,Homininae,207598╶┤
+# ╴⊗,Euarchontoglires,314146╶┤                    ╰╴9598,Pan troglodytes,9598
+#                            │
+#                            ╰╴10090,Mus musculus,10090</p>
+<p># b) Only take part of the leaf name as species attribute of each node.
+# Split names by ‘|’ and return the first part as the species taxid.
+tree = PhyloTree(‘((9606|protA, 9598|protA), 10090|protB);’, sp_naming_function=lambda name: name.split(‘|’)[0])
+tax2names, tax2lineages, tax2rank = tree.annotate_ncbi_taxa(taxid_attr=”species”)</p>
+<p>print(tree.to_str(props=[“name”, “sci_name”, “taxid”]))
+#                                                 ╭╴9606|protA,Homo sapiens,9606
+#                            ╭╴⊗,Homininae,207598╶┤
+# ╴⊗,Euarchontoglires,314146╶┤                    ╰╴9598|protA,Pan troglodytes,9598
+#                            │
+#                            ╰╴10090|protB,Mus musculus,10090</p>
+</div></blockquote>
+<ol class="arabic simple" start="3">
+<li><p>Using custom property as taxid identifier:</p></li>
+</ol>
+<blockquote>
+<div><p>from ete4 import PhyloTree</p>
+<p>tree = PhyloTree(‘((9606|protA, 9598|protA), 10090|protB);’)</p>
+<p># add custom property with namespace “spcode” to each node
+tree[‘9606|protA’].add_prop(“spcode”, 9606)
+tree[‘9598|protA’].add_prop(“spcode”, 9598)
+tree[‘10090|protB’].add_prop(“spcode”, 10090)</p>
+<p># passing the custom property name as taxid identifier to annotate_ncbi_taxa
+tax2names, tax2lineages, tax2rank = tree.annotate_ncbi_taxa(taxid_attr=”spcode”)
+print(tree.to_str(props=[“name”, “sci_name”, “spcode”]))
+#                                                             ╭╴9606|protA,Homo sapiens,9606
+#                                  ╭╴(empty),Homininae,207598╶┤
+# ╴(empty),Euarchontoglires,314146╶┤                          ╰╴9598|protA,Pan troglodytes,9598
+#                                  │
+#                                  ╰╴10090|protB,Mus musculus,10090</p>
+</div></blockquote>
+<p>Similar to the above examples but using the GTDB taxonomic
+annotation:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">PhyloTree</span>
 <span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">GTDBTaxa</span>
 
-<span class="c1"># update gtdb taxonomy database</span>
+<span class="c1"># Update gtdb taxonomy database.</span>
 <span class="n">gtdb</span> <span class="o">=</span> <span class="n">GTDBTaxa</span><span class="p">()</span>
 <span class="n">gtdb</span><span class="o">.</span><span class="n">update_taxonomy_database</span><span class="p">()</span>
 
@@ -532,36 +529,36 @@ any formatting</p>
 <span class="n">tree</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="n">newick</span><span class="p">,</span>  <span class="n">sp_naming_function</span><span class="o">=</span><span class="k">lambda</span> <span class="n">name</span><span class="p">:</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
 <span class="n">tax2name</span><span class="p">,</span> <span class="n">tax2track</span><span class="p">,</span> <span class="n">tax2rank</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">annotate_gtdb_taxa</span><span class="p">(</span><span class="n">taxid_attr</span><span class="o">=</span><span class="s2">&quot;species&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;sci_name&#39;</span><span class="p">,</span> <span class="s1">&#39;rank&#39;</span><span class="p">]))</span>
-<span class="c1">#                                            ╭╴⊗,s__Korarchaeum cryptofilum,subspecies,⊗╶╌╴GB_GCA_020833055.1|protA,s__Korarchaeum cryptofilum,subspecies,GB_GCA_020833055.1</span>
-<span class="c1">#                                            │</span>
-<span class="c1"># ╴⊗,s__Korarchaeum cryptofilum,subspecies,⊗╶┼╴⊗,s__Korarchaeum cryptofilum,subspecies,⊗╶╌╴GB_GCA_003344655.1|protB,s__Korarchaeum cryptofilum,subspecies,GB_GCA_003344655.1</span>
-<span class="c1">#                                            │</span>
-<span class="c1">#                                            │                                           ╭╴RS_GCF_000019605.1|protC,s__Korarchaeum cryptofilum,subspecies,RS_GCF_000019605.1</span>
-<span class="c1">#                                            ╰╴⊗,s__Korarchaeum cryptofilum,subspecies,⊗╶┤</span>
-<span class="c1">#                                                                                        ╰╴RS_GCF_003948265.1|protD,s__Korarchaeum cryptofilum,subspecies,RS_GCF_003948265.1</span>
+<span class="c1">#                         ╭╴⊗,GB_GCA_020833055.1,subspecies╶╌╴GB_GCA_020833055.1|protA,s__Korarchaeum sp020833055,subspecies</span>
+<span class="c1">#                         │</span>
+<span class="c1"># ╴⊗,g__Korarchaeum,genus╶┼╴⊗,GB_GCA_003344655.1,subspecies╶╌╴GB_GCA_003344655.1|protB,s__Korarchaeum sp003344655,subspecies</span>
+<span class="c1">#                         │</span>
+<span class="c1">#                         │                                      ╭╴RS_GCF_000019605.1|protC,s__Korarchaeum cryptofilum,subspecies</span>
+<span class="c1">#                         ╰╴⊗,s__Korarchaeum cryptofilum,species╶┤</span>
+<span class="c1">#                                                                ╰╴RS_GCF_003948265.1|protD,s__Korarchaeum cryptofilum,subspecies</span>
 
-<span class="c1"># using custom property as taxid identifier</span>
+<span class="c1"># Using custom property as taxid identifier:</span>
 <span class="n">newick</span> <span class="o">=</span> <span class="s1">&#39;((protA:1),(protB:1):1,(protC:1,protD:1):1):1;&#39;</span>
 <span class="n">tree</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="n">newick</span><span class="p">)</span>
 <span class="n">annotate_dict</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s1">&#39;protA&#39;</span><span class="p">:</span> <span class="s1">&#39;GB_GCA_020833055.1&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;protB&#39;</span><span class="p">:</span> <span class="s1">&#39;GB_GCA_003344655.1&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;protC&#39;</span><span class="p">:</span> <span class="s1">&#39;RS_GCF_000019605.1&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;protD&#39;</span><span class="p">:</span> <span class="s1">&#39;RS_GCF_003948265.1&#39;</span><span class="p">,</span>
-        <span class="p">}</span>
+    <span class="s1">&#39;protA&#39;</span><span class="p">:</span> <span class="s1">&#39;GB_GCA_020833055.1&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;protB&#39;</span><span class="p">:</span> <span class="s1">&#39;GB_GCA_003344655.1&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;protC&#39;</span><span class="p">:</span> <span class="s1">&#39;RS_GCF_000019605.1&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;protD&#39;</span><span class="p">:</span> <span class="s1">&#39;RS_GCF_003948265.1&#39;</span><span class="p">,</span>
+<span class="p">}</span>
 
 <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">annotate_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
     <span class="n">tree</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">add_prop</span><span class="p">(</span><span class="s1">&#39;gtdb_spcode&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
 
 <span class="n">tax2name</span><span class="p">,</span> <span class="n">tax2track</span><span class="p">,</span> <span class="n">tax2rank</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">annotate_gtdb_taxa</span><span class="p">(</span><span class="n">taxid_attr</span><span class="o">=</span><span class="s2">&quot;gtdb_spcode&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;sci_name&#39;</span><span class="p">,</span> <span class="s1">&#39;rank&#39;</span><span class="p">]))</span>
-<span class="c1">#                                          ╭╴⊗,s__Korarchaeum cryptofilum,subspecies╶╌╴protA,s__Korarchaeum cryptofilum,subspecies</span>
-<span class="c1">#                                          │</span>
-<span class="c1"># ╴⊗,s__Korarchaeum cryptofilum,subspecies╶┼╴⊗,s__Korarchaeum cryptofilum,subspecies╶╌╴protB,s__Korarchaeum cryptofilum,subspecies</span>
-<span class="c1">#                                          │</span>
-<span class="c1">#                                          │                                         ╭╴protC,s__Korarchaeum cryptofilum,subspecies</span>
-<span class="c1">#                                          ╰╴⊗,s__Korarchaeum cryptofilum,subspecies╶┤</span>
-<span class="c1">#                                                                                    ╰╴protD,s__Korarchaeum cryptofilum,subspecies</span>
+<span class="c1">#                         ╭╴⊗,GB_GCA_020833055.1,subspecies╶╌╴protA,s__Korarchaeum sp020833055,subspecies</span>
+<span class="c1">#                         │</span>
+<span class="c1"># ╴⊗,g__Korarchaeum,genus╶┼╴⊗,GB_GCA_003344655.1,subspecies╶╌╴protB,s__Korarchaeum sp003344655,subspecies</span>
+<span class="c1">#                         │</span>
+<span class="c1">#                         │                                      ╭╴protC,s__Korarchaeum cryptofilum,subspecies</span>
+<span class="c1">#                         ╰╴⊗,s__Korarchaeum cryptofilum,species╶┤</span>
+<span class="c1">#                                                                ╰╴protD,s__Korarchaeum cryptofilum,subspecies</span>
 </pre></div>
 </div>
 </section>
@@ -587,7 +584,6 @@ any formatting</p>
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../faqs.html">Frequently Asked Questions (FAQs)</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorial</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="tutorial_trees.html">Working with the Tree structure</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial_phylogeny.html">Phylogenetic trees</a></li>
@@ -597,6 +593,7 @@ any formatting</p>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs.html">Frequently Asked Questions (FAQs)</a></li>
 </ul>
 
 <div class="relations">

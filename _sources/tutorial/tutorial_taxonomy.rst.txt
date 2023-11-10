@@ -195,6 +195,7 @@ Like NCBITaxa, GTDBTaxa contains similar methods:
    GTDBTaxa.translate_to_names
    GTDBTaxa.get_name_lineage
 
+
 Getting descendant taxa
 -----------------------
 
@@ -208,17 +209,15 @@ NCBI taxonomy example::
 
   descendants = ncbi.get_descendant_taxa('Homo')
   print(ncbi.translate_to_names(descendants))
-
-  # ['Homo heidelbergensis', 'Homo sapiens ssp. Denisova',
-  # 'Homo sapiens neanderthalensis']
+  # ['Homo sapiens neanderthalensis', "Homo sapiens subsp. 'Denisova'",
+  #  'Homo heidelbergensis', 'Homo sapiens environmental sample', 'Homo sp.']
 
   # You can easily ignore subspecies, so only taxa labeled as "species" will be reported:
   descendants = ncbi.get_descendant_taxa('Homo', collapse_subspecies=True)
   print(ncbi.translate_to_names(descendants))
+  # ['Homo sapiens environmental sample', 'Homo sapiens', 'Homo heidelbergensis', 'Homo sp.']
 
-  # ['Homo sapiens', 'Homo heidelbergensis']
-
-  # or even returned as an annotated tree
+  # Or even returned as an annotated tree
   tree = ncbi.get_descendant_taxa('Homo', collapse_subspecies=True, return_tree=True)
 
   print(tree.to_str(props=['sci_name','taxid']))
@@ -234,6 +233,7 @@ GTDB taxonomy example::
 
   from ete4 import GTDBTaxa
   gtdb = GTDBTaxa()
+
   descendants = gtdb.get_descendant_taxa('f__Thorarchaeaceae')
   print(descendants)
   # ['GB_GCA_003662765.1', 'GB_GCA_003662805.1', ..., 'GB_GCA_013138615.1']
@@ -377,8 +377,8 @@ any formatting
 
 Here are some examples using the NCBI taxonomic annotation.
 
-1)Using the whole leaf name as taxonomic identifier::
-  
+1) Using the whole leaf name as taxonomic identifier::
+
   from ete4 import PhyloTree
   tree = PhyloTree('((9606, 9598), 10090);')
 
@@ -391,14 +391,15 @@ Here are some examples using the NCBI taxonomic annotation.
   #               │
   #               ╰╴10090,Ancylobacter aquaticus,10090
 
-2)Using `sp_naming_function` to define `species` attribute for each node::
-  
+2) Using `sp_naming_function` to define the `species` attribute for each node::
+
   from ete4 import PhyloTree
+
   # a) Load the whole leaf name as species attribute of each node.
   tree = PhyloTree('((9606, 9598), 10090);', sp_naming_function=lambda name: name)
 
-  # pass `species` as taxid identifier to annotate_ncbi_taxa
-  tax2names, tax2lineages, tax2rank = tree.annotate_ncbi_taxa(taxid_attr="species") 
+  # Pass `species` as taxid identifier to annotate_ncbi_taxa.
+  tax2names, tax2lineages, tax2rank = tree.annotate_ncbi_taxa(taxid_attr="species")
 
   # Or annotate using only the name as taxid identifier.
   tree = PhyloTree('((9606, 9598), 10090);')
@@ -423,7 +424,7 @@ Here are some examples using the NCBI taxonomic annotation.
   #                            │
   #                            ╰╴10090|protB,Mus musculus,10090
 
-3)Using custom property as taxid identifier::
+3) Using custom property as taxid identifier::
 
   from ete4 import PhyloTree
 
@@ -443,15 +444,16 @@ Here are some examples using the NCBI taxonomic annotation.
   #                                  │
   #                                  ╰╴10090|protB,Mus musculus,10090
 
-Similar to above examples but using the GTDB taxonomic annotation::
+Similar to the above examples but using the GTDB taxonomic
+annotation::
 
   from ete4 import PhyloTree
   from ete4 import GTDBTaxa
-  
-  # update gtdb taxonomy database 
+
+  # Update gtdb taxonomy database.
   gtdb = GTDBTaxa()
   gtdb.update_taxonomy_database()
-  
+
   # Load the whole leaf name as species taxid.
   newick = '((p__Huberarchaeota,f__Korarchaeaceae)d__Archaea,o__Peptococcales);'
   tree = PhyloTree(newick)
@@ -468,7 +470,7 @@ Similar to above examples but using the GTDB taxonomic annotation::
   newick = '((GB_GCA_020833055.1),(GB_GCA_003344655.1),(RS_GCF_000019605.1,RS_GCF_003948265.1));'
   tree = PhyloTree(newick,  sp_naming_function=lambda name: name)
   tax2name, tax2track, tax2rank = tree.annotate_gtdb_taxa(taxid_attr="species")
-  
+
   print(tree.to_str(props=['name', 'sci_name', 'rank']))
   #                         ╭╴⊗,GB_GCA_020833055.1,subspecies╶╌╴GB_GCA_020833055.1,s__Korarchaeum sp020833055,subspecies
   #                         │
@@ -484,33 +486,33 @@ Similar to above examples but using the GTDB taxonomic annotation::
   tree = PhyloTree(newick,  sp_naming_function=lambda name: name.split('|')[0])
   tax2name, tax2track, tax2rank = tree.annotate_gtdb_taxa(taxid_attr="species")
   print(tree.to_str(props=['name', 'sci_name', 'rank']))
-  #                                            ╭╴⊗,s__Korarchaeum cryptofilum,subspecies,⊗╶╌╴GB_GCA_020833055.1|protA,s__Korarchaeum cryptofilum,subspecies,GB_GCA_020833055.1
-  #                                            │
-  # ╴⊗,s__Korarchaeum cryptofilum,subspecies,⊗╶┼╴⊗,s__Korarchaeum cryptofilum,subspecies,⊗╶╌╴GB_GCA_003344655.1|protB,s__Korarchaeum cryptofilum,subspecies,GB_GCA_003344655.1
-  #                                            │
-  #                                            │                                           ╭╴RS_GCF_000019605.1|protC,s__Korarchaeum cryptofilum,subspecies,RS_GCF_000019605.1
-  #                                            ╰╴⊗,s__Korarchaeum cryptofilum,subspecies,⊗╶┤
-  #                                                                                        ╰╴RS_GCF_003948265.1|protD,s__Korarchaeum cryptofilum,subspecies,RS_GCF_003948265.1
-  
-  # using custom property as taxid identifier
+  #                         ╭╴⊗,GB_GCA_020833055.1,subspecies╶╌╴GB_GCA_020833055.1|protA,s__Korarchaeum sp020833055,subspecies
+  #                         │
+  # ╴⊗,g__Korarchaeum,genus╶┼╴⊗,GB_GCA_003344655.1,subspecies╶╌╴GB_GCA_003344655.1|protB,s__Korarchaeum sp003344655,subspecies
+  #                         │
+  #                         │                                      ╭╴RS_GCF_000019605.1|protC,s__Korarchaeum cryptofilum,subspecies
+  #                         ╰╴⊗,s__Korarchaeum cryptofilum,species╶┤
+  #                                                                ╰╴RS_GCF_003948265.1|protD,s__Korarchaeum cryptofilum,subspecies
+
+  # Using custom property as taxid identifier:
   newick = '((protA:1),(protB:1):1,(protC:1,protD:1):1):1;'
   tree = PhyloTree(newick)
   annotate_dict = {
-          'protA': 'GB_GCA_020833055.1', 
-          'protB': 'GB_GCA_003344655.1',
-          'protC': 'RS_GCF_000019605.1',
-          'protD': 'RS_GCF_003948265.1',
-          }
+      'protA': 'GB_GCA_020833055.1',
+      'protB': 'GB_GCA_003344655.1',
+      'protC': 'RS_GCF_000019605.1',
+      'protD': 'RS_GCF_003948265.1',
+  }
 
   for key, value in annotate_dict.items():
       tree[key].add_prop('gtdb_spcode', value)
 
   tax2name, tax2track, tax2rank = tree.annotate_gtdb_taxa(taxid_attr="gtdb_spcode")
   print(tree.to_str(props=['name', 'sci_name', 'rank']))
-  #                                          ╭╴⊗,s__Korarchaeum cryptofilum,subspecies╶╌╴protA,s__Korarchaeum cryptofilum,subspecies
-  #                                          │
-  # ╴⊗,s__Korarchaeum cryptofilum,subspecies╶┼╴⊗,s__Korarchaeum cryptofilum,subspecies╶╌╴protB,s__Korarchaeum cryptofilum,subspecies
-  #                                          │
-  #                                          │                                         ╭╴protC,s__Korarchaeum cryptofilum,subspecies
-  #                                          ╰╴⊗,s__Korarchaeum cryptofilum,subspecies╶┤
-  #                                                                                    ╰╴protD,s__Korarchaeum cryptofilum,subspecies
+  #                         ╭╴⊗,GB_GCA_020833055.1,subspecies╶╌╴protA,s__Korarchaeum sp020833055,subspecies
+  #                         │
+  # ╴⊗,g__Korarchaeum,genus╶┼╴⊗,GB_GCA_003344655.1,subspecies╶╌╴protB,s__Korarchaeum sp003344655,subspecies
+  #                         │
+  #                         │                                      ╭╴protC,s__Korarchaeum cryptofilum,subspecies
+  #                         ╰╴⊗,s__Korarchaeum cryptofilum,species╶┤
+  #                                                                ╰╴protD,s__Korarchaeum cryptofilum,subspecies
