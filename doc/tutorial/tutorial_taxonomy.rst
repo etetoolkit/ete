@@ -99,12 +99,13 @@ NCBI taxonomy
 You can fetch species names, ranks and linage track information for
 your taxids using the following methods:
 
+.. autosummary::
 
-- NCBITaxa.get_rank()
-- NCBITaxa.get_lineage()
-- NCBITaxa.get_taxid_translator()
-- NCBITaxa.get_name_translator()
-- NCBITaxa.translate_to_names()
+   NCBITaxa.get_rank
+   NCBITaxa.get_lineage
+   NCBITaxa.get_taxid_translator
+   NCBITaxa.get_name_translator
+   NCBITaxa.translate_to_names
 
 The so called get-translator functions will return a dictionary
 converting between taxids and species names. Either species or linage
@@ -185,12 +186,14 @@ fetch and relate taxonomic information.
 
 Like NCBITaxa, GTDBTaxa contains similar methods:
 
-- GTDBTaxa.get_rank()
-- GTDBTaxa.get_lineage()
-- GTDBTaxa.get_taxid_translator()
-- GTDBTaxa.get_name_translator()
-- GTDBTaxa.translate_to_names()
-- GTDBTaxa.get_name_lineage()
+.. autosummary::
+
+  GTDBTaxa.get_rank
+  GTDBTaxa.get_lineage
+  GTDBTaxa.get_taxid_translator
+  GTDBTaxa.get_name_translator
+  GTDBTaxa.translate_to_names
+  GTDBTaxa.get_name_lineage
 
 Getting descendant taxa
 -----------------------
