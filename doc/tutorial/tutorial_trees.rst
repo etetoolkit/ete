@@ -1078,6 +1078,7 @@ manipulate the topology of a tree:
 
    Tree.populate
    Tree.add_child
+   Tree.add_sister
    Tree.delete
    Tree.detach
 
