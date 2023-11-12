@@ -395,10 +395,11 @@ cdef class Tree(object):
 
         return child
 
-    def add_children(self, children):
-        for child in children:
-            self.add_child(child)
-        return children
+    def add_children(self, nodes):
+        """Set the given nodes as children of this node."""
+        for node in nodes:
+            self.add_child(node)
+        return nodes
 
     def pop_child(self, child_idx=-1):
         try:
