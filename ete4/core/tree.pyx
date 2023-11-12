@@ -419,13 +419,16 @@ cdef class Tree(object):
         but are no longer connected.
         """
         try:
+            if type(child) == str:  # translate into a node
+                child = next(n for n in self.children if n.name == child)
+
             self.children.remove(child)  # parent removes child
 
             if child.up == self:  # (it may point to another already!)
                 child.up = None  # child removes parent
 
             return child
-        except ValueError as e:
+        except (StopIteration, ValueError) as e:
             raise TreeError(f'Cannot remove child: not found ({e})')
 
     def remove_children(self):
