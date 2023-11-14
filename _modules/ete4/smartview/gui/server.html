@@ -50,6 +50,7 @@
 <span class="kn">import</span> <span class="nn">platform</span>
 <span class="kn">from</span> <span class="nn">subprocess</span> <span class="kn">import</span> <span class="n">Popen</span><span class="p">,</span> <span class="n">DEVNULL</span>
 <span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Thread</span>
+<span class="kn">import</span> <span class="nn">socket</span>
 <span class="kn">from</span> <span class="nn">importlib</span> <span class="kn">import</span> <span class="n">reload</span> <span class="k">as</span> <span class="n">module_reload</span>
 <span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">pi</span><span class="p">,</span> <span class="n">inf</span>
 <span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span><span class="p">,</span> <span class="n">sleep</span>
@@ -1601,12 +1602,19 @@
     <span class="c1"># TODO: Do we need to do this? (Maybe for the trees uploaded with a POST)</span>
     <span class="c1"># ops.update_sizes_all(t)</span>
 
-    <span class="n">tree_data</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">trees</span><span class="p">[</span><span class="n">tid</span><span class="p">]</span>
+    <span class="c1"># Initialize the tree_data.</span>
+    <span class="n">tree_data</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">trees</span><span class="p">[</span><span class="n">tid</span><span class="p">]</span> <span class="o">=</span> <span class="n">TreeData</span><span class="p">()</span>
     <span class="n">tree_data</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
-    <span class="n">tree_data</span><span class="o">.</span><span class="n">tree</span> <span class="o">=</span> <span class="n">tree</span>
-    <span class="n">tree_data</span><span class="o">.</span><span class="n">layouts</span> <span class="o">=</span> <span class="n">retrieve_layouts</span><span class="p">(</span><span class="n">layouts</span><span class="p">)</span>
+    <span class="n">tree_data</span><span class="o">.</span><span class="n">style</span> <span class="o">=</span> <span class="n">copy_style</span><span class="p">(</span><span class="n">TreeStyle</span><span class="p">())</span>
+    <span class="n">tree_data</span><span class="o">.</span><span class="n">nodestyles</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">tree_data</span><span class="o">.</span><span class="n">include_props</span> <span class="o">=</span> <span class="n">include_props</span>
     <span class="n">tree_data</span><span class="o">.</span><span class="n">exclude_props</span> <span class="o">=</span> <span class="n">exclude_props</span>
+    <span class="n">tree_data</span><span class="o">.</span><span class="n">layouts</span> <span class="o">=</span> <span class="n">retrieve_layouts</span><span class="p">(</span><span class="n">layouts</span><span class="p">)</span>
+    <span class="n">tree_data</span><span class="o">.</span><span class="n">timer</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+    <span class="n">tree_data</span><span class="o">.</span><span class="n">searches</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">tree_data</span><span class="o">.</span><span class="n">selected</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">tree_data</span><span class="o">.</span><span class="n">active</span> <span class="o">=</span> <span class="n">drawer_module</span><span class="o">.</span><span class="n">get_empty_active</span><span class="p">()</span>
+    <span class="n">tree_data</span><span class="o">.</span><span class="n">tree</span> <span class="o">=</span> <span class="n">tree</span>
 
     <span class="k">def</span> <span class="nf">write_tree</span><span class="p">():</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Write tree data as a temporary pickle file.&quot;&quot;&quot;</span>
@@ -1615,8 +1623,6 @@
             <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">handle</span><span class="p">)</span>
     <span class="n">thr_write</span> <span class="o">=</span> <span class="n">Thread</span><span class="p">(</span><span class="n">daemon</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">write_tree</span><span class="p">)</span>  <span class="c1"># so we are not delayed</span>
     <span class="n">thr_write</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>                                   <span class="c1"># by big trees</span>
-
-    <span class="n">app</span><span class="o">.</span><span class="n">trees</span><span class="p">[</span><span class="n">tid</span><span class="p">]</span><span class="o">.</span><span class="n">timer</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
 
     <span class="k">return</span> <span class="n">tid</span></div>
 
@@ -1798,18 +1804,7 @@
     <span class="n">app</span><span class="o">.</span><span class="n">default_layouts</span><span class="p">,</span> <span class="n">app</span><span class="o">.</span><span class="n">avail_layouts</span> <span class="o">=</span> <span class="n">get_layouts</span><span class="p">(</span><span class="n">layouts</span><span class="p">)</span>
 
     <span class="c1"># Dict containing TreeData dataclasses with tree info</span>
-    <span class="n">app</span><span class="o">.</span><span class="n">trees</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">TreeData</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="s1">&#39;tree&#39;</span><span class="p">,</span>
-        <span class="n">style</span><span class="o">=</span><span class="n">copy_style</span><span class="p">(</span><span class="n">TreeStyle</span><span class="p">()),</span>
-        <span class="n">nodestyles</span><span class="o">=</span><span class="p">{},</span>
-        <span class="n">include_props</span><span class="o">=</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">include_props</span><span class="p">),</span>
-        <span class="n">exclude_props</span><span class="o">=</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">exclude_props</span><span class="p">),</span>
-        <span class="n">layouts</span><span class="o">=</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">default_layouts</span><span class="p">),</span>
-        <span class="n">timer</span><span class="o">=</span><span class="n">time</span><span class="p">(),</span>
-        <span class="n">searches</span><span class="o">=</span><span class="p">{},</span>
-        <span class="n">selected</span><span class="o">=</span><span class="p">{},</span>
-        <span class="n">active</span><span class="o">=</span><span class="n">drawer_module</span><span class="o">.</span><span class="n">get_empty_active</span><span class="p">(),</span>
-    <span class="p">))</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">trees</span> <span class="o">=</span> <span class="p">{}</span>
 
     <span class="n">thread_maintenance</span> <span class="o">=</span> <span class="n">Thread</span><span class="p">(</span><span class="n">daemon</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">maintenance</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">app</span><span class="p">,))</span>
     <span class="n">thread_maintenance</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
@@ -1823,13 +1818,29 @@
 <a class="viewcode-back" href="../../../../reference/reference_smartview.html#ete4.smartview.gui.server.run_smartview">[docs]</a>
 <span class="k">def</span> <span class="nf">run_smartview</span><span class="p">(</span><span class="n">tree</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">layouts</span><span class="o">=</span><span class="p">[],</span>
                   <span class="n">include_props</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">exclude_props</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                  <span class="n">safe_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s1">&#39;localhost&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">quiet</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                  <span class="n">safe_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s1">&#39;localhost&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">quiet</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                   <span class="n">compress</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">keep_server</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">open_browser</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="k">global</span> <span class="n">app</span>
+
+    <span class="c1"># If we try to show a tree that we already have, do not initialize again.</span>
+    <span class="k">if</span> <span class="n">app</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">tid</span><span class="p">,</span> <span class="n">tree_data</span> <span class="ow">in</span> <span class="n">app</span><span class="o">.</span><span class="n">trees</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">tree_data</span><span class="o">.</span><span class="n">tree</span> <span class="ow">is</span> <span class="n">tree</span><span class="p">:</span>
+                <span class="n">app</span><span class="o">.</span><span class="n">default_layouts</span><span class="p">,</span> <span class="n">app</span><span class="o">.</span><span class="n">avail_layouts</span> <span class="o">=</span> <span class="n">get_layouts</span><span class="p">(</span><span class="n">layouts</span><span class="p">)</span>
+                <span class="n">tree_data</span><span class="o">.</span><span class="n">layouts</span> <span class="o">=</span> <span class="n">retrieve_layouts</span><span class="p">([])</span>
+                <span class="n">tree_data</span><span class="o">.</span><span class="n">initialized</span> <span class="o">=</span> <span class="kc">False</span>
+
+                <span class="k">if</span> <span class="n">open_browser</span><span class="p">:</span>
+                    <span class="n">_</span><span class="p">,</span> <span class="n">listening_port</span> <span class="o">=</span> <span class="n">g_threads</span><span class="p">[</span><span class="s1">&#39;webserver&#39;</span><span class="p">]</span>
+                    <span class="n">open_browser_window</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">listening_port</span><span class="p">)</span>
+
+                <span class="c1"># All this is kind of a hack.</span>
+                <span class="k">return</span>
+
     <span class="c1"># Set tree_name to None if no tree was provided</span>
     <span class="c1"># Generate tree_name if none was provided</span>
     <span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="ow">or</span> <span class="p">(</span><span class="n">make_name</span><span class="p">()</span> <span class="k">if</span> <span class="n">tree</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
 
-    <span class="k">global</span> <span class="n">app</span>
     <span class="n">app</span> <span class="o">=</span> <span class="n">initialize</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">layouts</span><span class="p">,</span>
                      <span class="n">include_props</span><span class="o">=</span><span class="n">include_props</span><span class="p">,</span> <span class="n">exclude_props</span><span class="o">=</span><span class="n">exclude_props</span><span class="p">,</span>
                      <span class="n">safe_mode</span><span class="o">=</span><span class="n">safe_mode</span><span class="p">,</span> <span class="n">compress</span><span class="o">=</span><span class="n">compress</span><span class="p">)</span>
@@ -1850,16 +1861,37 @@
         <span class="n">tid</span> <span class="o">=</span> <span class="n">add_tree</span><span class="p">(</span><span class="n">tree_data</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Added tree </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1"> with id </span><span class="si">{</span><span class="n">tid</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">open_browser</span><span class="p">:</span>
-        <span class="n">open_browser_window</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
-
     <span class="k">if</span> <span class="s1">&#39;webserver&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">g_threads</span><span class="p">:</span>
+        <span class="n">port</span> <span class="o">=</span> <span class="n">port</span> <span class="ow">or</span> <span class="n">get_next_available_port</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="n">port</span><span class="p">,</span> <span class="s1">&#39;could not find any port available&#39;</span>
+
         <span class="n">thread_webserver</span> <span class="o">=</span> <span class="n">Thread</span><span class="p">(</span>
             <span class="n">daemon</span><span class="o">=</span><span class="ow">not</span> <span class="n">keep_server</span><span class="p">,</span>  <span class="c1"># the server persists if it&#39;s not a daemon</span>
             <span class="n">target</span><span class="o">=</span><span class="n">run</span><span class="p">,</span>
             <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;quiet&#39;</span><span class="p">:</span> <span class="n">quiet</span><span class="p">,</span> <span class="s1">&#39;host&#39;</span><span class="p">:</span> <span class="n">host</span><span class="p">,</span> <span class="s1">&#39;port&#39;</span><span class="p">:</span> <span class="n">port</span><span class="p">})</span>
+
         <span class="n">thread_webserver</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-        <span class="n">g_threads</span><span class="p">[</span><span class="s1">&#39;webserver&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">thread_webserver</span></div>
+
+        <span class="n">g_threads</span><span class="p">[</span><span class="s1">&#39;webserver&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">thread_webserver</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">open_browser</span><span class="p">:</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">listening_port</span> <span class="o">=</span> <span class="n">g_threads</span><span class="p">[</span><span class="s1">&#39;webserver&#39;</span><span class="p">]</span>
+        <span class="n">open_browser_window</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">listening_port</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_next_available_port">
+<a class="viewcode-back" href="../../../../reference/reference_smartview.html#ete4.smartview.gui.server.get_next_available_port">[docs]</a>
+<span class="k">def</span> <span class="nf">get_next_available_port</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s1">&#39;localhost&#39;</span><span class="p">,</span> <span class="n">port_min</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">port_max</span><span class="o">=</span><span class="mi">6000</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the next available port where we can put a server socket.&quot;&quot;&quot;</span>
+    <span class="n">sock</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">port_min</span><span class="p">,</span> <span class="n">port_max</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">sock</span><span class="o">.</span><span class="n">bind</span><span class="p">((</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">))</span>  <span class="c1"># try to bind to the specified port</span>
+            <span class="n">sock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">port</span>
+        <span class="k">except</span> <span class="n">socket</span><span class="o">.</span><span class="n">error</span><span class="p">:</span>
+            <span class="k">pass</span></div>
 
 
 
@@ -1900,7 +1932,12 @@
 <span class="k">def</span> <span class="nf">open_browser_window</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Try to open a browser window in a different process.&quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">command</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Linux&#39;</span><span class="p">:</span> <span class="s1">&#39;xdg-open&#39;</span><span class="p">,</span> <span class="s1">&#39;Darwin&#39;</span><span class="p">:</span> <span class="s1">&#39;open&#39;</span><span class="p">}[</span><span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()]</span>
+        <span class="n">system</span> <span class="o">=</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span>
+
+        <span class="n">host</span> <span class="o">=</span> <span class="n">host</span> <span class="k">if</span> <span class="n">host</span> <span class="o">!=</span> <span class="s1">&#39;localhost&#39;</span> <span class="ow">or</span> <span class="n">system</span> <span class="o">!=</span> <span class="s1">&#39;Darwin&#39;</span> <span class="k">else</span> <span class="s1">&#39;127.0.0.1&#39;</span>
+
+        <span class="n">command</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Linux&#39;</span><span class="p">:</span> <span class="s1">&#39;xdg-open&#39;</span><span class="p">,</span> <span class="s1">&#39;Darwin&#39;</span><span class="p">:</span> <span class="s1">&#39;open&#39;</span><span class="p">}[</span><span class="n">system</span><span class="p">]</span>
+
         <span class="n">Popen</span><span class="p">([</span><span class="n">command</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;http://</span><span class="si">{</span><span class="n">host</span><span class="si">}</span><span class="s1">:</span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">],</span>
               <span class="n">stdout</span><span class="o">=</span><span class="n">DEVNULL</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">DEVNULL</span><span class="p">)</span>
     <span class="k">except</span> <span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">FileNotFoundError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
