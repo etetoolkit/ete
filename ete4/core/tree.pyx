@@ -1118,7 +1118,7 @@ cdef class Tree(object):
     def explore(self, name=None, layouts=None, show_leaf_name=True,
                 show_branch_length=True, show_branch_support=True,
                 include_props=('name', 'dist'), exclude_props=None,
-                host='localhost', port=5000, quiet=True,
+                host='localhost', port=None, quiet=True,
                 compress=False, keep_server=False, open_browser=True):
         """Launch an interactive smartview session to visualize the tree.
 
@@ -1129,6 +1129,8 @@ cdef class Tree(object):
         :param list include_props: Properties to show in the nodes popup.
             If None, show all.
         :param list exclude_props: Properties to exclude from the nodes popup.
+        :param port: Server listening port. If None, use next
+            available port >= 5000.
         """
         from ..smartview.gui.server import run_smartview
 

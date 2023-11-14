@@ -17,6 +17,7 @@ import re
 import platform
 from subprocess import Popen, DEVNULL
 from threading import Thread
+import socket
 from importlib import reload as module_reload
 from math import pi, inf
 from time import time, sleep
@@ -1629,16 +1630,34 @@ def run_smartview(tree=None, name=None, layouts=[],
         tid = add_tree(tree_data)
         print(f'Added tree {name} with id {tid}.')
 
-    if open_browser:
-        open_browser_window(host, port)
-
     if 'webserver' not in g_threads:
+        port = port or get_next_available_port()
+        assert port, 'could not find any port available'
+
         thread_webserver = Thread(
             daemon=not keep_server,  # the server persists if it's not a daemon
             target=run,
             kwargs={'quiet': quiet, 'host': host, 'port': port})
+
         thread_webserver.start()
-        g_threads['webserver'] = thread_webserver
+
+        g_threads['webserver'] = (thread_webserver, port)
+
+    if open_browser:
+        _, listening_port = g_threads['webserver']
+        open_browser_window(host, listening_port)
+
+
+def get_next_available_port(host='localhost', port_min=5000, port_max=6000):
+    """Return the next available port where we can put a server socket."""
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    for port in range(port_min, port_max):
+        try:
+            sock.bind((host, port))  # try to bind to the specified port
+            sock.close()
+            return port
+        except socket.error:
+            pass
 
 
 def maintenance(app, check_interval=60, max_time=30*60):
