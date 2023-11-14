@@ -1670,7 +1670,12 @@ def make_name():
 def open_browser_window(host, port):
     """Try to open a browser window in a different process."""
     try:
-        command = {'Linux': 'xdg-open', 'Darwin': 'open'}[platform.system()]
+        system = platform.system()
+
+        host = host if host != 'localhost' or system != 'Darwin' else '127.0.0.1'
+
+        command = {'Linux': 'xdg-open', 'Darwin': 'open'}[system]
+
         Popen([command, f'http://{host}:{port}'],
               stdout=DEVNULL, stderr=DEVNULL)
     except (KeyError, FileNotFoundError) as e:
