@@ -1414,12 +1414,19 @@ def add_tree(data):
     # TODO: Do we need to do this? (Maybe for the trees uploaded with a POST)
     # ops.update_sizes_all(t)
 
-    tree_data = app.trees[tid]
+    # Initialize the tree_data.
+    tree_data = app.trees[tid] = TreeData()
     tree_data.name = name
-    tree_data.tree = tree
-    tree_data.layouts = retrieve_layouts(layouts)
+    tree_data.style = copy_style(TreeStyle())
+    tree_data.nodestyles = {}
     tree_data.include_props = include_props
     tree_data.exclude_props = exclude_props
+    tree_data.layouts = retrieve_layouts(layouts)
+    tree_data.timer = time()
+    tree_data.searches = {}
+    tree_data.selected = {}
+    tree_data.active = drawer_module.get_empty_active()
+    tree_data.tree = tree
 
     def write_tree():
         """Write tree data as a temporary pickle file."""
@@ -1428,8 +1435,6 @@ def add_tree(data):
             pickle.dump(obj, handle)
     thr_write = Thread(daemon=True, target=write_tree)  # so we are not delayed
     thr_write.start()                                   # by big trees
-
-    app.trees[tid].timer = time()
 
     return tid
 
@@ -1581,18 +1586,7 @@ def initialize(tree=None, layouts=None,
     app.default_layouts, app.avail_layouts = get_layouts(layouts)
 
     # Dict containing TreeData dataclasses with tree info
-    app.trees = defaultdict(lambda: TreeData(
-        name='tree',
-        style=copy_style(TreeStyle()),
-        nodestyles={},
-        include_props=deepcopy(include_props),
-        exclude_props=deepcopy(exclude_props),
-        layouts=deepcopy(app.default_layouts),
-        timer=time(),
-        searches={},
-        selected={},
-        active=drawer_module.get_empty_active(),
-    ))
+    app.trees = {}
 
     thread_maintenance = Thread(daemon=True, target=maintenance, args=(app,))
     thread_maintenance.start()
@@ -1603,13 +1597,29 @@ def initialize(tree=None, layouts=None,
 
 def run_smartview(tree=None, name=None, layouts=[],
                   include_props=None, exclude_props=None,
-                  safe_mode=False, host='localhost', port=5000, quiet=True,
+                  safe_mode=False, host='localhost', port=None, quiet=True,
                   compress=False, keep_server=False, open_browser=True):
+    global app
+
+    # If we try to show a tree that we already have, do not initialize again.
+    if app:
+        for tid, tree_data in app.trees.items():
+            if tree_data.tree is tree:
+                app.default_layouts, app.avail_layouts = get_layouts(layouts)
+                tree_data.layouts = retrieve_layouts([])
+                tree_data.initialized = False
+
+                if open_browser:
+                    _, listening_port = g_threads['webserver']
+                    open_browser_window(host, listening_port)
+
+                # All this is kind of a hack.
+                return
+
     # Set tree_name to None if no tree was provided
     # Generate tree_name if none was provided
     name = name or (make_name() if tree else None)
 
-    global app
     app = initialize(name, layouts,
                      include_props=include_props, exclude_props=exclude_props,
                      safe_mode=safe_mode, compress=compress)
