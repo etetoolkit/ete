@@ -33,6 +33,8 @@
   <h1>Source code for ete4.smartview.renderer.nodestyle</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">re</span>
 
+<span class="kn">from</span> <span class="nn">ete4.utils</span> <span class="kn">import</span> <span class="n">SVG_COLORS</span>
+
 <span class="n">_LINE_TYPE_CHECKER</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># 0 solid, 1 dashed, 2 dotted</span>
 <span class="n">_SIZE_CHECKER</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
 <span class="n">_COLOR_MATCH</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;^#[A-Fa-f\d]</span><span class="si">{6}</span><span class="s2">$&quot;</span><span class="p">)</span>
