@@ -36,25 +36,27 @@ class TreePattern(Tree):
     def __str__(self):
         return self.to_str(show_internal=True, props=['name'])
 
-    def match(self, tree):
-        return match(self, tree)
+    def match(self, tree, context=None):
+        return match(self, tree, context)
 
-    def search(self, tree):
-        return search(self, tree)
+    def search(self, tree, context=None, strategy='levelorder'):
+        return search(self, tree, context, strategy)
 
 
-def match(pattern, node):
+def match(pattern, node, context=None):
     """Return True if the pattern matches the given node."""
     if pattern.children and len(node.children) != len(pattern.children):
         return False  # no match if there's not the same number of children
 
-    context = {
+    context = context or {}
+    context_base = {
         'node': node,
-        'name': node.props.get('name', ''),
-        'up': node.up, 'is_leaf': node.is_leaf, 'is_root': node.is_root,
+        'name': node.props.get('name', ''),  # node.name could be None
+        'up': node.up, 'parent': node.up,
+        'is_leaf': node.is_leaf, 'is_root': node.is_root,
         'dist': node.dist, 'd': node.dist,
         'props': node.props, 'p': node.props,
-        'species': getattr(node, 'species', None),  # for PhyloTree
+        'species': getattr(node, 'species', ''),  # for PhyloTree
         'get': dict.get,
         'children': node.children, 'ch': node.children,
         'size': node.size, 'dx': node.size[0], 'dy': node.size[1],
@@ -64,8 +66,13 @@ def match(pattern, node):
         'any': any, 'all': all, 'len': len,
         'sum': sum, 'abs': abs, 'float': float}
 
+    for k in context:
+        assert k not in context_base, f'colliding name: {k}'
+
+    eval_context = dict(context_base, **context)  # merge dicts
+
     evaluate = safer_eval if pattern.safer else eval  # risky business
-    if not evaluate(pattern.props['code'], context):
+    if not evaluate(pattern.props['code'], eval_context):
         return False  # no match if the condition for this node if false
 
     if not pattern.children:
@@ -73,17 +80,17 @@ def match(pattern, node):
 
     # Check all possible comparisons between pattern children and node children.
     for ch_perm in permutations(pattern.children):
-        if all(match(sub_pattern, node.children[i])
+        if all(match(sub_pattern, node.children[i], context)
                for i, sub_pattern in enumerate(ch_perm)):
             return True
 
     return False  # no match if no permutation of children satisfied sub-matches
 
 
-def search(pattern, tree):
+def search(pattern, tree, context=None, strategy='levelorder'):
     """Yield nodes that match the given pattern."""
-    for node in tree.traverse("preorder"):
-        if match(pattern, node):
+    for node in tree.traverse(strategy):
+        if match(pattern, node, context):
             yield node
 
 
