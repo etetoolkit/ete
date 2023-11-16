@@ -1,5 +1,7 @@
 import re
 
+from ete4.utils import SVG_COLORS
+
 _LINE_TYPE_CHECKER = lambda x: x in (0, 1, 2)  # 0 solid, 1 dashed, 2 dotted
 _SIZE_CHECKER = lambda x: isinstance(x, int)
 _COLOR_MATCH = re.compile("^#[A-Fa-f\d]{6}$")
