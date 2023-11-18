@@ -268,7 +268,8 @@ cdef class Tree(object):
         return True
 
     def __repr__(self):
-        return 'Tree %r (%s)' % (self.name, hex(self.__hash__()))
+        name_str = (' ' + repr(self.name)) if self.name else ''
+        return '<Tree%s at %s>' % (name_str, hex(self.__hash__()))
 
     def __getitem__(self, node_id):
         """Return the node that matches the given node_id."""
