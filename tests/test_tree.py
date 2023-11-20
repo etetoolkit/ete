@@ -223,9 +223,10 @@ class Test_Core_Tree(unittest.TestCase):
         # Let's stress a bit
         for i in range(10):
             t = Tree()
-            t.populate(4, random_branches=True)
+            t.populate(4, dist_fn=random.random, support_fn=random.random)
             for n in t.traverse():
                 n.name = n.name or 'NoName'
+                n.support = n.support or 1
             for f in NW_FORMAT:
                 self.assertEqual(t.write(parser=f), Tree(t.write(parser=f),parser=f).write(parser=f))
 
@@ -242,7 +243,7 @@ class Test_Core_Tree(unittest.TestCase):
         # Format 100 = ((,(,)),);
 
         t = Tree()
-        t.populate(50, random_branches=True)
+        t.populate(50, dist_fn=random.random, support_fn=random.random)
         for n in t.traverse():
             n.name = n.name or 'NoName'
         t.sort_descendants()
@@ -564,7 +565,7 @@ class Test_Core_Tree(unittest.TestCase):
         # test prune preserving distances
         for i in range(3):  # NOTE: each iteration is quite slow
             t = Tree()
-            t.populate(40, random_branches=True)
+            t.populate(40, dist_fn=random.random, support_fn=random.random)
             orig_nw = t.write()
             distances = {}
             for a in t.leaves():
@@ -603,7 +604,7 @@ class Test_Core_Tree(unittest.TestCase):
 
         # Test preserve branch dist when pruning
         t = Tree()
-        t.populate(100, random_branches=True)
+        t.populate(100, dist_fn=random.random, support_fn=random.random)
         sample_size = 10  # NOTE: big values make this test very slow
         sample = random.sample(list(t.leaves()), sample_size)
         matrix1 = ["%f" % t.get_distance(a, b) for (a,b) in itertools.product(sample, sample)]
@@ -954,7 +955,7 @@ class Test_Core_Tree(unittest.TestCase):
 
         # Generate a random tree. Test branch support and distances after rooting.
         t = Tree()
-        t.populate(50, random_branches=True, support_range=(0, 100))
+        t.populate(50, dist_fn=random.random, support_fn=lambda: random.uniform(0, 100))
         t.unroot()
 
         # Add a branch property.
@@ -1027,7 +1028,7 @@ class Test_Core_Tree(unittest.TestCase):
 
     def test_treeid(self):
         t = Tree()
-        t.populate(50, random_branches=True)
+        t.populate(50, dist_fn=random.random, support_fn=random.random)
         orig_id = t.get_topology_id()
         nodes = list(t.descendants())
         for i in range(20):
@@ -1055,14 +1056,14 @@ class Test_Core_Tree(unittest.TestCase):
         # Convert tree to a ultrametric, in which the distance from
         # leafs to root is always the same.
         t = Tree()
-        t.populate(80, random_branches=True)
+        t.populate(80, dist_fn=random.random, support_fn=random.random)
         max_dist = max(t.get_distance(t, n) for n in t)
 
         t.to_ultrametric()
         self.assertTrue(all(abs(t.get_distance(t, n) - max_dist) < EPSILON for n in t))
 
         t2 = Tree()
-        t2.populate(80, random_branches=True)
+        t2.populate(80, dist_fn=random.random, support_fn=random.random)
         max_dist = max(t2.get_distance(t2, n) for n in t2)
 
         t2.to_ultrametric(topological=True)

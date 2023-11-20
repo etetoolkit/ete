@@ -5,7 +5,7 @@ Sorting, changing the root to a node, moving branches, removing (prunning)...
 """
 
 import random
-from collections import namedtuple, deque
+from collections import namedtuple
 
 
 def sort(tree, key=None, reverse=False):
@@ -169,83 +169,126 @@ def common_ancestor(nodes):
     return curr  # which is now the last common ancestor of all nodes
 
 
-def populate(tree, size, names_library=None, random_branches=False,
-             dist_range=(0, 1), support_range=(0, 1)):
-    """Populate tree with branches generating a random topology.
+def populate(tree, size, names=None, model='yule',
+             dist_fn=None, support_fn=None):
+    """Populate tree with a dichotomic random topology.
 
-    All the nodes added will either be leaves or have two branches.
-
-    :param size: Number of leaves to add. The necessary
-        intermediate nodes will be created too.
-    :param names_library: Collection (list or set) used to name leaves.
+    :param size: Number of leaves to add. All necessary intermediate
+        nodes will be created too.
+    :param names: Collection (list or set) of names to name the leaves.
         If None, leaves will be named using short letter sequences.
-    :param random_branches: If True, branch distances and support
-        values will be randomized.
-    :param dist_range: Range (tuple with min and max) of distances
-        used to generate branch distances if random_branches is True.
-    :param support_range: Range (tuple with min and max) of distances
-        used to generate branch supports if random_branches is True.
+    :param model: Model used to generate the topology. It can be:
+
+        - "yule" or "yule-harding": Every step a randomly selected leaf
+          grows two new children.
+        - "uniform" or "pda": Every step a randomly selected node (leaf
+          or interior) grows a new sister leaf.
+
+    :param dist_fn: Function to produce values to set as distance
+        in newly created branches, or None for no distances.
+    :param support_fn: Function to produce values to set as support
+        in newly created internal branches, or None for no supports.
     """
-    assert names_library is None or len(names_library) >= size, \
-        f'names_library too small ({len(names_library)}) for size {size}'
+    assert names is None or len(names) >= size, \
+        f'names too small ({len(names)}) for size {size}'
 
-    NewNode = tree.__class__
+    root = tree if not tree.children else create_dichotomic_sister(tree)
 
-    if len(tree.children) > 1:
-        connector = NewNode()
-        for ch in tree.get_children():
-            ch.detach()
-            connector.add_child(ch)
-        root = NewNode()
-        tree.add_child(connector)
-        tree.add_child(root)
+    if model in ['yule', 'yule-harding']:
+        populate_yule(root, size)
+    elif model in ['uniform', 'pda']:
+        populate_uniform(root, size)
     else:
-        root = tree
+        raise ValueError(f'unknown model: {model}')
 
-    next_deq = deque([root])  # will contain the current leaves
-    for i in range(size - 1):
-        p = next_deq.popleft() if random.randint(0, 1) else next_deq.pop()
+    if dist_fn or support_fn:
+        add_branch_values(root, dist_fn, support_fn)
 
-        c1 = p.add_child()
-        c2 = p.add_child()
+    add_leaf_names(root, names)
 
-        next_deq.extend([c1, c2])
 
-        if random_branches:
-            c1.dist = random.uniform(*dist_range)
-            c2.dist = random.uniform(*dist_range)
-            c1.support = random.uniform(*support_range)
-            c2.support = random.uniform(*support_range)
-        else:
-            c1.dist = 1.0
-            c2.dist = 1.0
-            c1.support = 1.0
-            c2.support = 1.0
+def create_dichotomic_sister(tree):
+    """Make tree start with a dichotomy, with the old tree and a new sister."""
+    children = tree.remove_children()  # pass all the children to a connector
+    connector = tree.__class__(children=children)
+    sister = tree.__class__()  # new sister, dichotomic with the old tree
+    tree.add_children([connector, sister])
+    return sister
 
-    # Make sure the children of the root have the same support, and
-    # that the leaves have no support.
-    for node in root.children:
-        node.support = root.children[0].support
 
-    for node in root.leaves():
-        node.props.pop('support', None)
+def populate_yule(root, size):
+    """Populate with the Yule-Harding model a topology with size leaves."""
+    leaves = [root]  # will contain the current leaves
+    for _ in range(size - 1):
+        leaf = leaves.pop( random.randrange(len(leaves)) )
 
-    # Give names to leaves.
-    if names_library is not None:
-        for node, name in zip(next_deq, names_library):
+        node0 = leaf.add_child()
+        node1 = leaf.add_child()
+
+        leaves.extend([node0, node1])
+
+
+def populate_uniform(root, size):
+    """Populate with the uniform model a topology with size leaves."""
+    if size < 2:
+        return
+
+    child0 = root.add_child()
+    child1 = root.add_child()
+
+    nodes = [child0]  # without child1, since it is in the same branch!
+
+    for _ in range(size - 2):
+        node = random.choice(nodes)  # random node (except root and child1)
+
+        if node is child0 and random.randint(0, 1) == 1:  # 50% chance
+            node = child1  # take the other child
+
+        intermediate = root.__class__()  # could be Tree(), PhyloTree()...
+        insert_intermediate(node, intermediate)  # ---up---inter---node
+        leaf = intermediate.add_child()          # ---up---inter===node,leaf
+        random.shuffle(intermediate.children)  # [node,leaf] or [leaf,node]
+
+        nodes.extend([intermediate, leaf])
+
+
+def add_branch_values(root, dist_fn, support_fn):
+    """Add distances and support values to the branches."""
+    for node in root.descendants():
+        if dist_fn:
+            node.dist = dist_fn()
+        if support_fn and not node.is_leaf:
+            node.support = support_fn()
+
+    # Make sure the children of root have the same support.
+    if any(node.support is None for node in root.children):
+        for node in root.children:
+            node.props.pop('support', None)
+    else:
+        for node in root.children[1:]:
+            node.support = root.children[0].support
+
+
+def add_leaf_names(root, names):
+    """Add names to the leaves."""
+    leaves = list(root.leaves())
+    random.shuffle(leaves)  # so we name them in no particular order
+    if names is not None:
+        for node, name in zip(leaves, names):
             node.name = name
     else:
-        chars = 'abcdefghijklmnopqrstuvwxyz'
+        for i, node in enumerate(leaves):
+            node.name = make_name(i)
 
-        for i, node in enumerate(next_deq):
-            # Create a short name corresponding to the index i.
-            # 0: 'a', 1: 'b', ..., 25: 'z', 26: 'aa', 27: 'ab', ...
-            name = ''
-            while i >= 0:
-                name = chars[i % len(chars)] + name
-                i = i // len(chars) - 1
 
-            node.name = name
+def make_name(i, chars='abcdefghijklmnopqrstuvwxyz'):
+    """Return a short name corresponding to the index i."""
+    # 0: 'a', 1: 'b', ..., 25: 'z', 26: 'aa', 27: 'ab', ...
+    name = ''
+    while i >= 0:
+        name = chars[i % len(chars)] + name
+        i = i // len(chars) - 1
+    return name
 
 
 def ladderize(tree, topological=False, reverse=False):

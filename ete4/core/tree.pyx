@@ -1037,25 +1037,34 @@ cdef class Tree(object):
 
         return current  # the midpoint was the root (we went back to it)
 
-    def populate(self, size, names_library=None, random_branches=False,
-                 dist_range=(0, 1), support_range=(0, 1)):
-        """Populate current node with branches generating a random topology.
-
-        All the nodes added will either be leaves or have two branches.
+    def populate(self, size, names=None, model='yule',
+                 dist_fn=None, support_fn=None):
+        """Populate current node with a dichotomic random topology.
 
         :param size: Number of leaves to add. The necessary
             intermediate nodes will be created too.
-        :param names_library: Collection (list or set) used to name leaves.
+        :param names: Collection (list or set) of names to name the leaves.
             If None, leaves will be named using short letter sequences.
-        :param random_branches: If True, branch distances and support
-            values will be randomized.
-        :param dist_range: Range (tuple with min and max) of distances
-            used to generate branch distances if random_branches is True.
-        :param support_range: Range (tuple with min and max) of distances
-            used to generate branch supports if random_branches is True.
+        :param model: Model used to generate the topology. It can be:
+
+            - "yule" or "yule-harding": Every step a randomly selected leaf
+              grows two new children.
+            - "uniform" or "pda": Every step a randomly selected node (leaf
+              or interior) grows a new sister leaf.
+
+        :param dist_fn: Function to produce values to set as distance
+            in newly created branches, or None for no distances.
+        :param support_fn: Function to produce values to set as support
+            in newly created internal branches, or None for no supports.
+
+        Example to create a tree with 100 leaves, uniformly random
+        distances between 0 and 1, and all valid supports set to 1::
+
+          t = Tree()
+          random.seed(42)  # set seed if we want a reproducible result
+          t.populate(100, dist_fn=random.random, support_fn=lambda: 1)
         """
-        ops.populate(self, size, names_library, random_branches,
-                     dist_range, support_range)
+        ops.populate(self, size, names, model, dist_fn, support_fn)
 
     def set_outgroup(self, node, bprops=None):
         """Reroot the tree at the given outgroup node."""
