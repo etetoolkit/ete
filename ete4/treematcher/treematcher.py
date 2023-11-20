@@ -52,13 +52,14 @@ def match(pattern, node, context=None):
     context_base = {
         'node': node,
         'name': node.props.get('name', ''),  # node.name could be None
-        'up': node.up, 'parent': node.up,
-        'is_leaf': node.is_leaf, 'is_root': node.is_root,
         'dist': node.dist, 'd': node.dist,
+        'support': node.support, 'sup': node.support,
+        'up': node.up, 'parent': node.up,
+        'children': node.children, 'ch': node.children,
+        'is_leaf': node.is_leaf, 'is_root': node.is_root,
         'props': node.props, 'p': node.props,
         'species': getattr(node, 'species', ''),  # for PhyloTree
         'get': dict.get,
-        'children': node.children, 'ch': node.children,
         'size': node.size, 'dx': node.size[0], 'dy': node.size[1],
         'regex': re.search,
         'startswith': str.startswith, 'endswith': str.endswith,
