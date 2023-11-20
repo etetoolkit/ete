@@ -140,9 +140,13 @@ class Test_Core_Tree(unittest.TestCase):
         self.assertEqual(expected_nw, t.write(props=None))
 
     def test_repr(self):
-        # Node instance repr
-        self.assertTrue(Tree().__repr__().startswith('<Tree'))
-        self.assertTrue(('%r' % Tree()).startswith('<Tree'))
+        """Test that the Tree representation looks like we expect."""
+        t = Tree()
+        r1, r2, r3 = t.__repr__(), repr(t), '%r' % t
+        self.assertTrue(r1 == r2 == r3)
+        self.assertTrue(r1.startswith('<Tree '))
+        self.assertTrue(r1.endswith('>'))
+        self.assertTrue(' at 0x' in r1)
 
     def test_to_str(self):
         """Test that the ascii representation (to use when printing) works."""
