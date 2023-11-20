@@ -130,7 +130,10 @@ cdef class Tree(object):
 
     @name.setter
     def name(self, value):
-        self.props['name'] = str(value)
+        if value is not None:
+            self.props['name'] = str(value)
+        else:
+            self.props.pop('name', None)
 
     @property
     def dist(self):
@@ -138,7 +141,10 @@ cdef class Tree(object):
 
     @dist.setter
     def dist(self, value):
-        self.props['dist'] = float(value)
+        if value is not None:
+            self.props['dist'] = float(value)
+        else:
+            self.props.pop('dist', None)
 
     @property
     def support(self):
@@ -146,7 +152,10 @@ cdef class Tree(object):
 
     @support.setter
     def support(self, value):
-        self.props['support'] = float(value)
+        if value is not None:
+            self.props['support'] = float(value)
+        else:
+            self.props.pop('support', None)
 
     @property
     def children(self):

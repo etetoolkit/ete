@@ -65,6 +65,28 @@ class Test_Core_Tree(unittest.TestCase):
         t.del_prop('testf4')
         self.assertTrue('testf4' not in t.props)
 
+    def test_basic_properties(self):
+        t = Tree('((a:1,b:2)0.8:3,c:4);')
+
+        self.assertTrue(type(t['a'].dist) == float)
+        self.assertTrue(type(t[0].support) == float)
+
+        t[0].support = None
+        self.assertTrue('support' not in t[0].props)
+        self.assertTrue(t[0].support is None)
+
+        t[0].dist = None
+        self.assertTrue('dist' not in t[0].props)
+        self.assertTrue(t[0].dist is None)
+
+        a = t['a']
+        a.name = None
+        self.assertTrue('name' not in a.props)
+        self.assertTrue(a.name is None)
+
+        a.name = 5
+        self.assertTrue(a.name == '5')
+
     def test_tree_read_and_write(self):
         """Test newick support."""
         # Read and write newick tree from/to file.
