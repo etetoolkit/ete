@@ -74,6 +74,18 @@
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.add_branch_values">
+<span class="sig-name descname"><span class="pre">add_branch_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">support_fn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.add_branch_values" title="Link to this definition">¶</a></dt>
+<dd><p>Add distances and support values to the branches.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.add_leaf_names">
+<span class="sig-name descname"><span class="pre">add_leaf_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.add_leaf_names" title="Link to this definition">¶</a></dt>
+<dd><p>Add names to the leaves.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="ete4.core.operations.assert_root_consistency">
 <span class="sig-name descname"><span class="pre">assert_root_consistency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bprops</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.assert_root_consistency" title="Link to this definition">¶</a></dt>
 <dd><p>Raise AssertionError if the root node of a tree looks inconsistent.</p>
@@ -89,6 +101,12 @@
 <dd class="field-odd"><p><strong>nodes</strong> – List of nodes whose common ancestor we want to find.</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.create_dichotomic_sister">
+<span class="sig-name descname"><span class="pre">create_dichotomic_sister</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.create_dichotomic_sister" title="Link to this definition">¶</a></dt>
+<dd><p>Make tree start with a dichotomy, with the old tree and a new sister.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -139,6 +157,12 @@ number of nodes between them (instead of the sum of branch lenghts).</p></li>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.make_name">
+<span class="sig-name descname"><span class="pre">make_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'abcdefghijklmnopqrstuvwxyz'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.make_name" title="Link to this definition">¶</a></dt>
+<dd><p>Return a short name corresponding to the index i.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="ete4.core.operations.move">
 <span class="sig-name descname"><span class="pre">move</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shift</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.move" title="Link to this definition">¶</a></dt>
 <dd><p>Change the position of the current node with respect to its parent.</p>
@@ -146,25 +170,42 @@ number of nodes between them (instead of the sum of branch lenghts).</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ete4.core.operations.populate">
-<span class="sig-name descname"><span class="pre">populate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names_library</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_branches</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">support_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">1)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.populate" title="Link to this definition">¶</a></dt>
-<dd><p>Populate tree with branches generating a random topology.</p>
-<p>All the nodes added will either be leaves or have two branches.</p>
+<span class="sig-name descname"><span class="pre">populate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'yule'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">support_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.populate" title="Link to this definition">¶</a></dt>
+<dd><p>Populate tree with a dichotomic random topology.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>size</strong> – Number of leaves to add. The necessary
-intermediate nodes will be created too.</p></li>
-<li><p><strong>names_library</strong> – Collection (list or set) used to name leaves.
+<li><p><strong>size</strong> – Number of leaves to add. All necessary intermediate
+nodes will be created too.</p></li>
+<li><p><strong>names</strong> – Collection (list or set) of names to name the leaves.
 If None, leaves will be named using short letter sequences.</p></li>
-<li><p><strong>random_branches</strong> – If True, branch distances and support
-values will be randomized.</p></li>
-<li><p><strong>dist_range</strong> – Range (tuple with min and max) of distances
-used to generate branch distances if random_branches is True.</p></li>
-<li><p><strong>support_range</strong> – Range (tuple with min and max) of distances
-used to generate branch supports if random_branches is True.</p></li>
+<li><p><strong>model</strong> – <p>Model used to generate the topology. It can be:</p>
+<ul>
+<li><p>”yule” or “yule-harding”: Every step a randomly selected leaf
+grows two new children.</p></li>
+<li><p>”uniform” or “pda”: Every step a randomly selected node (leaf
+or interior) grows a new sister leaf.</p></li>
+</ul>
+</p></li>
+<li><p><strong>dist_fn</strong> – Function to produce values to set as distance
+in newly created branches, or None for no distances.</p></li>
+<li><p><strong>support_fn</strong> – Function to produce values to set as support
+in newly created internal branches, or None for no supports.</p></li>
 </ul>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.populate_uniform">
+<span class="sig-name descname"><span class="pre">populate_uniform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.populate_uniform" title="Link to this definition">¶</a></dt>
+<dd><p>Populate with the uniform model a topology with size leaves.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.populate_yule">
+<span class="sig-name descname"><span class="pre">populate_yule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.populate_yule" title="Link to this definition">¶</a></dt>
+<dd><p>Populate with the Yule-Harding model a topology with size leaves.</p>
 </dd></dl>
 
 <dl class="py function">

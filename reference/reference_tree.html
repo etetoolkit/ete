@@ -741,25 +741,37 @@ in postorder) and a node instance.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.Tree.populate">
-<span class="sig-name descname"><span class="pre">populate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names_library</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_branches</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">support_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">1)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.populate" title="Link to this definition">¶</a></dt>
-<dd><p>Populate current node with branches generating a random topology.</p>
-<p>All the nodes added will either be leaves or have two branches.</p>
+<span class="sig-name descname"><span class="pre">populate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'yule'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">support_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.populate" title="Link to this definition">¶</a></dt>
+<dd><p>Populate current node with a dichotomic random topology.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>size</strong> – Number of leaves to add. The necessary
 intermediate nodes will be created too.</p></li>
-<li><p><strong>names_library</strong> – Collection (list or set) used to name leaves.
+<li><p><strong>names</strong> – Collection (list or set) of names to name the leaves.
 If None, leaves will be named using short letter sequences.</p></li>
-<li><p><strong>random_branches</strong> – If True, branch distances and support
-values will be randomized.</p></li>
-<li><p><strong>dist_range</strong> – Range (tuple with min and max) of distances
-used to generate branch distances if random_branches is True.</p></li>
-<li><p><strong>support_range</strong> – Range (tuple with min and max) of distances
-used to generate branch supports if random_branches is True.</p></li>
+<li><p><strong>model</strong> – <p>Model used to generate the topology. It can be:</p>
+<ul>
+<li><p>”yule” or “yule-harding”: Every step a randomly selected leaf
+grows two new children.</p></li>
+<li><p>”uniform” or “pda”: Every step a randomly selected node (leaf
+or interior) grows a new sister leaf.</p></li>
+</ul>
+</p></li>
+<li><p><strong>dist_fn</strong> – Function to produce values to set as distance
+in newly created branches, or None for no distances.</p></li>
+<li><p><strong>support_fn</strong> – Function to produce values to set as support
+in newly created internal branches, or None for no supports.</p></li>
 </ul>
 </dd>
 </dl>
+<p>Example to create a tree with 100 leaves, uniformly random
+distances between 0 and 1, and all valid supports set to 1:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">()</span>
+<span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>  <span class="c1"># set seed if we want a reproducible result</span>
+<span class="n">t</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="n">dist_fn</span><span class="o">=</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">,</span> <span class="n">support_fn</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py attribute">
