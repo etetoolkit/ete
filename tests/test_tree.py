@@ -119,8 +119,8 @@ class Test_Core_Tree(unittest.TestCase):
 
     def test_repr(self):
         # Node instance repr
-        self.assertTrue(Tree().__repr__().startswith('Tree'))
-        self.assertTrue(('%r' % Tree()).startswith('Tree'))
+        self.assertTrue(Tree().__repr__().startswith('<Tree'))
+        self.assertTrue(('%r' % Tree()).startswith('<Tree'))
 
     def test_to_str(self):
         """Test that the ascii representation (to use when printing) works."""
