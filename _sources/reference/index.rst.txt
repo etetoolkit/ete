@@ -13,3 +13,4 @@ Reference Guide
    reference_taxonomy
    reference_smartview
    reference_treeview
+   reference_treematcher
