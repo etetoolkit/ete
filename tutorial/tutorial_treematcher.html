@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Tree matcher &#8212; ETE Toolkit 4.0.0-beta2 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=039e1c02" />
+    <script src="../_static/documentation_options.js?v=382e6e0c"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Reference Guide" href="../reference/index.html" />
+    <link rel="prev" title="Taxonomy databases" href="tutorial_taxonomy.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="tree-matcher">
+<h1><a class="toc-backref" href="#id1" role="doc-backlink">Tree matcher</a><a class="headerlink" href="#tree-matcher" title="Link to this heading">¶</a></h1>
+<nav class="contents" id="contents">
+<p class="topic-title">Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#tree-matcher" id="id1">Tree matcher</a></p>
+<ul>
+<li><p><a class="reference internal" href="#a-simple-example-only-topology" id="id2">A simple example (only topology)</a></p></li>
+<li><p><a class="reference internal" href="#a-less-simple-example-with-node-expressions" id="id3">A less simple example (with node expressions)</a></p></li>
+<li><p><a class="reference internal" href="#outside-variables" id="id4">Outside variables</a></p></li>
+<li><p><a class="reference internal" href="#examples-from-the-test-suite" id="id5">Examples from the test suite</a></p></li>
+</ul>
+</li>
+</ul>
+</nav>
+<p>The <em>tree matcher</em> in ete4 can find sub-tree patterns in a tree.</p>
+<p>It allows to search for topological realations, at the same time as
+imposing arbitrary requirements in the nodes of the subtree to be
+matched. We could see it as a regular-expression search on a tree,
+only more powerful.</p>
+<p>We are going to look at the two most useful parts of this module: the
+class <a class="reference internal" href="../reference/reference_treematcher.html#ete4.treematcher.treematcher.TreePattern" title="ete4.treematcher.treematcher.TreePattern"><code class="xref py py-class docutils literal notranslate"><span class="pre">TreePattern</span></code></a> and the method <a class="reference internal" href="../reference/reference_treematcher.html#ete4.treematcher.treematcher.TreePattern.search" title="ete4.treematcher.treematcher.TreePattern.search"><code class="xref py py-func docutils literal notranslate"><span class="pre">search()</span></code></a>
+defined in it.</p>
+<section id="a-simple-example-only-topology">
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">A simple example (only topology)</a><a class="headerlink" href="#a-simple-example-only-topology" title="Link to this heading">¶</a></h2>
+<p>Let’s start with a simple tree:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4</span> <span class="kn">import</span> <span class="n">Tree</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((K:4,((A:1,B:2)G:3,C:1)H:0.5,D:1)I:0.5,(E:1,F:2)J:1)root;&#39;</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">to_str</span><span class="p">(</span><span class="n">props</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;dist&#39;</span><span class="p">]))</span>
+<span class="c1">#                 ╭╴K,4.0</span>
+<span class="c1">#                 │</span>
+<span class="c1">#                 │               ╭╴A,1.0</span>
+<span class="c1">#                 │       ╭╴G,3.0╶┤</span>
+<span class="c1">#         ╭╴I,0.5╶┼╴H,0.5╶┤       ╰╴B,2.0</span>
+<span class="c1">#         │       │       │</span>
+<span class="c1">#         │       │       ╰╴C,1.0</span>
+<span class="c1"># ╴root,⊗╶┤       │</span>
+<span class="c1">#         │       ╰╴D,1.0</span>
+<span class="c1">#         │</span>
+<span class="c1">#         │       ╭╴E,1.0</span>
+<span class="c1">#         ╰╴J,1.0╶┤</span>
+<span class="c1">#                 ╰╴F,2.0</span>
+</pre></div>
+</div>
+<p>In the tree, there is a node that has 3 children. Let’s imagine we
+want to find all such nodes. We could traverse the tree with ETE and
+so on, but we could also do this with the tree matcher:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ete4.treematcher</span> <span class="kn">import</span> <span class="n">TreePattern</span>
+
+<span class="n">tp</span> <span class="o">=</span> <span class="n">TreePattern</span><span class="p">(</span><span class="s1">&#39; ( , , ) &#39;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">tp</span><span class="p">)</span>
+<span class="c1">#    ╭╴⊗</span>
+<span class="c1">#    │</span>
+<span class="c1"># ╴⊗╶┼╴⊗</span>
+<span class="c1">#    │</span>
+<span class="c1">#    ╰╴⊗</span>
+
+<span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">tp</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Match on node&#39;</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="c1"># Match on node I</span>
+</pre></div>
+</div>
+<p>Okay, it found the node!</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">tp.search(t)</span></code> iterates over the nodes of tree <code class="docutils literal notranslate"><span class="pre">t</span></code>, yielding
+the ones that match the tree pattern <code class="docutils literal notranslate"><span class="pre">tp</span></code> that we defined.</p>
+<p>How about if we also wanted that at least one of the children has two
+children?</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tp</span> <span class="o">=</span> <span class="n">TreePattern</span><span class="p">(</span><span class="s1">&#39; ( ( , ), , ) &#39;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">tp</span><span class="p">)</span>
+<span class="c1">#        ╭╴⊗</span>
+<span class="c1">#    ╭╴⊗╶┤</span>
+<span class="c1">#    │   ╰╴⊗</span>
+<span class="c1"># ╴⊗╶┤</span>
+<span class="c1">#    ├╴⊗</span>
+<span class="c1">#    │</span>
+<span class="c1">#    ╰╴⊗</span>
+</pre></div>
+</div>
+<p>It requires one of the three children to have two children. But it
+seems like it is the first of the children, and the one with two in
+<code class="docutils literal notranslate"><span class="pre">t</span></code> is the second. Will it match?</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">tp</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Match on node&#39;</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="c1"># Match on node I</span>
+</pre></div>
+</div>
+<p>Yes, it matches again. The reason is that the pattern we look for is a
+topological one, so the tree matcher is going to try all the
+permutations to see if any one matches. This is what we normally want
+when looking for a subtree pattern.</p>
+</section>
+<section id="a-less-simple-example-with-node-expressions">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">A less simple example (with node expressions)</a><a class="headerlink" href="#a-less-simple-example-with-node-expressions" title="Link to this heading">¶</a></h2>
+<p>The pattern is no limited to the tree structure. Each node can contain
+(and often does) a condition to check in that node. For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tp</span> <span class="o">=</span> <span class="n">TreePattern</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">(</span>
+<span class="s2">    ( &#39;any(regex(&quot;A|a&quot;, n.name) for n in node.leaves())&#39; ,</span>
+<span class="s2">    ),</span>
+<span class="s2">    &#39;len(ch) &lt; 3 and dist &lt; 10&#39;,</span>
+<span class="s2">)</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">tp</span><span class="p">)</span>
+<span class="c1">#        ╭╴any(regex(&quot;A|a&quot;, n.name) for n in node.leaves())</span>
+<span class="c1">#    ╭╴⊗╶┤</span>
+<span class="c1">#    │   ╰╴⊗</span>
+<span class="c1"># ╴⊗╶┤</span>
+<span class="c1">#    ├╴len(ch) &lt; 3 and dist &lt; 10</span>
+<span class="c1">#    │</span>
+<span class="c1">#    ╰╴⊗</span>
+</pre></div>
+</div>
+<p>We use triple quotes (<code class="docutils literal notranslate"><span class="pre">&quot;&quot;&quot;</span></code>) to then use quotes (<code class="docutils literal notranslate"><span class="pre">'</span></code> and <code class="docutils literal notranslate"><span class="pre">&quot;</span></code>)
+freely in the conditions. This is so the newick parser can distinguish
+the parenthesis related to function calls and the parenthesis related
+to the newick structure.</p>
+<p>Also, the conditions in each node are arbitrary Python expressions.
+The tree matcher automatically compiles them for efficiency, and then
+we can search:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">tp</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Match on node&#39;</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="c1"># Match on node I</span>
+</pre></div>
+</div>
+<p>Note that the same node matched. Feel free to change the expression in
+the pattern and run new variants to see when it produces a match, when
+it doesn’t, and the kind of errors that we could have (like incorrect
+use of quotes, or incorrect python expressions).</p>
+<p>Inside each expression, <code class="docutils literal notranslate"><span class="pre">node</span></code> will be evaluated to the node existing
+in that position of the tree pattern. In addition to that, we can use
+a few shortcuts to write short expressions. The main ones correspond
+to this dictionary:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">context</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;node&#39;</span><span class="p">:</span> <span class="n">node</span><span class="p">,</span>
+    <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">props</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>  <span class="c1"># node.name could be None</span>
+    <span class="s1">&#39;dist&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">dist</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">dist</span><span class="p">,</span>
+    <span class="s1">&#39;support&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">support</span><span class="p">,</span> <span class="s1">&#39;sup&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">support</span><span class="p">,</span>
+    <span class="s1">&#39;up&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">up</span><span class="p">,</span> <span class="s1">&#39;parent&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">up</span><span class="p">,</span>
+    <span class="s1">&#39;children&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">,</span> <span class="s1">&#39;ch&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">,</span>
+    <span class="s1">&#39;is_leaf&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">,</span> <span class="s1">&#39;is_root&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">is_root</span><span class="p">,</span>
+    <span class="s1">&#39;props&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">props</span><span class="p">,</span> <span class="s1">&#39;p&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">props</span><span class="p">,</span>
+    <span class="s1">&#39;species&#39;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s1">&#39;species&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>  <span class="c1"># for PhyloTree</span>
+    <span class="s1">&#39;regex&#39;</span><span class="p">:</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">,</span>
+  <span class="p">}</span>
+</pre></div>
+</div>
+<p>The idea is to be able to write relatively complex searches in a
+compact and legible way.</p>
+</section>
+<section id="outside-variables">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Outside variables</a><a class="headerlink" href="#outside-variables" title="Link to this heading">¶</a></h2>
+<p>In our node expressions we can include variables outside of the ones
+we described before. For example, if we substitute the 3 in our
+previous pattern for <code class="docutils literal notranslate"><span class="pre">nchildren</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tp</span> <span class="o">=</span> <span class="n">TreePattern</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">(</span>
+<span class="s2">    ( &#39;any(regex(&quot;A|a&quot;, n.name) for n in node.leaves())&#39; ,</span>
+<span class="s2">    ),</span>
+<span class="s2">    &#39;len(ch) &lt; nchildren and dist &lt; 10&#39;,</span>
+<span class="s2">)</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">tp</span><span class="p">)</span>
+<span class="c1">#        ╭╴any(regex(&quot;A|a&quot;, n.name) for n in node.leaves())</span>
+<span class="c1">#    ╭╴⊗╶┤</span>
+<span class="c1">#    │   ╰╴⊗</span>
+<span class="c1"># ╴⊗╶┤</span>
+<span class="c1">#    ├╴len(ch) &lt; nchildren and dist &lt; 10</span>
+<span class="c1">#    │</span>
+<span class="c1">#    ╰╴⊗</span>
+</pre></div>
+</div>
+<p>If now we did a search with <code class="docutils literal notranslate"><span class="pre">tp.search(t)</span></code> it would produce an
+exception, since it doesn’t know what <code class="docutils literal notranslate"><span class="pre">nchildren</span></code> is.</p>
+<p>But we can tell it:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">tp</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;nchildren&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">}):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Match on node&#39;</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="c1"># Match on node I</span>
+</pre></div>
+</div>
+<p>We just passed a dictionary to the <code class="docutils literal notranslate"><span class="pre">search()</span></code> function with the
+substitutions that we want it to make for any extra variables. If we
+run again with a different value for <code class="docutils literal notranslate"><span class="pre">nchildren</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">tp</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;nchildren&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Match on node&#39;</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="c1"># (no output)</span>
+</pre></div>
+</div>
+<p>There are no matches now. Of course: no children have a negative number of children.</p>
+<p>One common use is when we want to do checks on the leaf descendants of
+a node, and we cached them beforehand by calling
+<code class="docutils literal notranslate"><span class="pre">t.get_cached_content()</span></code>. If we did something like that for our
+example, it would look like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">n2leaves</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">get_cached_content</span><span class="p">()</span>
+
+<span class="c1"># Like before, but instead of node.leaves() we use n2leaves[node].</span>
+<span class="n">tp</span> <span class="o">=</span> <span class="n">TreePattern</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">(</span>
+<span class="s2">    ( &#39;any(regex(&quot;A|a&quot;, n.name) for n in n2leaves[node])&#39; ,</span>
+<span class="s2">    ),</span>
+<span class="s2">    &#39;len(ch) &lt; nchildren and dist &lt; 10&#39;,</span>
+<span class="s2">)</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">tp</span><span class="p">)</span>
+<span class="c1">#        ╭╴any(regex(&quot;A|a&quot;, n.name) for n in n2leaves[node])</span>
+<span class="c1">#    ╭╴⊗╶┤</span>
+<span class="c1">#    │   ╰╴⊗</span>
+<span class="c1"># ╴⊗╶┤</span>
+<span class="c1">#    ├╴len(ch) &lt; nchildren and dist &lt; 10</span>
+<span class="c1">#    │</span>
+<span class="c1">#    ╰╴⊗</span>
+
+<span class="c1"># Find matches.</span>
+<span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">tp</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;nchildren&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;n2leaves&#39;</span><span class="p">:</span> <span class="n">n2leaves</span><span class="p">}):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Match on node&#39;</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="c1"># Match on node I</span>
+</pre></div>
+</div>
+<p>A final tip related to the variables: in our program, specially when
+we are trying things quickly on the console, we can pass Python’s
+<code class="docutils literal notranslate"><span class="pre">locals()</span></code> as the dictionary. It will already contain all the
+variables that we have defined in our session.</p>
+<p>This can be quite comfortable, but not always the best option. Use
+sparingly and enjoy!</p>
+</section>
+<section id="examples-from-the-test-suite">
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">Examples from the test suite</a><a class="headerlink" href="#examples-from-the-test-suite" title="Link to this heading">¶</a></h2>
+<p>Finally, for a few more examples, let’s take from the ETE test suite
+one of the test patterns and several trees where we check for matches:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pattern</span> <span class="o">=</span> <span class="n">TreePattern</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">(</span>
+<span class="s2">    &quot;len(ch) &gt; 2&quot;,</span>
+<span class="s2">    &quot;name in [&#39;hello&#39;, &#39;bye&#39;]&quot;</span>
+<span class="s2">)</span>
+<span class="s2">&quot;(len(name) &lt; 3 or name == &#39;accept&#39;) and d &gt;= 0.5&quot;</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span>
+<span class="c1">#                                                   ╭╴len(ch) &gt; 2</span>
+<span class="c1"># ╴(len(name) &lt; 3 or name == &#39;accept&#39;) and d &gt;= 0.5╶┤</span>
+<span class="c1">#                                                   ╰╴name in [&#39;hello&#39;, &#39;bye&#39;]</span>
+</pre></div>
+</div>
+<p>We are going to construct several trees, and see the matches that this
+pattern has on them:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">newick</span><span class="p">,</span> <span class="n">expected_result</span> <span class="ow">in</span> <span class="p">[</span>
+    <span class="p">(</span><span class="s1">&#39;((hello:1,(1:1,2:1,3:1)xx:1)accept:1, NODE):0;&#39;</span><span class="p">,</span>   <span class="p">[</span><span class="s1">&#39;accept&#39;</span><span class="p">]),</span>  <span class="c1"># node &quot;accept&quot; will match</span>
+    <span class="p">(</span><span class="s1">&#39;((hello:1,(1:1,2:1,3:1)xx:1)accept:0.4, NODE):0;&#39;</span><span class="p">,</span> <span class="p">[]),</span>          <span class="c1"># no node will match</span>
+    <span class="p">(</span><span class="s1">&#39;(hello:1,(1:1,2:1,3:1)xx:1)accept:1;&#39;</span><span class="p">,</span>             <span class="p">[</span><span class="s1">&#39;accept&#39;</span><span class="p">]),</span>  <span class="c1"># etc.</span>
+    <span class="p">(</span><span class="s1">&#39;((bye:1,(1:1,2:1,3:1)xx:1)none:1, NODE):0;&#39;</span><span class="p">,</span>       <span class="p">[]),</span>
+    <span class="p">(</span><span class="s1">&#39;((bye:1,(1:1,2:1,3:1)xx:1)y:1, NODE):0;&#39;</span><span class="p">,</span>          <span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">]),</span>
+    <span class="p">(</span><span class="s1">&#39;((bye,(,,))x:1,((,,),bye)y:1):0;&#39;</span><span class="p">,</span>                 <span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">])]:</span>
+    <span class="nb">print</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Searching pattern in the tree:&#39;</span><span class="p">)</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="n">newick</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">to_str</span><span class="p">())</span>
+
+    <span class="n">matches</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">pattern</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">t</span><span class="p">)]</span>
+
+    <span class="nb">print</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Expected result:&#39;</span><span class="p">,</span> <span class="n">expected_result</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Matches found:  &#39;</span><span class="p">,</span> <span class="n">matches</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">matches</span> <span class="o">==</span> <span class="n">expected_result</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;TreePattern for the win!&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We end with the produced results:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Searching pattern in the tree:
+                                 ╭╴name=hello,dist=1.0
+                                 │
+          ╭╴name=accept,dist=1.0╶┤                  ╭╴name=1,dist=1.0
+          │                      │                  │
+          │                      ╰╴name=xx,dist=1.0╶┼╴name=2,dist=1.0
+╴dist=0.0╶┤                                         │
+          │                                         ╰╴name=3,dist=1.0
+          │
+          ╰╴name=NODE
+
+Expected result: [&#39;accept&#39;]
+Matches found:   [&#39;accept&#39;]
+TreePattern for the win!
+
+
+Searching pattern in the tree:
+                                 ╭╴name=hello,dist=1.0
+                                 │
+          ╭╴name=accept,dist=0.4╶┤                  ╭╴name=1,dist=1.0
+          │                      │                  │
+          │                      ╰╴name=xx,dist=1.0╶┼╴name=2,dist=1.0
+╴dist=0.0╶┤                                         │
+          │                                         ╰╴name=3,dist=1.0
+          │
+          ╰╴name=NODE
+
+Expected result: []
+Matches found:   []
+TreePattern for the win!
+
+
+Searching pattern in the tree:
+                      ╭╴name=hello,dist=1.0
+                      │
+╴name=accept,dist=1.0╶┤                  ╭╴name=1,dist=1.0
+                      │                  │
+                      ╰╴name=xx,dist=1.0╶┼╴name=2,dist=1.0
+                                         │
+                                         ╰╴name=3,dist=1.0
+
+Expected result: [&#39;accept&#39;]
+Matches found:   [&#39;accept&#39;]
+TreePattern for the win!
+
+
+Searching pattern in the tree:
+                               ╭╴name=bye,dist=1.0
+                               │
+          ╭╴name=none,dist=1.0╶┤                  ╭╴name=1,dist=1.0
+          │                    │                  │
+          │                    ╰╴name=xx,dist=1.0╶┼╴name=2,dist=1.0
+╴dist=0.0╶┤                                       │
+          │                                       ╰╴name=3,dist=1.0
+          │
+          ╰╴name=NODE
+
+Expected result: []
+Matches found:   []
+TreePattern for the win!
+
+
+Searching pattern in the tree:
+                            ╭╴name=bye,dist=1.0
+                            │
+          ╭╴name=y,dist=1.0╶┤                  ╭╴name=1,dist=1.0
+          │                 │                  │
+          │                 ╰╴name=xx,dist=1.0╶┼╴name=2,dist=1.0
+╴dist=0.0╶┤                                    │
+          │                                    ╰╴name=3,dist=1.0
+          │
+          ╰╴name=NODE
+
+Expected result: [&#39;y&#39;]
+Matches found:   [&#39;y&#39;]
+TreePattern for the win!
+
+
+Searching pattern in the tree:
+                            ╭╴name=bye
+                            │
+          ╭╴name=x,dist=1.0╶┤  ╭╴
+          │                 │  │
+          │                 ╰──┼╴
+          │                    │
+          │                    ╰╴
+╴dist=0.0╶┤
+          │                    ╭╴
+          │                    │
+          │                 ╭──┼╴
+          │                 │  │
+          ╰╴name=y,dist=1.0╶┤  ╰╴
+                            │
+                            ╰╴name=bye
+
+Expected result: [&#39;x&#39;, &#39;y&#39;]
+Matches found:   [&#39;x&#39;, &#39;y&#39;]
+TreePattern for the win!
+</pre></div>
+</div>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">ETE Toolkit</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorial</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="tutorial_trees.html">Working with the Tree structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_phylogeny.html">Phylogenetic trees</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_smartview.html">Tree drawing and exploration (web)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_treeview.html">Tree drawing (Qt)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_taxonomy.html">Taxonomy databases</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Tree matcher</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs.html">Frequently Asked Questions</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Tutorial</a><ul>
+      <li>Previous: <a href="tutorial_taxonomy.html" title="previous chapter">Taxonomy databases</a></li>
+      <li>Next: <a href="../reference/index.html" title="next chapter">Reference Guide</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2008 - 2023, The ETE Toolkit Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+      |
+      <a href="../_sources/tutorial/tutorial_treematcher.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

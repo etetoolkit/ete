@@ -11,3 +11,4 @@ Contents:
    tutorial_smartview
    tutorial_treeview
    tutorial_taxonomy
+   tutorial_treematcher
