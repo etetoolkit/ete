@@ -18,6 +18,16 @@ class TreePattern(Tree):
     """
 
     def __init__(self, pattern='', children=None, parser=1, safer=False):
+        """
+        :param pattern: Tree pattern to match, as a newick string. Optionally
+            with conditions on the nodes too (in place of node names).
+        :param safer: If True, calls to eval() will be safer by strongly
+            restricting the Python keywords that can be used.
+
+        The other parameters (children and parser) are needed to call
+        Tree's constructor appropriately, but should not be used when
+        creating a TreePattern.
+        """
         if type(pattern) == str:
             # We expect a newick tree whose names will be the conditions
             # to check for in each node. No need to end with ";".
