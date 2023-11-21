@@ -124,6 +124,7 @@ POSNAMES = {
     "b-bottom":"branch-bottom",
     "float":"float",
     "float-behind":"float-behind",
+    "float-right":"float-right",
     "aligned":"aligned",
 }
 
