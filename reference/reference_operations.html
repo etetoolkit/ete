@@ -116,6 +116,12 @@
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.interchange_references">
+<span class="sig-name descname"><span class="pre">interchange_references</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.interchange_references" title="Link to this definition">¶</a></dt>
+<dd><p>Interchange the references of the given nodes.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="ete4.core.operations.join_branch">
 <span class="sig-name descname"><span class="pre">join_branch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.join_branch" title="Link to this definition">¶</a></dt>
 <dd><p>Substitute node for its only child.</p>
@@ -211,7 +217,7 @@ in newly created internal branches, or None for no supports.</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="ete4.core.operations.rehang">
 <span class="sig-name descname"><span class="pre">rehang</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">child_pos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bprops</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.rehang" title="Link to this definition">¶</a></dt>
-<dd><p>Rehang node on its child at position child_pos and return it.</p>
+<dd><p>Rehang root on its child at position child_pos and return it.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -221,15 +227,31 @@ in newly created internal branches, or None for no supports.</p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="ete4.core.operations.set_outgroup">
-<span class="sig-name descname"><span class="pre">set_outgroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bprops</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.set_outgroup" title="Link to this definition">¶</a></dt>
-<dd><p>Reroot the tree at the given outgroup node.</p>
+<dt class="sig sig-object py" id="ete4.core.operations.root_at">
+<span class="sig-name descname"><span class="pre">root_at</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bprops</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.root_at" title="Link to this definition">¶</a></dt>
+<dd><p>Set the given node as the root of the tree.</p>
 <p>The original root node will be used as the new root node, so any
 reference to it in the code will still be valid.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>node</strong> – Node where to set root (future first child of the root).</p></li>
+<li><p><strong>node</strong> – Node to set as root. Its reference will be lost.</p></li>
+<li><p><strong>bprops</strong> – List of branch properties (other than “dist” and “support”).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.set_outgroup">
+<span class="sig-name descname"><span class="pre">set_outgroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bprops</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.set_outgroup" title="Link to this definition">¶</a></dt>
+<dd><p>Change tree so the given node is set as outgroup.</p>
+<p>The original root node will be used as the new root node, so any
+reference to it in the code will still be valid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>node</strong> – Node to set as outgroup (future first child of the root).</p></li>
 <li><p><strong>bprops</strong> – List of branch properties (other than “dist” and “support”).</p></li>
 </ul>
 </dd>

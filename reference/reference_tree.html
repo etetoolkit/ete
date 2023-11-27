@@ -993,7 +993,17 @@ value will be returned. See also <code class="xref py py-func docutils literal n
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.Tree.set_outgroup">
 <span class="sig-name descname"><span class="pre">set_outgroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bprops</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.set_outgroup" title="Link to this definition">¶</a></dt>
-<dd><p>Reroot the tree at the given outgroup node.</p>
+<dd><p>Change tree so the given node is set as outgroup.</p>
+<p>The original root node will be used as the new root node, so any
+reference to it in the code will still be valid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>node</strong> – Node to set as outgroup (future first child of the root).</p></li>
+<li><p><strong>bprops</strong> – List of branch properties (other than “dist” and “support”).</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1097,19 +1107,12 @@ collapsing internal nodes.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.Tree.unroot">
-<span class="sig-name descname"><span class="pre">unroot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'legacy'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.unroot" title="Link to this definition">¶</a></dt>
-<dd><p>Unroot current node.</p>
-<p>This function is expected to be used on the absolute tree root
-node, but it can be also be applied to any other internal
-node. It will convert a split into a multifurcation.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>mode</strong> – The value can be “legacy” or “keep”. If value is
-“keep”, it keeps the distance between the leaves by adding
-the distance associated to the deleted edge to the
-remaining edge. Otherwise that distance is just dropped.</p>
-</dd>
-</dl>
+<span class="sig-name descname"><span class="pre">unroot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.unroot" title="Link to this definition">¶</a></dt>
+<dd><p>Unroot the tree, that is, make the root not have 2 children.</p>
+<p>The convention in phylogenetic trees is that if the root has 2
+children, it is a “rooted” tree (the root is a real ancestor).
+Otherwise (typically a root with 3 children), the root is just
+an arbitrary place to hang the tree.</p>
 </dd></dl>
 
 <dl class="py attribute">
