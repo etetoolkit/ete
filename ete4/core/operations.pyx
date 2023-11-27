@@ -16,36 +16,84 @@ def sort(tree, key=None, reverse=False):
         node.children.sort(key=key, reverse=reverse)
 
 
-def set_outgroup(node, bprops=None):
-    """Reroot the tree at the given outgroup node.
+def root_at(node, bprops=None):
+    """Set the given node as the root of the tree.
 
     The original root node will be used as the new root node, so any
     reference to it in the code will still be valid.
 
-    :param node: Node where to set root (future first child of the root).
+    :param node: Node to set as root. Its reference will be lost.
     :param bprops: List of branch properties (other than "dist" and "support").
     """
-    old_root = node.root
+    root = node.root
+
+    if root is node:
+        return  # nothing to do!
+
+    assert_root_consistency(root, bprops)
+
     positions = node.id  # child positions from root to node (like [1, 0, ...])
 
-    assert_root_consistency(old_root, bprops)
-    assert node != old_root, 'cannot set the absolute tree root as outgroup'
+    interchange_references(root, node)  # root <--> node
+    old_root = node  # now "node" points to where the old root was
 
-    # Make a new node to replace the old root.
-    replacement = old_root.__class__()  # could be Tree() or PhyloTree(), etc.
-
-    children = old_root.remove_children()
-    replacement.add_children(children)  # take its children
-
-    # Now we can insert the old root, which has no children, in its new place.
-    insert_intermediate(node, old_root, bprops)
-
-    root = replacement  # current root, which will change in each iteration
+    current_root = old_root  # current root, which will change in each iteration
     for child_pos in positions:
-        root = rehang(root, child_pos, bprops)
+        current_root = rehang(current_root, child_pos, bprops)
 
-    if len(replacement.children) == 1:
-        join_branch(replacement)
+    if len(old_root.children) == 1:
+        join_branch(old_root)
+
+
+def interchange_references(node1, node2):
+    """Interchange the references of the given nodes."""
+    # node1 will point where node2 was, and viceversa.
+    if node1 is node2:
+        return
+
+    # Interchange properties.
+    node1.props, node2.props = node2.props, node1.props
+
+    # Interchange children.
+    children1 = node1.remove_children()
+    children2 = node2.remove_children()
+    node1.add_children(children2)
+    node2.add_children(children1)
+
+    # Interchange parents.
+    up1 = node1.up
+    up2 = node2.up
+    pos1 = up1.children.index(node1) if up1 else None
+    pos2 = up2.children.index(node2) if up2 else None
+
+    if up1 is not None:
+        up1.children.pop(pos1)
+        up1.children.insert(pos1, node2)
+
+    if up2 is not None:
+        up2.children.pop(pos2)
+        up2.children.insert(pos2, node1)
+
+    node1.up = up2
+    node2.up = up1
+
+
+def set_outgroup(node, bprops=None):
+    """Change tree so the given node is set as outgroup.
+
+    The original root node will be used as the new root node, so any
+    reference to it in the code will still be valid.
+
+    :param node: Node to set as outgroup (future first child of the root).
+    :param bprops: List of branch properties (other than "dist" and "support").
+    """
+    assert not node.is_root, 'cannot set the absolute tree root as outgroup'
+    assert_root_consistency(node.root, bprops)
+
+    intermediate = node.__class__()  # could be Tree() or PhyloTree(), etc.
+    insert_intermediate(node, intermediate, bprops)
+
+    root_at(intermediate, bprops)
 
 
 def assert_root_consistency(root, bprops=None):
@@ -62,7 +110,7 @@ def assert_root_consistency(root, bprops=None):
 
 
 def rehang(root, child_pos, bprops):
-    """Rehang node on its child at position child_pos and return it."""
+    """Rehang root on its child at position child_pos and return it."""
     # root === child  ->  child === root
     child = root.pop_child(child_pos)
 

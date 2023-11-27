@@ -1067,35 +1067,28 @@ cdef class Tree(object):
         ops.populate(self, size, names, model, dist_fn, support_fn)
 
     def set_outgroup(self, node, bprops=None):
-        """Reroot the tree at the given outgroup node."""
+        """Change tree so the given node is set as outgroup.
+
+        The original root node will be used as the new root node, so any
+        reference to it in the code will still be valid.
+
+        :param node: Node to set as outgroup (future first child of the root).
+        :param bprops: List of branch properties (other than "dist" and "support").
+        """
         node = self[node] if type(node) == str else node  # translates if needed
         ops.set_outgroup(node, bprops)
 
-    def unroot(self, mode='legacy'):
-        """Unroot current node.
+    def unroot(self):
+        """Unroot the tree, that is, make the root not have 2 children.
 
-        This function is expected to be used on the absolute tree root
-        node, but it can be also be applied to any other internal
-        node. It will convert a split into a multifurcation.
-
-        :param mode: The value can be "legacy" or "keep". If value is
-            "keep", it keeps the distance between the leaves by adding
-            the distance associated to the deleted edge to the
-            remaining edge. Otherwise that distance is just dropped.
+        The convention in phylogenetic trees is that if the root has 2
+        children, it is a "rooted" tree (the root is a real ancestor).
+        Otherwise (typically a root with 3 children), the root is just
+        an arbitrary place to hang the tree.
         """
-        if not (mode == 'legacy' or mode == 'keep'):
-            raise ValueError("The value of the mode parameter must be 'legacy' or 'keep'")
-        if len(self.children)==2:
-            if not self.children[0].is_leaf:
-                if mode == "keep":
-                    self.children[1].dist+=self.children[0].dist
-                self.children[0].delete()
-            elif not self.children[1].is_leaf:
-                if mode == "keep":
-                    self.children[0].dist+=self.children[1].dist
-                self.children[1].delete()
-            else:
-                raise TreeError("Cannot unroot a tree with only two leaves")
+        assert self.is_root, 'unroot only makes sense from the root node'
+        if len(self.children) == 2:
+            ops.root_at(self.children[0])
 
     def show(self, layout=None, tree_style=None, name="ETE"):
         """Start an interactive session to visualize the current node."""
