@@ -1218,16 +1218,9 @@ cdef class Tree(object):
         ops.ladderize(self, topological, reverse)
 
     def sort_descendants(self, prop='name'):
-        """Sort branches by node names.
-
-        After the tree is sorted, if duplicated names are present,
-        extra criteria should be added to sort nodes.
-        """
-        node2content = self.get_cached_content(prop, container_type=list)
-
-        for n in self.traverse():
-            if not n.is_leaf:
-                n.children.sort(key=lambda x: str(sorted(node2content[x])))
+        """Sort branches by leaf node values (names or any other given prop)."""
+        leaf_values = self.get_cached_content(prop, container_type=list)
+        ops.sort(self, key=lambda node: tuple(sorted(leaf_values[node])))
 
     def get_cached_content(self, prop=None, container_type=set,
                            leaves_only=True):
