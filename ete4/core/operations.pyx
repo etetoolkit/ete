@@ -176,6 +176,21 @@ def join_branch(node):
     child.up = up
 
 
+def unroot(tree):
+    """Unroot the tree (make the root not have 2 children).
+
+    The convention in phylogenetic trees is that if the root has 2
+    children, it is a "rooted" tree (the root is a real ancestor).
+    Otherwise (typically a root with 3 children), the root is just
+    an arbitrary place to hang the tree.
+    """
+    assert tree.is_root, 'unroot only makes sense from the root node'
+    if len(tree.children) == 2:
+        n1, n2 = tree.children
+        assert not (n1.is_leaf and n2.is_leaf), 'tree has just two leaves'
+        root_at(n1 if not n1.is_leaf else n2)
+
+
 def move(node, shift=1):
     """Change the position of the current node with respect to its parent."""
     # ╴up╶┬╴node     ->  ╴up╶┬╴sibling

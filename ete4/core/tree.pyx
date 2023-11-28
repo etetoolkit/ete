@@ -1086,12 +1086,7 @@ cdef class Tree(object):
         Otherwise (typically a root with 3 children), the root is just
         an arbitrary place to hang the tree.
         """
-        assert self.is_root, 'unroot only makes sense from the root node'
-        if len(self.children) == 2:
-            n1, n2 = self.children
-            if n1.is_leaf and n2.is_leaf:
-                raise TreeError('cannot unroot a tree with only two leaves')
-            ops.root_at(n1 if not n1.is_leaf else n2)
+        ops.unroot(self)
 
     def show(self, layout=None, tree_style=None, name="ETE"):
         """Start an interactive session to visualize the current node."""
