@@ -46,8 +46,10 @@ def root_at(node, bprops=None):
 
 
 def interchange_references(node1, node2):
-    """Interchange the references of the given nodes."""
-    # node1 will point where node2 was, and viceversa.
+    """Interchange the references of the given nodes.
+
+    node1 will point where node2 was, and viceversa.
+    """
     if node1 is node2:
         return
 

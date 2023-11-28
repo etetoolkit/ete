@@ -1251,7 +1251,6 @@ cdef class Tree(object):
         :param leaves_only: If False, for each node it stores all its
             descendant nodes, not only its leaves.
         """
-
         def get_content():  # return the node itself, or its requested prop
             return self if prop is None else self.get_prop(prop)
 
