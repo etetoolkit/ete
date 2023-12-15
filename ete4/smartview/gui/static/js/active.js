@@ -6,7 +6,7 @@ import { api } from "./api.js";
 import { notify_parent } from "./events.js";
 import { store_selection } from "./select.js";
 
-export { 
+export {
     activate_node, deactivate_node,
     update_active_nodes,
     get_active_class, colorize_active,
@@ -99,7 +99,7 @@ async function store_active(name, type) {
 function add_folder_active(type) {
 
     const folder = view.active[type].folder;
-    folder.addInput(view.active[type], "color", { view: "color" })
+    folder.addBinding(view.active[type], "color", { view: "color" })
         .on("change", () => colorize_active(type));
 
     view.active[type].remove = async function(purge=true, redraw=true, notify=true) {
@@ -117,7 +117,7 @@ function add_folder_active(type) {
             draw_tree();
     }
 
-    view.active[type].buttons.push(folder.addButton({ 
+    view.active[type].buttons.push(folder.addButton({
         title: "save selection",
         disabled: true })
         .on("click", () => {
@@ -174,7 +174,7 @@ async function get_active_nodes() {
 
 async function update_active_nodes(nodes, type) {
     // Override active nodes
-    
+
     // First remove
     view.active[type].remove(true, true, false)
 

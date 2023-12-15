@@ -1,8 +1,10 @@
 Where to find the libraries that appear here:
 
-## dat.gui
+## tweakpane
 
-* https://raw.githubusercontent.com/dataarts/dat.gui/master/build/dat.gui.min.js
+* https://github.com/cocopon/tweakpane/releases
+
+We are currently using tweakpane 4.0.2.
 
 
 ## sweetalert2

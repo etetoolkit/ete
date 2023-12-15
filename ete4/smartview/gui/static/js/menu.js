@@ -6,13 +6,14 @@ import { view, menus, on_tree_change,
 import { draw_minimap } from "./minimap.js";
 import { update, draw_tree_scale, draw_aligned, update_aligned_panel_display } from "./draw.js";
 import { add_folder_active } from "./active.js";
+import { Pane } from "../external/tweakpane-4.0.2.min.js";
 
 export { init_menus, update_folder_layouts };
 
 
 // Init the menus on the top with all the options we can see and change.
 function init_menus(trees) {
-    menus.pane = new Tweakpane.Pane({
+    menus.pane = new Pane({
         container: sidenav,
     });
 
@@ -41,26 +42,25 @@ function create_menu_basic(menu, trees) {
     // trees
     if (trees.length > 1) {
         const options = trees.reduce((opt, t) => ({ ...opt, [t]: t }), {});
-        menu.addInput(view, "tree", {options: options}).on("change", () => {
+        menu.addBinding(view, "tree", {options: options}).on("change", () => {
             view.subtree = "";
             on_tree_change();
         });
-    } else
-        menu.addMonitor(view, "tree",
-            { label: "tree" })
-
+    } else {
+        menu.addBinding(view, "tree", { readonly: true, label: "tree" });
+    }
 
     // drawer
     const options = { "Rectangular": "RectFaces", "Circular": "CircFaces" };
-    menu.addInput(view.drawer, "name", { label: "drawer", options: options })
+    menu.addBinding(view.drawer, "name", { label: "drawer", options: options })
         .on("change", on_drawer_change);
 
     // min collapse size
-    menu.addInput(view, "min_size", { label: "collapse",
+    menu.addBinding(view, "min_size", { label: "collapse",
         min: 1, max: 100, step: 1 }).on("change", update);
 
     // ultrametric
-    menu.addInput(view, "ultrametric", { label: "ultrametric" }).on("change",
+    menu.addBinding(view, "ultrametric", { label: "ultrametric" }).on("change",
         async () => {
             await api(`/trees/${get_tid()}/ultrametric`);
             update();
@@ -73,23 +73,23 @@ function create_menu_basic(menu, trees) {
     add_folder_layouts(menu, true);
 
     // minimap
-    menus.minimap = menu.addInput(view.minimap, "show", { label: "show minimap" })
+    menus.minimap = menu.addBinding(view.minimap, "show", { label: "show minimap" })
         .on("change", () => show_minimap(view.minimap.show));
 
     // tree scale legend
-    menu.addInput(view.tree_scale, "show", { label: "show tree scale legend" })
+    menu.addBinding(view.tree_scale, "show", { label: "show tree scale legend" })
         .on("change", draw_tree_scale);
 
     // tooltip
-    menu.addInput(view.tooltip, "auto", { label: "tooltip on hover" });
+    menu.addBinding(view.tooltip, "auto", { label: "tooltip on hover" });
 
     // zooms
-    menu.addInput(view, "smart_zoom", { label: "smart zoom" });
+    menu.addBinding(view, "smart_zoom", { label: "smart zoom" });
 
-    menu.addInput(view.aligned, "zoom", { label: "zoom in aligned panel" });
+    menu.addBinding(view.aligned, "zoom", { label: "zoom in aligned panel" });
 
     // text select
-    menu.addInput(view, "select_text", { label: "select text", position: 'left' })
+    menu.addBinding(view, "select_text", { label: "select text", position: 'left' })
       .on("change", () => {
         style("font").userSelect = (view.select_text ? "text" : "none");
         div_tree.style.cursor = (view.select_text ? "text" : "auto");
@@ -138,7 +138,7 @@ function add_folder_control_panel(menu) {
     const folder_cp = menu.addFolder({ title: "Control panel", expanded: false });
 
     let timeout;
-    folder_cp.addInput(menus, "width", { label: "width", format: v => v.toFixed(0) })
+    folder_cp.addBinding(menus, "width", { label: "width", format: v => v.toFixed(0) })
         .on("change", () => {
             if (timeout)
                 clearTimeout(timeout);
@@ -154,11 +154,11 @@ function add_folder_circular(menu) {
         draw_minimap();
         update();
     }
-    folder_circ.addInput(view, "rmin", { label: "min radius",
+    folder_circ.addBinding(view, "rmin", { label: "min radius",
         format: v => v.toFixed(4) }).on("change", update_with_minimap);
-    folder_circ.addInput(view.angle, "min", { label: "min angle",
+    folder_circ.addBinding(view.angle, "min", { label: "min angle",
         min: -180, max: 180, step: 1 }).on("change", update_with_minimap);
-    folder_circ.addInput(view.angle, "max", { label: "max angle",
+    folder_circ.addBinding(view.angle, "max", { label: "max angle",
         min: -180, max: 180, step: 1 }).on("change", update_with_minimap);
 
     //add_folder_style(menu);
@@ -187,8 +187,8 @@ function add_folder_sort(menu) {
     const folder_sort = menu.addFolder({ title: "Sort",
                                                 expanded: false });
     folder_sort.addButton({ title: "sort" }).on("click", view.sorting.sort);
-    folder_sort.addInput(view.sorting, "key");
-    folder_sort.addInput(view.sorting, "reverse");
+    folder_sort.addBinding(view.sorting, "key");
+    folder_sort.addBinding(view.sorting, "reverse");
 }
 
 
@@ -205,7 +205,7 @@ function update_folder_layouts (){
         const layout_folder = menus.layouts.addFolder({ title: name, expanded: true })
         const layouts = view.layouts[name];
         Object.keys(layouts).sort().forEach(layout =>
-            layout_folder.addInput(view.layouts[name], layout).on("change", update))
+            layout_folder.addBinding(view.layouts[name], layout).on("change", update))
     });
 }
 
@@ -226,16 +226,16 @@ function add_folder_searches(menu) {
 function add_folder_info(menu) {
     const folder_info = menu.addFolder({ title: "Info", expanded: false });
 
-    menus.subtree = folder_info.addInput(view, "subtree",
+    menus.subtree = folder_info.addBinding(view, "subtree",
         { value: view.subtree }).on("change", on_tree_change);
 
     const folder_nodes = folder_info.addFolder({ title: "Nodes", expanded: true });
-    folder_nodes.addMonitor(view, "nnodes",
-        { label: "visible", format: v => v.toFixed(0) });
-    folder_nodes.addMonitor(view, "tnodes",
-        { label: "total", view: "text" });
-    folder_nodes.addMonitor(view, "tleaves",
-        { label: "leaves", format: v => v.toFixed(0) });
+    folder_nodes.addBinding(view, "nnodes",
+        { readonly: true, label: "visible", format: v => v.toFixed(0) });
+    folder_nodes.addBinding(view, "tnodes",
+        { readonly: true, label: "total", view: "text" });
+    folder_nodes.addBinding(view, "tleaves",
+        { readonly: true, label: "leaves", format: v => v.toFixed(0) });
 
     folder_info.addButton({ title: "show details" })
         .on("click", view.show_tree_info);
@@ -247,25 +247,28 @@ function add_folder_view(menu) {
 
     folder_view.addButton({ title: "reset view" }).on("click", view.reset_view)
     const folder_tl = folder_view.addFolder({ title: "Top-left corner" });
-    folder_tl.addMonitor(view.tl, "x", { format: v => v.toFixed(3) });
-    folder_tl.addMonitor(view.tl, "y", { format: v => v.toFixed(3) });
+
+    folder_tl.addBinding(view.tl, "x",
+        { readonly: true, format: v => v.toFixed(3) });
+    folder_tl.addBinding(view.tl, "y",
+        { readonly: true, format: v => v.toFixed(3) });
 }
 
 
 function add_folder_zoom(menu) {
     const folder_zoom = menu.addFolder({ title: "Zoom", expanded: false });
 
-    folder_zoom.addInput(view.zoom, "x", {
+    folder_zoom.addBinding(view.zoom, "x", {
         label: "Adjust zoom x",
         format: v => v.toFixed(1),
         min: 1, max: div_tree.offsetWidth / view.tree_size.width }).on("change", update);
 
-    folder_zoom.addInput(view.zoom, "a", {
+    folder_zoom.addBinding(view.zoom, "a", {
         label: "Adjust zoom a",
         format: v => v.toFixed(1),
         min: 1, max: div_tree.offsetWidth / view.tree_size.width }).on("change", update);
 
-    folder_zoom.addInput(view, "zoom_sensitivity", {
+    folder_zoom.addBinding(view, "zoom_sensitivity", {
         label: "Zoom sensitivity",
         format: v => v.toFixed(1),
         min: 0.1, max: 2, step: 0.1,
@@ -408,21 +411,21 @@ function add_folder_minimap(menu) {
     const folder_minimap = menu.addFolder(
         { title: "Minimap", expanded: false });
 
-    folder_minimap.addInput(view.minimap, "width", { min: 1, max: 100 })
+    folder_minimap.addBinding(view.minimap, "width", { min: 1, max: 100 })
       .on("change", () => {
         if (view.drawer.type === "circ")
             view.minimap.height = view.minimap.width * div_tree.offsetWidth
                                                      / div_tree.offsetHeight;
         draw_minimap();
     });
-    folder_minimap.addInput(view.minimap, "height", { min: 1, max: 100 })
+    folder_minimap.addBinding(view.minimap, "height", { min: 1, max: 100 })
       .on("change", () => {
         if (view.drawer.type === "circ")
             view.minimap.width = view.minimap.height * div_tree.offsetHeight
                                                      / div_tree.offsetWidth;
         draw_minimap();
     });
-    menus.minimap = folder_minimap.addInput(view.minimap, "show")
+    menus.minimap = folder_minimap.addBinding(view.minimap, "show")
         .on("change", () => show_minimap(view.minimap.show));
 }
 
@@ -431,14 +434,14 @@ function add_folder_tree_scale(menu) {
     const folder_scale = menu.addFolder(
         { title: "Tree scale legend", expanded: false });
 
-    folder_scale.addInput(view.tree_scale, "length",
+    folder_scale.addBinding(view.tree_scale, "length",
         { label: "width (px)", min: 10, max: 300 })
         .on("change", draw_tree_scale);
 
-    folder_scale.addInput(view.tree_scale, "color", { view: "color" })
+    folder_scale.addBinding(view.tree_scale, "color", { view: "color" })
         .on("change", draw_tree_scale);
 
-    folder_scale.addInput(view.tree_scale, "show")
+    folder_scale.addBinding(view.tree_scale, "show")
         .on("change", draw_tree_scale);
 }
 
@@ -447,29 +450,29 @@ function add_folder_aligned(menu) {
     const folder_aligned = menu.addFolder(
         { title: "Aligned panel", expanded: false });
 
-    folder_aligned.addInput(view.aligned, "timeout",
+    folder_aligned.addBinding(view.aligned, "timeout",
         { label: "Refresh rate (ms)", min: 0, max: 1000 });
 
 
-    folder_aligned.addInput(view.aligned, "adjust_zoom",
+    folder_aligned.addBinding(view.aligned, "adjust_zoom",
         { label: "adjust zoom" });
 
-    folder_aligned.addInput(view.aligned.header, "show",
+    folder_aligned.addBinding(view.aligned.header, "show",
         { label: "show header" })
         .on("change",() => draw_aligned());
 
-    folder_aligned.addInput(view.aligned.footer, "show",
+    folder_aligned.addBinding(view.aligned.footer, "show",
         { label: "show footer" })
         .on("change",() => draw_aligned());
 
-    folder_aligned.addInput(view.aligned, "pos", { label: "position",
+    folder_aligned.addBinding(view.aligned, "pos", { label: "position",
                                                  min: 0, max: 100 })
         .on("change", () => div_aligned.style.width = `${100 - view.aligned.pos}%`);
 
-    folder_aligned.addInput(view.aligned, "adjust_pos", { label: "adjust position" })
+    folder_aligned.addBinding(view.aligned, "adjust_pos", { label: "adjust position" })
         .on("change", () => update_aligned_panel_display());
 
-    folder_aligned.addInput(view.aligned, "padding", { label: "padding from tree",
+    folder_aligned.addBinding(view.aligned, "padding", { label: "padding from tree",
                                                  min: 0, max: 600 })
         .on("change", () => update_aligned_panel_display());
 }

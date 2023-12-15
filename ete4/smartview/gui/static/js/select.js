@@ -6,9 +6,9 @@ import { api } from "./api.js";
 import { colors } from "./colors.js";
 import { notify_parent } from "./events.js";
 
-export { 
+export {
     select_node, unselect_node, store_selection,
-    get_selections, remove_selections, 
+    get_selections, remove_selections,
     get_selection_class, colorize_selections,
     select_by_command, prune_by_selection };
 
@@ -129,7 +129,7 @@ function change_name(name, folder) {
                 return false
 
             if (Object.keys(view.selected).includes(new_name))
-                selectError.fire({ 
+                selectError.fire({
                     html: "Selection name already exists<br>Please choose a different name"
                 }).then(() => change_name(name, folder));
             else {
@@ -142,7 +142,7 @@ function change_name(name, folder) {
             }
         },
     })
-    
+
 }
 
 
@@ -153,7 +153,7 @@ function add_selected_to_menu(name) {
 
     selected.folder = folder;
 
-    folder.addInput(selected.results, "color", { view: "color" })
+    folder.addBinding(selected.results, "color", { view: "color" })
         .on("change", () => colorize_selection(name));
 
 
@@ -176,16 +176,16 @@ function add_selected_to_menu(name) {
     folder_more.addButton({ title: "edit name" }).on("click", () => change_name(folder.title, folder));
 
     const folder_results = folder_more.addFolder({ title: `results (${selected.results.n})` });
-    folder_results.addInput(selected.results, "opacity", 
+    folder_results.addBinding(selected.results, "opacity",
         { min: 0, max: 1, step: 0.1 })
         .on("change", () => colorize_selection(name));
     // Store to change title when selection is edited
     selected.results.folder = folder_results;
 
     const folder_parents = folder_more.addFolder({ title: `parents (${selected.parents.n})` });
-    folder_parents.addInput(selected.parents, "color", { view: "color" })
+    folder_parents.addBinding(selected.parents, "color", { view: "color" })
         .on("change", () => colorize_selection(name));
-    folder_parents.addInput(selected.parents, "width", { min: 0.1, max: 10 })
+    folder_parents.addBinding(selected.parents, "width", { min: 0.1, max: 10 })
         .on("change", () => colorize_selection(name));
     // Store to change title when selection is edited
     selected.parents.folder = folder_parents;

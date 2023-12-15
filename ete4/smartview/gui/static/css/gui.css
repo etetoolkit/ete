@@ -372,94 +372,25 @@ kbd {
     white-space: nowrap;
 }
 
-/* Tweakpane customization */
-/* Total width */
-.tp-dfwv {
-    width: 330px !important;
-    z-index: 2;
-}
-
-.tp-dfwv * {
-    font-size: 0.6rem;
-}
-
-/* Folder padding */
-.tp-fldv.tp-fldv-expanded > .tp-fldv_c, .tp-rotv.tp-rotv-expanded .tp-rotv_c {
-    padding-bottom: 8px !important;
-    padding-right: 2px !important;
-}
-
-.tp-fldv.tp-cntv.tp-fldv-cpl {
-    margin-bottom: 4px;
-}
-
-/* Tab */
-button.tp-tbiv_b {
-    cursor: pointer;
-}
-
-/* Checkbox */
-.tp-lblv_v {
-    /*width: auto !important;*/
-    border-radius: 4px;
-}
-
-/* Color picker */
-.tp-colswv {
-    border-radius: 3px !important;
-}
-
-/* General tweakpane styling */
-.tp-rotv {
-    font-weight: bold !important;
-    box-shadow: none !important;
-}
-
-/*:root {*/
-    /*--tp-font-family: sans-serif;*/
-    /*--tp-input-background-color: black;*/
-    /*--tp-input-background-color-focus: black;*/
-/*}*/
-
-/*Light mode tweakpane*/
-:root {
-    --tp-font-family: sans-serif;
-    --tp-base-background-color: #f7f7f7;
-    --tp-container-foreground-color: black;
-    --tp-container-background-color: #eaeaea;
-    --tp-input-background-color: #eaeaea;
-    --tp-input-background-color-focus: #eaeaea;
-    --tp-input-background-color-hover: #eaeaea;
-    --tp-input-foreground-color: gray;
-    --tp-monitor-background-color: var(--tp-input-background-color);
-    --tp-monitor-foreground-color: var(--tp-input-foreground-color);
-    --tp-label-foreground-color: gray;
-    --tp-button-background-color: #d6d6d6;
-    --tp-button-background-color-hover: #ccc;
-}
-
-
-
-/*Tooltip*/
 .tooltip {
-  display: none;
-  position: absolute;
-  max-width:70vh;
-  overflow-wrap: break-word;
-  /*background-color: #d6d6d6;*/
-  background-color: #eaeaea;
-  color: black;
-  font-family:sans-serif;
-  font-size: 12px;
-  padding: 5px 10px;
-  margin-top: 20px;
-  transform: translateX(-50%);
-  border-radius: 2px;
-  border: solid 1px lightgray;
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-  z-index: 1;
-  transition: opacity 0.3s;
-  pointer-events: all;
+    display: none;
+    position: absolute;
+    max-width:70vh;
+    overflow-wrap: break-word;
+    /*background-color: #d6d6d6;*/
+    background-color: #eaeaea;
+    color: black;
+    font-family:sans-serif;
+    font-size: 12px;
+    padding: 5px 10px;
+    margin-top: 20px;
+    transform: translateX(-50%);
+    border-radius: 2px;
+    border: solid 1px lightgray;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    z-index: 1;
+    transition: opacity 0.3s;
+    pointer-events: all;
 }
 
 .tooltip::after {
@@ -474,7 +405,10 @@ button.tp-tbiv_b {
 }
 
 
-/*Sweetalert*/
+/*
+ * Sweetalert customization.
+ */
+
 .swal2-container * {
     font-family: sans-serif;
     font-size: .9rem;
@@ -514,6 +448,50 @@ button.tp-tbiv_b {
     height: 2em !important;
 }
 
-.swal2-search { 
+.swal2-search {
     min-width: 32rem;
+}
+
+
+/*
+ * Theming for tweakpane. Based on the "light" preset at
+ * https://cocopon.github.io/tweakpane/theming/
+ */
+
+:root {
+    --tp-base-font-family: sans-serif;
+    --tp-base-background-color: hsla(0, 0%, 96%, 1.00);
+    --tp-base-shadow-color: hsla(0, 0%, 0%, 0.1);
+    --tp-button-background-color: hsla(0, 0%, 80%, 1.00);
+    --tp-button-background-color-active: hsla(0, 0%, 65%, 1.00);
+    --tp-button-background-color-focus: hsla(0, 0%, 70%, 1.00);
+    --tp-button-background-color-hover: hsla(0, 0%, 75%, 1.00);
+    --tp-button-foreground-color: hsla(230, 10%, 30%, 1.00);
+    --tp-container-background-color: hsla(0, 0%, 50%, 0.20);
+    --tp-container-background-color-active: hsla(0, 0%, 65%, 0.20);
+    --tp-container-background-color-focus: hsla(0, 0%, 60%, 0.20);
+    --tp-container-background-color-hover: hsla(0, 0%, 55%, 0.20);
+    --tp-container-foreground-color: hsla(230, 10%, 30%, 1);
+    --tp-groove-foreground-color: hsla(230, 15%, 30%, 0.1);
+    --tp-input-background-color: hsla(230, 15%, 30%, 0.1);
+    --tp-input-background-color-active: hsla(231, 15%, 45%, 0.10);
+    --tp-input-background-color-focus: hsla(230, 15%, 40%, 0.10);
+    --tp-input-background-color-hover: hsla(231, 15%, 35%, 0.10);
+    --tp-input-foreground-color: hsla(230, 10%, 30%, 1.00);
+    --tp-label-foreground-color: hsla(230, 10%, 30%, 0.7);
+    --tp-monitor-background-color: hsla(230, 15%, 30%, 0.1);
+    --tp-monitor-foreground-color: hsla(230, 10%, 30%, 0.5);
+}
+
+.tp-rotv {
+    font-weight: bold !important;
+}
+
+.tp-fldv.tp-cntv.tp-fldv-cpl {
+    margin-bottom: 4px;  /* leave some space between submenus */
+}
+
+/* Tabs */
+button.tp-tbiv_b {
+    cursor: pointer;  /* have the cursor as a pointer in the tabs too */
 }
