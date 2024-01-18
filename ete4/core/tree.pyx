@@ -1880,11 +1880,11 @@ cdef class Tree(object):
         For this tree, we will return the two dimensional array::
 
                     A                B                C                D                E
-          A         0         d(A-y) + d(B-y)  d(A-z) + d(C-z)  d(A-z) + d(D-z)  d(A-z) + d(E-z)
-          B  d(B-y) + d(A-y)         0         d(B-z) + d(C-z)  d(B-z) + d(D-z)  d(B-z) + d(E-z)
-          C  d(C-z) + d(A-z)  d(C-z) + d(B-z)         0         d(C-x) + d(D-x)  d(C-x) + d(E-x)
-          D  d(D-z) + d(A-z)  d(D-z) + d(B-z)  d(D-x) + d(C-x)         0         d(D-w) + d(E-w)
-          E  d(E-z) + d(A-z)  d(E-z) + d(B-z)  d(E-x) + d(C-x)  d(E-w) + d(D-w)         0
+          A         0         d(A,y) + d(B,y)  d(A,z) + d(C,z)  d(A,z) + d(D,z)  d(A,z) + d(E,z)
+          B  d(B,y) + d(A,y)         0         d(B,z) + d(C,z)  d(B,z) + d(D,z)  d(B,z) + d(E,z)
+          C  d(C,z) + d(A,z)  d(C,z) + d(B,z)         0         d(C,x) + d(D,x)  d(C,x) + d(E,x)
+          D  d(D,z) + d(A,z)  d(D,z) + d(B,z)  d(D,x) + d(C,x)         0         d(D,w) + d(E,w)
+          E  d(E,z) + d(A,z)  d(E,z) + d(B,z)  d(E,x) + d(C,x)  d(E,w) + d(D,w)         0
 
         We will also return the one dimensional array with the leaves
         in the order in which they appear in the matrix (i.e. the
