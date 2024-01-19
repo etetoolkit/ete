@@ -425,6 +425,35 @@ def to_ultrametric(tree, topological=False):
             node.dist *= (dist_full - d) / node.size[0]
 
 
+def resolve_polytomy(tree, descendants=True):
+    """Convert tree to a series of dicotomies if it is a polytomy.
+
+    A polytomy is a node that has more than 2 children. This
+    function changes them to a ladderized series of dicotomic
+    branches. The tree topology modification is arbitrary (no
+    important results should depend on it!).
+
+    :param descendants: If True, resolve all polytomies in the tree,
+        including all root descendants. Otherwise, do it only for the root.
+    """
+    for node in tree.traverse():
+        if len(node.children) > 2:
+            children = node.remove_children()  #  x ::: a,b,c,d,e
+
+            # Create "backbone" nodes:  x --- * --- * ---
+            for i in range(len(children) - 2):
+                node = node.add_child(dist=0, support=0)
+
+            # Add children in order:  x === d,* === c,* === b,a
+            node.add_child(children[0])  # first:  x --- * --- * --- a
+            for i in range(1, len(children)):
+                node.add_child(children[i], support=0)
+                node = node.up
+
+        if not descendants:
+            break
+
+
 # Traversing the tree.
 
 # Position on the tree: current node, number of visited children.

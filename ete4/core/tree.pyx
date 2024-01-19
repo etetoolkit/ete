@@ -1798,22 +1798,7 @@ cdef class Tree(object):
         :param descendants: If True, resolve all polytomies under this
              node too. Otherwise, do it only for the current node.
         """
-        for node in self.traverse():
-            if len(node.children) > 2:
-                children = node.remove_children()  #  x ::: a,b,c,d,e
-
-                # Create "backbone" nodes:  x --- * --- * ---
-                for i in range(len(children) - 2):
-                    node = node.add_child(dist=0, support=0)
-
-                # Add children in order:  x === d,* === c,* === b,a
-                node.add_child(children[0])  # first:  x --- * --- * --- a
-                for i in range(1, len(children)):
-                    node.add_child(children[i], support=0)
-                    node = node.up
-
-            if not descendants:
-                break
+        ops.resolve_polytomy(self, descendants)
 
     def cophenetic_matrix(self):
         """Return a cophenetic distance matrix of the tree.
