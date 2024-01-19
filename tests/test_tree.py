@@ -618,17 +618,14 @@ class Test_Core_Tree(unittest.TestCase):
         self.assertEqual(matrix1, matrix2)
         self.assertEqual(len(list(t.descendants())), (sample_size*2)-2 )
 
-    def test_resolve_polytomies(self):
-        # resolve polytomy
-        t = Tree("((a,a,a,a), (b,b,b,(c,c,c)));")
+    def test_resolve_polytomy(self):
+        t = Tree('((a,a,a,a),(b,b,b,(c,c,c)));')
         t.resolve_polytomy()
-        t.ladderize()
-        self.assertEqual(t.write(parser=9), "((a,(a,(a,a))),(b,(b,(b,(c,(c,c))))));")
+        self.assertEqual(t.write(parser=9), '((((a,a),a),a),(((b,b),b),((c,c),c)));')
 
-        t = Tree("((((a,a,a,a))), (b,b,b,(c,c,c)));")
-        t.standardize()
-        t.ladderize()
-        self.assertEqual(t.write(parser=9), "((a,(a,(a,a))),(b,(b,(b,(c,(c,c))))));")
+        t = Tree('((((a,a,a,a))),(b,b,b,(c,c,c)));')
+        t.standardize()  # calls resolve_polytomy() internally too
+        self.assertEqual(t.write(parser=9), '((((b,b),b),((c,c),c)),(((a,a),a),a));')
 
     def test_common_ancestors(self):
         # getting nodes, get_childs, get_sisters, root,

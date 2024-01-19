@@ -1386,7 +1386,7 @@ Solving multifurcations
 
 When a tree contains a polytomy (a node with more than 2 children),
 the method :func:`resolve_polytomy` can be used to convert the node
-into a randomly bifurcated structure. This is really not a solution
+into an arbitrarily bifurcated structure. This is really not a solution
 for the polytomy but it allows to export the tree as a strictly
 bifurcated newick structure, which is a requirement for some external
 software.
@@ -1396,7 +1396,7 @@ of the tree intact by disabling the :attr:`recursive` flag.
 
 Example::
 
-  t = Tree('(((a,b,c),(d,e,f,g)),(f,i,h));')
+  t = Tree('(((a,b,c),(d,e,f,g)),(h,i,j));')
 
   print(t)
   #      ╭╴a
@@ -1406,38 +1406,38 @@ Example::
   #  │ ╰─┼╴e
   # ─┤   ├╴f
   #  │   ╰╴g
-  #  │ ╭╴f
+  #  │ ╭╴h
   #  ╰─┼╴i
-  #    ╰╴h
+  #    ╰╴j
 
   polynode = t.common_ancestor(['a', 'b'])
-  polynode.resolve_polytomy(recursive=False)
+  polynode.resolve_polytomy(descendants=False)
 
   print(t)
-  #      ╭─┬╴b
-  #    ╭─┤ ╰╴c
-  #  ╭─┤ ╰╴a
+  #      ╭─┬╴a
+  #    ╭─┤ ╰╴b
+  #  ╭─┤ ╰╴c
   #  │ │ ╭╴d
   #  │ ╰─┼╴e
   # ─┤   ├╴f
   #  │   ╰╴g
-  #  │ ╭╴f
+  #  │ ╭╴h
   #  ╰─┼╴i
-  #    ╰╴h
+  #    ╰╴j
 
-  t.resolve_polytomy(recursive=True)
+  t.resolve_polytomy(descendants=True)
 
   print(t)
-  #      ╭─┬╴b
-  #    ╭─┤ ╰╴c
-  #    │ ╰╴a
-  #  ╭─┤   ╭─┬╴f
-  #  │ │ ╭─┤ ╰╴g
-  # ─┤ ╰─┤ ╰╴e
-  #  │   ╰╴d
-  #  │ ╭─┬╴i
-  #  ╰─┤ ╰╴h
-  #    ╰╴f
+  #      ╭─┬╴a
+  #    ╭─┤ ╰╴b
+  #    │ ╰╴c
+  #  ╭─┤   ╭─┬╴d
+  #  │ │ ╭─┤ ╰╴e
+  # ─┤ ╰─┤ ╰╴f
+  #  │   ╰╴g
+  #  │ ╭─┬╴h
+  #  ╰─┤ ╰╴i
+  #    ╰╴j
 
 
 Tree rooting

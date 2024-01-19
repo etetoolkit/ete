@@ -1791,42 +1791,33 @@ cdef class Tree(object):
             n2subtrees[n] = subtrees
         return ["%s;"%str(nw) for nw in n2subtrees[self]] # tuples are in newick format ^_^
 
-    def resolve_polytomy(self, recursive=True, defaults=None):
-        """Resolve all polytomies under the current node, randomly.
+    def resolve_polytomy(self, descendants=True):
+        """Convert node to a series of dicotomies if it is a polytomy.
 
         A polytomy is a node that has more than 2 children. This
-        function resolves them by creating an arbitrary dicotomic
-        structure among the affected nodes. It randomly modifies the
-        current tree topology and should only be used for
-        compatibility reasons (like to later use programs that reject
-        multifurcated nodes).
+        function changes them to a ladderized series of dicotomic
+        branches. The tree topology modification is arbitrary (no
+        important results should depend on it!).
 
-        :param recursive: If True, resolve all polytomies under this
-             node too. Otherwise, only the current node will be
-             checked and fixed.
-        :param defaults: Dictionary of properties to use for new nodes.
+        :param descendants: If True, resolve all polytomies under this
+             node too. Otherwise, do it only for the current node.
         """
-        def resolve(node):
-            if len(node.children) <= 2:
-                return  # nothing to resolve here!
+        for node in self.traverse():
+            if len(node.children) > 2:
+                children = node.remove_children()  #  x ::: a,b,c,d,e
 
-            children = node.remove_children()
-            next_node = root = node
-            for i in range(len(children) - 2):
-                next_node = next_node.add_child()
-                next_node.props.update(defaults or {})
+                # Create "backbone" nodes:  x --- * --- * ---
+                for i in range(len(children) - 2):
+                    node = node.add_child(dist=0, support=0)
 
-            next_node = root
-            for ch in children:
-                next_node.add_child(ch)
-                if ch != children[-2]:
-                    next_node = next_node.children[0]
+                # Add children in order:  x === d,* === c,* === b,a
+                node.add_child(children[0])  # first:  x --- * --- * --- a
+                for i in range(1, len(children)):
+                    node.add_child(children[i], support=0)
+                    node = node.up
 
-        resolve(self)
-
-        if recursive:
-            for n in self.descendants():
-                resolve(n)
+            if not descendants:
+                break
 
     def cophenetic_matrix(self):
         """Return a cophenetic distance matrix of the tree.
