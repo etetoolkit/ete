@@ -295,6 +295,18 @@ reference to it in the code will still be valid.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.traverse">
+<span class="sig-name descname"><span class="pre">traverse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.traverse" title="Link to this definition">¶</a></dt>
+<dd><p>Traverse the tree and yield nodes in pre (&lt; 0) or post (&gt; 0) order.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.traverse_bfs">
+<span class="sig-name descname"><span class="pre">traverse_bfs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.traverse_bfs" title="Link to this definition">¶</a></dt>
+<dd><p>Yield nodes with a breadth-first search (level order traversal).</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="ete4.core.operations.unroot">
 <span class="sig-name descname"><span class="pre">unroot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.unroot" title="Link to this definition">¶</a></dt>
 <dd><p>Unroot the tree (make the root not have 2 children).</p>
