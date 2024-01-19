@@ -863,16 +863,12 @@ but are no longer connected.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.Tree.remove_sister">
 <span class="sig-name descname"><span class="pre">remove_sister</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sister</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.remove_sister" title="Link to this definition">¶</a></dt>
-<dd><p>Remove a sister node.</p>
-<p>It has the same effect as self.up.remove_child(sister).</p>
-<p>If a sister node is not supplied, the first sister will be deleted
-and returned.</p>
+<dd><p>Remove a sister node and return it.</p>
+<p>It has the same effect as self.up.remove_child(sister). If a sister
+node is not supplied, the first sister will be deleted.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>sister</strong> – A node instance to be removed as a sister.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The node removed.</p>
 </dd>
 </dl>
 </dd></dl>

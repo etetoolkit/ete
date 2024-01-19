@@ -229,6 +229,22 @@ in newly created internal branches, or None for no supports.</p></li>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.resolve_polytomy">
+<span class="sig-name descname"><span class="pre">resolve_polytomy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descendants</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.resolve_polytomy" title="Link to this definition">¶</a></dt>
+<dd><p>Convert tree to a series of dicotomies if it is a polytomy.</p>
+<p>A polytomy is a node that has more than 2 children. This
+function changes them to a ladderized series of dicotomic
+branches. The tree topology modification is arbitrary (no
+important results should depend on it!).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>descendants</strong> – If True, resolve all polytomies in the tree,
+including all root descendants. Otherwise, do it only for the root.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="ete4.core.operations.root_at">
 <span class="sig-name descname"><span class="pre">root_at</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bprops</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.root_at" title="Link to this definition">¶</a></dt>
 <dd><p>Set the given node as the root of the tree.</p>
