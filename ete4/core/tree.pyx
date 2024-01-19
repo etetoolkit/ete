@@ -769,27 +769,22 @@ cdef class Tree(object):
 
     def ancestors(self, root=None, include_root=True):
         """Yield all ancestor nodes of this node (up to the root if given)."""
+        # root === n1 === n2 === .. === nN === node  ->  [nN, .., n2, n1, root]
         node = self
 
-        if node is root or (not include_root and node.up is root):
+        if node is root:
             return  # node is not an ancestor of itself
 
-        while node.up is not None:
+        while node.up is not root:
             node = node.up
-
             yield node
 
-            if ((include_root and node == root) or
-                (not include_root and node.up == root)):
-                break  # we already yielded all the nodes we want
-
-        if root is not None and ((include_root and node != root) or
-                                 (not include_root and node.up != root)):
-            raise TreeError('node is no descendant from given root: %r' % root)
+        if root is not None and include_root:
+            yield root
 
     def lineage(self, root=None, include_root=True):
         """Yield all nodes in the lineage of this node (up to root if given)."""
-        if not include_root and self == root:
+        if not include_root and self is root:
             return  # the node itself would not be in its lineage
 
         # Same as ancestors() but also yielding itself first.
