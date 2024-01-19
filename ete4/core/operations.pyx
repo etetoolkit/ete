@@ -106,8 +106,7 @@ def assert_root_consistency(root, bprops=None):
         assert pname not in root.props, f'root has branch property: {pname}'
 
     if len(root.children) == 2:
-        ch1, ch2 = root.children
-        s1, s2 = ch1.props.get('support'), ch2.props.get('support')
+        s1, s2 = [n.support for n in root.children]
         assert s1 == s2, 'inconsistent support at the root: %r != %r' % (s1, s2)
 
 
