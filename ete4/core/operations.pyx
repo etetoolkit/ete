@@ -110,7 +110,7 @@ def assert_root_consistency(root, bprops=None):
         assert s1 == s2, 'inconsistent support at the root: %r != %r' % (s1, s2)
 
 
-def rehang(root, child_pos, bprops):
+def rehang(root, child_pos, bprops=None):
     """Rehang root on its child at position child_pos and return it."""
     # root === child  ->  child === root
     child = root.pop_child(child_pos)
@@ -119,7 +119,7 @@ def rehang(root, child_pos, bprops):
 
     swap_props(root, child, ['dist', 'support'] + (bprops or []))
 
-    return child  # which is now the parent of its previous parent
+    return child  # which is now the new root
 
 
 def swap_props(n1, n2, props):
