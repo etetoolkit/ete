@@ -562,7 +562,7 @@
     <span class="n">sort</span><span class="p">(</span><span class="n">tree_id</span><span class="p">,</span> <span class="n">node_id</span><span class="p">,</span> <span class="n">key_text</span><span class="p">,</span> <span class="n">reverse</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;ok&#39;</span><span class="p">}</span>
 
-<span class="nd">@put</span><span class="p">(</span><span class="s1">&#39;/trees/&lt;tree_id&gt;/root_at&#39;</span><span class="p">)</span>
+<span class="nd">@put</span><span class="p">(</span><span class="s1">&#39;/trees/&lt;tree_id&gt;/set_outgroup&#39;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="n">tree_id</span><span class="p">):</span>
     <span class="n">tree_data</span><span class="p">,</span> <span class="n">subtree</span> <span class="o">=</span> <span class="n">touch_and_get</span><span class="p">(</span><span class="n">tree_id</span><span class="p">)</span>
 
