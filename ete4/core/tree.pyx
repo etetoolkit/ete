@@ -273,7 +273,7 @@ cdef class Tree(object):
         self._collapsed_faces = value
 
     def __bool__(self):
-        # If this is not defined, bool(t) will call len(t).
+        # If this is not defined, bool(t) will call len(t) (terribly slow!).
         return True
 
     def __repr__(self):
@@ -457,16 +457,12 @@ cdef class Tree(object):
         return self.up.add_child(child=sister, name=name, dist=dist)
 
     def remove_sister(self, sister=None):
-        """Remove a sister node.
+        """Remove a sister node and return it.
 
-        It has the same effect as self.up.remove_child(sister).
-
-        If a sister node is not supplied, the first sister will be deleted
-        and returned.
+        It has the same effect as self.up.remove_child(sister). If a sister
+        node is not supplied, the first sister will be deleted.
 
         :param sister: A node instance to be removed as a sister.
-
-        :return: The node removed.
         """
         sisters = self.get_sisters()
         if not sisters:
