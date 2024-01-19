@@ -510,7 +510,7 @@ def callback(tree_id):
     sort(tree_id, node_id, key_text, reverse)
     return {'message': 'ok'}
 
-@put('/trees/<tree_id>/root_at')
+@put('/trees/<tree_id>/set_outgroup')
 def callback(tree_id):
     tree_data, subtree = touch_and_get(tree_id)
 

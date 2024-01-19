@@ -295,11 +295,11 @@ async function add_node_modifying_options(properties, nodestyle, node_id) {
     }, "Edit the content of this node. Changes the tree structure.",
        "edit", true);
     if (!view.subtree) {
-        add_button("Root on this node", async () => {
-            await tree_command("root_at", node_id);
+        add_button("Set node as outgroup", async () => {
+            await tree_command("set_outgroup", node_id);
             draw_minimap();
             update();
-        }, "Set this node as the root of the tree. Changes the tree structure.",
+        }, "Set this node as the 1st child of the root. Changes the tree structure.",
            "root", true);
     }
     add_button("Move branch up", async () => {
