@@ -1,6 +1,5 @@
 import copy
 import itertools
-from collections import deque
 from hashlib import md5
 from functools import cmp_to_key
 import pickle
@@ -702,51 +701,14 @@ cdef class Tree(object):
             True/False. Use this to traverse a tree by dynamically
             collapsing internal nodes.
         """
-        traversals = {'levelorder': self._iter_levelorder,
-                      'preorder': self._iter_preorder,
-                      'postorder': self._iter_postorder}
-        try:
-            yield from traversals[strategy](is_leaf_fn)
-        except KeyError:
+        if strategy == 'levelorder':
+            yield from ops.traverse_bfs(self, is_leaf_fn)
+        elif strategy == 'preorder':
+            yield from ops.traverse(self, order=-1, is_leaf_fn=is_leaf_fn)
+        elif strategy == 'postorder':
+            yield from ops.traverse(self, order=+1, is_leaf_fn=is_leaf_fn)
+        else:
             raise TreeError(f'Unknown strategy: {strategy}')
-
-    def _iter_levelorder(self, is_leaf_fn=None):
-        """Yield all nodes in levelorder."""
-        tovisit = deque([self])
-        while len(tovisit) > 0:
-            node = tovisit.popleft()
-            yield node
-            if not is_leaf_fn or not is_leaf_fn(node):
-                tovisit.extend(node.children)
-
-    def _iter_preorder(self, is_leaf_fn=None):
-        """Yield all nodes in preorder."""
-        to_visit = deque()
-        node = self
-        while node is not None:
-            yield node
-            if not is_leaf_fn or not is_leaf_fn(node):
-                to_visit.extendleft(reversed(node.children))
-            try:
-                node = to_visit.popleft()
-            except:
-                node = None
-
-    def _iter_postorder(self, is_leaf_fn=None):
-        """Yield all nodes in postorder."""
-        is_leaf = is_leaf_fn or (lambda n: n.is_leaf)
-        to_visit = [self]
-
-        while to_visit:
-            node = to_visit.pop(-1)
-            if type(node) != list:  # preorder actions
-                if not is_leaf(node):  # add children
-                    to_visit.extend(reversed(node.children + [[1, node]]))
-                else:
-                    yield node
-            else:  # postorder actions
-                node = node[1]
-                yield node
 
     def iter_prepostorder(self, is_leaf_fn=None):
         """Yield all nodes in a tree in both pre and post order.
@@ -754,18 +716,14 @@ cdef class Tree(object):
         Each iteration returns a postorder flag (True if node is being visited
         in postorder) and a node instance.
         """
-        is_leaf_fn = is_leaf_fn or (lambda n: n.is_leaf)
-        to_visit = [self]
-
-        while to_visit:
-            node = to_visit.pop(-1)
-            if type(node) != list:
-                yield (False, node)
-                if not is_leaf_fn(node):  # add children
-                    to_visit.extend(reversed(node.children + [[1, node]]))
-            else:  # postorder actions
-                node = node[1]
-                yield (True, node)
+        path = []  # path of nodes from the root to the current one
+        for node in ops.traverse(self, order=0, is_leaf_fn=is_leaf_fn):
+            seen = path and node is path[-1]  # has the current node been seen?
+            yield seen, node
+            if seen:
+                path.pop()
+            elif not node.is_leaf:
+                path.append(node)
 
     def ancestors(self, root=None, include_root=True):
         """Yield all ancestor nodes of this node (up to the root if given)."""

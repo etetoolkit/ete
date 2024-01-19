@@ -5,7 +5,7 @@ Sorting, changing the root to a node, moving branches, removing (prunning)...
 """
 
 import random
-from collections import namedtuple
+from collections import namedtuple, deque
 
 
 def sort(tree, key=None, reverse=False):
@@ -455,6 +455,32 @@ def resolve_polytomy(tree, descendants=True):
 
 
 # Traversing the tree.
+
+def traverse(tree, order=-1, is_leaf_fn=None):
+    """Traverse the tree and yield nodes in pre (< 0) or post (> 0) order."""
+    visiting = [(tree, False)]
+    while visiting:
+        node, seen = visiting.pop()
+
+        is_leaf = is_leaf_fn(node) if is_leaf_fn else node.is_leaf
+
+        if is_leaf or (order <= 0 and not seen) or (order >= 0 and seen):
+            yield node
+
+        if not seen and not is_leaf:
+            visiting.append((node, True))  # add node back, but mark as seen
+            visiting += [(n, False) for n in node.children[::-1]]
+
+
+def traverse_bfs(tree, is_leaf_fn=None):
+    """Yield nodes with a breadth-first search (level order traversal)."""
+    visiting = deque([tree])
+    while visiting:
+        node = visiting.popleft()
+        yield node
+        if not is_leaf_fn or not is_leaf_fn(node):
+            visiting.extend(node.children)
+
 
 # Position on the tree: current node, number of visited children.
 TreePos = namedtuple('TreePos', 'node nch')
