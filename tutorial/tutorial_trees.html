@@ -1476,14 +1476,14 @@ when attributes point to lambda functions.</p></li>
 <span id="resolve-polytomy"></span><h2><a class="toc-backref" href="#id34" role="doc-backlink">Solving multifurcations</a><a class="headerlink" href="#solving-multifurcations" title="Link to this heading">¶</a></h2>
 <p>When a tree contains a polytomy (a node with more than 2 children),
 the method <code class="xref py py-func docutils literal notranslate"><span class="pre">resolve_polytomy()</span></code> can be used to convert the node
-into a randomly bifurcated structure. This is really not a solution
+into an arbitrarily bifurcated structure. This is really not a solution
 for the polytomy but it allows to export the tree as a strictly
 bifurcated newick structure, which is a requirement for some external
 software.</p>
 <p>The method can be used on a very specific node while keeping the rest
 of the tree intact by disabling the <code class="xref py py-attr docutils literal notranslate"><span class="pre">recursive</span></code> flag.</p>
 <p>Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(((a,b,c),(d,e,f,g)),(f,i,h));&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(((a,b,c),(d,e,f,g)),(h,i,j));&#39;</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
 <span class="c1">#      ╭╴a</span>
@@ -1493,38 +1493,38 @@ of the tree intact by disabling the <code class="xref py py-attr docutils litera
 <span class="c1">#  │ ╰─┼╴e</span>
 <span class="c1"># ─┤   ├╴f</span>
 <span class="c1">#  │   ╰╴g</span>
-<span class="c1">#  │ ╭╴f</span>
+<span class="c1">#  │ ╭╴h</span>
 <span class="c1">#  ╰─┼╴i</span>
-<span class="c1">#    ╰╴h</span>
+<span class="c1">#    ╰╴j</span>
 
 <span class="n">polynode</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">common_ancestor</span><span class="p">([</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">])</span>
-<span class="n">polynode</span><span class="o">.</span><span class="n">resolve_polytomy</span><span class="p">(</span><span class="n">recursive</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">polynode</span><span class="o">.</span><span class="n">resolve_polytomy</span><span class="p">(</span><span class="n">descendants</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
-<span class="c1">#      ╭─┬╴b</span>
-<span class="c1">#    ╭─┤ ╰╴c</span>
-<span class="c1">#  ╭─┤ ╰╴a</span>
+<span class="c1">#      ╭─┬╴a</span>
+<span class="c1">#    ╭─┤ ╰╴b</span>
+<span class="c1">#  ╭─┤ ╰╴c</span>
 <span class="c1">#  │ │ ╭╴d</span>
 <span class="c1">#  │ ╰─┼╴e</span>
 <span class="c1"># ─┤   ├╴f</span>
 <span class="c1">#  │   ╰╴g</span>
-<span class="c1">#  │ ╭╴f</span>
+<span class="c1">#  │ ╭╴h</span>
 <span class="c1">#  ╰─┼╴i</span>
-<span class="c1">#    ╰╴h</span>
+<span class="c1">#    ╰╴j</span>
 
-<span class="n">t</span><span class="o">.</span><span class="n">resolve_polytomy</span><span class="p">(</span><span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">t</span><span class="o">.</span><span class="n">resolve_polytomy</span><span class="p">(</span><span class="n">descendants</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
-<span class="c1">#      ╭─┬╴b</span>
-<span class="c1">#    ╭─┤ ╰╴c</span>
-<span class="c1">#    │ ╰╴a</span>
-<span class="c1">#  ╭─┤   ╭─┬╴f</span>
-<span class="c1">#  │ │ ╭─┤ ╰╴g</span>
-<span class="c1"># ─┤ ╰─┤ ╰╴e</span>
-<span class="c1">#  │   ╰╴d</span>
-<span class="c1">#  │ ╭─┬╴i</span>
-<span class="c1">#  ╰─┤ ╰╴h</span>
-<span class="c1">#    ╰╴f</span>
+<span class="c1">#      ╭─┬╴a</span>
+<span class="c1">#    ╭─┤ ╰╴b</span>
+<span class="c1">#    │ ╰╴c</span>
+<span class="c1">#  ╭─┤   ╭─┬╴d</span>
+<span class="c1">#  │ │ ╭─┤ ╰╴e</span>
+<span class="c1"># ─┤ ╰─┤ ╰╴f</span>
+<span class="c1">#  │   ╰╴g</span>
+<span class="c1">#  │ ╭─┬╴h</span>
+<span class="c1">#  ╰─┤ ╰╴i</span>
+<span class="c1">#    ╰╴j</span>
 </pre></div>
 </div>
 </section>

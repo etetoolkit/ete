@@ -901,22 +901,16 @@ properties.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.Tree.resolve_polytomy">
-<span class="sig-name descname"><span class="pre">resolve_polytomy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recursive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">defaults</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.resolve_polytomy" title="Link to this definition">¶</a></dt>
-<dd><p>Resolve all polytomies under the current node, randomly.</p>
+<span class="sig-name descname"><span class="pre">resolve_polytomy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descendants</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.resolve_polytomy" title="Link to this definition">¶</a></dt>
+<dd><p>Convert node to a series of dicotomies if it is a polytomy.</p>
 <p>A polytomy is a node that has more than 2 children. This
-function resolves them by creating an arbitrary dicotomic
-structure among the affected nodes. It randomly modifies the
-current tree topology and should only be used for
-compatibility reasons (like to later use programs that reject
-multifurcated nodes).</p>
+function changes them to a ladderized series of dicotomic
+branches. The tree topology modification is arbitrary (no
+important results should depend on it!).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>recursive</strong> – If True, resolve all polytomies under this
-node too. Otherwise, only the current node will be
-checked and fixed.</p></li>
-<li><p><strong>defaults</strong> – Dictionary of properties to use for new nodes.</p></li>
-</ul>
+<dd class="field-odd"><p><strong>descendants</strong> – If True, resolve all polytomies under this
+node too. Otherwise, do it only for the current node.</p>
 </dd>
 </dl>
 </dd></dl>
