@@ -24,15 +24,15 @@ def get_empty_active():
     return TreeActive(nodes, clades)
 
 
-# They are all "generalized coordinates" (can be radius and angle, say).
-
+# The coordinates (x, y, dx, dy) are all "generalized coordinates" (x and y
+# can refer to radius and angle, for example).
 
 # The convention for coordinates is:
 #   x increases to the right, y increases to the bottom.
 #
 #  +-----> x          +------.
-#  |                   \   a .
-#  |                    \   .   (the angle thus increases clockwise too)
+#  |                   \     .
+#  |                    \   . a    (the angle thus increases clockwise too)
 #  v y                 r \.
 #
 # This is the convention normally used in computer graphics, including SVGs,
@@ -40,15 +40,16 @@ def get_empty_active():
 #
 # The boxes (shapes) we use are:
 #
-# * Rectangle         w
-#              x,y +-----+          so (x,y) is its (left,top) corner
-#                  |     | h        and (x+w,y+h) its (right,bottom) one
-#                  +-----+
+# * Rectangle            w
+#                 x,y +-----+      so (x,y) is its (left,top) corner
+#                     |     | h    and (x+w,y+h) its (right,bottom) one
+#                     +-----+
 #
-# * Annular sector   r,a .----.
-#                       .  dr .     so (r,a) is its (inner,smaller-angle) corner
-#                       \   .       and (r+dr,a+da) its (outer,bigger-angle) one
-#                        \. da
+# * Annular sector       dr
+#                  r,a .----.
+#                     .     .      so (r,a) is its (inner,smaller-angle) corner
+#                      \   . da    and (r+dr,a+da) its (outer,bigger-angle) one
+#                       \.
 
 # Drawing.
 
