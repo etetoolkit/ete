@@ -61,15 +61,15 @@
 
 
 
-<span class="c1"># They are all &quot;generalized coordinates&quot; (can be radius and angle, say).</span>
-
+<span class="c1"># The coordinates (x, y, dx, dy) are all &quot;generalized coordinates&quot; (x and y</span>
+<span class="c1"># can refer to radius and angle, for example).</span>
 
 <span class="c1"># The convention for coordinates is:</span>
 <span class="c1">#   x increases to the right, y increases to the bottom.</span>
 <span class="c1">#</span>
 <span class="c1">#  +-----&gt; x          +------.</span>
-<span class="c1">#  |                   \   a .</span>
-<span class="c1">#  |                    \   .   (the angle thus increases clockwise too)</span>
+<span class="c1">#  |                   \     .</span>
+<span class="c1">#  |                    \   . a    (the angle thus increases clockwise too)</span>
 <span class="c1">#  v y                 r \.</span>
 <span class="c1">#</span>
 <span class="c1"># This is the convention normally used in computer graphics, including SVGs,</span>
@@ -77,15 +77,16 @@
 <span class="c1">#</span>
 <span class="c1"># The boxes (shapes) we use are:</span>
 <span class="c1">#</span>
-<span class="c1"># * Rectangle         w</span>
-<span class="c1">#              x,y +-----+          so (x,y) is its (left,top) corner</span>
-<span class="c1">#                  |     | h        and (x+w,y+h) its (right,bottom) one</span>
-<span class="c1">#                  +-----+</span>
+<span class="c1"># * Rectangle            w</span>
+<span class="c1">#                 x,y +-----+      so (x,y) is its (left,top) corner</span>
+<span class="c1">#                     |     | h    and (x+w,y+h) its (right,bottom) one</span>
+<span class="c1">#                     +-----+</span>
 <span class="c1">#</span>
-<span class="c1"># * Annular sector   r,a .----.</span>
-<span class="c1">#                       .  dr .     so (r,a) is its (inner,smaller-angle) corner</span>
-<span class="c1">#                       \   .       and (r+dr,a+da) its (outer,bigger-angle) one</span>
-<span class="c1">#                        \. da</span>
+<span class="c1"># * Annular sector       dr</span>
+<span class="c1">#                  r,a .----.</span>
+<span class="c1">#                     .     .      so (r,a) is its (inner,smaller-angle) corner</span>
+<span class="c1">#                      \   . da    and (r+dr,a+da) its (outer,bigger-angle) one</span>
+<span class="c1">#                       \.</span>
 
 <span class="c1"># Drawing.</span>
 
