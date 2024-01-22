@@ -888,8 +888,8 @@ class Test_Core_Tree(unittest.TestCase):
         self.assertEqual(t.children[0].dist, 5.0)
         self.assertEqual(t.children[1].dist, 5.0)
 
-        # Test that set_outgroup can root an unrooted tree with three.
-        # root children
+        # Test that set_outgroup can root an "unrooted" tree (that is, a tree
+        # whose root has more than 2 children).
         t = Tree('(A:10,B:1,(C:1,D:1)E:1)root;', parser=1);
         self.assertEqual(t.children[0], t['A'])
         t.set_outgroup(t['A'])
@@ -900,9 +900,29 @@ class Test_Core_Tree(unittest.TestCase):
         self.assertEqual(t.children[1].dist, 5.0)
 
     def test_unroot(self):
+        # Simple case. We start with a dicotomy from the root.
         t = Tree('((a:0.5,b:0.5):0.5,(c:0.2,d:0.2):0.8);')
         t.unroot()
         self.assertEqual('(a:0.5,b:0.5,(c:0.2,d:0.2):1.3);', t.write())
+
+        # If we unroot an unrooted tree, it should stay the same:
+        t.unroot()
+        self.assertEqual('(a:0.5,b:0.5,(c:0.2,d:0.2):1.3);', t.write())
+
+        # Test unrooting when we have more branch properties.
+        t = Tree('((a:0.5[&&NHX:color=green],b:0.5[&&NHX:color=red]):0.5'
+                 '[&&NHX:color=green],(c:0.2[&&NHX:color=green],d:0.2'
+                 '[&&NHX:color=blue]):0.8[&&NHX:color=green]);')
+        t.unroot(bprops=['color'])
+        self.assertEqual(t.write(props=None),
+            '(a:0.5[&&NHX:color=green],b:0.5[&&NHX:color=red],(c:0.2'
+            '[&&NHX:color=green],d:0.2[&&NHX:color=blue]):1.3[&&NHX:color=green]);')
+
+        # If the branch properties are not consistent, we have an exception.
+        t = Tree('((a:0.5[&&NHX:color=green],b:0.5[&&NHX:color=red]):0.5'
+                 '[&&NHX:color=green],(c:0.2[&&NHX:color=green],d:0.2'
+                 '[&&NHX:color=blue]):0.8[&&NHX:color=red]);')
+        self.assertRaises(AssertionError, t.unroot, bprops=['color'])
 
     def test_tree_navigation(self):
         t = Tree('(((A,B)H,C)I,(D,F)J)root;', parser=1)
