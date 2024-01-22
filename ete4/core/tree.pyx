@@ -1027,7 +1027,7 @@ cdef class Tree(object):
         node = self[node] if type(node) == str else node  # translates if needed
         ops.set_outgroup(node, bprops)
 
-    def unroot(self):
+    def unroot(self, bprops=None):
         """Unroot the tree, that is, make the root not have 2 children.
 
         The convention in phylogenetic trees is that if the root has 2
@@ -1035,7 +1035,7 @@ cdef class Tree(object):
         Otherwise (typically a root with 3 children), the root is just
         an arbitrary place to hang the tree.
         """
-        ops.unroot(self)
+        ops.unroot(self, bprops)
 
     def show(self, layout=None, tree_style=None, name="ETE"):
         """Start an interactive session to visualize the current node."""

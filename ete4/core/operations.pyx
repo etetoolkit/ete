@@ -42,7 +42,7 @@ def root_at(node, bprops=None):
         current_root = rehang(current_root, child_pos, bprops)
 
     if len(old_root.children) == 1:
-        join_branch(old_root)
+        join_branch(old_root, bprops)
 
 
 def interchange_references(node1, node2):
@@ -154,16 +154,17 @@ def insert_intermediate(node, intermediate, bprops=None):
     intermediate.up = up
 
 
-def join_branch(node):
+def join_branch(node, bprops=None):
     """Substitute node for its only child."""
     # == node ==== child  ->  ====== child
     assert len(node.children) == 1, 'cannot join branch with multiple children'
 
     child = node.children[0]
 
-    if 'support' in node.props and 'support' in child.props:
-        assert node.support == child.support, \
-            'cannot join branches with different support'
+    for pname in ['support'] + (bprops or []):
+        if pname in node.props or pname in child.props:
+            assert node.props.get(pname) == child.props.get(pname), \
+                f'cannot join branches with different branch property: {pname}'
 
     if 'dist' in node.props:
         child.dist = (child.dist or 0) + node.dist  # restore total dist
@@ -175,7 +176,7 @@ def join_branch(node):
     child.up = up
 
 
-def unroot(tree):
+def unroot(tree, bprops=None):
     """Unroot the tree (make the root not have 2 children).
 
     The convention in phylogenetic trees is that if the root has 2
@@ -187,7 +188,7 @@ def unroot(tree):
     if len(tree.children) == 2:
         n1, n2 = tree.children
         assert not (n1.is_leaf and n2.is_leaf), 'tree has just two leaves'
-        root_at(n1 if not n1.is_leaf else n2)
+        root_at(n1 if not n1.is_leaf else n2, bprops)
 
 
 def move(node, shift=1):
