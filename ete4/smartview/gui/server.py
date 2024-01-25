@@ -776,7 +776,7 @@ def get_drawer(tree_id, args):
             (get('rmin', 0), 0,
              get('amin', -180) * pi/180, get('amax', 180) * pi/180))
 
-        collapsed_ids = set(tuple(int(i) for i in node_id.split(','))
+        collapsed_ids = set(tuple(int(i) for i in node_id.split(',') if i != '')
             for node_id in json.loads(args.get('collapsed_ids', '[]')))
 
         ultrametric = args.get('ultrametric') == '1'  # asked for ultrametric?
