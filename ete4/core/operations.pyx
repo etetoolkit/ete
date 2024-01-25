@@ -404,6 +404,12 @@ def ladderize(tree, topological=False, reverse=False):
                 sizes.pop(n)  # free memory, no need to keep all the sizes
 
 
+def to_dendrogram(tree):
+    """Convert tree to dendrogram (remove all distance values)."""
+    for node in tree.traverse():
+        node.props.pop('dist', None)
+
+
 def to_ultrametric(tree, topological=False):
     """Convert tree to ultrametric (all leaves equidistant from root)."""
     tree.dist = tree.dist or 0  # covers common case of not having dist set
