@@ -111,8 +111,20 @@
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.farthest">
+<span class="sig-name descname"><span class="pre">farthest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.farthest" title="Link to this definition">¶</a></dt>
+<dd><p>Return the farthest nodes and the diameter of the tree.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.farthest_descendant">
+<span class="sig-name descname"><span class="pre">farthest_descendant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.farthest_descendant" title="Link to this definition">¶</a></dt>
+<dd><p>Return the farthest descendant and its distance.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="ete4.core.operations.insert_intermediate">
-<span class="sig-name descname"><span class="pre">insert_intermediate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bprops</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.insert_intermediate" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">insert_intermediate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bprops</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.insert_intermediate" title="Link to this definition">¶</a></dt>
 <dd><p>Insert, between node and its parent, an intermediate node.</p>
 </dd></dl>
 
@@ -168,6 +180,12 @@ number of nodes between them (instead of the sum of branch lenghts).</p></li>
 <dt class="sig sig-object py" id="ete4.core.operations.make_name">
 <span class="sig-name descname"><span class="pre">make_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'abcdefghijklmnopqrstuvwxyz'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.make_name" title="Link to this definition">¶</a></dt>
 <dd><p>Return a short name corresponding to the index i.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.midpoint">
+<span class="sig-name descname"><span class="pre">midpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.midpoint" title="Link to this definition">¶</a></dt>
+<dd><p>Return the node in the middle and its distance from the exact center.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -261,8 +279,13 @@ reference to it in the code will still be valid.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.set_midpoint_outgroup">
+<span class="sig-name descname"><span class="pre">set_midpoint_outgroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.set_midpoint_outgroup" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="ete4.core.operations.set_outgroup">
-<span class="sig-name descname"><span class="pre">set_outgroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bprops</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.set_outgroup" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">set_outgroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bprops</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.set_outgroup" title="Link to this definition">¶</a></dt>
 <dd><p>Change tree so the given node is set as outgroup.</p>
 <p>The original root node will be used as the new root node, so any
 reference to it in the code will still be valid.</p>
@@ -271,6 +294,7 @@ reference to it in the code will still be valid.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>node</strong> – Node to set as outgroup (future first child of the root).</p></li>
 <li><p><strong>bprops</strong> – List of branch properties (other than “dist” and “support”).</p></li>
+<li><p><strong>dist</strong> – Distance from the node, where we put the new root of the tree.</p></li>
 </ul>
 </dd>
 </dl>

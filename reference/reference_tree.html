@@ -983,7 +983,7 @@ value will be returned. See also <code class="xref py py-func docutils literal n
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.Tree.set_outgroup">
-<span class="sig-name descname"><span class="pre">set_outgroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bprops</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.set_outgroup" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">set_outgroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bprops</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.set_outgroup" title="Link to this definition">¶</a></dt>
 <dd><p>Change tree so the given node is set as outgroup.</p>
 <p>The original root node will be used as the new root node, so any
 reference to it in the code will still be valid.</p>
@@ -992,6 +992,7 @@ reference to it in the code will still be valid.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>node</strong> – Node to set as outgroup (future first child of the root).</p></li>
 <li><p><strong>bprops</strong> – List of branch properties (other than “dist” and “support”).</p></li>
+<li><p><strong>dist</strong> – Distance from the node, where we put the new root of the tree.</p></li>
 </ul>
 </dd>
 </dl>
