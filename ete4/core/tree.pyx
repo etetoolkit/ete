@@ -1853,6 +1853,8 @@ cdef class Tree(object):
                     output[i].append(leaf_distances[n][m])
         return output, allleaves
 
+    # TODO: All the following "face and style functions" should go away.
+
     def add_face(self, face, column=0, position='branch_right',
                  collapsed_only=False):
         if TREEVIEW and isinstance(face, Face):
