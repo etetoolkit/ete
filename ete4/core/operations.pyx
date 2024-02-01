@@ -465,6 +465,82 @@ def resolve_polytomy(tree, descendants=True):
             break
 
 
+def farthest_descendant(tree, topological=False):
+    """Return the farthest descendant and its distance."""
+    d = (lambda node: 1) if topological else (lambda node: node.dist)  # dist
+
+    dist_root = {tree: 0}  # will contain all distances to the root
+
+    node_farthest, dist_farthest = tree, 0
+    for node in traverse(tree, order=-1):  # traverse in preorder
+        if node is not tree:
+            dist_root[node] = dist = dist_root[node.up] + d(node)
+            if dist > dist_farthest:
+                node_farthest, dist_farthest = node, dist
+
+    return node_farthest, dist_farthest
+
+
+def farthest(tree, topological=False):
+    """Return the farthest nodes and the diameter of the tree."""
+    d = (lambda node: 1) if topological else (lambda node: node.dist)  # dist
+
+    def last(x):
+        return x[-1]  # return the last element (used later for comparison)
+
+    # Part 1: Find the farthest descendant for all nodes.
+
+    fd = {}  # dict of {node: (farthest_descendant, dist_from_parent_to_it)}
+    for node in traverse(tree, order=+1):  # traverse in postorder
+        if node.is_leaf:
+            fd[node] = (node, d(node))
+        else:
+            f_leaf, dist = max((fd[n] for n in node.children), key=last)
+            fd[node] = (f_leaf, (d(node) if node is not tree else 0) + dist)
+
+    # Part 2: Find the extremes and the diameter.
+
+    # The first extreme is fixed. The second and the diameter will be updated.
+    extreme1, diameter = fd[tree]  # first extreme: farthest node from the root
+    extreme2 = tree  # so far, but may change later
+
+    # Go towards the root, updating the second extreme and diameter.
+    prev = extreme1  # the node that we saw previous to the current one
+    curr = extreme1.up  # the current node we are visiting
+    d_curr_e1 = d(extreme1)  # distance from current to the 1st extreme
+    while curr is not tree.up:
+        leaf, dist = max((fd[n] for n in curr.children if n is not prev),
+                         default=(curr, 0), key=last)
+        if dist + d_curr_e1 > diameter:
+            extreme2, diameter = leaf, dist + d_curr_e1
+
+        d_curr_e1 += d(curr) if curr is not tree else 0
+        prev, curr = curr, curr.up
+
+    return extreme1, extreme2, diameter
+
+
+def midpoint(tree, topological=False):
+    """Return the node in the middle and its distance from the exact center."""
+    d = (lambda node: 1) if topological else (lambda node: node.dist)
+
+    # Find the farthest node and diameter.
+    node, _, diameter = farthest(tree, topological)
+
+    # Go thru ancestor nodes until we cover more distance than the tree radius.
+    dist = diameter / 2 - d(node)  # radius of the tree minus branch dist
+    while dist > 0:
+        node = node.up
+        dist -= d(node)
+
+    return node, dist + d(node)  # NOTE: `dist` is negative
+
+
+def set_midpoint_outgroup(tree, topological=False):
+    node, dist = midpoint(tree, topological)
+    set_outgroup(node, dist=dist)
+
+
 # Traversing the tree.
 
 def traverse(tree, order=-1, is_leaf_fn=None):
