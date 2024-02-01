@@ -80,7 +80,7 @@ def interchange_references(node1, node2):
     node2.up = up1
 
 
-def set_outgroup(node, bprops=None):
+def set_outgroup(node, bprops=None, dist=None):
     """Change tree so the given node is set as outgroup.
 
     The original root node will be used as the new root node, so any
@@ -88,12 +88,13 @@ def set_outgroup(node, bprops=None):
 
     :param node: Node to set as outgroup (future first child of the root).
     :param bprops: List of branch properties (other than "dist" and "support").
+    :param dist: Distance from the node, where we put the new root of the tree.
     """
     assert not node.is_root, 'cannot set the absolute tree root as outgroup'
     assert_root_consistency(node.root, bprops)
 
     intermediate = node.__class__()  # could be Tree() or PhyloTree(), etc.
-    insert_intermediate(node, intermediate, bprops)
+    insert_intermediate(node, intermediate, bprops, dist)
 
     root_at(intermediate, bprops)
 
@@ -133,7 +134,7 @@ def swap_props(n1, n2, props):
             n1.props[pname] = p2
 
 
-def insert_intermediate(node, intermediate, bprops=None):
+def insert_intermediate(node, intermediate, bprops=None, dist=None):
     """Insert, between node and its parent, an intermediate node."""
     # == up ======= node  ->  == up === intermediate === node
     up = node.up
@@ -144,7 +145,10 @@ def insert_intermediate(node, intermediate, bprops=None):
     intermediate.add_child(node)
 
     if 'dist' in node.props:  # split dist between the new and old nodes
-        node.dist = intermediate.dist = node.dist / 2
+        if dist is not None:
+            node.dist, intermediate.dist = dist, node.dist - dist
+        else:
+            node.dist = intermediate.dist = node.dist / 2
 
     for prop in ['support'] + (bprops or []):  # copy other branch props if any
         if prop in node.props:

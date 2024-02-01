@@ -1015,7 +1015,7 @@ cdef class Tree(object):
         """
         ops.populate(self, size, names, model, dist_fn, support_fn)
 
-    def set_outgroup(self, node, bprops=None):
+    def set_outgroup(self, node, bprops=None, dist=None):
         """Change tree so the given node is set as outgroup.
 
         The original root node will be used as the new root node, so any
@@ -1023,9 +1023,10 @@ cdef class Tree(object):
 
         :param node: Node to set as outgroup (future first child of the root).
         :param bprops: List of branch properties (other than "dist" and "support").
+        :param dist: Distance from the node, where we put the new root of the tree.
         """
         node = self[node] if type(node) == str else node  # translates if needed
-        ops.set_outgroup(node, bprops)
+        ops.set_outgroup(node, bprops, dist)
 
     def unroot(self, bprops=None):
         """Unroot the tree, that is, make the root not have 2 children.
