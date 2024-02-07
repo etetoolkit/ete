@@ -167,7 +167,7 @@ class Test_Core_Tree(unittest.TestCase):
          ╰─┬╴c
            ╰╴d
         """))
-        self.assertEqual(t.to_str(props=['name'], waterfall=True), strip("""
+        self.assertEqual(t.to_str(props=['name'], cascade=True), strip("""
         ⊗
         ├─┐x
         │ ├─╴a

@@ -312,18 +312,18 @@ cdef class Tree(object):
         return self.to_str(show_internal=False, compact=True, props=['name'])
 
     def to_str(self, show_internal=True, compact=False, props=None,
-               px=None, py=None, px0=0, waterfall=False):
+               px=None, py=None, px0=0, cascade=False):
         """Return a string containing an ascii drawing of the tree.
 
         :param show_internal: If True, show the internal nodes too.
         :param compact: If True, use exactly one line per tip.
         :param props: List of node properties to show. If None, show all.
         :param px, py, px0: Paddings (x, y, x for leaves). Overrides `compact`.
-        :param waterfall: Use a waterfall representation. Overrides
+        :param cascade: Use a cascade representation. Overrides
             `show_internal`, `compact`, `px`, `py`, `px0`.
         """
         return text_viz.to_str(self, show_internal, compact, props,
-                               px, py, px0, waterfall)
+                               px, py, px0, cascade)
 
     def __contains__(self, item):
         """Return True if the tree contains the given item.
