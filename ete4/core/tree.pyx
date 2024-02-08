@@ -2009,7 +2009,3 @@ cdef class Tree(object):
                     ete_node.add_child(ete_ch)
                     all_nodes[ch] = ete_ch
             return ete_ch.root
-
-    def phonehome(self):
-        from .. import _ph
-        _ph.call()

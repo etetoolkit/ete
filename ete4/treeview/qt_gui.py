@@ -10,10 +10,6 @@ from .main import save, _leaf
 from ..utils import random_color
 from .qt_render import render
 from .node_gui_actions import NewickDialog
-try:
-    from .._ph import new_version
-except Exception:
-    pass
 
 
 class _SelectorItem(QGraphicsRectItem):
@@ -58,24 +54,6 @@ def etime(f):
         f(*args, **kargs)
         print(time.time() - t1)
     return a_wrapper_accepting_arguments
-
-class CheckUpdates(QThread):
-    def run(self):
-        try:
-            current, latest, tag = new_version()
-            if tag is None:
-                tag = ""
-            msg = ""
-            if current and latest:
-                if current < latest:
-                    msg = "New version available (rev%s): %s More info at http://etetoolkit.org." %\
-                        (latest, tag)
-                elif current == latest:
-                    msg = "Up to date"
-
-            self.emit(SIGNAL("output(QString)"), msg)
-        except Exception:
-            pass
 
 class _GUI(QMainWindow):
     def _updatestatus(self, msg):
@@ -127,11 +105,6 @@ class _GUI(QMainWindow):
         splitter.setSizes([int(self.scene.sceneRect().width()), 10])
 
         self.view.fitInView(0, 0, self.scene.sceneRect().width(), 200, Qt.AspectRatioMode.KeepAspectRatio)
-
-        # Check for updates
-        self.check = CheckUpdates()
-        #self.check.start()
-        #self.connect(self.check, SIGNAL("output(QString)"), self._updatestatus)
 
     @QtCore.pyqtSlot()
     def on_actionETE_triggered(self):
