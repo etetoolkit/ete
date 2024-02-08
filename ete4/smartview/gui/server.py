@@ -634,9 +634,10 @@ def load_tree(tree_id):
     "Add tree to app.trees and initialize it if not there, and return it"
     try:
         tid, subtree = get_tid(tree_id)
-        tree_data = app.trees[tid]
 
-        if tree_data.tree:
+        if tid in app.trees:
+            tree_data = app.trees[tid]
+
             # Reinitialize if layouts have to be reapplied
             if not tree_data.initialized:
                 initialize_tree_style(tree_data)
@@ -652,7 +653,7 @@ def load_tree(tree_id):
 
             return tree_data.tree[subtree]
         else:
-            tree_data.name, tree_data.tree, tree_data.layouts = retrieve_tree(tid)
+            tree_data = app.trees[tid] = retrieve_tree_data(tid)
 
             if tree_data.ultrametric:
                 tree_data.tree.to_ultrametric()
@@ -711,22 +712,17 @@ def retrieve_layouts(layouts):
     return dict(tree_layouts)
 
 
-def retrieve_tree(tid):
-    """Retrieve tree from file and return its name, tree structure, and layouts.
+def retrieve_tree_data(tid):
+    """Retrieve and return tree data from file.
 
     It retrieves all that from a previously saved pickle file in /tmp."""
     # Called when tree has been deleted from memory.
-    tmpfile = f'/tmp/{tid}.pickle'  # beautiful...
-    with open(tmpfile, 'rb') as handle:
-        data = pickle.load(handle)
-
-    name = data["name"]
-    tree = data["tree"]
-    layouts = retrieve_layouts(data["layouts"])
-
-    app.trees[tid].timer = time()  # to track if it is active
-
-    return name, tree, layouts
+    tree_data = pickle.load(open(f'/tmp/{tid}.pickle', 'rb'))
+    tree_data.style = copy_style(TreeStyle())
+    tree_data.layouts = retrieve_layouts(tree_data.layouts)
+    tree_data.active = drawer_module.get_empty_active()
+    tree_data.timer = time()  # to track if it is active
+    return tree_data
 
 
 def get_drawer(tree_id, args):
@@ -1428,12 +1424,14 @@ def add_tree(data):
     tree_data.active = drawer_module.get_empty_active()
     tree_data.tree = tree
 
-    def write_tree():
+    def write_tree_data():
         """Write tree data as a temporary pickle file."""
-        obj = { 'name': name, 'layouts': layouts, 'tree': tree }
-        with open(f'/tmp/{tid}.pickle', 'wb') as handle:
-            pickle.dump(obj, handle)
-    thr_write = Thread(daemon=True, target=write_tree)  # so we are not delayed
+        data = deepcopy(tree_data)
+        data.style = None  # since it can't be pickled
+        data.layouts = layouts  # same
+        data.active = None  # same
+        pickle.dump(data, open(f'/tmp/{tid}.pickle', 'wb'))
+    thr_write = Thread(daemon=True, target=write_tree_data)  # so we are not delayed
     thr_write.start()                                   # by big trees
 
     return tid
