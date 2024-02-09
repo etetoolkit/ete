@@ -2,7 +2,7 @@
 
 import { view, get_tid, on_box_click, on_box_wheel,
          on_box_mouseenter, on_box_mouseleave,
-         get_active_layouts } from "./gui.js";
+         get_active_layouts, tree_command, reset_view } from "./gui.js";
 import { update_minimap_visible_rect } from "./minimap.js";
 import { colorize_active, get_active_class } from "./active.js";
 import { colorize_searches, get_search_class } from "./search.js";
@@ -11,7 +11,8 @@ import { on_box_contextmenu } from "./contextmenu.js";
 import { api } from "./api.js";
 import { draw_pixi, clear_pixi } from "./pixi.js";
 
-export { update, draw_tree, draw_tree_scale, draw_aligned, draw, get_class_name, cartesian_shifted, update_aligned_panel_display };
+export { update, draw_tree, draw_tree_scale, draw_aligned, draw, get_class_name,
+         cartesian_shifted, update_aligned_panel_display };
 
 
 // Update the view of all elements (gui, tree, minimap).
@@ -22,7 +23,7 @@ async function update() {
         update_minimap_visible_rect();
 }
 
-function get_tree_params() {
+async function get_tree_params() {
     const [zx, zy, za] = [view.zoom.x, view.zoom.y, view.zoom.a];
     const [x, y] = [view.tl.x, view.tl.y];
     const [w, h] = [div_tree.offsetWidth / zx, div_tree.offsetHeight / zy];
@@ -50,7 +51,32 @@ var align_drawing = false;
 // Ask the server for a tree in the new defined region, and draw it.
 async function draw_tree() {
     div_tree.style.cursor = "wait";
-    const params = get_tree_params();
+
+    const params = await get_tree_params();
+
+    // Fix the tree if it has zero width.
+    if (params.w <= 0) {
+        const result = await Swal.fire({
+            icon: "error",
+            html: `Cannot draw tree with width ${params.w}`,
+            confirmButtonText: "Convert to ultrametric (equidistant leaves)",
+            showDenyButton: true,
+            denyButtonText: "Convert to dendrogram (remove all distances)",
+            showCancelButton: true,
+        });
+
+        if (result.isConfirmed) {
+            await tree_command("to_ultrametric", []);
+            reset_view();
+        }
+        else if (result.isDenied) {
+            await tree_command("to_dendrogram", []);
+            reset_view();
+        }
+
+        return;
+    }
+
     const qs = new URLSearchParams(params).toString();  // "x=...&y=..."
 
     try {

@@ -567,6 +567,26 @@ def callback(tree_id):
     except (AssertionError, newick.NewickError) as e:
         abort(400, f'cannot edit {node_id}: {e}')
 
+@put('/trees/<tree_id>/to_dendrogram')
+def callback(tree_id):
+    tree_data, subtree = touch_and_get(tree_id)
+    node_id = req_json()
+    ops.to_dendrogram(tree_data.tree[subtree][node_id])
+    ops.update_sizes_all(tree_data.tree)
+    return {'message': 'ok'}
+
+@put('/trees/<tree_id>/to_ultrametric')
+def callback(tree_id):
+    tree_data, subtree = touch_and_get(tree_id)
+
+    try:
+        node_id = req_json()
+        ops.to_ultrametric(tree_data.tree[subtree][node_id])
+        ops.update_sizes_all(tree_data.tree)
+        return {'message': 'ok'}
+    except AssertionError as e:
+        abort(400, f'cannot convert to ultrametric {tree_id}: {e}')
+
 @put('/trees/<tree_id>/update_props')
 def callback(tree_id):
     tree_data, subtree = touch_and_get(tree_id)
