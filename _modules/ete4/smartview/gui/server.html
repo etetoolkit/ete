@@ -619,6 +619,26 @@
     <span class="k">except</span> <span class="p">(</span><span class="ne">AssertionError</span><span class="p">,</span> <span class="n">newick</span><span class="o">.</span><span class="n">NewickError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="n">abort</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;cannot edit </span><span class="si">{</span><span class="n">node_id</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
+<span class="nd">@put</span><span class="p">(</span><span class="s1">&#39;/trees/&lt;tree_id&gt;/to_dendrogram&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="n">tree_id</span><span class="p">):</span>
+    <span class="n">tree_data</span><span class="p">,</span> <span class="n">subtree</span> <span class="o">=</span> <span class="n">touch_and_get</span><span class="p">(</span><span class="n">tree_id</span><span class="p">)</span>
+    <span class="n">node_id</span> <span class="o">=</span> <span class="n">req_json</span><span class="p">()</span>
+    <span class="n">ops</span><span class="o">.</span><span class="n">to_dendrogram</span><span class="p">(</span><span class="n">tree_data</span><span class="o">.</span><span class="n">tree</span><span class="p">[</span><span class="n">subtree</span><span class="p">][</span><span class="n">node_id</span><span class="p">])</span>
+    <span class="n">ops</span><span class="o">.</span><span class="n">update_sizes_all</span><span class="p">(</span><span class="n">tree_data</span><span class="o">.</span><span class="n">tree</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;ok&#39;</span><span class="p">}</span>
+
+<span class="nd">@put</span><span class="p">(</span><span class="s1">&#39;/trees/&lt;tree_id&gt;/to_ultrametric&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="n">tree_id</span><span class="p">):</span>
+    <span class="n">tree_data</span><span class="p">,</span> <span class="n">subtree</span> <span class="o">=</span> <span class="n">touch_and_get</span><span class="p">(</span><span class="n">tree_id</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">node_id</span> <span class="o">=</span> <span class="n">req_json</span><span class="p">()</span>
+        <span class="n">ops</span><span class="o">.</span><span class="n">to_ultrametric</span><span class="p">(</span><span class="n">tree_data</span><span class="o">.</span><span class="n">tree</span><span class="p">[</span><span class="n">subtree</span><span class="p">][</span><span class="n">node_id</span><span class="p">])</span>
+        <span class="n">ops</span><span class="o">.</span><span class="n">update_sizes_all</span><span class="p">(</span><span class="n">tree_data</span><span class="o">.</span><span class="n">tree</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;ok&#39;</span><span class="p">}</span>
+    <span class="k">except</span> <span class="ne">AssertionError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">abort</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;cannot convert to ultrametric </span><span class="si">{</span><span class="n">tree_id</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
 <span class="nd">@put</span><span class="p">(</span><span class="s1">&#39;/trees/&lt;tree_id&gt;/update_props&#39;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="n">tree_id</span><span class="p">):</span>
     <span class="n">tree_data</span><span class="p">,</span> <span class="n">subtree</span> <span class="o">=</span> <span class="n">touch_and_get</span><span class="p">(</span><span class="n">tree_id</span><span class="p">)</span>
