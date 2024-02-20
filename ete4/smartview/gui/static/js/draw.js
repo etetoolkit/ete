@@ -23,7 +23,7 @@ async function update() {
         update_minimap_visible_rect();
 }
 
-async function get_tree_params() {
+function get_tree_params() {
     const [zx, zy, za] = [view.zoom.x, view.zoom.y, view.zoom.a];
     const [x, y] = [view.tl.x, view.tl.y];
     const [w, h] = [div_tree.offsetWidth / zx, div_tree.offsetHeight / zy];
@@ -52,7 +52,7 @@ var align_drawing = false;
 async function draw_tree() {
     div_tree.style.cursor = "wait";
 
-    const params = await get_tree_params();
+    const params = get_tree_params();
 
     // Fix the tree if it has zero width.
     if (params.w <= 0) {
