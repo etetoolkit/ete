@@ -551,11 +551,6 @@
     <span class="n">response</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="mi">201</span>
     <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;ok&#39;</span><span class="p">,</span> <span class="s1">&#39;ids&#39;</span><span class="p">:</span> <span class="n">ids</span><span class="p">}</span>
 
-<span class="nd">@put</span><span class="p">(</span><span class="s1">&#39;/trees/&lt;tree_id&gt;&#39;</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="n">tree_id</span><span class="p">):</span>
-    <span class="n">modify_tree_fields</span><span class="p">(</span><span class="n">tree_id</span><span class="p">)</span>
-    <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;ok&#39;</span><span class="p">}</span>
-
 <span class="nd">@put</span><span class="p">(</span><span class="s1">&#39;/trees/&lt;tree_id&gt;/sort&#39;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="n">tree_id</span><span class="p">):</span>
     <span class="n">node_id</span><span class="p">,</span> <span class="n">key_text</span><span class="p">,</span> <span class="n">reverse</span> <span class="o">=</span> <span class="n">req_json</span><span class="p">()</span>
@@ -1647,20 +1642,6 @@
 
 
 
-<div class="viewcode-block" id="modify_tree_fields">
-<a class="viewcode-back" href="../../../../reference/reference_smartview.html#ete4.smartview.gui.server.modify_tree_fields">[docs]</a>
-<span class="k">def</span> <span class="nf">modify_tree_fields</span><span class="p">(</span><span class="n">tree_id</span><span class="p">):</span>
-    <span class="s2">&quot;Modify in the database the tree fields that appear in a request&quot;</span>
-    <span class="n">tid</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tree_id</span><span class="p">)</span>
-
-    <span class="n">data</span> <span class="o">=</span> <span class="n">get_fields</span><span class="p">(</span><span class="n">valid_extra</span><span class="o">=</span><span class="p">[</span>
-        <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;newick&#39;</span><span class="p">])</span>
-
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;ok&#39;</span><span class="p">}</span></div>
-
-
-
 <div class="viewcode-block" id="update_app_available_layouts">
 <a class="viewcode-back" href="../../../../reference/reference_smartview.html#ete4.smartview.gui.server.update_app_available_layouts">[docs]</a>
 <span class="k">def</span> <span class="nf">update_app_available_layouts</span><span class="p">():</span>
@@ -1765,23 +1746,6 @@
     <span class="s2">&quot;Delete a tree and everywhere where it appears referenced&quot;</span>
     <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;/tmp/</span><span class="si">{</span><span class="n">tid</span><span class="si">}</span><span class="s1">.pickle&#39;</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">app</span><span class="o">.</span><span class="n">trees</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">tid</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
-
-
-
-<div class="viewcode-block" id="get_fields">
-<a class="viewcode-back" href="../../../../reference/reference_smartview.html#ete4.smartview.gui.server.get_fields">[docs]</a>
-<span class="k">def</span> <span class="nf">get_fields</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">valid_extra</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="s2">&quot;Return fields and raise exception if missing required or invalid present&quot;</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">req_json</span><span class="p">()</span>
-
-    <span class="k">if</span> <span class="n">required</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span><span class="n">x</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">required</span><span class="p">):</span>
-        <span class="n">abort</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;must have the fields </span><span class="si">{</span><span class="n">required</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-
-    <span class="n">valid</span> <span class="o">=</span> <span class="p">(</span><span class="n">required</span> <span class="ow">or</span> <span class="p">[])</span> <span class="o">+</span> <span class="p">(</span><span class="n">valid_extra</span> <span class="ow">or</span> <span class="p">[])</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">x</span> <span class="ow">in</span> <span class="n">valid</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">data</span><span class="p">):</span>
-        <span class="n">abort</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;can only have the fields </span><span class="si">{</span><span class="n">valid</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">data</span></div>
 
 
 
