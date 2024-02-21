@@ -499,11 +499,6 @@ def callback():
     response.status = 201
     return {'message': 'ok', 'ids': ids}
 
-@put('/trees/<tree_id>')
-def callback(tree_id):
-    modify_tree_fields(tree_id)
-    return {'message': 'ok'}
-
 @put('/trees/<tree_id>/sort')
 def callback(tree_id):
     node_id, key_text, reverse = req_json()
@@ -1457,17 +1452,6 @@ def add_tree(data):
     return tid
 
 
-def modify_tree_fields(tree_id):
-    "Modify in the database the tree fields that appear in a request"
-    tid = int(tree_id)
-
-    data = get_fields(valid_extra=[
-        'name', 'description', 'newick'])
-
-    if not data:
-        return {'message': 'ok'}
-
-
 def update_app_available_layouts():
     try:
         module_reload(layout_modules)
@@ -1555,20 +1539,6 @@ def del_tree(tid):
     "Delete a tree and everywhere where it appears referenced"
     shutil.rmtree(f'/tmp/{tid}.pickle', ignore_errors=True)
     app.trees.pop(tid, None)
-
-
-def get_fields(required=None, valid_extra=None):
-    "Return fields and raise exception if missing required or invalid present"
-    data = req_json()
-
-    if required and any(x not in data for x in required):
-        abort(400, f'must have the fields {required}')
-
-    valid = (required or []) + (valid_extra or [])
-    if not all(x in valid for x in data):
-        abort(400, f'can only have the fields {valid}')
-
-    return data
 
 
 def copy_style(tree_style):
