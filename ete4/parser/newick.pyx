@@ -212,6 +212,9 @@ def loads(tree_text, parser=None, tree_class=Tree):
     if not tree_text.endswith(';'):
         raise NewickError('text ends with no ";"')
 
+    if type(parser) == int:  # parser is an integer? (old-style/shortcut)
+        parser = INT_PARSERS[parser]  # substitute it for the actual parser
+
     if tree_text[0] == '(':
         nodes, pos = read_nodes(tree_text, parser, 0, tree_class)
     else:
