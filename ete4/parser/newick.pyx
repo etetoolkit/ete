@@ -226,7 +226,7 @@ def loads(tree_text, parser=None, tree_class=Tree):
     return tree_class(props, nodes)
 
 
-def read_nodes(nodes_text, parser, pos=0, tree_class=Tree):
+def read_nodes(nodes_text, parser, int pos=0, tree_class=Tree):
     """Return a list of nodes and the position in the text where they end."""
     # nodes_text looks like '(a,b,c)', where any element can be a list of nodes
     if nodes_text[pos] != '(':
@@ -253,7 +253,7 @@ def read_nodes(nodes_text, parser, pos=0, tree_class=Tree):
     return nodes, pos+1
 
 
-def skip_spaces_and_comments(text, pos):
+def skip_spaces_and_comments(text, int pos):
     """Return position in text after pos and all whitespaces and comments."""
     # text = '...  [this is a comment] node1...'
     #            ^-- pos               ^-- pos (returned)
@@ -271,7 +271,7 @@ def skip_spaces_and_comments(text, pos):
     return pos
 
 
-def read_content(text, pos, endings=',);'):
+def read_content(str text, int pos, endings=',);'):
     """Return content starting at position pos in text, and where it ends."""
     # text = '...(node_1:0.5[&&NHX:p=a],...'  ->  'node_1:0.5[&&NHX:p=a]'
     #             ^-- pos              ^-- pos (returned)
@@ -288,7 +288,7 @@ def read_content(text, pos, endings=',);'):
     return text[start:pos], pos
 
 
-def skip_quoted_name(text, pos):
+def skip_quoted_name(str text, int pos):
     """Return the position where a quoted name ends."""
     # text = "... 'node ''2'' in tree' ..."
     #             ^-- pos             ^-- pos (returned)
