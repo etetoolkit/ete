@@ -114,13 +114,13 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ete4.parser.newick.read_content">
-<span class="sig-name descname"><span class="pre">read_content</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">',);'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.parser.newick.read_content" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">read_content</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unicode</span> <span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">int</span> <span class="pre">pos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endings=u'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">);'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.parser.newick.read_content" title="Link to this definition">¶</a></dt>
 <dd><p>Return content starting at position pos in text, and where it ends.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ete4.parser.newick.read_nodes">
-<span class="sig-name descname"><span class="pre">read_nodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodes_text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parser</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree_class</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Tree</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.parser.newick.read_nodes" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">read_nodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodes_text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parser</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">int</span> <span class="pre">pos=0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree_class=Tree</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.parser.newick.read_nodes" title="Link to this definition">¶</a></dt>
 <dd><p>Return a list of nodes and the position in the text where they end.</p>
 </dd></dl>
 
@@ -132,13 +132,13 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ete4.parser.newick.skip_quoted_name">
-<span class="sig-name descname"><span class="pre">skip_quoted_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.parser.newick.skip_quoted_name" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">skip_quoted_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unicode</span> <span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">int</span> <span class="pre">pos</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.parser.newick.skip_quoted_name" title="Link to this definition">¶</a></dt>
 <dd><p>Return the position where a quoted name ends.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ete4.parser.newick.skip_spaces_and_comments">
-<span class="sig-name descname"><span class="pre">skip_spaces_and_comments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.parser.newick.skip_spaces_and_comments" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">skip_spaces_and_comments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">int</span> <span class="pre">pos</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.parser.newick.skip_spaces_and_comments" title="Link to this definition">¶</a></dt>
 <dd><p>Return position in text after pos and all whitespaces and comments.</p>
 </dd></dl>
 
