@@ -1,3 +1,5 @@
+import random
+
 from .common import dump
 
 DESC = ""
@@ -13,5 +15,6 @@ def run(args):
 
     for n in range(args.number):
         t = Tree()
-        t.populate(args.size, random_branches=args.random_branches)
+        fn = random.random if args.random_branches else None
+        t.populate(args.size, dist_fn=fn, support_fn=fn)
         dump(t)

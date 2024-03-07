@@ -1,6 +1,7 @@
 import unittest
 import sys
 import os
+import random
 
 ETEPATH = os.path.abspath(os.path.split(os.path.realpath(__file__))[0]+'/../')
 sys.path.insert(0, ETEPATH)
@@ -144,7 +145,7 @@ class Test_Core_Treeview(unittest.TestCase):
                 faces.add_face_to_node(F2 ,node, 1, position="branch-right")
                 CONT += 1
         t = Tree()
-        t.populate(20, random_branches=True)
+        t.populate(20, dist_fn=random.random, support_fn=random.random)
         ts = TreeStyle()
         ts.layout_fn = layout
         ts.mode = "c"

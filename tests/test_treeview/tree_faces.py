@@ -24,7 +24,7 @@ def layout(node):
 def get_example_tree():
     # Random tree
     t = Tree()
-    t.populate(20, random_branches=True)
+    t.populate(20, dist_fn=random.random, support_fn=random.random)
 
     # Some random properties in all nodes
     for n in t.traverse():
