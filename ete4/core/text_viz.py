@@ -13,7 +13,7 @@ a console.
 
 
 def to_str(tree, show_internal=True, compact=False, props=None,
-           px=None, py=0, px0=0, cascade=False):
+           px=None, py=None, px0=0, cascade=False):
     """Return a string containing an ascii drawing of the tree.
 
     :param show_internal: If True, show the internal nodes too.
