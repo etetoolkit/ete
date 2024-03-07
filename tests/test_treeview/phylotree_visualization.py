@@ -31,8 +31,9 @@ def get_example_tree():
     # Performs a tree reconciliation analysis
     gene_tree_nw = '((Dme_001,Dme_002),(((Cfa_001,Mms_001),((Hsa_001,Ptr_001),Mmu_001)),(Ptr_002,(Hsa_002,Mmu_002))));'
     species_tree_nw = "((((Hsa, Ptr), Mmu), (Mms, Cfa)), Dme);"
-    genetree = PhyloTree(gene_tree_nw)
-    sptree = PhyloTree(species_tree_nw)
+    naming_fn = lambda name: name[:3]
+    genetree = PhyloTree(gene_tree_nw, sp_naming_function=naming_fn)
+    sptree = PhyloTree(species_tree_nw, sp_naming_function=naming_fn)
     recon_tree, events = genetree.reconcile(sptree)
     recon_tree.link_to_alignment(alg)
     return recon_tree, TreeStyle()
