@@ -171,3 +171,18 @@ def get_branches_repr(are_last, is_leaf, px):
 
     return (prefix   + ('└' if are_last[-1] else '├') +
             '─' * px + ('╴' if is_leaf      else '┐'))
+
+
+def to_repr(tree, depth=4, nchildren=3):
+    """Return a text representation that exactly recreates the tree.
+
+    If depth and nchildren are None, return the full representation.
+    """
+    children = tree.children[:nchildren]
+    depth_1 = depth if depth is None else depth - 1
+    children_repr = '...' if depth == 0 else (
+        ', '.join(to_repr(node, depth_1, nchildren) for node in children) +
+        ('' if nchildren is None or len(tree.children) <= nchildren
+         else ', ...'))
+
+    return 'Tree(%r, [%s])' % (tree.props, children_repr)
