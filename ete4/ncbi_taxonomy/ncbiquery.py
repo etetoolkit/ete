@@ -699,7 +699,7 @@ def update_db(dbfile, targz_file=None):
 
 def update_local_taxdump(fname=DEFAULT_TAXDUMP):
     """Update contents of file fname with taxdump.tar.gz from the NCBI site."""
-    url = 'https://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz'
+    url = 'https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz'
 
     if not os.path.exists(fname):
         print(f'Downloading {fname} from {url} ...')
