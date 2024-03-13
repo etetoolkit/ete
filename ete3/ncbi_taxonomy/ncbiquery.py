@@ -666,7 +666,7 @@ class NCBITaxa(object):
 
 def load_ncbi_tree_from_dump(tar):
     from .. import Tree
-    # Download: http://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz
+    # Download: http://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz
     parent2child = {}
     name2node = {}
     node2taxname = {}
@@ -755,7 +755,7 @@ def update_db(dbfile, targz_file=None):
         except ImportError:
             from urllib.request import urlretrieve
 
-        (md5_filename, _) = urlretrieve("https://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz.md5")
+        (md5_filename, _) = urlretrieve("https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz.md5")
         with open(md5_filename, "r") as md5_file:
             md5_check = md5_file.readline().split()[0]
         targz_file = "taxdump.tar.gz"
@@ -766,14 +766,14 @@ def update_db(dbfile, targz_file=None):
             if local_md5 != md5_check:
                 do_download = True
                 print('Updating taxdump.tar.gz from NCBI FTP site (via HTTP)...', file=sys.stderr)
-                urlretrieve("http://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz", targz_file)
+                urlretrieve("http://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz", targz_file)
                 print('Done. Parsing...', file=sys.stderr)
             else:
                 print('Local taxdump.tar.gz seems up-to-date', file=sys.stderr)
         else:
             do_download = True
             print('Downloading taxdump.tar.gz from NCBI FTP site (via HTTP)...', file=sys.stderr)
-            urlretrieve("http://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz", targz_file)
+            urlretrieve("http://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz", targz_file)
             print('Done. Parsing...', file=sys.stderr)
 
     tar = tarfile.open(targz_file, 'r')
