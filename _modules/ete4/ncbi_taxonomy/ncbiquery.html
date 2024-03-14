@@ -778,7 +778,7 @@
 
 <span class="k">def</span> <span class="nf">update_local_taxdump</span><span class="p">(</span><span class="n">fname</span><span class="o">=</span><span class="n">DEFAULT_TAXDUMP</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Update contents of file fname with taxdump.tar.gz from the NCBI site.&quot;&quot;&quot;</span>
-    <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;https://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz&#39;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz&#39;</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Downloading </span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s1"> from </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s1"> ...&#39;</span><span class="p">)</span>
