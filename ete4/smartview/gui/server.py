@@ -732,11 +732,20 @@ def retrieve_tree_data(tid):
 
     It retrieves all that from a previously saved pickle file in /tmp."""
     # Called when tree has been deleted from memory.
-    tree_data = pickle.load(open(f'/tmp/{tid}.pickle', 'rb'))
+    try:
+        tree_data = pickle.load(open(f'/tmp/{tid}.pickle', 'rb'))
+    except (FileNotFoundError, EOFError, pickle.UnpicklingError) as e:
+        print(f'Tree {tid} cannot be recovered from disk. Loading placeholder.')
+        tree_data = TreeData()
+        tree_data.name = 'Placeholder tree'
+        tree_data.tree = Tree('(could,not,load,tree);')
+        ops.update_sizes_all(tree_data.tree)
+
     tree_data.style = copy_style(TreeStyle())
     tree_data.layouts = retrieve_layouts(tree_data.layouts)
     tree_data.active = drawer_module.get_empty_active()
     tree_data.timer = time()  # to track if it is active
+
     return tree_data
 
 
@@ -1445,7 +1454,12 @@ def add_tree(data):
         data.style = None  # since it can't be pickled
         data.layouts = layouts  # same
         data.active = None  # same
-        pickle.dump(data, open(f'/tmp/{tid}.pickle', 'wb'))
+        try:
+            pickle.dump(data, open(f'/tmp/{tid}.pickle', 'wb'))
+        except (pickle.PicklingError, PermissionError) as e:
+            print(f'Tree {tid} not saved to file.')
+            # So changing to ultrametric and back will not work,
+            # because it is done by re-reading from the dumped file.
     thr_write = Thread(daemon=True, target=write_tree_data)  # so we are not delayed
     thr_write.start()                                   # by big trees
 
