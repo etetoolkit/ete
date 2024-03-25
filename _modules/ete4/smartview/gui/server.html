@@ -801,11 +801,20 @@
 
 <span class="sd">    It retrieves all that from a previously saved pickle file in /tmp.&quot;&quot;&quot;</span>
     <span class="c1"># Called when tree has been deleted from memory.</span>
-    <span class="n">tree_data</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;/tmp/</span><span class="si">{</span><span class="n">tid</span><span class="si">}</span><span class="s1">.pickle&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">))</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">tree_data</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;/tmp/</span><span class="si">{</span><span class="n">tid</span><span class="si">}</span><span class="s1">.pickle&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">))</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">FileNotFoundError</span><span class="p">,</span> <span class="ne">EOFError</span><span class="p">,</span> <span class="n">pickle</span><span class="o">.</span><span class="n">UnpicklingError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Tree </span><span class="si">{</span><span class="n">tid</span><span class="si">}</span><span class="s1"> cannot be recovered from disk. Loading placeholder.&#39;</span><span class="p">)</span>
+        <span class="n">tree_data</span> <span class="o">=</span> <span class="n">TreeData</span><span class="p">()</span>
+        <span class="n">tree_data</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Placeholder tree&#39;</span>
+        <span class="n">tree_data</span><span class="o">.</span><span class="n">tree</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;(could,not,load,tree);&#39;</span><span class="p">)</span>
+        <span class="n">ops</span><span class="o">.</span><span class="n">update_sizes_all</span><span class="p">(</span><span class="n">tree_data</span><span class="o">.</span><span class="n">tree</span><span class="p">)</span>
+
     <span class="n">tree_data</span><span class="o">.</span><span class="n">style</span> <span class="o">=</span> <span class="n">copy_style</span><span class="p">(</span><span class="n">TreeStyle</span><span class="p">())</span>
     <span class="n">tree_data</span><span class="o">.</span><span class="n">layouts</span> <span class="o">=</span> <span class="n">retrieve_layouts</span><span class="p">(</span><span class="n">tree_data</span><span class="o">.</span><span class="n">layouts</span><span class="p">)</span>
     <span class="n">tree_data</span><span class="o">.</span><span class="n">active</span> <span class="o">=</span> <span class="n">drawer_module</span><span class="o">.</span><span class="n">get_empty_active</span><span class="p">()</span>
     <span class="n">tree_data</span><span class="o">.</span><span class="n">timer</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>  <span class="c1"># to track if it is active</span>
+
     <span class="k">return</span> <span class="n">tree_data</span></div>
 
 
@@ -1634,7 +1643,12 @@
         <span class="n">data</span><span class="o">.</span><span class="n">style</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># since it can&#39;t be pickled</span>
         <span class="n">data</span><span class="o">.</span><span class="n">layouts</span> <span class="o">=</span> <span class="n">layouts</span>  <span class="c1"># same</span>
         <span class="n">data</span><span class="o">.</span><span class="n">active</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># same</span>
-        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;/tmp/</span><span class="si">{</span><span class="n">tid</span><span class="si">}</span><span class="s1">.pickle&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">))</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;/tmp/</span><span class="si">{</span><span class="n">tid</span><span class="si">}</span><span class="s1">.pickle&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">))</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">pickle</span><span class="o">.</span><span class="n">PicklingError</span><span class="p">,</span> <span class="ne">PermissionError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Tree </span><span class="si">{</span><span class="n">tid</span><span class="si">}</span><span class="s1"> not saved to file.&#39;</span><span class="p">)</span>
+            <span class="c1"># So changing to ultrametric and back will not work,</span>
+            <span class="c1"># because it is done by re-reading from the dumped file.</span>
     <span class="n">thr_write</span> <span class="o">=</span> <span class="n">Thread</span><span class="p">(</span><span class="n">daemon</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">write_tree_data</span><span class="p">)</span>  <span class="c1"># so we are not delayed</span>
     <span class="n">thr_write</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>                                   <span class="c1"># by big trees</span>
 
