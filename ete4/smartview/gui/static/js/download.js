@@ -10,7 +10,7 @@ export { download_newick, download_seqs, download_svg, download_pdf };
 
 // Download a file with the newick representation of the tree.
 async function download_newick(node_id) {
-    const nid = get_tid() + (node_id.length > 0 ? ("," + node_id) : "");
+    const nid = get_tid() + (node_id && node_id.length > 0 ? ("," + node_id) : "");
     const newick = await api(`/trees/${nid}/newick`);
     download(view.tree + ".tree", "data:text/plain;charset=utf-8," + newick);
 }
