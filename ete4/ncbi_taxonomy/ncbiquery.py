@@ -45,7 +45,7 @@ class NCBITaxa:
     """
 
     def __init__(self, dbfile=None, taxdump_file=None,
-                 memory=False, update=True):
+                 memory=False, update=True, check_same_thread=True):
         """Open and keep a connection to the NCBI taxonomy database.
 
         If it is not present in the system, it will download the
@@ -53,6 +53,7 @@ class NCBITaxa:
         format.
         """
         self.dbfile = dbfile or DEFAULT_TAXADB
+        self.check_same_thread = check_same_thread
 
         if taxdump_file:
             self.update_taxonomy_database(taxdump_file)
@@ -90,7 +91,7 @@ class NCBITaxa:
         update_db(self.dbfile, taxdump_file)
 
     def _connect(self):
-        self.db = sqlite3.connect(self.dbfile)
+        self.db = sqlite3.connect(self.dbfile, self.check_same_thread)
 
     def _translate_merged(self, all_taxids):
         conv_all_taxids = set((list(map(int, all_taxids))))
