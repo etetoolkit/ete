@@ -458,7 +458,7 @@ class NCBITaxa:
         return tree
 
     def annotate_tree(self, t, taxid_attr="name", tax2name=None,
-                      tax2track=None, tax2rank=None):
+                      tax2track=None, tax2rank=None, ignore_unclassified=False):
         """Annotate a tree containing taxids as leaf names.
 
         The annotation adds the properties: 'taxid', 'sci_name',
@@ -521,14 +521,18 @@ class NCBITaxa:
                                rank = 'Unknown',
                                named_lineage = [])
             else:
-                lineage = self._common_lineage([lf.props.get('lineage') for lf in n2leaves[n]])
+                if ignore_unclassified:
+                    vectors = [lf.props.get('lineage') for lf in n2leaves[n] if lf.props.get('lineage')]
+                else:
+                    vectors = [lf.props.get('lineage') for lf in n2leaves[n]]
+                lineage = self._common_lineage(vectors)
                 ancestor = lineage[-1]
                 n.add_props(sci_name = tax2name.get(ancestor, str(ancestor)),
-                               common_name = tax2common_name.get(ancestor, ''),
-                               taxid = ancestor,
-                               lineage = lineage,
-                               rank = tax2rank.get(ancestor, 'Unknown'),
-                               named_lineage = [tax2name.get(tax, str(tax)) for tax in lineage])
+                            common_name = tax2common_name.get(ancestor, ''),
+                            taxid = ancestor,
+                            lineage = lineage,
+                            rank = tax2rank.get(ancestor, 'Unknown'),
+                            named_lineage = [tax2name.get(tax, str(tax)) for tax in lineage])
 
         return tax2name, tax2track, tax2rank
 
