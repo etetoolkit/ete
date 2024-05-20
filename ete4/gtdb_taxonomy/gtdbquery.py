@@ -146,13 +146,26 @@ class GTDBTaxa:
 
     #     return taxid, spname, norm_score
 
-    def get_rank(self, taxids):
+    def _get_rank(self, taxids):
         """Return dictionary converting taxids to their GTDB taxonomy rank."""
         ids = ','.join('"%s"' % v for v in set(taxids) - {None, ''})
         result = self.db.execute('SELECT taxid, rank FROM species WHERE taxid IN (%s)' % ids)
         return {tax: spname for tax, spname in result.fetchall()}
+    
+    def get_rank(self, taxids):
+        taxid2rank = {}
+        name2ids = self._get_name_translator(taxids)
+        overlap_ids = name2ids.values()
+        taxids = [item for sublist in overlap_ids for item in sublist]
+        """Return dictionary converting taxids to their GTDB taxonomy rank."""
+        ids = ','.join('"%s"' % v for v in set(taxids) - {None, ''})
+        result = self.db.execute('SELECT taxid, rank FROM species WHERE taxid IN (%s)' % ids)
+        for tax, rank in result.fetchall():
+            taxid2rank[list(self._get_taxid_translator([tax]).values())[0]] = rank
+        
+        return taxid2rank
 
-    def get_lineage_translator(self, taxids):
+    def _get_lineage_translator(self, taxids):
         """Given a valid taxid number, return its corresponding lineage track as a
         hierarchically sorted list of parent taxids.
         """
@@ -172,10 +185,10 @@ class GTDBTaxa:
         hierarchically sorted list of parent taxnames.
         """
         name_lineages = []
-        name2taxid = self.get_name_translator(taxnames)
+        name2taxid = self._get_name_translator(taxnames)
         for key, value in name2taxid.items():
             lineage = self.get_lineage(value[0])
-            names = self.get_taxid_translator(lineage)
+            names = self._get_taxid_translator(lineage)
             name_lineages.append({key:[names[taxid] for taxid in lineage]})
 
         return name_lineages
@@ -215,7 +228,7 @@ class GTDBTaxa:
                 id2name[tax] = common_name
         return id2name
 
-    def get_taxid_translator(self, taxids, try_synonyms=True):
+    def _get_taxid_translator(self, taxids, try_synonyms=True):
         """Given a list of taxids, returns a dictionary with their corresponding
         scientific names.
         """
@@ -245,7 +258,7 @@ class GTDBTaxa:
 
         return id2name
 
-    def get_name_translator(self, names):
+    def _get_name_translator(self, names):
         """
         Given a list of taxid scientific names, returns a dictionary translating them into their corresponding taxids.
         Exact name match is required for translation.
@@ -276,11 +289,11 @@ class GTDBTaxa:
                 #name2realname[oname] = sp
         return name2id
 
-    def translate_to_names(self, taxids):
+    def _translate_to_names(self, taxids):
         """
         Given a list of taxid numbers, returns another list with their corresponding scientific names.
         """
-        id2name = self.get_taxid_translator(taxids)
+        id2name = self._get_taxid_translator(taxids)
         names = []
         for sp in taxids:
             names.append(id2name.get(sp, sp))
@@ -296,7 +309,7 @@ class GTDBTaxa:
             taxid = int(parent)
         except ValueError:
             try:
-                taxid = self.get_name_translator([parent])[parent][0]
+                taxid = self._get_name_translator([parent])[parent][0]
             except KeyError:
                 raise ValueError('%s not found!' %parent)
 
@@ -322,7 +335,7 @@ class GTDBTaxa:
         elif found == 1:
             return [taxid]
         if rank_limit or collapse_subspecies or return_tree:
-            descendants_spnames = self.get_taxid_translator(list(descendants.keys()))
+            descendants_spnames = self._get_taxid_translator(list(descendants.keys()))
             #tree = self.get_topology(list(descendants.keys()), intermediate_nodes=intermediate_nodes, collapse_subspecies=collapse_subspecies, rank_limit=rank_limit)
             tree = self.get_topology(list(descendants_spnames.values()), intermediate_nodes=intermediate_nodes, collapse_subspecies=collapse_subspecies, rank_limit=rank_limit)
             if return_tree:
@@ -333,10 +346,10 @@ class GTDBTaxa:
                 return [n.name for n in tree]
 
         elif intermediate_nodes:
-            return self.translate_to_names([tid for tid, count in descendants.items()])
+            return self._translate_to_names([tid for tid, count in descendants.items()])
         else:
-            self.translate_to_names([tid for tid, count in descendants.items() if count == 1])
-            return self.translate_to_names([tid for tid, count in descendants.items() if count == 1])
+            self._translate_to_names([tid for tid, count in descendants.items() if count == 1])
+            return self._translate_to_names([tid for tid, count in descendants.items() if count == 1])
 
     def get_topology(self, taxnames, intermediate_nodes=False, rank_limit=None,
                      collapse_subspecies=False, annotate=True):
@@ -356,7 +369,7 @@ class GTDBTaxa:
         """
         from .. import PhyloTree
         #taxids, merged_conversion = self._translate_merged(taxids)
-        tax2id = self.get_name_translator(taxnames) #{'f__Korarchaeaceae': [2174], 'o__Peptococcales': [205487], 'p__Huberarchaeota': [610]}
+        tax2id = self._get_name_translator(taxnames) #{'f__Korarchaeaceae': [2174], 'o__Peptococcales': [205487], 'p__Huberarchaeota': [610]}
         taxids = [i[0] for i in tax2id.values()]
 
         if len(taxids) == 1:
@@ -376,7 +389,7 @@ class GTDBTaxa:
                 # If root taxid is not found in postorder, must be a tip node
             	subtree = [root_taxid]
             leaves = set([v for v, count in Counter(subtree).items() if count == 1])
-            tax2name = self.get_taxid_translator(list(subtree))
+            tax2name = self._get_taxid_translator(list(subtree))
             name2tax ={spname:taxid for taxid,spname in tax2name.items()}
             nodes[root_taxid] = PhyloTree({'name': str(root_taxid)})
             current_parent = nodes[root_taxid]
@@ -394,15 +407,15 @@ class GTDBTaxa:
             taxids = set(map(int, taxids))
             sp2track = {}
             elem2node = {}
-            id2lineage = self.get_lineage_translator(taxids)
+            id2lineage = self._get_lineage_translator(taxids)
             all_taxids = set()
             for lineage in id2lineage.values():
                 all_taxids.update(lineage)
-            id2rank = self.get_rank(all_taxids)
+            id2rank = self._get_rank(all_taxids)
 
-            tax2name = self.get_taxid_translator(taxids)
+            tax2name = self._get_taxid_translator(taxids)
             all_taxid_codes = set([_tax for _lin in list(id2lineage.values()) for _tax in _lin])
-            extra_tax2name = self.get_taxid_translator(list(all_taxid_codes - set(tax2name.keys())))
+            extra_tax2name = self._get_taxid_translator(list(all_taxid_codes - set(tax2name.keys())))
             tax2name.update(extra_tax2name)
             name2tax ={spname:taxid for taxid,spname in tax2name.items()}
 
@@ -452,12 +465,12 @@ class GTDBTaxa:
                 n.detach()
 
         if annotate:
-            self.annotate_tree(tree)
+            self.annotate_tree(tree, ignore_unclassified=False)
 
         return tree
 
-    def annotate_tree(self, t, taxid_attr='name',
-                      tax2name=None, tax2track=None, tax2rank=None):
+    def annotate_tree(self, t, taxid_attr='name', tax2name=None, 
+                        tax2track=None, tax2rank=None, ignore_unclassified=False):
         """Annotate a tree containing taxids as leaf names.
 
         It annotates by adding the properties 'taxid', 'sci_name',
@@ -481,7 +494,7 @@ class GTDBTaxa:
                 try:
                     # translate gtdb name -> id
                     taxaname = getattr(n, taxid_attr, n.props.get(taxid_attr))
-                    tid = self.get_name_translator([taxaname])[taxaname][0]
+                    tid = self._get_name_translator([taxaname])[taxaname][0]
                     taxids.add(tid)
                 except (KeyError, ValueError, AttributeError):
                     pass
@@ -490,18 +503,18 @@ class GTDBTaxa:
         taxids, merged_conversion = self._translate_merged(taxids)
 
         if not tax2name or taxids - set(map(int, list(tax2name.keys()))):
-            tax2name = self.get_taxid_translator(taxids)
+            tax2name = self._get_taxid_translator(taxids)
         if not tax2track or taxids - set(map(int, list(tax2track.keys()))):
-            tax2track = self.get_lineage_translator(taxids)
-
+            tax2track = self._get_lineage_translator(taxids)
+        
         all_taxid_codes = set([_tax for _lin in list(tax2track.values()) for _tax in _lin])
-        extra_tax2name = self.get_taxid_translator(list(all_taxid_codes - set(tax2name.keys())))
+        extra_tax2name = self._get_taxid_translator(list(all_taxid_codes - set(tax2name.keys())))
         tax2name.update(extra_tax2name)
 
         tax2common_name = self.get_common_names(tax2name.keys())
 
         if not tax2rank:
-            tax2rank = self.get_rank(list(tax2name.keys()))
+            tax2rank = self._get_rank(list(tax2name.keys()))
 
         name2tax ={spname:taxid for taxid,spname in tax2name.items()}
         n2leaves = t.get_cached_content()
@@ -512,10 +525,8 @@ class GTDBTaxa:
             else:
                 node_taxid = None
             node.add_prop('taxid', node_taxid)
-
             if node_taxid:
-                tmp_taxid = self.get_name_translator([node_taxid]).get(node_taxid, [None])[0]
-
+                tmp_taxid = self._get_name_translator([node_taxid]).get(node_taxid, [None])[0]
                 if node_taxid in merged_conversion:
                     node_taxid = merged_conversion[node_taxid]
 
@@ -539,16 +550,30 @@ class GTDBTaxa:
                                rank = 'Unknown',
                                named_lineage = [])
             else:
-                lineage = self._common_lineage([lf.props.get('lineage') for lf in n2leaves[node]])
+                
+                if ignore_unclassified:
+                    vectors = [lf.props.get('lineage') for lf in n2leaves[node] if lf.props.get('lineage')]
+                else:
+                    vectors = [lf.props.get('lineage') for lf in n2leaves[node]]
+                lineage = self._common_lineage(vectors)
+                
+                rank = tax2rank.get(lineage[-1], 'Unknown')
+                
                 if lineage[-1]:
-                    ancestor = self.get_taxid_translator([lineage[-1]])[lineage[-1]]
+                    if rank != 'subspecies':
+                        ancestor = self._get_taxid_translator([lineage[-1]])[lineage[-1]]
+                    else:
+                        ancestor = self._get_taxid_translator([lineage[-2]])[lineage[-2]]
+                        lineage = lineage[:-1] # remove subspecies from lineage
+                        rank = tax2rank.get(lineage[-1], 'Unknown') # update rank
                 else:
                     ancestor = None
+
                 node.add_props(sci_name = tax2name.get(ancestor, str(ancestor)),
                                common_name = tax2common_name.get(lineage[-1], ''),
                                taxid = ancestor,
                                lineage = lineage,
-                               rank = tax2rank.get(lineage[-1], 'Unknown'),
+                               rank = rank,
                                named_lineage = [tax2name.get(tax, str(tax)) for tax in lineage])
 
         return tax2name, tax2track, tax2rank
