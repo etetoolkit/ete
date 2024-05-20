@@ -11,21 +11,21 @@ DEFAULT_GTDBTAXADUMP = ETE_DATA_HOME + '/gtdbdump.tar.gz'
 
 class Test_gtdbquery(unittest.TestCase):
 
-    # def test_00_update_database(self):
-    #     gtdb = GTDBTaxa()
+    def test_00_update_database(self):
+        gtdb = GTDBTaxa()
 
-    #     url = ('https://github.com/etetoolkit/ete-data/raw/main'
-    #                '/gtdb_taxonomy/gtdb202/gtdb202dump.tar.gz')
+        url = ('https://github.com/etetoolkit/ete-data/raw/main'
+                   '/gtdb_taxonomy/gtdb202/gtdb202dump.tar.gz')
 
-    #     print(f'Downloading GTDB database release 202 to {DEFAULT_GTDBTAXADUMP} from {url}')
+        print(f'Downloading GTDB database release 202 to {DEFAULT_GTDBTAXADUMP} from {url}')
 
-    #     with open(DEFAULT_GTDBTAXADUMP, 'wb') as f:
-    #         f.write(requests.get(url).content)
+        with open(DEFAULT_GTDBTAXADUMP, 'wb') as f:
+            f.write(requests.get(url).content)
 
-    #     gtdb.update_taxonomy_database(DEFAULT_GTDBTAXADUMP)
+        gtdb.update_taxonomy_database(DEFAULT_GTDBTAXADUMP)
 
-    #     if not os.path.exists(DATABASE_PATH):
-    #         gtdbquery.update_db(DATABASE_PATH)
+        if not os.path.exists(DATABASE_PATH):
+            gtdbquery.update_db(DATABASE_PATH)
 
     def test_01tree_annotation(self):
         tree = PhyloTree('((c__Alicyclobacillia, c__Bacilli), s__Caballeronia udeis);',
