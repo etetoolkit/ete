@@ -132,9 +132,30 @@ class Test_ncbiquery(unittest.TestCase):
   def test_merged_id(self):
     ncbi = NCBITaxa(dbfile=DATABASE_PATH)
     t1 = ncbi.get_lineage(649756)
-    self.assertEqual(t1, [1, 131567, 2, 1783272, 1239, 186801, 186802, 186803, 207244, 649756])
+    self.assertEqual(t1, [1, 131567, 2, 1783272, 1239, 186801, 3085636, 186803, 207244, 649756])
     t2 = ncbi.get_lineage("649756")
-    self.assertEqual(t2, [1, 131567, 2, 1783272, 1239, 186801, 186802, 186803, 207244, 649756])
+    self.assertEqual(t2, [1, 131567, 2, 1783272, 1239, 186801, 3085636, 186803, 207244, 649756])
+  
+  def test_ignore_unclassified(self):
+    # normal case
+    tree = PhyloTree('((9606, 9598), 10090);')
+    tree.annotate_ncbi_taxa(taxid_attr='name', ignore_unclassified=False)
+    self.assertEqual(tree.common_ancestor(['9606', '9598']).props.get("sci_name"), 'Homininae')
+    self.assertEqual(tree.common_ancestor(['9606', '10090']).props.get("sci_name"), 'Euarchontoglires')
+
+    # empty case
+    tree = PhyloTree('((9606, sample1), 10090);')
+    tree.annotate_ncbi_taxa(taxid_attr='name', ignore_unclassified=False)
+    self.assertEqual(tree.common_ancestor(['9606', 'sample1']).props.get("sci_name"), '')
+    self.assertEqual(tree.common_ancestor(['9606', 'sample1']).props.get("rank"), 'Unknown')
+    self.assertEqual(tree.common_ancestor(['9606', '10090']).props.get("sci_name"), '')
+
+    # ignore unclassified
+    tree = PhyloTree('((9606, sample1), 10090);')
+    tree.annotate_ncbi_taxa(taxid_attr='name', ignore_unclassified=True)
+    self.assertEqual(tree.common_ancestor(['9606', 'sample1']).props.get("sci_name"), 'Homo sapiens')
+    self.assertEqual(tree.common_ancestor(['9606', 'sample1']).props.get("rank"), 'species')
+    self.assertEqual(tree.common_ancestor(['9606', '10090']).props.get("sci_name"), 'Euarchontoglires')
 
 if __name__ == '__main__':
   unittest.main()
