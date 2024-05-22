@@ -146,6 +146,9 @@ class GTDBTaxa:
 
     #     return taxid, spname, norm_score
 
+    def _dirty_id_suffix(self, taxid):
+        pass
+
     def _get_rank(self, taxids):
         """Return dictionary converting taxids to their GTDB taxonomy rank."""
         ids = ','.join('"%s"' % v for v in set(taxids) - {None, ''})
@@ -177,7 +180,6 @@ class GTDBTaxa:
         id2lineages = {}
         for tax, track in result.fetchall():
             id2lineages[tax] = list(map(int, reversed(track.split(","))))
-
         return id2lineages
 
     def get_name_lineage(self, taxnames):
@@ -187,13 +189,13 @@ class GTDBTaxa:
         name_lineages = []
         name2taxid = self._get_name_translator(taxnames)
         for key, value in name2taxid.items():
-            lineage = self.get_lineage(value[0])
+            lineage = self._get_lineage(value[0])
             names = self._get_taxid_translator(lineage)
             name_lineages.append({key:[names[taxid] for taxid in lineage]})
 
         return name_lineages
 
-    def get_lineage(self, taxid):
+    def _get_lineage(self, taxid):
         """Given a valid taxid number, return its corresponding lineage track as a
         hierarchically sorted list of parent taxids.
         """
