@@ -4,6 +4,7 @@ Test the functionality of ncbiquery.py. To run with pytest.
 
 import os
 import pytest
+import requests
 
 from ete4 import PhyloTree, NCBITaxa, ETE_DATA_HOME
 from ete4.ncbi_taxonomy import ncbiquery
@@ -15,8 +16,15 @@ def execute_before_any_test():
     # Make sure we have the database file.
     if not os.path.exists(DATABASE_PATH):
         print(f'Downloading missing NCBI database to {DATABASE_PATH} ...')
-        ncbiquery.update_db(DATABASE_PATH)
-        # It will download the full NCBI taxa database and process it. Slow!
+
+        taxdump = ETE_DATA_HOME + '/tests/taxdump_tests.tar.gz'
+        if not os.path.exists(taxdump):
+            url = ('https://github.com/etetoolkit/ete-data/raw/main'
+                   '/tests/ncbiquery/taxdump_tests.tar.gz')
+            with open(taxdump, 'wb') as f:
+                f.write(requests.get(url).content)
+
+        ncbiquery.update_db(DATABASE_PATH, taxdump)
 
 
 
