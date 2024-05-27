@@ -146,21 +146,30 @@ class GTDBTaxa:
 
     #     return taxid, spname, norm_score
 
-    def _dirty_id_suffix(self, taxid):
-        pass
+    def _get_id2rank(self, internal_taxids):
+        """Given a list of numeric ids (each one representing a taxa in GTDB), return a dictionary with their corresponding ranks.
+        Examples: 
+        > gtdb.get_rank([2174, 205487, 610])
+        {2174: 'family', 205487: 'order', 610: 'phylum'}
 
-    def _get_rank(self, taxids):
-        """Return dictionary converting taxids to their GTDB taxonomy rank."""
-        ids = ','.join('"%s"' % v for v in set(taxids) - {None, ''})
+        Note: Numeric taxids are not recognized by the official GTDB taxonomy database, only for internal usage.
+        """
+        ids = ','.join('"%s"' % v for v in set(internal_taxids) - {None, ''})
         result = self.db.execute('SELECT taxid, rank FROM species WHERE taxid IN (%s)' % ids)
         return {tax: spname for tax, spname in result.fetchall()}
     
     def get_rank(self, taxids):
+        """Give a list of GTDB string taxids, return a dictionary with their corresponding ranks.
+        Examples: 
+        
+        > gtdb.get_rank(['c__Thorarchaeia', 'RS_GCF_001477695.1'])
+        {'c__Thorarchaeia': 'class', 'RS_GCF_001477695.1': 'subspecies'}
+        """
+
         taxid2rank = {}
         name2ids = self._get_name_translator(taxids)
         overlap_ids = name2ids.values()
         taxids = [item for sublist in overlap_ids for item in sublist]
-        """Return dictionary converting taxids to their GTDB taxonomy rank."""
         ids = ','.join('"%s"' % v for v in set(taxids) - {None, ''})
         result = self.db.execute('SELECT taxid, rank FROM species WHERE taxid IN (%s)' % ids)
         for tax, rank in result.fetchall():
@@ -413,7 +422,7 @@ class GTDBTaxa:
             all_taxids = set()
             for lineage in id2lineage.values():
                 all_taxids.update(lineage)
-            id2rank = self._get_rank(all_taxids)
+            id2rank = self._get_id2rank(all_taxids)
 
             tax2name = self._get_taxid_translator(taxids)
             all_taxid_codes = set([_tax for _lin in list(id2lineage.values()) for _tax in _lin])
@@ -516,7 +525,7 @@ class GTDBTaxa:
         tax2common_name = self.get_common_names(tax2name.keys())
 
         if not tax2rank:
-            tax2rank = self._get_rank(list(tax2name.keys()))
+            tax2rank = self._get_id2rank(list(tax2name.keys()))
 
         name2tax ={spname:taxid for taxid,spname in tax2name.items()}
         n2leaves = t.get_cached_content()
