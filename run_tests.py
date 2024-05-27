@@ -4,6 +4,7 @@
 A simple program to coordinate which tests to run.
 """
 
+import sys
 import os
 from argparse import ArgumentParser
 
@@ -25,6 +26,13 @@ tests = {
 def main():
     args = get_args()
 
+    if args.list:
+        print('Tests included in each category:')
+        for category, ctests in tests.items():
+            print(f'\n{category}')
+            print(' ', '\n  '.join(ctests))
+        sys.exit()
+
     run_pytest(tests['fast'], args.verbose)
 
     if args.include_interactive:
@@ -43,10 +51,9 @@ def get_args():
     parser = ArgumentParser(description=__doc__)
 
     add = parser.add_argument  # shortcut
-    add('-i', '--include-interactive', action='store_true',
-        help='run tests that require user input')
-    add('-s', '--include-slow', action='store_true',
-        help='run tests that take a long time')
+    add('-l', '--list', action='store_true', help='list the tests in each category and exit')
+    add('-i', '--include-interactive', action='store_true', help='run tests that require user input')
+    add('-s', '--include-slow', action='store_true', help='run tests that take a long time')
     add('-v', '--verbose', action='store_true', help='be verbose')
 
     return parser.parse_args()
