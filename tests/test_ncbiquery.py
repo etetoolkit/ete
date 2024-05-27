@@ -46,21 +46,23 @@ HUMAN_LINEAGE = [
 
 def assert_homi_props(node):
     """Assert that node has the properties of Homininae."""
-    p = node.props
-    assert p['sci_name'] == 'Homininae'
-    assert p['taxid'] == 207598
-    assert p['rank'] == 'subfamily'
-    assert p['named_lineage'] == HUMAN_NAMED_LINEAGE[:-2]
-    assert p['lineage'] == HUMAN_LINEAGE[:-2]
+    expected = [('sci_name',      'Homininae'),
+                ('taxid',         207598),
+                ('rank',          'subfamily'),
+                ('named_lineage', HUMAN_NAMED_LINEAGE[:-2]),
+                ('lineage',       HUMAN_LINEAGE[:-2])]
+    for prop, value in expected:
+        assert node.props[prop] == value
 
 def assert_human_props(node):
     """Assert that node has the properties of Homo sapiens."""
-    p = node.props
-    assert p['sci_name'] == 'Homo sapiens'
-    assert p['taxid'] == 9606
-    assert p['rank'] == 'species'
-    assert p['named_lineage'] == HUMAN_NAMED_LINEAGE
-    assert p['lineage'] == HUMAN_LINEAGE
+    expected = [('sci_name',      'Homo sapiens'),
+                ('taxid',         9606),
+                ('rank',          'species'),
+                ('named_lineage', HUMAN_NAMED_LINEAGE),
+                ('lineage',       HUMAN_LINEAGE)]
+    for prop, value in expected:
+        assert node.props[prop] == value
 
 
 # The actual tests.
