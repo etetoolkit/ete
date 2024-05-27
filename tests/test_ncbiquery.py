@@ -16,6 +16,7 @@ def execute_before_any_test():
     if not os.path.exists(DATABASE_PATH):
         print(f'Downloading missing NCBI database to {DATABASE_PATH} ...')
         ncbiquery.update_db(DATABASE_PATH)
+        # It will download the full NCBI taxa database and process it. Slow!
 
 
 
@@ -58,7 +59,7 @@ def assert_human_props(node):
 
 def test_01tree_annotation():
     # Using name as species name too.
-    t = PhyloTree("((9598, 9606), 10090);", sp_naming_function=lambda name: name)
+    t = PhyloTree('((9598, 9606), 10090);', sp_naming_function=lambda name: name)
 
     t.annotate_ncbi_taxa(dbfile=DATABASE_PATH)
 
@@ -71,7 +72,7 @@ def test_01tree_annotation():
 
 def test_02tree_annotation():
     # Using the first part of name as species name.
-    t = PhyloTree("((9598|protA, 9606|protB), 10090|propC);", sp_naming_function=lambda name: name.split('|')[0])
+    t = PhyloTree('((9598|protA, 9606|protB), 10090|propC);', sp_naming_function=lambda name: name.split('|')[0])
     t.annotate_ncbi_taxa(dbfile=DATABASE_PATH, taxid_attr='species')
 
     assert_homi_props(t['9606|protB'].up)
@@ -81,7 +82,7 @@ def test_02tree_annotation():
 
 def test_03tree_annotation():
     # Using a custom property as taxonomic identifier.
-    t = PhyloTree("((protA, protB), propC);")
+    t = PhyloTree('((protA, protB), propC);')
 
     # Add property called "spcode".
     t['protA'].add_prop('spcode', 9598)
@@ -109,50 +110,52 @@ def test_ncbiquery():
     name2id = ncbi.get_name_translator(['Bacteria'])
     assert set(name2id['Bacteria']) == {2}
 
-    out = ncbi.get_descendant_taxa("9605", intermediate_nodes=True)
+    out = ncbi.get_descendant_taxa('9605', intermediate_nodes=True)
     assert set(out) == {9606, 63221, 741158, 1425170, 2665952, 2665953, 2813598, 2813599}
 
-    out = ncbi.get_descendant_taxa("9605", intermediate_nodes=False)
+    out = ncbi.get_descendant_taxa('9605', intermediate_nodes=False)
     assert set(out) == {63221, 741158, 2665953, 1425170, 2813599}
 
-    out = ncbi.get_descendant_taxa("9596", intermediate_nodes=False, rank_limit="species")
+    out = ncbi.get_descendant_taxa('9596', intermediate_nodes=False, rank_limit='species')
     assert set(out) == {9597, 9598}
 
 
 def test_get_topology():
     ncbi = NCBITaxa(dbfile=DATABASE_PATH)
+
     t1 = ncbi.get_topology([9606, 7507, 9604])
     t2 = ncbi.get_topology([9606, 7507, 678])
 
-    assert sorted(t1.leaf_names()) == ["7507", "9606"]
-    assert sorted(t2.leaf_names()) == ["678", "7507", "9606"]
+    assert sorted(t1.leaf_names()) == ['7507', '9606']
+    assert sorted(t2.leaf_names()) == ['678', '7507', '9606']
 
     # Test taxid synonyms
-    assert ncbi.get_topology(["42099"]).write(format_root_node=True) == "1223560;"
+    assert ncbi.get_topology(['42099']).write(format_root_node=True) == '1223560;'
     # The id 42099 is for https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=42099
-    # which corresponds to "Phytopythium vexans DAOM BR484", which has id 1223560
+    # which corresponds to 'Phytopythium vexans DAOM BR484', which has id 1223560
     # https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=1223560
 
-    for target in [9604, 9443, "9443"]:
+    for target in [9604, 9443, '9443']:
         t1 = ncbi.get_descendant_taxa(target, return_tree=True)
         t2 = ncbi.get_topology([target])
         t3 = ncbi.get_topology(ncbi.get_descendant_taxa(target))
         t4 = ncbi.get_topology(list(map(str, ncbi.get_descendant_taxa(target))))
 
-    assert set(t1.leaf_names()) == set(t2.leaf_names())
-    assert set(t2.leaf_names()) == set(t3.leaf_names())
-    assert set(t3.leaf_names()) == set(t4.leaf_names())
-    diffs1 = t1.compare(t2, unrooted=True)
-    diffs2 = t2.compare(t3, unrooted=True)
-    diffs3 = t3.compare(t4, unrooted=True)
-    assert diffs1["rf"] == 0.0
-    assert diffs2["rf"] == 0.0
-    assert diffs3["rf"] == 0.0
+        assert (set(t1.leaf_names()) == set(t2.leaf_names()) ==
+                set(t3.leaf_names()) == set(t4.leaf_names()))
+
+        diffs1 = t1.compare(t2, unrooted=True)
+        diffs2 = t2.compare(t3, unrooted=True)
+        diffs3 = t3.compare(t4, unrooted=True)
+
+        assert diffs1['rf'] == diffs2['rf'] == diffs3['rf'] == 0.0
 
 
 def test_merged_id():
     ncbi = NCBITaxa(dbfile=DATABASE_PATH)
+
     t1 = ncbi.get_lineage(649756)
     assert t1 == [1, 131567, 2, 1783272, 1239, 186801, 3085636, 186803, 207244, 649756]
-    t2 = ncbi.get_lineage("649756")
+
+    t2 = ncbi.get_lineage('649756')
     assert t2 == [1, 131567, 2, 1783272, 1239, 186801, 3085636, 186803, 207244, 649756]
