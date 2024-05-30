@@ -90,9 +90,7 @@ class Drawer:
         self.layouts = layouts or []
         self.include_props = include_props
         self.exclude_props = exclude_props
-        self.tree_style = tree_style
-        if not self.tree_style:
-            self.tree_style = TreeStyle()
+        self.tree_style = tree_style or TreeStyle()
 
     def draw(self):
         "Yield graphic elements to draw the tree"
