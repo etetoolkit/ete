@@ -642,7 +642,7 @@ class PhyloTree(Tree):
         return prunned
 
 
-    def annotate_ncbi_taxa(self, taxid_attr='species', tax2name=None, tax2track=None, tax2rank=None, dbfile=None):
+    def annotate_ncbi_taxa(self, taxid_attr='species', tax2name=None, tax2track=None, tax2rank=None, dbfile=None, ignore_unclassified=False):
         """Add NCBI taxonomy annotation to all descendant nodes. Leaf nodes are
         expected to contain a feature (name, by default) encoding a valid taxid
         number.
@@ -694,11 +694,11 @@ class PhyloTree(Tree):
         """
 
         ncbi = NCBITaxa(dbfile=dbfile)
-        return ncbi.annotate_tree(self, taxid_attr=taxid_attr, tax2name=tax2name, tax2track=tax2track, tax2rank=tax2rank)
+        return ncbi.annotate_tree(self, taxid_attr=taxid_attr, tax2name=tax2name, tax2track=tax2track, tax2rank=tax2rank, ignore_unclassified=ignore_unclassified)
 
-    def annotate_gtdb_taxa(self, taxid_attr='species', tax2name=None, tax2track=None, tax2rank=None, dbfile=None):
+    def annotate_gtdb_taxa(self, taxid_attr='species', tax2name=None, tax2track=None, tax2rank=None, dbfile=None, ignore_unclassified=False):
         gtdb = GTDBTaxa(dbfile=dbfile)
-        return gtdb.annotate_tree(self, taxid_attr=taxid_attr, tax2name=tax2name, tax2track=tax2track, tax2rank=tax2rank)
+        return gtdb.annotate_tree(self, taxid_attr=taxid_attr, tax2name=tax2name, tax2track=tax2track, tax2rank=tax2rank, ignore_unclassified=ignore_unclassified)
 
     def ncbi_compare(self, autodetect_duplications=True, cached_content=None):
         if not cached_content:

@@ -163,9 +163,34 @@ def test_get_topology():
 
 def test_merged_id():
     ncbi = NCBITaxa(dbfile=DATABASE_PATH)
-
     t1 = ncbi.get_lineage(649756)
     assert t1 == [1, 131567, 2, 1783272, 1239, 186801, 3085636, 186803, 207244, 649756]
-
-    t2 = ncbi.get_lineage('649756')
+    t2 = ncbi.get_lineage("649756")
     assert t2 == [1, 131567, 2, 1783272, 1239, 186801, 3085636, 186803, 207244, 649756]
+
+  
+def test_ignore_unclassified():
+    # normal case
+    tree = PhyloTree('((9606, 9598), 10090);')
+    tree.annotate_ncbi_taxa(taxid_attr='name', ignore_unclassified=False)
+
+    assert tree.common_ancestor(['9606', '9598']).props.get("sci_name") == 'Homininae'
+    assert tree.common_ancestor(['9606', '10090']).props.get("sci_name") == 'Euarchontoglires'
+    
+    # empty case
+    tree = PhyloTree('((9606, sample1), 10090);')
+    tree.annotate_ncbi_taxa(taxid_attr='name', ignore_unclassified=False)
+    
+    assert tree.common_ancestor(['9606', 'sample1']).props.get("sci_name") == ''
+    assert tree.common_ancestor(['9606', 'sample1']).props.get("rank") == 'Unknown'
+    assert tree.common_ancestor(['9606', '10090']).props.get("sci_name") == ''
+    
+    # ignore unclassified
+    tree = PhyloTree('((9606, sample1), 10090);')
+    tree.annotate_ncbi_taxa(taxid_attr='name', ignore_unclassified=True)
+
+    assert tree.common_ancestor(['9606', 'sample1']).props.get("sci_name") == 'Homo sapiens'
+    assert tree.common_ancestor(['9606', 'sample1']).props.get("rank") == 'species'
+    assert tree.common_ancestor(['9606', '10090']).props.get("sci_name") == 'Euarchontoglires'
+
+
