@@ -15,17 +15,10 @@ DATABASE_PATH = ETE_DATA_HOME + '/tests/test_ncbiquery.taxa.sqlite'
 def execute_before_any_test():
     # Make sure we have the database file.
     if not os.path.exists(DATABASE_PATH):
-        print(f'Downloading missing NCBI database to {DATABASE_PATH} ...')
-
         taxdump = ETE_DATA_HOME + '/tests/taxdump_tests.tar.gz'
-        if not os.path.exists(taxdump):
-            url = ('https://github.com/etetoolkit/ete-data/raw/main'
-                   '/tests/ncbiquery/taxdump_tests.tar.gz')
-            with open(taxdump, 'wb') as f:
-                f.write(requests.get(url).content)
-
-        ncbiquery.update_db(DATABASE_PATH, taxdump)
-
+        update_ete_data(taxdump, url='tests/ncbiquery/taxdump_tests.tar.gz')
+        print(f'Generating NCBI database {DATABASE_PATH} ...')
+        ncbiquery.update_db(DATABASE_PATH, taxdump)  # sqlite from taxdump
 
 
 # Helper functions and data.

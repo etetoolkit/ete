@@ -40,10 +40,7 @@ class LayoutLastCommonAncestor(TreeLayout):
         # Make sure we have the big file with all the colors.
         taxid2color_file = ETE_DATA_HOME + '/taxid2color.json'
 
-        if not os.path.exists(taxid2color_file):
-            url = ('https://github.com/etetoolkit/ete-data/raw/main'
-                   '/layouts/taxid2color.json')
-            update_ete_data(taxid2color_file, url)
+        update_ete_data(taxid2color_file, url='layouts/taxid2color.json')
 
         with open(taxid2color_file) as handle:
             _taxid2color = json.load(handle)

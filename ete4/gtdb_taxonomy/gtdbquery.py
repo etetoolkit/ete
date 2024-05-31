@@ -58,10 +58,9 @@ class GTDBTaxa:
 
         if dbfile != DEFAULT_GTDBTAXADB and not os.path.exists(self.dbfile):
             print('GTDB database not present yet (first time used?)', file=sys.stderr)
-            urlbase = ('https://github.com/etetoolkit/ete-data/raw/main'
-                       '/gtdb_taxonomy/gtdblatest')
-            
-            update_ete_data(f'{DEFAULT_GTDBTAXADUMP}', f'{urlbase}/gtdb_latest_dump.tar.gz')
+
+            update_ete_data(DEFAULT_GTDBTAXADUMP,
+                            url='gtdb_taxonomy/gtdblatest/gtdb_latest_dump.tar.gz')
 
             self.update_taxonomy_database(taxdump_file=DEFAULT_GTDBTAXADUMP)
 

@@ -24,10 +24,8 @@ class _LayoutDomains(TreeLayout):
         # Load colormap from file if necessary.
         color_file = ETE_DATA_HOME + f'/{prop}2color.json'
 
-        if not os.path.exists(color_file):
-            url = ('https://github.com/etetoolkit/ete-data/raw/main'
-                   f'/layouts/{prop}2color.json')
-            update_ete_data(color_file, url)
+        # Make sure the color file is up-to-date.
+        update_ete_data(color_file, url=f'layouts/{prop}2color.json')
 
         with open(color_file) as handle:
             self.colormap = json.load(handle)
