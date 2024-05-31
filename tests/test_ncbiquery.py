@@ -4,9 +4,8 @@ Test the functionality of ncbiquery.py. To run with pytest.
 
 import os
 import pytest
-import requests
 
-from ete4 import PhyloTree, NCBITaxa, ETE_DATA_HOME
+from ete4 import PhyloTree, NCBITaxa, ETE_DATA_HOME, update_ete_data
 from ete4.ncbi_taxonomy import ncbiquery
 
 DATABASE_PATH = ETE_DATA_HOME + '/tests/test_ncbiquery.taxa.sqlite'

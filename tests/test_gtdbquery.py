@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from ete4 import PhyloTree, GTDBTaxa, ETE_DATA_HOME, update_ete_data
+from ete4 import PhyloTree, GTDBTaxa, ETE_DATA_HOME
 from ete4.gtdb_taxonomy import gtdbquery
 import requests
 
