@@ -81,10 +81,7 @@
         <span class="c1"># Make sure we have the big file with all the colors.</span>
         <span class="n">taxid2color_file</span> <span class="o">=</span> <span class="n">ETE_DATA_HOME</span> <span class="o">+</span> <span class="s1">&#39;/taxid2color.json&#39;</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">taxid2color_file</span><span class="p">):</span>
-            <span class="n">url</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;https://github.com/etetoolkit/ete-data/raw/main&#39;</span>
-                   <span class="s1">&#39;/layouts/taxid2color.json&#39;</span><span class="p">)</span>
-            <span class="n">update_ete_data</span><span class="p">(</span><span class="n">taxid2color_file</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+        <span class="n">update_ete_data</span><span class="p">(</span><span class="n">taxid2color_file</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="s1">&#39;layouts/taxid2color.json&#39;</span><span class="p">)</span>
 
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">taxid2color_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">handle</span><span class="p">:</span>
             <span class="n">_taxid2color</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>
