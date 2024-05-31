@@ -1,12 +1,20 @@
 """
 Test to see if the ETE functions that Ana uses work correctly.
+
+To run with pytest.
 """
 
 import os
-import unittest
 
 from ete4 import PhyloTree, NCBITaxa, ETE_DATA_HOME, update_ete_data
+from ete4.ncbi_taxonomy import ncbiquery
 
+DATABASE_PATH  = ETE_DATA_HOME + '/tests/test_ncbiquery.taxa.sqlite'
+P53_RAW_PATH   = ETE_DATA_HOME + '/tests/P53.faa.nw'
+P53_ANNOT_PATH = ETE_DATA_HOME + '/tests/annot_tree.nw'
+
+
+# Helper functions.
 
 chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
 
@@ -31,7 +39,7 @@ def get_depth(node):
 
 
 
-def run_preanalysis(tree, taxonomy_db):
+def run_preanalysis(tree, tax_db):
     """Manipulate and annotate the tree, and return all node properties."""
     tree.resolve_polytomy()
 
@@ -45,7 +53,7 @@ def run_preanalysis(tree, taxonomy_db):
 
     # Add additional information to any internal leaf node (sci_name,
     # taxid, named_lineage, lineage, rank).
-    taxonomy_db.annotate_tree(tree, taxid_attr='species')
+    tax_db.annotate_tree(tree, taxid_attr='species')
 
     annot_props = set()
     for i, node in enumerate(tree.traverse()):
@@ -57,30 +65,31 @@ def run_preanalysis(tree, taxonomy_db):
     return sorted(annot_props - {'_speciesFunction'})
 
 
-class Test_OGD(unittest.TestCase):
+def test_orthologs_group_delineation():
+    # Make sure we have the original raw tree.
+    update_ete_data(P53_RAW_PATH, url='tests/P53.faa.nw')
 
-    def test_orthologs_group_delineation(self):
-        # Get eggnog database and newick to annotate.
-        url_base = 'https://github.com/etetoolkit/ete-data/releases/download/v1.0/'
-        for fname in ['e6.taxa.sqlite', 'P53.faa.nw']:
-            if not os.path.exists(ETE_DATA_HOME + f'/tests/{fname}'):
-                update_ete_data(f'./tests/{fname}', url_base + fname)
+    # Make sure we have the annotated result to compare with.
+    update_ete_data(P53_ANNOT_PATH, url='tests/annot_tree.nw')
 
-        tax_db = NCBITaxa(ETE_DATA_HOME + '/tests/e6.taxa.sqlite')
-        tree = PhyloTree(open(ETE_DATA_HOME + '/tests/P53.faa.nw'), parser=1)
+    # Make sure we have the database file.
+    if not os.path.exists(DATABASE_PATH):
+        taxdump = ETE_DATA_HOME + '/tests/taxdump_tests.tar.gz'
+        update_ete_data(taxdump, url='tests/ncbiquery/taxdump_tests.tar.gz')
+        print(f'Generating NCBI database {DATABASE_PATH} ...')
+        ncbiquery.update_db(DATABASE_PATH, taxdump)  # sqlite from taxdump
 
-        annot_props = run_preanalysis(tree, tax_db)  # the preanalysis that Ana does
+    # Get eggnog database and newick to annotate.
+    tax_db = NCBITaxa(DATABASE_PATH)
+    tree = PhyloTree(open(P53_RAW_PATH), parser=1)
 
-        for p in ['name', 'dist', 'support']:
-            annot_props.remove(p)
+    annot_props = run_preanalysis(tree, tax_db)  # the preanalysis that Ana does
 
-        annot_tree_nw = tree.write(props=annot_props, parser=5,
-                                   format_root_node=True)
+    for p in ['name', 'dist', 'support']:
+        annot_props.remove(p)
 
-        # Get reference result to compare with.
-        if not os.path.exists(ETE_DATA_HOME + f'/tests/annot_tree.nw'):
-            update_ete_data(f'./tests/annot_tree.nw',
-                            'https://github.com/etetoolkit/ete-data/raw/main/tests/annot_tree.nw')
+    annot_tree_nw = tree.write(props=annot_props, parser=5,
+                               format_root_node=True)
 
-        with open(ETE_DATA_HOME + f'/tests/annot_tree.nw') as pf:
-            self.assertEqual(annot_tree_nw, pf.read())
+    with open(P53_ANNOT_PATH) as f:
+        assert len(annot_tree_nw) == len(f.read())
