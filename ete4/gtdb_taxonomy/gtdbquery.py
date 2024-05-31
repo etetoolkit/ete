@@ -148,7 +148,7 @@ class GTDBTaxa:
 
     def _get_id2rank(self, internal_taxids):
         """Given a list of numeric ids (each one representing a taxa in GTDB), return a dictionary with their corresponding ranks.
-        Examples: 
+        Examples:
         > gtdb.get_rank([2174, 205487, 610])
         {2174: 'family', 205487: 'order', 610: 'phylum'}
 
@@ -157,11 +157,11 @@ class GTDBTaxa:
         ids = ','.join('"%s"' % v for v in set(internal_taxids) - {None, ''})
         result = self.db.execute('SELECT taxid, rank FROM species WHERE taxid IN (%s)' % ids)
         return {tax: spname for tax, spname in result.fetchall()}
-    
+
     def get_rank(self, taxids):
         """Give a list of GTDB string taxids, return a dictionary with their corresponding ranks.
-        Examples: 
-        
+        Examples:
+
         > gtdb.get_rank(['c__Thorarchaeia', 'RS_GCF_001477695.1'])
         {'c__Thorarchaeia': 'class', 'RS_GCF_001477695.1': 'subspecies'}
         """
@@ -174,7 +174,7 @@ class GTDBTaxa:
         result = self.db.execute('SELECT taxid, rank FROM species WHERE taxid IN (%s)' % ids)
         for tax, rank in result.fetchall():
             taxid2rank[list(self._get_taxid_translator([tax]).values())[0]] = rank
-        
+
         return taxid2rank
 
     def _get_lineage_translator(self, taxids):
@@ -480,7 +480,7 @@ class GTDBTaxa:
 
         return tree
 
-    def annotate_tree(self, t, taxid_attr='name', tax2name=None, 
+    def annotate_tree(self, t, taxid_attr='name', tax2name=None,
                         tax2track=None, tax2rank=None, ignore_unclassified=False):
         """Annotate a tree containing taxids as leaf names.
 
@@ -517,7 +517,7 @@ class GTDBTaxa:
             tax2name = self._get_taxid_translator(taxids)
         if not tax2track or taxids - set(map(int, list(tax2track.keys()))):
             tax2track = self._get_lineage_translator(taxids)
-        
+
         all_taxid_codes = set([_tax for _lin in list(tax2track.values()) for _tax in _lin])
         extra_tax2name = self._get_taxid_translator(list(all_taxid_codes - set(tax2name.keys())))
         tax2name.update(extra_tax2name)
@@ -561,15 +561,15 @@ class GTDBTaxa:
                                rank = 'Unknown',
                                named_lineage = [])
             else:
-                
+
                 if ignore_unclassified:
                     vectors = [lf.props.get('lineage') for lf in n2leaves[node] if lf.props.get('lineage')]
                 else:
                     vectors = [lf.props.get('lineage') for lf in n2leaves[node]]
                 lineage = self._common_lineage(vectors)
-                
+
                 rank = tax2rank.get(lineage[-1], 'Unknown')
-                
+
                 if lineage[-1]:
                     if rank != 'subspecies':
                         ancestor = self._get_taxid_translator([lineage[-1]])[lineage[-1]]
@@ -780,12 +780,12 @@ def update_db(dbfile, targz_file=None):
     basepath = os.path.split(dbfile)[0]
     if basepath and not os.path.exists(basepath):
         os.mkdir(basepath)
-    
-    # if users don't provie targz_file, update the latest version from ete-data 
+
+    # if users don't provie targz_file, update the latest version from ete-data
     if not targz_file:
         update_local_taxdump(DEFAULT_GTDBTAXADUMP)
         targz_file = DEFAULT_GTDBTAXADUMP
-    
+
     tar = tarfile.open(targz_file, 'r')
     t, synonyms = load_gtdb_tree_from_dump(tar)
 
@@ -804,7 +804,7 @@ def update_db(dbfile, targz_file=None):
 def update_local_taxdump(fname=DEFAULT_GTDBTAXADUMP):
     # latest version of gtdb taxonomy dump
     url = "https://github.com/etetoolkit/ete-data/raw/main/gtdb_taxonomy/gtdblatest/gtdb_latest_dump.tar.gz"
-    
+
     if not os.path.exists(fname):
         print(f'Downloading {fname} from {url} ...')
         with open(fname, 'wb') as f:
