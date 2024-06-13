@@ -261,7 +261,12 @@ def render(root_node, img, hide_root=False):
             faces.add_face_to_node(su_face, n, 0, position="branch-bottom")
 
         if _leaf(n) and n.name and img.show_leaf_name:
-            faces.add_face_to_node(na_face, n, 0, position="branch-right")
+            if hasattr(n, "_faces") and 0 in n._faces.__dict__["branch-right"]:
+                pass
+                # If the node already has a text face in the position branch right in column 0
+                # the user already has already added a face in that position (node name with certain color)
+            else:
+                faces.add_face_to_node(na_face, n, 0, position="branch-right")
 
         if _leaf(n):# or len(n.img_style["_faces"]["aligned"]):
             virtual_leaves += 1

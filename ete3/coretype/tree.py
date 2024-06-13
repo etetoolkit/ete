@@ -68,6 +68,7 @@ DEFAULT_SHOWINTERNAL = False
 DEFAULT_DIST = 1.0
 DEFAULT_SUPPORT = 1.0
 DEFAULT_NAME = ""
+DEFAULT_TEXT_COLOR = "black"
 
 class TreeError(Exception):
     """
@@ -1444,7 +1445,7 @@ class TreeNode(object):
             else:
                 raise TreeError("Cannot unroot a tree with only two leaves")
 
-    def show(self, layout=None, tree_style=None, name="ETE"):
+    def show(self, layout=None, tree_style=None, name="ETE", child_app = False):
         """
         Starts an interactive session to visualize current node
         structure using provided layout and TreeStyle.
@@ -1452,8 +1453,9 @@ class TreeNode(object):
         """
         from ..treeview import drawer
         drawer.show_tree(self, layout=layout,
-                         tree_style=tree_style, win_name=name)
+                         tree_style=tree_style, win_name=name, child_app = child_app)
 
+    
     def render(self, file_name, layout=None, w=None, h=None, \
                        tree_style=None, units="px", dpi=90):
         """
@@ -2671,6 +2673,13 @@ class TreeNode(object):
     def phonehome(self):
         from .. import _ph
         _ph.call()
+
+    def add_leaf_text_color(self, color=None):
+        # Added the extra function to use the is_leaf() bool
+        if self.is_leaf():
+            if color == None:
+                color = "#000000"
+            self.add_feature("text_color",color)
 
 def _translate_nodes(root, *nodes):
     name2node = dict([ [n, None] for n in nodes if type(n) is str])
