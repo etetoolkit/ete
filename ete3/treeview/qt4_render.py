@@ -322,9 +322,10 @@ def render(root_node, img, hide_root=False):
     # Add extra layers: aligned faces, floating faces, node
     # backgrounds, etc. The order by which the following methods are
     # called IS IMPORTANT
-    render_floatings(n2i, n2f, img, parent.float_layer, parent.float_behind_layer)
 
-    aligned_region_width = render_aligned_faces(img, mainRect, parent.tree_layer, n2i, n2f)
+    aligned_region_width, tree_end_x = render_aligned_faces(img, mainRect, parent.tree_layer, n2i, n2f)
+
+    render_floatings(n2i, n2f, img, parent.float_layer, parent.float_behind_layer, aligned_region_width, tree_end_x)
 
     render_backgrounds(img, mainRect, parent.bg_layer, n2i, n2f)
 
@@ -760,14 +761,15 @@ def set_style(n, layout_func):
     for func in layout_func:
         func(n)
 
-def render_floatings(n2i, n2f, img, float_layer, float_behind_layer):
+def render_floatings(n2i, n2f, img, float_layer, float_behind_layer, extra_width, tree_end_x):
     #floating_faces = [ [node, fb["float"]] for node, fb in n2f.iteritems() if "float" in fb]
 
     for node, faces in six.iteritems(n2f):
-        face_set = [ [float_layer, faces.get("float", None)],
-                     [float_behind_layer, faces.get("float-behind",None)]]
+        face_set = [ [float_layer, faces.get("float", None), False],
+                     [float_behind_layer, faces.get("float-behind",None), False],
+                     [float_layer, faces.get("float-right",None), True]]
 
-        for parent_layer,fb in face_set:
+        for parent_layer,fb, isRight in face_set:
             if not fb:
                 continue
 
@@ -780,14 +782,24 @@ def render_floatings(n2i, n2f, img, float_layer, float_behind_layer):
                 xtra = 0
 
             if img.mode == "c":
-                # Floatings are positioned over branches
-                crender.rotate_and_displace(fb, item.rotation, fb.h, item.radius - item.nodeRegion.width() + xtra)
-                # Floatings are positioned starting from the node circle
-                #crender.rotate_and_displace(fb, item.rotation, fb.h, item.radius - item.nodeRegion.width())
+                if isRight:
+                    # Floatings are positioned right to all other aligned faces
+                    crender.rotate_and_displace(fb, item.rotation, fb.h, extra_width + tree_end_x)
+                else:
+                    # Floatings are positioned over branches
+                    crender.rotate_and_displace(fb, item.rotation, fb.h, item.radius - item.nodeRegion.width() + xtra)
+                    # Floatings are positioned starting from the node circle
+                    #crender.rotate_and_displace(fb, item.rotation, fb.h, item.radius - item.nodeRegion.width())
 
             elif img.mode == "r":
-                start = item.branch_length + xtra - fb.w #if fb.w < item.branch_length else 0.0
-                fb.setPos(item.content.mapToScene(start, item.center - (fb.h/2.0)))
+                if isRight:
+                    # Floatings are positioned right to all other aligned faces
+                    start = extra_width + tree_end_x # This puts it to the right of the column
+                    fb.setPos(start, item.content.mapToScene(start, item.center - (fb.h/2.0)).y())
+                else:
+                    # Floatings are positioned over branches
+                    start = item.branch_length + xtra - fb.w #if fb.w < item.branch_length else 0.0
+                    fb.setPos(item.content.mapToScene(start, item.center - (fb.h/2.0)))
 
             z = item.zValue()
             if not img.children_faces_on_top:
@@ -805,7 +817,7 @@ def render_aligned_faces(img, mainRect, parent, n2i, n2f):
 
     # If no aligned faces, just return an offset of 0 pixels
     if not aligned_faces:
-        return 0
+        return 0, 0
 
     # Load header and footer
     if img.mode == "r":
@@ -895,7 +907,7 @@ def render_aligned_faces(img, mainRect, parent, n2i, n2f):
         mainRect.adjust(-extra_width, -extra_width, extra_width, extra_width)
     else:
         mainRect.adjust(0, 0, extra_width, 0)
-    return extra_width
+    return extra_width, tree_end_x
 
 def get_tree_img_map(n2i, x_scale=1, y_scale=1):
     MOTIF_ITEMS = set([faces.QGraphicsTriangleItem,

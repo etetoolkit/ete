@@ -2557,7 +2557,7 @@ class TreeNode(object):
         :argument column: An integer number starting from 0
         :argument "branch-right" position: Posible values are:
           "branch-right", "branch-top", "branch-bottom", "float",
-          "aligned"
+          "aligned", "float-behind", "float-right"
         """
 
         if not hasattr(self, "_faces"):
