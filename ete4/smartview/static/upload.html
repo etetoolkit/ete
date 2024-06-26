@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tree Explorer</title>
+  <link rel="icon" type="image/png" href="icon.png">
+  <link rel="stylesheet" href="upload.css">
+  <script src="/static/external/sweetalert2.min.js"></script>
+  <script type="module" src="/static/js/upload.js"></script>
+</head>
+
+<body>
+
+<div class="centered">
+
+<h1>Tree Explorer</h1>
+
+<p>This is an online tool for exploring trees. It is mainly used to explore
+<a href="https://en.wikipedia.org/wiki/Phylogenetic_tree">phylogenetic trees</a>,
+but it can be used for any tree as long as it is written in the
+<a href="https://en.wikipedia.org/wiki/Newick_format">newick format</a>.</p>
+
+<p>You can <a href="/">explore the pre-loaded trees</a>, or add your
+own trees for exploration by uploading them from this page.</p>
+
+<p>When using the interactive gui for exploration, press <kbd>F1</kbd>
+or the help button in the viewer for instructions.</p>
+
+<div id="div_upload">
+  <fieldset><legend>Tree</legend>
+  <div>
+  <input type="radio" id="radio_string" name="newick" value="string">
+  <label for="radio_string">
+    From string (<a href="#" onclick="load_example(); return false;">load
+    an example</a>)
+  </label><br>
+  <textarea id="input_newick_string" rows="8" cols="80"
+    placeholder="Newick representation of the tree" disabled></textarea>
+  </div>
+
+  <div>
+  <input type="radio" id="radio_file" name="newick" value="file">
+  <label for="radio_file">From file: </label>
+  <input id="input_trees_file" type="file"
+    accept=".tree,.newick,.nw,.tre,.nex,.nxs,.nexus,.txt,.gz,.bz2,.tgz,.tar,.zip" disabled>
+  </div>
+  </fieldset>
+
+  <div>
+  <fieldset><legend>How to interpret content of internal nodes</legend>
+  <div>
+  <input type="radio" id="radio_name" name="internal" value="name" checked>
+  <label for="radio_name">
+    As node name &mdash; <tt>((name:dist)name:dist);</tt>
+  </label>
+  </div>
+
+  <div>
+  <input type="radio" id="radio_support" name="internal" value="support">
+  <label for="radio_support">
+    As node support &mdash; <tt>((name:dist)support:dist);</tt>
+  </label>
+  </div>
+  </fieldset>
+  </div>
+
+  <div>
+  <input type="checkbox" id="check_metadata" name="metadata">
+  <label for="check_metadata">Add name</label>
+  </div>
+
+  <div id="div_metadata">
+    <div>
+    <label for="input_name">Name (1 to 128 characters)</label><br>
+    <input type="text" id="input_name"
+      placeholder="Tree name" minlength="1" maxlength="128" size="20">
+    </div>
+  </div>
+
+  <p></p>
+
+  <div>
+  <button id="button_upload">Upload and explore tree</button>
+  </div>
+</div>
+
+</div>
+
+<footer>
+<div class="centered">
+
+</div>
+</footer>
+
+</body>
+</html>

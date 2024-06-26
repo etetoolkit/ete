@@ -3,7 +3,6 @@ import itertools
 from hashlib import md5
 from functools import cmp_to_key
 import pickle
-import logging
 import math
 
 from . import text_viz
@@ -12,50 +11,21 @@ from .. import utils
 from ete4.parser import newick
 from ..parser import ete_format
 
-# the following imports are necessary to set fixed styles and faces
-# try:
-try:
-    from ..treeview.main import NodeStyle
-    from ..treeview.faces import Face
-    TREEVIEW = True
-except ImportError:
-    TREEVIEW = False
-
-from ..smartview.renderer.faces import Face as smartFace
-from ..smartview.renderer.nodestyle import NodeStyle as smNodeStyle
-from ..smartview.renderer.face_positions import Faces, make_faces
-from ..smartview.renderer.layouts.default_layouts import (
-    LayoutLeafName, LayoutBranchLength, LayoutBranchSupport)
-
 
 class TreeError(Exception):
     pass
 
 
-cdef class Tree(object):
+cdef class Tree:
     """
-    The Tree class is used to store a tree structure.
-
-    A tree consists of a collection of Tree instances connected in a
-    hierarchical way. Trees can be loaded from the New Hampshire
-    Newick format (newick).
+    A Tree has a collection of Tree instances connected in a hierarchical way.
+    Trees can be loaded from their newick representation.
     """
 
-    # TODO: Clean up all the memebers of Tree and leave only:
-    #   up, props, children, size
-    cdef public Tree up
+    cdef public Tree up  # parent
     cdef public dict props
     cdef public list _children
-
-    cdef public (double, double) size
-
-    # All these members below should go away.
-    cdef public object _img_style
-    cdef public object _sm_style
-    cdef public object _smfaces
-    cdef public object _collapsed_faces
-    cdef public int _initialized
-    cdef public int _collapsed
+    cdef public (double, double) size  # sum of lengths, number of leaves
 
     def __init__(self, data=None, children=None, parser=None):
         """
@@ -75,12 +45,8 @@ cdef class Tree(object):
             t3 = Tree('(A:1,(B:1,(C:1,D:1):0.5):0.5);')
             t4 = Tree(open('/home/user/my-tree.nw'))
         """
+        self.up = None
         self.children = children or []
-
-        self._img_style = None
-        # Do not initialize _faces and _collapsed_faces
-        # for performance reasons (pickling)
-        self._initialized = 0 # Layout fns have not been run on node
 
         self.size = (0, 0)
 
@@ -161,9 +127,9 @@ cdef class Tree(object):
         return self._children
 
     @children.setter
-    def children(self, value):
+    def children(self, children):
         self._children = []
-        self.add_children(value)
+        self.add_children(children)
 
     @property
     def is_leaf(self):
@@ -208,76 +174,13 @@ cdef class Tree(object):
         attr = getattr(self, prop, None)
         return attr if attr is not None else self.props.get(prop, default)
 
-    # TODO: Move all the next functions out of the Tree class.
-    def _get_style(self):
-        if self._img_style is None:
-            self._img_style = NodeStyle()
-        return self._img_style
-
-    def _set_style(self, value):
-        self.set_style(value)
-
-    def _get_sm_style(self):
-        if self._sm_style is None:
-            self._sm_style = smNodeStyle()
-        return self._sm_style
-
-    def _set_sm_style(self, value):
-        self.set_style(value)
-
-    def _get_initialized(self):
-        return self._initialized == 1
-    def _set_initialized(self, value):
-        if value:
-            self._initialized = 1
-        else:
-            self._initialized = 0
-
-    def _get_collapsed(self):
-        return self._collapsed == 1
-    def _set_collapsed(self, value):
-        if value:
-            self._collapsed = 1
-        else:
-            self._collapsed = 0
-
-    #: Node styling properties
-    img_style = property(fget=_get_style, fset=_set_style)
-    sm_style = property(fget=_get_sm_style, fset=_set_sm_style)
-
-    #: Whether layout functions have been run on node
-    is_initialized = property(fget=_get_initialized, fset=_set_initialized)
-    is_collapsed = property(fget=_get_collapsed, fset=_set_collapsed)
-
-    @property
-    def faces(self):
-        if self._smfaces is None:
-            self._smfaces = make_faces()
-        return self._smfaces
-
-    @faces.setter
-    def faces(self, value):
-        assert isinstance(value, Faces), 'Not a Faces instance: %r' % value
-        self._smfaces = value
-
-    @property
-    def collapsed_faces(self):
-        if self._collapsed_faces is None:
-            self._collapsed_faces = make_faces()
-        return self._collapsed_faces
-
-    @collapsed_faces.setter
-    def collapsed_faces(self, value):
-        assert isinstance(value, Faces), 'Not a Faces instance: %r' % value
-        self._collapsed_faces = value
-
     def __bool__(self):
         # If this is not defined, bool(t) will call len(t) (terribly slow!).
         return True
 
-    def __repr__(self):
-        name_str = (' ' + repr(self.name)) if self.name else ''
-        return '<Tree%s at %s>' % (name_str, hex(self.__hash__()))
+    def __len__(self):
+        """Return the number of leaves."""
+        return sum(1 for _ in self.leaves())
 
     def __getitem__(self, node_id):
         """Return the node that matches the given node_id."""
@@ -307,6 +210,10 @@ cdef class Tree(object):
         else:
             raise TreeError("Invalid node type")
 
+    def __repr__(self):
+        name_str = (' ' + repr(self.name)) if self.name else ''
+        return '<Tree%s at %s>' % (name_str, hex(self.__hash__()))
+
     def __str__(self):
         """Return a string with an ascii drawing of the tree."""
         return self.to_str(show_internal=False, compact=True, props=['name'])
@@ -325,21 +232,17 @@ cdef class Tree(object):
         return text_viz.to_str(self, show_internal, compact, props,
                                px, py, px0, cascade)
 
-    def __contains__(self, item):
-        """Return True if the tree contains the given item.
+    def __contains__(self, node):
+        """Return True if the tree contains the given node.
 
-        :param item: A node instance or its associated name.
+        :param node: A Tree instance or a name (the name of a node).
         """
-        if isinstance(item, self.__class__):
-            return item in self.descendants()
-        elif type(item) == str:
-            return any(n.name == item for n in self.traverse())
+        if isinstance(node, self.__class__):
+            return node in self.traverse()
+        elif type(node) == str:
+            return any(n.name == node for n in self.traverse())
         else:
-            raise TreeError("Invalid item type")
-
-    def __len__(self):
-        """Return the number of leaves."""
-        return sum(1 for _ in self.leaves())
+            raise TreeError('Can only check nodes or names in a Tree')
 
     def __iter__(self):
         """Yield all the terminal nodes (leaves)."""
@@ -352,28 +255,11 @@ cdef class Tree(object):
     def add_props(self, **props):
         """Add or update several properties."""
         for name, value in props.items():
-            self.add_prop(name, value)
+            self.props[name] = value
 
-    def del_prop(self, prop_name):
-        """Permanently delete a node's property."""
-        self.props.pop(prop_name, None)
-
-    # DEPRECATED #
-    def add_feature(self, pr_name, pr_value):
-        """Add or update a node's feature."""
-        logging.warning('add_feature is DEPRECATED use add_prop instead')
-        self.add_prop(pr_name, pr_value)
-
-    def add_features(self, **features):
-        """Add or update several features."""
-        logging.warning('add_features is DEPRECATED use add_props instead')
-        self.add_props(**features)
-
-    def del_feature(self, pr_name):
-        """Permanently deletes a node's feature."""
-        logging.warning('del_feature is DEPRECATED use del_prop instead')
-        self.del_prop(pr_name)
-    # DEPRECATED #
+    def del_prop(self, name):
+        """Delete a node's property."""
+        self.props.pop(name, None)
 
     # Topology management
     def add_child(self, child=None, name=None, dist=None, support=None):
@@ -414,7 +300,7 @@ cdef class Tree(object):
         try:
             child = self.children.pop(child_idx)  # parent removes child
 
-            if child.up == self:  # (it may point to another already!)
+            if child.up is self:  # (it may point to another already!)
                 child.up = None  # child removes parent
 
             return child
@@ -655,10 +541,6 @@ cdef class Tree(object):
 
         self.children.reverse()
 
-    # #####################
-    # Tree traversing
-    # #####################
-
     def get_children(self):
         """Return an independent list of the node's children."""
         return self.children.copy()
@@ -679,7 +561,7 @@ cdef class Tree(object):
         for n in self.leaves(is_leaf_fn):
             yield n.name
 
-    def descendants(self, strategy="levelorder", is_leaf_fn=None):
+    def descendants(self, strategy='levelorder', is_leaf_fn=None):
         """Yield all descendant nodes."""
         for n in self.traverse(strategy, is_leaf_fn):
             if n is not self:
@@ -832,23 +714,21 @@ cdef class Tree(object):
           for node in tree.search_nodes(dist=0.0, name='human'):
               print(node.prop['support'])
         """
-        for n in self.traverse():
-            if all(n.props.get(key) == value or getattr(n, key, None) == value
-                   for key, value in conditions.items()):
-                yield n
+        for node in self.traverse():
+            if all(node.get_prop(k) == v for k, v in conditions.items()):
+                yield node
 
     def search_descendants(self, **conditions):
         """Yield descendant nodes matching the given conditions."""
-        for n in self.search_nodes(**conditions):
-            if n is not self:
-                yield n
+        for node in self.search_nodes(**conditions):
+            if node is not self:
+                yield node
 
     def search_ancestors(self, **conditions):
         """Yield ancestor nodes matching the given conditions."""
-        for n in self.ancestors():
-            if all(n.props.get(key) == value or getattr(n, key, None) == value
-                   for key, value in conditions.items()):
-                yield n
+        for node in self.ancestors():
+            if all(node.get_prop(k) == v for k, v in conditions.items()):
+                yield node
 
     def search_leaves_by_name(self, name):
         """Yield leaf nodes matching the given name."""
@@ -1075,48 +955,27 @@ cdef class Tree(object):
                                units=units, dpi=dpi)
             print('Wrote file:', file_name)
 
-    def explore(self, name=None, layouts=None, show_leaf_name=True,
-                show_branch_length=True, show_branch_support=True,
-                include_props=('name', 'dist'), exclude_props=None,
-                host='localhost', port=None, quiet=True,
+    def explore(self, name=None, layouts=None,
+                include_props=('dist', 'support'), exclude_props=None,
+                host='127.0.0.1', port=None, verbose=False,
                 compress=False, keep_server=False, open_browser=True):
-        """Launch an interactive smartview session to visualize the tree.
+        """Launch an interactive session to visualize the tree.
 
         :param str name: Name used to store and refer to the tree.
-        :param list layouts: Layouts that will be available from the
-            front end. It is important to name functions (__name__), as they
-            will be adressed by that name in the explorer.
+        :param list layouts: Layouts that specify how to visualize.
         :param list include_props: Properties to show in the nodes popup.
             If None, show all.
         :param list exclude_props: Properties to exclude from the nodes popup.
         :param port: Server listening port. If None, use next
             available port >= 5000.
         """
-        from ..smartview.gui.server import run_smartview
+        from ..smartview import explorer
 
-        default_layouts = []
-
-        if not show_leaf_name:
-            layout = LayoutLeafName()
-            layout.active = False
-            default_layouts.append(layout)
-
-        if not show_branch_length:
-            layout = LayoutBranchLength()
-            layout.active = False
-            default_layouts.append(layout)
-
-        if not show_branch_support:
-            layout = LayoutBranchSupport()
-            layout.active = False
-            default_layouts.append(layout)
-
-        run_smartview(tree=self, name=name,
-                      layouts=list(default_layouts + (layouts or [])),
-                      include_props=include_props, exclude_props=exclude_props,
-                      host=host, port=port, quiet=quiet,
-                      compress=compress, keep_server=keep_server,
-                      open_browser=open_browser)
+        explorer.explore(
+            self, name, layouts,
+            include_props, exclude_props,
+            host, port, verbose,
+            compress, keep_server, open_browser)
 
     def copy(self, method="cpickle"):
         """Return a copy of the current node.
@@ -1852,78 +1711,6 @@ cdef class Tree(object):
                 else:
                     output[i].append(leaf_distances[n][m])
         return output, allleaves
-
-    # TODO: All the following "face and style functions" should go away.
-
-    def add_face(self, face, column=0, position='branch_right',
-                 collapsed_only=False):
-        if TREEVIEW and isinstance(face, Face):
-            self.add_face_treeview(face, column, position)
-        elif isinstance(face, smartFace):
-            self.add_face_smartview(face, column, position, collapsed_only)
-        else:
-            raise ValueError('Invalid face format for: %r' % face)
-
-    def add_face_treeview(self, face, column, position='branch-right'):
-        """Add a fixed face to the node.
-
-        This type of faces will be always attached to nodes,
-        independently of the layout function.
-
-        :param face: Face to add.
-        :param column: An integer number starting from 0
-        :param position: Position to place the face in the node. Posible
-            values are: "branch-right", "branch-top", "branch-bottom", "float",
-            "float-behind", "aligned".
-        """
-        from ..treeview.main import _FaceAreas, FaceContainer, FACE_POSITIONS
-
-        if "_faces" not in self.props:
-            self.props["_faces"] = _FaceAreas()
-
-        if position not in FACE_POSITIONS:
-            raise ValueError("face position not in %s" %FACE_POSITIONS)
-
-        if isinstance(face, Face):
-            getattr(self.props["_faces"], position).add_face(face, column=column)
-        else:
-            raise ValueError("not a Face instance")
-
-    def add_face_smartview(self, face, column, position='branch_right',
-                           collapsed_only=False):
-        """Add a fixed face to the node.
-
-        This type of faces will be always attached to nodes, independently of
-        the layout function.
-
-        :param face: Face to add.
-        :param column: Column number where the face will go. Starts at 0.
-        :param position: Position to place the face in the node. Posible
-            values are: "branch_right", "branch_top", "branch_bottom", "aligned".
-        """
-        # TODO: Is it true that "This type of faces will be always attached
-        # to nodes, independently of the layout function"? And why?
-        from ..smartview.renderer.face_positions import FACE_POSITIONS
-
-        assert position in FACE_POSITIONS, 'Invalid position %r' % position
-
-        if collapsed_only:
-            getattr(self.collapsed_faces, position).add_face(face, column=column)
-        else:
-            getattr(self.faces, position).add_face(face, column=column)
-
-    def set_style(self, node_style):
-        """
-        .. versionadded: 2.1
-
-        Set 'node_style' as the fixed style for the current node.
-        """
-        if TREEVIEW and isinstance(node_style, NodeStyle):
-            self._img_style = node_style
-        elif isinstance(node_style, smNodeStyle):
-            self._sm_style = node_style
-        else:
-            raise ValueError("Invalid NodeStyle format")
 
     @staticmethod
     def from_parent_child_table(parent_child_table):

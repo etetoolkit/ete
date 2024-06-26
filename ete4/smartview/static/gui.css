@@ -1,0 +1,240 @@
+* {
+    padding: 0;
+    margin: 0;
+}
+
+
+/*
+ * Note that the next few styles are used in menu.js (function style()),
+ * and it depends on the order in which they appear in this file.
+ */
+
+.line {
+    stroke: #000;
+    fill-opacity: 0;
+}
+
+.layout_distline {
+    stroke-width: 0.5;
+}
+
+.layout_childrenline {
+    stroke-width: 0.5;
+}
+
+.layout_nodedot {
+    opacity: 1;
+    fill: #00F;
+}
+
+.box {
+    stroke: #000;
+    stroke-width: 0.5;
+}
+
+.text {
+    font-family: sans-serif;
+    user-select: none;
+}
+
+.node {
+    opacity: 0;
+    fill: #222;
+}
+
+.outline {
+    fill-opacity: 0.3;
+    fill: #EEE;
+    stroke: #000;
+    stroke-width: 0.4;
+}
+
+
+/* The foreground nodes (the ones that the mouse "feels") */
+
+.fg_node {
+    opacity: 0;
+    fill: #222;
+}
+
+.fg_node:hover {
+    opacity: 0.05;
+}
+
+
+.search {
+    opacity: 0.3;
+}
+
+.tree {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    touch-action: none;
+}
+
+.aligned {
+    display: none;
+    cursor: ew-resize;
+    position: absolute;
+    right: 0px;
+    width: 20%;
+    height: 100%;
+    background: white;
+    overflow: hidden;
+    touch-action: none;
+}
+
+.dotted {
+    stroke-dasharray: 4;
+}
+
+
+.scale {
+    position: absolute;
+    background-color: #fffc;
+    width: 180px;
+    height: 30px;
+    left: 15px;
+    bottom: 0;
+}
+
+
+/* Minimap-related */
+
+.minimap {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    z-index: 1;
+    background: #FFF;
+    visibility: hidden;
+    touch-action: none;
+    border-style: solid;
+    border-width: 2px;
+    border-color: #DDD;
+    border-radius: 4px;
+}
+
+.visible_rect {
+    position: absolute;
+    border-style: solid;
+    border-width: 1px;
+    border-color: gray;
+    border-radius: 4px;
+    z-index: 2;
+    background: rgba(0, 0, 0, 0.1);
+    cursor: grab;
+    touch-action: none;
+}
+
+.menu {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 3;
+}
+
+.contextmenu {
+    position: absolute;
+    z-index: 4;
+    visibility: hidden;
+    border: 1px solid #AAA;
+    background-color: white;
+}
+
+.ctx_button {
+    width: 100%;
+    cursor: pointer;
+    padding: 3px 15px;
+    border-style: hidden;
+    text-align: left;
+    background-color: white;
+}
+
+.ctx_button:hover {
+    background-color: #88F;
+    color: white;
+}
+
+.ctx_label {
+    padding: 3px 10px;
+    text-align: left;
+    background-color: #EEE;
+    font-family: sans-serif;
+    font-size: 0.8em;
+}
+
+.negative_xaxis {
+    stroke: #A50A;
+    stroke-width: 4px;
+    stroke-linecap: round;
+}
+
+hr {
+    border: 0;
+    height: 1px;
+    background-color: #333;
+}
+
+kbd {  /* from https://developer.mozilla.org/en-US/docs/Web/HTML/Element/kbd */
+    background-color: #eee;
+    border-radius: 3px;
+    border: 1px solid #b4b4b4;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, .2),
+                0 2px 0 0 rgba(255, 255, 255, .7) inset;
+    color: #333;
+    display: inline-block;
+    font-size: .85em;
+    font-weight: 700;
+    line-height: 1;
+    padding: 2px 4px;
+    white-space: nowrap;
+}
+
+
+/*
+ * Theming for tweakpane. Based on the "light" preset at
+ * https://cocopon.github.io/tweakpane/theming/
+ */
+
+:root {
+    --tp-base-font-family: sans-serif;
+    --tp-base-background-color: hsla(0, 0%, 96%, 1.00);
+    --tp-base-shadow-color: hsla(0, 0%, 0%, 0.1);
+    --tp-button-background-color: hsla(0, 0%, 80%, 1.00);
+    --tp-button-background-color-active: hsla(0, 0%, 65%, 1.00);
+    --tp-button-background-color-focus: hsla(0, 0%, 70%, 1.00);
+    --tp-button-background-color-hover: hsla(0, 0%, 75%, 1.00);
+    --tp-button-foreground-color: hsla(230, 10%, 30%, 1.00);
+    --tp-container-background-color: hsla(0, 0%, 50%, 0.20);
+    --tp-container-background-color-active: hsla(0, 0%, 65%, 0.20);
+    --tp-container-background-color-focus: hsla(0, 0%, 60%, 0.20);
+    --tp-container-background-color-hover: hsla(0, 0%, 55%, 0.20);
+    --tp-container-foreground-color: hsla(230, 10%, 30%, 1);
+    --tp-groove-foreground-color: hsla(230, 15%, 30%, 0.1);
+    --tp-input-background-color: hsla(230, 15%, 30%, 0.1);
+    --tp-input-background-color-active: hsla(231, 15%, 45%, 0.10);
+    --tp-input-background-color-focus: hsla(230, 15%, 40%, 0.10);
+    --tp-input-background-color-hover: hsla(231, 15%, 35%, 0.10);
+    --tp-input-foreground-color: hsla(230, 10%, 30%, 1.00);
+    --tp-label-foreground-color: hsla(230, 10%, 30%, 0.7);
+    --tp-monitor-background-color: hsla(230, 15%, 30%, 0.1);
+    --tp-monitor-foreground-color: hsla(230, 10%, 30%, 0.5);
+}
+
+.tp-rotv {
+    font-weight: bold !important;
+}
+
+.tp-fldv.tp-cntv.tp-fldv-cpl {
+    margin-bottom: 4px;  /* leave some space between submenus */
+}
+
+/* Tabs */
+button.tp-tbiv_b {
+    cursor: pointer;  /* have the cursor as a pointer in the tabs too */
+}

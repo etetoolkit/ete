@@ -23,9 +23,6 @@ setup(
               'ete4/nexml',
               'ete4/orthoxml',
               'ete4/smartview',
-              'ete4/smartview/gui',
-              'ete4/smartview/renderer',
-              'ete4/smartview/renderer/layouts',
               'ete4/treeview'],
     ext_modules=cythonize(
         glob('**/*.pyx', recursive=True),
@@ -33,6 +30,6 @@ setup(
         compiler_directives={'embedsignature': True}),  # for call signatures
     data_files=[
         ('share/ete4/static',
-         [x for x in glob('ete4/smartview/gui/static/**',
+         [x for x in glob('ete4/smartview/static/**',
                           recursive=True) if isfile(x)])],
 )

@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Tree Explorer</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Expires" content="0" />
+    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="stylesheet" href="gui.css">
+    <script src="/static/external/sweetalert2.min.js"></script>
+    <script type="module" src="/static/js/gui.js"></script>
+  </head>
+  <body>
+    <div id="div_tree" class="tree" tabindex="-1"><svg></svg></div>
+    <div id="div_menu" class="menu"></div>
+    <div id="div_scale" class="scale"><svg>
+      <line x1="10" y1="15" x2="110" y2="15" stroke="#000" stroke-width="1.5"></line>
+      <line x1="10" y1="10" x2="10" y2="20" stroke="#000" stroke-width="1.5"></line>
+      <line x1="110" y1="10" x2="110" y2="20" stroke="#000" stroke-width="1.5"></line>
+      <text id="text_scale" font-size="12" fill="#000" x="125" y="20">(scale)</text>
+    </svg></div>
+    <div id="div_contextmenu" class="contextmenu"></div>
+    <div id="div_aligned" class="aligned"><svg></svg></div>
+    <div id="div_minimap" class="minimap"><svg></svg></div>
+    <div id="div_visible_rect" class="visible_rect"></div>
+  </body>
+</html>

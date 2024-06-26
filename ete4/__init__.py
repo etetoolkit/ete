@@ -2,8 +2,9 @@
 # the __all__ variable.
 from warnings import warn
 
-from .core.tree import *
-from .core import operations
+from .core.tree import Tree, TreeError
+from .core import operations, text_viz
+from .parser import newick, ete_format, nexus
 from .config import (ETE_DATA_HOME, ETE_CONFIG_HOME, ETE_CACHE_HOME,
                      update_ete_data)
 from .ncbi_taxonomy import *
