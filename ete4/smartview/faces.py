@@ -139,6 +139,7 @@ def texts_size(texts, size_max, fs_max, zoom, shrink_x=True, r=1):
 
 def text_repr(texts, all_have):
     """Return a summarized representation of the given texts."""
+    texts = list(dict.fromkeys(texts))  # remove duplicates
     if all_have:  # texts are all the texts that we want to summarize
         return texts if len(texts) < 6 else (texts[:3] + ['[...]'] + texts[-2:])
     else:  # there may be more texts that our representation is not including
