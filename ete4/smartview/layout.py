@@ -46,29 +46,47 @@ class Layout:
 @dataclass
 class Decoration:
     face: Face
-    position: str = 'top'
-    column: int = 0
-    anchor: tuple = (-1, 1)
+    position: str
+    column: int
+    anchor: tuple
+
+    def __init__(self, face, position='top', column=0, anchor=None):
+        self.face = face
+        self.position = position
+        self.column = column
+        self.anchor = anchor or default_anchors[position]
+
+default_anchors = {'top':     (-1, 1),   # left, bottom
+                   'bottom':  (-1, -1),  # left, top
+                   'right':   (-1, 0),   # left, middle
+                   'left':    ( 1, 0),   # right, middle
+                   'aligned': (-1, 0)}   # left, middle
 
 
 # The default style of a tree.
 
 DEFAULT_TREE_STYLE = {
-    'shape': 'rectangular',  # or 'circular'
-    'min-size': 6, 'min-size-content': 4,
-    'styles': {},  # to name styles that can be referenced in node styles
+    'styles': {  # to name styles that can be referenced in node styles
+        'grey': {'fill': '#999'},
+    }
 }
+
+# We could have things like:
+# DEFAULT_TREE_STYLE = {
+#    'shape': 'rectangular',  # or 'circular'
+#    'min-size': 10,
+#    'min-size-content': 5,
+#}
 
 
 # The default layout.
 
 def default_node_decos(node):
     decos = []
-    face_dist = TextFace('"%.2g" % dist if dist else ""')
-    decos.append(Decoration(face_dist, position='top', anchor=(-1, 1)))
+    face_dist = TextFace('"%.2g" % dist if dist else ""', style='grey')
+    decos.append(Decoration(face_dist, position='top'))
     if node.is_leaf:
-        decos.append(Decoration(TextFace('name'),
-                                position='right', anchor=(-1, 0)))
+        decos.append(Decoration(TextFace('name'), position='right'))
     return decos
 
 def default_collapsed_decos(nodes):
