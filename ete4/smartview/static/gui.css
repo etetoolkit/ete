@@ -100,6 +100,10 @@
     height: 30px;
     left: 15px;
     bottom: 0;
+    stroke: #000;
+    stroke-width: 1.5;
+    font-family: sans-serif;
+    font-size: 12px;
 }
 
 

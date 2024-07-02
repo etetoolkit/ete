@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", main);
 
 
 // Global variables related to the current view on the tree.
-// Most will be shown on the top-right menu.
+// Most will be shown on the menu.
 const view = {
     // tree
     tree: null,  // string with the current tree name
