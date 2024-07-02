@@ -14,7 +14,7 @@ from .faces import TextFace
 def draw(tree, shape, layouts=None, labels=None, viewport=None,
          zoom=(1, 1), limits=None, collapsed_ids=None, searches=None,
          include_props=None, exclude_props=None,
-         min_size=6, min_size_content=4):
+         min_size=10, min_size_content=5):
     """Yield graphic commands to draw the tree."""
     drawer_class = {'rectangular': DrawerRect,
                     'circular': DrawerCirc}[shape]
@@ -32,8 +32,8 @@ def draw(tree, shape, layouts=None, labels=None, viewport=None,
 class Drawer:
     """Base class (needs subclassing with extra functions to draw)."""
 
-    MIN_SIZE = 6  # anything that has less pixels will be outlined
-    MIN_SIZE_CONTENT = 4
+    MIN_SIZE = 10  # anything that has less pixels will be outlined
+    MIN_SIZE_CONTENT = 5
 
     def __init__(self, tree, layouts=None, labels=None, viewport=None,
                  zoom=(1, 1), limits=None, collapsed_ids=None, searches=None,

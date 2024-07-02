@@ -383,7 +383,7 @@ def get_drawing_kwargs(tree_id, args):
         include_props = g_options[name]['include_props']
         exclude_props = g_options[name]['exclude_props']
 
-        min_size = get('min_size', 6)
+        min_size = get('min_size', 10)
         assert min_size > 0, 'min_size must be > 0'
 
         min_size_content = get('min_size_content', 4)
