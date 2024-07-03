@@ -53,41 +53,31 @@ def node_matcher(node, filters):
                 pass
             if OPFUNC[f[1]](node_v, f[2]):
                 return True
-            # else:
-            #     print f, node_v, type(node_v)
-    return False
-
-def _re(q, exp):
-    if re.search(exp, q):
-        return True
     return False
 
 POSNAMES = {
-    "b-right":"branch-right",
-    "b-top":"branch-top",
-    "b-bottom":"branch-bottom",
-    "float":"float",
-    "float-behind":"float-behind",
-    "aligned":"aligned",
+    'b-right': 'branch-right',
+    'b-top': 'branch-top',
+    'b-bottom': 'branch-bottom',
+    'float': 'float',
+    'float-behind': 'float-behind',
+    'aligned': 'aligned',
 }
 
 OPFUNC = {
-    "<":operator.lt,
-    ">":operator.gt,
-    "=":operator.eq,
-    "==":operator.eq,
-    "!=":operator.ne,
-    ">=":operator.ge,
-    "<-":operator.le,
-    "~=":_re,
+    '<': operator.lt,
+    '>': operator.gt,
+    '=': operator.eq,
+    '==': operator.eq,
+    '!=': operator.ne,
+    '>=': operator.ge,
+    '<=': operator.le,
+    '=~': lambda string, pattern: re.search(pattern, string),
 }
 
 
 def as_str(v):
-    if isinstance(v, float):
-        return '%0.2f' %v
-    else:
-        return str(v)
+    return ('%0.2f' % v) if isinstance(v, float) else str(v)
 
 def shorten_str(string, l, reverse=False):
     if len(string) > l:
