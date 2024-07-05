@@ -29,7 +29,7 @@ from bottle import (
 DIR_BIN = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(DIR_BIN))  # so we can import ete w/o install
 
-from ete4 import newick, nexus, operations as ops
+from ete4 import newick, nexus, operations as ops, treematcher as tm
 from . import draw
 from .layout import DEFAULT_LAYOUT
 
@@ -443,7 +443,7 @@ def get_search_function(text):
 def get_command_search(text):
     """Return the appropriate node search function according to the command."""
     parts = text.split(None, 1)
-    if parts[0] not in ['/r', '/e']:
+    if parts[0] not in ['/r', '/e', '/t']:
         abort(400, 'invalid command %r' % parts[0])
     if len(parts) != 2:
         abort(400, 'missing argument to command %r' % parts[0])
@@ -453,6 +453,8 @@ def get_command_search(text):
         return lambda node: re.search(arg, node.props.get('name', ''))
     elif command == '/e':  # eval expression
         return get_eval_search(arg)
+    elif command == '/t':  # topological search
+        return get_topological_search(arg)
     else:
         abort(400, 'invalid command %r' % command)
 
@@ -485,6 +487,16 @@ def safer_eval(code, context):
         if name not in context:
             abort(400, 'invalid use of %r during evaluation' % name)
     return eval(code, {'__builtins__': {}}, context)
+
+
+def get_topological_search(pattern):
+    """Return a function of a node that sees if it matches the given pattern."""
+    try:
+        tree_pattern = tm.TreePattern(pattern)
+    except newick.NewickError as e:
+        abort(400, 'invalid pattern %r: %s' % (pattern, e))
+
+    return lambda node: tm.match(tree_pattern, node)
 
 
 # Add trees.
