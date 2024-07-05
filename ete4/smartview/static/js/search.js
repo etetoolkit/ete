@@ -227,75 +227,126 @@ function remove_searches() {
 function show_search_help() {
     const help_text = `
 <div style="text-align: left">
-<br />
-<h3>Simple search</h3><br />
+
+<details>
+<summary><b>Simple search</b></summary>
+<span>
 
 <p>Put a text in the search box to find all the nodes whose name matches
 it.</p><br />
 
 <p>The search will be <i>case-insensitive</i> if the text is all in lower
-case, and <i>case-sensitive</i> otherwise.</p><br /><br />
+case, and <i>case-sensitive</i> otherwise.</p>
 
-<h3>Regular expression search</h3><br />
+</span>
+</details>
 
-<p>To search for names mathing a given regular expression, you can prefix your
+<br />
+
+<details>
+<summary><b>Regular expression search</b></summary>
+<span>
+
+<p>To search for names matching a given regular expression, you can prefix your
 text with the command <b>/r</b> (the <i>regexp command</i>) and follow it
-with the regular expression.</p><br /><br />
+with the regular expression.</p>
 
-<h3>Expression search</h3><br />
+</span>
+</details>
+
+<br />
+
+<details>
+<summary><b>General expression search</b></summary>
+<span>
 
 <p>When prefixing your text with <b>/e</b> (the <i>eval command</i>),
-you can use a quite general Python expression to search for nodes. This is
-the most powerful search method available (and the most complex to
-use).</p><br />
+you can use a Python expression to search for nodes.
+The expression will be evaluated for every node, and the ones that satisfy
+it will be selected.</p><br />
 
-<p>The expression will be evaluated for every node, and will select those
-that satisfy it. In the expression you can use (among others) the following
-variables, with their straightforward interpretation: <b>node</b>,
-<b>parent</b>, <b>is_leaf</b>, <b>length</b> / <b>dist</b> / <b>d</b>,
-<b>properties</b> / <b>props</b> / <b>p</b>, <b>children</b> / <b>ch</b>,
-<b>size</b>, <b>dx</b>, <b>dy</b>, <b>regex</b>.</p><br /><br />
+<p>In the expression you can use, among others, the following
+symbols: <b>node</b>,
+<b>parent</b>, <b>name</b>, <b>is_leaf</b>, <b>length</b> or <b>dist</b> or <b>d</b>,
+<b>properties</b> or <b>props</b> or <b>p</b>, <b>children</b> or <b>ch</b>,
+<b>size</b>, <b>dx</b>, <b>dy</b>, <b>regex</b>.</p>
 
-<h3>Examples of searches and possible matches</h3>
+</span>
+</details>
 
-</div>
+<br />
+
+<details>
+<summary><b>Topological search</b></summary>
+<span>
+
+<p>Similar to the expression search, if you prefix your text with <b>/t</b>
+(the <i>topological command</i>), you can write a newick tree with quoted
+names in each node containing an eval command. This will select the nodes
+that satisfy the full subtree of expressions that you passed.</p>
+
+</span>
+</details>
+
+<br />
+
+<details>
+<summary><b>Examples</b></summary>
+<span>
 
 <table style="margin: 0 auto">
+<thead>
+<tr><th>Search text</th><th></th><th>Possible matches</th></tr>
+</thead>
 <tbody>
+
 <tr><td></td><td>&nbsp;&nbsp;&nbsp;</td><td></td></tr>
-<tr><td style="text-align: left"><b>citrobacter</b></td><td></td>
+<tr><td style="text-align: left"><code>citrobacter</code></td><td></td>
 <td style="text-align: left">
-will match nodes named "Citrobacter werkmanii" and "Citrobacter youngae"
+nodes named "[...]citrobacter[...]" (case insensitive)
 </td></tr>
+
 <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
-<tr><td style="text-align: left"><b>UBA</b></td><td></td>
+<tr><td style="text-align: left"><code>BA</code></td><td></td>
 <td style="text-align: left">
-will match "spx UBA2009" but not "Rokubacteriales"
+matches "UBA20" but not "Rokubacteria"
 </td></tr>
+
 <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
-<tr><td style="text-align: left"><b>/r sp\\d\\d</b></td><td></td>
+<tr><td style="text-align: left"><code>/r sp\\d\\d</code></td><td></td>
 <td style="text-align: left">
-will match any name that contains "sp" followed by (at least)
-two digits, like "Escherichia sp002965065" and "Citrobacter sp005281345"
+any name with "sp" followed by 2 digits, like "E. sp0029" and "C. sp0052"
 </td></tr>
+
 <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
-<tr><td style="text-align: left"><b>/e d &gt; 1</b></td><td></td>
+<tr><td style="text-align: left"><code>/e d &gt; 1</code></td><td></td>
 <td style="text-align: left">
-will match nodes with a length &gt; 1
+nodes with length &gt; 1
 </td></tr>
+
 <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
-<tr><td style="text-align: left">
-<b>/e is_leaf and p['species'] == 'Homo'</b>
-</td><td></td>
+<tr><td style="text-align: left"><code>/e is_leaf and p['species'] == 'Homo'</code></td><td></td>
 <td style="text-align: left">
-will match leaf nodes with property "species" equal to "Homo"
+leaf nodes with property "species" equal to "Homo"
 </td></tr>
+
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td style="text-align: left"><code>/t ("is_leaf","d > 1")"name=='AB'"</code></td><td></td>
+<td style="text-align: left">
+nodes named "AB" with two children, one that is a leaf and another that has a length &gt; 1
+</td></tr>
+
 </tbody>
 </table>
 
+</span>
+</details>
+
+</div>
 `;
     Swal.fire({
         title: "Searching nodes",
         html: help_text,
+        width: "80%",
     });
 }
