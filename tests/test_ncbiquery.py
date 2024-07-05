@@ -61,7 +61,8 @@ def assert_human_props(node):
 
 def test_01tree_annotation():
     # Using name as species name too.
-    t = PhyloTree('((9598, 9606), 10090);', sp_naming_function=lambda name: name)
+    t = PhyloTree('((9598, 9606), 10090);',
+                  sp_naming_function=lambda name: name)
 
     t.annotate_ncbi_taxa(dbfile=DATABASE_PATH)
 
@@ -74,7 +75,9 @@ def test_01tree_annotation():
 
 def test_02tree_annotation():
     # Using the first part of name as species name.
-    t = PhyloTree('((9598|protA, 9606|protB), 10090|propC);', sp_naming_function=lambda name: name.split('|')[0])
+    t = PhyloTree('((9598|protA, 9606|protB), 10090|propC);',
+                  sp_naming_function=lambda name: name.split('|')[0])
+
     t.annotate_ncbi_taxa(dbfile=DATABASE_PATH, taxid_attr='species')
 
     assert_homi_props(t['9606|protB'].up)
