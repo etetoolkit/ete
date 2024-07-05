@@ -24,7 +24,7 @@ import brotli
 
 from bottle import (
     get, post, put, redirect, static_file,
-    request, response, error, abort, HTTPError, run)
+    request, response, error, abort, HTTPError, default_app, run)
 
 DIR_BIN = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(DIR_BIN))  # so we can import ete w/o install
@@ -53,6 +53,7 @@ def req_json():
 
 
 def nice_html(content, title='Tree Explorer'):
+    """Return the content as part of a nice-looking html page."""
     return f"""
 <!DOCTYPE html>
 <html><head><title>{title}</title>
@@ -90,8 +91,17 @@ def callback(path):
     return static_file(path, f'{DIR_LIB}/static')
 
 
+@get('/api')
+def callback():
+    """Get all the available api endpoints and their documentation."""
+    exclude = {"/", "/help", "/static/<path:path>"}  # excluded endpoints
+    return {r.rule: r.callback.__doc__
+            for r in default_app().routes if r.rule not in exclude}
+
+
 @get('/trees')
 def callback():
+    """Get information about all the loaded trees."""
     response.content_type = 'application/json'
     return json.dumps([{'name': name, 'id': name} for name in g_trees])
 
@@ -99,6 +109,7 @@ def callback():
 # property of a tree is its name, and we use it for its tree_id.
 @get('/trees/<tree_id>')
 def callback(tree_id):
+    """Get information about the requested tree."""
     if tree_id in g_trees:
         return {'name': tree_id}
     else:
@@ -106,17 +117,20 @@ def callback(tree_id):
 
 @get('/trees/<tree_id>/size')
 def callback(tree_id):
+    """Get tree size as {'width': w, 'height': h}."""
     width, height = load_tree(tree_id).size
     return {'width': width, 'height': height}
 
 @get('/trees/<tree_id>/nodecount')
 def callback(tree_id):
+    """Get the total number of nodes and leaves of the given tree."""
     t = load_tree(tree_id)
     return {'nnodes': sum(1 for node in t.traverse()),
             'nleaves': sum(1 for node in t.leaves())}
 
 @get('/trees/<tree_id>/properties')
 def callback(tree_id):
+    """Get a list of the available properties for the tree."""
     t = load_tree(tree_id)
     props = set()
     for node in t.traverse():
@@ -127,6 +141,7 @@ def callback(tree_id):
 
 @get('/trees/<tree_id>/layouts')
 def callback(tree_id):
+    """Get a list of available layouts for the tree."""
     name, _ = get_tid(tree_id)  # "name" or "tid" is what identifies the tree
 
     layouts = [layout.name for layout in g_layouts.get(name, [])]
@@ -136,6 +151,7 @@ def callback(tree_id):
 
 @get('/trees/<tree_id>/style')
 def callback(tree_id):
+    """Get the style of the tree according to all the active layouts."""
     try:
         args = request.query  # shortcut
         assert list(args.keys()) == ['active'], 'missing list of active layouts'
@@ -159,6 +175,7 @@ def callback(tree_id):
 
 @get('/trees/<tree_id>/draw')
 def callback(tree_id):
+    """Get all the drawing commands to represent the tree."""
     try:
         kwargs = get_drawing_kwargs(tree_id, request.query)
 
@@ -175,28 +192,33 @@ def callback(tree_id):
 
 @get('/trees/<tree_id>/search')
 def callback(tree_id):
+    """Store a search, saving matching nodes so they can be later drawn."""
     nresults, nparents = store_search(tree_id, request.query)
     return {'message': 'ok', 'nresults': nresults, 'nparents': nparents}
 
 @get('/trees/<tree_id>/newick')
 def callback(tree_id):
+    """Get the newick string that represents the tree."""
     MAX_MB = 2
     response.content_type = 'application/json'
     return json.dumps(get_newick(tree_id, MAX_MB))
 
 @put('/trees/<tree_id>/clear_searches')
 def callback(tree_id):
+    """Remove all saved searches."""
     g_searches.clear()
     return {'message': 'ok'}
 
 @put('/trees/<tree_id>/sort')
 def callback(tree_id):
+    """Sort the nodes in the tree according to the criteria in the request."""
     node_id, key_text, reverse = req_json()
     sort(tree_id, node_id, key_text, reverse)
     return {'message': 'ok'}
 
 @put('/trees/<tree_id>/set_outgroup')
 def callback(tree_id):
+    """Set the requested node as an outgroup in the tree."""
     tid, subtree = get_tid(tree_id)
     if subtree:
         abort(400, 'operation not allowed with subtree')
@@ -211,6 +233,7 @@ def callback(tree_id):
 
 @put('/trees/<tree_id>/move')
 def callback(tree_id):
+    """Move the requested node up/down within its siblings."""
     try:
         t = load_tree(tree_id)
         node_id, shift = req_json()
@@ -221,6 +244,7 @@ def callback(tree_id):
 
 @put('/trees/<tree_id>/remove')
 def callback(tree_id):
+    """Remove the requested node (including descendants) from the tree."""
     try:
         t = load_tree(tree_id)
         node_id = req_json()
@@ -232,6 +256,7 @@ def callback(tree_id):
 
 @put('/trees/<tree_id>/rename')
 def callback(tree_id):
+    """Change name of the requested node in the tree."""
     try:
         t = load_tree(tree_id)
         node_id, name = req_json()
@@ -242,6 +267,7 @@ def callback(tree_id):
 
 @put('/trees/<tree_id>/edit')
 def callback(tree_id):
+    """Edit content (with newick notation) of the requested node in the tree."""
     try:
         t = load_tree(tree_id)
         node_id, content = req_json()
@@ -254,6 +280,7 @@ def callback(tree_id):
 
 @put('/trees/<tree_id>/to_dendrogram')
 def callback(tree_id):
+    """Convert tree to dendrogram (remove all branch distances)."""
     node_id = req_json()
     t = load_tree(tree_id)
     ops.to_dendrogram(t[node_id])
@@ -262,6 +289,7 @@ def callback(tree_id):
 
 @put('/trees/<tree_id>/to_ultrametric')
 def callback(tree_id):
+    """Convert tree to ultrametric (all leaves ending at the same distance)."""
     try:
         node_id = req_json()
         t = load_tree(tree_id)
@@ -273,6 +301,7 @@ def callback(tree_id):
 
 @post('/trees')
 def callback():
+    """Add a new tree."""
     ids = add_trees_from_request()
     response.status = 201
     return {'message': 'ok', 'ids': ids}
