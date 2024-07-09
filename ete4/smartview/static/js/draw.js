@@ -634,7 +634,7 @@ function anchored_position(x, dx, ax) {
 
 // Flip all the texts in circular representation that look upside-down.
 // NOTE: getBBox() is very expensive and requires text to be already in the DOM.
-async function fix_text_orientations() {
+function fix_text_orientations() {
     const texts = Array.from(div_tree.getElementsByClassName("text"))
         .filter(is_upside_down);
 
