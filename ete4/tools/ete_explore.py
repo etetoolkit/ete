@@ -5,7 +5,8 @@ from .common import src_tree_iterator
 from ete4 import PhyloTree
 from ete4.smartview.explorer import explore
 
-DESC = "Launches an instance of the ETE smartview tree explorer server."
+DESC = "Launches the ETE smartview tree explorer."
+
 
 def populate_args(explore_args_p):
     explore_args_p.add_argument(
