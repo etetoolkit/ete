@@ -66,7 +66,7 @@
     opacity: 0.3;
 }
 
-.tree {
+#div_tree {
     position: absolute;
     left: 0px;
     top: 0px;
@@ -76,7 +76,7 @@
     touch-action: none;
 }
 
-.aligned {
+#div_aligned {
     display: none;
     cursor: ew-resize;
     position: absolute;
@@ -93,7 +93,7 @@
 }
 
 
-.scale {
+#div_scale {
     position: absolute;
     background-color: #fffc;
     width: 180px;
@@ -109,7 +109,7 @@
 
 /* Minimap-related */
 
-.minimap {
+#div_minimap {
     position: absolute;
     right: 10px;
     bottom: 10px;
@@ -123,7 +123,7 @@
     border-radius: 4px;
 }
 
-.visible_rect {
+#div_visible_rect {
     position: absolute;
     border-style: solid;
     border-width: 1px;
@@ -135,14 +135,14 @@
     touch-action: none;
 }
 
-.menu {
+#div_menu {
     position: absolute;
     top: 10px;
     left: 10px;
     z-index: 3;
 }
 
-.contextmenu {
+#div_contextmenu {
     position: absolute;
     z-index: 4;
     visibility: hidden;

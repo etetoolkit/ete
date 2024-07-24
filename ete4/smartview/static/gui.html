@@ -12,13 +12,13 @@
   </head>
   <body>
     <!-- Main div where the tree is drawn with svg elements -->
-    <div id="div_tree" class="tree" tabindex="-1"><svg></svg></div>
+    <div id="div_tree" tabindex="-1"><svg></svg></div>
 
     <!-- Contains the menu with options to visualize, etc. -->
-    <div id="div_menu" class="menu"></div>
+    <div id="div_menu"></div>
 
     <!-- Scale bar and text -->
-    <div id="div_scale" class="scale"><svg>
+    <div id="div_scale"><svg>
       <line x1="10"  y1="15" x2="110" y2="15"></line>
       <line x1="10"  y1="10" x2="10"  y2="20"></line>
       <line x1="110" y1="10" x2="110" y2="20"></line>
@@ -26,14 +26,16 @@
     </svg></div>
 
     <!-- Contains the context menu that appears on mouse right-click -->
-    <div id="div_contextmenu" class="contextmenu"></div>
+    <div id="div_contextmenu"></div>
 
     <!-- Contains the aligned elements (in a rectangular representation) -->
-    <div id="div_aligned" class="aligned"><svg></svg></div>
-    <div id="div_aligned_grabber" class="aligned"></div>
+    <div id="div_aligned">
+      <svg></svg>
+      <div id="div_aligned_grabber"></div>
+    </div>
 
     <!-- Minimap and currenlty visible rectangle -->
-    <div id="div_minimap" class="minimap"><svg></svg></div>
-    <div id="div_visible_rect" class="visible_rect"></div>
+    <div id="div_minimap"><svg></svg></div>
+    <div id="div_visible_rect"></div>
   </body>
 </html>
