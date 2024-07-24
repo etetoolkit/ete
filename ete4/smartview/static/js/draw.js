@@ -156,7 +156,7 @@ function get_items_per_panel(commands) {
 function draw_aligned(items) {
     if (view.shape === "rectangular") {
         if (items) {
-            div_aligned.style.display = "initial";  // show aligned panel
+            div_aligned.style.display = "flex";  // show aligned panel
             const tl = {x: 0, y: view.tl.y};  // relative "top-left" point
             draw(div_aligned, items, tl, view.zoom);
         }
@@ -216,7 +216,7 @@ function draw(element, items, tl, zoom, replace=true) {
     if (replace)
         replace_svg(element);
 
-    const svg = element.children[0];
+    const svg = element.getElementsByTagName("svg")[0];
     svg.appendChild(g);
 }
 
@@ -245,8 +245,10 @@ function replace_svg(element) {
         "height": element.offsetHeight,
     });
 
-    if (element.children.length > 0)
-        element.children[0].replaceWith(svg);
+    const existing_svg = element.getElementsByTagName("svg")[0];
+
+    if (existing_svg)
+        existing_svg.replaceWith(svg);
     else
         element.appendChild(svg);
 }
