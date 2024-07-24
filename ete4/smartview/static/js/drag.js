@@ -7,10 +7,12 @@ import { draw_tree } from "./draw.js";
 export { drag_start, drag_stop, drag_move };
 
 
+// Object with the current state of the thing being dragged.
 const dragging = {
-    element: undefined, moved: false,
-    p0: {x: 0, y: 0},
-    p_last: {x: 0, y: 0},
+    element: undefined,  // DOM element where we are dragging
+    moved: false,  // has it actually moved? (to avoid redrawing if not)
+    p0: {x: 0, y: 0},  // cursor position at the start of the dragging
+    p_last: {x: 0, y: 0},  // cursor position since the last drag_move() call
 };
 
 
@@ -68,7 +70,7 @@ function drag_move(point) {
         Array.from(div_tree.children[0].children).forEach(g =>
             g.setAttribute("transform", `translate(${dx} ${dy})`));
 
-        menus.pane.refresh();  // update the info box on the top-right
+        menus.pane.refresh();  // update the info box on the menu
 
         if (view.minimap.show)
             update_minimap_visible_rect();
