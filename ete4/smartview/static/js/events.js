@@ -41,7 +41,7 @@ function on_keydown(event) {
     const key = event.key;  // shortcut
     let is_hotkey = true;  // will set to false if it isn't
 
-    if (document.querySelector(".menu").contains(event.target))
+    if (div_menu.contains(event.target))
         return;  // avoid interfering with writing on a field of the menus
 
     if (key === "F1") {
