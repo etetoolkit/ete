@@ -108,7 +108,7 @@
 
 #div_scale {
     position: absolute;
-    background-color: #fffc;
+    background-color: #FFFC;
     width: 180px;
     height: 30px;
     left: 15px;
@@ -128,7 +128,7 @@
     right: 10px;
     bottom: 10px;
     z-index: 1;
-    background: #FFF;
+    background-color: #FFF;
     visibility: hidden;
     touch-action: none;
     border-style: solid;
@@ -144,7 +144,7 @@
     border-color: gray;
     border-radius: 4px;
     z-index: 2;
-    background: rgba(0, 0, 0, 0.1);
+    background-color: rgba(0, 0, 0, 0.1);
     cursor: grab;
     touch-action: none;
 }
@@ -199,9 +199,9 @@ hr {
 }
 
 kbd {  /* from https://developer.mozilla.org/en-US/docs/Web/HTML/Element/kbd */
-    background-color: #eee;
+    background-color: #EEE;
     border-radius: 3px;
-    border: 1px solid #b4b4b4;
+    border: 1px solid #B4B4B4;
     box-shadow: 0 1px 1px rgba(0, 0, 0, .2),
                 0 2px 0 0 rgba(255, 255, 255, .7) inset;
     color: #333;
