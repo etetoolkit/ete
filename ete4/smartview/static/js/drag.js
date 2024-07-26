@@ -49,7 +49,7 @@ function drag_move(point) {
     if (dragging.element === div_aligned) {
         view.align_bar += 100 * movement.x / div_tree.offsetWidth;
         view.align_bar = Math.min(Math.max(view.align_bar, 1), 99);  // clip
-        menus.pane.refresh();  // update the info box on the top-right
+        menus.pane.refresh();  // update the info box
         div_aligned.style.width = `${100 - view.align_bar}%`;
     }
     else if (dragging.element) {
