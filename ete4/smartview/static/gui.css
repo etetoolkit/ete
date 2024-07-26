@@ -104,6 +104,7 @@
     stroke-width: 1.5;
     font-family: sans-serif;
     font-size: 12px;
+    overflow: hidden;
 }
 
 
