@@ -16,7 +16,7 @@ import platform
 import gzip, bz2, zipfile, tarfile
 import socket
 from math import pi
-from subprocess import Popen, DEVNULL
+import webbrowser
 from threading import Thread
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter as fmt
 
@@ -690,10 +690,8 @@ def make_name():
 def open_browser_window(host='127.0.0.1', port=5000):
     """Try to open a browser window in a different process."""
     try:
-        command = {'Linux': 'xdg-open', 'Darwin': 'open'}[platform.system()]
-        Popen([command, f'http://{host}:{port}'],
-              stdout=DEVNULL, stderr=DEVNULL)
-    except (KeyError, FileNotFoundError) as e:
+        webbrowser.open(f'http://{host}:{port}')
+    except webbrowser.Error:
         pass  # it's ok if we don't succeed
 
 
