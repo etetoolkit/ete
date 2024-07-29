@@ -1796,3 +1796,38 @@ cdef class Tree:
                     ete_node.add_child(ete_ch)
                     all_nodes[ch] = ete_ch
             return ete_ch.root
+
+    # Functions used for treeview (qt visualization).
+
+    def add_face(self, face, column, position='branch-right'):
+        from ..treeview import Face, FaceContainer
+        from ..treeview.main import _FaceAreas, FACE_POSITIONS
+
+        if '_faces' not in self.props:
+            self.props['_faces'] = _FaceAreas()
+
+        try:
+            assert position in FACE_POSITIONS, f'position {position} not in {FACE_POSITIONS}'
+            assert isinstance(face, Face), f'face {face} is not a Face instance'
+
+            face_area = getattr(self.props['_faces'], position)
+            face_area.add_face(face, column=column)
+
+        except AssertionError as e:
+            raise ValueError(e)
+
+    @property
+    def img_style(self):
+        from ..treeview.main import NodeStyle
+
+        if '_img_style' not in self.props:
+            self.props['_img_style'] = NodeStyle()
+
+        return self.props['_img_style']
+
+    @img_style.setter
+    def img_style(self, value):
+        self.props['_img_style'] = value
+
+    def set_style(self, value):
+        self.props['_img_style'] = value
