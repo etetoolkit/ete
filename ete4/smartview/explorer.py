@@ -12,7 +12,6 @@ import sys
 import os
 import re
 import json
-import platform
 import gzip, bz2, zipfile, tarfile
 import socket
 from math import pi
