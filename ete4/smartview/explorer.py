@@ -18,19 +18,20 @@ from math import pi
 import webbrowser
 from threading import Thread
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter as fmt
+from wsgiref.simple_server import make_server, WSGIRequestHandler
 
 import brotli
 
 from bottle import (
     get, post, put, redirect, static_file,
-    request, response, error, abort, HTTPError, default_app, run)
+    request, response, error, abort, HTTPError, default_app)
 
 DIR_BIN = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(DIR_BIN))  # so we can import ete w/o install
 
 from ete4 import newick, nexus, operations as ops, treematcher as tm
-from . import draw
-from .layout import DEFAULT_LAYOUT
+from ete4.smartview import draw
+from ete4.smartview.layout import DEFAULT_LAYOUT
 
 DIR_LIB = os.path.dirname(os.path.abspath(draw.__file__))
 
@@ -314,7 +315,7 @@ g_config = {'compress': False}  # global configuration
 g_layouts = {}  # 'name' -> list of available layouts
 g_options = {}  # 'name' -> {'include_props': ..., 'exclude_props': ...}
 g_searches = {}  # 'searched_text' -> ({result nodes}, {parent nodes})
-g_threads = {}  # {'webserver': (thread, port)}
+g_threads = {}  # {'server': (thread, server)}
 
 def load_tree(tree_id):
     """Add tree to g_trees and initialize it if not there, and return it."""
@@ -624,14 +625,34 @@ def explore(tree, name=None, layouts=None,
             host='127.0.0.1', port=None, verbose=False,
             compress=None, keep_server=False, open_browser=True):
     """Run the web server, add tree and open a browser to visualize it."""
-    # First make sure we are ready to draw (all internal sizes are updated).
-    ops.update_sizes_all(tree)
+    add_tree(tree, name, layouts, include_props, exclude_props)
 
-    # Add tree, layouts, and other options to the global variables.
     if compress is not None:
         g_config['compress'] = compress  # global configuration
 
+    # Launch the thread with the http server (if not already running).
+    if 'server' not in g_threads:
+        thread, server = start_server(host, port, verbose, keep_server)
+        g_threads['server'] = (thread, server)
+        host, port = server.server_address  # port may have changed
+        print(f'Explorer now available at http://{host}:{port}')
+    else:
+        _, server = g_threads['server']
+        host, port = server.server_address
+        print(f'Existing explorer available at http://{host}:{port}')
+
+    if open_browser:
+        _, server = g_threads['server']
+        host, port = server.server_address
+        open_browser_window(host, port)
+
+
+def add_tree(tree, name=None, layouts=None,
+             include_props=('dist', 'support'), exclude_props=None):
+    """Add tree, layouts, etc to the global variables, and return its name."""
     name = name or make_name()  # in case we didn't receive one
+
+    ops.update_sizes_all(tree)  # update all internal sizes (ready to draw!)
 
     g_trees[name] = tree  # add tree to the global dict of trees
 
@@ -639,30 +660,37 @@ def explore(tree, name=None, layouts=None,
 
     g_options[name] = {
         'include_props': include_props,
-        'exclude_props': exclude_props}
+        'exclude_props': exclude_props,
+    }
 
-    # Launch the thread with the http server (if not already running).
-    if 'webserver' not in g_threads:
-        port = port or get_next_available_port(host)
-        assert port, 'could not find any port available'
+    return name
 
-        thread_webserver = Thread(
-            daemon=not keep_server,  # the server persists if it's not a daemon
-            target=run,
-            kwargs={'port': port, 'quiet': not verbose})
 
-        thread_webserver.start()
+def remove_tree(name):
+    g_trees.pop(name)
+    g_layouts.pop(name)
+    g_options.pop(name)
 
-        g_threads['webserver'] = (thread_webserver, port)
 
-        print(f'Explorer now available at http://{host}:{port}')
-    else:
-        _, port = g_threads['webserver']
-        print(f'Existing explorer available at http://{host}:{port}')
+def start_server(host='127.0.0.1', port=None, verbose=False, keep_server=False):
+    """Create a thread running the web server and return it and the server."""
+    port = port or get_next_available_port(host)
+    assert port, 'could not find any port available'
 
-    if open_browser:
-        _, port = g_threads['webserver']
-        open_browser_window(host, port)
+    # Override the function that logs requests, if we are not verbose.
+    if not verbose:
+        WSGIRequestHandler.log_request = lambda *args, **kwargs: None
+
+    # Create explicitly the web sever (uses internally WSGIRequestHandler).
+    server = make_server(host, port, default_app())
+
+    thread = Thread(
+        daemon=not keep_server,  # the server persists if it's not a daemon
+        target=server.serve_forever)
+
+    thread.start()
+
+    return thread, server
 
 
 def get_next_available_port(host='127.0.0.1', port_min=5000, port_max=6000):
@@ -682,7 +710,6 @@ def make_name():
     tnames = [name for name in g_trees
               if name.startswith('tree-') and name[len('tree-'):].isdecimal()]
     n = max((int(name[len('tree-'):]) for name in tnames), default=0) + 1
-    print(f'New tree name: tree-{n}')
     return f'tree-{n}'
 
 
@@ -719,12 +746,14 @@ if __name__ == '__main__':
         # Set the global config options.
         g_config['compress'] = args.compress
 
-        # Launch the http server ("run") in a thread and open the browser.
+        # Launch the http server in a thread and open the browser.
         port = args.port or get_next_available_port()
         assert port, 'could not find any port available'
 
-        options = {'port': port, 'quiet': not args.verbose}  # for run()
-        Thread(daemon=True, target=run, kwargs=options).start()
+        if not args.verbose:
+            WSGIRequestHandler.log_request = lambda *args, **kwargs: None
+        server = make_server('127.0.0.1', port, default_app())
+        Thread(daemon=True, target=server.serve_forever).start()
 
         open_browser_window(port=port)
 

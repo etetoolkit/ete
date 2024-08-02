@@ -977,6 +977,53 @@ cdef class Tree:
             host, port, verbose,
             compress, keep_server, open_browser)
 
+    def render_sm(self, file_name, layouts=None, w=None, h=None):
+        """Save an image with the contents of the tree."""
+        import time
+        from ..smartview import explorer
+        try:
+            from selenium import webdriver
+            from selenium.webdriver.chrome.options import Options
+        except ModuleNotFoundError:
+            from warnings import warn
+            warn('Cannot render image - missing module "selenium"')
+            return
+
+        # Add tree and start a server.
+        name = explorer.add_tree(self, layouts=layouts)
+        thread, server = explorer.start_server()
+
+        # Use selenium to make a screenshot.
+        w = w or 2560  # width
+        if h is None:
+            h = max(200, 10 * self.size[1])  # 10 pixels per leaf
+
+        options = Options()
+        options.add_argument('--headless')  # do not display anything
+        options.add_argument(f'--window-size={w},{h}')  # set window size
+
+        options.add_argument('--disable-logging')         # try not to send
+        options.add_argument('--disable-breakpad')        # any report to the
+        options.add_argument('--metrics-recording-only')  # chrome website
+
+        driver = webdriver.Chrome(options=options)
+
+        host, port = server.server_address
+        driver.get(f'http://{host}:{port}/static/gui.html?tree={name}')
+
+        time.sleep(2)  # wait, kind of a hack
+
+        driver.save_screenshot(file_name)
+
+        driver.quit()
+
+        # Stop the server, close its thread, and remove the tree.
+        server.server_close()
+        server.shutdown()
+        thread.join()
+
+        explorer.remove_tree(name)
+
     def copy(self, method="cpickle"):
         """Return a copy of the current node.
 

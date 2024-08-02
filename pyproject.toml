@@ -40,6 +40,7 @@ ete4 = "ete4.tools.ete:main"
 
 [project.optional-dependencies]
 treeview = ["pyqt6"]
+render_sm = ["selenium"]
 treediff = ["lap"]
 test = ["pytest>=6.0"]
 doc = ["sphinx"]
