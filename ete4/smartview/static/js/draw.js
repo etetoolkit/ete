@@ -25,7 +25,7 @@ function update() {
 
 // Ask the server for a tree in the new defined region, and draw it.
 async function draw_tree() {
-    if (div_tree.offsetWidth <= 0) {
+    if (div_tree.offsetWidth <= 0 || view.zoom.x === Infinity) {
         const w = div_tree.offsetWidth / view.zoom.x;
         suggest_width_change("error", `Cannot draw tree with width ${w}`);
         return;
