@@ -722,6 +722,22 @@ def open_browser_window(host='127.0.0.1', port=5000):
         pass  # it's ok if we don't succeed
 
 
+def stop_server():
+    """Stop the running server."""
+    if 'server' in g_threads:
+        # Without a server, we won't need to remember anything about the trees.
+        names = list(g_trees.keys())  # copied so g_trees can be modified
+        for name in names:
+            remove_tree(name)
+
+        # Find the thread with the server and do a proper shutdown.
+        thread, server = g_threads.pop('server')
+
+        server.server_close()
+        server.shutdown()
+        thread.join()
+
+
 
 if __name__ == '__main__':
     parser = ArgumentParser(description=__doc__, formatter_class=fmt)
