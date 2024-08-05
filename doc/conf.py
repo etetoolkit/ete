@@ -13,7 +13,7 @@ import os
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'ETE Toolkit'
-copyright = '2008 - 2023, The ETE Toolkit Team'
+copyright = '2008 - 2024, The ETE Toolkit Team'
 author = 'Jaime Huerta-Cepas et al.'
 release = open('../VERSION').readline().strip()
 
