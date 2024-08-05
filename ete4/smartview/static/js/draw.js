@@ -33,7 +33,8 @@ async function draw_tree() {
 
     div_tree.style.cursor = "wait";  // so the user knows we are drawing
 
-    text_scale.textContent = (100 / view.zoom.x).toFixed(3);  // show the scale
+    const scale = 100 / view.zoom.x;  // the line is 100 pixels (see gui.html)
+    text_scale.textContent = format_float(scale);  // show scale
 
     try {
         const qs = build_draw_query_string();
@@ -72,6 +73,14 @@ async function draw_tree() {
     }
 
     div_tree.style.cursor = "auto";  // show that we finished drawing
+}
+
+// Return number x as a nice string (with approximately n precision digits).
+function format_float(x, n=2) {
+    if (x < Math.pow(10, -n) || x > Math.pow(10, n))
+        return x.toExponential(n);
+    else
+        return x.toFixed(n);
 }
 
 
