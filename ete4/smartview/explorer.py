@@ -667,6 +667,7 @@ def add_tree(tree, name=None, layouts=None,
 
 
 def remove_tree(name):
+    """Remove all global references to the tree."""
     g_trees.pop(name)
     g_layouts.pop(name)
     g_options.pop(name)
