@@ -23,7 +23,7 @@ from wsgiref.simple_server import make_server, WSGIRequestHandler
 import brotli
 
 from bottle import (
-    get, post, put, redirect, static_file,
+    get, post, put, delete, redirect, static_file,
     request, response, error, abort, HTTPError, default_app)
 
 DIR_BIN = os.path.dirname(os.path.abspath(__file__))
@@ -305,6 +305,15 @@ def callback():
     ids = add_trees_from_request()
     response.status = 201
     return {'message': 'ok', 'ids': ids}
+
+@delete('/trees/<tree_id>')
+def callback(tree_id):
+    """Remove a tree."""
+    try:
+        remove_tree(tree_id)
+        return {'message': 'ok'}
+    except KeyError as e:
+        abort(404, f'unknown tree {tree_id}')
 
 
 # Logic.
