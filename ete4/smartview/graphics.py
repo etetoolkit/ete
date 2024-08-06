@@ -37,7 +37,7 @@ def draw_line(p1, p2, style='', kwargs=None):
 def draw_arc(p1, p2, large=False, style='', kwargs=None):
     return ['arc', p1, p2, int(large), style, kwargs or {}]
 
-def draw_circle(center, radius, style=''):
+def draw_circle(center, radius=1, style=''):
     return ['circle', center, radius, style]
 
 def draw_text(box, anchor, text, fs_max=None, style=''):

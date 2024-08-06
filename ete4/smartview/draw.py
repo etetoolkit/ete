@@ -357,7 +357,7 @@ class DrawerRect(Drawer):
             yield line
 
     def draw_nodedot(self, center):
-        dot = gr.draw_circle(center, radius=1, style='nodedot')
+        dot = gr.draw_circle(center, style='nodedot')
         if not self.viewport or intersects_box(self.viewport, get_rect(dot)):
             yield dot
 
@@ -443,7 +443,7 @@ class DrawerCirc(Drawer):
     def draw_nodedot(self, center):
         r, a = center
         if -pi < a < pi:
-            yield gr.draw_circle(cartesian(center), radius=1, style='nodedot')
+            yield gr.draw_circle(cartesian(center), style='nodedot')
 
     def draw_nodebox(self, node, node_id, box, result_of):
         r, a, dr, da = box

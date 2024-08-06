@@ -511,10 +511,13 @@ function create_arc(p1, p2, large, tl, z, style="", kwargs=null) {
 function create_circle(center, radius, tl, zx, zy, style="") {
     const [x, y] = [zx * (center[0] - tl.x), zy * (center[1] - tl.y)];
 
+    const r = style.split(" ").includes("nodedot") ? view.node.dot.radius : radius;
+
     const element = create_svg_element("circle", {
         "class": "circle",
-        "cx": x, "cy": y,
-        "r": view.node.dot.radius,  // FIXME: use radius, not view.node.dot.radius
+        "cx": x,
+        "cy": y,
+        "r": r,
     });
 
     add_style(element, style);
