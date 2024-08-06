@@ -67,7 +67,8 @@ default_anchors = {'top':     (-1, 1),   # left, bottom
 
 DEFAULT_TREE_STYLE = {
     'styles': {  # to name styles that can be referenced in node styles
-        'grey': {'fill': '#999'},
+        'grey': {'fill': '#888'},
+        'red': {'fill': '#f88'},  # a light red
     }
 }
 
@@ -83,10 +84,16 @@ DEFAULT_TREE_STYLE = {
 
 def default_node_decos(node):
     decos = []
+
     face_dist = TextFace('"%.2g" % dist if dist else ""', style='grey')
     decos.append(Decoration(face_dist, position='top'))
+
+    face_support = TextFace('"%.2g" % support if support else ""', style='red')
+    decos.append(Decoration(face_support, position='bottom'))
+
     if node.is_leaf:
         decos.append(Decoration(TextFace('name'), position='right'))
+
     return decos
 
 def default_collapsed_decos(nodes):
