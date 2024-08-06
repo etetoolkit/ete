@@ -43,7 +43,7 @@ class Face:
 class TextFace:  # no need to inherit like  TextFace(Face)  (faster?)
     """A text that results from executing an expression on the node."""
 
-    def __init__(self, expression, fs_max=20, style=None):
+    def __init__(self, expression, fs_max=16, style=None):
         self.code = (expression if type(expression) != str else
                      compile(expression, '<string>', 'eval'))
         self.style = style or ('text_' + expression)
