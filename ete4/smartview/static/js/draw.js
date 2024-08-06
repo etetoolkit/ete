@@ -511,7 +511,9 @@ function create_arc(p1, p2, large, tl, z, style="", kwargs=null) {
 function create_circle(center, radius, tl, zx, zy, style="") {
     const [x, y] = [zx * (center[0] - tl.x), zy * (center[1] - tl.y)];
 
-    const r = style.split(" ").includes("nodedot") ? view.node.dot.radius : radius;
+    const is_nodedot = (typeof style === "string" &&
+                        style.split(" ").includes("nodedot"));
+    const r = is_nodedot ? view.node.dot.radius : radius;
 
     const element = create_svg_element("circle", {
         "class": "circle",
