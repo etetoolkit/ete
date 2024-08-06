@@ -83,22 +83,18 @@ DEFAULT_TREE_STYLE = {
 # The default layout.
 
 def default_node_decos(node):
-    decos = []
-
     face_dist = TextFace('"%.2g" % dist if dist else ""', style='grey')
-    decos.append(Decoration(face_dist, position='top'))
+    yield Decoration(face_dist, position='top')
 
     face_support = TextFace('"%.2g" % support if support else ""', style='red')
-    decos.append(Decoration(face_support, position='bottom'))
+    yield Decoration(face_support, position='bottom')
 
     if node.is_leaf:
-        decos.append(Decoration(TextFace('name'), position='right'))
-
-    return decos
+        yield Decoration(TextFace('name'), position='right')
 
 def default_collapsed_decos(nodes):
-    return [Decoration(TextFace('name'),
-                       position='right', anchor=(-1, 0))]
+    yield Decoration(TextFace('name'),
+                     position='right', anchor=(-1, 0))
 
 DEFAULT_LAYOUT = Layout(
     name='default',
