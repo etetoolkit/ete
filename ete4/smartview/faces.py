@@ -185,7 +185,7 @@ class CircleFace:
 
     def __init__(self, rmax=None, color='black'):
         self.rmax = rmax  # maximum radius in pixels
-        self.color = color
+        self.style = {'fill': color}
 
     def draw(self, nodes, size, collapsed=False, zoom=None, anchor=None, r=1):
         dx, dy = size
@@ -199,6 +199,6 @@ class CircleFace:
             cr = min(cr, self.rmax)
 
         center = (cr / zx, cr / zy)  # in tree coordinates
-        circle = gr.draw_circle(center, cr)
+        circle = gr.draw_circle(center, cr, self.style)
 
         return [circle], Size(2*cr/zx, 2*cr/zy)
