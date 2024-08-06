@@ -519,8 +519,8 @@ def draw_decorations(decorations, nodes, xmin, content_box, bdy, zoom,
             rows = [a for a in decos_at_pos if a.column == col]
             dx_col = (pos_box.dx - (x_col - pos_box.x)) / (ncols - icol)
 
-            if pos_box.dx == 0 or dx_col * zoom[0] > min_size:
-                # pos_box.dx == 0 has a special meaning (no limits for dx)
+            if (pos in ['left', 'right', 'aligned'] or  # in these, dx == 0
+                dx_col * zoom[0] > min_size):           # means no limits for dx
                 elements, x_col = get_col_data(rows, x_col, dx_col, nodes,
                                                pos_box, pos, bdy_dy, zoom,
                                                min_size, collapsed, circular)
