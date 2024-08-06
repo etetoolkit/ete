@@ -178,3 +178,27 @@ def safer_eval(code, context):
         if name not in context:
             raise SyntaxError('invalid use of %r during evaluation' % name)
     return eval(code, {'__builtins__': {}}, context)
+
+
+class CircleFace:
+    """A circle."""
+
+    def __init__(self, rmax=None, color='black'):
+        self.rmax = rmax  # maximum radius in pixels
+        self.color = color
+
+    def draw(self, nodes, size, collapsed=False, zoom=None, anchor=None, r=1):
+        dx, dy = size
+        zx, zy = zoom if zoom else (1, 1)
+
+        # Find the circle radius in pixels.
+        cr = zy * r * dy / 2
+        if dx > 0:
+            cr = min(cr, zx * dx / 2)
+        if self.rmax:
+            cr = min(cr, self.rmax)
+
+        center = (cr / zx, cr / zy)  # in tree coordinates
+        circle = gr.draw_circle(center, cr)
+
+        return [circle], Size(2*cr/zx, 2*cr/zy)
