@@ -183,9 +183,9 @@ def safer_eval(code, context):
 class CircleFace:
     """A circle."""
 
-    def __init__(self, rmax=None, color='black'):
+    def __init__(self, rmax=None, style=None):
         self.rmax = rmax  # maximum radius in pixels
-        self.style = {'fill': color}
+        self.style = style or ''
 
     def draw(self, nodes, size, collapsed=False, zoom=None, anchor=None, r=1):
         dx, dy = size
