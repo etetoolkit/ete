@@ -311,6 +311,11 @@ function create_item(item, tl, zoom) {
 
         return create_circle(center, radius, tl, zx, zy, style);
     }
+    else if (item[0] === "rect") {
+        const [ , rect, style] = item;
+
+        return create_rect(rect, tl, zx, zy, style);
+    }
     else if (item[0] === "text") {
         const [ , box, anchor, text, fs_max, style] = item;
         const s = typeof style === "string" ? get_class_name(style) : style;
@@ -368,13 +373,17 @@ function create_box(box, tl, zx, zy) {
 }
 
 
-function create_rect(box, tl, zx, zy) {
+function create_rect(box, tl, zx, zy, style="") {
     const [x, y, w, h] = box;
 
-    return create_svg_element("rect", {
+    const element = create_svg_element("rect", {
         "x": zx * (x - tl.x), "y": zy * (y - tl.y),
         "width": zx * w, "height": zy * h,
     });
+
+    add_style(element, style);
+
+    return element;
 }
 
 

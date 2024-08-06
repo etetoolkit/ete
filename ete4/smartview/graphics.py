@@ -40,6 +40,9 @@ def draw_arc(p1, p2, large=False, style='', kwargs=None):
 def draw_circle(center, radius=1, style=''):
     return ['circle', center, radius, style]
 
+def draw_rect(rect, style=''):  # rect is like a box in rectangular mode
+    return ['rect', rect, style]
+
 def draw_text(box, anchor, text, fs_max=None, style=''):
     return ['text', box, anchor, text, fs_max, style]
 # NOTE: We include  fs_max  in addition to just  box  because in circular mode

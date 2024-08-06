@@ -198,7 +198,39 @@ class CircleFace:
         if self.rmax:
             cr = min(cr, self.rmax)
 
+        # Return the circle graphic and its size.
         center = (cr / zx, cr / zy)  # in tree coordinates
         circle = gr.draw_circle(center, cr, self.style)
 
         return [circle], Size(2*cr/zx, 2*cr/zy)
+
+
+class RectFace:
+    """A rectangle."""
+
+    def __init__(self, wmax, hmax=None, style=None):
+        self.wmax = wmax  # maximum width in pixels
+        self.hmax = hmax  # maximum height in pixels
+        self.style = style or ''
+
+    def draw(self, nodes, size, collapsed=False, zoom=None, anchor=None, r=1):
+        dx, dy = size
+        zx, zy = zoom if zoom else (1, 1)
+
+        # Find the width and height so they are never bigger than the max.
+        w = min(zx * dx, self.wmax) if dx > 0 else self.wmax
+        h = min(zy * r * dy, self.hmax)
+
+        # Keep the ratio h/w if we had hmax in addition to wmax.
+        if self.hmax:
+            h_over_w = self.hmax / self.wmax
+
+            if h / w > h_over_w:
+                h = h_over_w * w
+            else:
+                w = h / h_over_w
+
+        # Return the rectangle graphic and its size.
+        rect = gr.draw_rect((0, 0, w/zx, h/zy), self.style)
+
+        return [rect], Size(w/zx, h/zy)
