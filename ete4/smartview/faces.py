@@ -220,7 +220,7 @@ class RectFace:
 
         # Find the width and height so they are never bigger than the max.
         w = min(zx * dx, self.wmax) if dx > 0 else self.wmax
-        h = min(zy * r * dy, self.hmax)
+        h = min(zy * r * dy, self.hmax) if self.hmax else (zy * r * dy)
 
         # Keep the ratio h/w if we had hmax in addition to wmax.
         if self.hmax:
