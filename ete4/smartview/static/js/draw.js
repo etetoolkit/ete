@@ -312,9 +312,9 @@ function create_item(item, tl, zoom) {
         return create_circle(center, radius, tl, zx, zy, style);
     }
     else if (item[0] === "rect") {
-        const [ , rect, style] = item;
+        const [ , box, style] = item;
 
-        return create_rect(rect, tl, zx, zy, style);
+        return create_box(box, tl, zx, zy, style);
     }
     else if (item[0] === "text") {
         const [ , box, anchor, text, fs_max, style] = item;
@@ -364,10 +364,10 @@ function create_svg_element(name, attrs={}) {
 
 
 // Return a box (rectangle or annular sector).
-function create_box(box, tl, zx, zy) {
+function create_box(box, tl, zx, zy, style="") {
     const b = view.shape === "rectangular" ?
-                    create_rect(box, tl, zx, zy) :
-                    create_asec(box, tl, zx);
+                    create_rect(box, tl, zx, zy, style) :
+                    create_asec(box, tl, zx, style);
     b.classList.add("box");
     return b;
 }
