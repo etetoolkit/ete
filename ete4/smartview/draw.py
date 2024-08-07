@@ -172,7 +172,9 @@ class Drawer:
             commands += self.draw_distline((x, y + bdy), (x + dx, y + bdy),
                                            parent_of)
 
-            commands += self.draw_nodedot((x + dx, y + bdy))
+            dot_center = (x + dx, y + bdy)
+            if self.is_visible(make_box(dot_center, (0, 0))):
+                commands.append(gr.draw_circle(dot_center, style='nodedot'))
 
         if bdy0 != bdy1:
             commands += self.draw_childrenline((x + dx, y + bdy0),
@@ -356,11 +358,6 @@ class DrawerRect(Drawer):
         if not self.viewport or intersects_box(self.viewport, get_rect(line)):
             yield line
 
-    def draw_nodedot(self, center):
-        dot = gr.draw_circle(center, style='nodedot')
-        if not self.viewport or intersects_box(self.viewport, get_rect(dot)):
-            yield dot
-
     def draw_nodebox(self, node, node_id, box, result_of):
         props = self.get_nodeprops(node)
         yield gr.draw_nodebox(box, node.name, props, node_id, result_of)
@@ -439,11 +436,6 @@ class DrawerCirc(Drawer):
             is_large = a2 - a1 > pi
             yield gr.draw_arc(cartesian((r1, a1)), cartesian((r2, a2)),
                               is_large, 'childrenline')
-
-    def draw_nodedot(self, center):
-        r, a = center
-        if -pi < a < pi:
-            yield gr.draw_circle(cartesian(center), style='nodedot')
 
     def draw_nodebox(self, node, node_id, box, result_of):
         r, a, dr, da = box
