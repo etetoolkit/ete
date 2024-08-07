@@ -522,7 +522,7 @@ function create_arc(p1, p2, large, tl, z, style="", kwargs=null) {
 
 
 function create_circle(center, radius, tl, zx, zy, style="") {
-    const {x, y} = view.shape === "rectangular" ?
+    const c = view.shape === "rectangular" ?
         tree2rect(center, tl, zx, zy) :
         tree2circ(center, tl, zx);
 
@@ -532,8 +532,8 @@ function create_circle(center, radius, tl, zx, zy, style="") {
 
     const element = create_svg_element("circle", {
         "class": "circle",
-        "cx": x,
-        "cy": y,
+        "cx": c.x,
+        "cy": c.y,
         "r": r,
     });
 
@@ -585,14 +585,11 @@ function tree2rect(point, tl, zx, zy) {
 
 // "From tree coordinates to screen coordinates (for circular mode)".
 // Return the {x, y} corresponding to the given point coordinates in the tree.
-// The point is translated, rotated, and scaled.
+// The point is rotated, translated, and scaled.
 function tree2circ(point, tl, z) {
-    const [r, a] = point;
-
-    return {
-        x: z * (r * Math.cos(a) - tl.x),
-        y: z * (r * Math.sin(a) - tl.y),
-    };
+    const [r, a] = point;  // point specified as [radius, angle]
+    const p = [r * Math.cos(a), r * Math.sin(a)];  // point as [x, y]
+    return tree2rect(p, tl, z, z);
 }
 
 
