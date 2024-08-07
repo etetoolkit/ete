@@ -10,7 +10,7 @@ import { draw_minimap, update_minimap_visible_rect } from "./minimap.js";
 import { api, api_put, escape_html } from "./api.js";
 import { remove_tags } from "./tag.js";
 import { remove_collapsed } from "./collapse.js";
-import { label_expression, label_property, add_label_to_menu } from "./label.js";
+import { label_expression, label_property } from "./label.js";
 
 export { view, menus, on_tree_change, on_shape_change, show_minimap,
          tree_command, get_tid, on_box_click, on_box_wheel, coordinates,
@@ -155,13 +155,6 @@ async function main() {
         await set_consistent_values();
 
         reset_node_count();
-
-        // TODO: These are just example labels. Remove them in the future.
-        add_label_to_menu("name", "leaf", "aligned", "#000");
-        add_label_to_menu("('%.3g' % dist) if dist else None", "any",
-                          "top", "#999", 0, {x: -1, y: 1});
-        add_label_to_menu("('%.2g' % support) if support else None", "any",
-                          "bottom", "#F77", 0, {x: -1, y: -1});
 
         init_events();
 
