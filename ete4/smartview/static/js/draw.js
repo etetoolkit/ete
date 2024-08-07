@@ -189,16 +189,25 @@ function draw_aligned(items) {
     }
 }
 
-// Translate box.
+// Translate the position of the given item.
 function translate(item, shift) {
-    if (item[0] != "text")
+    if (item[0] === "text") {
+        const [ , box, anchor, text, fs_max, style] = item;
+        const [x, y, dx, dy] = box;
+        const tbox = [x + shift, y, dx, dy];
+        return ["text", tbox, anchor, text, fs_max, style];
+    }
+    else if (item[0] === "circle") {
+        const [ , [x, y], radius, style] = item;
+        return ["circle", [x + shift, y], radius, style];
+    }
+    else if (item[0] === "rect") {
+        const [ , [x, y, w, h], style] = item;
+        return ["rect", [x + shift, y, w, h], style];
+    }
+    else {
         return item;  // we are not translating anything else for the moment
-    // TODO: For non-texts, maybe raise an error or translate them too.
-
-    const [ , box, anchor, text, fs_max, style] = item;
-    const [x, y, dx, dy] = box;
-    const tbox = [x + shift, y, dx, dy];
-    return ["text", tbox, anchor, text, fs_max, style];
+    }
 }
 
 
