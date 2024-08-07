@@ -676,7 +676,7 @@ def draw_group(elements, circular, shift):
             x, y = element[1]
             yield [eid, (x0 + x, y0 + y)] + element[2:]
         elif eid == 'rect':
-            (x, y, w, h) = element[1]
+            x, y, w, h = element[1]
             yield [eid, (x0 + x, y0 + y, w, h)] + element[2:]
         else:
             raise ValueError(f'unrecognized element: {element!r}')
