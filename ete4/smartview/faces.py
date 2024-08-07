@@ -199,10 +199,11 @@ class CircleFace:
             cr = min(cr, self.rmax)
 
         # Return the circle graphic and its size.
-        center = (cr / zx, cr / zy)  # in tree coordinates
+        center = (cr / zx, cr / (r * zy))  # in tree coordinates
         circle = gr.draw_circle(center, cr, self.style)
 
-        return [circle], Size(2*cr/zx, 2*cr/zy)
+        return [circle], Size(2*cr/zx, 2*cr/(r*zy))
+        # NOTE: For small r (in circular mode), that size is just approximate.
 
 
 class RectFace:
@@ -231,6 +232,6 @@ class RectFace:
                 w = h / h_over_w
 
         # Return the rectangle graphic and its size.
-        rect = gr.draw_rect((0, 0, w/zx, h/zy), self.style)
+        rect = gr.draw_rect((0, 0, w/zx, h/(r*zy)), self.style)
 
-        return [rect], Size(w/zx, h/zy)
+        return [rect], Size(w/zx, h/(r*zy))
