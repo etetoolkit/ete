@@ -385,8 +385,10 @@ function create_box(box, tl, zx, zy, style="") {
 function create_rect(box, tl, zx, zy, style="") {
     const [x, y, w, h] = box;
 
+    const p = tree2rect([x, y], tl, zx, zy);
+
     const element = create_svg_element("rect", {
-        "x": zx * (x - tl.x), "y": zy * (y - tl.y),
+        "x": p.x, "y": p.y,
         "width": zx * w, "height": zy * h,
     });
 
@@ -397,26 +399,25 @@ function create_rect(box, tl, zx, zy, style="") {
 
 
 // Return a svg annular sector, described by box and with zoom z.
-function create_asec(box, tl, z) {
+function create_asec(box, tl, z, style="") {
     const [r, a, dr, da] = box;
     const large = da > Math.PI ? 1 : 0;
-    const p00 = cartesian_shifted(r, a, tl, z),
-          p01 = cartesian_shifted(r, a + da, tl, z),
-          p10 = cartesian_shifted(r + dr, a, tl, z),
-          p11 = cartesian_shifted(r + dr, a + da, tl, z);
+    const p00 = tree2circ([r, a], tl, z),
+          p01 = tree2circ([r, a + da], tl, z),
+          p10 = tree2circ([r + dr, a], tl, z),
+          p11 = tree2circ([r + dr, a + da], tl, z);
 
-    return create_svg_element("path", {
+    const element = create_svg_element("path", {
         "d": `M ${p00.x} ${p00.y}
               L ${p10.x} ${p10.y}
               A ${z * (r + dr)} ${z * (r + dr)} 0 ${large} 1 ${p11.x} ${p11.y}
               L ${p01.x} ${p01.y}
               A ${z * r} ${z * r} 0 ${large} 0 ${p00.x} ${p00.y}`,
     });
-}
 
-function cartesian_shifted(r, a, tl, z) {
-    return {x: z * (r * Math.cos(a) - tl.x),
-            y: z * (r * Math.sin(a) - tl.y)};
+    add_style(element, style);
+
+    return element;
 }
 
 
@@ -431,19 +432,13 @@ function create_outline(points, tl, zx, zy) {
 
 // Return a svg horizontal outline.
 function create_rect_outline(points, tl, zx, zy) {
-    const ps = points.map(p => transform(p, tl, zx, zy));
+    const ps = points.map(p => tree2rect(p, tl, zx, zy));
 
     return create_svg_element("path", {
         "class": "outline",
-        "d": (`M ${ps[0][0]} ${ps[0][1]} ` +
-              ps.slice(1).map(p => `L ${p[0]} ${p[1]}`).join(' ')),
+        "d": (`M ${ps[0].x} ${ps[0].y} ` +
+              ps.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ')),
     });
-}
-
-// Return the point translated (from tl) and scaled.
-function transform(point, tl, zx, zy) {
-    const [x, y] = point;
-    return [zx * (x - tl.x), zy * (y - tl.y)];
 }
 
 
@@ -453,7 +448,7 @@ function create_circ_outline(points, tl, z) {
     for (let i = 1; i < points.length; i++)
         das.push(points[i][1] - points[i-1][1]);
 
-    const ps = points.map(p => cartesian_shifted(p[0], p[1], tl, z));
+    const ps = points.map(p => tree2circ(p, tl, z));
 
     const arc = (p, i) => {
         if (das[i] === 0)  // if previous point was at the same angle
@@ -485,17 +480,19 @@ function create_tooltip(name, props) {
 
 
 function create_line(p1, p2, tl, zx, zy, style="", kwargs=null) {
-    const [x1, y1] = [zx * (p1[0] - tl.x), zy * (p1[1] - tl.y)],
-          [x2, y2] = [zx * (p2[0] - tl.x), zy * (p2[1] - tl.y)];
+    // Transform points to screen coordinates.
+    const pt1 = tree2rect(p1, tl, zx, zy),
+          pt2 = tree2rect(p2, tl, zx, zy);
 
+    // Classes, including the ones that mark the line as leading to a search.
     const parent_of = kwargs?.parent_of || [];
     const classes = "line " +
         parent_of.map(text => get_search_class(text, "parents")).join(" ");
 
     const element = create_svg_element("line", {
         "class": classes,
-        "x1": x1, "y1": y1,
-        "x2": x2, "y2": y2,
+        "x1": pt1.x, "y1": pt1.y,
+        "x2": pt2.x, "y2": pt2.y,
     });
 
     add_style(element, style);
@@ -505,11 +502,9 @@ function create_line(p1, p2, tl, zx, zy, style="", kwargs=null) {
 
 
 function create_arc(p1, p2, large, tl, z, style="", kwargs=null) {
-    const [x1, y1] = p1,
-          [x2, y2] = p2;
-    const r = z * Math.sqrt(x1*x1 + y1*y1);
-    const n1 = {x: z * (x1 - tl.x), y: z * (y1 - tl.y)},
-          n2 = {x: z * (x2 - tl.x), y: z * (y2 - tl.y)};
+    const n1 = tree2rect(p1, tl, z, z),
+          n2 = tree2rect(p2, tl, z, z);
+    const r = z * Math.sqrt(p1[0]*p1[0] + p1[1]*p1[1]);
 
     const parent_of = kwargs?.parent_of || []
     const classes = "line " +
@@ -527,7 +522,9 @@ function create_arc(p1, p2, large, tl, z, style="", kwargs=null) {
 
 
 function create_circle(center, radius, tl, zx, zy, style="") {
-    const [x, y] = [zx * (center[0] - tl.x), zy * (center[1] - tl.y)];
+    const {x, y} = view.shape === "rectangular" ?
+        tree2rect(center, tl, zx, zy) :
+        tree2circ(center, tl, zx);
 
     const is_nodedot = (typeof style === "string" &&
                         style.split(" ").includes("nodedot"));
@@ -570,6 +567,32 @@ function create_text(box, anchor, text, fs_max, tl, zx, zy, style="") {
     add_style(t, style);
 
     return t;
+}
+
+
+// "From tree coordinates to screen coordinates (for rectangular mode)".
+// Return the {x, y} corresponding to the given point coordinates in the tree.
+// The point is translated (from the top-left point tl) and scaled (by zx, zy).
+function tree2rect(point, tl, zx, zy) {
+    const [x, y] = point;
+
+    return {
+        x: zx * (x - tl.x),
+        y: zy * (y - tl.y),
+    };
+}
+
+
+// "From tree coordinates to screen coordinates (for circular mode)".
+// Return the {x, y} corresponding to the given point coordinates in the tree.
+// The point is translated, rotated, and scaled.
+function tree2circ(point, tl, z) {
+    const [r, a] = point;
+
+    return {
+        x: z * (r * Math.cos(a) - tl.x),
+        y: z * (r * Math.sin(a) - tl.y),
+    };
 }
 
 
@@ -617,7 +640,9 @@ function get_text_placement_rect(box, anchor, text, fs_max, tl, zx, zy, type="")
     const dx_in_tree = scale * dx;
     const [x_anchor, text_anchor] = anchored_position(x_in_tree, dx_in_tree, ax);
 
-    return [zx * (x_anchor - tl.x), zy * (y_in_tree - tl.y), fs, text_anchor];
+    const corner = tree2rect([x_anchor, y_in_tree], tl, zx, zy);
+
+    return [corner.x, corner.y, fs, text_anchor];
 }
 
 
@@ -645,10 +670,9 @@ function get_text_placement_circ(box, anchor, text, fs_max, tl, z, type="") {
     const dr_in_tree = scale * dr;
     const [r_anchor, text_anchor] = anchored_position(r_in_tree, dr_in_tree, ar);
 
-    const x_anchor = r_anchor * Math.cos(a_in_tree),
-          y_anchor = r_anchor * Math.sin(a_in_tree);
+    const corner = tree2circ([r_anchor, a_in_tree], tl, z);
 
-    return [z * (x_anchor - tl.x), z * (y_anchor - tl.y), fs, text_anchor];
+    return [corner.x, corner.y, fs, text_anchor];
 }
 
 
