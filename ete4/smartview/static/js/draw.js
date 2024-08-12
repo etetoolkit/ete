@@ -653,10 +653,12 @@ function get_text_placement_circ(box, anchor, text, fs_max, tl, z, type="") {
     if (r === 0)
         throw new Error("r cannot be 0 (text would have 0 font size)");
 
+    // Find the font size, according to fs_max. "width" (dr), and "heigth" (da).
     const dr_char = dr / text.length;  // ~ dr of 1 char (in tree units)
-    fs_max = Math.min(fs_max, z * Math.max(dr_char * 1.6, r * da));
+    fs_max = Math.min(fs_max, z * dr_char * 1.6, z * r * da);
     const fs = font_adjust(fs_max, type);
 
+    // Find the coordinates where it would go in the tree.
     const scale = fs / (z * r * da);
     const [ar, aa] = anchor;
     const r_in_tree = r + ar * (1 - scale) * dr,
@@ -664,6 +666,7 @@ function get_text_placement_circ(box, anchor, text, fs_max, tl, z, type="") {
     // We give the position as the bottom-left point, the same convention as in
     // svgs. We go a bit up (0.8 instead of 1.0) because of the baseline.
 
+    // Convert to in-screen values and return those.
     const dr_in_tree = scale * dr;
     const [r_anchor, text_anchor] = anchored_position(r_in_tree, dr_in_tree, ar);
 
