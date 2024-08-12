@@ -766,6 +766,7 @@ if __name__ == '__main__':
             ops.update_sizes_all(t)
             name = tree['name'].replace(',', '_')  # "," is used for subtrees
             g_trees[name] = t
+            g_layouts[name] = [DEFAULT_LAYOUT]
             g_options[name] = {'include_props': ('dist', 'support'),
                                'exclude_props': None}
 
