@@ -43,13 +43,13 @@ async function draw_tree() {
         const commands = await api(`/trees/${get_tid()}/draw?${qs}`);
 
         // Separate them per panel.
-        const items_per_panel = get_items_per_panel(commands);
+        const [items_per_panel, xmax] = get_items_per_panel(commands);
 
         // The main function: draw all received items on panel 0 in div_tree.
         draw(div_tree, items_per_panel[0], view.tl, view.zoom);
 
         // Add aligned panel items.
-        draw_aligned(items_per_panel[1]);  // items in aligned panel (panel 1)
+        draw_aligned(items_per_panel[1], xmax);  // items in panel 1 (aligned)
 
         // Update variable that shows the number of visible nodes in the menu.
         view.nnodes_visible = div_tree.getElementsByClassName("node").length;
@@ -144,25 +144,29 @@ function build_draw_query_string() {
 // values a list of graphics to draw on them.
 function get_items_per_panel(commands) {
     const items = {};
+    let xmax = 0;
 
     let current_panel = 0;
     commands.forEach(c => {
-        if (c[0] == "panel") {
+        if (c[0] === "panel") {  // we got a "change panel" command
             current_panel = c[1];
         }
-        else {
+        else if (c[0] === "xmax") {  // we got a "set xmax" command
+            xmax = c[1];
+        }
+        else {  // we got a normal drawing command
             if (!(current_panel in items))
                 items[current_panel] = [];
             items[current_panel].push(c);
         }
     });
 
-    return items;
+    return [items, xmax];
 }
 
 
 // Draw items in the aligned position.
-function draw_aligned(items) {
+function draw_aligned(items, xmax) {
     if (view.shape === "rectangular") {
         if (items) {
             div_aligned.style.display = "flex";  // show aligned panel
@@ -177,11 +181,8 @@ function draw_aligned(items) {
         div_aligned.style.display = "none";  // hide aligned panel (may be open)
 
         if (items) {
-            // Translate  r -> r + view.tree_size.width
-            const translated_items = items.map(
-                item => translate(item, view.tree_size.width));
-            // NOTE: We might want to use the furthest previous distance,
-            // instead of view.tree_size.width
+            // Translate  r -> r + rmax
+            const translated_items = items.map(item => translate(item, xmax));
 
             const replace = false;
             draw(div_tree, translated_items, view.tl, view.zoom, replace);

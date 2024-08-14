@@ -50,12 +50,13 @@ class Drawer:
         self.exclude_props = exclude_props
 
     def draw(self):
-        """Yield graphic elements to draw the tree."""
+        """Yield commands to draw the tree."""
         self.collapsed = []  # nodes that are curretly collapsed together
         self.outline = None  # box surrounding the current collapsed nodes
         self.nodeboxes = []  # boxes surrounding all nodes and collapsed boxes
         self.nodes_dx = [0]  # nodes dx, from root to current (with subnodes)
         self.bdy_dys = [[]]  # lists of branch dys and total dys
+        self.xmax_reached = 0  # maximum x value we reached in the tree
 
         point = self.xmin, self.ymin
 
@@ -75,6 +76,8 @@ class Drawer:
         # We have been collecting in postorder the boxes surrounding the nodes.
         # Draw them now in preorder (so they stack nicely, small over big ones).
         yield from self.nodeboxes[::-1]
+
+        yield gr.set_xmax(self.xmax_reached)
 
     def on_first_visit(self, point, it, graphics):
         """Update list of graphics to draw and return new position."""
@@ -128,6 +131,7 @@ class Drawer:
 
         content_graphics, xmax = self.draw_content(it.node, (x_before, y_before))
         graphics += content_graphics
+        self.xmax_reached = max(self.xmax_reached, xmax)
 
         # dx of the node including all its graphics and its children's.
         ndx = ((max(xmax, x_after) - x_before) if it.node.is_leaf else
@@ -206,6 +210,8 @@ class Drawer:
             x, y, _, _ = self.outline
             content_graphics, xmax = self.draw_content(node0, (x, y))
             graphics += content_graphics
+
+        self.xmax_reached = max(self.xmax_reached, xmax)
 
         self.collapsed = []  # reset the list of currently collapsed nodes
 
@@ -499,7 +505,7 @@ def draw_decorations(decorations, nodes, xmin, content_box, bdy, zoom,
     """Return the graphic commands from the decorations, and xmax."""
     positions = {a.position for a in decorations}
 
-    xmax = content_box.x
+    xmax = content_box.x + content_box.dx
     commands = []
 
     for pos in positions:

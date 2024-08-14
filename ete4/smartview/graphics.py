@@ -54,5 +54,8 @@ def draw_array(box, a):
 
 # Other (non-drawing) commands.
 
-def set_panel(panel=0):
+def set_panel(panel=0):  # panel that we will use to draw from now on
     return ['panel', panel]
+
+def set_xmax(xmax):  # maximum reached x (so we can align to it)
+    return ['xmax', xmax]
