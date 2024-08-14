@@ -349,6 +349,9 @@ function create_item(item, tl, zoom) {
 
         return g;
     }
+    else {
+        console.log(`Unrecognized item: ${item}`);
+    }
 }
 
 
