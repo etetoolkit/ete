@@ -53,6 +53,9 @@ function add_tab_main(tab, trees) {
 
     tab.addBinding(view, "min_size", {label: "collapse size", min: 1, max: 200})
         .on("change", update);
+    tab.addBinding(view, "min_size_content", {label: "collapse content",
+                                              min: 1, max: 200})
+        .on("change", update);
 
     menus.layouts = folder(tab, "layouts", true);  // filled dynamically
 
