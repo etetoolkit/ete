@@ -76,8 +76,8 @@ PARSERS = {  # predefined parsers
     100: {'leaf': [EMPTY,    EMPTY],    'internal': [EMPTY,       EMPTY]},
 }
 
-def make_parser(number=1, name='%s', dist='%g', support='%g'):
-    """Return "int" parser changing the format of name, dist or support."""
+def make_parser(parser=None, name='%s', dist='%g', support='%g'):
+    """Return parser, changing the format of name, dist or support."""
     def copy(props):
         p0, p1 = props[0].copy(), props[1].copy()  # so the changes are local
         for p in [p0, p1]:  # change the writer functions
@@ -89,7 +89,7 @@ def make_parser(number=1, name='%s', dist='%g', support='%g'):
                 p['write'] = lambda x: support % float(x)  # etc
         return [p0, p1]
 
-    parser = PARSERS[number]
+    parser = parser if type(parser) is dict else PARSERS[parser]
     return {'leaf': copy(parser['leaf']), 'internal': copy(parser['internal'])}
 
 
