@@ -72,8 +72,8 @@ cdef class Tree:
                 self.init_from_newick(data)
             elif type(parser) == dict:
                 self.init_from_newick(data, parser)
-            elif parser in newick.INT_PARSERS:
-                self.init_from_newick(data, newick.INT_PARSERS[parser])
+            elif parser in newick.PARSERS:
+                self.init_from_newick(data, newick.PARSERS[parser])
             elif parser == 'ete':
                 self.init_from_ete(data)
 
@@ -684,7 +684,7 @@ cdef class Tree:
 
           t.write(props=['species', 'sci_name'])
         """
-        parser = newick.INT_PARSERS[parser] if type(parser) == int else parser
+        parser = parser if type(parser) is dict else newick.PARSERS[parser]
 
         if not outfile:
             return newick.dumps(self, props, parser, format_root_node, is_leaf_fn)

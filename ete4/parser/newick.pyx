@@ -61,7 +61,8 @@ SUPPORT_REQ = dict(SUPPORT, req=True)
 EMPTY = {'pname': '',
          'read': lambda x: error(f'parser expected empty field but got: {x}'),
          'write': lambda x: ''}
-INT_PARSERS = {  # parsers corresponding to old-style integers
+PARSERS = {  # predefined parsers
+    None: PARSER_DEFAULT,
     0:   {'leaf': [NAME,     DIST],     'internal': [SUPPORT,     DIST]},
     1:   {'leaf': [NAME,     DIST],     'internal': [NAME,        DIST]},
     2:   {'leaf': [NAME_REQ, DIST_REQ], 'internal': [SUPPORT_REQ, DIST_REQ]},
@@ -88,7 +89,7 @@ def make_parser(number=1, name='%s', dist='%g', support='%g'):
                 p['write'] = lambda x: support % float(x)  # etc
         return [p0, p1]
 
-    parser = INT_PARSERS[number]
+    parser = PARSERS[number]
     return {'leaf': copy(parser['leaf']), 'internal': copy(parser['internal'])}
 
 
@@ -113,7 +114,7 @@ def prop_repr(prop):
 
 def content_repr(node, props=None, parser=None):
     """Return content of a node as represented in newick format."""
-    parser = parser or PARSER_DEFAULT
+    parser = parser if type(parser) is dict else PARSERS[parser]
     prop0, prop1 = parser['leaf' if node.is_leaf else 'internal']
 
     # Shortcuts.
@@ -140,7 +141,7 @@ def get_props(content, is_leaf, parser=None):
     Example (for the default format of a leaf node):
       'abc:123[&&NHX:x=foo]'  ->  {'name': 'abc', 'dist': 123, 'x': 'foo'}
     """
-    parser = parser or PARSER_DEFAULT
+    parser = parser if type(parser) is dict else PARSERS[parser]
     prop0, prop1 = parser['leaf' if is_leaf else 'internal']
 
     # Shortcuts.
@@ -212,8 +213,7 @@ def loads(tree_text, parser=None, tree_class=Tree):
     if not tree_text.endswith(';'):
         raise NewickError('text ends with no ";"')
 
-    if type(parser) == int:  # parser is an integer? (old-style/shortcut)
-        parser = INT_PARSERS[parser]  # substitute it for the actual parser
+    parser = parser if type(parser) is dict else PARSERS[parser]
 
     if tree_text[0] == '(':
         nodes, pos = read_nodes(tree_text, parser, 0, tree_class)
