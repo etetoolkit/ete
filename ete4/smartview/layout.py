@@ -66,7 +66,7 @@ default_anchors = {'top':     (-1, 1),   # left, bottom
 # The default style of a tree.
 
 DEFAULT_TREE_STYLE = {
-    'styles': {  # to name styles that can be referenced in node styles
+    'node_styles': {  # to name styles that can be referenced in draw_nodes
         'grey': {'fill': '#888'},
         'red': {'fill': '#f88'},  # a light red
     }

@@ -227,12 +227,12 @@ async function set_tree_style() {
     if (style["min-size-content"])
         view.min_size_content = style["min-size-content"];
 
-    if (style["styles"]) {
+    if (style["node_styles"]) {
         // Add new stylesheet with all the layout_* names for the styles.
         // They will be used when elements with those styles appear in draw.js
         const sheet = new CSSStyleSheet();
-        for (const name in style["styles"]) {
-            const block = Object.entries(style["styles"][name])
+        for (const name in style["node_styles"]) {
+            const block = Object.entries(style["node_styles"][name])
                 .map(([prop, value]) => `${prop}: ${value}`).join("; ");
             sheet.insertRule(`.layout_${name} { ${block} }`);
         }
