@@ -37,19 +37,14 @@ def unquote(name):
 #
 # For example: {'pname': 'my-prop', 'read': str, 'write': str}
 
-# Common IO parts in property dicts.
-STRING_IO = {'read': unquote, 'write': quote}
-NUMBER_IO = {'read': float,   'write': lambda x: '%g' % float(x)}
+NAME    = {'pname': 'name',    'read': unquote, 'write': quote}
+DIST    = {'pname': 'dist',    'read': float,   'write': lambda x: '%g' % float(x)}
+SUPPORT = {'pname': 'support', 'read': float,   'write': lambda x: '%g' % float(x)}
 
-# Common property dicts.
-NAME    = dict(STRING_IO, pname='name')
-DIST    = dict(NUMBER_IO, pname='dist')
-SUPPORT = dict(NUMBER_IO, pname='support')
-
-MULTISUPPORT = {
+MULTISUPPORT = {  # to parse multiple values of support written as v1/v2[/...]
     'pname': 'multisupport',
     'read': lambda field: [float(x) for x in field.split('/')],
-    'write': lambda xs: '/'.join(str(x) for x in xs),
+    'write': lambda xs: '/'.join('%g' % float(x) for x in xs),
 }
 
 # A "parser dict" says, for leaf and internal nodes, what 'p0:p1' means
@@ -85,7 +80,8 @@ PARSERS = {  # predefined parsers
 }
 
 def make_parser(parser=None, name='%s', dist='%g', support='%g'):
-    """Return parser, changing the format of name, dist or support."""
+    """Return parser changing the format of properties name, dist or support."""
+    # Auxiliary function to return modified property dicts.
     def copy(props):
         p0, p1 = props[0].copy(), props[1].copy()  # so the changes are local
         for p in [p0, p1]:  # change the writer functions

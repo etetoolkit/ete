@@ -222,7 +222,7 @@ class Test_Core_Tree(unittest.TestCase):
 
     def test_newick_formats(self):
         """Test different newick subformats."""
-        NW_FORMAT = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 100]  # old-style parsers ("formats")
+        NW_FORMAT = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 100]  # predefined parsers ("formats")
 
         # Let's stress a bit
         for i in range(10):
@@ -344,6 +344,11 @@ class Test_Core_Tree(unittest.TestCase):
         self.assertRaises(NewickError, Tree, "(((A, B), C)[&&NHX:nameI]);")
         # unsupported newick stream
         self.assertRaises(Exception, Tree, [1,2,3])
+
+    def test_newick_multisupport(self):
+        nw = '((a,b)2/3:4,(c,d)5/6:7);'
+        t = Tree(nw, parser='multisupport')
+        self.assertEqual(t.write(parser='multisupport'), nw)
 
     def test_quoted_names(self):
         complex_name = "((A:0.0001[&&NHX:hello=true],B:0.011)90:0.01[&&NHX:hello=true],(C:0.01, D:0.001)hello:0.01);"
