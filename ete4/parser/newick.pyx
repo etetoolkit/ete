@@ -46,6 +46,12 @@ NAME    = dict(STRING_IO, pname='name')
 DIST    = dict(NUMBER_IO, pname='dist')
 SUPPORT = dict(NUMBER_IO, pname='support')
 
+MULTISUPPORT = {
+    'pname': 'multisupport',
+    'read': lambda field: [float(x) for x in field.split('/')],
+    'write': lambda xs: '/'.join(str(x) for x in xs),
+}
+
 # A "parser dict" says, for leaf and internal nodes, what 'p0:p1' means
 # (which properties they are, including how to read and write them).
 
@@ -74,6 +80,8 @@ PARSERS = {  # predefined parsers
     8:   {'leaf': [NAME_REQ, EMPTY],    'internal': [NAME_REQ,    EMPTY]},
     9:   {'leaf': [NAME_REQ, EMPTY],    'internal': [EMPTY,       EMPTY]},
     100: {'leaf': [EMPTY,    EMPTY],    'internal': [EMPTY,       EMPTY]},
+    'multisupport':
+         {'leaf': [NAME,     DIST],     'internal': [MULTISUPPORT, DIST]},
 }
 
 def make_parser(parser=None, name='%s', dist='%g', support='%g'):

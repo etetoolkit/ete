@@ -59,7 +59,8 @@ cdef class Tree:
         else:  # from newick or ete format
             assert not children, 'init from parsed content cannot have children'
 
-            assert (type(parser) in [dict, int] or
+            assert (type(parser) is dict or
+                    parser in newick.PARSERS or
                     parser in [None, 'newick', 'ete', 'auto']), 'bad parser'
 
             data = data.strip()
