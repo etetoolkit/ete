@@ -5,6 +5,7 @@ Decoration), extra labels (Label), and the default tree style.
 
 from collections import namedtuple
 from dataclasses import dataclass, field
+from functools import lru_cache
 
 from .faces import Face, TextFace
 
@@ -20,22 +21,51 @@ from .faces import Face, TextFace
 #   each visible node (called for each node)
 #   each group of collapsed sibling nodes (too small to fully represent)
 
-def empty_dict_fn():
-    return lambda _: {}  # function that takes a tree or a node and returns {}
-
-def empty_list_fn():
-    return lambda _: []  # function that takes a tree or a node and returns []
-
-@dataclass
 class Layout:
     """Contains all the info about how to represent a tree."""
-    name: str
-    tree_style: None = field(default_factory=empty_dict_fn)
-    tree_decos: None = field(default_factory=empty_list_fn)
-    node_style: None = field(default_factory=empty_dict_fn)  # dict or str
-    node_decos: None = field(default_factory=empty_list_fn)
-    collapsed_style: None = field(default_factory=empty_dict_fn)  # dict or str
-    collapsed_decos: None = field(default_factory=empty_list_fn)
+
+    def __init__(self, name, tree_style=None, draw_node=None, draw_collapsed=None,
+                 cache_size=None):
+        # Check types.
+        assert type(name) is str
+        assert not tree_style or type(tree_style) is dict or callable(tree_style)
+        assert not draw_node or callable(draw_node)
+        assert not draw_collapsed or callable(draw_collapsed)
+
+        # Name. This is mainly to activate/deactivate the layout in the gui.
+        self.name = name
+
+        # Tree style. Can be a dict or a function of a tree that returns a dict.
+        self.tree_style = tree_style or {}
+
+        # - Representation of a node (style and decorations) -
+
+        # We use an auxiliary function to cache its results.
+        @lru_cache(maxsize=cache_size)
+        def cached_draw_node(node):
+            return to_elements(draw_node(node))
+
+        # The function defining the representation of a node.
+        self.draw_node = cached_draw_node if draw_node else (lambda node: [])
+
+        # - Representation of a group of collapsed sibling nodes -
+
+        # The default function uses representations from all collapsed siblings.
+        self.draw_collapsed = draw_collapsed or (
+            lambda nodes: [x for node in nodes for x in self.draw_node(node)])
+
+
+def to_elements(xs):
+    """Return a list of the elements of iterable xs as Decorations/dicts."""
+    # Normally xs is already a list of decorations/dicts.
+    if xs is None:  # but xs can be None (a draw_node() didn't return anything)
+        return []
+
+    if not hasattr(xs, '__iter__'):  # or it can be a single element
+        xs = [xs]
+
+    # Return elements, wrapped as Decorations if they need it.
+    return [x if type(x) in [Decoration, dict] else Decoration(x) for x in xs]
 
 
 # A decoration is a face with a position ("top", "bottom", "right",
@@ -82,7 +112,7 @@ DEFAULT_TREE_STYLE = {
 
 # The default layout.
 
-def default_node_decos(node):
+def default_draw_node(node):
     face_dist = TextFace('"%.2g" % dist if dist else ""', style='grey')
     yield Decoration(face_dist, position='top')
 
@@ -92,15 +122,15 @@ def default_node_decos(node):
     if node.is_leaf:
         yield Decoration(TextFace('name'), position='right')
 
-def default_collapsed_decos(nodes):
+def default_draw_collapsed(nodes):
     yield Decoration(TextFace('name'),
                      position='right', anchor=(-1, 0))
 
 DEFAULT_LAYOUT = Layout(
     name='default',
-    tree_style=lambda tree: DEFAULT_TREE_STYLE,
-    node_decos=default_node_decos,
-    collapsed_decos=default_collapsed_decos)
+    tree_style=DEFAULT_TREE_STYLE,
+    draw_node=default_draw_node,
+    draw_collapsed=default_draw_collapsed)
 
 
 # Description of a label that we want to add to the representation of a node.

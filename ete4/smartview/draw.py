@@ -261,7 +261,7 @@ class Drawer:
 
         decos = []  # decorations
         for layout in self.layouts:
-            decos += to_decorations(layout.node_decos(node))  # from layouts
+            decos.extend(layout.draw_node(node))  # from layouts
 
         decos.extend(make_deco(label) for label in self.labels  # from labels
                      if is_valid_label(label, node.is_leaf))
@@ -277,7 +277,7 @@ class Drawer:
 
         decos = []  # decorations
         for layout in self.layouts:
-            decos += layout.collapsed_decos(self.collapsed)  # from layouts
+            decos.extend(layout.draw_collapsed(self.collapsed))  # from layouts
 
         decos.extend(make_deco(label) for label in self.labels  # from labels
                      if is_valid_label(label, is_leaf=True))
@@ -478,20 +478,6 @@ def is_valid_label(label, is_leaf):
     return ((ntype == 'any') or
             (ntype == 'leaf' and is_leaf) or
             (ntype == 'internal' and not is_leaf))
-
-
-
-def to_decorations(xs):
-    """Yield the elements of iterable xs as Decorations."""
-    # Normally xs is already a list of decorations.
-    if xs is None:  # but xs can be None (a node_decos() didn't return anything)
-        return
-
-    if not hasattr(xs, '__iter__'):  # or it can be a single element
-        xs = [xs]
-
-    for element in xs:  # wrap elements as Decorations if they need it
-        yield element if type(element) is Decoration else Decoration(element)
 
 
 def make_deco(label):
