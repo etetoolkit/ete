@@ -545,9 +545,12 @@ def get_col_data(rows, x_col, dx_col, nodes, pos_box, pos, bdy_dy, zoom,
 
     blocks = []  # will contain the column data to send afterwards
 
+    # Iterate over the decorations and get their graphics (none if
+    # there's not enough space). We iterate reversed ([::-1]) so the
+    # first decorations are the ones with more space (dy) allocated.
     dy_sum = 0
     ax, ay = None, None  # so we set the anchor only once per column
-    for irow, deco in enumerate(rows):  # iterate over all decorations
+    for irow, deco in enumerate(rows[::-1]):  # iterate over all decorations
         if ax is None:  # anchor already set? then no more for this column!
             ax, ay = get_anchor(deco.anchor, pos, bdy_dy)
 
@@ -570,7 +573,7 @@ def get_col_data(rows, x_col, dx_col, nodes, pos_box, pos, bdy_dy, zoom,
     # Get all the graphic elements appropriately positioned.
     y = y_pos + ay * (dy_pos - dy_sum)  # starting y position for the blocks
     elements_all = []  # all the graphic elements to send
-    if ay > 0.5:
+    if ay <= 0.5:
         blocks.reverse()  # we want the 1st block closer to its anchor point
     for elements, size in blocks:
         elements_all += draw_group(elements, circular, shift=(x_col, y))
