@@ -82,6 +82,7 @@ function add_label_to_menu(expression, nodetype="any", position="top",
         .on("change", ({value: pos}) => {
             label.anchor = default_anchor(pos);
             label.nodetype = ["right", "aligned"].includes(pos) ? "leaf" : label.nodetype;
+            folder.refresh();  // to reflect the new values in the gui
             draw_tree();
         });
 
