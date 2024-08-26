@@ -106,11 +106,11 @@ function add_label_to_menu(expression, nodetype="any", position="top",
 
 function default_anchor(position) {
     const p = position;  // shortcut
-    return p == "top"     ? {x: -1, y: 1} :   // left, bottom
-           p == "bottom"  ? {x: -1, y: -1} :  // left, top
-           p == "right"   ? {x: -1, y: 0} :   // left, middle
-           p == "left"    ? {x:  1, y: 0} :   // right, middle
-           p == "aligned" ? {x: -1, y: 0} :   // left, middle
+    return p === "top"     ? {x: -1, y: 1} :   // left, bottom
+           p === "bottom"  ? {x: -1, y: -1} :  // left, top
+           p === "right"   ? {x: -1, y: 0} :   // left, middle
+           p === "left"    ? {x:  1, y: 0} :   // right, middle
+           p === "aligned" ? {x: -1, y: 0} :   // left, middle
                             {x: null, y: null};
 }
 // See also default_anchors in layout.py for the defaults in a layout.
