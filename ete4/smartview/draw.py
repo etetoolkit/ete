@@ -370,11 +370,11 @@ class DrawerRect(Drawer):
 
     def draw_node(self, node, point, bdy):  # bdy: branch dy (height)
         """Return graphic commands for the contents of the node, and xmax."""
-        yield from super().draw_node(node, point, bdy, circular=False)
+        return super().draw_node(node, point, bdy, circular=False)
 
     def draw_collapsed(self):
         """Return graphic commands for the nodes in self.collapsed, and xmax."""
-        yield from super().draw_collapsed(circular=False)
+        return super().draw_collapsed(circular=False)
 
 
 class DrawerCirc(Drawer):
