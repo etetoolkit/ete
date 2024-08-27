@@ -55,13 +55,15 @@ PARSER_DEFAULT = {
     'internal': [SUPPORT, DIST],  # ((x:y)support:dist);
 }
 
-# This part is only used to read the old-fashioned int formats.
+# This part is used for parsers referred by name (or old-fashioned integers).
 NAME_REQ = dict(NAME, req=True)  # value required
 DIST_REQ = dict(DIST, req=True)
 SUPPORT_REQ = dict(SUPPORT, req=True)
+
 EMPTY = {'pname': '',
          'read': lambda x: error(f'parser expected empty field but got: {x}'),
          'write': lambda x: ''}
+
 PARSERS = {  # predefined parsers
     None: PARSER_DEFAULT,
     0:   {'leaf': [NAME,     DIST],     'internal': [SUPPORT,     DIST]},
@@ -75,8 +77,9 @@ PARSERS = {  # predefined parsers
     8:   {'leaf': [NAME_REQ, EMPTY],    'internal': [NAME_REQ,    EMPTY]},
     9:   {'leaf': [NAME_REQ, EMPTY],    'internal': [EMPTY,       EMPTY]},
     100: {'leaf': [EMPTY,    EMPTY],    'internal': [EMPTY,       EMPTY]},
-    'multisupport':
-         {'leaf': [NAME,     DIST],     'internal': [MULTISUPPORT, DIST]},
+    'name':         {'leaf': [NAME, DIST], 'internal': [NAME,         DIST]},
+    'support':      {'leaf': [NAME, DIST], 'internal': [SUPPORT,      DIST]},
+    'multisupport': {'leaf': [NAME, DIST], 'internal': [MULTISUPPORT, DIST]},
 }
 
 def make_parser(parser=None, name='%s', dist='%g', support='%g'):
