@@ -165,7 +165,7 @@ def run(args):
         for tindex, tfile in enumerate(src_tree_iterator(args)):
             #print tfile
             if args.raxml:
-                nw = re.sub(":(\d+\.\d+)\[(\d+)\]", ":\\1[&&NHX:support=\\2]", open(tfile).read())
+                nw = re.sub(r":(\d+\.\d+)\[(\d+)\]", ":\\1[&&NHX:support=\\2]", open(tfile).read())
                 t = Tree(nw, parser=args.src_newick_format)
             else:
                 t = Tree(open(tfile), parser=args.src_newick_format)
@@ -231,7 +231,7 @@ def run(args):
     for tindex, tfile in enumerate(src_tree_iterator(args)):
         #print tfile
         if args.raxml:
-            nw = re.sub(":(\d+\.\d+)\[(\d+)\]", ":\\1[&&NHX:support=\\2]", open(tfile).read())
+            nw = re.sub(r":(\d+\.\d+)\[(\d+)\]", ":\\1[&&NHX:support=\\2]", open(tfile).read())
             t = PhyloTree(nw, parser=args.src_newick_format)
         else:
             t = PhyloTree(open(tfile), parser=args.src_newick_format)
@@ -328,7 +328,7 @@ def run(args):
 
                             if fcolor:
                                 # Parse color options
-                                auto_m = re.search("auto\(([^)]*)\)", fcolor)
+                                auto_m = re.search(r"auto\(([^)]*)\)", fcolor)
                                 if auto_m:
                                     target_attr = auto_m.groups()[0].strip()
                                     if not target_attr :
@@ -348,7 +348,7 @@ def run(args):
 
                             if fbgcolor:
                                 # Parse color options
-                                auto_m = re.search("auto\(([^)]*)\)", fbgcolor)
+                                auto_m = re.search(r"auto\(([^)]*)\)", fbgcolor)
                                 if auto_m:
                                     target_attr = auto_m.groups()[0].strip()
                                     if not target_attr :

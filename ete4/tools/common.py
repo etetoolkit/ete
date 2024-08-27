@@ -89,7 +89,7 @@ def shorten_str(string, l, reverse=False):
         return string
 
 def parse_value(fvalue):
-    func_match = re.search("(\w+)\(([^)]*)\)", fvalue)
+    func_match = re.search(r"(\w+)\(([^)]*)\)", fvalue)
     if func_match:
         func_name = func_match.groups()[0]
         func_arg = func_match.groups()[1]
