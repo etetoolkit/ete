@@ -214,57 +214,55 @@ def load(fp, parser=None):
     return loads(fp.read().strip(), parser)
 
 
-def loads(tree_text, parser=None, tree_class=Tree):
+def loads(str text, parser=None, tree_class=Tree):
     """Return tree from its newick representation."""
-    assert type(tree_text) == str, 'newick is not a string'
+    try:
+        assert text.endswith(';'), 'text ends with no ";"'
 
-    if not tree_text.endswith(';'):
-        raise NewickError('text ends with no ";"')
+        parser = parser if type(parser) is dict else PARSERS[parser]
 
-    parser = parser if type(parser) is dict else PARSERS[parser]
+        tree, pos = read_node(text, parser, 0, tree_class)
 
-    if tree_text[0] == '(':
-        nodes, pos = read_nodes(tree_text, parser, 0, tree_class)
-    else:
-        nodes, pos = [], 0
+        assert pos == len(text) - 1, f'root node ends prematurely at {pos}'
 
-    content, pos = read_content(tree_text, pos)
-    if pos != len(tree_text) - 1:
-        raise NewickError(f'root node ends at position {pos}, before tree ends')
+        return tree
 
-    props = get_props(content, not nodes, parser) if content else {}
-
-    return tree_class(props, nodes)
+    except AssertionError as e:
+        raise NewickError(str(e))
 
 
-def read_nodes(nodes_text, parser, long pos=0, tree_class=Tree):
+def read_node(str text, dict parser, long pos, tree_class=Tree):
+    """Return a node and the position in the text where it ends."""
+    pos = skip_spaces_and_comments(text, pos)
+
+    if text[pos] == '(':  # node has children
+        children, pos = read_nodes(text, parser, pos, tree_class)
+    else:  # node is a leaf
+        children = []
+
+    content, pos = read_content(text, pos)
+    props = get_props(content, not children, parser) if content else {}
+
+    return tree_class(props, children), pos
+
+
+def read_nodes(str text, dict parser, long pos, tree_class=Tree):
     """Return a list of nodes and the position in the text where they end."""
-    # nodes_text looks like '(a,b,c)', where any element can be a list of nodes
-    if nodes_text[pos] != '(':
-        raise NewickError('nodes text starts with no "("')
-
+    # text looks like '(a,b,c)', where any element can be a list of nodes
     nodes = []
-    while nodes_text[pos] != ')':
-        pos += 1
-        if pos >= len(nodes_text):
-            raise NewickError('nodes text ends missing a matching ")"')
+    while pos < len(text) and text[pos] != ')':
+        pos += 1  # advance from the separator: "(" or ","
 
-        pos = skip_spaces_and_comments(nodes_text, pos)
+        node, pos = read_node(text, parser, pos, tree_class)
 
-        if nodes_text[pos] == '(':  # this element is a list of nodes
-            children, pos = read_nodes(nodes_text, parser, pos, tree_class)
-        else:  # this element is a leaf
-            children = []
+        nodes.append(node)
 
-        content, pos = read_content(nodes_text, pos)
+    assert pos < len(text), 'nodes text ends missing a matching ")"'
 
-        nodes.append(tree_class(get_props(content, not children, parser),
-                                children))
-
-    return nodes, pos+1
+    return nodes, pos+1  # it is +1 to advance from the closing ")"
 
 
-def skip_spaces_and_comments(text, long pos):
+def skip_spaces_and_comments(str text, long pos):
     """Return position in text after pos and all whitespaces and comments."""
     # text = '...  [this is a comment] node1...'
     #            ^-- pos               ^-- pos (returned)
@@ -275,8 +273,7 @@ def skip_spaces_and_comments(text, long pos):
                 return pos
             else:
                 pos = text.find(']', pos+1)  # skip comment
-                if pos < 0:
-                    raise NewickError(f'unfinished comment at position {start}')
+                assert pos >= 0, f'unfinished comment at position {start}'
         pos += 1  # skip whitespace and comment endings
 
     return pos
@@ -303,9 +300,6 @@ def skip_quoted_name(str text, long pos):
     """Return the position where a quoted name ends."""
     # text = "... 'node ''2'' in tree' ..."
     #             ^-- pos             ^-- pos (returned)
-    if pos >= len(text) or text[pos] not in ["'", '"']:
-        raise NewickError(f'text at position {pos} does not start with quote')
-
     start = pos
     q = text[start]  # quoting character (can be ' or ")
 
