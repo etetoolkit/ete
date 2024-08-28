@@ -56,6 +56,7 @@ PARSER_DEFAULT = {
 }
 
 # This part is used for parsers referred by name (or old-fashioned integers).
+
 NAME_REQ = dict(NAME, req=True)  # value required
 DIST_REQ = dict(DIST, req=True)
 SUPPORT_REQ = dict(SUPPORT, req=True)
