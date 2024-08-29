@@ -178,12 +178,12 @@ def read_props(str text, long pos, is_leaf, dict parser, check_req):
 
     pos = skip_spaces_and_comments(text, pos)
 
-    if text[pos] == '[':
+    if text[pos] == '[':  # this can't be a comment since we just skipped those
         start = pos + 1
         pos = text.find(']', start)
         assert pos >= 0, 'unfinished extended props'
         props.update(get_extended_props(text[start:pos]))
-        pos = skip_spaces_and_comments(text, pos+1)
+        pos = skip_spaces_and_comments(text, pos + 1)  # after the "]"
 
     return props, pos
 
