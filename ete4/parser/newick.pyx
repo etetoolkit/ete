@@ -143,13 +143,12 @@ def content_repr(node, props=None, parser=None):
             (f'[&&NHX:{pairs_str}]' if pairs_str else ''))  # [&&NHX:p2=x:p3=y]
 
 
-def get_props(content, is_leaf, parser=None):
-    """Return the properties from the content (as a newick) of a node.
+def read_props(str text, long pos, is_leaf, dict parser, check_req):
+    """Return the properties from the content of a node, and where it ends.
 
     Example (for the default format of a leaf node):
       'abc:123[&&NHX:x=foo]'  ->  {'name': 'abc', 'dist': 123, 'x': 'foo'}
     """
-    parser = parser if type(parser) is dict else PARSERS[parser]
     prop0, prop1 = parser['leaf' if is_leaf else 'internal']
 
     # Shortcuts.
@@ -158,37 +157,38 @@ def get_props(content, is_leaf, parser=None):
 
     props = {}  # will contain the properties extracted from the content string
 
-    p0_str, pos = read_content(content, 0, endings=':[')
+    p0_str, pos = read_content(text, pos, endings=':[,);')
 
     try:
-        assert p0_str or not p0_req, 'missing required value'
+        assert not check_req or not p0_req or p0_str, 'missing required value'
         if p0_str:
             props[p0_name] = p0_read(p0_str)
     except (AssertionError, ValueError) as e:
-        raise NewickError('parsing 1st position of %r: %s' % (content, e))
+        raise NewickError('parsing %r: %s' % (p0_str, e))
 
     try:
-        if pos < len(content) and content[pos] == ':':
-            pos = skip_spaces_and_comments(content, pos+1)
-            p1_str, pos = read_content(content, pos, endings='[ ')
+        if pos < len(text) and text[pos] == ':':
+            pos = skip_spaces_and_comments(text, pos+1)
+            p1_str, pos = read_content(text, pos, endings='[ ,);')
             props[p1_name] = p1_read(p1_str)
-        elif p1_req:
+        elif check_req and p1_req:
             raise AssertionError('missing required value')
     except (AssertionError, ValueError) as e:
-        raise NewickError('parsing 2nd position of %r: %s' % (content, e))
+        raise NewickError('parsing %r: %s' % (p1_str, e))
 
-    pos = skip_spaces_and_comments(content, pos)
+    pos = skip_spaces_and_comments(text, pos)
 
-    if pos < len(content) and content[pos] == '[':
-        pos_end = content.find(']', pos+1)
-        props.update(get_extended_props(content[pos+1:pos_end]))
-    elif pos < len(content):
-        raise NewickError('malformed content: %s' % repr_short(content))
+    if text[pos] == '[':
+        start = pos + 1
+        pos = text.find(']', start)
+        assert pos >= 0, 'unfinished extended props'
+        props.update(get_extended_props(text[start:pos]))
+        pos = skip_spaces_and_comments(text, pos+1)
 
-    return props
+    return props, pos
 
 
-def get_extended_props(text):
+def get_extended_props(str text):
     """Return a dict with the properties extracted from the text in NHX format.
 
     Example: '&&NHX:x=foo:y=bar'  ->  {'x': 'foo', 'y': 'bar'}
@@ -221,7 +221,9 @@ def loads(str text, parser=None, tree_class=Tree):
 
         parser = parser if type(parser) is dict else PARSERS[parser]
 
-        tree, pos = read_node(text, parser, 0, tree_class)
+        tree, pos = read_node(text, 0, parser, tree_class, check_req=False)
+        # We set check_req=False because the formats requiring certain
+        # fields mean it for all nodes but the root.
 
         assert pos == len(text) - 1, f'root node ends prematurely at {pos}'
 
@@ -231,29 +233,28 @@ def loads(str text, parser=None, tree_class=Tree):
         raise NewickError(str(e))
 
 
-def read_node(str text, dict parser, long pos, tree_class=Tree):
+def read_node(str text, long pos, dict parser, tree_class=Tree, check_req=True):
     """Return a node and the position in the text where it ends."""
     pos = skip_spaces_and_comments(text, pos)
 
     if text[pos] == '(':  # node has children
-        children, pos = read_nodes(text, parser, pos, tree_class)
+        children, pos = read_nodes(text, pos, parser, tree_class)
     else:  # node is a leaf
         children = []
 
-    content, pos = read_content(text, pos)
-    props = get_props(content, not children, parser) if content else {}
+    props, pos = read_props(text, pos, not children, parser, check_req)
 
     return tree_class(props, children), pos
 
 
-def read_nodes(str text, dict parser, long pos, tree_class=Tree):
+def read_nodes(str text, long pos, dict parser, tree_class=Tree):
     """Return a list of nodes and the position in the text where they end."""
     # text looks like '(a,b,c)', where any element can be a list of nodes
     nodes = []
     while pos < len(text) and text[pos] != ')':
         pos += 1  # advance from the separator: "(" or ","
 
-        node, pos = read_node(text, parser, pos, tree_class)
+        node, pos = read_node(text, pos, parser, tree_class)
 
         nodes.append(node)
 
@@ -279,12 +280,8 @@ def skip_spaces_and_comments(str text, long pos):
     return pos
 
 
-def read_content(str text, long pos, endings=',);'):
-    """Return content starting at position pos in text, and where it ends."""
-    # text = '...(node_1:0.5[&&NHX:p=a],...'  ->  'node_1:0.5[&&NHX:p=a]'
-    #             ^-- pos              ^-- pos (returned)
-    start = pos
-
+def skip_content(str text, long pos, endings=',);'):
+    """Return the position where the content ends."""
     pos = skip_spaces_and_comments(text, pos)
 
     if pos < len(text) and text[pos] in ["'", '"']:
@@ -293,6 +290,15 @@ def read_content(str text, long pos, endings=',);'):
     while pos < len(text) and text[pos] not in endings:
         pos += 1
 
+    return pos
+
+
+def read_content(str text, long pos, endings=',);'):
+    """Return content starting at position pos in text, and where it ends."""
+    # text = '...(node_1:0.5[&&NHX:p=a],...'  ->  'node_1:0.5[&&NHX:p=a]'
+    #             ^-- pos              ^-- pos (returned)
+    start = pos
+    pos = skip_content(text, pos, endings)
     return text[start:pos], pos
 
 
