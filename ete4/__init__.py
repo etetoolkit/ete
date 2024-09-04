@@ -17,7 +17,6 @@ from .evol.evoltree import *
 from .evol import EvolTree
 
 from .phyloxml import Phyloxml, PhyloxmlTree
-from .nexml import Nexml, NexmlTree
 
 from .utils import SVG_COLORS, COLOR_SCHEMES, random_color
 
