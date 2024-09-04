@@ -32,21 +32,9 @@ To run the tests, after you have a local installation (see
 [README.md](README.md) for details), you can:
 
 ```sh
-python -m unittest tests.test_arraytable
-python -m unittest tests.test_clustertree
-python -m unittest tests.test_gtdbquery
-python -m unittest tests.test_interop
-python -m unittest tests.test_phylotree
-python -m unittest tests.test_seqgroup
-python -m unittest tests.test_tree
-python -m unittest tests.test_treediff
-python -m unittest tests.test_orthologs_group_delineation
-python -m unittest tests.test_ncbiquery
-python -m unittest tests.test_nexus
+./run_tests.py
 ```
 
-Eventually we will fix the remaining tests, and then we expect to run them all with:
-
-```sh
-python -m unittest tests.test_all
-```
+which will run the subset of the tests that should be working. You can
+use the `--list` argument to see the tests, or `--help` to see all the
+options.

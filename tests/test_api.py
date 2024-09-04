@@ -7,9 +7,6 @@ from .test_phylotree import *
 from .test_ncbiquery import *
 from .test_treediff import *
 
-from .test_arraytable import *
-from .test_clustertree import *
-
 from .test_evol import *
 #from .test_xml_parsers import *
 

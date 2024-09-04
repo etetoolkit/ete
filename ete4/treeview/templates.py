@@ -1,4 +1,4 @@
-from .. import PhyloTree, ClusterTree, EvolTree, EvolNode
+from .. import PhyloTree, EvolTree, EvolNode
 from . import layouts
 
 def apply_template(tree_style, template):
@@ -7,24 +7,18 @@ def apply_template(tree_style, template):
 
 phylogeny = {
     "layout_fn": layouts.phylogeny,
-     "show_leaf_name":False,
-     "draw_guiding_lines":False
-    }
+    "show_leaf_name":False,
+    "draw_guiding_lines":False
+}
 
 evol = {
     "layout_fn": layouts.evol_layout,
-     "show_leaf_name":True,
-     "draw_guiding_lines":False
-    }
+    "show_leaf_name":True,
+    "draw_guiding_lines":False
+}
 
-clustering = {
-    "layout_fn": layouts.large,
-    "show_leaf_name":False
-    }
-
-_DEFAULT_STYLE={
+_DEFAULT_STYLE= {
     PhyloTree: phylogeny,
     EvolTree: evol,
     EvolNode: evol,
-    ClusterTree: clustering,
-    }
+}

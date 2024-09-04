@@ -11,7 +11,6 @@ setup(
     packages=['ete4',
               'ete4/core',
               'ete4/parser',
-              'ete4/clustering',
               'ete4/treematcher',
               'ete4/phylo',
               'ete4/phyloxml',
