@@ -1060,16 +1060,16 @@ class Test_Core_Tree(unittest.TestCase):
     def test_node_id(self):
         """Test the node_id corresponding to a node inside a tree."""
         t = Tree('((a,b)x,(c,d)y);', parser=1)
-        #     ╭╴x [0]╶┬╴a [0,0]
-        # ╴[]╶┤       ╰╴b [0,1]
-        #     ╰╴y [1]╶┬╴c [1,0]
-        #             ╰╴d [1,1]
+        #     ╭╴x (0,)╶┬╴a (0,0)
+        # ╴()╶┤        ╰╴b (0,1)
+        #     ╰╴y (1,)╶┬╴c (1,0)
+        #              ╰╴d (1,1)
 
-        self.assertEqual(t.id, [])
-        self.assertEqual(t['x'].id, [0])
-        self.assertEqual(t['y'].id, [1])
-        self.assertEqual(t['a'].id, [0,0])
-        self.assertEqual(t['d'].id, [1,1])
+        self.assertEqual(t.id, ())
+        self.assertEqual(t['x'].id, (0,))
+        self.assertEqual(t['y'].id, (1,))
+        self.assertEqual(t['a'].id, (0,0))
+        self.assertEqual(t['d'].id, (1,1))
 
     def test_ultrametric(self):
         EPSILON = 1e-5  # small number for the purposes of comparing distances

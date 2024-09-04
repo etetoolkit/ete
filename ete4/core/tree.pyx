@@ -158,7 +158,7 @@ cdef class Tree:
         while node.up is not None:
             reversed_id.append(node.up.children.index(node))
             node = node.up
-        return reversed_id[::-1]  # will look like  [0, 0, 1, 0]
+        return tuple(reversed_id[::-1])  # will look like  (0, 0, 1, 0)
 
     @property
     def level(self):
