@@ -2,7 +2,6 @@ from .core.tree import Tree, TreeError
 
 from .core import operations, text_viz
 
-from .core.arraytable import ArrayTable
 from .core.seqgroup import SeqGroup
 
 from .parser import newick, ete_format, nexus
@@ -16,10 +15,8 @@ from .gtdb_taxonomy import *
 from .phylo.phylotree import *
 from .evol.evoltree import *
 from .evol import EvolTree
-from .clustering.clustertree import *
 
 from .phyloxml import Phyloxml, PhyloxmlTree
-from .nexml import Nexml, NexmlTree
 
 from .utils import SVG_COLORS, COLOR_SCHEMES, random_color
 

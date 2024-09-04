@@ -49,8 +49,7 @@ considerations, many properties remains constant among them. In this
 respect, ETE is a python toolkit that assists in the automated
 manipulation, analysis and visualization of any type of hierarchical
 trees. It provides general methods to handle and visualize tree
-topologies, as well as specific modules to deal with phylogenetic and
-clustering trees.
+topologies, as well as specific modules to deal with phylogenetic trees.
 
 
 .. _sec:newick-formats:
