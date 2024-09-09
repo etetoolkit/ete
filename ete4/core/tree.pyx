@@ -5,11 +5,10 @@ from functools import cmp_to_key
 import pickle
 import math
 
-from . import text_viz
-from . import operations as ops
-from .. import utils
-from ete4.parser import newick
-from ..parser import ete_format
+from ete4.core import text_viz
+from ete4.core import operations as ops
+from ete4 import utils
+from ete4.parser import newick, ete_format
 
 
 class TreeError(Exception):
