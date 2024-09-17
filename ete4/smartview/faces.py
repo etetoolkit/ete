@@ -17,7 +17,7 @@ class Face:
         """Save all the parameters that we may want to use."""
         pass  # in this example, we don't save any
 
-    def draw(self, nodes, size, collapsed=False, zoom=None, anchor=None, r=1):
+    def draw(self, nodes, size, collapsed=False, zoom=(1, 1), ax_ay=(0, 0), r=1):
         """Return a list of graphic elements and the actual size they use."""
         # The retuned graphic elements normally depend on the node(s).
         # They have to fit inside the given size (dx, dy) in tree
@@ -27,8 +27,10 @@ class Face:
         # collapsed). Otherwise, nodes is a list of the collapsed nodes.
 
         # The zoom is passed in case the face wants to represent
-        # things differently according to its size on the screen. But
-        # zoom=None should work too. Same thing for the anchor point.
+        # things differently according to its size on the screen.
+
+        # ax_ay is the anchor point within the box of the given size
+        # (from 0 for left/up, to 1 for right/down).
 
         # r * size[1] * zoom[1] is the size in pixels of the left
         # border, whether we are in rectangular or circular mode.
@@ -41,7 +43,7 @@ class Face:
 
 
 class EvalTextFace(Face):
-    """A text that results from executing an expression on the node."""
+    """A text that results from evaluating an expression on the node."""
 
     def __init__(self, expression, fs_min=4, fs_max=16, style=None):
         self.code = (expression if type(expression) != str else
@@ -50,7 +52,7 @@ class EvalTextFace(Face):
         self.fs_min = fs_min
         self.fs_max = fs_max
 
-    def draw(self, nodes, size, collapsed=False, zoom=(1, 1), anchor=None, r=1):
+    def draw(self, nodes, size, collapsed=False, zoom=(1, 1), ax_ay=(0, 0), r=1):
         # Get text(s) from applying expression to nodes.
         if collapsed:
             texts_dirty, all_accounted = make_nodes_summary(nodes, self.code)
@@ -71,8 +73,8 @@ class EvalTextFace(Face):
             return [], Size(0, 0)  # nothing to draw
 
         # Place x according to the anchor point. It must be:
-        #   ax * dx_col == x + ax * size_used.dx
-        ax, ay = anchor or (0, 0)
+        #   ax * size.dx == x + ax * size_used.dx
+        ax, ay = ax_ay
         x = ax * (size.dx - size_used.dx)
 
         # Get the graphic elements to draw.
@@ -164,14 +166,14 @@ def text_repr(texts, all_have):
         return texts[:6] + ['[...]']
 
 
-def draw_texts(box, anchor, texts, fs_max, style):
+def draw_texts(box, ax_ay, texts, fs_max, style):
     """Yield texts so they fit in the box."""
     x = box.x
     y = box.y  # will advance for each text
     dx = box.dx
     dy = box.dy / len(texts)
     for text in texts:
-        yield gr.draw_text(Box(x, y, dx, dy), anchor, text, fs_max, style)
+        yield gr.draw_text(Box(x, y, dx, dy), ax_ay, text, fs_max, style)
         y += dy
 
 
@@ -205,9 +207,9 @@ class CircleFace(Face):
         self.rmax = rmax  # maximum radius in pixels
         self.style = style or ''
 
-    def draw(self, nodes, size, collapsed=False, zoom=None, anchor=None, r=1):
+    def draw(self, nodes, size, collapsed=False, zoom=(1, 1), ax_ay=(0, 0), r=1):
         dx, dy = size
-        zx, zy = zoom if zoom else (1, 1)
+        zx, zy = zoom
 
         # Find the circle radius in pixels.
         cr = zy * r * dy / 2
@@ -225,7 +227,7 @@ class CircleFace(Face):
 
 
 class RectFace(Face):
-    """A rectangle."""
+    """A rectangle (with optionally a text inside)."""
 
     def __init__(self, wmax, hmax=None, style=None, text=None):
         self.wmax = wmax  # maximum width in pixels
@@ -233,9 +235,9 @@ class RectFace(Face):
         self.style = style or ''
         self.text = TextFace(text) if type(text) is str else text
 
-    def draw(self, nodes, size, collapsed=False, zoom=None, anchor=None, r=1):
+    def draw(self, nodes, size, collapsed=False, zoom=(1, 1), ax_ay=(0, 0), r=1):
         dx, dy = size
-        zx, zy = zoom if zoom else (1, 1)
+        zx, zy = zoom
 
         # Find the width and height so they are never bigger than the max.
         w = min(zx * dx, self.wmax) if dx > 0 else self.wmax
@@ -258,9 +260,8 @@ class RectFace(Face):
 
         if self.text:
             graphics_text, size_text = self.text.draw(nodes, size, collapsed,
-                                                      zoom, anchor, r)
-            shift = ((size.dx - size_text.dx / 1.5) / 2,
-                     (size.dy - size_text.dy      ) / 2)
+                                                      zoom, (0.5, 0), r)
+            shift = (0, (size.dy - size_text.dy) / 2)
             circular = (r == 1)
             graphics += gr.draw_group(graphics_text, circular, shift)
 
