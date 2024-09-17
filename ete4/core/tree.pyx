@@ -5,10 +5,10 @@ from functools import cmp_to_key
 import pickle
 import math
 
-from ete4.core import text_viz
-from ete4.core import operations as ops
-from ete4 import utils
-from ete4.parser import newick, ete_format
+from . import text_viz
+from . import operations as ops
+from .. import utils
+from ..parser import newick, ete_format
 
 
 class TreeError(Exception):
@@ -157,7 +157,7 @@ cdef class Tree:
         while node.up is not None:
             reversed_id.append(node.up.children.index(node))
             node = node.up
-        return reversed_id[::-1]  # will look like  [0, 0, 1, 0]
+        return tuple(reversed_id[::-1])  # will look like  (0, 0, 1, 0)
 
     @property
     def level(self):

@@ -11,6 +11,8 @@ Whenever a box is used, it is in "tree coordinates" (that is, not
 multiplied by the zoom or the radius, so not in pixels).
 """
 
+from math import pi
+
 
 # A nodebox is a high-level representations of a node (or a group of
 # collapsed nodes). It can have the name of the node, other
@@ -59,3 +61,46 @@ def set_panel(panel=0):  # panel that we will use to draw from now on
 
 def set_xmax(xmax):  # maximum reached x (so we can align to it)
     return ['xmax', xmax]
+
+
+# Related functions.
+
+def draw_group(elements, circular, shift):
+    """Yield the given drawing elements with their coordinates shifted."""
+    x0, y0 = shift
+
+    if x0 == y0 == 0:
+        yield from elements  # no need to shift anything
+        return
+
+    for element in elements:
+        eid = element[0]  # "element identifier" (name of drawing element)
+        if eid in ['nodebox', 'array', 'text']:
+            # The position for these elements is given by a box.
+            x, y, dx, dy = element[1]
+            box = x0 + x, y0 + y, dx, dy
+            if not circular or are_valid_angles(y0 + y, y0 + y + dy):
+                yield [eid, box] + element[2:]
+        elif eid == 'outline':
+            # The points given in the outline can be (x,y) or (r,a).
+            points = [(x0 + x, y0 + y) for x, y in element[1]
+                      if not circular or are_valid_angles(y0 + y)]
+            yield [eid, points]
+        elif eid in ['line', 'arc']:
+            # The points in these elements are always in rectanglar coords.
+            (x1, y1), (x2, y2) = element[1], element[2]
+            yield [eid, (x0 + x1, y0 + y1), (x0 + x2, y0 + y2)] + element[3:]
+        elif eid == 'circle':
+            # The center of the circle is always in rectangular coords.
+            x, y = element[1]
+            yield [eid, (x0 + x, y0 + y)] + element[2:]
+        elif eid == 'rect':
+            x, y, w, h = element[1]
+            yield [eid, (x0 + x, y0 + y, w, h)] + element[2:]
+        else:
+            raise ValueError(f'unrecognized element: {element!r}')
+
+
+def are_valid_angles(*angles):
+    EPSILON = 1e-8  # without it, rounding can fake an angle a > pi
+    return all(-pi <= a < pi+EPSILON for a in angles)

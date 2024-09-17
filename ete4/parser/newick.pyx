@@ -4,7 +4,7 @@ Parser for trees represented in newick format.
 
 # See https://en.wikipedia.org/wiki/Newick_format
 
-from ete4.core.tree import Tree
+from ..core.tree import Tree
 
 
 class NewickError(Exception):

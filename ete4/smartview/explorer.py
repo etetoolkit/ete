@@ -30,8 +30,8 @@ DIR_BIN = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(DIR_BIN))  # so we can import ete w/o install
 
 from ete4 import newick, nexus, operations as ops, treematcher as tm
-from ete4.smartview import draw
-from ete4.smartview.layout import DEFAULT_LAYOUT
+from . import draw
+from .layout import DEFAULT_LAYOUT
 
 DIR_LIB = os.path.dirname(os.path.abspath(draw.__file__))
 

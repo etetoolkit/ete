@@ -7,7 +7,7 @@ from collections import namedtuple
 from dataclasses import dataclass, field
 from functools import lru_cache
 
-from .faces import Face, TextFace
+from .faces import Face, PropFace
 
 
 # Layouts have all the information needed to represent a tree.
@@ -113,18 +113,17 @@ DEFAULT_TREE_STYLE = {
 # The default layout.
 
 def default_draw_node(node):
-    face_dist = TextFace('"%.2g" % dist if dist else ""', style='grey')
+    face_dist = PropFace('dist', '%.2g', style='grey')
     yield Decoration(face_dist, position='top')
 
-    face_support = TextFace('"%.2g" % support if support else ""', style='red')
+    face_support = PropFace('support', '%.2g', style='red')
     yield Decoration(face_support, position='bottom')
 
     if node.is_leaf:
-        yield Decoration(TextFace('name'), position='right')
+        yield Decoration(PropFace('name'), position='right')
 
 def default_draw_collapsed(nodes):
-    yield Decoration(TextFace('name'),
-                     position='right', anchor=(-1, 0))
+    yield Decoration(PropFace('name'), position='right', anchor=(-1, 0))
 
 DEFAULT_LAYOUT = Layout(
     name='default',
