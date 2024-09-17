@@ -259,10 +259,13 @@ class RectFace(Face):
         size = Size(w/zx, h/(r*zy))
 
         if self.text:
+            # Draw the text centered in x (0.5). But we have to shift the y
+            # "by hand" because faces let the caller anchor in y afterwards
+            # (so several faces can be vertically stacked and then anchored).
             graphics_text, size_text = self.text.draw(nodes, size, collapsed,
-                                                      zoom, (0.5, 0), r)
-            shift = (0, (size.dy - size_text.dy) / 2)
-            circular = (r == 1)
+                                                      zoom, (0.5, 0.5), r)
+            circular = False
+            shift = (0, (size.dy - size_text.dy) / 2)  # shift the y
             graphics += gr.draw_group(graphics_text, circular, shift)
 
         return graphics, size
