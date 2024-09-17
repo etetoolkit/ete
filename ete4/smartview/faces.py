@@ -40,16 +40,17 @@ class Face:
         return graphic_elements, size_used
 
 
-class TextFace:  # no need to inherit like  TextFace(Face)  (faster?)
+class EvalTextFace(Face):
     """A text that results from executing an expression on the node."""
 
-    def __init__(self, expression, fs_max=16, style=None):
+    def __init__(self, expression, fs_min=4, fs_max=16, style=None):
         self.code = (expression if type(expression) != str else
                      compile(expression, '<string>', 'eval'))
         self.style = style or ('text_' + expression)
+        self.fs_min = fs_min
         self.fs_max = fs_max
 
-    def draw(self, nodes, size, collapsed=False, zoom=None, anchor=None, r=1):
+    def draw(self, nodes, size, collapsed=False, zoom=(1, 1), anchor=None, r=1):
         # Get text(s) from applying expression to nodes.
         if collapsed:
             texts_dirty, all_accounted = make_nodes_summary(nodes, self.code)
@@ -58,15 +59,16 @@ class TextFace:  # no need to inherit like  TextFace(Face)  (faster?)
             text = eval_as_str(self.code, nodes[0])
             texts = [text] if text else []
 
-        if not texts:  # no texts, nothing to draw
-            return [], Size(0, 0)
+        if not texts:  # no texts?
+            return [], Size(0, 0)  # nothing to draw
 
         # Find the size that we will use to draw everything.
         shrink_x = size.dx > 0  # dx == 0 is a special value, "no shrink"
         size_used = texts_size(texts, size, self.fs_max, zoom, shrink_x, r)
 
-        if size_used.dx <= 0 or size_used.dy <= 0:
-            return [], size_used
+        if (size_used.dx <= 0 or
+            zoom[1] * size_used.dy < self.fs_min * len(texts)):  # fs < fs_min ?
+            return [], Size(0, 0)  # nothing to draw
 
         # Place x according to the anchor point. It must be:
         #   ax * dx_col == x + ax * size_used.dx
@@ -78,6 +80,22 @@ class TextFace:  # no need to inherit like  TextFace(Face)  (faster?)
                                    (ax, ay), texts, self.fs_max, self.style))
 
         return elements, size_used
+
+
+class TextFace(EvalTextFace):
+    """A fixed text."""
+
+    def __init__(self, text, fs_min=4, fs_max=16, style=None):
+        expression = '"%s"' % text.replace('"', r'\"')
+        super().__init__(expression, fs_min, fs_max, style)
+
+
+class PropFace(EvalTextFace):
+    """A text showing the given property, and optionally a special format."""
+
+    def __init__(self, prop, fmt='%s', fs_min=4, fs_max=16, style=None):
+        expression = f'("{fmt}" % p["{prop}"]) if "{prop}" in p else ""'
+        super().__init__(expression, fs_min, fs_max, style)
 
 
 def make_nodes_summary(nodes, code=None):
@@ -180,7 +198,7 @@ def safer_eval(code, context):
     return eval(code, {'__builtins__': {}}, context)
 
 
-class CircleFace:
+class CircleFace(Face):
     """A circle."""
 
     def __init__(self, rmax=None, style=None):
@@ -206,13 +224,14 @@ class CircleFace:
         # NOTE: For small r (in circular mode), that size is just approximate.
 
 
-class RectFace:
+class RectFace(Face):
     """A rectangle."""
 
-    def __init__(self, wmax, hmax=None, style=None):
+    def __init__(self, wmax, hmax=None, style=None, text=None):
         self.wmax = wmax  # maximum width in pixels
         self.hmax = hmax  # maximum height in pixels
         self.style = style or ''
+        self.text = TextFace(text) if type(text) is str else text
 
     def draw(self, nodes, size, collapsed=False, zoom=None, anchor=None, r=1):
         dx, dy = size
@@ -234,4 +253,15 @@ class RectFace:
         # Return the rectangle graphic and its size.
         rect = gr.draw_rect((0, 0, w/zx, h/(r*zy)), self.style)
 
-        return [rect], Size(w/zx, h/(r*zy))
+        graphics = [rect]
+        size = Size(w/zx, h/(r*zy))
+
+        if self.text:
+            graphics_text, size_text = self.text.draw(nodes, size, collapsed,
+                                                      zoom, anchor, r)
+            shift = ((size.dx - size_text.dx / 1.5) / 2,
+                     (size.dy - size_text.dy      ) / 2)
+            circular = (r == 1)
+            graphics += gr.draw_group(graphics_text, circular, shift)
+
+        return graphics, size

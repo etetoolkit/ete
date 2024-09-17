@@ -576,7 +576,7 @@ def get_col_data(rows, x_col, dx_col, nodes, pos_box, pos, bdy_dy, zoom,
     if ay <= 0.5:
         blocks.reverse()  # we want the 1st block closer to its anchor point
     for elements, size in blocks:
-        elements_all += draw_group(elements, circular, shift=(x_col, y))
+        elements_all += gr.draw_group(elements, circular, shift=(x_col, y))
         y += size.dy
 
     return elements_all, x_col + dx_max
@@ -631,47 +631,6 @@ def default_anchor(position):
 def circular_dy(r, dr, da):
     """Return the dy corresponding to the exterior part of an annular sector."""
     return (r + dr) * da if r > 0 else 0  # but dy=0 if r=0 (no interior part)
-
-
-def draw_group(elements, circular, shift):
-    """Yield the given drawing elements with their coordinates shifted."""
-    x0, y0 = shift
-
-    if x0 == y0 == 0:
-        yield from elements  # no need to shift anything
-        return
-
-    for element in elements:
-        eid = element[0]  # "element identifier" (name of drawing element)
-        if eid in ['nodebox', 'array', 'text']:
-            # The position for these elements is given by a box.
-            x, y, dx, dy = element[1]
-            box = x0 + x, y0 + y, dx, dy
-            if not circular or are_valid_angles(y0 + y, y0 + y + dy):
-                yield [eid, box] + element[2:]
-        elif eid == 'outline':
-            # The points given in the outline can be (x,y) or (r,a).
-            points = [(x0 + x, y0 + y) for x, y in element[1]
-                      if not circular or are_valid_angles(y0 + y)]
-            yield [eid, points]
-        elif eid in ['line', 'arc']:
-            # The points in these elements are always in rectanglar coords.
-            (x1, y1), (x2, y2) = element[1], element[2]
-            yield [eid, (x0 + x1, y0 + y1), (x0 + x2, y0 + y2)] + element[3:]
-        elif eid == 'circle':
-            # The center of the circle is always in rectangular coords.
-            x, y = element[1]
-            yield [eid, (x0 + x, y0 + y)] + element[2:]
-        elif eid == 'rect':
-            x, y, w, h = element[1]
-            yield [eid, (x0 + x, y0 + y, w, h)] + element[2:]
-        else:
-            raise ValueError(f'unrecognized element: {element!r}')
-
-
-def are_valid_angles(*angles):
-    EPSILON = 1e-8  # without it, rounding can fake an angle a > pi
-    return all(-pi <= a < pi+EPSILON for a in angles)
 
 
 # Box-related functions.
