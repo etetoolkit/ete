@@ -18,8 +18,10 @@ from math import pi
 # collapsed nodes). It can have the name of the node, other
 # properties, and a list of texts (searches for which the node is a
 # result of).
-def draw_nodebox(box, name='', props=None, node_id=None, result_of=None):
-    return ['nodebox', box, name, props or {}, node_id or [], result_of or []]
+def draw_nodebox(box, name='', props=None, node_id=None,
+                 result_of=None, style=''):
+    return ['nodebox', box, name, props or {}, node_id or [],
+            result_of or [], style]
 
 # An outline has the information to draw an approximate representation
 # of the interior of collapsed nodes.
