@@ -597,9 +597,11 @@ function tree2circ(point, tl, z) {
 }
 
 
-// Add style to the given element.
+// Add to the given element a style. It can be a string with class name(s),
+// an object with the individual properties to set, or a list of styles.
 function add_style(element, style) {
-    if (typeof style === "string") {  // style refers to class name(s)
+    // style can be a string with class name(s), an object with
+    if (typeof style === "string") {  // string with class name(s).
         for (const name of style.split(" ").filter(x => x)) { // nonempty names
             // We define the "layout_" styles in the css (in
             // gui.js:set_tree_style()), and the "label_" styles with the gui.
@@ -611,10 +613,13 @@ function add_style(element, style) {
             element.classList.add(prefix + name);
         }
     }
-    else {  // style is an object with the individual properties to set
+    else if (style.length === undefined) {  // object with individual properties
         for (const [prop, value] of Object.entries(style)) {
             element.style[prop] = value;
         }
+    }
+    else {  // list of styles to combine
+        style.forEach(s => add_style(element, s));
     }
 }
 
