@@ -280,9 +280,9 @@ function create_item(item, tl, zoom) {
     const [zx, zy] = [zoom.x, zoom.y];  // shortcut
 
     if (item[0] === "nodebox") {
-        const [ , box, name, props, node_id, result_of] = item;
+        const [ , box, name, props, node_id, result_of, style] = item;
 
-        const b = create_box(box, tl, zx, zy);
+        const b = create_box(box, tl, zx, zy, style);
 
         b.id = "node-" + node_id.join("_");  // used in tags
 
