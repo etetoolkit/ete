@@ -8,7 +8,7 @@ from ete4.core import operations as ops
 from .coordinates import Size, Box, make_box, get_xs, get_ys
 from . import graphics as gr
 from .layout import Decoration, Label
-from .faces import TextFace
+from .faces import EvalTextFace
 
 
 def draw(tree, shape, layouts=None, labels=None, viewport=None,
@@ -482,7 +482,7 @@ def is_valid_label(label, is_leaf):
 
 def make_deco(label):
     """Return a Decoration object from its description as a Label one."""
-    face = TextFace(label.code, fs_max=label.fs_max, style=label.style)
+    face = EvalTextFace(label.code, fs_max=label.fs_max, style=label.style)
     return Decoration(face, label.position, label.column, label.anchor)
 
 
