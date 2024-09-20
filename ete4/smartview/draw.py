@@ -4,11 +4,11 @@ Classes and functions for drawing a tree.
 
 from math import sin, cos, pi, sqrt, atan2
 
-from ete4.core import operations as ops
+from ..core import operations as ops
 from .coordinates import Size, Box, make_box, get_xs, get_ys
-from . import graphics as gr
 from .layout import Decoration, Label
 from .faces import EvalTextFace
+from . import graphics as gr
 
 
 def draw(tree, shape, layouts=None, labels=None, viewport=None,
