@@ -45,7 +45,7 @@ class Face:
 class EvalTextFace(Face):
     """A text that results from evaluating an expression on the node."""
 
-    def __init__(self, expression, fs_min=4, fs_max=16, style=None):
+    def __init__(self, expression, fs_min=2, fs_max=16, style=None):
         self.code = (expression if type(expression) != str else
                      compile(expression, '<string>', 'eval'))
         self.style = style or ('text_' + expression)
@@ -87,7 +87,7 @@ class EvalTextFace(Face):
 class TextFace(EvalTextFace):
     """A fixed text."""
 
-    def __init__(self, text, fs_min=4, fs_max=16, style=None):
+    def __init__(self, text, fs_min=2, fs_max=16, style=None):
         expression = '"%s"' % text.replace('"', r'\"')
         super().__init__(expression, fs_min, fs_max, style)
 
@@ -95,7 +95,7 @@ class TextFace(EvalTextFace):
 class PropFace(EvalTextFace):
     """A text showing the given property, and optionally a special format."""
 
-    def __init__(self, prop, fmt='%s', fs_min=4, fs_max=16, style=None):
+    def __init__(self, prop, fmt='%s', fs_min=2, fs_max=16, style=None):
         expression = f'("{fmt}" % p["{prop}"]) if "{prop}" in p else ""'
         super().__init__(expression, fs_min, fs_max, style)
 
