@@ -33,7 +33,7 @@ class Drawer:
     """Base class (needs subclassing with extra functions to draw)."""
 
     MIN_SIZE = 10  # anything that has less pixels will be outlined
-    MIN_SIZE_CONTENT = 5
+    MIN_SIZE_CONTENT = 5  # any content with less pixels won't be shown
 
     def __init__(self, tree, layouts=None, labels=None, viewport=None,
                  zoom=(1, 1), limits=None, collapsed_ids=None, searches=None,
@@ -303,7 +303,7 @@ def read_label(label):
         code=compile(expression, '<string>', 'eval'),
         style='label_'+expression,  # will be used to set its looks in css
         node_type=node_type,  # type of nodes to apply this label to
-        position=position,
+        position=position,  # top, bottom, left, right, aligned
         column=int(column),  # to locate relative to others in the same position
         anchor=(to_num(ax), to_num(ay)),  # point used for anchoring
         fs_max=fs_max)  # maximum font size (height in pixels)
