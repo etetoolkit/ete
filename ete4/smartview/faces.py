@@ -69,7 +69,7 @@ class EvalTextFace(Face):
         size_used = texts_size(texts, size, self.fs_max, zoom, shrink_x, r)
 
         if (size_used.dx <= 0 or
-            zoom[1] * size_used.dy < self.fs_min * len(texts)):  # fs < fs_min ?
+            r * zoom[1] * size_used.dy < self.fs_min * len(texts)):  # fs < fs_min ?
             return [], Size(0, 0)  # nothing to draw
 
         # Place x according to the anchor point. It must be:
