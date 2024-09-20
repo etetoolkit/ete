@@ -68,8 +68,8 @@ class EvalTextFace(Face):
         shrink_x = size.dx > 0  # dx == 0 is a special value, "no shrink"
         size_used = texts_size(texts, size, self.fs_max, zoom, shrink_x, r)
 
-        if (size_used.dx <= 0 or
-            r * zoom[1] * size_used.dy < self.fs_min * len(texts)):  # fs < fs_min ?
+        # Only draw if  font size > fs_min.
+        if not r * zoom[1] * size_used.dy > self.fs_min * len(texts):
             return [], Size(0, 0)  # nothing to draw
 
         # Place x according to the anchor point. It must be:
