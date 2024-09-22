@@ -251,6 +251,7 @@ function put_nodes_in_background(g) {
     Array.from(g.getElementsByClassName("node")).forEach(e => {
         const bg_node = e.cloneNode();
         e.id = "foreground-" + bg_node.id;  // avoid id collisions
+        e.removeAttribute("style");  // in case it is set
         e.classList = ["fg_node"];  // avoid being wrongly selected as a node
         g.insertBefore(bg_node, first);
     });

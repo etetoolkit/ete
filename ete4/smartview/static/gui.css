@@ -38,8 +38,8 @@
 }
 
 .node {
-    opacity: 0;
-    fill: #222;
+    fill: white;
+    stroke: white;
 }
 
 .outline {

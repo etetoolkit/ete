@@ -143,7 +143,7 @@ class Drawer:
         result_of = [text for text,(results,_) in self.searches.items()
                         if it.node in results]
         self.nodeboxes += self.draw_nodebox(it.node, it.node_id, box, result_of,
-                                            style.get('nodebox'))
+                                            style.get('node', ''))
 
         return x_before, y_after
 
@@ -229,7 +229,7 @@ class Drawer:
         name, props = (('(collapsed)', {}) if not uncollapse else
                        (node0.name, self.get_nodeprops(node0)))
         box = gr.draw_nodebox(nodebox, name, props, node0.id, result_of,
-                              style.get('nodebox'))
+                              style.get('node', ''))
         self.nodeboxes.append(box)
 
         yield from graphics
