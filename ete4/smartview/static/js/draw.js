@@ -202,12 +202,18 @@ function translate(item, shift) {
         const [ , [x, y], radius, style] = item;
         return ["circle", [x + shift, y], radius, style];
     }
+    else if (item[0] === "box") {
+        const [ , [x, y, w, h], style] = item;
+        return ["box", [x + shift, y, w, h], style];
+    }
     else if (item[0] === "rect") {
         const [ , [x, y, w, h], style] = item;
         return ["rect", [x + shift, y, w, h], style];
     }
     else {
-        return item;  // we are not translating anything else for the moment
+        // We are not translating anything else for the moment, including
+        // nodeboxes or nodedots.
+        return item;
     }
 }
 
@@ -283,7 +289,7 @@ function create_item(item, tl, zoom) {
     if (item[0] === "nodebox") {
         const [ , box, name, props, node_id, result_of, style] = item;
 
-        const b = create_box(box, tl, zx, zy, style);
+        const b = create_box(box, tl, zx, zy, ["node", style]);
 
         b.id = "node-" + node_id.join("_");  // used in tags
 
@@ -301,6 +307,12 @@ function create_item(item, tl, zoom) {
             b.appendChild(create_tooltip(name, props));
 
         return b;
+    }
+    else if (item[0] === "nodedot") {
+        const [ , point, style] = item;
+
+        return create_circle(point, view.node.dot.radius, tl, zx, zy,
+                             ["nodedot", style]);
     }
     else if (item[0] === "outline") {
         const [ , points] = item;
@@ -322,10 +334,15 @@ function create_item(item, tl, zoom) {
 
         return create_circle(center, radius, tl, zx, zy, style);
     }
-    else if (item[0] === "rect") {
+    else if (item[0] === "box") {
         const [ , box, style] = item;
 
         return create_box(box, tl, zx, zy, style);
+    }
+    else if (item[0] === "rect") {
+        const [ , box, style] = item;
+
+        return create_rect(box, tl, zx, zy, style);
     }
     else if (item[0] === "text") {
         const [ , box, anchor, text, fs_max, style] = item;
@@ -390,12 +407,20 @@ function create_box(box, tl, zx, zy, style="") {
 function create_rect(box, tl, zx, zy, style="") {
     const [x, y, w, h] = box;
 
-    const p = tree2rect([x, y], tl, zx, zy);
+    const p = view.shape === "rectangular" ?
+        tree2rect([x, y], tl, zx, zy) :
+        tree2circ([x, y], tl, zx);
 
     const element = create_svg_element("rect", {
         "x": p.x, "y": p.y,
         "width": zx * w, "height": zy * h,
     });
+
+    if (view.shape === "circular") {
+        const angle = 180 / Math.PI * Math.atan2(zy * tl.y + p.y,
+                                                 zx * tl.x + p.x);
+        add_rotation(element, angle, p.x, p.y);
+    }
 
     add_style(element, style);
 
@@ -531,15 +556,11 @@ function create_circle(center, radius, tl, zx, zy, style="") {
         tree2rect(center, tl, zx, zy) :
         tree2circ(center, tl, zx);
 
-    const is_nodedot = (typeof style === "string" &&
-                        style.split(" ").includes("nodedot"));
-    const r = is_nodedot ? view.node.dot.radius : radius;
-
     const element = create_svg_element("circle", {
         "class": "circle",
         "cx": c.x,
         "cy": c.y,
-        "r": r,
+        "r": radius,
     });
 
     add_style(element, style);

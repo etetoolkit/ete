@@ -184,7 +184,8 @@ class Drawer:
 
             dot_center = (x + dx, y + bdy)
             if self.is_visible(make_box(dot_center, (0, 0))):
-                commands.append(gr.draw_circle(dot_center, style='nodedot'))
+                commands.append(gr.draw_nodedot(dot_center,
+                                                style=style.get('dot', '')))
 
         if bdy0 != bdy1:
             commands += self.draw_childrenline((x + dx, y + bdy0),

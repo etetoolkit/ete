@@ -226,14 +226,17 @@ class CircleFace(Face):
         # NOTE: For small r (in circular mode), that size is just approximate.
 
 
-class RectFace(Face):
-    """A rectangle (with optionally a text inside)."""
+class BoxedFace(Face):
+    """A shape defined by a box (with optionally a text inside)."""
+    # Base class for BoxFace and RectFace.
 
     def __init__(self, wmax, hmax=None, style=None, text=None):
         self.wmax = wmax  # maximum width in pixels
         self.hmax = hmax  # maximum height in pixels
         self.style = style or ''
         self.text = TextFace(text) if type(text) is str else text
+
+        self.drawing_fn = None  # will be set by its subclasses
 
     def draw(self, nodes, size, collapsed=False, zoom=(1, 1), ax_ay=(0, 0), r=1):
         dx, dy = size
@@ -252,11 +255,10 @@ class RectFace(Face):
             else:
                 w = h / h_over_w
 
-        # Return the rectangle graphic and its size.
-        rect = gr.draw_rect((0, 0, w/zx, h/(r*zy)), self.style)
-
-        graphics = [rect]
+        # Return the graphics and their size.
         size = Size(w/zx, h/(r*zy))
+        box = make_box((0, 0), size)
+        graphics = [self.drawing_fn(box, self.style)]
 
         if self.text:
             # Draw the text centered in x (0.5). But we have to shift the y
@@ -269,3 +271,19 @@ class RectFace(Face):
             graphics += gr.draw_group(graphics_text, circular, shift)
 
         return graphics, size
+
+
+class BoxFace(BoxedFace):
+    """A box (with optionally a text inside)."""
+
+    def __init__(self, wmax, hmax=None, style=None, text=None):
+        super().__init__(wmax, hmax, style, text)
+        self.drawing_fn = gr.draw_box
+
+
+class RectFace(BoxedFace):
+    """A rectangle (with optionally a text inside)."""
+
+    def __init__(self, wmax, hmax=None, style=None, text=None):
+        super().__init__(wmax, hmax, style, text)
+        self.drawing_fn = gr.draw_rect

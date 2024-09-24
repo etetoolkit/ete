@@ -23,6 +23,11 @@ def draw_nodebox(box, name='', props=None, node_id=None,
     return ['nodebox', box, name, props or {}, node_id or [],
             result_of or [], style]
 
+
+def draw_nodedot(point, style=''):
+    return ['nodedot', point, style]
+
+
 # An outline has the information to draw an approximate representation
 # of the interior of collapsed nodes.
 def draw_outline(points):
@@ -43,6 +48,9 @@ def draw_arc(p1, p2, large=False, style='', kwargs=None):
 
 def draw_circle(center, radius=1, style=''):
     return ['circle', center, radius, style]
+
+def draw_box(box, style=''):
+    return ['box', box, style]
 
 def draw_rect(box, style=''):
     return ['rect', box, style]
@@ -92,11 +100,11 @@ def draw_group(elements, circular, shift):
             # The points in these elements are always in rectanglar coords.
             (x1, y1), (x2, y2) = element[1], element[2]
             yield [eid, (x0 + x1, y0 + y1), (x0 + x2, y0 + y2)] + element[3:]
-        elif eid == 'circle':
+        elif eid in ['nodedot', 'circle']:
             # The center of the circle is always in rectangular coords.
             x, y = element[1]
             yield [eid, (x0 + x, y0 + y)] + element[2:]
-        elif eid == 'rect':
+        elif eid in ['box', 'rect']:
             x, y, w, h = element[1]
             yield [eid, (x0 + x, y0 + y, w, h)] + element[2:]
         else:
