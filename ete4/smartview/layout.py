@@ -97,8 +97,8 @@ default_anchors = {'top':     (-1, 1),   # left, bottom
 
 DEFAULT_TREE_STYLE = {
     'node_styles': {  # to name styles that can be referenced in draw_nodes
-        'grey': {'fill': '#888'},
-        'red': {'fill': '#f88'},  # a light red
+        'dist': {'fill': '#888'},
+        'support': {'fill': '#f88'},  # a light red
     }
 }
 
@@ -109,14 +109,29 @@ DEFAULT_TREE_STYLE = {
 #    'min-size-content': 5,
 #}
 
+def add_to_style(style, style_old=None):
+    """Return a style dictionary merging properly style_old and style."""
+    style_old = style_old or DEFAULT_TREE_STYLE
+
+    # Update a copy of the old dict with the new (except for node_styles).
+    style_new = style_old.copy()
+    style_new.update((k, v) for k, v in style.items() if k != 'node_styles')
+
+    # Update node_styles (which is itself a dict).
+    node_styles = style_old.get('node_styles', {}).copy()
+    node_styles.update(style.get('node_styles', {}))
+    style_new['node_styles'] = node_styles
+
+    return style_new
+
 
 # The default layout.
 
 def default_draw_node(node):
-    face_dist = PropFace('dist', '%.2g', style='grey')
+    face_dist = PropFace('dist', '%.2g', style='dist')
     yield Decoration(face_dist, position='top')
 
-    face_support = PropFace('support', '%.2g', style='red')
+    face_support = PropFace('support', '%.2g', style='support')
     yield Decoration(face_support, position='bottom')
 
     if node.is_leaf:
