@@ -216,9 +216,9 @@ function add_folder_style(menu) {
     const folder_outline = folder(folder_style, "outline");
 
     folder_outline.addBinding(view.outline, "opacity", {min: 0, max: 1, step: 0.1})
-        .on("change", () => style("outline").fillOpacity = view.outline.opacity);
+        .on("change", () => style("outline").opacity = view.outline.opacity);
     folder_outline.addBinding(view.outline, "color")
-        .on("change", () => style("outline").fill = view.outline.color);
+        .on("change", () => style("outline").stroke = view.outline.color);
     folder_outline.addBinding(view.outline, "width", {min: 0.1, max: 10})
         .on("change", () => style("outline").strokeWidth = view.outline.width);
 
