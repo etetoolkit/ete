@@ -724,12 +724,12 @@ function get_font_size(text) {
 
 // Apply svg transformation to flip the given text (bounded by bbox).
 function flip_with_bbox(text, bbox) {
-    addRotation(text, 180, bbox.x + bbox.width/2, bbox.y + bbox.height/2);
+    add_rotation(text, 180, bbox.x + bbox.width/2, bbox.y + bbox.height/2);
 }
 
 
 // Add rotation to element, with angle in degrees and centered around (cx, cy).
-function addRotation(element, angle, cx=0, cy=0) {
+function add_rotation(element, angle, cx=0, cy=0) {
     const svg = div_tree.children[0];
     const tr = svg.createSVGTransform();
     tr.setRotate(angle, cx, cy);
