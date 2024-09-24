@@ -566,7 +566,7 @@ function create_text(box, anchor, text, fs_max, tl, zx, zy, style="") {
 
     if (view.shape === "circular") {
         const angle = Math.atan2(zy * tl.y + y, zx * tl.x + x) * 180 / Math.PI;
-        addRotation(t, angle, x, y);
+        add_rotation(t, angle, x, y);
     }
 
     add_style(t, style);
