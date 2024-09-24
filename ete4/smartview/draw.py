@@ -13,7 +13,7 @@ from . import graphics as gr
 
 def draw(tree, shape, layouts=None, labels=None, viewport=None,
          zoom=(1, 1), limits=None, collapsed_ids=None, searches=None,
-         include_props=None, exclude_props=None,
+         include_props=None, exclude_props=None, is_leaf_fn=None,
          min_size=10, min_size_content=5):
     """Yield graphic commands to draw the tree."""
     drawer_class = {'rectangular': DrawerRect,
@@ -21,7 +21,7 @@ def draw(tree, shape, layouts=None, labels=None, viewport=None,
 
     drawer_obj = drawer_class(tree, layouts, labels, viewport,
                               zoom, limits, collapsed_ids, searches,
-                              include_props, exclude_props)
+                              include_props, exclude_props, is_leaf_fn)
 
     drawer_obj.MIN_SIZE = min_size
     drawer_obj.MIN_SIZE_CONTENT = min_size_content
@@ -37,7 +37,7 @@ class Drawer:
 
     def __init__(self, tree, layouts=None, labels=None, viewport=None,
                  zoom=(1, 1), limits=None, collapsed_ids=None, searches=None,
-                 include_props=None, exclude_props=None):
+                 include_props=None, exclude_props=None, is_leaf_fn=None):
         self.tree = tree
         self.layouts = layouts or []
         self.labels = [read_label(label) for label in (labels or [])]
@@ -46,8 +46,9 @@ class Drawer:
         self.xmin, self.xmax, self.ymin, self.ymax = limits or (0, 0, 0, 0)
         self.collapsed_ids = collapsed_ids or set()  # manually collapsed
         self.searches = searches or {}  # looks like {text: (results, parents)}
-        self.include_props = include_props
-        self.exclude_props = exclude_props
+        self.include_props = include_props  # properties included in tooltips
+        self.exclude_props = exclude_props  # properties excluded in tooltips
+        self.is_leaf_fn = is_leaf_fn  # function used to manually collapse
 
     def draw(self):
         """Yield commands to draw the tree."""
@@ -91,13 +92,13 @@ class Drawer:
             return x, y + box_node.dy
 
         # Deal with collapsed nodes.
-        is_manually_collapsed = it.node_id in self.collapsed_ids
+        is_collapsed = (it.node_id in self.collapsed_ids or
+                        self.is_leaf_fn and self.is_leaf_fn(it.node))
 
-        if self.collapsed and (is_manually_collapsed or
-                               not self.is_small(self.outline)):
+        if self.collapsed and (is_collapsed or not self.is_small(self.outline)):
             graphics += self.flush_collapsed()  # don't stack more collapsed
 
-        if is_manually_collapsed or self.is_small(box_node):
+        if is_collapsed or self.is_small(box_node):
             self.nodes_dx[-1] = max(self.nodes_dx[-1], box_node.dx)
             self.collapsed.append(it.node)
             self.outline = stack(self.outline, box_node)
@@ -339,10 +340,10 @@ class DrawerRect(Drawer):
 
     def __init__(self, tree, layouts=None, labels=None, viewport=None,
                  zoom=(1, 1), limits=None, collapsed_ids=None, searches=None,
-                 include_props=None, exclude_props=None):
+                 include_props=None, exclude_props=None, is_leaf_fn=None):
         super().__init__(tree, layouts, labels, viewport, zoom,
                          limits, collapsed_ids, searches,
-                         include_props, exclude_props)
+                         include_props, exclude_props, is_leaf_fn)
         # We don't really need to define this function, but we do it
         # for symmetry, because in DrawerCirc it needs to do more things.
 
@@ -407,10 +408,10 @@ class DrawerCirc(Drawer):
 
     def __init__(self, tree, layouts=None, labels=None, viewport=None,
                  zoom=(1, 1), limits=None, collapsed_ids=None, searches=None,
-                 include_props=None, exclude_props=None):
+                 include_props=None, exclude_props=None, is_leaf_fn=None):
         super().__init__(tree, layouts, labels, viewport, zoom,
                          limits, collapsed_ids, searches,
-                         include_props, exclude_props)
+                         include_props, exclude_props, is_leaf_fn)
 
         assert self.zoom[0] == self.zoom[1], 'zoom must be equal in x and y'
 

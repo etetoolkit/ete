@@ -957,6 +957,7 @@ cdef class Tree:
 
     def explore(self, name=None, layouts=None,
                 include_props=('dist', 'support'), exclude_props=None,
+                is_leaf_fn=None,
                 host='127.0.0.1', port=None, verbose=False,
                 compress=False, keep_server=False, open_browser=True):
         """Launch an interactive session to visualize the tree.
@@ -973,7 +974,7 @@ cdef class Tree:
 
         explorer.explore(
             self, name, layouts,
-            include_props, exclude_props,
+            include_props, exclude_props, is_leaf_fn,
             host, port, verbose,
             compress, keep_server, open_browser)
 
