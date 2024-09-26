@@ -75,7 +75,7 @@ function add_tab_main(tab, trees) {
         .on("click", view.label_expression);
 
     tab.addBinding(view, "select_text", {label: "select text"}).on("change", () => {
-        style("font").userSelect = (view.select_text ? "text" : "none");
+        style("text").userSelect = (view.select_text ? "text" : "none");
         div_tree.style.cursor = (view.select_text ? "text" : "auto");
         div_aligned.style.cursor = (view.select_text ? "text" : "ew-resize");
         set_boxes_clickable(!view.select_text);
@@ -195,9 +195,9 @@ function add_folder_style(menu) {
     const folder_box = folder(folder_node, "box", true);
 
     folder_box.addBinding(view.node.box, "opacity", {min: 0, max: 0.2, step: 0.001})
-      .on("change", () => style("node").opacity = view.node.box.opacity);
+      .on("change", () => style("nodebox").opacity = view.node.box.opacity);
     folder_box.addBinding(view.node.box, "color").on("change",
-        () => style("node").fill = view.node.box.color);
+        () => style("nodebox").fill = view.node.box.color);
 
     const folder_dot = folder(folder_node, "dot", true);
 
@@ -258,7 +258,7 @@ function add_folder_style(menu) {
     folder_text.addBinding(view.font_sizes, "auto", {label: "automatic size"})
       .on("change",
         () => {
-            style("font").fontSize =
+            style("text").fontSize =
                 view.font_sizes.auto ? "" : `${view.font_sizes.fixed}px`;
 
             if (view.font_sizes.auto && view.font_sizes.scroller)
@@ -270,7 +270,7 @@ function add_folder_style(menu) {
     function create_font_size_scroller() {
         return folder_text.addBinding(view.font_sizes, "fixed", {min: 0.1, max: 50})
             .on("change",
-                () => style("font").fontSize = `${view.font_sizes.fixed}px`);
+                () => style("text").fontSize = `${view.font_sizes.fixed}px`);
     }
 
     const folder_array = folder(folder_style, "array");
@@ -313,8 +313,8 @@ function style(name) {
         "distline": 2,
         "childrenline": 3,
         "nodedot": 4,
-        "font": 6,
-        "node": 7,
+        "text": 6,
+        "nodebox": 7,
         "outline": 8,
     };
     return document.styleSheets[0].cssRules[pos[name]].style;
