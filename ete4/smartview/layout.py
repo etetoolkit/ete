@@ -77,7 +77,7 @@ def to_elements(xs):
 
 
 DEFAULT_TREE_STYLE = {  # the default style of a tree
-    'node_styles': {  # to name styles that can be referenced in draw_nodes
+    'aliases': {  # to name styles that can be referenced in draw_nodes
         'dist': {'fill': '#888'},
         'support': {'fill': '#f88'},  # a light red
     }
@@ -92,14 +92,14 @@ DEFAULT_TREE_STYLE = {  # the default style of a tree
 
 def add_to_style(style, style_old):
     """Return a style dictionary merging properly style_old and style."""
-    # Update a copy of the old dict with the new (except for node_styles).
+    # Update a copy of the old dict with the new (except for aliases).
     style_new = style_old.copy()
-    style_new.update((k, v) for k, v in style.items() if k != 'node_styles')
+    style_new.update((k, v) for k, v in style.items() if k != 'aliases')
 
-    # Update node_styles (which is itself a dict).
-    node_styles = style_old.get('node_styles', {}).copy()
-    node_styles.update(style.get('node_styles', {}))
-    style_new['node_styles'] = node_styles
+    # Update aliases (which is itself a dict).
+    aliases = style_old.get('aliases', {}).copy()
+    aliases.update(style.get('aliases', {}))
+    style_new['aliases'] = aliases
 
     return style_new
 

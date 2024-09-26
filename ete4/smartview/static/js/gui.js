@@ -240,12 +240,12 @@ async function set_tree_style() {
         }
     }
 
-    if (style["node_styles"]) {
+    if (style["aliases"]) {
         // Add new stylesheet with all the ns_* names for the styles.
         // They will be used when elements with those styles appear in draw.js
         const sheet = new CSSStyleSheet();
-        for (const name in style["node_styles"]) {
-            const block = Object.entries(style["node_styles"][name])
+        for (const name in style["aliases"]) {
+            const block = Object.entries(style["aliases"][name])
                 .map(([prop, value]) => `${prop}: ${value}`).join("; ");
             sheet.insertRule(`.ns_${name} { ${block} }`);
         }

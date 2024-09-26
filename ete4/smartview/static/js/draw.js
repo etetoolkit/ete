@@ -634,8 +634,8 @@ function tree2circ(point, tl, z) {
 
 // Add "ns_" prefix to the style. A "style" can be a string with class name(s),
 // an object with the individual properties to set, or a list of styles.
-// This is useful when referring to classes in the css that comes from the
-// tree style (in its node_styles).
+// This is useful when referring to classes in the css that come from the
+// tree style (in its aliases).
 function add_ns_prefix(style) {
     if (typeof style === "string") {  // string with class name(s).
         const styles = [];
