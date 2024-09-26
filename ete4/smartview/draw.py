@@ -183,15 +183,15 @@ class Drawer:
                                            parent_of,
                                            style=style.get('hz-line', ''))
 
-            dot_center = (x + dx, y + bdy)
-            if self.is_visible(make_box(dot_center, (0, 0))):
-                commands.append(gr.draw_nodedot(dot_center,
-                                                style=style.get('dot', '')))
-
         if bdy0 != bdy1:
             commands += self.draw_childrenline((x + dx, y + bdy0),
                                                (x + dx, y + bdy1),
                                                style=style.get('vt-line', ''))
+
+        dot_center = (x + dx, y + bdy)
+        if self.is_visible(make_box(dot_center, (0, 0))):
+            commands.append(gr.draw_nodedot(dot_center,
+                                            style=style.get('dot', '')))
 
         return style, commands + node_commands, xmax
 
