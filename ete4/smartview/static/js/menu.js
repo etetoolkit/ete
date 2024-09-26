@@ -180,9 +180,7 @@ function add_folder_viewport(menu) {
 
     const folder_aligned = folder(folder_viewport, "aligned bar");
     folder_aligned.addBinding(view, "align_bar",
-        {readonly: true, label: "current position"});
-    folder_aligned.addBinding(view, "align_bar",
-        {readonly: true, min: 0, max: 100, label: "set position"})
+        {min: 0, max: 100, label: "position"})
         .on("change", (ev) => div_aligned.style.width = `${100 - ev.value}%`);
 }
 
