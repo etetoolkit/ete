@@ -222,33 +222,33 @@ function add_folder_style(menu) {
 
     const folder_lines = folder(folder_style, "lines");
 
-    const folder_length = folder(folder_lines, "length", true);
+    const folder_length = folder(folder_lines, "hz (horizontal/length)", true);
 
     folder_length.addBinding(view.line.length, "color")
-        .on("change", () => style("distline").stroke = view.line.length.color);
+        .on("change", () => style("hz_line").stroke = view.line.length.color);
     folder_length.addBinding(view.line.length, "width", {min: 0.1, max: 10})
         .on("change",
-            () => style("distline").strokeWidth = view.line.length.width);
+            () => style("hz_line").strokeWidth = view.line.length.width);
 
-    const folder_children = folder(folder_lines, "children", true);
+    const folder_children = folder(folder_lines, "vt (vertical/children)", true);
 
     folder_children.addBinding(view.line.children, "color")
-        .on("change", () => style("childrenline").stroke = view.line.children.color);
+        .on("change", () => style("vt_line").stroke = view.line.children.color);
     folder_children.addBinding(view.line.children, "width", {min: 0.1, max: 10})
         .on("change",
-            () => style("childrenline").strokeWidth = view.line.children.width);
+            () => style("vt_line").strokeWidth = view.line.children.width);
     folder_children.addBinding(view.line.children, "pattern",
           {options: to_opts(["solid", "dotted", "dotted - 2", "dotted - 4"])})
         .on("change", () => {
             const pattern = view.line.children.pattern;
             if (pattern === "solid")
-                style("childrenline").strokeDasharray = "";
+                style("vt_line").strokeDasharray = "";
             else if (pattern === "dotted")
-                style("childrenline").strokeDasharray = "1";
+                style("vt_line").strokeDasharray = "1";
             else if (pattern === "dotted - 2")
-                style("childrenline").strokeDasharray = "2";
+                style("vt_line").strokeDasharray = "2";
             else if (pattern === "dotted - 4")
-                style("childrenline").strokeDasharray = "4";
+                style("vt_line").strokeDasharray = "4";
         });
 
     const folder_text = folder(folder_style, "text");
@@ -308,8 +308,8 @@ function style(name) {
     // Based on the order in which they appear in gui.css.
     const pos = {
         "line": 1,
-        "distline": 2,
-        "childrenline": 3,
+        "hz_line": 2,
+        "vt_line": 3,
         "nodedot": 4,
         "text": 6,
         "nodebox": 7,

@@ -1,5 +1,5 @@
 """
-Basic graphical elements.
+Basic graphical commands.
 
 They are all lists whose first element is a string saying which kind
 of element it is (like "line"), and the rest are its parameters.
@@ -14,6 +14,13 @@ multiplied by the zoom or the radius, so not in pixels).
 from math import pi
 
 
+# In the following commands, "style" can be a string (referencing an alias
+# from tree_style), a dictionary (with style properties and their values),
+# or a list containing strings and dictionaries (to be combined).
+
+
+# Node drawing commands.
+
 # A nodebox is a high-level representations of a node (or a group of
 # collapsed nodes). It can have the name of the node, other
 # properties, and a list of texts (searches for which the node is a
@@ -23,27 +30,22 @@ def draw_nodebox(box, name='', props=None, node_id=None,
     return ['nodebox', box, name, props or {}, node_id or [],
             result_of or [], style]
 
-
-def draw_nodedot(point, style=''):
-    return ['nodedot', point, style]
-
 def draw_hz_line(p1, p2, parent_of=None, style=''):
     return ['hz-line', p1, p2, parent_of or [], style]
 
 def draw_vt_line(p1, p2, style=''):
     return ['vt-line', p1, p2, style]
 
+def draw_nodedot(point, style=''):
+    return ['nodedot', point, style]
+
 # An outline has the information to draw an approximate representation
 # of the interior of collapsed nodes.
 def draw_outline(points):
     return ['outline', points]
 
-# In the following elements, "style" can be a string (referencing a
-# css class), a dictionary (with css fields), or a list containing
-# strings and dictionaries (to be combined); and "kwargs" is a
-# dictionary with any extra information that we may want to pass (for
-# example, if a line is a distline of a node that is parent to the
-# result of a search, so we can draw it highlighted or something).
+
+# Other (drawing) commands.
 
 def draw_line(p1, p2, style=''):
     return ['line', p1, p2, style]

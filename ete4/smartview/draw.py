@@ -175,19 +175,21 @@ class Drawer:
         # Get the drawing commands and style that the user wants for this node.
         style, node_commands, xmax = self.draw_node(node, point, bdy)
 
-        # Draw the branch line ("distline") and a line spanning all children.
+        # Draw the branch line ("hz_line").
         if dx > 0:
             parent_of = [text for text,(_,parents) in self.searches.items()
                              if node in parents]
-            commands += self.draw_distline((x, y + bdy), (x + dx, y + bdy),
-                                           parent_of,
-                                           style=style.get('hz-line', ''))
+            commands += self.draw_hz_line((x, y + bdy), (x + dx, y + bdy),
+                                          parent_of,
+                                          style=style.get('hz-line', ''))
 
+        # Draw a line spanning all children ("vt_line").
         if bdy0 != bdy1:
-            commands += self.draw_childrenline((x + dx, y + bdy0),
-                                               (x + dx, y + bdy1),
-                                               style=style.get('vt-line', ''))
+            commands += self.draw_vt_line((x + dx, y + bdy0),
+                                          (x + dx, y + bdy1),
+                                          style=style.get('vt-line', ''))
 
+        # Draw a dot on the node tip.
         dot_center = (x + dx, y + bdy)
         if self.is_visible(make_box(dot_center, (0, 0))):
             commands.append(gr.draw_nodedot(dot_center,
@@ -380,14 +382,14 @@ class DrawerRect(Drawer):
         zx, zy = self.zoom
         return box.dy * zy < self.MIN_SIZE
 
-    def draw_distline(self, p1, p2, parent_of, style):
-        """Yield a line representing a length."""
+    def draw_hz_line(self, p1, p2, parent_of, style):
+        """Yield a "horizontal line" representing a length."""
         line = gr.draw_hz_line(p1, p2, parent_of, style)
         if not self.viewport or intersects_box(self.viewport, get_rect(line)):
             yield line
 
-    def draw_childrenline(self, p1, p2, style):
-        """Yield a line spanning children that starts at p1 and ends at p2."""
+    def draw_vt_line(self, p1, p2, style):
+        """Yield a "vertical line" spanning children, from p1 to p2."""
         line = gr.draw_vt_line(p1, p2, style)
         if not self.viewport or intersects_box(self.viewport, get_rect(line)):
             yield line
@@ -456,13 +458,13 @@ class DrawerCirc(Drawer):
         r, a, dr, da = box
         return (r + dr) * da * z < self.MIN_SIZE
 
-    def draw_distline(self, p1, p2, parent_of, style):
-        """Yield a line representing a length."""
+    def draw_hz_line(self, p1, p2, parent_of, style):
+        """Yield a "horizontal line" representing a length."""
         if -pi <= p1[1] < pi:  # NOTE: the angles p1[1] and p2[1] are equal
             yield gr.draw_hz_line(p1, p2, parent_of, style)
 
-    def draw_childrenline(self, p1, p2, style):
-        """Yield an arc spanning children that starts at p1 and ends at p2."""
+    def draw_vt_line(self, p1, p2, style):
+        """Yield a "vertical line" (arc) spanning children, from p1 to p2."""
         (r1, a1), (r2, a2) = p1, p2
         a1, a2 = clip_angles(a1, a2)
         if a1 < a2:

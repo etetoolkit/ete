@@ -14,11 +14,11 @@
     fill-opacity: 0;
 }
 
-.distline {  /* for lines with style "distline" */
+.hz_line {  /* for lines with style "hz_line" */
     stroke-width: 0.5;
 }
 
-.childrenline {  /* for lines with style "childrenline" */
+.vt_line {  /* for lines with style "vt_line" */
     stroke-width: 0.5;
 }
 

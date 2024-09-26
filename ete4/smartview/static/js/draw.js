@@ -317,7 +317,7 @@ function create_item(item, tl, zoom) {
     else if (item[0] === "hz-line") {
         const [ , p1, p2, parent_of, style] = item;
 
-        const styles = ["distline",
+        const styles = ["hz_line",
             parent_of.map(text => get_search_class(text, "parents")),
             add_ns_prefix(style)];
         return create_line(p1, p2, tl, zx, zy, styles);
@@ -325,7 +325,7 @@ function create_item(item, tl, zoom) {
     else if (item[0] === "vt-line") {
         const [ , p1, p2, style] = item;
 
-        const styles = ["childrenline", add_ns_prefix(style)];
+        const styles = ["vt_line", add_ns_prefix(style)];
         return view.shape === "rectangular" ?
             create_line(p1, p2, tl, zx, zy, styles) :
             create_arc(p1, p2, tl, zx, styles);
