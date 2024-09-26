@@ -52,7 +52,7 @@ async function draw_tree() {
         draw_aligned(items_per_panel[1], xmax);  // items in panel 1 (aligned)
 
         // Update variable that shows the number of visible nodes in the menu.
-        view.nnodes_visible = div_tree.getElementsByClassName("node").length;
+        view.nnodes_visible = div_tree.getElementsByClassName("nodebox").length;
 
         colorize_labels();
         colorize_tags();
@@ -254,7 +254,7 @@ function draw(element, items, tl, zoom, replace=true) {
 // interact with them (highlighting, opening their contextmenu, etc.).
 function put_nodes_in_background(g) {
     const first = g.children[0];  // first svg element, for reference
-    Array.from(g.getElementsByClassName("node")).forEach(e => {
+    Array.from(g.getElementsByClassName("nodebox")).forEach(e => {
         const bg_node = e.cloneNode();
         e.id = "foreground-" + bg_node.id;  // avoid id collisions
         e.removeAttribute("style");  // in case it is set
@@ -289,11 +289,11 @@ function create_item(item, tl, zoom) {
     if (item[0] === "nodebox") {
         const [ , box, name, props, node_id, result_of, style] = item;
 
-        const b = create_box(box, tl, zx, zy, ["node", style]);
+        const styles = ["nodebox", add_ns_prefix(style)];
+        const b = create_box(box, tl, zx, zy, styles);
 
         b.id = "node-" + node_id.join("_");  // used in tags
 
-        b.classList.add("node");
         result_of.forEach(t => b.classList.add(get_search_class(t, "results")));
 
         b.addEventListener("click", event =>
@@ -311,8 +311,24 @@ function create_item(item, tl, zoom) {
     else if (item[0] === "nodedot") {
         const [ , point, style] = item;
 
-        return create_circle(point, view.node.dot.radius, tl, zx, zy,
-                             ["nodedot", style]);
+        const styles = ["nodedot", add_ns_prefix(style)];
+        return create_circle(point, view.node.dot.radius, tl, zx, zy, styles);
+    }
+    else if (item[0] === "hz-line") {
+        const [ , p1, p2, parent_of, style] = item;
+
+        const styles = ["distline",
+            parent_of.map(text => get_search_class(text, "parents")),
+            add_ns_prefix(style)];
+        return create_line(p1, p2, tl, zx, zy, styles);
+    }
+    else if (item[0] === "vt-line") {
+        const [ , p1, p2, style] = item;
+
+        const styles = ["childrenline", add_ns_prefix(style)];
+        return view.shape === "rectangular" ?
+            create_line(p1, p2, tl, zx, zy, styles) :
+            create_arc(p1, p2, tl, zx, styles);
     }
     else if (item[0] === "outline") {
         const [ , points] = item;
@@ -320,34 +336,38 @@ function create_item(item, tl, zoom) {
         return create_outline(points, tl, zx, zy);
     }
     else if (item[0] === "line") {
-        const [ , p1, p2, style, kwargs] = item;
+        const [ , p1, p2, style] = item;
 
-        return create_line(p1, p2, tl, zx, zy, style, kwargs);
+        return create_line(p1, p2, tl, zx, zy, add_ns_prefix(style));
     }
     else if (item[0] === "arc") {
-        const [ , p1, p2, large, style, kwargs] = item;
+        const [ , p1, p2, style] = item;
 
-        return create_arc(p1, p2, large, tl, zx, style, kwargs);
+        return create_arc(p1, p2, tl, zx, add_ns_prefix(style));
     }
     else if (item[0] === "circle") {
         const [ , center, radius, style] = item;
 
-        return create_circle(center, radius, tl, zx, zy, style);
+        return create_circle(center, radius, tl, zx, zy, add_ns_prefix(style));
     }
     else if (item[0] === "box") {
         const [ , box, style] = item;
 
-        return create_box(box, tl, zx, zy, style);
+        return create_box(box, tl, zx, zy, add_ns_prefix(style));
     }
     else if (item[0] === "rect") {
         const [ , box, style] = item;
 
-        return create_rect(box, tl, zx, zy, style);
+        return create_rect(box, tl, zx, zy, add_ns_prefix(style));
     }
     else if (item[0] === "text") {
         const [ , box, anchor, text, fs_max, style] = item;
-        const s = typeof style === "string" ? get_class_name(style) : style;
-        return create_text(box, anchor, text, fs_max, tl, zx, zy, s);
+
+        // TODO: Remove the next line if I'm sure it shouldn't be there.
+        //        const s = typeof style === "string" ? get_class_name(style) : style;
+
+        return create_text(box, anchor, text, fs_max, tl, zx, zy,
+                           add_ns_prefix(style));
     }
     else if (item[0] === "array") {
         const [ , box, array] = item;
@@ -399,7 +419,6 @@ function create_box(box, tl, zx, zy, style="") {
     const b = view.shape === "rectangular" ?
                     create_rect(box, tl, zx, zy, style) :
                     create_asec(box, tl, zx, style);
-    b.classList.add("box");
     return b;
 }
 
@@ -509,18 +528,14 @@ function create_tooltip(name, props) {
 }
 
 
-function create_line(p1, p2, tl, zx, zy, style="", kwargs=null) {
+function create_line(p1, p2, tl, zx, zy, style="") {
     // Transform points to screen coordinates.
-    const pt1 = tree2rect(p1, tl, zx, zy),
-          pt2 = tree2rect(p2, tl, zx, zy);
-
-    // Classes, including the ones that mark the line as leading to a search.
-    const parent_of = kwargs?.parent_of || [];
-    const classes = "line " +
-        parent_of.map(text => get_search_class(text, "parents")).join(" ");
+    const [pt1, pt2] = view.shape === "rectangular" ?
+        [tree2rect(p1, tl, zx, zy), tree2rect(p2, tl, zx, zy)] :
+        [tree2circ(p1, tl, zx),     tree2circ(p2, tl, zx)];
 
     const element = create_svg_element("line", {
-        "class": classes,
+        "class": "line",
         "x1": pt1.x, "y1": pt1.y,
         "x2": pt2.x, "y2": pt2.y,
     });
@@ -531,17 +546,15 @@ function create_line(p1, p2, tl, zx, zy, style="", kwargs=null) {
 }
 
 
-function create_arc(p1, p2, large, tl, z, style="", kwargs=null) {
-    const n1 = tree2rect(p1, tl, z, z),
-          n2 = tree2rect(p2, tl, z, z);
-    const r = z * Math.sqrt(p1[0]*p1[0] + p1[1]*p1[1]);
-
-    const parent_of = kwargs?.parent_of || []
-    const classes = "line " +
-        parent_of.map(text => get_search_class(text, "parents")).join(" ");
+function create_arc(p1, p2, tl, z, style="") {
+    // NOTE: We use this only for  view.shape === "circular"  for the moment.
+    const n1 = tree2circ(p1, tl, z),
+          n2 = tree2circ(p2, tl, z);
+    const r = z * p1[0];
+    const large = p2[1] - p1[1] > Math.PI ? 1 : 0;
 
     const element = create_svg_element("path", {
-        "class": classes,
+        "class": "line",
         "d": `M ${n1.x} ${n1.y} A ${r} ${r} 0 ${large} 1 ${n2.x} ${n2.y}`,
     });
 
@@ -619,20 +632,42 @@ function tree2circ(point, tl, z) {
 }
 
 
-// Add to the given element a style. It can be a string with class name(s),
+// Add "ns_" prefix to the style. A "style" can be a string with class name(s),
 // an object with the individual properties to set, or a list of styles.
-function add_style(element, style) {
-    // style can be a string with class name(s), an object with
+// This is useful when referring to classes in the css that comes from the
+// tree style (in its node_styles).
+function add_ns_prefix(style) {
     if (typeof style === "string") {  // string with class name(s).
+        const styles = [];
+
         for (const name of style.split(" ").filter(x => x)) { // nonempty names
-            // We define the "layout_" styles in the css (in
+            // We define the "ns_" styles in the css (in
             // gui.js:set_tree_style()), and the "label_" styles with the gui.
-            const prefix = name.startsWith("label_") ? "" : "layout_";
+            const prefix = name.startsWith("label_") ? "" : "ns_";
             // draw.py sends labels styles with the "label_" prefix, and
             // label.js:colorize_label() expects their class start as "label_".
             // This may not be the clearest way to prefix things...
 
-            element.classList.add(prefix + name);
+            styles.push(prefix + name);
+        }
+
+        return styles.join(" ");
+    }
+    else if (style.length === undefined) {  // object with individual properties
+        return style;
+    }
+    else {  // list of styles to combine
+        return style.map(s => add_prefix(s));
+    }
+}
+
+
+// Add to the given element a style. It can be a string with class name(s),
+// an object with the individual properties to set, or a list of styles.
+function add_style(element, style) {
+    if (typeof style === "string") {  // string with class name(s).
+        for (const name of style.split(" ").filter(x => x)) { // nonempty names
+            element.classList.add(name);
         }
     }
     else if (style.length === undefined) {  // object with individual properties

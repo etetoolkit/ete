@@ -144,7 +144,7 @@ class Drawer:
         result_of = [text for text,(results,_) in self.searches.items()
                         if it.node in results]
         self.nodeboxes += self.draw_nodebox(it.node, it.node_id, box, result_of,
-                                            style.get('node', ''))
+                                            style.get('box', ''))
 
         return x_before, y_after
 
@@ -180,7 +180,8 @@ class Drawer:
             parent_of = [text for text,(_,parents) in self.searches.items()
                              if node in parents]
             commands += self.draw_distline((x, y + bdy), (x + dx, y + bdy),
-                                           parent_of)
+                                           parent_of,
+                                           style=style.get('hz-line', ''))
 
             dot_center = (x + dx, y + bdy)
             if self.is_visible(make_box(dot_center, (0, 0))):
@@ -189,7 +190,8 @@ class Drawer:
 
         if bdy0 != bdy1:
             commands += self.draw_childrenline((x + dx, y + bdy0),
-                                               (x + dx, y + bdy1))
+                                               (x + dx, y + bdy1),
+                                               style=style.get('vt-line', ''))
 
         return style, commands + node_commands, xmax
 
@@ -231,7 +233,7 @@ class Drawer:
         name, props = (('(collapsed)', {}) if not uncollapse else
                        (node0.name, self.get_nodeprops(node0)))
         box = gr.draw_nodebox(nodebox, name, props, node0.id, result_of,
-                              style.get('node', ''))
+                              style.get('collapsed', ''))
         self.nodeboxes.append(box)
 
         yield from graphics
@@ -378,16 +380,15 @@ class DrawerRect(Drawer):
         zx, zy = self.zoom
         return box.dy * zy < self.MIN_SIZE
 
-    def draw_distline(self, p1, p2, parent_of):
+    def draw_distline(self, p1, p2, parent_of, style):
         """Yield a line representing a length."""
-        kwargs = {'parent_of': parent_of} if parent_of else {}
-        line = gr.draw_line(p1, p2, 'distline', kwargs)
+        line = gr.draw_hz_line(p1, p2, parent_of, style)
         if not self.viewport or intersects_box(self.viewport, get_rect(line)):
             yield line
 
-    def draw_childrenline(self, p1, p2):
+    def draw_childrenline(self, p1, p2, style):
         """Yield a line spanning children that starts at p1 and ends at p2."""
-        line = gr.draw_line(p1, p2, 'childrenline')
+        line = gr.draw_vt_line(p1, p2, style)
         if not self.viewport or intersects_box(self.viewport, get_rect(line)):
             yield line
 
@@ -455,20 +456,17 @@ class DrawerCirc(Drawer):
         r, a, dr, da = box
         return (r + dr) * da * z < self.MIN_SIZE
 
-    def draw_distline(self, p1, p2, parent_of):
+    def draw_distline(self, p1, p2, parent_of, style):
         """Yield a line representing a length."""
         if -pi <= p1[1] < pi:  # NOTE: the angles p1[1] and p2[1] are equal
-            kwargs = {'parent_of': parent_of} if parent_of else {}
-            yield gr.draw_line(cartesian(p1), cartesian(p2), 'distline', kwargs)
+            yield gr.draw_hz_line(p1, p2, parent_of, style)
 
-    def draw_childrenline(self, p1, p2):
+    def draw_childrenline(self, p1, p2, style):
         """Yield an arc spanning children that starts at p1 and ends at p2."""
         (r1, a1), (r2, a2) = p1, p2
         a1, a2 = clip_angles(a1, a2)
         if a1 < a2:
-            is_large = a2 - a1 > pi
-            yield gr.draw_arc(cartesian((r1, a1)), cartesian((r2, a2)),
-                              is_large, 'childrenline')
+            yield gr.draw_vt_line((r1, a1), (r2, a2), style)
 
     def draw_nodebox(self, node, node_id, box, result_of, style):
         r, a, dr, da = box
@@ -671,8 +669,11 @@ def get_rect(element):
         points = element[1]
         x, y = points[0]
         return Box(x, y, 0, 0)  # we don't care for the rect of an outline
-    elif eid in ['line', 'arc']:  # not a great approximation for an arc...
+    elif eid in ['line', 'hz-line', 'vt-line']:
         (x1, y1), (x2, y2) = element[1], element[2]
+        return Box(min(x1, x2), min(y1, y2), abs(x2 - x1), abs(y2 - y1))
+    elif eid in ['arc']:  # not a great approximation for an arc...
+        (x1, y1), (x2, y2) = cartesian(element[1]), cartesian(element[2])
         return Box(min(x1, x2), min(y1, y2), abs(x2 - x1), abs(y2 - y1))
     elif eid == 'circle':
         (x, y), r = element[1], element[2]

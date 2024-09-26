@@ -27,6 +27,11 @@ def draw_nodebox(box, name='', props=None, node_id=None,
 def draw_nodedot(point, style=''):
     return ['nodedot', point, style]
 
+def draw_hz_line(p1, p2, parent_of=None, style=''):
+    return ['hz-line', p1, p2, parent_of or [], style]
+
+def draw_vt_line(p1, p2, style=''):
+    return ['vt-line', p1, p2, style]
 
 # An outline has the information to draw an approximate representation
 # of the interior of collapsed nodes.
@@ -40,11 +45,11 @@ def draw_outline(points):
 # example, if a line is a distline of a node that is parent to the
 # result of a search, so we can draw it highlighted or something).
 
-def draw_line(p1, p2, style='', kwargs=None):
-    return ['line', p1, p2, style, kwargs or {}]
+def draw_line(p1, p2, style=''):
+    return ['line', p1, p2, style]
 
-def draw_arc(p1, p2, large=False, style='', kwargs=None):
-    return ['arc', p1, p2, int(large), style, kwargs or {}]
+def draw_arc(p1, p2, style=''):
+    return ['arc', p1, p2, style]
 
 def draw_circle(center, radius=1, style=''):
     return ['circle', center, radius, style]
