@@ -192,7 +192,7 @@ function add_folder_style(menu) {
 
     const folder_box = folder(folder_node, "box", true);
 
-    folder_box.addBinding(view.node.box, "opacity", {min: 0, max: 0.2, step: 0.001})
+    folder_box.addBinding(view.node.box, "opacity", {min: 0, max: 1, step: 0.002})
       .on("change", () => style("nodebox").opacity = view.node.box.opacity);
     folder_box.addBinding(view.node.box, "color").on("change",
         () => style("nodebox").fill = view.node.box.color);

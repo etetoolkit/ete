@@ -83,8 +83,8 @@ const view = {
     // style
     node: {
         box: {
-            opacity: 0,
-            color: "#222",
+            opacity: 1,
+            color: "#FFF",
         },
         dot: {
             radius: 1,
