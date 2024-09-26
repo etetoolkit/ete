@@ -199,7 +199,7 @@ function add_folder_style(menu) {
 
     const folder_dot = folder(folder_node, "dot", true);
 
-    folder_dot.addBinding(view.node.dot, "radius", {min: 0, max: 10, step: 0.1})
+    folder_dot.addBinding(view.node.dot, "radius", {min: 0, max: 20, step: 0.1})
       .on("change", () => {
         Array.from(div_tree.getElementsByClassName("nodedot")).forEach(
             e => e.setAttribute("r", view.node.dot.radius));
