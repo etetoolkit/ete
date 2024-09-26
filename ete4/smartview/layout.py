@@ -54,6 +54,14 @@ class Layout:
         self.draw_collapsed = draw_collapsed or (
             lambda nodes: [x for node in nodes for x in self.draw_node(node)])
 
+    @property
+    def tree_style(self):
+        return self._tree_style
+
+    @tree_style.setter
+    def tree_style(self, value):
+        self._tree_style = add_to_style(value, DEFAULT_TREE_STYLE)
+
 
 def to_elements(xs):
     """Return a list of the elements of iterable xs as Decorations/dicts."""
@@ -66,6 +74,34 @@ def to_elements(xs):
 
     # Return elements, wrapped as Decorations if they need it.
     return [x if type(x) in [Decoration, dict] else Decoration(x) for x in xs]
+
+
+DEFAULT_TREE_STYLE = {  # the default style of a tree
+    'node_styles': {  # to name styles that can be referenced in draw_nodes
+        'dist': {'fill': '#888'},
+        'support': {'fill': '#f88'},  # a light red
+    }
+}
+
+# A tree style can have things like:
+#   my_tree_style = {
+#      'shape': 'rectangular',  # or 'circular'
+#      'min-size': 10,
+#      'min-size-content': 5,
+#   }
+
+def add_to_style(style, style_old):
+    """Return a style dictionary merging properly style_old and style."""
+    # Update a copy of the old dict with the new (except for node_styles).
+    style_new = style_old.copy()
+    style_new.update((k, v) for k, v in style.items() if k != 'node_styles')
+
+    # Update node_styles (which is itself a dict).
+    node_styles = style_old.get('node_styles', {}).copy()
+    node_styles.update(style.get('node_styles', {}))
+    style_new['node_styles'] = node_styles
+
+    return style_new
 
 
 # A decoration is a face with a position ("top", "bottom", "right",
@@ -93,38 +129,6 @@ default_anchors = {'top':     (-1, 1),   # left, bottom
                    'aligned': (-1, 0)}   # left, middle
 
 
-# The default style of a tree.
-
-DEFAULT_TREE_STYLE = {
-    'node_styles': {  # to name styles that can be referenced in draw_nodes
-        'dist': {'fill': '#888'},
-        'support': {'fill': '#f88'},  # a light red
-    }
-}
-
-# We could have things like:
-# DEFAULT_TREE_STYLE = {
-#    'shape': 'rectangular',  # or 'circular'
-#    'min-size': 10,
-#    'min-size-content': 5,
-#}
-
-def add_to_style(style, style_old=None):
-    """Return a style dictionary merging properly style_old and style."""
-    style_old = style_old or DEFAULT_TREE_STYLE
-
-    # Update a copy of the old dict with the new (except for node_styles).
-    style_new = style_old.copy()
-    style_new.update((k, v) for k, v in style.items() if k != 'node_styles')
-
-    # Update node_styles (which is itself a dict).
-    node_styles = style_old.get('node_styles', {}).copy()
-    node_styles.update(style.get('node_styles', {}))
-    style_new['node_styles'] = node_styles
-
-    return style_new
-
-
 # The default layout.
 
 def default_draw_node(node):
@@ -142,7 +146,6 @@ def default_draw_collapsed(nodes):
 
 DEFAULT_LAYOUT = Layout(
     name='default',
-    tree_style=DEFAULT_TREE_STYLE,
     draw_node=default_draw_node,
     draw_collapsed=default_draw_collapsed)
 
