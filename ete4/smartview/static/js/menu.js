@@ -119,7 +119,7 @@ function add_tab_advanced(tab) {
     const folder_sort = folder(tab, "sort");
     folder_sort.addBinding(view.sorting, "key");
     folder_sort.addBinding(view.sorting, "reverse");
-    folder_sort.addButton({title: "apply"}).on("click", view.sorting.sort)
+    folder_sort.addButton({title: "apply"}).on("click", view.sorting.sort);
 
     const folder_circ = folder(tab, "circular");
 
