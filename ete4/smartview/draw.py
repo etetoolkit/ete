@@ -152,8 +152,9 @@ class Drawer:
         """Return the node content's style, graphic commands and its xmax."""
         x, y = point
         dx, dy = self.content_size(node)
+        box = Box(x, y, dx, dy)
 
-        if not self.is_visible(Box(x, y, dx, dy)):
+        if not self.is_visible(box):
             return {}, [], x + dx
 
         commands = []  # will contain the graphics commands to return
@@ -173,7 +174,7 @@ class Drawer:
         self.bdy_dys[-1].append( (bdy, dy) )
 
         # Get the drawing commands and style that the user wants for this node.
-        style, node_commands, xmax = self.draw_node(node, point, bdy)
+        style, node_commands, xmax = self.draw_nodes([node], box, bdy)
 
         # Draw the branch line ("hz_line").
         if dx > 0:
@@ -205,14 +206,17 @@ class Drawer:
             if any(node in results or node in parents
                    for node in self.collapsed)]
 
-        graphics = []  # will contain the graphic elements to draw
+        graphics = []  # will contain the graphic commands to draw
 
         node0 = self.collapsed[0]
         uncollapse = len(self.collapsed) == 1 and node0.is_leaf  # single leaf?
 
         if not uncollapse:  # normal case: we represent the collapsed nodes
             graphics += self.draw_outline()  # it updates self.bdy_dys too
-            style, collapsed_graphics, xmax = self.draw_collapsed()
+
+            style, collapsed_graphics, xmax = self.draw_nodes(
+                self.collapsed, self.outline, self.outline.dy / 2)
+
             graphics += collapsed_graphics
         else:  # forced uncollapse: we simply draw node0's content
             self.bdy_dys.append([])  # empty list of extra bdy_dys to add
@@ -265,16 +269,14 @@ class Drawer:
                     if k in node.props and k not in excluded}
         # NOTE: So the properties appear in the order given in included.
 
-    def draw_node(self, node, point, bdy, circular):  # bdy: branch dy (height)
-        """Return style, graphic commands, and xmax for representing a node."""
-        content_box = make_box(point, self.content_size(node))
-
+    def draw_nodes(self, nodes, box, bdy, circular):  # bdy: branch dy (height)
+        """Return style, graphic commands, and xmax for representing nodes."""
         style = {}  # style
         decos = []  # decorations
 
         # Add style and decorations from layouts.
         for layout in self.layouts:
-            for element in layout.draw_node(node):
+            for element in layout.draw_node(nodes[0], tuple(self.collapsed)):
                 if type(element) is dict:
                     style.update(element)
                 else:
@@ -282,38 +284,12 @@ class Drawer:
 
         # Add decorations from labels.
         decos.extend(make_deco(label) for label in self.labels
-                     if is_valid_label(label, node.is_leaf))
+                     if is_valid_label(label, node.is_leaf or self.collapsed))
 
         # Get the graphic commands, and xmax, from applying the decorations.
-        commands, xmax = draw_decorations(decos, [node], self.xmin,
-                                          content_box, bdy, self.zoom,
-                                          self.MIN_SIZE_CONTENT,
-                                          circular=circular)
-
-        return style, commands, xmax
-
-    def draw_collapsed(self, circular):
-        """Return style, graphic commands, and xmax for the nodes in self.collapsed."""
-        _, _, _, dy0 = self.outline
-
-        style = {}  # style
-        decos = []  # decorations
-
-        # Add style and decorations from layouts.
-        for layout in self.layouts:
-            for element in layout.draw_collapsed(self.collapsed):
-                if type(element) is dict:
-                    style.update(element)
-                else:
-                    decos.append(element)  # from layouts
-
-        # Add decorations from labels.
-        decos.extend(make_deco(label) for label in self.labels  # from labels
-                     if is_valid_label(label, is_leaf=True))
-
-        commands, xmax = draw_decorations(decos, self.collapsed, self.xmin,
-                                          self.outline, dy0/2, self.zoom,
-                                          self.MIN_SIZE_CONTENT, collapsed=True,
+        commands, xmax = draw_decorations(decos, nodes, self.xmin, box, bdy,
+                                          self.zoom, self.MIN_SIZE_CONTENT,
+                                          collapsed=self.collapsed,
                                           circular=circular)
 
         return style, commands, xmax
@@ -398,13 +374,9 @@ class DrawerRect(Drawer):
         props = self.get_nodeprops(node)
         yield gr.draw_nodebox(box, node.name, props, node_id, result_of, style)
 
-    def draw_node(self, node, point, bdy):  # bdy: branch dy (height)
-        """Return graphic commands for the contents of the node, and xmax."""
-        return super().draw_node(node, point, bdy, circular=False)
-
-    def draw_collapsed(self):
-        """Return graphic commands for the nodes in self.collapsed, and xmax."""
-        return super().draw_collapsed(circular=False)
+    def draw_nodes(self, nodes, box, bdy):  # bdy: branch dy (height)
+        """Return graphic commands for the contents of nodes, and xmax."""
+        return super().draw_nodes(nodes, box, bdy, circular=False)
 
 
 class DrawerCirc(Drawer):
@@ -478,13 +450,9 @@ class DrawerCirc(Drawer):
             yield gr.draw_nodebox(Box(r, a1, dr, a2 - a1),
                                   node.name, props, node_id, result_of, style)
 
-    def draw_node(self, node, point, bda):  # bda: branch da (height)
-        """Return graphic commands for the contents of the node, and xmax."""
-        return super().draw_node(node, point, bda, circular=True)
-
-    def draw_collapsed(self):
-        """Return graphic commands for the nodes in self.collapsed, and xmax."""
-        return super().draw_collapsed(circular=True)
+    def draw_nodes(self, nodes, box, bda):  # bda: branch da (height)
+        """Return graphic commands for the contents of nodes, and xmax."""
+        return super().draw_nodes(nodes, box, bda, circular=True)
 
 
 def clip_angles(a1, a2):
