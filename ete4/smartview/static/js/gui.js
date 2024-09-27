@@ -259,6 +259,12 @@ async function set_tree_style() {
 
 // Fill the folder menus.layouts with the actual available layouts.
 async function populate_layouts() {
+    // First clear the existing layouts from the menu.
+    for (const layout of menus.layouts.children) {
+        menus.layouts.remove(layout);
+    }
+
+    // Get list of existing layouts for the current tree and populate the menu.
     const layouts = await api(`/trees/${get_tid()}/layouts`);
 
     for (const layout of layouts) {
@@ -307,6 +313,7 @@ async function on_tree_change() {
     reset_node_count();
     reset_zoom();
     reset_position();
+    await populate_layouts();
     draw_minimap();
     update();
 
