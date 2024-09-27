@@ -9,37 +9,37 @@
  * and it depends on the order in which they appear in this file.
  */
 
-.line {
+.line {  /* all lines and arcs will inherit this */
     stroke: #000;
     fill-opacity: 0;
 }
 
-.layout_distline {
+.hz_line {  /* for lines with style "hz_line" */
     stroke-width: 0.5;
 }
 
-.layout_childrenline {
+.vt_line {  /* for lines with style "vt_line" */
     stroke-width: 0.5;
 }
 
-.layout_nodedot {
+.nodedot {
     opacity: 1;
     fill: #00F;
 }
 
-.box {
+.box {  /* not referenced in menu.js, but inherited by any box (nodeboxes too) */
     stroke: #000;
     stroke-width: 0.5;
 }
 
-.text {
+.text {  /* all texts inherit this */
     font-family: sans-serif;
     user-select: none;
 }
 
-.node {
-    opacity: 0;
-    fill: #222;
+.nodebox {
+    fill: white;
+    stroke: white;
 }
 
 .outline {

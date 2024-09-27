@@ -1,6 +1,7 @@
 // Functions related to the top-right menus.
 
-import { view, menus, to_opts, on_tree_change, on_shape_change, show_minimap }
+import { view, menus, to_opts, on_tree_change, on_shape_change,
+    set_tree_style, show_minimap }
     from "./gui.js";
 import { draw_minimap } from "./minimap.js";
 import { update } from "./draw.js";
@@ -14,7 +15,7 @@ function init_menus(trees) {
     const pane = new Pane({
         title: "Control panel",
         container: div_menu,
-        expanded: true, ///////false,
+        expanded: true,
     });
     menus.pane = pane;
 
@@ -75,7 +76,7 @@ function add_tab_main(tab, trees) {
         .on("click", view.label_expression);
 
     tab.addBinding(view, "select_text", {label: "select text"}).on("change", () => {
-        style("font").userSelect = (view.select_text ? "text" : "none");
+        style("text").userSelect = (view.select_text ? "text" : "none");
         div_tree.style.cursor = (view.select_text ? "text" : "auto");
         div_aligned.style.cursor = (view.select_text ? "text" : "ew-resize");
         set_boxes_clickable(!view.select_text);
@@ -119,7 +120,7 @@ function add_tab_advanced(tab) {
     const folder_sort = folder(tab, "sort");
     folder_sort.addBinding(view.sorting, "key");
     folder_sort.addBinding(view.sorting, "reverse");
-    folder_sort.addButton({title: "apply"}).on("click", view.sorting.sort)
+    folder_sort.addButton({title: "apply"}).on("click", view.sorting.sort);
 
     const folder_circ = folder(tab, "circular");
 
@@ -180,9 +181,7 @@ function add_folder_viewport(menu) {
 
     const folder_aligned = folder(folder_viewport, "aligned bar");
     folder_aligned.addBinding(view, "align_bar",
-        {readonly: true, label: "current position"});
-    folder_aligned.addBinding(view, "align_bar",
-        {readonly: true, min: 0, max: 100, label: "set position"})
+        {min: 0, max: 100, label: "position"})
         .on("change", (ev) => div_aligned.style.width = `${100 - ev.value}%`);
 }
 
@@ -190,18 +189,24 @@ function add_folder_viewport(menu) {
 function add_folder_style(menu) {
     const folder_style = folder(menu, "style");
 
+    folder_style.addButton({title: "use original tree style"})
+      .on("click", async () => {
+        await set_tree_style();
+        update();
+      });
+
     const folder_node = folder(folder_style, "node");
 
     const folder_box = folder(folder_node, "box", true);
 
-    folder_box.addBinding(view.node.box, "opacity", {min: 0, max: 0.2, step: 0.001})
-      .on("change", () => style("node").opacity = view.node.box.opacity);
+    folder_box.addBinding(view.node.box, "opacity", {min: 0, max: 1, step: 0.002})
+      .on("change", () => style("nodebox").opacity = view.node.box.opacity);
     folder_box.addBinding(view.node.box, "color").on("change",
-        () => style("node").fill = view.node.box.color);
+        () => style("nodebox").fill = view.node.box.color);
 
     const folder_dot = folder(folder_node, "dot", true);
 
-    folder_dot.addBinding(view.node.dot, "radius", {min: 0, max: 10, step: 0.1})
+    folder_dot.addBinding(view.node.dot, "radius", {min: 0, max: 20, step: 0.1})
       .on("change", () => {
         Array.from(div_tree.getElementsByClassName("nodedot")).forEach(
             e => e.setAttribute("r", view.node.dot.radius));
@@ -216,41 +221,41 @@ function add_folder_style(menu) {
     const folder_outline = folder(folder_style, "outline");
 
     folder_outline.addBinding(view.outline, "opacity", {min: 0, max: 1, step: 0.1})
-        .on("change", () => style("outline").fillOpacity = view.outline.opacity);
+        .on("change", () => style("outline").opacity = view.outline.opacity);
     folder_outline.addBinding(view.outline, "color")
-        .on("change", () => style("outline").fill = view.outline.color);
+        .on("change", () => style("outline").stroke = view.outline.color);
     folder_outline.addBinding(view.outline, "width", {min: 0.1, max: 10})
         .on("change", () => style("outline").strokeWidth = view.outline.width);
 
     const folder_lines = folder(folder_style, "lines");
 
-    const folder_length = folder(folder_lines, "length", true);
+    const folder_length = folder(folder_lines, "hz (horizontal/length)", true);
 
     folder_length.addBinding(view.line.length, "color")
-        .on("change", () => style("distline").stroke = view.line.length.color);
+        .on("change", () => style("hz_line").stroke = view.line.length.color);
     folder_length.addBinding(view.line.length, "width", {min: 0.1, max: 10})
         .on("change",
-            () => style("distline").strokeWidth = view.line.length.width);
+            () => style("hz_line").strokeWidth = view.line.length.width);
 
-    const folder_children = folder(folder_lines, "children", true);
+    const folder_children = folder(folder_lines, "vt (vertical/children)", true);
 
     folder_children.addBinding(view.line.children, "color")
-        .on("change", () => style("childrenline").stroke = view.line.children.color);
+        .on("change", () => style("vt_line").stroke = view.line.children.color);
     folder_children.addBinding(view.line.children, "width", {min: 0.1, max: 10})
         .on("change",
-            () => style("childrenline").strokeWidth = view.line.children.width);
+            () => style("vt_line").strokeWidth = view.line.children.width);
     folder_children.addBinding(view.line.children, "pattern",
           {options: to_opts(["solid", "dotted", "dotted - 2", "dotted - 4"])})
         .on("change", () => {
             const pattern = view.line.children.pattern;
             if (pattern === "solid")
-                style("childrenline").strokeDasharray = "";
+                style("vt_line").strokeDasharray = "";
             else if (pattern === "dotted")
-                style("childrenline").strokeDasharray = "1";
+                style("vt_line").strokeDasharray = "1";
             else if (pattern === "dotted - 2")
-                style("childrenline").strokeDasharray = "2";
+                style("vt_line").strokeDasharray = "2";
             else if (pattern === "dotted - 4")
-                style("childrenline").strokeDasharray = "4";
+                style("vt_line").strokeDasharray = "4";
         });
 
     const folder_text = folder(folder_style, "text");
@@ -258,7 +263,7 @@ function add_folder_style(menu) {
     folder_text.addBinding(view.font_sizes, "auto", {label: "automatic size"})
       .on("change",
         () => {
-            style("font").fontSize =
+            style("text").fontSize =
                 view.font_sizes.auto ? "" : `${view.font_sizes.fixed}px`;
 
             if (view.font_sizes.auto && view.font_sizes.scroller)
@@ -270,7 +275,7 @@ function add_folder_style(menu) {
     function create_font_size_scroller() {
         return folder_text.addBinding(view.font_sizes, "fixed", {min: 0.1, max: 50})
             .on("change",
-                () => style("font").fontSize = `${view.font_sizes.fixed}px`);
+                () => style("text").fontSize = `${view.font_sizes.fixed}px`);
     }
 
     const folder_array = folder(folder_style, "array");
@@ -310,11 +315,11 @@ function style(name) {
     // Based on the order in which they appear in gui.css.
     const pos = {
         "line": 1,
-        "distline": 2,
-        "childrenline": 3,
+        "hz_line": 2,
+        "vt_line": 3,
         "nodedot": 4,
-        "font": 6,
-        "node": 7,
+        "text": 6,
+        "nodebox": 7,
         "outline": 8,
     };
     return document.styleSheets[0].cssRules[pos[name]].style;

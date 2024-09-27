@@ -420,6 +420,7 @@ def get_drawing_kwargs(tree_id, args):
 
         include_props = g_options[name]['include_props']
         exclude_props = g_options[name]['exclude_props']
+        is_leaf_fn = g_options[name]['is_leaf_fn']
 
         min_size = get('min_size', 10)
         assert min_size > 0, 'min_size must be > 0'
@@ -433,6 +434,7 @@ def get_drawing_kwargs(tree_id, args):
                 'limits': limits, 'collapsed_ids': collapsed_ids,
                 'searches': searches,
                 'include_props': include_props, 'exclude_props': exclude_props,
+                'is_leaf_fn': is_leaf_fn,
                 'min_size': min_size, 'min_size_content': min_size_content}
     except (ValueError, AssertionError) as e:
         abort(400, str(e))
@@ -631,10 +633,11 @@ def get_trees_from_nexus_or_newick(btext, name_newick):
 
 def explore(tree, name=None, layouts=None,
             include_props=('dist', 'support'), exclude_props=None,
+            is_leaf_fn=None,
             host='127.0.0.1', port=None, verbose=False,
             compress=None, keep_server=False, open_browser=True):
     """Run the web server, add tree and open a browser to visualize it."""
-    add_tree(tree, name, layouts, include_props, exclude_props)
+    add_tree(tree, name, layouts, include_props, exclude_props, is_leaf_fn)
 
     if compress is not None:
         g_config['compress'] = compress  # global configuration
@@ -657,7 +660,8 @@ def explore(tree, name=None, layouts=None,
 
 
 def add_tree(tree, name=None, layouts=None,
-             include_props=('dist', 'support'), exclude_props=None):
+             include_props=('dist', 'support'), exclude_props=None,
+             is_leaf_fn=None):
     """Add tree, layouts, etc to the global variables, and return its name."""
     name = name or make_name()  # in case we didn't receive one
 
@@ -670,6 +674,7 @@ def add_tree(tree, name=None, layouts=None,
     g_options[name] = {
         'include_props': include_props,
         'exclude_props': exclude_props,
+        'is_leaf_fn': is_leaf_fn,
     }
 
     return name

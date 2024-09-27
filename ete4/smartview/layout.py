@@ -6,6 +6,7 @@ Decoration), extra labels (Label), and the default tree style.
 from collections import namedtuple
 from dataclasses import dataclass, field
 from functools import lru_cache
+import inspect
 
 from .faces import Face, PropFace
 
@@ -15,22 +16,18 @@ from .faces import Face, PropFace
 # They compose. Using several layouts will add extra graphic
 # representations, and/or overwrite some styles from previous layouts.
 #
-# They have a name and 3 functions that provide the style and
-# decorations related to:
-#   the full tree (for example rectangular/circular, with scale, etc.)
-#   each visible node (called for each node)
-#   each group of collapsed sibling nodes (too small to fully represent)
+# They have a name and two functions providing the style and decorations of:
+# - the full tree (for example rectangular/circular, with scale, etc.)
+# - each visible node (called for each node) or group of collapsed sibling nodes
 
 class Layout:
     """Contains all the info about how to represent a tree."""
 
-    def __init__(self, name, tree_style=None, draw_node=None, draw_collapsed=None,
-                 cache_size=None):
+    def __init__(self, name, tree_style=None, draw_node=None, cache_size=None):
         # Check types.
         assert type(name) is str
-        assert not tree_style or type(tree_style) is dict or callable(tree_style)
-        assert not draw_node or callable(draw_node)
-        assert not draw_collapsed or callable(draw_collapsed)
+        assert tree_style is None or type(tree_style) is dict or callable(tree_style)
+        assert draw_node is None or callable(draw_node)
 
         # Name. This is mainly to activate/deactivate the layout in the gui.
         self.name = name
@@ -38,21 +35,36 @@ class Layout:
         # Tree style. Can be a dict or a function of a tree that returns a dict.
         self.tree_style = tree_style or {}
 
-        # - Representation of a node (style and decorations) -
+        # Representation of a node (style and decorations).
+        if draw_node is None:
+            self.draw_node = lambda node, collapsed: ()
+            return
 
         # We use an auxiliary function to cache its results.
-        @lru_cache(maxsize=cache_size)
-        def cached_draw_node(node):
-            return to_elements(draw_node(node))
+        arity = len(inspect.signature(draw_node).parameters)
+        if arity == 1:  # draw_node(node) (unspecified what to do with collapsed)
+            @lru_cache(maxsize=cache_size)
+            def cached_draw_node(node, collapsed):
+                if not collapsed:  # just draw the node
+                    return to_elements(draw_node(node))
+                else:  # get representations from all siblings
+                    return [x for n in collapsed for x in to_elements(draw_node(n))]
+        elif arity == 2:  # draw_node(node, collapsed) (fully specified)
+            @lru_cache(maxsize=cache_size)
+            def cached_draw_node(node, collapsed):
+                return to_elements(draw_node(node, collapsed))
+        else:
+            raise ValueError('draw_node can have only 1 or 2 arguments.')
 
-        # The function defining the representation of a node.
-        self.draw_node = cached_draw_node if draw_node else (lambda node: [])
+        self.draw_node = cached_draw_node  # use the auxiliary caching function
 
-        # - Representation of a group of collapsed sibling nodes -
+    @property
+    def tree_style(self):
+        return self._tree_style
 
-        # The default function uses representations from all collapsed siblings.
-        self.draw_collapsed = draw_collapsed or (
-            lambda nodes: [x for node in nodes for x in self.draw_node(node)])
+    @tree_style.setter
+    def tree_style(self, value):
+        self._tree_style = add_to_style(value, DEFAULT_TREE_STYLE)
 
 
 def to_elements(xs):
@@ -66,6 +78,34 @@ def to_elements(xs):
 
     # Return elements, wrapped as Decorations if they need it.
     return [x if type(x) in [Decoration, dict] else Decoration(x) for x in xs]
+
+
+DEFAULT_TREE_STYLE = {  # the default style of a tree
+    'aliases': {  # to name styles that can be referenced in draw_nodes
+        'dist': {'fill': '#888'},
+        'support': {'fill': '#f88'},  # a light red
+    }
+}
+
+# A tree style can have things like:
+#   my_tree_style = {
+#      'shape': 'rectangular',  # or 'circular'
+#      'min-size': 10,
+#      'min-size-content': 5,
+#   }
+
+def add_to_style(style, style_old):
+    """Return a style dictionary merging properly style_old and style."""
+    # Update a copy of the old dict with the new (except for aliases).
+    style_new = style_old.copy()
+    style_new.update((k, v) for k, v in style.items() if k != 'aliases')
+
+    # Update aliases (which is itself a dict).
+    aliases = style_old.get('aliases', {}).copy()
+    aliases.update(style.get('aliases', {}))
+    style_new['aliases'] = aliases
+
+    return style_new
 
 
 # A decoration is a face with a position ("top", "bottom", "right",
@@ -93,43 +133,20 @@ default_anchors = {'top':     (-1, 1),   # left, bottom
                    'aligned': (-1, 0)}   # left, middle
 
 
-# The default style of a tree.
-
-DEFAULT_TREE_STYLE = {
-    'node_styles': {  # to name styles that can be referenced in draw_nodes
-        'grey': {'fill': '#888'},
-        'red': {'fill': '#f88'},  # a light red
-    }
-}
-
-# We could have things like:
-# DEFAULT_TREE_STYLE = {
-#    'shape': 'rectangular',  # or 'circular'
-#    'min-size': 10,
-#    'min-size-content': 5,
-#}
-
-
 # The default layout.
 
-def default_draw_node(node):
-    face_dist = PropFace('dist', '%.2g', style='grey')
-    yield Decoration(face_dist, position='top')
+def default_draw_node(node, collapsed):
+    if not collapsed:
+        face_dist = PropFace('dist', '%.2g', style='dist')
+        yield Decoration(face_dist, position='top')
 
-    face_support = PropFace('support', '%.2g', style='red')
-    yield Decoration(face_support, position='bottom')
+        face_support = PropFace('support', '%.2g', style='support')
+        yield Decoration(face_support, position='bottom')
 
-    if node.is_leaf:
+    if node.is_leaf or collapsed:
         yield Decoration(PropFace('name'), position='right')
 
-def default_draw_collapsed(nodes):
-    yield Decoration(PropFace('name'), position='right', anchor=(-1, 0))
-
-DEFAULT_LAYOUT = Layout(
-    name='default',
-    tree_style=DEFAULT_TREE_STYLE,
-    draw_node=default_draw_node,
-    draw_collapsed=default_draw_collapsed)
+DEFAULT_LAYOUT = Layout(name='default', draw_node=default_draw_node)
 
 
 # Description of a label that we want to add to the representation of a node.

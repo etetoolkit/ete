@@ -14,7 +14,7 @@ import { label_expression, label_property } from "./label.js";
 
 export { view, menus, on_tree_change, on_shape_change, show_minimap,
          tree_command, get_tid, on_box_click, on_box_wheel, coordinates,
-         reset_view, show_help, sort, to_opts };
+         reset_view, show_help, sort, to_opts, set_tree_style };
 
 
 // Run main() when the page is loaded.
@@ -83,8 +83,8 @@ const view = {
     // style
     node: {
         box: {
-            opacity: 0,
-            color: "#222",
+            opacity: 1,
+            color: "#FFF",
         },
         dot: {
             radius: 1,
@@ -218,23 +218,36 @@ async function set_tree_style() {
 
     const style = await api(`/trees/${get_tid()}/style?${qs}`);
 
+    // Set rectangular or circular shape.
     if (style.shape)
         view.shape = style.shape;
 
+    // Set collapsing sizes.
     if (style["min-size"])
         view.min_size = style["min-size"];
 
     if (style["min-size-content"])
         view.min_size_content = style["min-size-content"];
 
-    if (style["node_styles"]) {
-        // Add new stylesheet with all the layout_* names for the styles.
+    // Update styles for general node graphical elements.
+    for (const [name, pos] of
+             [["box", 7], ["dot", 4], ["hz-line", 2], ["vt-line", 3]]) {
+        // Position pos based on the order in which they appear in gui.css.
+        if (style[name]) {
+            document.styleSheets[0].cssRules[pos].style.cssText +=
+                Object.entries(style[name]).map(([k, v]) => `${k}: ${v}`)
+                .join("; ");
+        }
+    }
+
+    if (style["aliases"]) {
+        // Add new stylesheet with all the ns_* names for the styles.
         // They will be used when elements with those styles appear in draw.js
         const sheet = new CSSStyleSheet();
-        for (const name in style["node_styles"]) {
-            const block = Object.entries(style["node_styles"][name])
+        for (const name in style["aliases"]) {
+            const block = Object.entries(style["aliases"][name])
                 .map(([prop, value]) => `${prop}: ${value}`).join("; ");
-            sheet.insertRule(`.layout_${name} { ${block} }`);
+            sheet.insertRule(`.ns_${name} { ${block} }`);
         }
         document.adoptedStyleSheets = [sheet];
     }
@@ -246,6 +259,12 @@ async function set_tree_style() {
 
 // Fill the folder menus.layouts with the actual available layouts.
 async function populate_layouts() {
+    // First clear the existing layouts from the menu.
+    for (const layout of menus.layouts.children) {
+        menus.layouts.remove(layout);
+    }
+
+    // Get list of existing layouts for the current tree and populate the menu.
     const layouts = await api(`/trees/${get_tid()}/layouts`);
 
     for (const layout of layouts) {
@@ -294,6 +313,7 @@ async function on_tree_change() {
     reset_node_count();
     reset_zoom();
     reset_position();
+    await populate_layouts();
     draw_minimap();
     update();
 

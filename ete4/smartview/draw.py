@@ -4,16 +4,16 @@ Classes and functions for drawing a tree.
 
 from math import sin, cos, pi, sqrt, atan2
 
-from ete4.core import operations as ops
+from ..core import operations as ops
 from .coordinates import Size, Box, make_box, get_xs, get_ys
-from . import graphics as gr
 from .layout import Decoration, Label
-from .faces import TextFace
+from .faces import EvalTextFace
+from . import graphics as gr
 
 
 def draw(tree, shape, layouts=None, labels=None, viewport=None,
          zoom=(1, 1), limits=None, collapsed_ids=None, searches=None,
-         include_props=None, exclude_props=None,
+         include_props=None, exclude_props=None, is_leaf_fn=None,
          min_size=10, min_size_content=5):
     """Yield graphic commands to draw the tree."""
     drawer_class = {'rectangular': DrawerRect,
@@ -21,7 +21,7 @@ def draw(tree, shape, layouts=None, labels=None, viewport=None,
 
     drawer_obj = drawer_class(tree, layouts, labels, viewport,
                               zoom, limits, collapsed_ids, searches,
-                              include_props, exclude_props)
+                              include_props, exclude_props, is_leaf_fn)
 
     drawer_obj.MIN_SIZE = min_size
     drawer_obj.MIN_SIZE_CONTENT = min_size_content
@@ -33,11 +33,11 @@ class Drawer:
     """Base class (needs subclassing with extra functions to draw)."""
 
     MIN_SIZE = 10  # anything that has less pixels will be outlined
-    MIN_SIZE_CONTENT = 5
+    MIN_SIZE_CONTENT = 5  # any content with less pixels won't be shown
 
     def __init__(self, tree, layouts=None, labels=None, viewport=None,
                  zoom=(1, 1), limits=None, collapsed_ids=None, searches=None,
-                 include_props=None, exclude_props=None):
+                 include_props=None, exclude_props=None, is_leaf_fn=None):
         self.tree = tree
         self.layouts = layouts or []
         self.labels = [read_label(label) for label in (labels or [])]
@@ -46,8 +46,9 @@ class Drawer:
         self.xmin, self.xmax, self.ymin, self.ymax = limits or (0, 0, 0, 0)
         self.collapsed_ids = collapsed_ids or set()  # manually collapsed
         self.searches = searches or {}  # looks like {text: (results, parents)}
-        self.include_props = include_props
-        self.exclude_props = exclude_props
+        self.include_props = include_props  # properties included in tooltips
+        self.exclude_props = exclude_props  # properties excluded in tooltips
+        self.is_leaf_fn = is_leaf_fn  # function used to manually collapse
 
     def draw(self):
         """Yield commands to draw the tree."""
@@ -91,13 +92,13 @@ class Drawer:
             return x, y + box_node.dy
 
         # Deal with collapsed nodes.
-        is_manually_collapsed = it.node_id in self.collapsed_ids
+        is_collapsed = (it.node_id in self.collapsed_ids or
+                        self.is_leaf_fn and self.is_leaf_fn(it.node))
 
-        if self.collapsed and (is_manually_collapsed or
-                               not self.is_small(self.outline)):
+        if self.collapsed and (is_collapsed or not self.is_small(self.outline)):
             graphics += self.flush_collapsed()  # don't stack more collapsed
 
-        if is_manually_collapsed or self.is_small(box_node):
+        if is_collapsed or self.is_small(box_node):
             self.nodes_dx[-1] = max(self.nodes_dx[-1], box_node.dx)
             self.collapsed.append(it.node)
             self.outline = stack(self.outline, box_node)
@@ -129,7 +130,8 @@ class Drawer:
         dx, dy = self.content_size(it.node)              #      dy|      |
         x_before, y_before = x_after - dx, y_after - dy  #        +------+ after
 
-        content_graphics, xmax = self.draw_content(it.node, (x_before, y_before))
+        style, content_graphics, xmax = self.draw_content(it.node,
+                                                          (x_before, y_before))
         graphics += content_graphics
         self.xmax_reached = max(self.xmax_reached, xmax)
 
@@ -141,17 +143,19 @@ class Drawer:
         box = Box(x_before, y_before, ndx, dy)
         result_of = [text for text,(results,_) in self.searches.items()
                         if it.node in results]
-        self.nodeboxes += self.draw_nodebox(it.node, it.node_id, box, result_of)
+        self.nodeboxes += self.draw_nodebox(it.node, it.node_id, box, result_of,
+                                            style.get('box', ''))
 
         return x_before, y_after
 
     def draw_content(self, node, point):
-        """Return the node content's graphic commands and its xmax."""
+        """Return the node content's style, graphic commands and its xmax."""
         x, y = point
         dx, dy = self.content_size(node)
+        box = Box(x, y, dx, dy)
 
-        if not self.is_visible(Box(x, y, dx, dy)):
-            return [], x + dx
+        if not self.is_visible(box):
+            return {}, [], x + dx
 
         commands = []  # will contain the graphics commands to return
 
@@ -169,24 +173,30 @@ class Drawer:
         bdy = (bdy0 + bdy1) / 2  # this node's branch dy
         self.bdy_dys[-1].append( (bdy, dy) )
 
-        # Draw the branch line ("distline") and a line spanning all children.
+        # Get the drawing commands and style that the user wants for this node.
+        style, node_commands, xmax = self.draw_nodes([node], box, bdy)
+
+        # Draw the branch line ("hz_line").
         if dx > 0:
             parent_of = [text for text,(_,parents) in self.searches.items()
                              if node in parents]
-            commands += self.draw_distline((x, y + bdy), (x + dx, y + bdy),
-                                           parent_of)
+            commands += self.draw_hz_line((x, y + bdy), (x + dx, y + bdy),
+                                          parent_of,
+                                          style=style.get('hz-line', ''))
 
-            dot_center = (x + dx, y + bdy)
-            if self.is_visible(make_box(dot_center, (0, 0))):
-                commands.append(gr.draw_circle(dot_center, style='nodedot'))
-
+        # Draw a line spanning all children ("vt_line").
         if bdy0 != bdy1:
-            commands += self.draw_childrenline((x + dx, y + bdy0),
-                                               (x + dx, y + bdy1))
+            commands += self.draw_vt_line((x + dx, y + bdy0),
+                                          (x + dx, y + bdy1),
+                                          style=style.get('vt-line', ''))
 
-        node_commands, xmax = self.draw_node(node, point, bdy)
+        # Draw a dot on the node tip.
+        dot_center = (x + dx, y + bdy)
+        if self.is_visible(make_box(dot_center, (0, 0))):
+            commands.append(gr.draw_nodedot(dot_center,
+                                            style=style.get('dot', '')))
 
-        return commands + node_commands, xmax
+        return style, commands + node_commands, xmax
 
     def flush_collapsed(self):
         """Yield outline representation and graphics from collapsed nodes."""
@@ -196,19 +206,22 @@ class Drawer:
             if any(node in results or node in parents
                    for node in self.collapsed)]
 
-        graphics = []  # will contain the graphic elements to draw
+        graphics = []  # will contain the graphic commands to draw
 
         node0 = self.collapsed[0]
         uncollapse = len(self.collapsed) == 1 and node0.is_leaf  # single leaf?
 
         if not uncollapse:  # normal case: we represent the collapsed nodes
             graphics += self.draw_outline()  # it updates self.bdy_dys too
-            collapsed_graphics, xmax = self.draw_collapsed()
+
+            style, collapsed_graphics, xmax = self.draw_nodes(
+                self.collapsed, self.outline, self.outline.dy / 2)
+
             graphics += collapsed_graphics
         else:  # forced uncollapse: we simply draw node0's content
             self.bdy_dys.append([])  # empty list of extra bdy_dys to add
             x, y, _, _ = self.outline
-            content_graphics, xmax = self.draw_content(node0, (x, y))
+            style, content_graphics, xmax = self.draw_content(node0, (x, y))
             graphics += content_graphics
 
         self.xmax_reached = max(self.xmax_reached, xmax)
@@ -225,7 +238,8 @@ class Drawer:
 
         name, props = (('(collapsed)', {}) if not uncollapse else
                        (node0.name, self.get_nodeprops(node0)))
-        box = gr.draw_nodebox(nodebox, name, props, node0.id, result_of)
+        box = gr.draw_nodebox(nodebox, name, props, node0.id, result_of,
+                              style.get('collapsed', ''))
         self.nodeboxes.append(box)
 
         yield from graphics
@@ -255,37 +269,31 @@ class Drawer:
                     if k in node.props and k not in excluded}
         # NOTE: So the properties appear in the order given in included.
 
-    def draw_node(self, node, point, bdy, circular):  # bdy: branch dy (height)
-        """Return graphic commands for the contents of node, and xmax."""
-        content_box = make_box(point, self.content_size(node))
-
+    def draw_nodes(self, nodes, box, bdy, circular):  # bdy: branch dy (height)
+        """Return style, graphic commands, and xmax for representing nodes."""
+        style = {}  # style
         decos = []  # decorations
+
+        # Add style and decorations from layouts.
         for layout in self.layouts:
-            decos.extend(layout.draw_node(node))  # from layouts
+            for element in layout.draw_node(nodes[0], tuple(self.collapsed)):
+                if type(element) is dict:
+                    style.update(element)
+                else:
+                    decos.append(element)  # from layouts
 
-        decos.extend(make_deco(label) for label in self.labels  # from labels
-                     if is_valid_label(label, node.is_leaf))
+        # Add decorations from labels.
+        is_leaf = nodes[0].is_leaf or self.collapsed  # for is_valid_label()
+        decos.extend(make_deco(label) for label in self.labels
+                     if is_valid_label(label, is_leaf))
 
-        return draw_decorations(decos, [node], self.xmin,
-                                content_box, bdy, self.zoom,
-                                self.MIN_SIZE_CONTENT,
-                                circular=circular)
+        # Get the graphic commands, and xmax, from applying the decorations.
+        commands, xmax = draw_decorations(decos, nodes, self.xmin, box, bdy,
+                                          self.zoom, self.MIN_SIZE_CONTENT,
+                                          collapsed=self.collapsed,
+                                          circular=circular)
 
-    def draw_collapsed(self, circular):
-        """Return graphic commands for the nodes in self.collapsed, and xmax."""
-        _, _, _, dy0 = self.outline
-
-        decos = []  # decorations
-        for layout in self.layouts:
-            decos.extend(layout.draw_collapsed(self.collapsed))  # from layouts
-
-        decos.extend(make_deco(label) for label in self.labels  # from labels
-                     if is_valid_label(label, is_leaf=True))
-
-        return draw_decorations(decos, self.collapsed, self.xmin,
-                                self.outline, dy0/2, self.zoom,
-                                self.MIN_SIZE_CONTENT, collapsed=True,
-                                circular=circular)
+        return style, commands, xmax
 
 def read_label(label):
     """Return a Label from the label description as a tuple."""
@@ -303,7 +311,7 @@ def read_label(label):
         code=compile(expression, '<string>', 'eval'),
         style='label_'+expression,  # will be used to set its looks in css
         node_type=node_type,  # type of nodes to apply this label to
-        position=position,
+        position=position,  # top, bottom, left, right, aligned
         column=int(column),  # to locate relative to others in the same position
         anchor=(to_num(ax), to_num(ay)),  # point used for anchoring
         fs_max=fs_max)  # maximum font size (height in pixels)
@@ -314,10 +322,10 @@ class DrawerRect(Drawer):
 
     def __init__(self, tree, layouts=None, labels=None, viewport=None,
                  zoom=(1, 1), limits=None, collapsed_ids=None, searches=None,
-                 include_props=None, exclude_props=None):
+                 include_props=None, exclude_props=None, is_leaf_fn=None):
         super().__init__(tree, layouts, labels, viewport, zoom,
                          limits, collapsed_ids, searches,
-                         include_props, exclude_props)
+                         include_props, exclude_props, is_leaf_fn)
         # We don't really need to define this function, but we do it
         # for symmetry, because in DrawerCirc it needs to do more things.
 
@@ -351,30 +359,25 @@ class DrawerRect(Drawer):
         zx, zy = self.zoom
         return box.dy * zy < self.MIN_SIZE
 
-    def draw_distline(self, p1, p2, parent_of):
-        """Yield a line representing a length."""
-        kwargs = {'parent_of': parent_of} if parent_of else {}
-        line = gr.draw_line(p1, p2, 'distline', kwargs)
+    def draw_hz_line(self, p1, p2, parent_of, style):
+        """Yield a "horizontal line" representing a length."""
+        line = gr.draw_hz_line(p1, p2, parent_of, style)
         if not self.viewport or intersects_box(self.viewport, get_rect(line)):
             yield line
 
-    def draw_childrenline(self, p1, p2):
-        """Yield a line spanning children that starts at p1 and ends at p2."""
-        line = gr.draw_line(p1, p2, 'childrenline')
+    def draw_vt_line(self, p1, p2, style):
+        """Yield a "vertical line" spanning children, from p1 to p2."""
+        line = gr.draw_vt_line(p1, p2, style)
         if not self.viewport or intersects_box(self.viewport, get_rect(line)):
             yield line
 
-    def draw_nodebox(self, node, node_id, box, result_of):
+    def draw_nodebox(self, node, node_id, box, result_of, style):
         props = self.get_nodeprops(node)
-        yield gr.draw_nodebox(box, node.name, props, node_id, result_of)
+        yield gr.draw_nodebox(box, node.name, props, node_id, result_of, style)
 
-    def draw_node(self, node, point, bdy):  # bdy: branch dy (height)
-        """Return graphic commands for the contents of the node, and xmax."""
-        return super().draw_node(node, point, bdy, circular=False)
-
-    def draw_collapsed(self):
-        """Return graphic commands for the nodes in self.collapsed, and xmax."""
-        return super().draw_collapsed(circular=False)
+    def draw_nodes(self, nodes, box, bdy):  # bdy: branch dy (height)
+        """Return graphic commands for the contents of nodes, and xmax."""
+        return super().draw_nodes(nodes, box, bdy, circular=False)
 
 
 class DrawerCirc(Drawer):
@@ -382,10 +385,10 @@ class DrawerCirc(Drawer):
 
     def __init__(self, tree, layouts=None, labels=None, viewport=None,
                  zoom=(1, 1), limits=None, collapsed_ids=None, searches=None,
-                 include_props=None, exclude_props=None):
+                 include_props=None, exclude_props=None, is_leaf_fn=None):
         super().__init__(tree, layouts, labels, viewport, zoom,
                          limits, collapsed_ids, searches,
-                         include_props, exclude_props)
+                         include_props, exclude_props, is_leaf_fn)
 
         assert self.zoom[0] == self.zoom[1], 'zoom must be equal in x and y'
 
@@ -428,36 +431,29 @@ class DrawerCirc(Drawer):
         r, a, dr, da = box
         return (r + dr) * da * z < self.MIN_SIZE
 
-    def draw_distline(self, p1, p2, parent_of):
-        """Yield a line representing a length."""
+    def draw_hz_line(self, p1, p2, parent_of, style):
+        """Yield a "horizontal line" representing a length."""
         if -pi <= p1[1] < pi:  # NOTE: the angles p1[1] and p2[1] are equal
-            kwargs = {'parent_of': parent_of} if parent_of else {}
-            yield gr.draw_line(cartesian(p1), cartesian(p2), 'distline', kwargs)
+            yield gr.draw_hz_line(p1, p2, parent_of, style)
 
-    def draw_childrenline(self, p1, p2):
-        """Yield an arc spanning children that starts at p1 and ends at p2."""
+    def draw_vt_line(self, p1, p2, style):
+        """Yield a "vertical line" (arc) spanning children, from p1 to p2."""
         (r1, a1), (r2, a2) = p1, p2
         a1, a2 = clip_angles(a1, a2)
         if a1 < a2:
-            is_large = a2 - a1 > pi
-            yield gr.draw_arc(cartesian((r1, a1)), cartesian((r2, a2)),
-                              is_large, 'childrenline')
+            yield gr.draw_vt_line((r1, a1), (r2, a2), style)
 
-    def draw_nodebox(self, node, node_id, box, result_of):
+    def draw_nodebox(self, node, node_id, box, result_of, style):
         r, a, dr, da = box
         a1, a2 = clip_angles(a, a + da)
         if a1 < a2:
             props = self.get_nodeprops(node)
             yield gr.draw_nodebox(Box(r, a1, dr, a2 - a1),
-                                  node.name, props, node_id, result_of)
+                                  node.name, props, node_id, result_of, style)
 
-    def draw_node(self, node, point, bda):  # bda: branch da (height)
-        """Return graphic commands for the contents of the node, and xmax."""
-        return super().draw_node(node, point, bda, circular=True)
-
-    def draw_collapsed(self):
-        """Return graphic commands for the nodes in self.collapsed, and xmax."""
-        return super().draw_collapsed(circular=True)
+    def draw_nodes(self, nodes, box, bda):  # bda: branch da (height)
+        """Return graphic commands for the contents of nodes, and xmax."""
+        return super().draw_nodes(nodes, box, bda, circular=True)
 
 
 def clip_angles(a1, a2):
@@ -482,7 +478,7 @@ def is_valid_label(label, is_leaf):
 
 def make_deco(label):
     """Return a Decoration object from its description as a Label one."""
-    face = TextFace(label.code, fs_max=label.fs_max, style=label.style)
+    face = EvalTextFace(label.code, fs_max=label.fs_max, style=label.style)
     return Decoration(face, label.position, label.column, label.anchor)
 
 
@@ -644,8 +640,11 @@ def get_rect(element):
         points = element[1]
         x, y = points[0]
         return Box(x, y, 0, 0)  # we don't care for the rect of an outline
-    elif eid in ['line', 'arc']:  # not a great approximation for an arc...
+    elif eid in ['line', 'hz-line', 'vt-line']:
         (x1, y1), (x2, y2) = element[1], element[2]
+        return Box(min(x1, x2), min(y1, y2), abs(x2 - x1), abs(y2 - y1))
+    elif eid in ['arc']:  # not a great approximation for an arc...
+        (x1, y1), (x2, y2) = cartesian(element[1]), cartesian(element[2])
         return Box(min(x1, x2), min(y1, y2), abs(x2 - x1), abs(y2 - y1))
     elif eid == 'circle':
         (x, y), r = element[1], element[2]
@@ -779,51 +778,3 @@ def circumasec(rect):
         rmin, amin = sqrt(min(radius2)), min(angles)
 
         return Box(rmin, amin, sqrt(max(radius2)) - rmin, max(angles) - amin)
-
-
-# TODO:
-#
-# Add seqface and so on.
-#
-# Apply node styles (change the width and color of branches, etc.)
-#
-# Be able to draw things with blocks of kingdom ... species  like  |...:
-
-# The way we are doing it now:
-#
-# for each node:
-#   draw faces on panel 0 (corresponging to its "content" in pos top, bottom, etc)
-#   send signal to draw on aligned panel (panel 1)
-#   draw faces in aligned panel
-#   send signal to go back to drawing on panel 0
-#
-# So the drawing commands look like:
-#   [["line", ...],          \
-#    ["arc", ...],            |
-#    ["panel", 1],            | 1st node
-#    ["text", ...],           |
-#    ["panel", 0],           /
-#    ["line", ...],          \
-#    ["arc", ...],            |
-#    ["panel", 1],            | 2nd node
-#    ["text", ...],           |
-#    ["panel", 0],           /
-#    ...
-#   ]
-#
-#
-# Other ways we could use:
-#
-#   [["panel", 0],
-#    ["line", ...],          \
-#    ["arc", ...],           / 1st node
-#    ["line", ...],          \
-#    ["arc", ...],           / 2nd node
-#    ["panel", 1],
-#    ["text", ...],          + 1st node
-#    ["text", ...],          + 2nd node
-#    ...
-#   ]
-#
-#
-# Is it worth it in terms of speed or clarity?
