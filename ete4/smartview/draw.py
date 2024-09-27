@@ -283,8 +283,9 @@ class Drawer:
                     decos.append(element)  # from layouts
 
         # Add decorations from labels.
+        is_leaf = nodes[0].is_leaf or self.collapsed  # for is_valid_label()
         decos.extend(make_deco(label) for label in self.labels
-                     if is_valid_label(label, node.is_leaf or self.collapsed))
+                     if is_valid_label(label, is_leaf))
 
         # Get the graphic commands, and xmax, from applying the decorations.
         commands, xmax = draw_decorations(decos, nodes, self.xmin, box, bdy,
