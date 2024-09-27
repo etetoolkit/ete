@@ -14,7 +14,7 @@ import { label_expression, label_property } from "./label.js";
 
 export { view, menus, on_tree_change, on_shape_change, show_minimap,
          tree_command, get_tid, on_box_click, on_box_wheel, coordinates,
-         reset_view, show_help, sort, to_opts };
+         reset_view, show_help, sort, to_opts, set_tree_style };
 
 
 // Run main() when the page is loaded.

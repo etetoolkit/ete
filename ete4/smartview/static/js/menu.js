@@ -1,6 +1,7 @@
 // Functions related to the top-right menus.
 
-import { view, menus, to_opts, on_tree_change, on_shape_change, show_minimap }
+import { view, menus, to_opts, on_tree_change, on_shape_change,
+    set_tree_style, show_minimap }
     from "./gui.js";
 import { draw_minimap } from "./minimap.js";
 import { update } from "./draw.js";
@@ -187,6 +188,12 @@ function add_folder_viewport(menu) {
 
 function add_folder_style(menu) {
     const folder_style = folder(menu, "style");
+
+    folder_style.addButton({title: "use original tree style"})
+      .on("click", async () => {
+        await set_tree_style();
+        update();
+      });
 
     const folder_node = folder(folder_style, "node");
 
