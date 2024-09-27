@@ -26,8 +26,8 @@ class Layout:
     def __init__(self, name, tree_style=None, draw_node=None, cache_size=None):
         # Check types.
         assert type(name) is str
-        assert not tree_style or type(tree_style) is dict or callable(tree_style)
-        assert not draw_node or callable(draw_node)
+        assert tree_style is None or type(tree_style) is dict or callable(tree_style)
+        assert draw_node is None or callable(draw_node)
 
         # Name. This is mainly to activate/deactivate the layout in the gui.
         self.name = name
