@@ -44,7 +44,7 @@ const view = {
 
     // representation
     shape: "rectangular",  // default shape
-    min_size: 20,  // for less pixels, we will outine things
+    min_size: 30,  // for less pixels, we will outine things
     min_size_content: 4,  // for less pixels, node contents won't be drawn
     rmin: 0,
     angle: {min: -180, max: 180},
