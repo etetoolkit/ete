@@ -9,7 +9,7 @@ import { colorize_tags } from "./tag.js";
 import { colorize_labels } from "./label.js";
 import { api } from "./api.js";
 
-export { update, draw_tree, draw, get_class_name };
+export { update, draw_tree, draw, get_class_name, get_items_per_panel };
 
 
 // Update the view of all elements (gui, tree, minimap).
