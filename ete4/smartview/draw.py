@@ -276,7 +276,7 @@ class Drawer:
 
         # Add style and decorations from layouts.
         for layout in self.layouts:
-            for element in layout.draw_node(nodes[0], tuple(self.collapsed)):
+            for element in layout.node_style(nodes[0], tuple(self.collapsed)):
                 if type(element) is dict:
                     style.update(element)
                 else:
