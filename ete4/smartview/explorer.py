@@ -419,8 +419,8 @@ def get_drawing_kwargs(tree_id, args):
         searches = g_searches.get(tree_id)
 
         include_props = g_options[name]['include_props']
-        exclude_props = g_options[name]['exclude_props']
-        is_leaf_fn = g_options[name]['is_leaf_fn']
+        exclude_props = g_options[name].get('exclude_props')
+        is_leaf_fn = g_options[name].get('is_leaf_fn')
 
         min_size = get('min_size', 10)
         assert min_size > 0, 'min_size must be > 0'
@@ -558,8 +558,8 @@ def add_trees_from_request():
             name = tree['name'].replace(',', '_')  # "," is used for subtrees
             names[name] = name  # tree ids are already equal to their names...
             g_trees[name] = t
-            g_options[name] = {'include_props': ('dist', 'support'),
-                               'exclude_props': None}
+            g_layouts[name] = [DEFAULT_LAYOUT]
+            g_options[name] = {'include_props': ('dist', 'support')}
 
         return names
         # TODO: tree ids are already equal to their names, so in the future
@@ -772,8 +772,7 @@ if __name__ == '__main__':
             name = tree['name'].replace(',', '_')  # "," is used for subtrees
             g_trees[name] = t
             g_layouts[name] = [DEFAULT_LAYOUT]
-            g_options[name] = {'include_props': ('dist', 'support'),
-                               'exclude_props': None}
+            g_options[name] = {'include_props': ('dist', 'support')}
 
         # Set the global config options.
         g_config['compress'] = args.compress
