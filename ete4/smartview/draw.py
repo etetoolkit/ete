@@ -32,7 +32,7 @@ def draw(tree, shape, layouts=None, labels=None, viewport=None,
 class Drawer:
     """Base class (needs subclassing with extra functions to draw)."""
 
-    MIN_SIZE = 10  # anything that has less pixels will be outlined
+    MIN_SIZE = 10  # anything that has less pixels will be collapsed
     MIN_SIZE_CONTENT = 5  # any content with less pixels won't be shown
 
     def __init__(self, tree, layouts=None, labels=None, viewport=None,
@@ -199,9 +199,9 @@ class Drawer:
         return style, commands + node_commands, xmax
 
     def flush_collapsed(self):
-        """Yield outline representation and graphics from collapsed nodes."""
-        # This includes the shape of the outline and the representation of the
-        # collapsed nodes, and empties self.outline and self.collapsed.
+        """Yield representation and graphics from collapsed nodes."""
+        # This includes all the graphics for representing the collapsed nodes,
+        # and empties self.outline and self.collapsed.
         result_of = [text for text,(results,parents) in self.searches.items()
             if any(node in results or node in parents
                    for node in self.collapsed)]
@@ -212,7 +212,7 @@ class Drawer:
         uncollapse = len(self.collapsed) == 1 and node0.is_leaf  # single leaf?
 
         if not uncollapse:  # normal case: we represent the collapsed nodes
-            graphics += self.draw_outline()  # it updates self.bdy_dys too
+            graphics += self.draw_collapsed()  # it updates self.bdy_dys too
 
             style, collapsed_graphics, xmax = self.draw_nodes(
                 self.collapsed, self.outline, self.outline.dy / 2)
@@ -244,8 +244,8 @@ class Drawer:
 
         yield from graphics
 
-    def draw_outline(self, *args, **kwargs):
-        """Yield outline with all the skeleton points."""
+    def draw_collapsed(self, *args, **kwargs):
+        """Yield collapsed nodes representation with all the skeleton points."""
         # This is the shape of the outline. It also updates self.bdy_dys.
         x, y, dx, dy = self.outline
         _, zy = self.zoom
@@ -257,7 +257,7 @@ class Drawer:
         y1 = points[-1][1]  # last point's y (it is at branch position)
         self.bdy_dys[-1].append( (y1 - y, dy) )
 
-        yield gr.draw_outline(points)
+        yield gr.draw_collapsed(points)
 
     def get_nodeprops(self, node):
         """Return the node properties that we want to show with the nodebox."""
@@ -342,9 +342,9 @@ class DrawerRect(Drawer):
         """Clip borders of outline to make sure that its box is reasonable."""
         pass  # this function exists only for symmetry with DrawerCirc
 
-    def draw_outline(self):
-        """Yield outline with all the skeleton points."""
-        yield from super().draw_outline()
+    def draw_collapsed(self):
+        """Yield collapsed nodes representation with all the skeleton points."""
+        yield from super().draw_collapsed()
         # For symmetry with DrawerCirc.
 
     def node_size(self, node):
@@ -414,9 +414,9 @@ class DrawerCirc(Drawer):
         a1, a2 = clip_angles(a, a + da)
         self.outline = Box(r, a1, dr, a2 - a1)
 
-    def draw_outline(self):
-        """Yield outline with all the skeleton points."""
-        yield from super().draw_outline(self.dy2da)
+    def draw_collapsed(self):
+        """Yield collapsed nodes representation with all the skeleton points."""
+        yield from super().draw_collapsed(self.dy2da)
 
     def node_size(self, node):
         """Return the size of a node (its content and its children)."""
@@ -636,10 +636,10 @@ def get_rect(element):
     eid = element[0]
     if eid in ['nodebox', 'array', 'text']:
         return element[1]
-    elif eid == 'outline':
+    elif eid == 'collapsed':
         points = element[1]
         x, y = points[0]
-        return Box(x, y, 0, 0)  # we don't care for the rect of an outline
+        return Box(x, y, 0, 0)  # we don't care for the rect of this element
     elif eid in ['line', 'hz-line', 'vt-line']:
         (x1, y1), (x2, y2) = element[1], element[2]
         return Box(min(x1, x2), min(y1, y2), abs(x2 - x1), abs(y2 - y1))
@@ -695,7 +695,7 @@ def stack(box1, box2):
 
 
 def points_from_nodes(nodes, point, dy_min, dy2da=1, maxdepth=30):
-    """Return the points outlining the given nodes, starting at point."""
+    """Return the points sketching the given nodes, starting at point."""
     x, y = point  # top-left origin at point
     dx, dy = 0, 0  # defined here so they can be accessed inside add_points()
     points = []  # the actual points we are interested in
@@ -732,7 +732,7 @@ def points_from_nodes(nodes, point, dy_min, dy2da=1, maxdepth=30):
 
 
 def points_from_node(node, point, dy_min, dy2da=1, maxdepth=30):
-    """Return the points outlining the given node, starting at point."""
+    """Return the points sketching the given node, starting at point."""
     x, y = point
     dx, dy = dist(node), node.size[1] * dy2da
 

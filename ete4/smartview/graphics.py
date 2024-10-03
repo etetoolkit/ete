@@ -39,10 +39,9 @@ def draw_vt_line(p1, p2, style=''):
 def draw_nodedot(point, style=''):
     return ['nodedot', point, style]
 
-# An outline has the information to draw an approximate representation
-# of the interior of collapsed nodes.
-def draw_outline(points):
-    return ['outline', points]
+# Information to draw an approximate representation of collapsed nodes.
+def draw_collapsed(points):
+    return ['collapsed', points]
 
 
 # Other (drawing) commands.
@@ -98,8 +97,8 @@ def draw_group(elements, circular, shift):
             box = x0 + x, y0 + y, dx, dy
             if not circular or are_valid_angles(y0 + y, y0 + y + dy):
                 yield [eid, box] + element[2:]
-        elif eid == 'outline':
-            # The points given in the outline can be (x,y) or (r,a).
+        elif eid == 'collapsed':
+            # The points given as collapsed skeleton can be (x,y) or (r,a).
             points = [(x0 + x, y0 + y) for x, y in element[1]
                       if not circular or are_valid_angles(y0 + y)]
             yield [eid, points]

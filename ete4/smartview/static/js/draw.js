@@ -330,10 +330,10 @@ function create_item(item, tl, zoom) {
             create_line(p1, p2, tl, zx, zy, styles) :
             create_arc(p1, p2, tl, zx, styles);
     }
-    else if (item[0] === "outline") {
+    else if (item[0] === "collapsed") {
         const [ , points] = item;
 
-        return create_outline(points, tl, zx, zy);
+        return create_collapsed(points, tl, zx, zy);
     }
     else if (item[0] === "line") {
         const [ , p1, p2, style] = item;
@@ -482,29 +482,29 @@ function create_dot(point, tl, zx, zy, styles) {
 }
 
 
-// Return an outline (collapsed version of a box).
-function create_outline(points, tl, zx, zy) {
+// Return a shape summarizing collapsed nodes (collapsed version of a box).
+function create_collapsed(points, tl, zx, zy) {
     if (view.shape === "rectangular")
-        return create_rect_outline(points, tl, zx, zy);
+        return create_rect_collapsed(points, tl, zx, zy);
     else
-        return create_circ_outline(points, tl, zx);
+        return create_circ_collapsed(points, tl, zx);
 }
 
 
-// Return a svg horizontal outline.
-function create_rect_outline(points, tl, zx, zy) {
+// Return a svg horizontal approximation to the collapsed nodes.
+function create_rect_collapsed(points, tl, zx, zy) {
     const ps = points.map(p => tree2rect(p, tl, zx, zy));
 
     return create_svg_element("path", {
-        "class": "outline",
+        "class": "collapsed",
         "d": (`M ${ps[0].x} ${ps[0].y} ` +
               ps.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ')),
     });
 }
 
 
-// Return a svg outline in the direction of an annular sector.
-function create_circ_outline(points, tl, z) {
+// Return a svg collapsed representation in the direction of an annular sector.
+function create_circ_collapsed(points, tl, z) {
     const das = [];  // list of angle differences
     for (let i = 1; i < points.length; i++)
         das.push(points[i][1] - points[i-1][1]);
@@ -522,7 +522,7 @@ function create_circ_outline(points, tl, z) {
     }
 
     return create_svg_element("path", {
-        "class": "outline",
+        "class": "collapsed",
         "d": (`M ${ps[0].x} ${ps[0].y} ` +
               ps.slice(1).map(arc).join(' ')),
     });

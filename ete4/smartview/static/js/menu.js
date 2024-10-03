@@ -220,14 +220,14 @@ function add_folder_style(menu) {
     folder_dot.addBinding(view.node.dot, "color")
         .on("change", () => style("nodedot").fill = view.node.dot.color);
 
-    const folder_outline = folder(folder_style, "outline");
+    const folder_collapsed = folder(folder_style, "collapsed");
 
-    folder_outline.addBinding(view.outline, "opacity", {min: 0, max: 1, step: 0.1})
-        .on("change", () => style("outline").opacity = view.outline.opacity);
-    folder_outline.addBinding(view.outline, "color")
-        .on("change", () => style("outline").stroke = view.outline.color);
-    folder_outline.addBinding(view.outline, "width", {min: 0.1, max: 10})
-        .on("change", () => style("outline").strokeWidth = view.outline.width);
+    folder_collapsed.addBinding(view.collapsed, "opacity", {min: 0, max: 1, step: 0.1})
+        .on("change", () => style("collapsed").opacity = view.collapsed.opacity);
+    folder_collapsed.addBinding(view.collapsed, "color")
+        .on("change", () => style("collapsed").stroke = view.collapsed.color);
+    folder_collapsed.addBinding(view.collapsed, "width", {min: 0.1, max: 10})
+        .on("change", () => style("collapsed").strokeWidth = view.collapsed.width);
 
     const folder_lines = folder(folder_style, "lines");
 
@@ -322,7 +322,7 @@ function style(name) {
         "nodedot": 4,
         "text": 6,
         "nodebox": 7,
-        "outline": 8,
+        "collapsed": 8,
     };
     return document.styleSheets[0].cssRules[pos[name]].style;
 }

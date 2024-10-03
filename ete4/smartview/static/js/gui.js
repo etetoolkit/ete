@@ -93,7 +93,7 @@ const view = {
             color: "#00F",
         },
     },
-    outline: {
+    collapsed: {
         opacity: 0.1,
         color: "#A50",
         width: 0.4,
@@ -130,12 +130,12 @@ const view = {
 
 const menus = {  // will contain the menus on the top
     pane: undefined,  // main pane containing the tabs
-    layouts: undefined,
-    labels: undefined,
-    node_properties: undefined,
-    collapsed: undefined,
-    selections: undefined,
-    searches: undefined,
+    layouts: undefined,  // to show the available layouts (and (de)activate them)
+    labels: undefined,  // see labels.js
+    node_properties: undefined,  // for labels based on properties (see below)
+    collapsed: undefined,  // for manually collapsed nodes (see collapse.js)
+    selections: undefined,  // see tag.js
+    searches: undefined,  // see search.js
 };
 
 const trees = {};  // will translate names to ids (trees[tree_name] = tree_id)

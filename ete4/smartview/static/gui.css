@@ -42,7 +42,7 @@
     stroke: white;
 }
 
-.outline {
+.collapsed {
     fill-opacity: 0.3;
     fill: #EEE;
     stroke: #000;
