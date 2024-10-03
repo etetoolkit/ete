@@ -87,7 +87,8 @@ const view = {
             color: "#FFF",
         },
         dot: {
-            radius: 1,
+            shape: "circle",
+            radius: 2,
             opacity: 0.5,
             color: "#00F",
         },
@@ -228,6 +229,25 @@ async function set_tree_style() {
 
     if (style["min-size-content"])
         view.min_size_content = style["min-size-content"];
+
+    // Get special (non-css) styles first and remove them.
+    if (style.dot) {
+        const shape = style.dot.shape;
+        if (shape) {
+            if (! typeof shape === "number" &&
+                ! ["circle", "triangle", "square", "pentagon",
+                   "hexagon", "heptagon", "octogon"].includes(shape))
+                throw new Error(`unknown dot shape ${shape}`);
+            view.node.dot.shape = shape;
+            delete style.dot.shape;  // so we don't use it later
+        }
+
+        const radius = style.dot.radius;
+        if (radius) {
+            view.node.dot.radius = radius;
+            delete style.dot.radius;  // so we don't use it later
+        }
+    }
 
     // Update styles for general node graphical elements.
     for (const [name, pos] of

@@ -206,12 +206,14 @@ function add_folder_style(menu) {
 
     const folder_dot = folder(folder_node, "dot", true);
 
-    folder_dot.addBinding(view.node.dot, "radius", {min: 0, max: 20, step: 0.1})
-      .on("change", () => {
-        Array.from(div_tree.getElementsByClassName("nodedot")).forEach(
-            e => e.setAttribute("r", view.node.dot.radius));
-        update();
-      });
+    folder_dot.addBinding(view.node.dot, "shape",
+        {label: "shape",
+         options: to_opts(["circle", "triangle", "square", "pentagon",
+                           "hexagon", "heptagon", "octogon"])})
+        .on("change", update);
+
+    folder_dot.addBinding(view.node.dot, "radius", {min: 0, max: 30, step: 0.1})
+        .on("change", update);
 
     folder_dot.addBinding(view.node.dot, "opacity", {min: 0, max: 1, step: 0.01})
         .on("change", () => style("nodedot").opacity = view.node.dot.opacity);

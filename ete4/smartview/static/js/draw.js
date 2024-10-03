@@ -312,7 +312,7 @@ function create_item(item, tl, zoom) {
         const [ , point, style] = item;
 
         const styles = ["nodedot", add_ns_prefix(style)];
-        return create_circle(point, view.node.dot.radius, tl, zx, zy, styles);
+        return create_dot(point, tl, zx, zy, styles);
     }
     else if (item[0] === "hz-line") {
         const [ , p1, p2, parent_of, style] = item;
@@ -470,6 +470,18 @@ function create_asec(box, tl, z, style="") {
 }
 
 
+// Return a nodedot.
+function create_dot(point, tl, zx, zy, styles) {
+    const shape = pop_style(styles, "shape") || view.node.dot.shape;
+    const r = pop_style(styles, "radius") || view.node.dot.radius;
+
+    if (shape === "circle")
+        return create_circle(point, r, tl, zx, zy, styles);
+    else
+        return create_polygon(shape, point, r, tl, zx, zy, styles);
+}
+
+
 // Return an outline (collapsed version of a box).
 function create_outline(points, tl, zx, zy) {
     if (view.shape === "rectangular")
@@ -582,6 +594,47 @@ function create_circle(center, radius, tl, zx, zy, style="") {
 }
 
 
+// Create a polygon.
+function create_polygon(name, center, r, tl, zx, zy, style="") {
+    const n = typeof name === "number" ? name :
+          {"triangle": 3,
+           "square":   4,
+           "pentagon": 5,
+           "hexagon":  6,
+           "heptagon": 7,
+           "octogon":  8}[name];
+
+    const c = view.shape === "rectangular" ?  // center point in screen coords
+        tree2rect(center, tl, zx, zy) :
+        tree2circ(center, tl, zx);
+
+    const s = 2 * r * Math.tan(Math.PI / n);  // side length
+    let p = {x: c.x - s/2,  // starting point
+             y: c.y + r};
+
+    const ps = [p];  // polygon points, adding a rotated (s, 0)
+    for (let i = 0; i < n - 1; i++) {
+        p = {x: p.x + s * Math.cos(i * 2 * Math.PI / n),
+             y: p.y - s * Math.sin(i * 2 * Math.PI / n)}
+        ps.push(p);
+    }
+
+    const element = create_svg_element("polygon", {
+        "points": ps.map(p => `${p.x},${p.y}`).join(" "),
+    });
+
+    if (view.shape === "circular") {
+        const angle = 180 / Math.PI * Math.atan2(zy * tl.y + c.y,
+                                                 zx * tl.x + c.x);
+        add_rotation(element, angle, c.x, c.y);
+    }
+
+    add_style(element, style);
+
+    return element;
+}
+
+
 function create_text(box, anchor, text, fs_max, tl, zx, zy, style="") {
     const [x, y, fs, text_anchor] = view.shape === "rectangular" ?
         get_text_placement_rect(box, anchor, text, fs_max, tl, zx, zy, style) :
@@ -664,19 +717,42 @@ function add_ns_prefix(style) {
 
 // Add to the given element a style. It can be a string with class name(s),
 // an object with the individual properties to set, or a list of styles.
-function add_style(element, style) {
+function add_style(element, style, exclude=["shape", "radius"]) {
     if (typeof style === "string") {  // string with class name(s).
-        for (const name of style.split(" ").filter(x => x)) { // nonempty names
+        for (const name of style.split(" ").filter(x => x)) {  // nonempty names
             element.classList.add(name);
         }
     }
     else if (style.length === undefined) {  // object with individual properties
         for (const [prop, value] of Object.entries(style)) {
-            element.style[prop] = value;
+            if (!exclude.includes(prop))
+                element.style[prop] = value;
         }
     }
     else {  // list of styles to combine
-        style.forEach(s => add_style(element, s));
+        style.forEach(s => add_style(element, s, exclude));
+    }
+}
+
+
+// Return the value in style associated with the given property prop,
+// and remove it from the style,
+function pop_style(style, prop) {
+    if (typeof style === "string") {  // string with class name(s).
+        return undefined;
+    }
+    else if (style.length === undefined) {  // object with individual properties
+        const value = style[prop];
+        delete style[prop];  // remove it from the style if it is there
+        return value;  // possibly undefined
+    }
+    else {  // list of styles to combine
+        for (let s of style) {
+            const value = pop_style(s, prop);
+            if (value !== undefined)
+                return value;
+        }
+        return undefined;
     }
 }
 
