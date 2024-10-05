@@ -82,6 +82,7 @@ def to_elements(xs):
 
 
 DEFAULT_TREE_STYLE = {  # the default style of a tree
+    'include-props': ('dist', 'support'),
     'aliases': {  # to name styles that can be referenced in node_style
         'dist': {'fill': '#888'},
         'support': {'fill': '#f88'},  # a light red
@@ -93,7 +94,24 @@ DEFAULT_TREE_STYLE = {  # the default style of a tree
 #      'shape': 'rectangular',  # or 'circular'
 #      'min-size': 10,
 #      'min-size-content': 5,
+#      'limits': (5, 0, -pi/2, pi/2),
+#      'include_props': None,  # all defined properties
+#      'is-leaf-fn': lambda node: node.level > 4,
+#      'box': {'fill': 'green', 'opacity': 0.1, 'stroke': 'blue', 'border': 2},
+#      'dot': {'shape': 'hexagon', 'fill': 'red'},
+#      'hz-line': {'stroke-width': 2},
+#      'vt-line': {'stroke': '#ffff00'},
+#      'aliases': {
+#          'support': {'fill': 'green'},  # changes the default one
+#          'my-leaf': {'fill': 'blue', 'font-weight': 'bold'},
 #   }
+#
+# Some properties will be used directly by the backend:
+#   - shape, min-size, min-size-content, limits,
+#     include-props, exclude-props, is-leaf-fn
+# Most  will be controlled by the css class of the element in the frontend:
+#   - box, dot, hz-line, vt-line
+# And the "aliases" part will tell the frontend which styles are referenced.
 
 def add_to_style(style, style_old):
     """Return a style dictionary merging properly style_old and style."""

@@ -163,13 +163,19 @@ def callback(tree_id):
         name, _ = get_tid(tree_id)  # "name" or "tid" is what identifies the tree
 
         # Get the style of the tree according to all the layouts.
-        tstyle = {}
+        style = {}
         for layout in g_layouts.get(name, []):
             if layout.name in active:
                 ts = layout.tree_style  # may be dict or function returning dict
-                tstyle.update(ts if type(ts) == dict else ts(t))
+                style.update(ts if type(ts) is dict else ts(t))
 
-        return tstyle
+        # We remove is-leaf-fn because it is a function (thus not serializable).
+        style.pop('is-leaf-fn', None)
+
+        # We keep other parts like "aliases" if they are in the style, even if
+        # the gui will not do anything with them.
+
+        return style
     except (ValueError, AssertionError) as e:
         abort(400, str(e))
 
@@ -322,7 +328,6 @@ def callback(tree_id):
 g_trees = {}  # 'name' -> Tree
 g_config = {'compress': False}  # global configuration
 g_layouts = {}  # 'name' -> list of available layouts
-g_options = {}  # 'name' -> {'include_props': ..., 'exclude_props': ...}
 g_searches = {}  # 'searched_text' -> ({result nodes}, {parent nodes})
 g_threads = {}  # {'server': (thread, server)}
 
@@ -382,24 +387,56 @@ def sort(tree_id, node_id, key_text, reverse):
 
 def get_drawing_kwargs(tree_id, args):
     """Return the drawing arguments initialized as specified in the args."""
-    valid_keys = ['x', 'y', 'w', 'h', 'zx', 'zy', 'shape',
-                  'min_size', 'min_size_content', 'collapsed_ids',
-                  'layouts', 'labels', 'rmin', 'amin', 'amax']
+    valid_keys = ['x', 'y', 'w', 'h', 'zx', 'zy',
+                  'layouts', 'labels', 'collapsed_ids',
+                  'shape', 'min_size', 'min_size_content',
+                  'rmin', 'amin', 'amax']
     try:
         assert all(k in valid_keys for k in args.keys()), 'invalid keys'
 
-        tree = load_tree(tree_id)
+        get = lambda x, default: float(args.get(x, default))  # shortcut
 
-        shape = args.get('shape', 'rectangular')
+        tree = load_tree(tree_id)
 
         name, _ = get_tid(tree_id)  # "name" or "tid" is what identifies the tree
 
+        # From the layouts we get:
+        # - The tree style (a consensus from them and the gui options)
+        # - The node styles
+
+        # Active layouts.
         layout_names = json.loads(args.get('layouts', '[]'))  # active layouts
         layouts = [a for a in g_layouts.get(name, []) if a.name in layout_names]
 
-        labels = json.loads(args.get('labels', '[]'))
+        # Merge tree style from layouts with tree style from gui.
+        tree_style = {}
+        for layout in layouts:
+            ts = layout.tree_style  # can be a dict or a function
+            tree_style.update(ts if type(ts) is dict else ts(tree))
 
-        get = lambda x, default: float(args.get(x, default))  # shortcut
+        # Things that can be set in a tree style, and we override from the gui.
+        shape = args.get('shape', 'rectangular')
+
+        min_size = get('min_size', 10)
+        assert min_size > 0, 'min_size must be > 0'
+
+        min_size_content = get('min_size_content', 5)
+        assert min_size_content > 0, 'min_size_content must be > 0'
+
+        limits = (None if shape == 'rectangular' else
+            (get('rmin', 0), 0,
+             get('amin', -180) * pi/180, get('amax', 180) * pi/180))
+
+        tree_style.update({  # update with the "tree style" from the gui
+            'shape': shape,
+            'min-size': min_size, 'min-size-content': min_size_content,
+            'limits': limits})
+
+        # Get the node styles.
+        node_styles = [layout.node_style for layout in layouts]
+
+        # Get the rest: labels, viewport, zoom, collapsed_ids, searches.
+        labels = json.loads(args.get('labels', '[]'))
 
         viewport = ([get(k, 0) for k in ['x', 'y', 'w', 'h']]
             if all(k in args for k in ['x', 'y', 'w', 'h']) else None)
@@ -409,33 +446,19 @@ def get_drawing_kwargs(tree_id, args):
         zoom = (get('zx', 1), get('zy', 1))
         assert zoom[0] > 0 and zoom[1] > 0, 'zoom must be > 0'
 
-        limits = (None if shape == 'rectangular' else
-            (get('rmin', 0), 0,
-             get('amin', -180) * pi/180, get('amax', 180) * pi/180))
-
         collapsed_ids = set(tuple(int(i) for i in node_id.split(',') if i != '')
             for node_id in json.loads(args.get('collapsed_ids', '[]')))
 
         searches = g_searches.get(tree_id)
 
-        include_props = g_options[name]['include_props']
-        exclude_props = g_options[name].get('exclude_props')
-        is_leaf_fn = g_options[name].get('is_leaf_fn')
-
-        min_size = get('min_size', 10)
-        assert min_size > 0, 'min_size must be > 0'
-
-        min_size_content = get('min_size_content', 4)
-        assert min_size_content > 0, 'min_size_content must be > 0'
-
-        return {'tree': tree, 'shape': shape,
-                'layouts': layouts, 'labels': labels,
-                'viewport': viewport, 'zoom': zoom,
-                'limits': limits, 'collapsed_ids': collapsed_ids,
-                'searches': searches,
-                'include_props': include_props, 'exclude_props': exclude_props,
-                'is_leaf_fn': is_leaf_fn,
-                'min_size': min_size, 'min_size_content': min_size_content}
+        return {'tree': tree,
+                'tree_style': tree_style,
+                'node_styles': node_styles,
+                'labels': labels,
+                'viewport': viewport,
+                'zoom': zoom,
+                'collapsed_ids': collapsed_ids,
+                'searches': searches}
     except (ValueError, AssertionError) as e:
         abort(400, str(e))
 
@@ -559,7 +582,6 @@ def add_trees_from_request():
             names[name] = name  # tree ids are already equal to their names...
             g_trees[name] = t
             g_layouts[name] = [DEFAULT_LAYOUT]
-            g_options[name] = {'include_props': ('dist', 'support')}
 
         return names
         # TODO: tree ids are already equal to their names, so in the future
@@ -632,12 +654,10 @@ def get_trees_from_nexus_or_newick(btext, name_newick):
 # Explore.
 
 def explore(tree, name=None, layouts=None,
-            include_props=('dist', 'support'), exclude_props=None,
-            is_leaf_fn=None,
             host='127.0.0.1', port=None, verbose=False,
             compress=None, keep_server=False, open_browser=True):
     """Run the web server, add tree and open a browser to visualize it."""
-    add_tree(tree, name, layouts, include_props, exclude_props, is_leaf_fn)
+    add_tree(tree, name, layouts)
 
     if compress is not None:
         g_config['compress'] = compress  # global configuration
@@ -659,9 +679,7 @@ def explore(tree, name=None, layouts=None,
         open_browser_window(host, port)
 
 
-def add_tree(tree, name=None, layouts=None,
-             include_props=('dist', 'support'), exclude_props=None,
-             is_leaf_fn=None):
+def add_tree(tree, name=None, layouts=None):
     """Add tree, layouts, etc to the global variables, and return its name."""
     name = name or make_name()  # in case we didn't receive one
 
@@ -671,12 +689,6 @@ def add_tree(tree, name=None, layouts=None,
 
     g_layouts[name] = layouts if layouts is not None else [DEFAULT_LAYOUT]
 
-    g_options[name] = {
-        'include_props': include_props,
-        'exclude_props': exclude_props,
-        'is_leaf_fn': is_leaf_fn,
-    }
-
     return name
 
 
@@ -684,7 +696,6 @@ def remove_tree(name):
     """Remove all global references to the tree."""
     g_trees.pop(name)
     g_layouts.pop(name)
-    g_options.pop(name)
 
 
 def start_server(host='127.0.0.1', port=None, verbose=False, keep_server=False):
@@ -772,7 +783,6 @@ if __name__ == '__main__':
             name = tree['name'].replace(',', '_')  # "," is used for subtrees
             g_trees[name] = t
             g_layouts[name] = [DEFAULT_LAYOUT]
-            g_options[name] = {'include_props': ('dist', 'support')}
 
         # Set the global config options.
         g_config['compress'] = args.compress
