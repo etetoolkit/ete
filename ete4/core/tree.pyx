@@ -957,7 +957,8 @@ cdef class Tree:
 
     def explore(self, name=None, layouts=None,
                 host='127.0.0.1', port=None, verbose=False,
-                compress=False, keep_server=False, open_browser=True):
+                compress=False, keep_server=False, open_browser=True,
+                **kwargs):
         """Launch an interactive session to visualize the tree.
 
         :param str name: Name used to store and refer to the tree.
@@ -969,7 +970,8 @@ cdef class Tree:
 
         explorer.explore(self, name, layouts,
                          host, port, verbose,
-                         compress, keep_server, open_browser)
+                         compress, keep_server, open_browser,
+                         **kwargs)
 
     def render_sm(self, file_name, layouts=None, w=None, h=None):
         """Save an image with the contents of the tree."""

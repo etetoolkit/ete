@@ -31,7 +31,7 @@ sys.path.append(os.path.dirname(DIR_BIN))  # so we can import ete w/o install
 
 from ete4 import newick, nexus, operations as ops, treematcher as tm
 from . import draw
-from .layout import BASIC_LAYOUT
+from .layout import Layout, BASIC_LAYOUT
 
 DIR_LIB = os.path.dirname(os.path.abspath(draw.__file__))
 
@@ -655,9 +655,10 @@ def get_trees_from_nexus_or_newick(btext, name_newick):
 
 def explore(tree, name=None, layouts=None,
             host='127.0.0.1', port=None, verbose=False,
-            compress=None, keep_server=False, open_browser=True):
+            compress=None, keep_server=False, open_browser=True,
+            **kwargs):
     """Run the web server, add tree and open a browser to visualize it."""
-    add_tree(tree, name, layouts)
+    add_tree(tree, name, layouts, kwargs)
 
     if compress is not None:
         g_config['compress'] = compress  # global configuration
@@ -679,7 +680,7 @@ def explore(tree, name=None, layouts=None,
         open_browser_window(host, port)
 
 
-def add_tree(tree, name=None, layouts=None):
+def add_tree(tree, name=None, layouts=None, extra_style=None):
     """Add tree, layouts, etc to the global variables, and return its name."""
     name = name or make_name()  # in case we didn't receive one
 
@@ -688,6 +689,10 @@ def add_tree(tree, name=None, layouts=None):
     g_trees[name] = tree  # add tree to the global dict of trees
 
     g_layouts[name] = layouts if layouts is not None else [BASIC_LAYOUT]
+
+    if extra_style:
+        style = {k.replace('_', '-'): v for k, v in extra_style.items()}
+        g_layouts[name].append(Layout(name='extra arguments', tree_style=style))
 
     return name
 
