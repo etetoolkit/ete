@@ -31,7 +31,7 @@ sys.path.append(os.path.dirname(DIR_BIN))  # so we can import ete w/o install
 
 from ete4 import newick, nexus, operations as ops, treematcher as tm
 from . import draw
-from .layout import DEFAULT_LAYOUT
+from .layout import BASIC_LAYOUT
 
 DIR_LIB = os.path.dirname(os.path.abspath(draw.__file__))
 
@@ -581,7 +581,7 @@ def add_trees_from_request():
             name = tree['name'].replace(',', '_')  # "," is used for subtrees
             names[name] = name  # tree ids are already equal to their names...
             g_trees[name] = t
-            g_layouts[name] = [DEFAULT_LAYOUT]
+            g_layouts[name] = [BASIC_LAYOUT]
 
         return names
         # TODO: tree ids are already equal to their names, so in the future
@@ -687,7 +687,7 @@ def add_tree(tree, name=None, layouts=None):
 
     g_trees[name] = tree  # add tree to the global dict of trees
 
-    g_layouts[name] = layouts if layouts is not None else [DEFAULT_LAYOUT]
+    g_layouts[name] = layouts if layouts is not None else [BASIC_LAYOUT]
 
     return name
 
@@ -782,7 +782,7 @@ if __name__ == '__main__':
             ops.update_sizes_all(t)
             name = tree['name'].replace(',', '_')  # "," is used for subtrees
             g_trees[name] = t
-            g_layouts[name] = [DEFAULT_LAYOUT]
+            g_layouts[name] = [BASIC_LAYOUT]
 
         # Set the global config options.
         g_config['compress'] = args.compress

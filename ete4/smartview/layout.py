@@ -165,7 +165,7 @@ def default_node_style(node, collapsed):
     if node.is_leaf or collapsed:
         yield Decoration(PropFace('name'), position='right')
 
-DEFAULT_LAYOUT = Layout(name='default', node_style=default_node_style)
+BASIC_LAYOUT = Layout(name='default', node_style=default_node_style)
 
 
 # Description of a label that we want to add to the representation of a node.
