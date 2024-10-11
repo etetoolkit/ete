@@ -201,8 +201,8 @@ function add_folder_style(menu) {
 
     folder_box.addBinding(view.node.box, "opacity", {min: 0, max: 1, step: 0.002})
       .on("change", () => style("nodebox").opacity = view.node.box.opacity);
-    folder_box.addBinding(view.node.box, "color").on("change",
-        () => style("nodebox").fill = view.node.box.color);
+    folder_box.addBinding(view.node.box, "fill", {label: "color"}).on("change",
+        () => style("nodebox").fill = view.node.box.fill);
 
     const folder_dot = folder(folder_node, "dot", true);
 
@@ -217,39 +217,42 @@ function add_folder_style(menu) {
 
     folder_dot.addBinding(view.node.dot, "opacity", {min: 0, max: 1, step: 0.01})
         .on("change", () => style("nodedot").opacity = view.node.dot.opacity);
-    folder_dot.addBinding(view.node.dot, "color")
-        .on("change", () => style("nodedot").fill = view.node.dot.color);
+    folder_dot.addBinding(view.node.dot, "fill", {label: "color"})
+        .on("change", () => style("nodedot").fill = view.node.dot.fill);
 
     const folder_collapsed = folder(folder_style, "collapsed");
 
     folder_collapsed.addBinding(view.collapsed, "opacity", {min: 0, max: 1, step: 0.1})
         .on("change", () => style("collapsed").opacity = view.collapsed.opacity);
-    folder_collapsed.addBinding(view.collapsed, "color")
-        .on("change", () => style("collapsed").stroke = view.collapsed.color);
-    folder_collapsed.addBinding(view.collapsed, "width", {min: 0.1, max: 10})
-        .on("change", () => style("collapsed").strokeWidth = view.collapsed.width);
+    folder_collapsed.addBinding(view.collapsed, "fill", {label: "color"})
+        .on("change", () => style("collapsed").stroke = view.collapsed.fill);
+    folder_collapsed.addBinding(view.collapsed, "stroke-width",
+        {label: "width", min: 0.1, max: 10})
+        .on("change", () => style("collapsed").strokeWidth = view.collapsed["stroke-width"]);
 
     const folder_lines = folder(folder_style, "lines");
 
-    const folder_length = folder(folder_lines, "hz (horizontal/length)", true);
+    const folder_hz = folder(folder_lines, "hz (horizontal/length)", true);
 
-    folder_length.addBinding(view.line.length, "color")
-        .on("change", () => style("hz_line").stroke = view.line.length.color);
-    folder_length.addBinding(view.line.length, "width", {min: 0.1, max: 10})
+    folder_hz.addBinding(view.hz_line, "stroke", {label: "color"})
+        .on("change", () => style("hz_line").stroke = view.hz_line.stroke);
+    folder_hz.addBinding(view.hz_line, "stroke-width",
+        {label: "width", min: 0.1, max: 10})
         .on("change",
-            () => style("hz_line").strokeWidth = view.line.length.width);
+            () => style("hz_line").strokeWidth = view.hz_line["stroke-width"]);
 
-    const folder_children = folder(folder_lines, "vt (vertical/children)", true);
+    const folder_vt = folder(folder_lines, "vt (vertical/children)", true);
 
-    folder_children.addBinding(view.line.children, "color")
-        .on("change", () => style("vt_line").stroke = view.line.children.color);
-    folder_children.addBinding(view.line.children, "width", {min: 0.1, max: 10})
+    folder_vt.addBinding(view.vt_line, "stroke", {label: "color"})
+        .on("change", () => style("vt_line").stroke = view.vt_line.stroke);
+    folder_vt.addBinding(view.vt_line, "stroke-width",
+        {label: "width", min: 0.1, max: 10})
         .on("change",
-            () => style("vt_line").strokeWidth = view.line.children.width);
-    folder_children.addBinding(view.line.children, "pattern",
+            () => style("vt_line").strokeWidth = view.vt_line["stroke-width"]);
+    folder_vt.addBinding(view.vt_line, "pattern",
           {options: to_opts(["solid", "dotted", "dotted - 2", "dotted - 4"])})
         .on("change", () => {
-            const pattern = view.line.children.pattern;
+            const pattern = view.vt_line.pattern;
             if (pattern === "solid")
                 style("vt_line").strokeDasharray = "";
             else if (pattern === "dotted")

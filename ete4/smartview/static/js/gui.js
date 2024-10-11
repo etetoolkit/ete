@@ -85,30 +85,28 @@ const view = {
     node: {
         box: {
             opacity: 1,
-            color: "#FFF",
+            fill: "#FFF",
         },
         dot: {
             shape: "circle",
             radius: 2,
             opacity: 0.5,
-            color: "#00F",
+            fill: "#00F",
         },
     },
     collapsed: {
         opacity: 0.1,
-        color: "#A50",
-        width: 0.4,
+        fill: "#A50",
+        "stroke-width": 0.4,
     },
-    line: {
-        length: {
-            color: "#000",
-            width: 0.5,
-        },
-        children: {
-            color: "#000",
-            width: 0.5,
-            pattern: "solid",
-        },
+    hz_line: {
+        stroke: "#000",
+        "stroke-width": 0.5,
+    },
+    vt_line: {
+        stroke: "#000",
+        "stroke-width": 0.5,
+        pattern: "solid",
     },
     array: {padding: 0.0},
     font_sizes: {auto: true, scroller: undefined, fixed: 10},
@@ -286,10 +284,18 @@ async function set_tree_style() {
     while (document.styleSheets[0].cssRules.length > 0)
         document.styleSheets[0].deleteRule(0);
     view.default_rules.forEach(r => document.styleSheets[0].insertRule(r));
-    for (const [name, pos] of
-             [["box", 7], ["dot", 4], ["hz-line", 2], ["vt-line", 3]]) {
-        // Position pos based on the order in which they appear in gui.css.
+    // Iterate over name of elements whose style we can change, their position
+    // pos in CSS rules (in gui.css), and the global variable that tracks them.
+    for (const [name, pos, gvar] of
+             [["box", 7, view.node.box],
+              ["dot", 4, view.node.dot],
+              ["hz-line", 2, view.hz_line],
+              ["vt-line", 3, view.vt_line]]) {
         if (style[name]) {
+            // Update global variables (exposed in the menus).
+            Object.entries(style[name]).forEach(([k, v]) => gvar[k] = v);
+
+            // Update CSS rules.
             document.styleSheets[0].cssRules[pos].style.cssText +=
                 Object.entries(style[name]).map(([k, v]) => `${k}: ${v}`)
                 .join("; ");
