@@ -187,7 +187,7 @@ function add_folder_viewport(menu) {
 
 
 function add_folder_style(menu) {
-    const folder_style = folder(menu, "style");
+    const folder_style = folder(menu, "tree style");
 
     folder_style.addButton({title: "use original tree style"})
       .on("click", async () => {
