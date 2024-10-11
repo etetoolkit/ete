@@ -293,11 +293,11 @@ async function set_tree_style() {
               ["vt-line", 3, view.vt_line]]) {
         if (style[name]) {
             // Update global variables (exposed in the menus).
-            Object.entries(style[name]).forEach(([k, v]) => gvar[k] = v);
+            Object.entries(style[name]).forEach( ([k, v]) => gvar[k] = v );
 
             // Update CSS rules.
             document.styleSheets[0].cssRules[pos].style.cssText +=
-                Object.entries(style[name]).map(([k, v]) => `${k}: ${v}`)
+                Object.entries(style[name]).map( ([k, v]) => `${k}: ${v}` )
                 .join("; ");
         }
     }
@@ -308,7 +308,7 @@ async function set_tree_style() {
         const sheet = new CSSStyleSheet();
         for (const name in style["aliases"]) {
             const block = Object.entries(style["aliases"][name])
-                .map(([prop, value]) => `${prop}: ${value}`).join("; ");
+                .map( ([prop, value]) => `${prop}: ${value}` ).join("; ");
             sheet.insertRule(`.ns_${name} { ${block} }`);
         }
         document.adoptedStyleSheets = [sheet];
