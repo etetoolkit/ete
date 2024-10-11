@@ -191,7 +191,7 @@ class Drawer:
         # Draw a dot on the node tip.
         dot_center = (x + dx, y + bdy)
         if self.is_visible(make_box(dot_center, (0, 0))):
-            commands.append(gr.draw_nodedot(dot_center,
+            commands.append(gr.draw_nodedot(dot_center, dy_max=min(bdy, dy-bdy),
                                             style=style.get('dot', '')))
 
         return style, commands + node_commands, xmax

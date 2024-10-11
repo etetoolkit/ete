@@ -313,10 +313,10 @@ function create_item(item, tl, zoom) {
         return b;
     }
     else if (item[0] === "nodedot") {
-        const [ , point, style] = item;
+        const [ , point, dy_max, style] = item;
 
         const styles = ["nodedot", add_ns_prefix(style)];
-        return create_dot(point, tl, zx, zy, styles);
+        return create_dot(point, dy_max, tl, zx, zy, styles);
     }
     else if (item[0] === "hz-line") {
         const [ , p1, p2, parent_of, style] = item;
@@ -475,12 +475,13 @@ function create_asec(box, tl, z, style="") {
 
 
 // Return a nodedot.
-function create_dot(point, tl, zx, zy, styles) {
+function create_dot(point, dy_max, tl, zx, zy, styles) {
     const shape = pop_style(styles, "shape") || view.node.dot.shape;
     if (shape === "none")
         return null;
 
-    const r = pop_style(styles, "radius") || view.node.dot.radius;
+    const r = Math.min(dy_max * zy,
+                       pop_style(styles, "radius") || view.node.dot.radius);
 
     if (shape === "circle")
         return create_circle(point, r, tl, zx, zy, styles);

@@ -36,8 +36,8 @@ def draw_hz_line(p1, p2, parent_of=None, style=''):
 def draw_vt_line(p1, p2, style=''):
     return ['vt-line', p1, p2, style]
 
-def draw_nodedot(point, style=''):
-    return ['nodedot', point, style]
+def draw_nodedot(point, dy_max, style=''):
+    return ['nodedot', point, dy_max, style]
 
 # Information to draw an approximate representation of collapsed nodes.
 def draw_collapsed(points):
