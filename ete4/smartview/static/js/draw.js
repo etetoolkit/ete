@@ -234,7 +234,11 @@ function draw_negative_xaxis() {
 function draw(element, items, tl, zoom, replace=true) {
     const g = create_svg_element("g");
 
-    items.forEach(item => g.appendChild(create_item(item, tl, zoom)));
+    items.forEach(item => {
+        const svg = create_item(item, tl, zoom);
+        if (svg !== null)
+            g.appendChild(svg);
+    });
 
     put_nodes_in_background(g);
 
@@ -473,6 +477,9 @@ function create_asec(box, tl, z, style="") {
 // Return a nodedot.
 function create_dot(point, tl, zx, zy, styles) {
     const shape = pop_style(styles, "shape") || view.node.dot.shape;
+    if (shape === "none")
+        return null;
+
     const r = pop_style(styles, "radius") || view.node.dot.radius;
 
     if (shape === "circle")

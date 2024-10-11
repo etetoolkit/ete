@@ -266,7 +266,7 @@ async function set_tree_style() {
         const shape = style.dot.shape;
         if (shape) {
             if (! (typeof shape === "number") &&
-                ! ["circle", "triangle", "square", "pentagon",
+                ! ["none", "circle", "triangle", "square", "pentagon",
                    "hexagon", "heptagon", "octogon"].includes(shape))
                 throw new Error(`unknown dot shape ${shape}`);
             view.node.dot.shape = shape;

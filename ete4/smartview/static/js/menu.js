@@ -208,7 +208,7 @@ function add_folder_style(menu) {
 
     folder_dot.addBinding(view.node.dot, "shape",
         {label: "shape",
-         options: to_opts(["circle", "triangle", "square", "pentagon",
+         options: to_opts(["none", "circle", "triangle", "square", "pentagon",
                            "hexagon", "heptagon", "octogon"])})
         .on("change", update);
 
