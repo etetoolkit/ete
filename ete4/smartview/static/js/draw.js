@@ -604,6 +604,9 @@ function create_polygon(name, center, r, tl, zx, zy, style="") {
            "heptagon": 7,
            "octogon":  8}[name];
 
+    if (n === undefined)
+        throw new Error(`unknown dot shape ${name}`);
+
     const c = view.shape === "rectangular" ?  // center point in screen coords
         tree2rect(center, tl, zx, zy) :
         tree2circ(center, tl, zx);
