@@ -106,7 +106,7 @@ def to_elements(xs):
 
 
 DEFAULT_TREE_STYLE = {  # the default style of a tree
-    'include-props': ('dist', 'support'),
+    'show-popup-props': ['dist', 'support'],
     'aliases': {  # to name styles that can be referenced in draw_node
         'dist': {'fill': '#888'},
         'support': {'fill': '#f88'},  # a light red
@@ -119,7 +119,8 @@ DEFAULT_TREE_STYLE = {  # the default style of a tree
 #      'min-node-height': 10,
 #      'min-content-height': 5,
 #      'limits': (5, 0, -pi/2, pi/2),
-#      'include_props': None,  # all defined properties
+#      'show-popup-props': None,  # all defined properties
+#      'hide-popup-props': ['support'],  # except support
 #      'is-leaf-fn': lambda node: node.level > 4,
 #      'box': {'fill': 'green', 'opacity': 0.1, 'stroke': 'blue', 'border': 2},
 #      'dot': {'shape': 'hexagon', 'fill': 'red'},
@@ -132,7 +133,7 @@ DEFAULT_TREE_STYLE = {  # the default style of a tree
 #
 # Some properties will be used directly by the backend:
 #   - shape, min-node-height, min-content-height, limits,
-#     include-props, exclude-props, is-leaf-fn
+#     show-popup-props, hide-popup-props, is-leaf-fn
 # Most  will be controlled by the css class of the element in the frontend:
 #   - box, dot, hz-line, vt-line
 # And the "aliases" part will tell the frontend which styles are referenced.

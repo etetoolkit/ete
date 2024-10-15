@@ -278,14 +278,14 @@ class Drawer:
         style = self.tree_style  # shortcut
 
         # Not present? use defaults; None? use all; else, use whatever they are.
-        included = (style['include-props'] if 'include-props' in style else
-                    ['dist', 'support'])  # defaults
-        included = included if included is not None else node.props.keys()
+        shown = (style['show-popup-props'] if 'show-popup-props' in style else
+                 ['dist', 'support'])  # defaults
+        shown = shown if shown is not None else node.props.keys()
 
-        excluded = style.get('exclude-props') or []  # nothing special for None
+        hidden = style.get('hide-popup-props') or []  # nothing special for None
 
-        return {k: str(node.props[k]) for k in included
-                    if k in node.props and k not in excluded}
+        return {k: str(node.props[k]) for k in shown
+                    if k in node.props and k not in hidden}
         # NOTE: So the properties appear in the order given in included.
 
     def draw_nodes(self, nodes, box, bdy, circular):  # bdy: branch dy (height)
