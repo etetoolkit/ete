@@ -116,8 +116,8 @@ DEFAULT_TREE_STYLE = {  # the default style of a tree
 # A tree style can have things like:
 #   my_tree_style = {
 #      'shape': 'rectangular',  # or 'circular'
-#      'min-size': 10,
-#      'min-size-content': 5,
+#      'min-node-height': 10,
+#      'min-content-height': 5,
 #      'limits': (5, 0, -pi/2, pi/2),
 #      'include_props': None,  # all defined properties
 #      'is-leaf-fn': lambda node: node.level > 4,
@@ -131,7 +131,7 @@ DEFAULT_TREE_STYLE = {  # the default style of a tree
 #   }
 #
 # Some properties will be used directly by the backend:
-#   - shape, min-size, min-size-content, limits,
+#   - shape, min-node-height, min-content-height, limits,
 #     include-props, exclude-props, is-leaf-fn
 # Most  will be controlled by the css class of the element in the frontend:
 #   - box, dot, hz-line, vt-line

@@ -390,7 +390,7 @@ def get_drawing_kwargs(tree_id, args):
     """Return the drawing arguments initialized as specified in the args."""
     valid_keys = ['x', 'y', 'w', 'h', 'zx', 'zy',
                   'layouts', 'labels', 'collapsed_ids',
-                  'shape', 'min_size', 'min_size_content',
+                  'shape', 'min_node_height', 'min_content_height',
                   'rmin', 'amin', 'amax']
     try:
         assert all(k in valid_keys for k in args.keys()), 'invalid keys'
@@ -408,11 +408,11 @@ def get_drawing_kwargs(tree_id, args):
         # Things that can be set in a tree style, and we override from the gui.
         shape = args.get('shape', 'rectangular')
 
-        min_size = get('min_size', 10)
-        assert min_size > 0, 'min_size must be > 0'
+        min_node_height = get('min_node_height', 10)
+        assert min_node_height > 0, 'min_node_height must be > 0'
 
-        min_size_content = get('min_size_content', 5)
-        assert min_size_content > 0, 'min_size_content must be > 0'
+        min_content_height = get('min_content_height', 5)
+        assert min_content_height > 0, 'min_content_height must be > 0'
 
         limits = (None if shape == 'rectangular' else
             (get('rmin', 0), 0,
@@ -420,8 +420,8 @@ def get_drawing_kwargs(tree_id, args):
 
         overrides = {  # overrides of the tree style from the gui
             'shape': shape,
-            'min-size': min_size,
-            'min-size-content': min_size_content,
+            'min-node-height': min_node_height,
+            'min-content-height': min_content_height,
             'limits': limits}
 
         # Get the rest: labels, viewport, zoom, collapsed_ids, searches.

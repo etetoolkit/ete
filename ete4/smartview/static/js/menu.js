@@ -49,13 +49,14 @@ function add_tab_main(tab, trees) {
     tab.addButton({title: "upload"}).on("click", view.upload);
 
     tab.addBinding(view, "shape", {label: "shape",
-                                    options: to_opts(["rectangular", "circular"])})
+                                   options: to_opts(["rectangular", "circular"])})
         .on("change", on_shape_change);
 
-    tab.addBinding(view, "min_size", {label: "collapse size", min: 1, max: 200})
+    tab.addBinding(view, "min_node_height", {label: "min node height",
+                                             min: 1, max: 200})
         .on("change", update);
-    tab.addBinding(view, "min_size_content", {label: "collapse content",
-                                              min: 1, max: 200})
+    tab.addBinding(view, "min_content_height", {label: "min content height",
+                                                min: 1, max: 200})
         .on("change", update);
 
     menus.layouts = folder(tab, "layouts", true);  // filled dynamically
