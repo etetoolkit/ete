@@ -7,6 +7,7 @@ from collections import namedtuple
 from dataclasses import dataclass, field
 from functools import lru_cache
 import inspect
+import copy
 
 from .faces import Face, PropFace
 
@@ -23,59 +24,82 @@ from .faces import Face, PropFace
 class Layout:
     """Contains all the info about how to represent a tree."""
 
-    def __init__(self, name, tree_style=None, node_style=None, cache_size=None):
-        # Check types.
-        assert type(name) is str
-        assert tree_style is None or type(tree_style) is dict or callable(tree_style)
-        assert node_style is None or callable(node_style)
+    def __init__(self, name, draw_tree=None, draw_node=None, cache_size=None):
+        self.cache_size = cache_size  # used to cache functions in the setters
 
         # Name. This is mainly to activate/deactivate the layout in the gui.
+        assert type(name) is str
         self.name = name
 
-        # Tree style. Can be a dict or a function of a tree that returns a dict.
-        self.tree_style = tree_style or {}
+        # Tree representation (style and decorations).
+        self.draw_tree = draw_tree
 
-        # Representation of a node (style and decorations).
-        if node_style is None:
-            self.node_style = lambda node, collapsed: ()
-            return
-
-        # We use an auxiliary function to cache its results.
-        arity = len(inspect.signature(node_style).parameters)
-        if arity == 1:  # node_style(node) (unspecified what to do with collapsed)
-            @lru_cache(maxsize=cache_size)
-            def cached_node_style(node, collapsed):
-                if not collapsed:
-                    return to_elements(node_style(node))  # get just for the node
-                else:
-                    return [x for n in collapsed   # get from all siblings
-                                for x in to_elements(node_style(n))]
-        elif arity == 2:  # node_style(node, collapsed) (fully specified)
-            @lru_cache(maxsize=cache_size)
-            def cached_node_style(node, collapsed):
-                return to_elements(node_style(node, collapsed))
-        else:
-            raise ValueError('node_style can have only 1 or 2 arguments.')
-
-        self.node_style = cached_node_style  # use the auxiliary caching function
+        # Node representation (style and decorations).
+        self.draw_node = draw_node
 
     @property
-    def tree_style(self):
-        return self._tree_style
+    def draw_tree(self):
+        return self._draw_tree
 
-    @tree_style.setter
-    def tree_style(self, value):
-        self._tree_style = add_to_style(value, DEFAULT_TREE_STYLE)
+    @draw_tree.setter
+    def draw_tree(self, value):
+        if value is None:
+            self._draw_tree = lambda tree: [DEFAULT_TREE_STYLE]
+        elif type(value) is dict:
+            self._draw_tree = lambda tree: [DEFAULT_TREE_STYLE, value]
+        elif callable(value):
+            @lru_cache(maxsize=self.cache_size)
+            def cached_draw_tree(tree):
+                return [DEFAULT_TREE_STYLE] + to_elements(value(tree))
+            self._draw_tree = cached_draw_tree
+        else:
+            raise ValueError('draw_tree can be either a dict or a function')
+
+    @property
+    def draw_node(self):
+        return self._draw_node
+
+    @draw_node.setter
+    def draw_node(self, value):
+        assert value is None or callable(value)
+
+        if value is None:
+            self._draw_node = lambda node, collapsed: []
+            return
+
+        f = value  # nicer name, since it is a function
+
+        # We use an auxiliary function to cache its results.
+        arity = len(inspect.signature(f).parameters)
+        if arity == 1:  # f(node) (unspecified what to do with collapsed)
+            @lru_cache(maxsize=self.cache_size)
+            def cached_draw_node(node, collapsed):
+                if not collapsed:
+                    return to_elements(f(node))  # get just for the node
+                else:
+                    return [x for n in collapsed   # get from all siblings
+                                for x in to_elements(f(n))]
+        elif arity == 2:  # f(node, collapsed) (fully specified)
+            @lru_cache(maxsize=self.cache_size)
+            def cached_draw_node(node, collapsed):
+                return to_elements(f(node, collapsed))
+        else:
+            raise ValueError('draw_node can have only 1 or 2 arguments.')
+
+        self._draw_node = cached_draw_node  # use the auxiliary caching function
 
 
 def to_elements(xs):
     """Return a list of the elements of iterable xs as Decorations/dicts."""
     # Normally xs is already a list of decorations/dicts.
-    if xs is None:  # but xs can be None (a node_style() didn't return anything)
+    if xs is None:  # but xs can be None (a draw_node() didn't return anything)
         return []
 
+    if type(xs) is dict:
+        return [xs]
+
     if not hasattr(xs, '__iter__'):  # or it can be a single element
-        return [xs if type(xs) in [Decoration, dict] else Decoration(xs)]
+        return [xs if type(xs) is Decoration else Decoration(xs)]
 
     # Return elements, wrapped as Decorations if they need it.
     return [x if type(x) in [Decoration, dict] else Decoration(x) for x in xs]
@@ -83,7 +107,7 @@ def to_elements(xs):
 
 DEFAULT_TREE_STYLE = {  # the default style of a tree
     'include-props': ('dist', 'support'),
-    'aliases': {  # to name styles that can be referenced in node_style
+    'aliases': {  # to name styles that can be referenced in draw_node
         'dist': {'fill': '#888'},
         'support': {'fill': '#f88'},  # a light red
     }
@@ -113,18 +137,14 @@ DEFAULT_TREE_STYLE = {  # the default style of a tree
 #   - box, dot, hz-line, vt-line
 # And the "aliases" part will tell the frontend which styles are referenced.
 
-def add_to_style(style, style_old):
-    """Return a style dictionary merging properly style_old and style."""
-    # Update a copy of the old dict with the new (except for aliases).
-    style_new = style_old.copy()
-    style_new.update((k, v) for k, v in style.items() if k != 'aliases')
-
-    # Update aliases (which is itself a dict).
-    aliases = style_old.get('aliases', {}).copy()
-    aliases.update(style.get('aliases', {}))
-    style_new['aliases'] = aliases
-
-    return style_new
+def update_style(style, style_new):
+    """Update the style dictionary merging properly with style_new."""
+    subdicts = {k for k in style_new if type(style_new[k]) is dict and
+                                        type(style.get(k)) is dict}
+    style.update((k, copy.deepcopy(v)) for k, v in style_new.items()
+                     if k not in subdicts)
+    for k in subdicts:
+        update_style(style[k], style_new[k])
 
 
 # A decoration is a face with a position ("top", "bottom", "right",
@@ -154,7 +174,7 @@ default_anchors = {'top':     (-1, 1),   # left, bottom
 
 # The default layout.
 
-def default_node_style(node, collapsed):
+def default_draw_node(node, collapsed):
     if not collapsed:
         face_dist = PropFace('dist', '%.2g', style='dist')
         yield Decoration(face_dist, position='top')
@@ -165,7 +185,7 @@ def default_node_style(node, collapsed):
     if node.is_leaf or collapsed:
         yield Decoration(PropFace('name'), position='right')
 
-BASIC_LAYOUT = Layout(name='basic', node_style=default_node_style)
+BASIC_LAYOUT = Layout(name='basic', draw_node=default_draw_node)
 
 
 # Description of a label that we want to add to the representation of a node.

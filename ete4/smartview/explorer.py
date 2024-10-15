@@ -31,7 +31,7 @@ sys.path.append(os.path.dirname(DIR_BIN))  # so we can import ete w/o install
 
 from ete4 import newick, nexus, operations as ops, treematcher as tm
 from . import draw
-from .layout import Layout, BASIC_LAYOUT
+from .layout import Layout, BASIC_LAYOUT, update_style
 
 DIR_LIB = os.path.dirname(os.path.abspath(draw.__file__))
 
@@ -166,8 +166,9 @@ def callback(tree_id):
         style = {}
         for layout in g_layouts.get(name, []):
             if layout.name in active:
-                ts = layout.tree_style  # may be dict or function returning dict
-                style.update(ts if type(ts) is dict else ts(t))
+                for element in layout.draw_tree(t):
+                    if type(element) is dict:
+                        update_style(style, element)
 
         # We remove is-leaf-fn because it is a function (thus not serializable).
         style.pop('is-leaf-fn', None)
@@ -400,19 +401,9 @@ def get_drawing_kwargs(tree_id, args):
 
         name, _ = get_tid(tree_id)  # "name" or "tid" is what identifies the tree
 
-        # From the layouts we get:
-        # - The tree style (a consensus from them and the gui options)
-        # - The node styles
-
         # Active layouts.
         layout_names = json.loads(args.get('layouts', '[]'))  # active layouts
         layouts = [a for a in g_layouts.get(name, []) if a.name in layout_names]
-
-        # Merge tree style from layouts with tree style from gui.
-        tree_style = {}
-        for layout in layouts:
-            ts = layout.tree_style  # can be a dict or a function
-            tree_style.update(ts if type(ts) is dict else ts(tree))
 
         # Things that can be set in a tree style, and we override from the gui.
         shape = args.get('shape', 'rectangular')
@@ -427,13 +418,11 @@ def get_drawing_kwargs(tree_id, args):
             (get('rmin', 0), 0,
              get('amin', -180) * pi/180, get('amax', 180) * pi/180))
 
-        tree_style.update({  # update with the "tree style" from the gui
+        overrides = {  # overrides of the tree style from the gui
             'shape': shape,
-            'min-size': min_size, 'min-size-content': min_size_content,
-            'limits': limits})
-
-        # Get the node styles.
-        node_styles = [layout.node_style for layout in layouts]
+            'min-size': min_size,
+            'min-size-content': min_size_content,
+            'limits': limits}
 
         # Get the rest: labels, viewport, zoom, collapsed_ids, searches.
         labels = json.loads(args.get('labels', '[]'))
@@ -452,8 +441,8 @@ def get_drawing_kwargs(tree_id, args):
         searches = g_searches.get(tree_id)
 
         return {'tree': tree,
-                'tree_style': tree_style,
-                'node_styles': node_styles,
+                'layouts': layouts,
+                'overrides': overrides,
                 'labels': labels,
                 'viewport': viewport,
                 'zoom': zoom,
@@ -692,7 +681,7 @@ def add_tree(tree, name=None, layouts=None, extra_style=None):
 
     if extra_style:
         style = {k.replace('_', '-'): v for k, v in extra_style.items()}
-        g_layouts[name].append(Layout(name='extra arguments', tree_style=style))
+        g_layouts[name].append(Layout(name='extra arguments', draw_tree=style))
 
     return name
 

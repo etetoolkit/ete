@@ -6,18 +6,34 @@ from math import sin, cos, pi, sqrt, atan2
 
 from ..core import operations as ops
 from .coordinates import Size, Box, make_box, get_xs, get_ys
-from .layout import Decoration, Label
+from .layout import Decoration, Label, update_style
 from .faces import EvalTextFace
 from . import graphics as gr
 
 
-def draw(tree, tree_style=None, node_styles=None, labels=None,
+def draw(tree, layouts, overrides=None, labels=None,
          viewport=None, zoom=(1, 1), collapsed_ids=None, searches=None):
     """Yield graphic commands to draw the tree."""
-    drawer_class = {'rectangular': DrawerRect,
-                    'circular':    DrawerCirc}[tree_style['shape']]
+    style = {}  # tree style
+    decos = []  # tree decorations
 
-    drawer_obj = drawer_class(tree, tree_style, node_styles, labels,
+    for layout in layouts:
+        for element in layout.draw_tree(tree):
+            if type(element) is dict:
+                update_style(style, element)
+            else:
+                decos.append(element)
+
+    style.update(overrides)
+
+    # TODO: Draw the decos.
+
+    drawer_class = {'rectangular': DrawerRect,
+                    'circular':    DrawerCirc}[style['shape']]
+
+    draw_node_fns = [layout.draw_node for layout in layouts]
+
+    drawer_obj = drawer_class(tree, style, draw_node_fns, labels,
                               viewport, zoom, collapsed_ids, searches)
 
     yield from drawer_obj.draw()
@@ -26,11 +42,11 @@ def draw(tree, tree_style=None, node_styles=None, labels=None,
 class Drawer:
     """Base class (needs subclassing with extra functions to draw)."""
 
-    def __init__(self, tree, tree_style=None, node_styles=None, labels=None,
+    def __init__(self, tree, tree_style=None, draw_node_fns=None, labels=None,
                  viewport=None, zoom=(1, 1), collapsed_ids=None, searches=None):
         self.tree = tree
         self.tree_style = tree_style or {}
-        self.node_styles = node_styles or []
+        self.draw_node_fns = draw_node_fns or []
         self.labels = [read_label(label) for label in (labels or [])]
         self.viewport = Box(*viewport) if viewport else None
         self.zoom = zoom
@@ -277,9 +293,9 @@ class Drawer:
         style = {}  # style
         decos = []  # decorations
 
-        # Add style and decorations from node_styles (from layouts).
-        for node_style in self.node_styles:
-            for element in node_style(nodes[0], tuple(self.collapsed)):
+        # Add style and decorations from draw_node_fns (from layouts).
+        for draw_node in self.draw_node_fns:
+            for element in draw_node(nodes[0], tuple(self.collapsed)):
                 if type(element) is dict:
                     style.update(element)
                 else:
@@ -323,9 +339,9 @@ def read_label(label):
 class DrawerRect(Drawer):
     """Drawer for a rectangular representation."""
 
-    def __init__(self, tree, tree_style=None, node_styles=None, labels=None,
+    def __init__(self, tree, tree_style=None, draw_node_fns=None, labels=None,
                  viewport=None, zoom=(1, 1), collapsed_ids=None, searches=None):
-        super().__init__(tree, tree_style, node_styles, labels,
+        super().__init__(tree, tree_style, draw_node_fns, labels,
                          viewport, zoom, collapsed_ids, searches)
         # We don't really need to define this function, but we do it
         # for symmetry, because in DrawerCirc it needs to do more things.
@@ -384,9 +400,9 @@ class DrawerRect(Drawer):
 class DrawerCirc(Drawer):
     """Drawer for a circular representation."""
 
-    def __init__(self, tree, tree_style=None, node_styles=None, labels=None,
+    def __init__(self, tree, tree_style=None, draw_node_fns=None, labels=None,
                  viewport=None, zoom=(1, 1), collapsed_ids=None, searches=None):
-        super().__init__(tree, tree_style, node_styles, labels,
+        super().__init__(tree, tree_style, draw_node_fns, labels,
                          viewport, zoom, collapsed_ids, searches)
 
         assert self.zoom[0] == self.zoom[1], 'zoom must be equal in x and y'
