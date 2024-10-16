@@ -129,11 +129,11 @@ function add_tab_advanced(tab) {
         draw_minimap();
         update();
     }
-    folder_circ.addBinding(view, "rmin", {label: "radius min"})
+    folder_circ.addBinding(view, "rmin", {label: "radius"})
         .on("change", update_with_minimap);
-    folder_circ.addBinding(view.angle, "min", {label: "angle min", min: -180, max: 180})
+    folder_circ.addBinding(view.angle, "min", {label: "angle start", min: -180, max: 180})
         .on("change", update_with_minimap);
-    folder_circ.addBinding(view.angle, "max", {label: "angle max", min: -180, max: 180})
+    folder_circ.addBinding(view.angle, "max", {label: "angle end", min: -180, max: 180})
         .on("change", update_with_minimap);
 
     add_folder_info(tab);

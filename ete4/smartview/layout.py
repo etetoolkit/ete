@@ -118,7 +118,9 @@ DEFAULT_TREE_STYLE = {  # the default style of a tree
 #      'shape': 'rectangular',  # or 'circular'
 #      'min-node-height': 10,
 #      'min-content-height': 5,
-#      'limits': (5, 0, -pi/2, pi/2),
+#      'radius': 5,
+#      'angle-start': -pi/2,
+#      'angle-end': pi/2,  # alternatively we can give 'angle-span'
 #      'show-popup-props': None,  # all defined properties
 #      'hide-popup-props': ['support'],  # except support
 #      'is-leaf-fn': lambda node: node.level > 4,
@@ -132,7 +134,8 @@ DEFAULT_TREE_STYLE = {  # the default style of a tree
 #   }
 #
 # Some properties will be used directly by the backend:
-#   - shape, min-node-height, min-content-height, limits,
+#   - shape, min-node-height, min-content-height,
+#     radius, angle-start, angle-end, angle-span,
 #     show-popup-props, hide-popup-props, is-leaf-fn
 # Most  will be controlled by the css class of the element in the frontend:
 #   - box, dot, hz-line, vt-line

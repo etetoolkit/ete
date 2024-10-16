@@ -54,14 +54,15 @@ class Drawer:
         self.searches = searches or {}  # looks like {text: (results, parents)}
 
         # Get some useful constants from the tree style.
-        self.xmin, self.xmax, self.ymin, self.ymax = \
-            self.tree_style.get('limits') or (0, 0, 0, 0)
 
-        # Anything that has less pixels will be collapsed:
+        # Any node that has less pixels will be collapsed.
         self.min_node_height = self.tree_style.get('min-node-height', 10)
 
-        # Any content with less pixels won't be shown:
+        # Any content with less pixels won't be shown.
         self.min_content_height = self.tree_style.get('min-content-height', 5)
+
+        # xmin, ymin, ymax used only for the circular mode for the moment.
+        self.xmin, self.ymin, self.ymax = 0, 0, 0
 
     def draw(self):
         """Yield commands to draw the tree."""
@@ -407,8 +408,22 @@ class DrawerCirc(Drawer):
 
         assert self.zoom[0] == self.zoom[1], 'zoom must be equal in x and y'
 
-        if tree_style.get('limits') is None:
-            self.ymin, self.ymax = -pi, pi
+        self.xmin = self.tree_style.get('radius', 0)
+
+        amin = self.tree_style.get('angle-start')
+        amax = self.tree_style.get('angle-end')
+        self.ymin = amin * pi/180 if amin is not None else -pi
+        self.ymax = amax * pi/180 if amax is not None else +pi
+
+        da = self.tree_style.get('angle-span')
+        if da is not None:
+            if amin is not None and amax is not None:
+                assert abs(amax - (amin + da)) < 1e-10, \
+                    'incompatible values: angle-start, angle-end, angle-span'
+            if amin is not None:
+                self.ymax = self.ymin + da * pi/180
+            else:
+                self.ymin = self.ymax - da * pi/180
 
         self.dy2da = (self.ymax - self.ymin) / self.tree.size[1]
 

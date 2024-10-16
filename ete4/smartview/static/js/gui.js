@@ -236,35 +236,46 @@ async function set_tree_style() {
 
     // Set rectangular or circular shape.
     view.shape = "rectangular";
-    if (style.shape)
+    if ("shape" in style) {
+        if (! ["rectangular", "circular"].includes(style.shape))
+            throw new Error(`unknown shape "${style.shape}"`);
         view.shape = style.shape;
+    }
 
     // Set collapse and visualize sizes.
     view.min_node_height = 30;
-    if (style["min-node-height"])
+    if ("min-node-height" in style)
         view.min_node_height = style["min-node-height"];
 
     view.min_content_height = 4;
-    if (style["min-content-height"])
+    if ("min-content-height" in style)
         view.min_content_height = style["min-content-height"];
 
     // Set limits.
     view.rmin = 0;
+    if ("radius" in style)
+        view.rmin = style.radius;
+
     view.angle.min = -180;
+    if ("angle-start" in style)
+        view.angle.min = style["angle-start"];
+
     view.angle.max = 180;
-    if (style.limits) {
-        const [rmin, , amin, amax] = style.limits;
-        view.rmin = rmin;
-        view.angle.min = amin;
-        view.angle.max = amax;
-    }
+    if ("angle-end" in style)
+        view.angle.max = style["angle-end"];
+
+    if ("angle-span" in style)
+        if ("angle-start" in style)
+            view.angle.max = view.angle.min + style["angle-span"];
+        else
+            view.angle.min = view.angle.max - style["angle-span"];
 
     // Get special (non-css) styles first and remove them.
     view.node.dot.shape = "circle";
     view.node.dot.radius = 2;
-    if (style.dot) {
+    if ("dot" in style) {
         const shape = style.dot.shape;
-        if (shape) {
+        if (shape !== undefined) {
             if (! (typeof shape === "number") &&
                 ! ["none", "circle", "triangle", "square", "pentagon",
                    "hexagon", "heptagon", "octogon"].includes(shape))
@@ -274,7 +285,7 @@ async function set_tree_style() {
         }
 
         const radius = style.dot.radius;
-        if (radius) {
+        if (radius !== undefined) {
             view.node.dot.radius = radius;
             delete style.dot.radius;  // so we don't use it later
         }
@@ -291,7 +302,7 @@ async function set_tree_style() {
               ["dot", 4, view.node.dot],
               ["hz-line", 2, view.hz_line],
               ["vt-line", 3, view.vt_line]]) {
-        if (style[name]) {
+        if (name in style) {
             // Update global variables (exposed in the menus).
             Object.entries(style[name]).forEach( ([k, v]) => gvar[k] = v );
 
@@ -302,7 +313,7 @@ async function set_tree_style() {
         }
     }
 
-    if (style["aliases"]) {
+    if ("aliases" in style) {
         // Add new stylesheet with all the ns_* names for the styles.
         // They will be used when elements with those styles appear in draw.js
         const sheet = new CSSStyleSheet();

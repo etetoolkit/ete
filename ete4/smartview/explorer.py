@@ -414,15 +414,16 @@ def get_drawing_kwargs(tree_id, args):
         min_content_height = get('min_content_height', 5)
         assert min_content_height > 0, 'min_content_height must be > 0'
 
-        limits = (None if shape == 'rectangular' else
-            (get('rmin', 0), 0,
-             get('amin', -180) * pi/180, get('amax', 180) * pi/180))
-
         overrides = {  # overrides of the tree style from the gui
             'shape': shape,
             'min-node-height': min_node_height,
-            'min-content-height': min_content_height,
-            'limits': limits}
+            'min-content-height': min_content_height}
+
+        if shape == 'circular':
+            overrides.update({
+                'radius': get('rmin', 0),
+                'angle-start': get('amin', -180),
+                'angle-end': get('amax', 180)})
 
         # Get the rest: labels, viewport, zoom, collapsed_ids, searches.
         labels = json.loads(args.get('labels', '[]'))
