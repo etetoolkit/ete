@@ -260,19 +260,28 @@ class Drawer:
         yield from graphics
 
     def draw_collapsed(self, *args, **kwargs):
-        """Yield collapsed nodes representation with all the skeleton points."""
+        """Yield collapsed nodes representation."""
         # This is the shape of the outline. It also updates self.bdy_dys.
         x, y, dx, dy = self.outline
         _, zy = self.zoom
 
-        points = points_from_nodes(self.collapsed, (x, y),
-                                   self.min_content_height/zy,
-                                   *args, **kwargs)  # for subclasses
+        shape = self.tree_style.get('collapsed-shape', 'skeleton')
 
-        y1 = points[-1][1]  # last point's y (it is at branch position)
-        self.bdy_dys[-1].append( (y1 - y, dy) )
+        if shape == 'skeleton':
+            points = points_from_nodes(self.collapsed, (x, y),
+                                       self.min_content_height/zy,
+                                       *args, **kwargs)  # for subclasses
 
-        yield gr.draw_collapsed(points)
+            y1 = points[-1][1]  # last point's y (it is at branch position)
+            self.bdy_dys[-1].append( (y1 - y, dy) )
+
+            yield gr.draw_skeleton(points)
+        elif shape == 'outline':
+            self.bdy_dys[-1].append( (dy/2, dy) )
+
+            yield gr.draw_outline(self.outline)
+        else:
+            raise ValueError(f'unrecognized collapsed shape: {shape!r}')
 
     def get_nodeprops(self, node):
         """Return the node properties that we want to show with the nodebox."""

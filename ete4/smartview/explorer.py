@@ -389,7 +389,7 @@ def sort(tree_id, node_id, key_text, reverse):
 def get_drawing_kwargs(tree_id, args):
     """Return the drawing arguments initialized as specified in the args."""
     valid_keys = ['x', 'y', 'w', 'h', 'zx', 'zy',
-                  'layouts', 'labels', 'collapsed_ids',
+                  'layouts', 'labels', 'collapsed_shape', 'collapsed_ids',
                   'shape', 'min_node_height', 'min_content_height',
                   'rmin', 'amin', 'amax']
     try:
@@ -408,6 +408,8 @@ def get_drawing_kwargs(tree_id, args):
         # Things that can be set in a tree style, and we override from the gui.
         shape = args.get('shape', 'rectangular')
 
+        collapsed_shape = args.get('collapsed_shape', 'skeleton')
+
         min_node_height = get('min_node_height', 10)
         assert min_node_height > 0, 'min_node_height must be > 0'
 
@@ -416,6 +418,7 @@ def get_drawing_kwargs(tree_id, args):
 
         overrides = {  # overrides of the tree style from the gui
             'shape': shape,
+            'collapsed-shape': collapsed_shape,
             'min-node-height': min_node_height,
             'min-content-height': min_content_height}
 

@@ -125,6 +125,7 @@ function build_draw_query_string() {
         "min_node_height": view.min_node_height,
         "min_content_height": view.min_content_height,
         "zx": zx, "zy": zy, "x": x, "y": y, "w": w, "h": h,
+        "collapsed_shape": view.collapsed.shape,
         "collapsed_ids": JSON.stringify(Object.keys(view.collapsed_ids)),
         "layouts": layouts,
         "labels": labels,
@@ -335,10 +336,15 @@ function create_item(item, tl, zoom) {
             create_line(p1, p2, tl, zx, zy, styles) :
             create_arc(p1, p2, tl, zx, styles);
     }
-    else if (item[0] === "collapsed") {
+    else if (item[0] === "skeleton") {
         const [ , points] = item;
 
-        return create_collapsed(points, tl, zx, zy);
+        return create_skeleton(points, tl, zx, zy);
+    }
+    else if (item[0] === "outline") {
+        const [ , box] = item;
+
+        return create_outline(box, tl, zx, zy);
     }
     else if (item[0] === "line") {
         const [ , p1, p2, style] = item;
@@ -492,17 +498,17 @@ function create_dot(point, dy_max, tl, zx, zy, styles) {
 }
 
 
-// Return a shape summarizing collapsed nodes (collapsed version of a box).
-function create_collapsed(points, tl, zx, zy) {
+// Return a shape summarizing collapsed nodes (skeleton).
+function create_skeleton(points, tl, zx, zy) {
     if (view.shape === "rectangular")
-        return create_rect_collapsed(points, tl, zx, zy);
+        return create_rect_skeleton(points, tl, zx, zy);
     else
-        return create_circ_collapsed(points, tl, zx);
+        return create_circ_skeleton(points, tl, zx);
 }
 
 
 // Return a svg horizontal approximation to the collapsed nodes.
-function create_rect_collapsed(points, tl, zx, zy) {
+function create_rect_skeleton(points, tl, zx, zy) {
     const ps = points.map(p => tree2rect(p, tl, zx, zy));
 
     return create_svg_element("path", {
@@ -514,7 +520,7 @@ function create_rect_collapsed(points, tl, zx, zy) {
 
 
 // Return a svg collapsed representation in the direction of an annular sector.
-function create_circ_collapsed(points, tl, z) {
+function create_circ_skeleton(points, tl, z) {
     const das = [];  // list of angle differences
     for (let i = 1; i < points.length; i++)
         das.push(points[i][1] - points[i-1][1]);
@@ -535,6 +541,56 @@ function create_circ_collapsed(points, tl, z) {
         "class": "collapsed",
         "d": (`M ${ps[0].x} ${ps[0].y} ` +
               ps.slice(1).map(arc).join(' ')),
+    });
+}
+
+
+// Return an outline (collapsed version of a box).
+function create_outline(box, tl, zx, zy) {
+    if (view.shape === "rectangular")
+        return create_rect_outline(box, tl, zx, zy);
+    else
+        return create_circ_outline(box, tl, zx);
+}
+
+
+// Return a svg horizontal outline.
+function create_rect_outline(box, tl, zx, zy) {
+    const [x, y, dx, dy] = box;
+
+    const p0 = tree2rect([x, y + dy/2], tl, zx, zy),
+          p10 = tree2rect([x + dx, y], tl, zx, zy),
+          p11 = tree2rect([x + dx, y + dy], tl, zx, zy);
+
+    return create_svg_element("path", {
+        "class": "collapsed",
+        "d": `M ${p0.x} ${p0.y}
+              L ${p10.x} ${p10.y}
+              L ${p11.x} ${p11.y}
+              L ${p0.x} ${p0.y}`,
+    });
+    // NOTE: Symmetrical to create_circ_outline(). Otherwise, we could just do:
+    //   create_svg_element("polygon", {
+    //       "points": [p0, p10, p11].map(p => `${p.x},${p.y}`).join(" "),
+    //   });
+}
+
+
+// Return a svg outline in the direction of an annular sector.
+function create_circ_outline(box, tl, z) {
+    const [r, a, dr, da] = box;
+
+    const large = da > Math.PI ? 1 : 0;
+    const p0 = tree2circ([r, a + da/2], tl, z),
+          p10 = tree2circ([r + dr, a], tl, z),
+          p11 = tree2circ([r + dr, a + da], tl, z);
+
+    return create_svg_element("path", {
+        "class": "collapsed",
+        "d": `M ${p0.x} ${p0.y}
+              L ${p10.x} ${p10.y}
+              A ${z * (r + dr)} ${z * (r + dr)} 0 ${large} 1 ${p11.x} ${p11.y}
+              L ${p0.x} ${p0.y}`,
     });
 }
 

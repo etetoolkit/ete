@@ -208,8 +208,7 @@ function add_folder_style(menu) {
     const folder_dot = folder(folder_node, "dot", true);
 
     folder_dot.addBinding(view.node.dot, "shape",
-        {label: "shape",
-         options: to_opts(["none", "circle", "triangle", "square", "pentagon",
+        {options: to_opts(["none", "circle", "triangle", "square", "pentagon",
                            "hexagon", "heptagon", "octogon"])})
         .on("change", update);
 
@@ -223,10 +222,13 @@ function add_folder_style(menu) {
 
     const folder_collapsed = folder(folder_style, "collapsed");
 
+    folder_collapsed.addBinding(view.collapsed, "shape",
+        {options: to_opts(["skeleton", "outline"])})
+        .on("change", update);
     folder_collapsed.addBinding(view.collapsed, "opacity", {min: 0, max: 1, step: 0.1})
         .on("change", () => style("collapsed").opacity = view.collapsed.opacity);
-    folder_collapsed.addBinding(view.collapsed, "fill", {label: "color"})
-        .on("change", () => style("collapsed").stroke = view.collapsed.fill);
+    folder_collapsed.addBinding(view.collapsed, "stroke", {label: "color"})
+        .on("change", () => style("collapsed").stroke = view.collapsed.stroke);
     folder_collapsed.addBinding(view.collapsed, "stroke-width",
         {label: "width", min: 0.1, max: 10})
         .on("change", () => style("collapsed").strokeWidth = view.collapsed["stroke-width"]);

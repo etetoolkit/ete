@@ -115,12 +115,13 @@ DEFAULT_TREE_STYLE = {  # the default style of a tree
 
 # A tree style can have things like:
 #   my_tree_style = {
-#      'shape': 'rectangular',  # or 'circular'
-#      'min-node-height': 10,
-#      'min-content-height': 5,
+#      'shape': 'circular',  # or 'rectangular'
 #      'radius': 5,
 #      'angle-start': -pi/2,
 #      'angle-end': pi/2,  # alternatively we can give 'angle-span'
+#      'min-node-height': 10,
+#      'min-content-height': 5,
+#      'collapsed': {'shape': 'outline', 'fill-opacity': 0.8},
 #      'show-popup-props': None,  # all defined properties
 #      'hide-popup-props': ['support'],  # except support
 #      'is-leaf-fn': lambda node: node.level > 4,
@@ -128,6 +129,7 @@ DEFAULT_TREE_STYLE = {  # the default style of a tree
 #      'dot': {'shape': 'hexagon', 'fill': 'red'},
 #      'hz-line': {'stroke-width': 2},
 #      'vt-line': {'stroke': '#ffff00'},
+#      'collapsed': {'shape': 'skeleton', 'stroke': '#ff00ff'}
 #      'aliases': {
 #          'support': {'fill': 'green'},  # changes the default one
 #          'my-leaf': {'fill': 'blue', 'font-weight': 'bold'},

@@ -95,8 +95,9 @@ const view = {
         },
     },
     collapsed: {
+        shape: "skeleton",
         opacity: 0.1,
-        fill: "#A50",
+        stroke: "#A50",
         "stroke-width": 0.4,
     },
     hz_line: {
@@ -291,6 +292,14 @@ async function set_tree_style() {
         }
     }
 
+    view.collapsed.shape = "skeleton";
+    if ("collapsed" in style && "shape" in style.collapsed) {
+        if (! ["skeleton", "outline"].includes(style.collapsed.shape))
+            throw new Error(`unknown collapsed shape "${style.collapsed.shape}"`);
+        view.collapsed.shape = style.collapsed.shape;
+        delete style.collapsed.shape;  // so we don't use it later
+    }
+
     // Update styles for general node graphical elements.
     while (document.styleSheets[0].cssRules.length > 0)
         document.styleSheets[0].deleteRule(0);
@@ -299,6 +308,7 @@ async function set_tree_style() {
     // pos in CSS rules (in gui.css), and the global variable that tracks them.
     for (const [name, pos, gvar] of
              [["box", 7, view.node.box],
+              ["collapsed", 8, view.collapsed],
               ["dot", 4, view.node.dot],
               ["hz-line", 2, view.hz_line],
               ["vt-line", 3, view.vt_line]]) {

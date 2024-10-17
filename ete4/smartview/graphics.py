@@ -40,8 +40,11 @@ def draw_nodedot(point, dy_max, style=''):
     return ['nodedot', point, dy_max, style]
 
 # Information to draw an approximate representation of collapsed nodes.
-def draw_collapsed(points):
-    return ['collapsed', points]
+def draw_skeleton(points):
+    return ['skeleton', points]
+
+def draw_outline(box):
+    return ['outline', box]
 
 
 # Other (drawing) commands.
