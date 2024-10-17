@@ -297,6 +297,7 @@ class Drawer:
         # Add style and decorations from draw_node_fns (from layouts).
         for draw_node in self.draw_node_fns:
             for element in draw_node(nodes[0], tuple(self.collapsed)):
+                # NOTE: draw_node() is cached: tuple(...) works (can be hashed).
                 if type(element) is dict:
                     style.update(element)
                 else:
