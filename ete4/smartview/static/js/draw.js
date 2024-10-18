@@ -122,8 +122,8 @@ function build_draw_query_string() {
 
     const params_rect = {  // parameters we have to pass to the drawer
         "shape": view.shape,
-        "min_node_height": view.min_node_height,
-        "min_content_height": view.min_content_height,
+        "node_height_min": view.node_height_min,
+        "content_height_min": view.content_height_min,
         "zx": zx, "zy": zy, "x": x, "y": y, "w": w, "h": h,
         "collapsed_shape": view.collapsed.shape,
         "collapsed_ids": JSON.stringify(Object.keys(view.collapsed_ids)),

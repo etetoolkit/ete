@@ -52,10 +52,10 @@ function add_tab_main(tab, trees) {
                                    options: to_opts(["rectangular", "circular"])})
         .on("change", on_shape_change);
 
-    tab.addBinding(view, "min_node_height", {label: "min node height",
+    tab.addBinding(view, "node_height_min", {label: "node height min",
                                              min: 1, max: 200})
         .on("change", update);
-    tab.addBinding(view, "min_content_height", {label: "min content height",
+    tab.addBinding(view, "content_height_min", {label: "content height min",
                                                 min: 1, max: 200})
         .on("change", update);
 

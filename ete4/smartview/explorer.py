@@ -390,7 +390,7 @@ def get_drawing_kwargs(tree_id, args):
     """Return the drawing arguments initialized as specified in the args."""
     valid_keys = ['x', 'y', 'w', 'h', 'zx', 'zy',
                   'layouts', 'labels', 'collapsed_shape', 'collapsed_ids',
-                  'shape', 'min_node_height', 'min_content_height',
+                  'shape', 'node_height_min', 'content_height_min',
                   'rmin', 'amin', 'amax']
     try:
         assert all(k in valid_keys for k in args.keys()), 'invalid keys'
@@ -410,17 +410,17 @@ def get_drawing_kwargs(tree_id, args):
 
         collapsed_shape = args.get('collapsed_shape', 'skeleton')
 
-        min_node_height = get('min_node_height', 10)
-        assert min_node_height > 0, 'min_node_height must be > 0'
+        node_height_min = get('node_height_min', 10)
+        assert node_height_min > 0, 'node_height_min must be > 0'
 
-        min_content_height = get('min_content_height', 5)
-        assert min_content_height > 0, 'min_content_height must be > 0'
+        content_height_min = get('content_height_min', 5)
+        assert content_height_min > 0, 'content_height_min must be > 0'
 
         overrides = {  # overrides of the tree style from the gui
             'shape': shape,
             'collapsed-shape': collapsed_shape,
-            'min-node-height': min_node_height,
-            'min-content-height': min_content_height}
+            'node-height-min': node_height_min,
+            'content-height-min': content_height_min}
 
         if shape == 'circular':
             overrides.update({

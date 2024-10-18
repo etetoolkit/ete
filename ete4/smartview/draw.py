@@ -56,10 +56,10 @@ class Drawer:
         # Get some useful constants from the tree style.
 
         # Any node that has less pixels will be collapsed.
-        self.min_node_height = self.tree_style.get('min-node-height', 10)
+        self.node_height_min = self.tree_style.get('node-height-min', 10)
 
         # Any content with less pixels won't be shown.
-        self.min_content_height = self.tree_style.get('min-content-height', 5)
+        self.content_height_min = self.tree_style.get('content-height-min', 5)
 
         # xmin, ymin, ymax used only for the circular mode for the moment.
         self.xmin, self.ymin, self.ymax = 0, 0, 0
@@ -269,7 +269,7 @@ class Drawer:
 
         if shape == 'skeleton':
             points = points_from_nodes(self.collapsed, (x, y),
-                                       self.min_content_height/zy,
+                                       self.content_height_min/zy,
                                        *args, **kwargs)  # for subclasses
 
             y1 = points[-1][1]  # last point's y (it is at branch position)
@@ -319,7 +319,7 @@ class Drawer:
 
         # Get the graphic commands, and xmax, from applying the decorations.
         commands, xmax = draw_decorations(decos, nodes, self.xmin, box, bdy,
-                                          self.zoom, self.min_content_height,
+                                          self.zoom, self.content_height_min,
                                           collapsed=self.collapsed,
                                           circular=circular)
 
@@ -385,7 +385,7 @@ class DrawerRect(Drawer):
 
     def is_small(self, box):
         zx, zy = self.zoom
-        return box.dy * zy < self.min_node_height
+        return box.dy * zy < self.node_height_min
 
     def draw_hz_line(self, p1, p2, parent_of, style):
         """Yield a "horizontal line" representing a length."""
@@ -469,7 +469,7 @@ class DrawerCirc(Drawer):
     def is_small(self, box):
         z = self.zoom[0]  # zx == zy in this drawer
         r, a, dr, da = box
-        return (r + dr) * da * z < self.min_node_height
+        return (r + dr) * da * z < self.node_height_min
 
     def draw_hz_line(self, p1, p2, parent_of, style):
         """Yield a "horizontal line" representing a length."""

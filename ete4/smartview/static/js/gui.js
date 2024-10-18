@@ -44,8 +44,8 @@ const view = {
 
     // representation
     shape: "rectangular",  // default shape
-    min_node_height: 30,  // for less pixels, we will collapse nodes
-    min_content_height: 4,  // for less pixels, node contents won't be drawn
+    node_height_min: 30,  // for less pixels, we will collapse nodes
+    content_height_min: 4,  // for less pixels, node contents won't be drawn
     rmin: 0,
     angle: {min: -180, max: 180},
     align_bar: 80,  // % of the screen width where the aligned panel starts
@@ -244,13 +244,13 @@ async function set_tree_style() {
     }
 
     // Set collapse and visualize sizes.
-    view.min_node_height = 30;
-    if ("min-node-height" in style)
-        view.min_node_height = style["min-node-height"];
+    view.node_height_min = 30;
+    if ("node-height-min" in style)
+        view.node_height_min = style["node-height-min"];
 
-    view.min_content_height = 4;
-    if ("min-content-height" in style)
-        view.min_content_height = style["min-content-height"];
+    view.content_height_min = 4;
+    if ("content-height-min" in style)
+        view.content_height_min = style["content-height-min"];
 
     // Set limits.
     view.rmin = 0;
