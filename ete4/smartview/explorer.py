@@ -177,6 +177,8 @@ def callback(tree_id):
                 aliases = set(style.get('aliases', {}).keys())
                 assert v in aliases, f'unknown style "{v}" among {aliases}'
                 style[k] = style['aliases'][v]
+        # NOTE: The principal use of "aliases" is for the styles coming out of
+        # calling draw_node() in the layouts. This is just an extra.
 
         # We remove is-leaf-fn because it is a function (thus not serializable).
         style.pop('is-leaf-fn', None)
