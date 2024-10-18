@@ -129,7 +129,6 @@ DEFAULT_TREE_STYLE = {  # the default style of a tree
 #      'dot': {'shape': 'hexagon', 'fill': 'red'},
 #      'hz-line': {'stroke-width': 2},
 #      'vt-line': {'stroke': '#ffff00'},
-#      'collapsed': {'shape': 'skeleton', 'stroke': '#ff00ff'}
 #      'aliases': {
 #          'support': {'fill': 'green'},  # changes the default one
 #          'my-leaf': {'fill': 'blue', 'font-weight': 'bold'},
