@@ -170,6 +170,14 @@ def callback(tree_id):
                     if type(element) is dict:
                         update_style(style, element)
 
+        # Susbstitute aliases for their corresponding styles.
+        aliasable_keys = {'box', 'dot', 'hz-line', 'vt-line', 'collapsed'}
+        for k, v in style.items():
+            if type(v) is str and k in aliasable_keys:
+                aliases = set(style.get('aliases', {}).keys())
+                assert v in aliases, f'unknown style "{v}" among {aliases}'
+                style[k] = style['aliases'][v]
+
         # We remove is-leaf-fn because it is a function (thus not serializable).
         style.pop('is-leaf-fn', None)
 

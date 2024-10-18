@@ -17,6 +17,7 @@ def draw(tree, layouts, overrides=None, labels=None,
     style = {}  # tree style
     decos = []  # tree decorations
 
+    # Merge the style from all layouts, and get all decorations.
     for layout in layouts:
         for element in layout.draw_tree(tree):
             if type(element) is dict:
@@ -24,6 +25,11 @@ def draw(tree, layouts, overrides=None, labels=None,
             else:
                 decos.append(element)
 
+    # NOTE: No need to susbstitute aliased values for their "aliases"
+    # style, as opposed to the /style endpoint in explorer.py.
+    # Those tree styles are applied (via gui.js) through css manipulation.
+
+    # Override tree style (with options that normally come from the gui).
     style.update(overrides)
 
     # TODO: Draw the decos.
