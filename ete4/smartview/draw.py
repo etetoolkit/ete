@@ -529,7 +529,7 @@ def make_deco(label):
 
 
 def draw_decorations(decorations, nodes, xmin, content_box, bdy, zoom,
-                     min_size, collapsed=False, circular=False):
+                     min_size, collapsed, circular=False):
     """Return the graphic commands from the decorations, and xmax."""
     positions = {a.position for a in decorations}
 
@@ -575,7 +575,7 @@ def draw_decorations(decorations, nodes, xmin, content_box, bdy, zoom,
 
 
 def get_col_data(rows, x_col, dx_col, nodes, pos_box, pos, bdy_dy, zoom,
-                 min_size, collapsed=False, circular=False):
+                 min_size, collapsed, circular=False):
     """Return the graphic elements at the given rows, and the new x_col."""
     # rows contains all the decorations that go in this column.
     # x_col is the starting x for this column (after all boxes in previos cols).

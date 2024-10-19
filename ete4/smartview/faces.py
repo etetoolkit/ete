@@ -17,14 +17,14 @@ class Face:
         """Save all the parameters that we may want to use."""
         pass  # in this example, we don't save any
 
-    def draw(self, nodes, size, collapsed=False, zoom=(1, 1), ax_ay=(0, 0), r=1):
+    def draw(self, nodes, size, collapsed, zoom=(1, 1), ax_ay=(0, 0), r=1):
         """Return a list of graphic elements and the actual size they use."""
         # The retuned graphic elements normally depend on the node(s).
         # They have to fit inside the given size (dx, dy) in tree
         # coordinates (dx==0 means no limit for dx).
 
-        # If collapsed=False, nodes contain only one node (and is not
-        # collapsed). Otherwise, nodes is a list of the collapsed nodes.
+        # If collapsed=[], nodes contain only one node (and is not collapsed).
+        # Otherwise, nodes (== collapsed) is a list of the collapsed nodes.
 
         # The zoom is passed in case the face wants to represent
         # things differently according to its size on the screen.
@@ -52,7 +52,7 @@ class EvalTextFace(Face):
         self.fs_min = fs_min
         self.fs_max = fs_max
 
-    def draw(self, nodes, size, collapsed=False, zoom=(1, 1), ax_ay=(0, 0), r=1):
+    def draw(self, nodes, size, collapsed, zoom=(1, 1), ax_ay=(0, 0), r=1):
         # Get text(s) from applying expression to nodes.
         if collapsed:
             texts_dirty, all_accounted = make_nodes_summary(nodes, self.code)
@@ -207,7 +207,7 @@ class CircleFace(Face):
         self.rmax = rmax  # maximum radius in pixels
         self.style = style or ''
 
-    def draw(self, nodes, size, collapsed=False, zoom=(1, 1), ax_ay=(0, 0), r=1):
+    def draw(self, nodes, size, collapsed, zoom=(1, 1), ax_ay=(0, 0), r=1):
         dx, dy = size
         zx, zy = zoom
 
@@ -238,7 +238,7 @@ class BoxedFace(Face):
 
         self.drawing_fn = None  # will be set by its subclasses
 
-    def draw(self, nodes, size, collapsed=False, zoom=(1, 1), ax_ay=(0, 0), r=1):
+    def draw(self, nodes, size, collapsed, zoom=(1, 1), ax_ay=(0, 0), r=1):
         dx, dy = size
         zx, zy = zoom
 
