@@ -383,7 +383,7 @@ function create_item(item, tl, zoom) {
     else if (item[0] === "array") {
         const [ , box, array] = item;
         const [x0, y0, dx0, dy0] = box;
-        const dx = dx0 / array.length / zx;
+        const dx = dx0 / array.length;
 
         const [y, dy] = pad(y0, dy0, view.array.padding);
 
