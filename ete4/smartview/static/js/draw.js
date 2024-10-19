@@ -398,6 +398,35 @@ function create_item(item, tl, zoom) {
 
         return g;
     }
+    else if (item[0] === "seq") {
+        const [ , box, seq, draw_text, fs_max, style] = item;
+        const [x0, y0, dx0, dy0] = box;
+        const dx = dx0 / seq.length;
+
+        const [y, dy] = pad(y0, dy0, view.array.padding);
+
+        const g = create_svg_element("g");
+        for (let i = 0, x = x0; i < seq.length; i++, x+=dx) {
+            const r = view.shape === "rectangular" ?
+                create_rect([x, y, dx, dy], tl, zx, zy) :
+                create_asec([x, y, dx, dy], tl, zx);
+
+            const code = (seq.charCodeAt(i) - 65) * 9;  // 'A' -> 65, and 26 letters vs 256 hs
+            r.style.fill = `hsl(${code}, 100%, 50%)`;
+            // TODO: maybe select colors following some "standards" like:
+            // https://acces.ens-lyon.fr/biotic/rastop/help/colour.htm
+            // https://www.dnastar.com/manuals/MegAlignPro/17.2/en/topic/change-the-analysis-view-color-scheme
+            // http://yulab-smu.top/ggmsa/articles/guides/Color_schemes_And_Font_Families.html
+
+            g.appendChild(r);
+
+            if (draw_text)
+                g.appendChild(create_text([x, y, dx, dy], [0.5, 0.5],
+                                          seq[i], fs_max, tl, zx, zy));
+        }
+
+        return g;
+    }
     else {
         console.log(`Unrecognized item: ${item}`);
     }

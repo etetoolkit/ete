@@ -72,6 +72,9 @@ def draw_text(box, anchor, text, fs_max=None, style=''):
 def draw_array(box, a):
     return ['array', box, a]
 
+def draw_seq(box, seq, draw_text=True, fs_max=None, style=''):
+    return ['seq', box, seq, draw_text, fs_max, style]
+
 
 # Other (non-drawing) commands.
 
@@ -94,7 +97,7 @@ def draw_group(elements, circular, shift):
 
     for element in elements:
         eid = element[0]  # "element identifier" (name of drawing element)
-        if eid in ['nodebox', 'array', 'text']:
+        if eid in ['nodebox', 'array', 'seq', 'text']:
             # The position for these elements is given by a box.
             x, y, dx, dy = element[1]
             box = x0 + x, y0 + y, dx, dy
