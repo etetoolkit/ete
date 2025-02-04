@@ -367,7 +367,7 @@ are objects of the class <a class="reference internal" href="../reference/refere
 <li><p><code class="docutils literal notranslate"><span class="pre">name</span></code>: Identifies the layout, so it can be activated/deactivated in the GUI.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">draw_tree()</span></code>: A function that sets style and decorations for the full tree.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">draw_node()</span></code>: A function that sets style and decorations for the given nodes.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">cache_size</span></code>: The number of arguments cached when calling <cite>draw_node</cite> (defaults to all).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cache_size</span></code>: The number of nodes cached when calling <cite>draw_node</cite> (defaults to all).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">active</span></code>: Whether the layout will be immediately active when exploring (defaults to True).</p></li>
 </ul>
 <p>Let’s look at how to use them. The simplest case is:</p>
@@ -721,16 +721,17 @@ following examples.</p>
 <p>Let’s see an example combining styles and faces, for both the tree
 (with <code class="docutils literal notranslate"><span class="pre">draw_tree</span></code>) and the nodes (with <code class="docutils literal notranslate"><span class="pre">draw_node</span></code>):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ete4</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tree</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">ete4.smartview</span><span class="w"> </span><span class="kn">import</span> <span class="n">Layout</span><span class="p">,</span> <span class="n">TextFace</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ete4.smartview</span><span class="w"> </span><span class="kn">import</span> <span class="n">Layout</span><span class="p">,</span> <span class="n">Decoration</span><span class="p">,</span> <span class="n">TextFace</span><span class="p">,</span> <span class="n">LegendFace</span>
 
 <span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((((a,b),c),d),e);&#39;</span><span class="p">)</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">draw_tree</span><span class="p">(</span><span class="n">tree</span><span class="p">):</span>
-    <span class="k">yield</span> <span class="n">Decoration</span><span class="p">(</span><span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;Vowel title&#39;</span><span class="p">,</span> <span class="n">fs_min</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">fs_max</span><span class="o">=</span><span class="mi">12</span><span class="p">),</span>
+    <span class="k">yield</span> <span class="p">{</span><span class="s1">&#39;dot&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;opacity&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;fill&#39;</span><span class="p">:</span> <span class="s1">&#39;black&#39;</span><span class="p">}}</span>
+    <span class="k">yield</span> <span class="n">Decoration</span><span class="p">(</span><span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;Vowel?&#39;</span><span class="p">,</span> <span class="n">fs_min</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">fs_max</span><span class="o">=</span><span class="mi">16</span><span class="p">),</span>
                      <span class="n">position</span><span class="o">=</span><span class="s1">&#39;header&#39;</span><span class="p">)</span>
-    <span class="c1">#yield Decoration(LegendFace(&#39;My legend&#39;,</span>
-    <span class="c1">#                            variable=&#39;discrete&#39;,</span>
-    <span class="c1">#                            colormap={&#39;vowel&#39;: &#39;red&#39;, &#39;conostant&#39;: &#39;blue&#39;}))</span>
+    <span class="k">yield</span> <span class="n">Decoration</span><span class="p">(</span><span class="n">LegendFace</span><span class="p">(</span><span class="s1">&#39;Type of letter&#39;</span><span class="p">,</span>
+                                <span class="n">variable</span><span class="o">=</span><span class="s1">&#39;discrete&#39;</span><span class="p">,</span>
+                                <span class="n">colormap</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;vowel&#39;</span><span class="p">:</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;consonant&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">}))</span>
 
 <span class="n">vowels</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;e&#39;</span><span class="p">,</span> <span class="s1">&#39;i&#39;</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="s1">&#39;u&#39;</span><span class="p">}</span>
 
@@ -738,18 +739,18 @@ following examples.</p>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">node</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">:</span>
         <span class="k">return</span>
 
+    <span class="k">yield</span> <span class="p">{</span><span class="s1">&#39;dot&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;shape&#39;</span><span class="p">:</span> <span class="s1">&#39;triangle&#39;</span><span class="p">,</span> <span class="s1">&#39;radius&#39;</span><span class="p">:</span> <span class="mi">8</span><span class="p">}}</span>
+
     <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">vowels</span><span class="p">:</span>
-        <span class="k">yield</span> <span class="p">{</span><span class="s1">&#39;dot&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;radius&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">},</span>
-               <span class="s1">&#39;box&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;fill&#39;</span><span class="p">:</span> <span class="s1">&#39;red&#39;</span><span class="p">}}</span>
-        <span class="k">yield</span> <span class="n">Decoration</span><span class="p">(</span><span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;vowel!&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fill&#39;</span><span class="p">:</span> <span class="s1">&#39;red&#39;</span><span class="p">}),</span>
+        <span class="k">yield</span> <span class="p">{</span><span class="s1">&#39;box&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;fill&#39;</span><span class="p">:</span> <span class="s1">&#39;red&#39;</span><span class="p">}}</span>
+        <span class="k">yield</span> <span class="n">Decoration</span><span class="p">(</span><span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;yes, a vowel&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fill&#39;</span><span class="p">:</span> <span class="s1">&#39;red&#39;</span><span class="p">}),</span>
                          <span class="n">position</span><span class="o">=</span><span class="s1">&#39;aligned&#39;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">yield</span> <span class="p">{</span><span class="s1">&#39;dot&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;radius&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">},</span>
-               <span class="s1">&#39;box&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;fill&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">}}</span>
-        <span class="k">yield</span> <span class="n">Decoration</span><span class="p">(</span><span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;not vowel!&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fill&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">}),</span>
+        <span class="k">yield</span> <span class="p">{</span><span class="s1">&#39;box&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;fill&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">}}</span>
+        <span class="k">yield</span> <span class="n">Decoration</span><span class="p">(</span><span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;not a vowel&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fill&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">}),</span>
                          <span class="n">position</span><span class="o">=</span><span class="s1">&#39;aligned&#39;</span><span class="p">)</span>
 
-<span class="n">layout</span> <span class="o">=</span> <span class="n">Layout</span><span class="p">(</span><span class="s1">&#39;My layout&#39;</span><span class="p">,</span> <span class="n">draw_tree</span><span class="o">=</span><span class="n">draw_tree</span><span class="p">,</span> <span class="n">draw_node</span><span class="o">=</span><span class="n">draw_node</span><span class="p">)</span>
+<span class="n">layout</span> <span class="o">=</span> <span class="n">Layout</span><span class="p">(</span><span class="s1">&#39;Vowels layout&#39;</span><span class="p">,</span> <span class="n">draw_tree</span><span class="o">=</span><span class="n">draw_tree</span><span class="p">,</span> <span class="n">draw_node</span><span class="o">=</span><span class="n">draw_node</span><span class="p">)</span>
 <span class="n">t</span><span class="o">.</span><span class="n">explore</span><span class="p">(</span><span class="n">layouts</span><span class="o">=</span><span class="p">[</span><span class="n">layout</span><span class="p">])</span>
 </pre></div>
 </div>

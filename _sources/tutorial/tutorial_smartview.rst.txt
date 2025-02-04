@@ -316,7 +316,7 @@ are objects of the class :class:`Layout <layout.Layout>`. They contain:
 - ``name``: Identifies the layout, so it can be activated/deactivated in the GUI.
 - ``draw_tree()``: A function that sets style and decorations for the full tree.
 - ``draw_node()``: A function that sets style and decorations for the given nodes.
-- ``cache_size``: The number of arguments cached when calling `draw_node` (defaults to all).
+- ``cache_size``: The number of nodes cached when calling `draw_node` (defaults to all).
 - ``active``: Whether the layout will be immediately active when exploring (defaults to True).
 
 Let's look at how to use them. The simplest case is::
@@ -731,16 +731,17 @@ Let's see an example combining styles and faces, for both the tree
 (with ``draw_tree``) and the nodes (with ``draw_node``)::
 
   from ete4 import Tree
-  from ete4.smartview import Layout, TextFace
+  from ete4.smartview import Layout, Decoration, TextFace, LegendFace
 
   t = Tree('((((a,b),c),d),e);')
 
   def draw_tree(tree):
-      yield Decoration(TextFace('Vowel title', fs_min=5, fs_max=12),
+      yield {'dot': {'opacity': 1, 'fill': 'black'}}
+      yield Decoration(TextFace('Vowel?', fs_min=6, fs_max=16),
                        position='header')
-      #yield Decoration(LegendFace('My legend',
-      #                            variable='discrete',
-      #                            colormap={'vowel': 'red', 'conostant': 'blue'}))
+      yield Decoration(LegendFace('Type of letter',
+                                  variable='discrete',
+                                  colormap={'vowel': 'red', 'consonant': 'blue'}))
 
   vowels = {'a', 'e', 'i', 'o', 'u'}
 
@@ -748,18 +749,18 @@ Let's see an example combining styles and faces, for both the tree
       if not node.is_leaf:
           return
 
+      yield {'dot': {'shape': 'triangle', 'radius': 8}}
+
       if node.name in vowels:
-          yield {'dot': {'radius': 3},
-                 'box': {'fill': 'red'}}
-          yield Decoration(TextFace('vowel!', style={'fill': 'red'}),
+          yield {'box': {'fill': 'red'}}
+          yield Decoration(TextFace('yes, a vowel', style={'fill': 'red'}),
                            position='aligned')
       else:
-          yield {'dot': {'radius': 3},
-                 'box': {'fill': 'blue'}}
-          yield Decoration(TextFace('not vowel!', style={'fill': 'blue'}),
+          yield {'box': {'fill': 'blue'}}
+          yield Decoration(TextFace('not a vowel', style={'fill': 'blue'}),
                            position='aligned')
 
-  layout = Layout('My layout', draw_tree=draw_tree, draw_node=draw_node)
+  layout = Layout('Vowels layout', draw_tree=draw_tree, draw_node=draw_node)
   t.explore(layouts=[layout])
 
 .. image:: ../images/combined.png
