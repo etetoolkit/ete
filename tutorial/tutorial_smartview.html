@@ -80,16 +80,16 @@
 <li><p><a class="reference internal" href="#id1" id="id24">Example of simple change</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#faces-and-decorations" id="id25">Faces and decorations</a></p>
+<li><p><a class="reference internal" href="#faces" id="id25">Faces</a></p>
 <ul>
-<li><p><a class="reference internal" href="#positioning-faces-with-decorations" id="id26">Positioning faces with decorations</a></p></li>
+<li><p><a class="reference internal" href="#positioning-faces" id="id26">Positioning faces</a></p></li>
 <li><p><a class="reference internal" href="#collapsed-nodes" id="id27">Collapsed nodes</a></p></li>
 <li><p><a class="reference internal" href="#face-properties" id="id28">Face properties</a></p></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#combining-styles-and-decorations" id="id29">Combining styles and decorations</a></p></li>
+<li><p><a class="reference internal" href="#combining-styles-and-faces" id="id29">Combining styles and faces</a></p></li>
 </ul>
 </li>
 </ul>
@@ -131,17 +131,11 @@ the class <a class="reference internal" href="../reference/reference_smartview.h
 for different kinds of representations (<a class="reference internal" href="../reference/reference_smartview.html#ete4.smartview.faces.TextFace" title="ete4.smartview.faces.TextFace"><code class="xref py py-class docutils literal notranslate"><span class="pre">TextFace</span></code></a>, <a class="reference internal" href="../reference/reference_smartview.html#ete4.smartview.faces.ImageFace" title="ete4.smartview.faces.ImageFace"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageFace</span></code></a>, …). Faces
 know how to return graphic elements showing the information
 corresponding to a node, or to a group nodes collapsed together.</p></li>
-<li><p><strong>Decorations</strong>, a way to describe where to place faces, by means of
-the class <a class="reference internal" href="../reference/reference_smartview.html#ete4.smartview.layout.Decoration" title="ete4.smartview.layout.Decoration"><code class="xref py py-class docutils literal notranslate"><span class="pre">Decoration</span></code></a>. It mainly allows
-to specify the <code class="docutils literal notranslate"><span class="pre">position</span></code> where to draw the information relative
-to its node (on <em>top</em> of its branch, at its <em>right</em>, <em>aligned</em>,
-etc.), and in which column to put it (to stack it nicely with other
-faces from the same layout or a different one).</p></li>
 <li><p><strong>Layouts</strong>, full descriptions of how to represent a tree, using the
 class <a class="reference internal" href="../reference/reference_smartview.html#ete4.smartview.layout.Layout" title="ete4.smartview.layout.Layout"><code class="xref py py-class docutils literal notranslate"><span class="pre">Layout</span></code></a>. They contain a
-<code class="xref py py-func docutils literal notranslate"><span class="pre">draw_node()</span></code> function that produces the decorations and
+<code class="xref py py-func docutils literal notranslate"><span class="pre">draw_node()</span></code> function that produces the faces and
 styles that we want for a given node, and a <code class="xref py py-func docutils literal notranslate"><span class="pre">draw_tree()</span></code>
-function that does the same for the full tree. They
+function that does the same for the full tree. When
 exploring/visualizing a tree, they compose: using several layouts
 will add extra graphic representations, and/or overwrite some styles
 from previous layouts.</p></li>
@@ -357,7 +351,7 @@ view, sorting the tree, or converting it to dendogram or ultrametric.</p>
 <section id="customizing-the-visualization">
 <h2><a class="toc-backref" href="#id19" role="doc-backlink">Customizing the visualization</a><a class="headerlink" href="#customizing-the-visualization" title="Link to this heading">¶</a></h2>
 <p>The main elements used to customize the visualization are <em>styles</em>,
-<em>faces</em>, <em>decorations</em>, and <em>layouts</em>.</p>
+<em>faces</em>, and <em>layouts</em>.</p>
 <section id="layouts">
 <h3><a class="toc-backref" href="#id20" role="doc-backlink">Layouts</a><a class="headerlink" href="#layouts" title="Link to this heading">¶</a></h3>
 <p>Layouts contain the <code class="docutils literal notranslate"><span class="pre">draw_node()</span></code> and <code class="docutils literal notranslate"><span class="pre">draw_tree()</span></code> functions, which
@@ -365,8 +359,8 @@ create the styles and faces that we use to represent the tree. They
 are objects of the class <a class="reference internal" href="../reference/reference_smartview.html#ete4.smartview.layout.Layout" title="ete4.smartview.layout.Layout"><code class="xref py py-class docutils literal notranslate"><span class="pre">Layout</span></code></a>. They contain:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">name</span></code>: Identifies the layout, so it can be activated/deactivated in the GUI.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">draw_tree()</span></code>: A function that sets style and decorations for the full tree.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">draw_node()</span></code>: A function that sets style and decorations for the given nodes.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">draw_tree()</span></code>: A function that produces style and faces for the full tree.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">draw_node()</span></code>: A function that produces style and faces for the given nodes.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">cache_size</span></code>: The number of nodes cached when calling <cite>draw_node</cite> (defaults to all).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">active</span></code>: Whether the layout will be immediately active when exploring (defaults to True).</p></li>
 </ul>
@@ -395,7 +389,7 @@ in the tree anyway.</p>
 tree style. For example, we can modify the scale used to render tree
 branches or choose between circular or rectangular tree drawing, etc.</p>
 <p>In general, it is a function of the tree, and returns a list of
-decorations and styles to use.</p>
+faces and styles to use.</p>
 <p>We often just need to change its style, and in a way that does not
 depend on the tree. For that common case, <code class="docutils literal notranslate"><span class="pre">draw_tree</span></code> can also be a
 dictionary with the style.</p>
@@ -556,8 +550,8 @@ examples:</p>
 <img alt="../_images/vowels.png" src="../_images/vowels.png" />
 </section>
 </section>
-<section id="faces-and-decorations">
-<h3><a class="toc-backref" href="#id25" role="doc-backlink">Faces and decorations</a><a class="headerlink" href="#faces-and-decorations" title="Link to this heading">¶</a></h3>
+<section id="faces">
+<h3><a class="toc-backref" href="#id25" role="doc-backlink">Faces</a><a class="headerlink" href="#faces" title="Link to this heading">¶</a></h3>
 <p>Faces are small pieces of graphical information that can be shown in
 nodes. For instance, text labels or external images can be linked to
 nodes and they will be plotted within the tree image.</p>
@@ -568,27 +562,26 @@ nodes and they will be plotted within the tree image.</p>
 (<a class="reference internal" href="../reference/reference_smartview.html#ete4.smartview.faces.SeqFace" title="ete4.smartview.faces.SeqFace"><code class="xref py py-class docutils literal notranslate"><span class="pre">SeqFace</span></code></a>).</p>
 <p>A complete list of available faces can be found at the
 <a class="reference internal" href="../reference/reference_smartview.html#module-ete4.smartview.faces" title="ete4.smartview.faces"><code class="xref py py-mod docutils literal notranslate"><span class="pre">faces</span> <span class="pre">module</span> <span class="pre">page</span></code></a>.</p>
-<section id="positioning-faces-with-decorations">
-<h4><a class="toc-backref" href="#id26" role="doc-backlink">Positioning faces with decorations</a><a class="headerlink" href="#positioning-faces-with-decorations" title="Link to this heading">¶</a></h4>
-<p>Faces can be added to different areas around the node, namely
-<strong>right</strong>, <strong>left</strong>, <strong>top</strong>, <strong>bottom</strong> or <strong>aligned</strong>. Each area
-represents a table in which faces can be placed with a
-<a class="reference internal" href="../reference/reference_smartview.html#ete4.smartview.layout.Decoration" title="ete4.smartview.layout.Decoration"><code class="xref py py-func docutils literal notranslate"><span class="pre">Decoration</span></code></a>.</p>
+<section id="positioning-faces">
+<h4><a class="toc-backref" href="#id26" role="doc-backlink">Positioning faces</a><a class="headerlink" href="#positioning-faces" title="Link to this heading">¶</a></h4>
+<p>Faces can be placed on different positions around the node, namely
+<strong>top</strong>, <strong>bottom</strong>, <strong>right</strong>, <strong>left</strong>, or <strong>aligned</strong> (and for
+texts produced by the function <code class="docutils literal notranslate"><span class="pre">draw_tree</span></code>, also <strong>header</strong>).</p>
 <p>For instance, if you want two text labels drawn below the branch line
 of a given node, a pair of <code class="xref py py-class docutils literal notranslate"><span class="pre">TextFace</span></code> faces can
-be created and put into decorations for the columns 0 and 1 of the
-<strong>bottom</strong> area, which are returned by the function <code class="docutils literal notranslate"><span class="pre">draw_node</span></code>:</p>
+be created on the columns 0 and 1 of the <strong>bottom</strong> position, which
+are returned by the function <code class="docutils literal notranslate"><span class="pre">draw_node</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ete4</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tree</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">ete4.smartview</span><span class="w"> </span><span class="kn">import</span> <span class="n">Layout</span><span class="p">,</span> <span class="n">Decoration</span><span class="p">,</span> <span class="n">TextFace</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ete4.smartview</span><span class="w"> </span><span class="kn">import</span> <span class="n">Layout</span><span class="p">,</span> <span class="n">TextFace</span>
 
 <span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((a:1,b:1):1,c:1):1;&#39;</span><span class="p">)</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">draw_node</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">is_root</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">Decoration</span><span class="p">(</span><span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;hello&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fill&#39;</span><span class="p">:</span> <span class="s1">&#39;red&#39;</span><span class="p">}),</span>
-                           <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;bottom&#39;</span><span class="p">),</span>
-                <span class="n">Decoration</span><span class="p">(</span><span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;world&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fill&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">}),</span>
-                           <span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;bottom&#39;</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;hello&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fill&#39;</span><span class="p">:</span> <span class="s1">&#39;red&#39;</span><span class="p">},</span>
+                         <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;bottom&#39;</span><span class="p">),</span>
+                <span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;world&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fill&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">},</span>
+                         <span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;bottom&#39;</span><span class="p">)]</span>
 
 <span class="n">layout</span> <span class="o">=</span> <span class="n">Layout</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;My layout&#39;</span><span class="p">,</span> <span class="n">draw_node</span><span class="o">=</span><span class="n">draw_node</span><span class="p">)</span>
 <span class="n">t</span><span class="o">.</span><span class="n">explore</span><span class="p">(</span><span class="n">layouts</span><span class="o">=</span><span class="p">[</span><span class="n">layout</span><span class="p">])</span>
@@ -598,10 +591,10 @@ be created and put into decorations for the columns 0 and 1 of the
 <p>If we set the column of “world” to 0 too:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ete4</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tree</span>
 <span class="p">[</span><span class="o">...</span><span class="p">]</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">Decoration</span><span class="p">(</span><span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;hello&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fill&#39;</span><span class="p">:</span> <span class="s1">&#39;red&#39;</span><span class="p">}),</span>
-                           <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;bottom&#39;</span><span class="p">),</span>
-                <span class="n">Decoration</span><span class="p">(</span><span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;world&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fill&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">}),</span>
-                           <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;bottom&#39;</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;hello&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fill&#39;</span><span class="p">:</span> <span class="s1">&#39;red&#39;</span><span class="p">},</span>
+                         <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;bottom&#39;</span><span class="p">),</span>
+                <span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;world&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fill&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">},</span>
+                         <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;bottom&#39;</span><span class="p">)]</span>
 <span class="p">[</span><span class="o">...</span><span class="p">]</span>
 <span class="n">t</span><span class="o">.</span><span class="n">explore</span><span class="p">(</span><span class="n">layouts</span><span class="o">=</span><span class="p">[</span><span class="n">layout</span><span class="p">])</span>
 </pre></div>
@@ -612,16 +605,16 @@ be piled up.</p>
 <p>If the position is <strong>aligned</strong>, the face will be drawn in an aligned
 column. Let’s see an example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ete4</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tree</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">ete4.smartview</span><span class="w"> </span><span class="kn">import</span> <span class="n">Layout</span><span class="p">,</span> <span class="n">Decoration</span><span class="p">,</span> <span class="n">TextFace</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ete4.smartview</span><span class="w"> </span><span class="kn">import</span> <span class="n">Layout</span><span class="p">,</span> <span class="n">TextFace</span>
 
 <span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((a,b),c);&#39;</span><span class="p">)</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">draw_node</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">Decoration</span><span class="p">(</span><span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;hello&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fill&#39;</span><span class="p">:</span> <span class="s1">&#39;red&#39;</span><span class="p">}),</span>
-                           <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;aligned&#39;</span><span class="p">),</span>
-                <span class="n">Decoration</span><span class="p">(</span><span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;world&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fill&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">}),</span>
-                           <span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;aligned&#39;</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;hello&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fill&#39;</span><span class="p">:</span> <span class="s1">&#39;red&#39;</span><span class="p">},</span>
+                         <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;aligned&#39;</span><span class="p">),</span>
+                <span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;world&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fill&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">},</span>
+                         <span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;aligned&#39;</span><span class="p">)]</span>
 
 <span class="n">layout</span> <span class="o">=</span> <span class="n">Layout</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;My layout&#39;</span><span class="p">,</span> <span class="n">draw_node</span><span class="o">=</span><span class="n">draw_node</span><span class="p">)</span>
 <span class="n">t</span><span class="o">.</span><span class="n">explore</span><span class="p">(</span><span class="n">layouts</span><span class="o">=</span><span class="p">[</span><span class="n">layout</span><span class="p">])</span>
@@ -650,16 +643,16 @@ collapsed (sibling) nodes at the time of the drawing, and it will be
 empty if the node is not collapsed. The function will look like
 <code class="docutils literal notranslate"><span class="pre">draw_node(node,</span> <span class="pre">collapsed)</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ete4</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tree</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">ete4.smartview</span><span class="w"> </span><span class="kn">import</span> <span class="n">Layout</span><span class="p">,</span> <span class="n">Decoration</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ete4.smartview</span><span class="w"> </span><span class="kn">import</span> <span class="n">Layout</span><span class="p">,</span> <span class="n">TextFace</span>
 
 <span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((a:1,b:1)n1:1,c):1;&#39;</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">draw_node</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">collapsed</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;n1&#39;</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">collapsed</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">Decoration</span><span class="p">(</span><span class="s1">&#39;n1 is collapsed&#39;</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;n1 is collapsed&#39;</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">Decoration</span><span class="p">(</span><span class="s1">&#39;n1 is NOT collapsed&#39;</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;n1 is NOT collapsed&#39;</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">)</span>
 
 <span class="n">layout</span> <span class="o">=</span> <span class="n">Layout</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;My layout&#39;</span><span class="p">,</span> <span class="n">draw_node</span><span class="o">=</span><span class="n">draw_node</span><span class="p">)</span>
 <span class="n">t</span><span class="o">.</span><span class="n">explore</span><span class="p">(</span><span class="n">layouts</span><span class="o">=</span><span class="p">[</span><span class="n">layout</span><span class="p">])</span>
@@ -668,9 +661,6 @@ empty if the node is not collapsed. The function will look like
 <p>Depending on the zoom level, we now will see:</p>
 <img alt="../_images/not_collapsed.png" src="../_images/not_collapsed.png" />
 <img alt="../_images/collapsed.png" src="../_images/collapsed.png" />
-<p>By the way, did you notice that we did not create a <code class="docutils literal notranslate"><span class="pre">TextFace</span></code> in
-this case? If we pass a text to a <code class="docutils literal notranslate"><span class="pre">Decoration</span></code> instead of a face, it
-will assume that we want a simple text face with that content.</p>
 </section>
 <section id="face-properties">
 <h4><a class="toc-backref" href="#id28" role="doc-backlink">Face properties</a><a class="headerlink" href="#face-properties" title="Link to this heading">¶</a></h4>
@@ -686,7 +676,8 @@ drawing. We can find a complete list for each face in the
 <span class="c1"># Create a TextFace initialized with certain properties.</span>
 <span class="n">face_top</span> <span class="o">=</span> <span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;branch top!&#39;</span><span class="p">,</span>
                     <span class="n">fs_min</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">fs_max</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span>
-                    <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fill&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;font-family&#39;</span><span class="p">:</span> <span class="s1">&#39;courier&#39;</span><span class="p">})</span>
+                    <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fill&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;font-family&#39;</span><span class="p">:</span> <span class="s1">&#39;courier&#39;</span><span class="p">},</span>
+                    <span class="n">position</span><span class="o">=</span><span class="s1">&#39;top&#39;</span><span class="p">)</span>
 
 <span class="c1"># Same thing, but adding them after initializing it.</span>
 <span class="n">face_bottom</span> <span class="o">=</span> <span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;branch bottom!&#39;</span><span class="p">)</span>
@@ -694,10 +685,10 @@ drawing. We can find a complete list for each face in the
 <span class="n">face_bottom</span><span class="o">.</span><span class="n">fs_max</span> <span class="o">=</span> <span class="mi">25</span>
 <span class="n">face_bottom</span><span class="o">.</span><span class="n">rotation</span> <span class="o">=</span> <span class="mi">10</span>
 <span class="n">face_bottom</span><span class="o">.</span><span class="n">style</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;fill&#39;</span><span class="p">:</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;font-family&#39;</span><span class="p">:</span> <span class="s1">&#39;sans-serif&#39;</span><span class="p">}</span>
+<span class="n">face_bottom</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="s1">&#39;bottom&#39;</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">draw_node</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
-    <span class="k">return</span> <span class="p">[</span><span class="n">Decoration</span><span class="p">(</span><span class="n">face_top</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;top&#39;</span><span class="p">),</span>
-            <span class="n">Decoration</span><span class="p">(</span><span class="n">face_bottom</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;bottom&#39;</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">face_top</span><span class="p">,</span> <span class="n">face_bottom</span><span class="p">]</span>
 
 <span class="n">layout</span> <span class="o">=</span> <span class="n">Layout</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;My layout&#39;</span><span class="p">,</span> <span class="n">draw_node</span><span class="o">=</span><span class="n">draw_node</span><span class="p">)</span>
 <span class="n">t</span><span class="o">.</span><span class="n">explore</span><span class="p">(</span><span class="n">layouts</span><span class="o">=</span><span class="p">[</span><span class="n">layout</span><span class="p">])</span>
@@ -707,11 +698,11 @@ drawing. We can find a complete list for each face in the
 </section>
 </section>
 </section>
-<section id="combining-styles-and-decorations">
-<h2><a class="toc-backref" href="#id29" role="doc-backlink">Combining styles and decorations</a><a class="headerlink" href="#combining-styles-and-decorations" title="Link to this heading">¶</a></h2>
+<section id="combining-styles-and-faces">
+<h2><a class="toc-backref" href="#id29" role="doc-backlink">Combining styles and faces</a><a class="headerlink" href="#combining-styles-and-faces" title="Link to this heading">¶</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">draw_node</span></code> function can return a list with as many styles and
-decorations as we want.</p>
-<p>If it returns just one element (a decoration or a dictionary
+faces as we want.</p>
+<p>If it returns just one element (a face or a dictionary
 representing a style), it is intepreted as a list of only one element
 (itself).</p>
 <p>Instead of returning a list, we can also <a class="reference external" href="https://docs.python.org/3/reference/expressions.html#yieldexpr">yield</a>
@@ -721,17 +712,18 @@ following examples.</p>
 <p>Let’s see an example combining styles and faces, for both the tree
 (with <code class="docutils literal notranslate"><span class="pre">draw_tree</span></code>) and the nodes (with <code class="docutils literal notranslate"><span class="pre">draw_node</span></code>):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ete4</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tree</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">ete4.smartview</span><span class="w"> </span><span class="kn">import</span> <span class="n">Layout</span><span class="p">,</span> <span class="n">Decoration</span><span class="p">,</span> <span class="n">TextFace</span><span class="p">,</span> <span class="n">LegendFace</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ete4.smartview</span><span class="w"> </span><span class="kn">import</span> <span class="n">Layout</span><span class="p">,</span> <span class="n">TextFace</span><span class="p">,</span> <span class="n">LegendFace</span>
 
 <span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((((a,b),c),d),e);&#39;</span><span class="p">)</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">draw_tree</span><span class="p">(</span><span class="n">tree</span><span class="p">):</span>
     <span class="k">yield</span> <span class="p">{</span><span class="s1">&#39;dot&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;opacity&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;fill&#39;</span><span class="p">:</span> <span class="s1">&#39;black&#39;</span><span class="p">}}</span>
-    <span class="k">yield</span> <span class="n">Decoration</span><span class="p">(</span><span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;Vowel?&#39;</span><span class="p">,</span> <span class="n">fs_min</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">fs_max</span><span class="o">=</span><span class="mi">16</span><span class="p">),</span>
-                     <span class="n">position</span><span class="o">=</span><span class="s1">&#39;header&#39;</span><span class="p">)</span>
-    <span class="k">yield</span> <span class="n">Decoration</span><span class="p">(</span><span class="n">LegendFace</span><span class="p">(</span><span class="s1">&#39;Type of letter&#39;</span><span class="p">,</span>
-                                <span class="n">variable</span><span class="o">=</span><span class="s1">&#39;discrete&#39;</span><span class="p">,</span>
-                                <span class="n">colormap</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;vowel&#39;</span><span class="p">:</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;consonant&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">}))</span>
+
+    <span class="k">yield</span> <span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;Vowel?&#39;</span><span class="p">,</span> <span class="n">fs_min</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">fs_max</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;header&#39;</span><span class="p">)</span>
+
+    <span class="k">yield</span> <span class="n">LegendFace</span><span class="p">(</span><span class="s1">&#39;Type of letter&#39;</span><span class="p">,</span>
+                     <span class="n">variable</span><span class="o">=</span><span class="s1">&#39;discrete&#39;</span><span class="p">,</span>
+                     <span class="n">colormap</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;vowel&#39;</span><span class="p">:</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;consonant&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">})</span>
 
 <span class="n">vowels</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;e&#39;</span><span class="p">,</span> <span class="s1">&#39;i&#39;</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="s1">&#39;u&#39;</span><span class="p">}</span>
 
@@ -743,12 +735,12 @@ following examples.</p>
 
     <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">vowels</span><span class="p">:</span>
         <span class="k">yield</span> <span class="p">{</span><span class="s1">&#39;box&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;fill&#39;</span><span class="p">:</span> <span class="s1">&#39;red&#39;</span><span class="p">}}</span>
-        <span class="k">yield</span> <span class="n">Decoration</span><span class="p">(</span><span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;yes, a vowel&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fill&#39;</span><span class="p">:</span> <span class="s1">&#39;red&#39;</span><span class="p">}),</span>
-                         <span class="n">position</span><span class="o">=</span><span class="s1">&#39;aligned&#39;</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;yes, a vowel&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fill&#39;</span><span class="p">:</span> <span class="s1">&#39;red&#39;</span><span class="p">},</span>
+                       <span class="n">position</span><span class="o">=</span><span class="s1">&#39;aligned&#39;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">yield</span> <span class="p">{</span><span class="s1">&#39;box&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;fill&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">}}</span>
-        <span class="k">yield</span> <span class="n">Decoration</span><span class="p">(</span><span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;not a vowel&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fill&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">}),</span>
-                         <span class="n">position</span><span class="o">=</span><span class="s1">&#39;aligned&#39;</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;not a vowel&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fill&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">},</span>
+                       <span class="n">position</span><span class="o">=</span><span class="s1">&#39;aligned&#39;</span><span class="p">)</span>
 
 <span class="n">layout</span> <span class="o">=</span> <span class="n">Layout</span><span class="p">(</span><span class="s1">&#39;Vowels layout&#39;</span><span class="p">,</span> <span class="n">draw_tree</span><span class="o">=</span><span class="n">draw_tree</span><span class="p">,</span> <span class="n">draw_node</span><span class="o">=</span><span class="n">draw_node</span><span class="p">)</span>
 <span class="n">t</span><span class="o">.</span><span class="n">explore</span><span class="p">(</span><span class="n">layouts</span><span class="o">=</span><span class="p">[</span><span class="n">layout</span><span class="p">])</span>
@@ -758,7 +750,7 @@ following examples.</p>
 <p>Let’s see another example, where we change the background of certain
 nodes that are common ancestors to other nodes we are interested in:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ete4</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tree</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">ete4.smartview</span><span class="w"> </span><span class="kn">import</span> <span class="n">Layout</span><span class="p">,</span> <span class="n">Decoration</span><span class="p">,</span> <span class="n">TextFace</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ete4.smartview</span><span class="w"> </span><span class="kn">import</span> <span class="n">Layout</span><span class="p">,</span> <span class="n">TextFace</span>
 
 <span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;((((a1,a2),a3), ((b1,b2),(b3,b4))), ((c1,c2),c3));&#39;</span><span class="p">)</span>
 
@@ -776,7 +768,7 @@ nodes that are common ancestors to other nodes we are interested in:</p>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">draw_node</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
     <span class="c1"># Add node name with big text.</span>
-    <span class="k">yield</span> <span class="n">Decoration</span><span class="p">(</span><span class="n">TextFace</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">fs_min</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">fs_max</span><span class="o">=</span><span class="mi">25</span><span class="p">),</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">)</span>
+    <span class="k">yield</span> <span class="n">TextFace</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">fs_min</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">fs_max</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">)</span>
 
     <span class="c1"># Set the node style.</span>
     <span class="k">if</span> <span class="n">node</span> <span class="o">==</span> <span class="n">n1</span><span class="p">:</span>

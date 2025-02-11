@@ -9,7 +9,7 @@ takes mainly a tree and a viewport, and can produce a list of
 graphical commands.
 
 
-Graphical Elements
+Graphical Commands
 ------------------
 
 The :func:`draw` function is a generator that yields graphical
@@ -21,7 +21,7 @@ are lists that look like::
 It always starts with the name of the graphical command, followed by
 its parameters. (This is similar to creating a `DSL
 <https://en.wikipedia.org/wiki/Domain-specific_language>`_ with
-functions that draw, and which will be interpreted in the frontend).
+functions that draw, and which will be interpreted in the frontend.)
 
 
 gui.js

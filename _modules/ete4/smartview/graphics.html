@@ -169,10 +169,10 @@
     <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">,</span> <span class="n">box</span><span class="p">,</span> <span class="n">href</span><span class="p">,</span> <span class="n">style</span><span class="p">]</span></div>
 
 
-<div class="viewcode-block" id="draw_array">
-<a class="viewcode-back" href="../../../reference/reference_smartview.html#ete4.smartview.graphics.draw_array">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">draw_array</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="n">a</span><span class="p">):</span>
-    <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;array&#39;</span><span class="p">,</span> <span class="n">box</span><span class="p">,</span> <span class="n">a</span><span class="p">]</span></div>
+<div class="viewcode-block" id="draw_heatmap">
+<a class="viewcode-back" href="../../../reference/reference_smartview.html#ete4.smartview.graphics.draw_heatmap">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">draw_heatmap</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">value_range</span><span class="p">,</span> <span class="n">color_range</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;heatmap&#39;</span><span class="p">,</span> <span class="n">box</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">value_range</span><span class="p">,</span> <span class="n">color_range</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="draw_seq">
@@ -212,7 +212,7 @@
 
     <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">elements</span><span class="p">:</span>
         <span class="n">eid</span> <span class="o">=</span> <span class="n">element</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># &quot;element identifier&quot; (name of drawing element)</span>
-        <span class="k">if</span> <span class="n">eid</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;nodebox&#39;</span><span class="p">,</span> <span class="s1">&#39;array&#39;</span><span class="p">,</span> <span class="s1">&#39;seq&#39;</span><span class="p">,</span> <span class="s1">&#39;text&#39;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">eid</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;nodebox&#39;</span><span class="p">,</span> <span class="s1">&#39;array&#39;</span><span class="p">,</span> <span class="s1">&#39;seq&#39;</span><span class="p">,</span> <span class="s1">&#39;heatmap&#39;</span><span class="p">,</span> <span class="s1">&#39;text&#39;</span><span class="p">]:</span>
             <span class="c1"># The position for these elements is given by a box.</span>
             <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span> <span class="o">=</span> <span class="n">element</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
             <span class="n">box</span> <span class="o">=</span> <span class="n">x0</span> <span class="o">+</span> <span class="n">x</span><span class="p">,</span> <span class="n">y0</span> <span class="o">+</span> <span class="n">y</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span>
@@ -244,6 +244,27 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">are_valid_angles</span><span class="p">(</span><span class="o">*</span><span class="n">angles</span><span class="p">):</span>
     <span class="n">EPSILON</span> <span class="o">=</span> <span class="mf">1e-8</span>  <span class="c1"># without it, rounding can fake an angle a &gt; pi</span>
     <span class="k">return</span> <span class="nb">all</span><span class="p">(</span><span class="o">-</span><span class="n">pi</span> <span class="o">&lt;=</span> <span class="n">a</span> <span class="o">&lt;</span> <span class="n">pi</span><span class="o">+</span><span class="n">EPSILON</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">angles</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="hex2rgba">
+<a class="viewcode-back" href="../../../reference/reference_smartview.html#ete4.smartview.graphics.hex2rgba">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">hex2rgba</span><span class="p">(</span><span class="n">color</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return [r, g, b, a] (from 0 to 255) for color in hex like &quot;#rrggbbaa&quot;.&quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">color</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span> <span class="ow">and</span> <span class="n">color</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">color</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">9</span><span class="p">],</span> \
+        <span class="sa">f</span><span class="s1">&#39;color format must be &quot;#rrggbbaa&quot;, invalid value: </span><span class="si">{</span><span class="n">color</span><span class="si">}</span><span class="s1">&#39;</span>
+
+    <span class="c1"># Make color look like &quot;#rrggbbaa&quot;.</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">color</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>  <span class="c1"># &#39;#rgb&#39;</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">color</span>
+        <span class="n">color</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;#</span><span class="si">{</span><span class="n">r</span><span class="si">}{</span><span class="n">r</span><span class="si">}{</span><span class="n">g</span><span class="si">}{</span><span class="n">g</span><span class="si">}{</span><span class="n">b</span><span class="si">}{</span><span class="n">b</span><span class="si">}</span><span class="s1">ff&#39;</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">color</span><span class="p">)</span> <span class="o">==</span> <span class="mi">7</span><span class="p">:</span>  <span class="c1"># &#39;#rrggbb&#39;</span>
+        <span class="n">color</span> <span class="o">=</span> <span class="n">color</span> <span class="o">+</span> <span class="s1">&#39;ff&#39;</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">color</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>  <span class="c1"># &#39;#rgba&#39;</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">a</span> <span class="o">=</span> <span class="n">color</span>
+        <span class="n">color</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;#</span><span class="si">{</span><span class="n">r</span><span class="si">}{</span><span class="n">r</span><span class="si">}{</span><span class="n">g</span><span class="si">}{</span><span class="n">g</span><span class="si">}{</span><span class="n">b</span><span class="si">}{</span><span class="n">b</span><span class="si">}{</span><span class="n">a</span><span class="si">}{</span><span class="n">a</span><span class="si">}</span><span class="s1">&#39;</span>
+
+    <span class="k">return</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">color</span><span class="p">[</span><span class="mi">1</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="n">i</span><span class="p">:</span><span class="mi">3</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="n">i</span><span class="p">],</span> <span class="mi">16</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">)]</span></div>
 
 </pre></div>
 
