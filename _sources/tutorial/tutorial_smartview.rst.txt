@@ -296,8 +296,8 @@ view, sorting the tree, or converting it to dendogram or ultrametric.
 Customizing the visualization
 -----------------------------
 
-The main elements used to customize the visualization are *styles*,
-*faces*, and *layouts*.
+The main elements used to customize the visualization are *layouts*,
+*styles*, and *faces*.
 
 
 Layouts
