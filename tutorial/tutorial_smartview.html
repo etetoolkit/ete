@@ -513,8 +513,7 @@ examples:</p>
 
 <span class="c1"># The root node will be blue, with a dot of 15 pixel radius, and a</span>
 <span class="c1"># custom vertical line.</span>
-<span class="n">root_style</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;box&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;fill&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">},</span>
-              <span class="s1">&#39;dot&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;radius&#39;</span><span class="p">:</span> <span class="mi">15</span><span class="p">},</span>
+<span class="n">root_style</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;dot&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;radius&#39;</span><span class="p">:</span> <span class="mi">15</span><span class="p">,</span> <span class="s1">&#39;fill&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">},</span>
               <span class="s1">&#39;vt-line&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;stroke&#39;</span><span class="p">:</span> <span class="s1">&#39;#964B00&#39;</span><span class="p">,</span>
                           <span class="s1">&#39;stroke-width&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
                           <span class="s1">&#39;stroke-dasharray&#39;</span><span class="p">:</span> <span class="s1">&#39;5,5&#39;</span><span class="p">}}</span>
@@ -677,7 +676,7 @@ drawing. We can find a complete list for each face in the
 <span class="n">face_top</span> <span class="o">=</span> <span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;branch top!&#39;</span><span class="p">,</span>
                     <span class="n">fs_min</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">fs_max</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span>
                     <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fill&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;font-family&#39;</span><span class="p">:</span> <span class="s1">&#39;courier&#39;</span><span class="p">},</span>
-                    <span class="n">position</span><span class="o">=</span><span class="s1">&#39;top&#39;</span><span class="p">)</span>
+                    <span class="n">position</span><span class="o">=</span><span class="s1">&#39;top&#39;</span><span class="p">,</span> <span class="n">anchor</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
 
 <span class="c1"># Same thing, but adding them after initializing it.</span>
 <span class="n">face_bottom</span> <span class="o">=</span> <span class="n">TextFace</span><span class="p">(</span><span class="s1">&#39;branch bottom!&#39;</span><span class="p">)</span>
@@ -686,6 +685,7 @@ drawing. We can find a complete list for each face in the
 <span class="n">face_bottom</span><span class="o">.</span><span class="n">rotation</span> <span class="o">=</span> <span class="mi">10</span>
 <span class="n">face_bottom</span><span class="o">.</span><span class="n">style</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;fill&#39;</span><span class="p">:</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;font-family&#39;</span><span class="p">:</span> <span class="s1">&#39;sans-serif&#39;</span><span class="p">}</span>
 <span class="n">face_bottom</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="s1">&#39;bottom&#39;</span>
+<span class="n">face_bottom</span><span class="o">.</span><span class="n">anchor</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">draw_node</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
     <span class="k">return</span> <span class="p">[</span><span class="n">face_top</span><span class="p">,</span> <span class="n">face_bottom</span><span class="p">]</span>

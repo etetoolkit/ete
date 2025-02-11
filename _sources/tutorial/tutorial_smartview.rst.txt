@@ -485,8 +485,7 @@ examples::
 
   # The root node will be blue, with a dot of 15 pixel radius, and a
   # custom vertical line.
-  root_style = {'box': {'fill': 'blue'},
-                'dot': {'radius': 15},
+  root_style = {'dot': {'radius': 15, 'fill': 'blue'},
                 'vt-line': {'stroke': '#964B00',
                             'stroke-width': 10,
                             'stroke-dasharray': '5,5'}}
@@ -679,7 +678,7 @@ Let's look at a simple example::
   face_top = TextFace('branch top!',
                       fs_min=6, fs_max=25, rotation=-10,
                       style={'fill': 'blue', 'font-family': 'courier'},
-                      position='top')
+                      position='top', anchor=(-1, 1))
 
   # Same thing, but adding them after initializing it.
   face_bottom = TextFace('branch bottom!')
@@ -688,6 +687,7 @@ Let's look at a simple example::
   face_bottom.rotation = 10
   face_bottom.style = {'fill': 'red', 'font-family': 'sans-serif'}
   face_bottom.position = 'bottom'
+  face_bottom.anchor = (-1, -1)
 
   def draw_node(node):
       return [face_top, face_bottom]
