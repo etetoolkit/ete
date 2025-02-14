@@ -1,4 +1,4 @@
-// Handle gui events.  
+// Handle gui events.
 import { view, get_tid, menus, coordinates, reset_view,
          on_drawer_change, show_minimap, show_help }
     from "./gui.js";
@@ -94,16 +94,16 @@ function on_keydown(event) {
     else if (key === "+") {
         const center = {x: div_tree.offsetWidth / 2,
                         y: div_tree.offsetHeight / 2};
-        const zoom_in = true;
+        const deltaY = -200;
         const do_zoom = {x: !event.ctrlKey, y: !event.altKey};
-        zoom_around(center, zoom_in, do_zoom);
+        zoom_around(center, deltaY, do_zoom);
     }
     else if (key === "-") {
         const center = {x: div_tree.offsetWidth / 2,
                         y: div_tree.offsetHeight / 2};
-        const zoom_in = false;
+        const deltaY = 200;
         const do_zoom = {x: !event.ctrlKey, y: !event.altKey};
-        zoom_around(center, zoom_in, do_zoom);
+        zoom_around(center, deltaY, do_zoom);
     }
     else if (key === "ArrowLeft") {
         const fraction = event.shiftKey ? 0.2 : 0.04;
@@ -140,7 +140,7 @@ function on_keydown(event) {
 function get_event_zoom(event) {
     const do_zoom = {x: !event.ctrlKey, y: !event.altKey};
     const zoom_in = event.deltaY < 0;
-    return [ zoom_in, do_zoom ]
+    return [ zoom_in, do_zoom, event.deltaY ];
 }
 
 
@@ -158,12 +158,12 @@ function on_wheel(event) {
 
     const point = {x: event.pageX, y: event.pageY};
     point.x -= (menus.show ? menus.width : 0)
-    const [ zoom_in, do_zoom ] = get_event_zoom(event);
+    const [ zoom_in, do_zoom, deltaY ] = get_event_zoom(event);
 
     if (div_aligned.contains(event.target) && view.aligned.zoom)
         zoom_aligned(point, zoom_in)
     else
-        zoom_around(point, zoom_in, do_zoom);
+        zoom_around(point, deltaY, do_zoom);
 }
 
 function is_svg(element) {
@@ -199,7 +199,7 @@ function on_mousedown(event) {
 }
 
 function update_tooltip(event, delay=500) {
-    
+
     if (!event.target.getAttribute)
         return
 
@@ -247,7 +247,7 @@ function on_mousemove(event) {
 function on_mouseup(event) {
     if (!dragging.moved) {
         if (!tooltip.contains(event.target) &&
-            !(event.target.getAttribute && 
+            !(event.target.getAttribute &&
               event.target.getAttribute("data-tooltip")) ||
             (!view.tooltip.auto &&
              event.target === view.tooltip.target))
@@ -321,7 +321,7 @@ function on_touchmove(event) {
         if (view.drawer.type === "circ")  // for those, we want zx == zy
             qz.x = qz.y = Math.sqrt(qz.x * qz.y);  // geometric mean
 
-        zoom_around({x: x1, y: y1}, zoom_in, do_zoom, qz);
+        zoom_around({x: x1, y: y1}, (dx + dy) - (finger_d.x + finger_d.y), do_zoom, qz);
 
         [finger_d.x, finger_d.y] = [Math.abs(x1 - x0), Math.abs(y1 - y0)];
     }
@@ -364,7 +364,7 @@ function notify_parent(selectionMode, { eventType, name, color, node, activeType
         })
 
     else if (selectionMode === "saved")
-        sendPostMessage({ 
+        sendPostMessage({
             selectionMode: selectionMode,
             eventType: eventType,
             name: name,
@@ -374,7 +374,7 @@ function notify_parent(selectionMode, { eventType, name, color, node, activeType
 
 async function on_postMessage(event) {
     // Selection when placing ETE in iframe
-    
+
     // TODO: we should register allowed origins
     //if (!wiew.allowed_origins.includes(event.origin))
         //return
@@ -393,7 +393,7 @@ async function on_postMessage(event) {
         view.search();
         return
     }
-    
+
     const { selectionMode, eventType, name, node, nodes, selectCommand, activeType } = event.data;
 
     div_tree.style.cursor = "wait";
@@ -421,7 +421,7 @@ async function on_postMessage(event) {
                 remove_selections(true); // purge from backend as well
             else if (view.selected[name])
                 view.selected[name].remove();
-        } 
+        }
 
         // Prune based on selection names
         else if (eventType === "prune" && name)

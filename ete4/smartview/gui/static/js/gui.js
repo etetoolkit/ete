@@ -779,12 +779,12 @@ function on_box_wheel(event, box) {
 
     const point = {x: event.pageX, y: event.pageY};
     point.x -= (menus.show ? menus.width : 0)
-    const [ zoom_in, do_zoom ] = get_event_zoom(event);
+    const [ zoom_in, do_zoom, deltaY ] = get_event_zoom(event);
 
     if (view.drawer.type === "rect" && view.smart_zoom)
-        zoom_towards_box(box, point, zoom_in, do_zoom);
+        zoom_towards_box(box, point, deltaY, do_zoom);
     else
-        zoom_around(point, zoom_in, do_zoom);
+        zoom_around(point, deltaY, do_zoom);
 }
 
 

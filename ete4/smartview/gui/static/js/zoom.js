@@ -46,12 +46,13 @@ window.zoom_into_box = zoom_into_box;  // exposed so it can be called in onclick
 
 
 // Zoom maintaining the given point on the screen.
-function zoom_around(point, zoom_in, do_zoom={x:true, y:true}, qz=undefined) {
+function zoom_around(point, deltaY, do_zoom={x:true, y:true}, qz=undefined) {
     tooltip.style.display = "none";
-    if (!qz)  // zoom change (quotient)
-        qz = { x: 1 + (zoom_in ? view.zoom.delta.in : view.zoom.delta.out),
-               y: 1 + (zoom_in ? view.zoom.delta.in : view.zoom.delta.out),
-               a: 1 + (zoom_in ? view.zoom.delta.in : view.zoom.delta.out)};
+
+    if (!qz) { // quotient zoom (how much to change the zoom) not given?
+        const factor = Math.exp(-deltaY/1000);
+        qz = {x: factor, y: factor};  // zoom change (quotient)
+    }
 
     if (view.drawer.type === "rect") {
         zoom_xy(point, qz, do_zoom);
@@ -132,25 +133,29 @@ function zoom_aligned(point, zoom_in) {
 }
 
 
-// Zoom adaptatively so that the given box tends to occupy the full screen.
-function zoom_towards_box(box, point, zoom_in, do_zoom) {
+// Zoom adaptatively so the given box tends to occupy a fraction of the screen.
+function zoom_towards_box(box, point, deltaY, do_zoom) {
     tooltip.style.display = "none";
-    let qx, qy;
-    if (zoom_in) {
-        const [dx, dy] = [box[2], box[3]];
-        qx = 0.8 * div_tree.offsetWidth / (dx * view.zoom.x) - 1;
-        qy = 0.8 * div_tree.offsetHeight / (dy * view.zoom.y) - 1;
-    }
-    else {
-        const [dx, dy] = [3 * view.tree_size.width, 3 * view.tree_size.height];
-        qx = div_tree.offsetWidth / (dx * view.zoom.x) - 1,
-        qy = div_tree.offsetHeight / (dy * view.zoom.y) - 1;
-    }
 
-    const qz = {x: 1 + view.zoom.delta.in * Math.atan(qx),
-                y: 1 + view.zoom.delta.in * Math.atan(qy)};
+    const [dx, dy] = [box[2], box[3]];
+    const dist = deltaY / 1000;  // distance moved, in convenient units
+
+    // Screen size in terms of dx, dy (how many times bigger it is).
+    const ssx = div_tree.offsetWidth  / (dx * view.zoom.x),
+          ssy = div_tree.offsetHeight / (dy * view.zoom.y);
+
+    const qz = (dist < 0) ?  // zoom in : zoom out
+          {x: Math.min(1.5,             sigmoid(-dist, 0.80 * ssx)),    // 80%
+           y: Math.min(1.5,             sigmoid(-dist, 0.80 * ssy))} :  // 80%
+          {x: Math.max(0.7, Math.min(1, sigmoid( dist, 0.10 * ssx))),   // 10%
+           y: Math.max(0.7, Math.min(1, sigmoid( dist, 0.01 * ssy)))};  //  1%
 
     zoom_xy(point, qz, do_zoom);
+}
+
+function sigmoid(x, lim) {  // helper function: s(0) = 1, and s(inf) = lim
+    const a = Math.atan(x) / (Math.PI / 2);  // a goes between 0 and 1
+    return 1 + a * (lim - 1);
 }
 
 
