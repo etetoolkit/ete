@@ -138,6 +138,7 @@ function add_tab_advanced(tab) {
 
     add_folder_info(tab);
     add_folder_viewport(tab);
+    add_folder_zoom(tab);
     add_folder_style(tab);
     add_folder_minimap(tab);
 }
@@ -187,6 +188,15 @@ function add_folder_viewport(menu) {
             div_aligned.style.width = `${100 - ev.value}%`;
             view.pixi_app_aligned.resizeTo = div_aligned;  // otherwise it forgets...
         });
+}
+
+
+function add_folder_zoom(menu) {
+    const folder_zoom = folder(menu, "zoom");
+    folder_zoom.addBinding(view, "zoom_sensitivity",
+                           {label: "sensitivity", min: 0, max: 1});
+    folder_zoom.addBinding(view, "smart_zoom", {label: "smart zoom"});
+
 }
 
 

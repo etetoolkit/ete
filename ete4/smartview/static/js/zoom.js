@@ -48,7 +48,7 @@ window.zoom_into_box = zoom_into_box;  // exposed so it can be called in onclick
 // Zoom maintaining the given point on the screen.
 function zoom_around(point, deltaY, do_zoom={x:true, y:true}, qz=undefined) {
     if (!qz) { // quotient zoom (how much to change the zoom) not given?
-        const factor = Math.exp(-deltaY/1000);
+        const factor = Math.exp(zoom_amount(deltaY));
         qz = {x: factor, y: factor};  // zoom change (quotient)
     }
 
@@ -124,27 +124,35 @@ function zoom_angular(point, qz) {
 
 
 
-// Zoom adaptatively so the given box tends to occupy a fraction of the screen.
+// Zoom adaptatively so the given box tends to occupy the screen.
 function zoom_towards_box(box, point, deltaY, do_zoom) {
     const [dx, dy] = [box[2], box[3]];
-    const dist = deltaY / 1000;  // distance moved, in convenient units
 
     // Screen size in terms of dx, dy (how many times bigger it is).
     const ssx = div_tree.offsetWidth  / (dx * view.zoom.x),
           ssy = div_tree.offsetHeight / (dy * view.zoom.y);
 
-    const qz = (dist < 0) ?  // zoom in : zoom out
-          {x: Math.min(1.5,             sigmoid(-dist, 0.80 * ssx)),    // 80%
-           y: Math.min(1.5,             sigmoid(-dist, 0.80 * ssy))} :  // 80%
-          {x: Math.max(0.7, Math.min(1, sigmoid( dist, 0.10 * ssx))),   // 10%
-           y: Math.max(0.7, Math.min(1, sigmoid( dist, 0.01 * ssy)))};  //  1%
+    const amount = zoom_amount(deltaY);
+    const qz = {x: Math.max(0.5, Math.min(1.5, sigmoid(amount, ssx))),
+                y: Math.max(0.5, Math.min(1.5, sigmoid(amount, ssy)))};
 
     zoom_xy(point, qz, do_zoom);
 }
 
-function sigmoid(x, lim) {  // helper function: s(0) = 1, and s(inf) = lim
-    const a = Math.atan(x) / (Math.PI / 2);  // a goes between 0 and 1
-    return 1 + a * (lim - 1);
+function sigmoid(x, ymax) {  // helper function, x=0,inf,-inf -> 1,ymax,1/ymax
+    const a = Math.atan(x) / (Math.PI / 2);  // a goes between -1 and 1
+    return Math.exp(a * Math.log(ymax));  // 0 -> 1, inf -> ymax, -inf -> 1/ymax
+}
+
+
+// Return the amount of zooming corresponding to the deltaY that the
+// mouse has moved, taking into account the sensitivity setting.
+// The n argument allows to control how quickly the sensitivity changes.
+function zoom_amount(deltaY, n=1) {
+    const delta = -0.0005 * deltaY;  // (small) positive zooming when deltaY < 0
+    const sn = view.zoom_sensitivity ** n;  // sensitivity to the power of n
+    const factor = (2**n - 1) * sn / (1 - sn);  // 0 -> 0,  0.5 -> 1,  1 -> inf
+    return factor * delta;
 }
 
 

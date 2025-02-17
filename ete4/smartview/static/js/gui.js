@@ -83,6 +83,10 @@ const view = {
 
     aligned: {origin: 0, zoom: 1},  // for aligned panel view (only horizonally)
 
+    // zoom
+    smart_zoom: true,
+    zoom_sensitivity: 0.5,
+
     // style
     default_rules: null,  // will contain an array of the original css rules
     node: {
@@ -130,8 +134,6 @@ const view = {
     pixi_sheet: null,  // spritesheet with the graphics
 
     render: "auto",  // "auto", "raster", or "svg" - for drawing sequences
-
-    smart_zoom: true,
 
     share_view: () => share_view(),
 
