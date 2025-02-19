@@ -161,7 +161,7 @@ class NCBITaxa:
         all_ids.discard(None)
         all_ids.discard("")
 
-        query = ','.join('"%s"' % v for v in all_ids)
+        query = ','.join("'%s'" % v for v in all_ids)
         cmd = 'SELECT taxid, rank FROM species WHERE taxid IN (%s);' % query
         result = self.db.execute(cmd)
 
@@ -180,7 +180,7 @@ class NCBITaxa:
         all_ids.discard(None)
         all_ids.discard("")
 
-        query = ','.join('"%s"' % v for v in all_ids)
+        query = ','.join("'%s'" % v for v in all_ids)
         cmd = 'SELECT taxid, track FROM species WHERE taxid IN (%s);' % query
         result = self.db.execute(cmd)
 
@@ -220,7 +220,7 @@ class NCBITaxa:
         return list(reversed(track))
 
     def get_common_names(self, taxids):
-        query = ','.join('"%s"' % v for v in taxids)
+        query = ','.join("'%s'" % v for v in taxids)
         cmd = 'SELECT taxid, common FROM species WHERE taxid IN (%s);' % query
         result = self.db.execute(cmd)
 
@@ -237,7 +237,7 @@ class NCBITaxa:
         all_ids.discard(None)
         all_ids.discard("")
 
-        query = ','.join('"%s"' % v for v in all_ids)
+        query = ','.join("'%s'" % v for v in all_ids)
         cmd = 'SELECT taxid, spname FROM species WHERE taxid IN (%s);' % query
         result = self.db.execute(cmd)
 
@@ -252,7 +252,7 @@ class NCBITaxa:
             new2old = {v: k for k,v in old2new.items()}
 
             if old2new:
-                query = ','.join('"%s"' % v for v in new2old)
+                query = ','.join("'%s'" % v for v in new2old)
                 cmd = 'SELECT taxid, spname FROM species WHERE taxid IN (%s);' % query
                 result = self.db.execute(cmd)
                 for tax, spname in result.fetchall():
@@ -273,16 +273,16 @@ class NCBITaxa:
 
         names = set(name2origname.keys())
 
-        query = ','.join('"%s"' % n for n in name2origname.keys())
+        query = ','.join("'%s'" % n for n in name2origname.keys())
         cmd = 'SELECT spname, taxid FROM species WHERE spname IN (%s)' % query
-        result = self.db.execute('SELECT spname, taxid FROM species WHERE spname IN (%s)' % query)
+        result = self.db.execute(cmd)
         for sp, taxid in result.fetchall():
             oname = name2origname[sp.lower()]
             name2id.setdefault(oname, []).append(taxid)
             #name2realname[oname] = sp
         missing =  names - set([n.lower() for n in name2id.keys()])
         if missing:
-            query = ','.join('"%s"' % n for n in missing)
+            query = ','.join("'%s'" % n for n in missing)
             result = self.db.execute('SELECT spname, taxid FROM synonym '
                                      'WHERE spname IN (%s)' % query)
             for sp, taxid in result.fetchall():
