@@ -44,6 +44,8 @@ def draw(tree, layouts, overrides=None, labels=None,
 
     for face in faces:
         if face.position == 'header':  # face must be TextFace or similar
+            # TODO: Allow any kind of face, not only TextFace.
+
             text = eval_as_str(face.code, tree)
 
             # Go to the right panel.
