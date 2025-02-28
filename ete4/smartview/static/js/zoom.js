@@ -139,9 +139,10 @@ function zoom_towards_box(box, point, deltaY, do_zoom) {
     zoom_xy(point, qz, do_zoom);
 }
 
-function sigmoid(x, ymax) {  // helper function, x=0,inf,-inf -> 1,ymax,1/ymax
+function sigmoid(x, ymax) {  // helper function, goes from 1/ymax to ymax
+    ymax = ymax >= 1 ? ymax : 1/ymax;  // so the function is increasing
     const a = Math.atan(x) / (Math.PI / 2);  // a goes between -1 and 1
-    return Math.exp(a * Math.log(ymax));  // 0 -> 1, inf -> ymax, -inf -> 1/ymax
+    return Math.exp(a * Math.log(ymax));  // -inf -> 1/ymax, 0 -> 1, inf -> ymax
 }
 
 
