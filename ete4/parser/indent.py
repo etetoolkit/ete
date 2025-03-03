@@ -34,7 +34,7 @@ from ..core.tree import Tree
 
 
 # Any of these chars are considered part of the (left) indentation.
-DEFAULT_INDENT_CHARS = ' \t\n\r-|/\\`─│┐├┤┬┼╌╭╰╴└\xa0'
+DEFAULT_INDENT_CHARS = ' \t\n\r-|_/\\`─│┐├┤┬┼╌╭╰╴└\xa0'
 
 
 def load(fp, parse_content=None, indent_chars=DEFAULT_INDENT_CHARS):
