@@ -57,6 +57,11 @@
 <span class="n">DEFAULT_TAXDUMP</span> <span class="o">=</span> <span class="n">ETE_DATA_HOME</span> <span class="o">+</span> <span class="s1">&#39;/taxdump.tar.gz&#39;</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">as_csv</span><span class="p">(</span><span class="n">xs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return sequence xs as comma-separated values, quoted properly for SQL.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;&#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&#39;&#39;&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">xs</span><span class="p">)</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">is_taxadb_up_to_date</span><span class="p">(</span><span class="n">dbfile</span><span class="o">=</span><span class="n">DEFAULT_TAXADB</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return True if a valid and up-to-date taxa.sqlite database exists.</span>
 
@@ -140,7 +145,7 @@
 
         <span class="n">cmd</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;SELECT taxid_old, taxid_new &#39;</span>
                <span class="s1">&#39;FROM merged WHERE taxid_old IN (</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span>
-               <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">all_taxids</span><span class="p">)))</span>
+               <span class="n">as_csv</span><span class="p">(</span><span class="n">all_taxids</span><span class="p">))</span>
 
         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
 
@@ -173,7 +178,7 @@
 
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Trying fuzzy search for </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
         <span class="n">maxdiffs</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">sim</span><span class="p">))</span>
-        <span class="n">cmd</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s1">&#39;SELECT taxid, spname, LEVENSHTEIN(spname, &quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">&quot;) AS sim &#39;</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s1">&#39;SELECT taxid, spname, LEVENSHTEIN(spname, </span><span class="se">\&#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="se">\&#39;</span><span class="s1">) AS sim &#39;</span>
                <span class="sa">f</span><span class="s1">&#39;FROM species WHERE sim &lt;= </span><span class="si">{</span><span class="n">maxdiffs</span><span class="si">}</span><span class="s1"> ORDER BY sim LIMIT 1;&#39;</span><span class="p">)</span>
 
         <span class="n">taxid</span><span class="p">,</span> <span class="n">spname</span><span class="p">,</span> <span class="n">score</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
@@ -182,7 +187,7 @@
             <span class="n">taxid</span><span class="p">,</span> <span class="n">spname</span><span class="p">,</span> <span class="n">score</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
         <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
             <span class="n">cmd</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="sa">f</span><span class="s1">&#39;SELECT taxid, spname, LEVENSHTEIN(spname, &quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">&quot;) AS sim &#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;SELECT taxid, spname, LEVENSHTEIN(spname, </span><span class="se">\&#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="se">\&#39;</span><span class="s1">) AS sim &#39;</span>
                 <span class="sa">f</span><span class="s1">&#39;FROM synonym WHERE sim &lt;= </span><span class="si">{</span><span class="n">maxdiffs</span><span class="si">}</span><span class="s1"> ORDER BY sim LIMIT 1;&#39;</span><span class="p">)</span>
             <span class="n">result</span> <span class="o">=</span> <span class="n">_db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
@@ -209,8 +214,7 @@
         <span class="n">all_ids</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
         <span class="n">all_ids</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
-        <span class="n">query</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;&quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">all_ids</span><span class="p">)</span>
-        <span class="n">cmd</span> <span class="o">=</span> <span class="s1">&#39;SELECT taxid, rank FROM species WHERE taxid IN (</span><span class="si">%s</span><span class="s1">);&#39;</span> <span class="o">%</span> <span class="n">query</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="s1">&#39;SELECT taxid, rank FROM species WHERE taxid IN (</span><span class="si">%s</span><span class="s1">);&#39;</span> <span class="o">%</span> <span class="n">as_csv</span><span class="p">(</span><span class="n">all_ids</span><span class="p">)</span>
         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
 
         <span class="n">id2rank</span> <span class="o">=</span> <span class="p">{}</span>
@@ -231,8 +235,7 @@
         <span class="n">all_ids</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
         <span class="n">all_ids</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
-        <span class="n">query</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;&quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">all_ids</span><span class="p">)</span>
-        <span class="n">cmd</span> <span class="o">=</span> <span class="s1">&#39;SELECT taxid, track FROM species WHERE taxid IN (</span><span class="si">%s</span><span class="s1">);&#39;</span> <span class="o">%</span> <span class="n">query</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="s1">&#39;SELECT taxid, track FROM species WHERE taxid IN (</span><span class="si">%s</span><span class="s1">);&#39;</span> <span class="o">%</span> <span class="n">as_csv</span><span class="p">(</span><span class="n">all_ids</span><span class="p">)</span>
         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
 
         <span class="n">id2lineages</span> <span class="o">=</span> <span class="p">{}</span>
@@ -277,8 +280,7 @@
 <div class="viewcode-block" id="NCBITaxa.get_common_names">
 <a class="viewcode-back" href="../../../reference/reference_taxonomy.html#ete4.NCBITaxa.get_common_names">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_common_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">taxids</span><span class="p">):</span>
-        <span class="n">query</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;&quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">taxids</span><span class="p">)</span>
-        <span class="n">cmd</span> <span class="o">=</span> <span class="s1">&#39;SELECT taxid, common FROM species WHERE taxid IN (</span><span class="si">%s</span><span class="s1">);&#39;</span> <span class="o">%</span> <span class="n">query</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="s1">&#39;SELECT taxid, common FROM species WHERE taxid IN (</span><span class="si">%s</span><span class="s1">);&#39;</span> <span class="o">%</span> <span class="n">as_csv</span><span class="p">(</span><span class="n">taxids</span><span class="p">)</span>
         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
 
         <span class="n">id2name</span> <span class="o">=</span> <span class="p">{}</span>
@@ -297,8 +299,7 @@
         <span class="n">all_ids</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
         <span class="n">all_ids</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
-        <span class="n">query</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;&quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">all_ids</span><span class="p">)</span>
-        <span class="n">cmd</span> <span class="o">=</span> <span class="s1">&#39;SELECT taxid, spname FROM species WHERE taxid IN (</span><span class="si">%s</span><span class="s1">);&#39;</span> <span class="o">%</span> <span class="n">query</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="s1">&#39;SELECT taxid, spname FROM species WHERE taxid IN (</span><span class="si">%s</span><span class="s1">);&#39;</span> <span class="o">%</span> <span class="n">as_csv</span><span class="p">(</span><span class="n">all_ids</span><span class="p">)</span>
         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
 
         <span class="n">id2name</span> <span class="o">=</span> <span class="p">{}</span>
@@ -312,8 +313,7 @@
             <span class="n">new2old</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">old2new</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
 
             <span class="k">if</span> <span class="n">old2new</span><span class="p">:</span>
-                <span class="n">query</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;&quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">new2old</span><span class="p">)</span>
-                <span class="n">cmd</span> <span class="o">=</span> <span class="s1">&#39;SELECT taxid, spname FROM species WHERE taxid IN (</span><span class="si">%s</span><span class="s1">);&#39;</span> <span class="o">%</span> <span class="n">query</span>
+                <span class="n">cmd</span> <span class="o">=</span> <span class="s1">&#39;SELECT taxid, spname FROM species WHERE taxid IN (</span><span class="si">%s</span><span class="s1">);&#39;</span> <span class="o">%</span> <span class="n">as_csv</span><span class="p">(</span><span class="n">new2old</span><span class="p">)</span>
                 <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">tax</span><span class="p">,</span> <span class="n">spname</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">fetchall</span><span class="p">():</span>
                     <span class="n">id2name</span><span class="p">[</span><span class="n">new2old</span><span class="p">[</span><span class="n">tax</span><span class="p">]]</span> <span class="o">=</span> <span class="n">spname</span>
@@ -336,18 +336,16 @@
 
         <span class="n">names</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">name2origname</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
 
-        <span class="n">query</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;&quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">name2origname</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-        <span class="n">cmd</span> <span class="o">=</span> <span class="s1">&#39;SELECT spname, taxid FROM species WHERE spname IN (</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="n">query</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;SELECT spname, taxid FROM species WHERE spname IN (</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="n">query</span><span class="p">)</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="s1">&#39;SELECT spname, taxid FROM species WHERE spname IN (</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="n">as_csv</span><span class="p">(</span><span class="n">name2origname</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">sp</span><span class="p">,</span> <span class="n">taxid</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">fetchall</span><span class="p">():</span>
             <span class="n">oname</span> <span class="o">=</span> <span class="n">name2origname</span><span class="p">[</span><span class="n">sp</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span>
             <span class="n">name2id</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">oname</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">taxid</span><span class="p">)</span>
             <span class="c1">#name2realname[oname] = sp</span>
         <span class="n">missing</span> <span class="o">=</span>  <span class="n">names</span> <span class="o">-</span> <span class="nb">set</span><span class="p">([</span><span class="n">n</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">name2id</span><span class="o">.</span><span class="n">keys</span><span class="p">()])</span>
         <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
-            <span class="n">query</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;&quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">missing</span><span class="p">)</span>
             <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;SELECT spname, taxid FROM synonym &#39;</span>
-                                     <span class="s1">&#39;WHERE spname IN (</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="n">query</span><span class="p">)</span>
+                                     <span class="s1">&#39;WHERE spname IN (</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="n">as_csv</span><span class="p">(</span><span class="n">missing</span><span class="p">))</span>
             <span class="k">for</span> <span class="n">sp</span><span class="p">,</span> <span class="n">taxid</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">fetchall</span><span class="p">():</span>
                 <span class="n">oname</span> <span class="o">=</span> <span class="n">name2origname</span><span class="p">[</span><span class="n">sp</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span>
                 <span class="n">name2id</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">oname</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">taxid</span><span class="p">)</span>
