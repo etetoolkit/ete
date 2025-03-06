@@ -22,6 +22,11 @@ DEFAULT_TAXADB = ETE_DATA_HOME + '/taxa.sqlite'
 DEFAULT_TAXDUMP = ETE_DATA_HOME + '/taxdump.tar.gz'
 
 
+def as_csv(xs):
+    """Return sequence xs as comma-separated values, quoted properly for SQL."""
+    return ','.join("'%s'" % str(x).replace("'", "''") for x in xs)
+
+
 def is_taxadb_up_to_date(dbfile=DEFAULT_TAXADB):
     """Return True if a valid and up-to-date taxa.sqlite database exists.
 
@@ -97,7 +102,7 @@ class NCBITaxa:
 
         cmd = ('SELECT taxid_old, taxid_new '
                'FROM merged WHERE taxid_old IN (%s)' %
-               ','.join(map(str, all_taxids)))
+               as_csv(all_taxids))
 
         result = self.db.execute(cmd)
 
@@ -128,7 +133,7 @@ class NCBITaxa:
 
         print("Trying fuzzy search for %s" % name)
         maxdiffs = math.ceil(len(name) * (1-sim))
-        cmd = (f'SELECT taxid, spname, LEVENSHTEIN(spname, "{name}") AS sim '
+        cmd = (f'SELECT taxid, spname, LEVENSHTEIN(spname, \'{name}\') AS sim '
                f'FROM species WHERE sim <= {maxdiffs} ORDER BY sim LIMIT 1;')
 
         taxid, spname, score = None, None, len(name)
@@ -137,7 +142,7 @@ class NCBITaxa:
             taxid, spname, score = result.fetchone()
         except TypeError:
             cmd = (
-                f'SELECT taxid, spname, LEVENSHTEIN(spname, "{name}") AS sim '
+                f'SELECT taxid, spname, LEVENSHTEIN(spname, \'{name}\') AS sim '
                 f'FROM synonym WHERE sim <= {maxdiffs} ORDER BY sim LIMIT 1;')
             result = _db.execute(cmd)
             try:
@@ -161,8 +166,7 @@ class NCBITaxa:
         all_ids.discard(None)
         all_ids.discard("")
 
-        query = ','.join('"%s"' % v for v in all_ids)
-        cmd = 'SELECT taxid, rank FROM species WHERE taxid IN (%s);' % query
+        cmd = 'SELECT taxid, rank FROM species WHERE taxid IN (%s);' % as_csv(all_ids)
         result = self.db.execute(cmd)
 
         id2rank = {}
@@ -180,8 +184,7 @@ class NCBITaxa:
         all_ids.discard(None)
         all_ids.discard("")
 
-        query = ','.join('"%s"' % v for v in all_ids)
-        cmd = 'SELECT taxid, track FROM species WHERE taxid IN (%s);' % query
+        cmd = 'SELECT taxid, track FROM species WHERE taxid IN (%s);' % as_csv(all_ids)
         result = self.db.execute(cmd)
 
         id2lineages = {}
@@ -220,8 +223,7 @@ class NCBITaxa:
         return list(reversed(track))
 
     def get_common_names(self, taxids):
-        query = ','.join('"%s"' % v for v in taxids)
-        cmd = 'SELECT taxid, common FROM species WHERE taxid IN (%s);' % query
+        cmd = 'SELECT taxid, common FROM species WHERE taxid IN (%s);' % as_csv(taxids)
         result = self.db.execute(cmd)
 
         id2name = {}
@@ -237,8 +239,7 @@ class NCBITaxa:
         all_ids.discard(None)
         all_ids.discard("")
 
-        query = ','.join('"%s"' % v for v in all_ids)
-        cmd = 'SELECT taxid, spname FROM species WHERE taxid IN (%s);' % query
+        cmd = 'SELECT taxid, spname FROM species WHERE taxid IN (%s);' % as_csv(all_ids)
         result = self.db.execute(cmd)
 
         id2name = {}
@@ -252,8 +253,7 @@ class NCBITaxa:
             new2old = {v: k for k,v in old2new.items()}
 
             if old2new:
-                query = ','.join('"%s"' % v for v in new2old)
-                cmd = 'SELECT taxid, spname FROM species WHERE taxid IN (%s);' % query
+                cmd = 'SELECT taxid, spname FROM species WHERE taxid IN (%s);' % as_csv(new2old)
                 result = self.db.execute(cmd)
                 for tax, spname in result.fetchall():
                     id2name[new2old[tax]] = spname
@@ -273,18 +273,16 @@ class NCBITaxa:
 
         names = set(name2origname.keys())
 
-        query = ','.join('"%s"' % n for n in name2origname.keys())
-        cmd = 'SELECT spname, taxid FROM species WHERE spname IN (%s)' % query
-        result = self.db.execute('SELECT spname, taxid FROM species WHERE spname IN (%s)' % query)
+        cmd = 'SELECT spname, taxid FROM species WHERE spname IN (%s)' % as_csv(name2origname.keys())
+        result = self.db.execute(cmd)
         for sp, taxid in result.fetchall():
             oname = name2origname[sp.lower()]
             name2id.setdefault(oname, []).append(taxid)
             #name2realname[oname] = sp
         missing =  names - set([n.lower() for n in name2id.keys()])
         if missing:
-            query = ','.join('"%s"' % n for n in missing)
             result = self.db.execute('SELECT spname, taxid FROM synonym '
-                                     'WHERE spname IN (%s)' % query)
+                                     'WHERE spname IN (%s)' % as_csv(missing))
             for sp, taxid in result.fetchall():
                 oname = name2origname[sp.lower()]
                 name2id.setdefault(oname, []).append(taxid)

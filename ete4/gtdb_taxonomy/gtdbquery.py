@@ -23,6 +23,12 @@ DB_VERSION = 2
 DEFAULT_GTDBTAXADB = ETE_DATA_HOME + '/gtdbtaxa.sqlite'
 DEFAULT_GTDBTAXADUMP = ETE_DATA_HOME + '/gtdbdump.tar.gz'
 
+
+def as_csv(xs):
+    """Return sequence xs as comma-separated values, quoted properly for SQL."""
+    return ','.join("'%s'" % str(x).replace("'", "''") for x in xs)
+
+
 def is_taxadb_up_to_date(dbfile=DEFAULT_GTDBTAXADB):
     """Check if a valid and up-to-date gtdbtaxa.sqlite database exists
     If dbfile= is not specified, DEFAULT_TAXADB is assumed
@@ -36,9 +42,7 @@ def is_taxadb_up_to_date(dbfile=DEFAULT_GTDBTAXADB):
 
     db.close()
 
-    if version != DB_VERSION:
-        return False
-    return True
+    return version == DB_VERSION
 
 
 class GTDBTaxa:
@@ -94,7 +98,7 @@ class GTDBTaxa:
 
     def _translate_merged(self, all_taxids):
         conv_all_taxids = set((list(map(int, all_taxids))))
-        cmd = 'select taxid_old, taxid_new FROM merged WHERE taxid_old IN (%s)' %','.join(map(str, all_taxids))
+        cmd = 'SELECT taxid_old, taxid_new FROM merged WHERE taxid_old IN (%s)' % as_csv(all_taxids)
 
         result = self.db.execute(cmd)
         conversion = {}
@@ -153,7 +157,7 @@ class GTDBTaxa:
 
         Note: Numeric taxids are not recognized by the official GTDB taxonomy database, only for internal usage.
         """
-        ids = ','.join('"%s"' % v for v in set(internal_taxids) - {None, ''})
+        ids = as_csv(set(internal_taxids) - {None, ''})
         result = self.db.execute('SELECT taxid, rank FROM species WHERE taxid IN (%s)' % ids)
         return {tax: spname for tax, spname in result.fetchall()}
 
@@ -169,7 +173,7 @@ class GTDBTaxa:
         name2ids = self._get_name_translator(taxids)
         overlap_ids = name2ids.values()
         taxids = [item for sublist in overlap_ids for item in sublist]
-        ids = ','.join('"%s"' % v for v in set(taxids) - {None, ''})
+        ids = as_csv(set(taxids) - {None, ''})
         result = self.db.execute('SELECT taxid, rank FROM species WHERE taxid IN (%s)' % ids)
         for tax, rank in result.fetchall():
             taxid2rank[list(self._get_taxid_translator([tax]).values())[0]] = rank
@@ -183,8 +187,7 @@ class GTDBTaxa:
         all_ids = set(taxids)
         all_ids.discard(None)
         all_ids.discard("")
-        query = ','.join(['"%s"' %v for v in all_ids])
-        result = self.db.execute('SELECT taxid, track FROM species WHERE taxid IN (%s);' %query)
+        result = self.db.execute('SELECT taxid, track FROM species WHERE taxid IN (%s);' % as_csv(all_ids))
         id2lineages = {}
         for tax, track in result.fetchall():
             id2lineages[tax] = list(map(int, reversed(track.split(","))))
@@ -229,8 +232,7 @@ class GTDBTaxa:
         return list(reversed(track))
 
     def get_common_names(self, taxids):
-        query = ','.join(['"%s"' %v for v in taxids])
-        cmd = "select taxid, common FROM species WHERE taxid IN (%s);" %query
+        cmd = "select taxid, common FROM species WHERE taxid IN (%s);" % as_csv(taxids)
         result = self.db.execute(cmd)
         id2name = {}
         for tax, common_name in result.fetchall():
@@ -246,8 +248,7 @@ class GTDBTaxa:
         all_ids = set(map(int, taxids))
         all_ids.discard(None)
         all_ids.discard("")
-        query = ','.join(['"%s"' %v for v in all_ids])
-        cmd = "select taxid, spname FROM species WHERE taxid IN (%s);" %query
+        cmd = "select taxid, spname FROM species WHERE taxid IN (%s);" % as_csv(all_ids)
         result = self.db.execute(cmd)
         id2name = {}
         for tax, spname in result.fetchall():
@@ -282,17 +283,15 @@ class GTDBTaxa:
 
         names = set(name2origname.keys())
 
-        query = ','.join(['"%s"' %n for n in name2origname.keys()])
-        cmd = 'select spname, taxid from species where spname IN (%s)' %query
-        result = self.db.execute('select spname, taxid from species where spname IN (%s)' %query)
+        cmd = 'SELECT spname, taxid FROM species WHERE spname IN (%s)' % as_csv(name2origname.keys())
+        result = self.db.execute(cmd)
         for sp, taxid in result.fetchall():
             oname = name2origname[sp.lower()]
             name2id.setdefault(oname, []).append(taxid)
             #name2realname[oname] = sp
         missing =  names - set([n.lower() for n in name2id.keys()])
         if missing:
-            query = ','.join(['"%s"' %n for n in missing])
-            result = self.db.execute('select spname, taxid from synonym where spname IN (%s)' %query)
+            result = self.db.execute('SELECT spname, taxid FROM synonym WHERE spname IN (%s)' % as_csv(missing))
             for sp, taxid in result.fetchall():
                 oname = name2origname[sp.lower()]
                 name2id.setdefault(oname, []).append(taxid)
@@ -882,12 +881,12 @@ if __name__ == "__main__":
 
     descendants = gtdb.get_descendant_taxa('c__Thorarchaeia', collapse_subspecies=True, return_tree=True)
     print(descendants.write(properties=None))
-    print(descendants.get_ascii(properties=['sci_name', 'taxid','rank']))
+    print(descendants.get_ascii(properties=['sci_name', 'taxid', 'rank']))
     tree = gtdb.get_topology(["p__Huberarchaeota", "o__Peptococcales", "f__Korarchaeaceae", "s__Korarchaeum"], intermediate_nodes=True, collapse_subspecies=True, annotate=True)
-    print(tree.get_ascii(properties=["taxid",  "sci_name", "rank"]))
+    print(tree.get_ascii(properties=["taxid", "sci_name", "rank"]))
 
     tree = PhyloTree('((c__Thorarchaeia, c__Lokiarchaeia_A), s__Caballeronia udeis);', sp_naming_function=lambda name: name)
     tax2name, tax2track, tax2rank = gtdb.annotate_tree(tree, taxid_attr="name")
-    print(tree.get_ascii(properties=["taxid","name", "sci_name", "rank"]))
+    print(tree.get_ascii(properties=["taxid", "name", "sci_name", "rank"]))
 
-    print(gtdb.get_name_lineage(['RS_GCF_006228565.1','GB_GCA_001515945.1']))
+    print(gtdb.get_name_lineage(['RS_GCF_006228565.1', 'GB_GCA_001515945.1']))
