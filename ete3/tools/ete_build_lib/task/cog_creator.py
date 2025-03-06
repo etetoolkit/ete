@@ -163,14 +163,14 @@ def brh_cogs(DB, species, missing_factor=0.0, seed_sp=None, min_score=0):
         # such ids.
         if species_side1 != "":
             cmd = """SELECT seqid1, taxid1, seqid2, taxid2 from ortho_pair WHERE
-            taxid1="%s" AND taxid2 IN (%s) """ %\
+            taxid1='%s' AND taxid2 IN (%s) """ %\
             (seed, species_side1)
             DB.orthocursor.execute(cmd)
             pairs1 = DB.orthocursor.fetchall()
 
         if species_side2 != "":
             cmd = """SELECT seqid2, taxid2, seqid1, taxid1 from ortho_pair WHERE
-            taxid1 IN (%s) AND taxid2 = "%s" """ %\
+            taxid1 IN (%s) AND taxid2='%s' """ %\
             (species_side2, seed)
 
             #taxid2="%s" AND taxid1 IN (%s) AND score >= %s""" %\
@@ -322,13 +322,13 @@ def brh_cogs2(DB, species, missing_factor=0.0, seed_sp=None, min_score=0):
     # such ids.
     if species_side1 != "":
         cmd = """SELECT seqid1, taxid1, seqid2, taxid2 from ortho_pair WHERE
-            taxid1="%s" AND taxid2 IN (%s) """ % (seed, species_side1)
+            taxid1='%s' AND taxid2 IN (%s) """ % (seed, species_side1)
         DB.orthocursor.execute(cmd)
         pairs1 = DB.orthocursor.fetchall()
 
     if species_side2 != "":
         cmd = """SELECT seqid2, taxid2, seqid1, taxid1 from ortho_pair WHERE
-            taxid1 IN (%s) AND taxid2 = "%s" """ % (species_side2, seed)
+            taxid1 IN (%s) AND taxid2='%s' """ % (species_side2, seed)
         DB.orthocursor.execute(cmd)
         pairs2 = DB.orthocursor.fetchall()
 
@@ -377,12 +377,12 @@ def get_sorted_seeds(seed, species, sp_to_test, min_species, DB):
         pairs1 = []
         pairs2 = []
         cmd = """SELECT seqid1, GROUP_CONCAT(taxid2) FROM ortho_pair WHERE
-            taxid1="%s" GROUP BY (seqid1)""" % (seed)
+            taxid1='%s' GROUP BY (seqid1)""" % (seed)
         DB.orthocursor.execute(cmd)
         pairs1= DB.orthocursor.fetchall()
 
         cmd = """SELECT seqid2, GROUP_CONCAT(taxid1) FROM ortho_pair WHERE
-            taxid2 = "%s" GROUP BY seqid2""" % (seed)
+            taxid2='%s' GROUP BY seqid2""" % (seed)
         DB.orthocursor.execute(cmd)
         pairs2 = DB.orthocursor.fetchall()
 
