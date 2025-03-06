@@ -145,7 +145,7 @@ def create_data_db():
     autocommit(dataconn)
 
 def get_dataid(taskid, datatype):
-    cmd = """ SELECT md5 FROM task2data WHERE taskid="%s" AND datatype = "%s"
+    cmd = """ SELECT md5 FROM task2data WHERE taskid='%s' AND datatype='%s'
         """ %(taskid, datatype)
     datacursor.execute(cmd)
     try:
@@ -154,18 +154,18 @@ def get_dataid(taskid, datatype):
         raise ValueError("data not found")
 
 def get_data(dataid):
-    cmd = """ SELECT data.data FROM data WHERE md5="%s" """ %(dataid)
+    cmd = """ SELECT data.data FROM data WHERE md5='%s' """ %(dataid)
     datacursor.execute(cmd)
     return zdecode(datacursor.fetchone()[0])
 
 def get_task_data(taskid, datatype):
-    cmd = """ SELECT data FROM task2data as t LEFT JOIN data AS d ON(d.md5 = t.md5) WHERE taskid="%s" AND t.datatype = "%s"
+    cmd = """ SELECT data FROM task2data as t LEFT JOIN data AS d ON(d.md5 = t.md5) WHERE taskid='%s' AND t.datatype = '%s'
         """ %(taskid, datatype)
     datacursor.execute(cmd)
     return zdecode(datacursor.fetchone()[0])
 
 def task_is_saved(taskid):
-    cmd = """ SELECT status FROM task WHERE taskid="%s" """ %taskid
+    cmd = """ SELECT status FROM task WHERE taskid='%s' """ %taskid
     datacursor.execute(cmd)
     try:
         st = datacursor.fetchone()[0]
@@ -177,21 +177,21 @@ def task_is_saved(taskid):
 def add_task_data(taskid, datatype, data, duplicates="OR IGNORE"):
     data_id = md5(str(data))
     cmd = """ INSERT %s INTO task (taskid, status) VALUES
-    ("%s", "D") """ %(duplicates, taskid)
+    ('%s', 'D') """ %(duplicates, taskid)
     datacursor.execute(cmd)
 
     cmd = """ INSERT %s INTO task2data (taskid, datatype, md5) VALUES
-    ("%s", "%s", "%s") """ %(duplicates, taskid, datatype, data_id)
+    ('%s', '%s', '%s') """ %(duplicates, taskid, datatype, data_id)
     datacursor.execute(cmd)
     cmd = """ INSERT %s INTO data (md5, data) VALUES
-    ("%s", "%s") """ %(duplicates, data_id, zencode(data, data_id))
+    ('%s', '%s') """ %(duplicates, data_id, zencode(data, data_id))
     datacursor.execute(cmd)
     autocommit()
     return data_id
 
 def register_task_data(taskid, datatype, data_id, duplicates="OR IGNORE"):
     cmd = """ INSERT %s INTO task2data (taskid, datatype, md5) VALUES
-    ("%s", "%s", "%s") """ %(duplicates, taskid, datatype, data_id)
+    ('%s', '%s', '%s') """ %(duplicates, taskid, datatype, data_id)
     datacursor.execute(cmd)
     autocommit()
     return data_id
@@ -273,7 +273,7 @@ def create_db():
 
 def add_task(tid, nid, parent=None, status=None, type=None, subtype=None,
              name=None):
-    values = ','.join(['"%s"' % (v or "") for v in
+    values = ','.join(["'%s'" % (v or "") for v in
               [tid, nid, parent, status, type, subtype, name]])
     cmd = ('INSERT OR REPLACE INTO task (taskid, nodeid, parentid, status,'
            ' type, subtype, name) VALUES (%s);' %(values))
@@ -282,42 +282,42 @@ def add_task(tid, nid, parent=None, status=None, type=None, subtype=None,
 
 def add_runid2task(runid, tid):
     cmd = ('INSERT OR REPLACE INTO runid2task (runid, taskid)'
-           ' VALUES ("%s", "%s");' %(runid, tid))
+           ' VALUES (\'%s\', \'%s\');' %(runid, tid))
     execute(cmd)
     autocommit()
 
 def get_runid_tasks(runid):
 
     cmd = ('SELECT taskid FROM runid2task'
-           ' WHERE runid = "%s";' %(runid))
+           ' WHERE runid = \'%s\';' %(runid))
     execute(cmd)
     return [e[0] for e in cursor.fetchall()]
 
 
 def update_task(tid, **kargs):
     if kargs:
-        values = ', '.join(['%s="%s"' %(k,v) for k,v in
+        values = ', '.join(['%s=\'%s\'' %(k,v) for k,v in
                        kargs.items()])
-        cmd = 'UPDATE task SET %s where taskid="%s";' %(values, tid)
+        cmd = 'UPDATE task SET %s where taskid=\'%s\';' %(values, tid)
         execute(cmd)
         autocommit()
 
 def update_node(nid, runid, **kargs):
     if kargs:
-        values = ', '.join(['%s="%s"' %(k,v) for k,v in
+        values = ', '.join(['%s=\'%s\'' %(k,v) for k,v in
                        kargs.items()])
-        cmd = 'UPDATE node SET %s where nodeid="%s" AND runid="%s";' %\
+        cmd = 'UPDATE node SET %s where nodeid=\'%s\' AND runid=\'%s\';' %\
               (values, nid, runid)
         execute(cmd)
         autocommit()
 
 def get_last_task_status(tid):
-    cmd = 'SELECT status FROM task WHERE taskid="%s"' %(tid)
+    cmd = 'SELECT status FROM task WHERE taskid=\'%s\'' %(tid)
     execute(cmd)
     return cursor.fetchone()[0]
 
 def get_task_info(tid):
-    cmd = 'SELECT status, host, pid  FROM task WHERE taskid="%s"' %(tid)
+    cmd = 'SELECT status, host, pid  FROM task WHERE taskid=\'%s\'' %(tid)
     execute(cmd)
     values = cursor.fetchone()
     if values:
@@ -327,8 +327,8 @@ def get_task_info(tid):
         return {}
 
 def get_sge_tasks():
-    cmd = ('SELECT taskid, pid FROM task WHERE host="@sge" '
-           ' AND status IN ("Q", "R", "L");')
+    cmd = ('SELECT taskid, pid FROM task WHERE host=\'@sge\' '
+           ' AND status IN (\'Q\', \'R\', \'L\');')
     execute(cmd)
     values = cursor.fetchall()
     pid2jobs = defaultdict(list)
@@ -337,7 +337,7 @@ def get_sge_tasks():
     return pid2jobs
 
 def add_node(runid, nodeid, cladeid, targets, outgroups):
-    values = ','.join(['"%s"' % (v or "") for v in
+    values = ','.join(["'%s'" % (v or "") for v in
                        [nodeid, cladeid, encode(targets),
                         encode(outgroups), len(targets),
                         len(outgroups), runid]])
@@ -347,13 +347,13 @@ def add_node(runid, nodeid, cladeid, targets, outgroups):
     autocommit()
 
 def get_cladeid(nodeid):
-    cmd = 'SELECT cladeid FROM node WHERE nodeid="%s"' %(nodeid)
+    cmd = 'SELECT cladeid FROM node WHERE nodeid=\'%s\'' %(nodeid)
     execute(cmd)
     return (cursor.fetchone() or [])[0]
 
 def get_node_info(threadid, nodeid):
     cmd = ('SELECT cladeid, target_seqs, out_seqs FROM'
-           ' node WHERE runid="%s" AND nodeid="%s"' %(threadid,
+           ' node WHERE runid=\'%s\' AND nodeid=\'%s\'' %(threadid,
            nodeid))
 
     execute(cmd)
@@ -364,7 +364,7 @@ def get_node_info(threadid, nodeid):
 
 def print_node_by_clade(threadid, cladeid):
     cmd = ('SELECT nodeid, target_seqs, out_seqs, newick FROM'
-           ' node WHERE runid="%s" AND cladeid="%s"' %(threadid,
+           ' node WHERE runid=\'%s\' AND cladeid=\'%s\'' %(threadid,
            cladeid))
 
     execute(cmd)
@@ -380,7 +380,7 @@ def print_node_by_clade(threadid, cladeid):
 
 def get_runid_nodes(runid):
     cmd = ('SELECT cladeid, newick, target_size FROM node'
-           ' WHERE runid="%s" ORDER BY target_size DESC' %(runid))
+           ' WHERE runid=\'%s\' ORDER BY target_size DESC' %(runid))
     execute(cmd)
     return cursor.fetchall()
 
@@ -389,7 +389,7 @@ def report(runid, filter_rules=None):
     #filters = 'WHERE runid ="%s" AND taskid IN (%s) ' %(runid,
     #                        ','.join(map(lambda x: '"%s"' %x, task_ids)))
     # There is a single npr.db file per runid
-    filters = 'WHERE runid ="%s" ' %(runid)
+    filters = 'WHERE runid =\'%s\' ' %(runid)
 
     if filter_rules:
         custom_filter = ' AND '.join(filter_rules)
@@ -404,7 +404,7 @@ def report(runid, filter_rules=None):
 
 def add_seq_name(seqid, name):
     cmd = ('INSERT OR REPLACE INTO seqid2name (seqid, name)'
-           ' VALUES ("%s", "%s");' %(seqid, name))
+           ' VALUES (\'%s\', \'%s\');' %(seqid, name))
     execute(cmd, seqcursor)
     autocommit()
 
@@ -414,7 +414,7 @@ def add_seq_name_table(entries):
     autocommit()
 
 def get_seq_name(seqid):
-    cmd = 'SELECT name FROM seqid2name WHERE seqid="%s"' %seqid
+    cmd = 'SELECT name FROM seqid2name WHERE seqid=\'%s\'' %seqid
     execute(cmd, seqcursor)
     return (seqcursor.fetchone() or [seqid])[0]
 
@@ -430,7 +430,7 @@ def get_all_seq_names():
     return set([name[0] for name in seqcursor.fetchall()])
 
 def translate_names(names):
-    name_string = ",".join(['"%s"'%x for x in names])
+    name_string = ",".join(["'%s'" % x for x in names])
     cmd = 'SELECT name, seqid FROM seqid2name WHERE name in (%s);' %name_string
     execute(cmd, seqcursor)
     return dict(seqcursor.fetchall())
@@ -444,7 +444,7 @@ def get_all_seqids(seqtype):
     return seqids
 
 def add_seq(seqid, seq, seqtype):
-    cmd = 'INSERT OR REPLACE INTO %s_seq (seqid, seq) VALUES ("%s", "%s")' %(seqtype, seqid, seq)
+    cmd = 'INSERT OR REPLACE INTO %s_seq (seqid, seq) VALUES (\'%s\', \'%s\')' %(seqtype, seqid, seq)
     execute(cmd, seqcursor)
     autocommit(seqconn)
 
@@ -454,7 +454,7 @@ def add_seq_table(entries, seqtype):
     autocommit(seqconn)
 
 def get_seq(seqid, seqtype):
-    cmd = 'SELECT seq FROM %s_seq WHERE seqid = "%s";' %(seqtype, seqid)
+    cmd = 'SELECT seq FROM %s_seq WHERE seqid = \'%s\';' %(seqtype, seqid)
     execute(cmd, seqcursor)
     return seqcursor.fetchone()[0]
 
