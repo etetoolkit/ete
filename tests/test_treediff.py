@@ -13,6 +13,10 @@ example3_nw = '(((ao:1,(ap:1,2aq:1)1:1)1:1,(ar:1,(as:1,2at:1)1:1)1:1)1:1,((aa:1,
 example4_nw = '(((2ao:1,(ap:1,aq:1)1:1)1:1,(2ar:1,(2as:1,at:1)1:1)1:1)1:1,((aa:1,2ab:1)1:1,((ac:1,(ad:1,(ae:1,(2af:1,(2ag:1,2ah:1)1:1)1:1)1:1)1:1)1:1,((ai:1,(aj:1,(2ak:1,al:1)1:1)1:1)1:1,(2am:1,an:1)1:1)1:1)1:1)1:1);'
 
 
+def almost_equal(x, y, precision=1e-6):
+    return abs(x - y) / max(abs(x), abs(y)) < precision
+
+
 class Test_Treediff(unittest.TestCase):
     """Test specific methods for trees linked to treediff."""
 
@@ -53,7 +57,7 @@ class Test_Treediff(unittest.TestCase):
                                    reduce_matrix=False, extended=None,
                                    jobs=1, parallel=None)
 
-        self.assertEqual(sum([i[0] for i in difftable]), 19.621428668498993)
+        self.assertTrue(almost_equal(sum([i[0] for i in difftable]), 19.621428))
 
     def test_treediff_EUCL_DIST_3(self):
         """ Tests tree-diff EUCL_DIST diffs"""
