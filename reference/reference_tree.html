@@ -144,9 +144,15 @@ or any custom feature present in the tree).</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.Tree.common_ancestor">
-<span class="sig-name descname"><span class="pre">common_ancestor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.common_ancestor" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">common_ancestor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">nodes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.common_ancestor" title="Link to this definition">¶</a></dt>
 <dd><p>Return the last node common to the lineages of the given nodes.</p>
 <p>All the nodes should have self as an ancestor, or an error is raised.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>nodes</strong> – It can be a single argument with a list of nodes, or
+multiple arguments with the nodes. They can be just node names too.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
