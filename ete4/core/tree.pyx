@@ -746,7 +746,7 @@ cdef class Tree:
         :param node1: A node within the same tree structure.
         :param node2: Another node within the same tree structure.
         :param topological: If True, distance will refer to the number of
-            nodes between target and target2.
+            nodes between node1 and node2.
         """
         d = (lambda node: 1) if topological else (lambda node: node.dist)
 
