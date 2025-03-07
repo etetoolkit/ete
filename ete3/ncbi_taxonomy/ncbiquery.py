@@ -174,17 +174,14 @@ class NCBITaxa(object):
 
         print("Trying fuzzy search for %s" % name)
         maxdiffs = math.ceil(len(name) * (1-sim))
-        cmd = (f'SELECT taxid, spname, LEVENSHTEIN(spname, \'{name}\') AS sim '
-               f'FROM species WHERE sim <= {maxdiffs} ORDER BY sim LIMIT 1;')
+        cmd = """SELECT taxid, spname, LEVENSHTEIN(spname, '%s') AS sim FROM species WHERE sim <= %s ORDER BY sim LIMIT 1;""" % (name, maxdiffs)
 
         taxid, spname, score = None, None, len(name)
         result = _db.execute(cmd)
         try:
             taxid, spname, score = result.fetchone()
         except TypeError:
-            cmd = (
-                f'SELECT taxid, spname, LEVENSHTEIN(spname, \'{name}\') AS sim '
-                f'FROM synonym WHERE sim <= {maxdiffs} ORDER BY sim LIMIT 1;')
+            cmd = """SELECT taxid, spname, LEVENSHTEIN(spname, '%s') AS sim FROM synonym WHERE sim <= %s ORDER BY sim LIMIT 1;""" % (name, maxdiffs)
             result = _db.execute(cmd)
             try:
                 taxid, spname, score = result.fetchone()

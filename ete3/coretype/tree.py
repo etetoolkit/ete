@@ -1184,7 +1184,7 @@ class TreeNode(object):
 
         :argument "fast" distrubtion: Determines the algorithm used to place
           leaves, which controls the resulting distribution over possible
-          topologies. Parameter can be "fast" (original implementation), 
+          topologies. Parameter can be "fast" (original implementation),
           "yule", or "pda" aka "uniform".
             "fast": newly added leaves are stored in a deque (two-sided linked
               list), in each step a leaf is chosen from one end randomly, and
@@ -1299,7 +1299,7 @@ class TreeNode(object):
                         new_parent.add_child(child=child)
                     grow_node.add_child(child=new_parent)
                     new_leaf = grow_node.add_child()
-                
+
                 # add new node, leaf to `new_nodes`, `new_leaves`
                 new_leaves.append(new_leaf)
                 new_nodes.extend([new_parent, new_leaf])
@@ -1308,7 +1308,7 @@ class TreeNode(object):
                         c.dist = random.uniform(*branch_range)
                         c.support = random.uniform(*support_range)
         else:
-            raise ValueError(f"parameter topology={distribution} not recognized")
+            raise ValueError("parameter topology=%s not recognized" % distribution)
         if ladderize:
             root.ladderize()
 
