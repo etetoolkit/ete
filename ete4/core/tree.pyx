@@ -686,13 +686,21 @@ cdef class Tree:
             with open(outfile, 'w') as fp:
                 newick.dump(self, fp, props, parser, format_root_node, is_leaf_fn)
 
-    def common_ancestor(self, nodes):
+    def common_ancestor(self, *nodes):
         """Return the last node common to the lineages of the given nodes.
 
         All the nodes should have self as an ancestor, or an error is raised.
-        """
-        nodes = self._translate_nodes(nodes)
 
+        :param nodes: It can be a single argument with a list of nodes, or
+            multiple arguments with the nodes. They can be just node names too.
+        """
+        # Make "nodes" refer to the actual list(-like) of node objects.
+        if len(nodes) == 1 and type(nodes[0]) in [list, tuple, set, frozenset]:
+            nodes = nodes[0]
+
+        nodes = self._translate_nodes(nodes)  # in case anyone is given as name
+
+        # Find their common root and return it.
         root = ops.common_ancestor(nodes)
 
         if root is None or self not in root.lineage():
