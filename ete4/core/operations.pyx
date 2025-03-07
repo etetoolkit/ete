@@ -199,7 +199,7 @@ def move(node, shift=1):
     """Change the position of the current node with respect to its parent."""
     # ╴up╶┬╴node     ->  ╴up╶┬╴sibling
     #     ╰╴sibling          ╰╴node
-    assert node.up, 'cannot move the root'
+    assert not node.is_root, 'cannot move the root'
 
     siblings = node.up.children
 
@@ -211,7 +211,7 @@ def move(node, shift=1):
 
 def remove(node):
     """Remove the given node from its tree."""
-    assert node.up, 'cannot remove the root'
+    assert not node.is_root, 'cannot remove the root'
 
     parent = node.up
     parent.remove_child(node)
