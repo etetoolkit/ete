@@ -7,7 +7,7 @@ from math import sin, cos, pi, sqrt, atan2
 from ..core import operations as ops
 from .coordinates import Size, Box, make_box, get_xs, get_ys
 from .layout import Label, update_style
-from .faces import LegendFace, EvalTextFace, eval_as_str
+from .faces import LegendFace, EvalTextFace, TextFace, eval_as_str
 from . import graphics as gr
 
 
@@ -43,23 +43,44 @@ def draw(tree, layouts, overrides=None, labels=None,
     yield from drawer_obj.draw()
 
     for face in faces:
+        
         if face.position == 'header':  # face must be TextFace or similar
             # TODO: Allow any kind of face, not only TextFace.
 
-            text = eval_as_str(face.code, tree)
+            if type(face) is TextFace:
+                text = eval_as_str(face.code, tree)
 
-            # Go to the right panel.
-            panel = face.column + 1  # where the header should go to
-            yield gr.set_panel(panel)  # command to change to panel
+                # Go to the right panel.
+                panel = face.column + 1  # where the header should go to
+                yield gr.set_panel(panel)  # command to change to panel
 
-            # Update where we keep the "maximum x" arrived to for that panel.
-            width = (face.fs_max/1.6) * len(text) * cos(face.rotation * pi/180)
-            xmax = max(face.fs_max, width) / zoom[0]
-            drawer_obj.xmaxs[panel] = max(drawer_obj.xmaxs.get(panel, 0), xmax)
+                # Update where we keep the "maximum x" arrived to for that panel.
+                width = (face.fs_max/1.6) * len(text) * cos(face.rotation * pi/180)
+                xmax = max(face.fs_max, width) / zoom[0]
+                drawer_obj.xmaxs[panel] = max(drawer_obj.xmaxs.get(panel, 0), xmax)
 
-            # Draw the header and go back to the main panel.
-            yield gr.draw_header(text, face.fs_max, face.rotation, face.style)
-            yield gr.set_panel(0)  # command to change to panel 0
+                # Draw the header and go back to the main panel.
+                yield gr.draw_header(text, face.fs_max, face.rotation, face.style)
+                yield gr.set_panel(0)  # command to change to panel 0
+            
+            else:
+
+                # Go to the right panel.
+                panel = face.column + 1  # where the header should go to
+                yield gr.set_panel(panel)  # command to change to panel
+                
+                graphics, _ = face.draw([tree], tree.size, [], zoom, (0, 0), tree.size[0])
+                yield from graphics
+                # Draw LineFace
+                # dx, dy = tree.size
+                # zx, zy = zoom
+                # w = min(zx * dx, face.wmax) if dx > 0 else face.wmax
+                # box = make_box((0, 0), Size(w / zx, 0))
+
+                # yield gr.draw_line((box.x, box.y), (box.x + box.dx, box.y), face.style)
+                yield gr.set_panel(0)  # command to change to panel 0
+            
+
             # NOTE: We don't use the face.draw() function, which would
             # draw inside a box. Instead we extract the data and draw by hand.
         elif type(face) is LegendFace:
