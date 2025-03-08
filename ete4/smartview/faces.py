@@ -281,11 +281,12 @@ class CircleFace(Face):
 class PolygonFace(Face):
     """A polygon."""
 
-    def __init__(self, rmax=None, shape=3, style='',
-                 position='top', column=0, anchor=None):
+    def __init__(self, rmax=None, shape=3, rotation=0, 
+                style='', position='top', column=0, anchor=None):
         super().__init__(position, column, anchor)
 
         self.shape = shape  # name of the shape or number of edges
+        self.rotation = rotation  # rotation in degrees
         self.rmax = rmax  # maximum "radius" in pixels
         self.style = style
 
@@ -302,7 +303,7 @@ class PolygonFace(Face):
 
         # Return the graphic and its size.
         center = (cr / zx, cr / (r * zy))  # in tree coordinates
-        polygon = gr.draw_polygon(center, cr, self.shape, self.style)
+        polygon = gr.draw_polygon(center, cr, self.shape, self.rotation, self.style)
 
         return [polygon], Size(2*cr/zx, 2*cr/(r*zy))
         # NOTE: For small r (in circular mode), that size is just approximate.
@@ -329,7 +330,7 @@ class BoxedFace(Face):
         # Find the width and height so they are never bigger than the max.
         w = min(zx * dx, self.wmax) if dx > 0 else self.wmax
         h = min(zy * r * dy, self.hmax) if self.hmax else (zy * r * dy)
-
+        
         # Keep the ratio h/w if we had hmax in addition to wmax.
         if self.hmax:
             h_over_w = self.hmax / self.wmax
