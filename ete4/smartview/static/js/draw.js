@@ -708,11 +708,12 @@ function create_dot(point, dy_max, tl, zx, zy, styles) {
     // Radius of the dot in pixels.
     const r_max = zy * dy_max * (view.shape === "circular" ? point[0] : 1);
     const r = Math.min(r_max, pop_style(styles, "radius") || view.node.dot.radius);
+    const rotation = 0;
 
     if (shape === "circle")
         return create_circle(point, r, tl, zx, zy, styles);
     else
-        return create_polygon(point, r, shape, tl, zx, zy, styles);
+        return create_polygon(point, r, shape, tl, zx, zy, rotation, styles);
 }
 
 
