@@ -12,7 +12,8 @@ from ete4 import Tree
 
 
 class TreePattern(Tree):
-    """A pattern of conditions to be satisfied by a subtree in a tree.
+    """
+    A pattern of conditions to be satisfied by a subtree in a tree.
 
     It stores in the node names the constraints for that node.
     """
