@@ -1,3 +1,14 @@
+"""
+This module provides the class Tree, which is the main one used in ete.
+
+The most common way to use it is::
+
+  t = Tree(open(file_with_newick), parser=parser_id)
+
+where ``parser_id`` is one of the values that can be seen in the
+:mod:`newick parser module <ete4.parser.newick>`.
+"""
+
 import copy
 import itertools
 from hashlib import md5
