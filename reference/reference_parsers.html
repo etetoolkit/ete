@@ -40,6 +40,98 @@
 <section id="module-ete4.parser.newick">
 <span id="newick"></span><h2>Newick<a class="headerlink" href="#module-ete4.parser.newick" title="Link to this heading">¶</a></h2>
 <p>Parser for trees represented in newick format.</p>
+<p>The main functions are <code class="docutils literal notranslate"><span class="pre">loads()</span></code> and <code class="docutils literal notranslate"><span class="pre">dumps()</span></code>, which read/write a tree
+from/to its newick text representation.</p>
+<p>When reading a newick file, the argument <code class="docutils literal notranslate"><span class="pre">parser=...</span></code> specifies
+which kind of parser to use.</p>
+<p>The classical ones in ete are the following:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Format</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Example</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0 (*)</p></td>
+<td><p>internal nodes with support (flexible)</p></td>
+<td><p>((D:2,E:5)1.0:9,(F:6,G):7);</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>internal nodes with names (flexible)</p></td>
+<td><p>((D:2,E:5)B:9,(F:6,G):7);</p></td>
+</tr>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>internal w/ support, all values present</p></td>
+<td><p>((D:2,E:5)1.0:9,(F:6,G:3)1.0:7);</p></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>internal w/ names, all values present</p></td>
+<td><p>((D:2,E:5)B:9,(F:6,G:3)C:7);</p></td>
+</tr>
+<tr class="row-even"><td><p>4</p></td>
+<td><p>names and lengths for leaves only</p></td>
+<td><p>((D:2,E:5),(F:6,G:3));</p></td>
+</tr>
+<tr class="row-odd"><td><p>5</p></td>
+<td><p>leaf names and all lengths</p></td>
+<td><p>((D:2,E:5):9,(F:6,G:3):7);</p></td>
+</tr>
+<tr class="row-even"><td><p>6</p></td>
+<td><p>leaf names and internal lengths</p></td>
+<td><p>((D,F):6,(B,H):8);</p></td>
+</tr>
+<tr class="row-odd"><td><p>7</p></td>
+<td><p>all names and leaf lengths</p></td>
+<td><p>((D:2,E:5)B,(F:6,G:3)C);</p></td>
+</tr>
+<tr class="row-even"><td><p>8</p></td>
+<td><p>all names (leaves and internal nodes)</p></td>
+<td><p>((D,E)B,(F,G)C);</p></td>
+</tr>
+<tr class="row-odd"><td><p>9</p></td>
+<td><p>leaf names only</p></td>
+<td><p>((D,E),(F,G));</p></td>
+</tr>
+<tr class="row-even"><td><p>100</p></td>
+<td><p>topology only</p></td>
+<td><p>((,),(,));</p></td>
+</tr>
+</tbody>
+</table>
+<p>where the example tree would look (more or less) like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>       ╭╴D:2
+ ╭╴B:9╶┤
+ │     ╰╴E:5
+╶┤
+ │     ╭╴F:6
+ ╰╴C:7╶┤
+       ╰╴G:3
+</pre></div>
+</div>
+<p>There are other valid values for <code class="docutils literal notranslate"><span class="pre">parser</span></code>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">'name'</span></code>, same as 1</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'support'</span></code>, same as 0</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'multisupport'</span></code>, internal nodes look like <code class="docutils literal notranslate"><span class="pre">((X:5)80/100:7)...</span></code>, that is,
+have multiple values of support separated by <code class="docutils literal notranslate"><span class="pre">/</span></code></p></li>
+</ul>
+<p>More generally, <code class="docutils literal notranslate"><span class="pre">parser</span></code> can be a dictionary that specifies in
+detail how to read/write each field. It must say, for leaf and internal
+nodes, what <code class="docutils literal notranslate"><span class="pre">p0:p1</span></code> means (which properties they are, including how
+to read and write them). For example, the default parser looks like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PARSER_DEFAULT</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;leaf&#39;</span><span class="p">:</span>     <span class="p">[</span><span class="n">NAME</span><span class="p">,</span>    <span class="n">DIST</span><span class="p">],</span>  <span class="c1"># ((name:dist)x:y);</span>
+    <span class="s1">&#39;internal&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">SUPPORT</span><span class="p">,</span> <span class="n">DIST</span><span class="p">],</span>  <span class="c1"># ((x:y)support:dist);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">NAME</span></code> and <code class="docutils literal notranslate"><span class="pre">DIST</span></code> are “property dicts”, that have all the
+information for a property (<code class="docutils literal notranslate"><span class="pre">pname</span></code>) to know which function to apply
+to read/write from/to a string. For example, <code class="docutils literal notranslate"><span class="pre">DIST</span></code> is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">DIST</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;pname&#39;</span><span class="p">:</span> <span class="s1">&#39;dist&#39;</span><span class="p">,</span> <span class="s1">&#39;read&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="s1">&#39;write&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s1">&#39;</span><span class="si">%g</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)}</span>
+</pre></div>
+</div>
 <dl class="py exception">
 <dt class="sig sig-object py" id="ete4.parser.newick.NewickError">
 <em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">NewickError</span></span><a class="headerlink" href="#ete4.parser.newick.NewickError" title="Link to this definition">¶</a></dt>

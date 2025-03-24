@@ -35,16 +35,23 @@
 
           <div class="body" role="main">
             
-  <section id="tree-main-class">
-<h1>Tree (main class)<a class="headerlink" href="#tree-main-class" title="Link to this heading">¶</a></h1>
+  <section id="module-ete4.core.tree">
+<span id="tree-main-class"></span><h1>Tree (main class)<a class="headerlink" href="#module-ete4.core.tree" title="Link to this heading">¶</a></h1>
+<p>This module provides the class Tree, which is the main one used in ete.</p>
+<p>The most common way to use it is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">file_with_newick</span><span class="p">),</span> <span class="n">parser</span><span class="o">=</span><span class="n">parser_id</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">parser_id</span></code> is one of the values that can be seen in the
+<a class="reference internal" href="reference_parsers.html#module-ete4.parser.newick" title="ete4.parser.newick"><code class="xref py py-mod docutils literal notranslate"><span class="pre">newick</span> <span class="pre">parser</span> <span class="pre">module</span></code></a>.</p>
 <dl class="py class">
-<dt class="sig sig-object py" id="ete4.Tree">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Tree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">children</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parser</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Tree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">children</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parser</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree" title="Link to this definition">¶</a></dt>
 <dd><p>A Tree has a collection of Tree instances connected in a hierarchical way.
 Trees can be loaded from their newick representation.</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.__init__" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.__init__" title="Link to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -69,8 +76,8 @@ how to interpret nodes (see <code class="docutils literal notranslate"><span cla
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.add_child">
-<span class="sig-name descname"><span class="pre">add_child</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">child</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">support</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.add_child" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.add_child">
+<span class="sig-name descname"><span class="pre">add_child</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">child</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">support</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.add_child" title="Link to this definition">¶</a></dt>
 <dd><p>Add a new child to this node and return it.</p>
 <p>If child node is not suplied, a new node instance will be created.</p>
 <dl class="field-list simple">
@@ -86,44 +93,44 @@ how to interpret nodes (see <code class="docutils literal notranslate"><span cla
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.add_children">
-<span class="sig-name descname"><span class="pre">add_children</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.add_children" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.add_children">
+<span class="sig-name descname"><span class="pre">add_children</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.add_children" title="Link to this definition">¶</a></dt>
 <dd><p>Set the given nodes as children of this node.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.add_face">
-<span class="sig-name descname"><span class="pre">add_face</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'branch-right'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.add_face" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.add_face">
+<span class="sig-name descname"><span class="pre">add_face</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'branch-right'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.add_face" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.add_prop">
-<span class="sig-name descname"><span class="pre">add_prop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.add_prop" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.add_prop">
+<span class="sig-name descname"><span class="pre">add_prop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.add_prop" title="Link to this definition">¶</a></dt>
 <dd><p>Add or update node’s property to the given value.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.add_props">
-<span class="sig-name descname"><span class="pre">add_props</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">props</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.add_props" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.add_props">
+<span class="sig-name descname"><span class="pre">add_props</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">props</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.add_props" title="Link to this definition">¶</a></dt>
 <dd><p>Add or update several properties.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.add_sister">
-<span class="sig-name descname"><span class="pre">add_sister</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sister</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.add_sister" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.add_sister">
+<span class="sig-name descname"><span class="pre">add_sister</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sister</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.add_sister" title="Link to this definition">¶</a></dt>
 <dd><p>Add a sister to this node and return it.</p>
 <p>If sister node is not supplied, a new Tree instance will be created.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.ancestors">
-<span class="sig-name descname"><span class="pre">ancestors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.ancestors" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.ancestors">
+<span class="sig-name descname"><span class="pre">ancestors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.ancestors" title="Link to this definition">¶</a></dt>
 <dd><p>Yield all ancestor nodes of this node (up to the root if given).</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.check_monophyly">
-<span class="sig-name descname"><span class="pre">check_monophyly</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'name'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unrooted</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.check_monophyly" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.check_monophyly">
+<span class="sig-name descname"><span class="pre">check_monophyly</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'name'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unrooted</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.check_monophyly" title="Link to this definition">¶</a></dt>
 <dd><p>Return tuple (is_monophyletic, clade_type, leaves_extra).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -138,13 +145,13 @@ or any custom feature present in the tree).</p></li>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ete4.Tree.children">
-<span class="sig-name descname"><span class="pre">children</span></span><a class="headerlink" href="#ete4.Tree.children" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.children">
+<span class="sig-name descname"><span class="pre">children</span></span><a class="headerlink" href="#ete4.core.tree.Tree.children" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.common_ancestor">
-<span class="sig-name descname"><span class="pre">common_ancestor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">nodes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.common_ancestor" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.common_ancestor">
+<span class="sig-name descname"><span class="pre">common_ancestor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">nodes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.common_ancestor" title="Link to this definition">¶</a></dt>
 <dd><p>Return the last node common to the lineages of the given nodes.</p>
 <p>All the nodes should have self as an ancestor, or an error is raised.</p>
 <dl class="field-list simple">
@@ -156,8 +163,8 @@ multiple arguments with the nodes. They can be just node names too.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.compare">
-<span class="sig-name descname"><span class="pre">compare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_collateral</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_support_source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_support_ref</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_duplications</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expand_polytomies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unrooted</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_treeko_splits_to_be_artifact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_tree_attr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'name'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_tree_attr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'name'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.compare" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.compare">
+<span class="sig-name descname"><span class="pre">compare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_collateral</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_support_source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_support_ref</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_duplications</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expand_polytomies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unrooted</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_treeko_splits_to_be_artifact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_tree_attr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'name'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_tree_attr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'name'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.compare" title="Link to this definition">¶</a></dt>
 <dd><p>compare this tree with another using robinson foulds symmetric difference
 and number of shared edges. Trees of different sizes and with duplicated
 items allowed.</p>
@@ -165,8 +172,8 @@ items allowed.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.cophenetic_matrix">
-<span class="sig-name descname"><span class="pre">cophenetic_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.cophenetic_matrix" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.cophenetic_matrix">
+<span class="sig-name descname"><span class="pre">cophenetic_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.cophenetic_matrix" title="Link to this definition">¶</a></dt>
 <dd><p>Return a cophenetic distance matrix of the tree.</p>
 <p>The <a class="reference external" href="https://en.wikipedia.org/wiki/Cophenetic">cophenetic matrix</a> is a matrix
 representation of the distance between each node.</p>
@@ -223,8 +230,8 @@ column and/or row headers).</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.copy">
-<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpickle'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.copy" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpickle'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.copy" title="Link to this definition">¶</a></dt>
 <dd><p>Return a copy of the current node.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -265,14 +272,14 @@ objects even if attributes point to lambda functions, etc.)</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.del_prop">
-<span class="sig-name descname"><span class="pre">del_prop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.del_prop" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.del_prop">
+<span class="sig-name descname"><span class="pre">del_prop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.del_prop" title="Link to this definition">¶</a></dt>
 <dd><p>Delete a node’s property.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.delete">
-<span class="sig-name descname"><span class="pre">delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prevent_nondicotomic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preserve_branch_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.delete" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.delete">
+<span class="sig-name descname"><span class="pre">delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prevent_nondicotomic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preserve_branch_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.delete" title="Link to this definition">¶</a></dt>
 <dd><p>Delete node from the tree structure, keeping its children.</p>
 <p>The children from the deleted node are transferred to the old parent.</p>
 <dl class="field-list simple">
@@ -308,34 +315,34 @@ nodes.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.descendants">
-<span class="sig-name descname"><span class="pre">descendants</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'levelorder'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.descendants" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.descendants">
+<span class="sig-name descname"><span class="pre">descendants</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'levelorder'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.descendants" title="Link to this definition">¶</a></dt>
 <dd><p>Yield all descendant nodes.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.describe">
-<span class="sig-name descname"><span class="pre">describe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.describe" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.describe">
+<span class="sig-name descname"><span class="pre">describe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.describe" title="Link to this definition">¶</a></dt>
 <dd><p>Return a string with information on this node and its connections.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.detach">
-<span class="sig-name descname"><span class="pre">detach</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.detach" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.detach">
+<span class="sig-name descname"><span class="pre">detach</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.detach" title="Link to this definition">¶</a></dt>
 <dd><p>Detach this node (and descendants) from its parent and return itself.</p>
 <p>The detached node conserves all its structure of descendants,
-and can be attached to another node with the <a class="reference internal" href="#ete4.Tree.add_child" title="ete4.Tree.add_child"><code class="xref py py-func docutils literal notranslate"><span class="pre">add_child()</span></code></a>
+and can be attached to another node with the <a class="reference internal" href="#ete4.core.tree.Tree.add_child" title="ete4.core.tree.Tree.add_child"><code class="xref py py-func docutils literal notranslate"><span class="pre">add_child()</span></code></a>
 function. This mechanism can be seen as a “cut and paste”.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ete4.Tree.dist">
-<span class="sig-name descname"><span class="pre">dist</span></span><a class="headerlink" href="#ete4.Tree.dist" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.dist">
+<span class="sig-name descname"><span class="pre">dist</span></span><a class="headerlink" href="#ete4.core.tree.Tree.dist" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.edges">
-<span class="sig-name descname"><span class="pre">edges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cached_content</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.edges" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.edges">
+<span class="sig-name descname"><span class="pre">edges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cached_content</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.edges" title="Link to this definition">¶</a></dt>
 <dd><p>Yield a pair of sets of leafs for every partition of the tree.</p>
 <p>For every node, there are leaves that lay on one side of that
 node, and leaves that lay on the other. This generator yields
@@ -349,8 +356,8 @@ leaves that descend from it. If passed, it won’t be recomputed.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.expand_polytomies">
-<span class="sig-name descname"><span class="pre">expand_polytomies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">map_prop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'name'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polytomy_size_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_large_polytomies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.expand_polytomies" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.expand_polytomies">
+<span class="sig-name descname"><span class="pre">expand_polytomies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">map_prop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'name'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polytomy_size_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_large_polytomies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.expand_polytomies" title="Link to this definition">¶</a></dt>
 <dd><p>Return all combinations of solutions of the multifurcated nodes.</p>
 <p>If the tree has one or more polytomies, this functions returns
 the list of all trees (in newick format) resulting from the
@@ -368,8 +375,8 @@ number of binary trees: 3, 15, 105, 945, 10395, 135135, 2027025</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.explore">
-<span class="sig-name descname"><span class="pre">explore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layouts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'127.0.0.1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_server</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">open_browser</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.explore" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.explore">
+<span class="sig-name descname"><span class="pre">explore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layouts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'127.0.0.1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_server</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">open_browser</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.explore" title="Link to this definition">¶</a></dt>
 <dd><p>Launch an interactive session to visualize the tree.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -384,8 +391,8 @@ available port &gt;= 5000.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.from_parent_child_table">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_parent_child_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent_child_table</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.from_parent_child_table" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.from_parent_child_table">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_parent_child_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent_child_table</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.from_parent_child_table" title="Link to this definition">¶</a></dt>
 <dd><p>Convert a parent-child table into an ETE Tree instance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -411,8 +418,8 @@ each tuple represents: [parent, child, child-parent-dist]</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.from_skbio">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_skbio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">skbio_tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">map_attributes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.from_skbio" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.from_skbio">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_skbio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">skbio_tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">map_attributes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.from_skbio" title="Link to this definition">¶</a></dt>
 <dd><p>Convert a scikit-bio TreeNode object into ETE Tree object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -431,8 +438,8 @@ instance. (name, id and branch length are always mapped)</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.get_cached_content">
-<span class="sig-name descname"><span class="pre">get_cached_content</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">container_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">set</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leaves_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.get_cached_content" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.get_cached_content">
+<span class="sig-name descname"><span class="pre">get_cached_content</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">container_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">set</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leaves_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.get_cached_content" title="Link to this definition">¶</a></dt>
 <dd><p>Return dict that assigns to each node a set of its leaves.</p>
 <p>The dictionary serves as a cache for operations that require
 many traversals of the nodes under this tree.</p>
@@ -453,14 +460,14 @@ descendant nodes, not only its leaves.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.get_children">
-<span class="sig-name descname"><span class="pre">get_children</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.get_children" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.get_children">
+<span class="sig-name descname"><span class="pre">get_children</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.get_children" title="Link to this definition">¶</a></dt>
 <dd><p>Return an independent list of the node’s children.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.get_closest_leaf">
-<span class="sig-name descname"><span class="pre">get_closest_leaf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.get_closest_leaf" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.get_closest_leaf">
+<span class="sig-name descname"><span class="pre">get_closest_leaf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.get_closest_leaf" title="Link to this definition">¶</a></dt>
 <dd><p>Return the node’s closest descendant leaf, and its distance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -471,8 +478,8 @@ number of nodes between them (instead of the sum of branch lenghts).</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.get_distance">
-<span class="sig-name descname"><span class="pre">get_distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.get_distance" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.get_distance">
+<span class="sig-name descname"><span class="pre">get_distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.get_distance" title="Link to this definition">¶</a></dt>
 <dd><p>Return the distance between the given nodes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -487,8 +494,8 @@ nodes between node1 and node2.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.get_farthest_leaf">
-<span class="sig-name descname"><span class="pre">get_farthest_leaf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.get_farthest_leaf" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.get_farthest_leaf">
+<span class="sig-name descname"><span class="pre">get_farthest_leaf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.get_farthest_leaf" title="Link to this definition">¶</a></dt>
 <dd><p>Return the node’s farthest descendant (a leaf), and its distance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -499,8 +506,8 @@ number of nodes between them (instead of the sum of branch lenghts).</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.get_farthest_node">
-<span class="sig-name descname"><span class="pre">get_farthest_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.get_farthest_node" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.get_farthest_node">
+<span class="sig-name descname"><span class="pre">get_farthest_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.get_farthest_node" title="Link to this definition">¶</a></dt>
 <dd><p>Returns the farthest descendant or ancestor node, and its distance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -511,8 +518,8 @@ number of nodes between them (instead of the sum of branch lenghts).</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.get_midpoint_outgroup">
-<span class="sig-name descname"><span class="pre">get_midpoint_outgroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.get_midpoint_outgroup" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.get_midpoint_outgroup">
+<span class="sig-name descname"><span class="pre">get_midpoint_outgroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.get_midpoint_outgroup" title="Link to this definition">¶</a></dt>
 <dd><p>Return the node dividing into two distance-balanced partitions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -523,8 +530,8 @@ number of nodes between them (instead of the sum of branch lenghts).</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.get_monophyletic">
-<span class="sig-name descname"><span class="pre">get_monophyletic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'name'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.get_monophyletic" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.get_monophyletic">
+<span class="sig-name descname"><span class="pre">get_monophyletic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'name'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.get_monophyletic" title="Link to this definition">¶</a></dt>
 <dd><p>Yield nodes matching the provided monophyly criteria.</p>
 <p>For a node to be considered a match, all <code class="docutils literal notranslate"><span class="pre">prop</span></code> values within
 the node, and exclusively them, should be grouped.</p>
@@ -540,20 +547,20 @@ the node, and exclusively them, should be grouped.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.get_prop">
-<span class="sig-name descname"><span class="pre">get_prop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.get_prop" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.get_prop">
+<span class="sig-name descname"><span class="pre">get_prop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.get_prop" title="Link to this definition">¶</a></dt>
 <dd><p>Return the node’s property prop (an attribute or in self.props).</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.get_sisters">
-<span class="sig-name descname"><span class="pre">get_sisters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.get_sisters" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.get_sisters">
+<span class="sig-name descname"><span class="pre">get_sisters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.get_sisters" title="Link to this definition">¶</a></dt>
 <dd><p>Return an independent list of sister nodes.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.get_topology_id">
-<span class="sig-name descname"><span class="pre">get_topology_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'name'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.get_topology_id" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.get_topology_id">
+<span class="sig-name descname"><span class="pre">get_topology_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'name'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.get_topology_id" title="Link to this definition">¶</a></dt>
 <dd><p>Return a unique ID representing the topology of the tree.</p>
 <p>Two trees with the same topology will produce the same id.
 This is useful to detect the number of unique topologies over
@@ -566,85 +573,85 @@ topology id.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ete4.Tree.id">
-<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#ete4.Tree.id" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#ete4.core.tree.Tree.id" title="Link to this definition">¶</a></dt>
 <dd><p>Return node_id (list of relative hops from root to node).</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ete4.Tree.img_style">
-<span class="sig-name descname"><span class="pre">img_style</span></span><a class="headerlink" href="#ete4.Tree.img_style" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.img_style">
+<span class="sig-name descname"><span class="pre">img_style</span></span><a class="headerlink" href="#ete4.core.tree.Tree.img_style" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ete4.Tree.is_leaf">
-<span class="sig-name descname"><span class="pre">is_leaf</span></span><a class="headerlink" href="#ete4.Tree.is_leaf" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.is_leaf">
+<span class="sig-name descname"><span class="pre">is_leaf</span></span><a class="headerlink" href="#ete4.core.tree.Tree.is_leaf" title="Link to this definition">¶</a></dt>
 <dd><p>Return True if the current node is a leaf.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.is_monophyletic">
-<span class="sig-name descname"><span class="pre">is_monophyletic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.is_monophyletic" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.is_monophyletic">
+<span class="sig-name descname"><span class="pre">is_monophyletic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.is_monophyletic" title="Link to this definition">¶</a></dt>
 <dd><p>Return True if the nodes form a monophyletic group.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ete4.Tree.is_root">
-<span class="sig-name descname"><span class="pre">is_root</span></span><a class="headerlink" href="#ete4.Tree.is_root" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.is_root">
+<span class="sig-name descname"><span class="pre">is_root</span></span><a class="headerlink" href="#ete4.core.tree.Tree.is_root" title="Link to this definition">¶</a></dt>
 <dd><p>Return True if the current node has no parent.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.iter_prepostorder">
-<span class="sig-name descname"><span class="pre">iter_prepostorder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.iter_prepostorder" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.iter_prepostorder">
+<span class="sig-name descname"><span class="pre">iter_prepostorder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.iter_prepostorder" title="Link to this definition">¶</a></dt>
 <dd><p>Yield all nodes in a tree in both pre and post order.</p>
 <p>Each iteration returns a postorder flag (True if node is being visited
 in postorder) and a node instance.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.ladderize">
-<span class="sig-name descname"><span class="pre">ladderize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.ladderize" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.ladderize">
+<span class="sig-name descname"><span class="pre">ladderize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.ladderize" title="Link to this definition">¶</a></dt>
 <dd><p>Sort branches according to the size of each partition.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.leaf_names">
-<span class="sig-name descname"><span class="pre">leaf_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.leaf_names" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.leaf_names">
+<span class="sig-name descname"><span class="pre">leaf_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.leaf_names" title="Link to this definition">¶</a></dt>
 <dd><p>Yield the leaf names under this node.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.leaves">
-<span class="sig-name descname"><span class="pre">leaves</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.leaves" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.leaves">
+<span class="sig-name descname"><span class="pre">leaves</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.leaves" title="Link to this definition">¶</a></dt>
 <dd><p>Yield the terminal nodes (leaves) under this node.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ete4.Tree.level">
-<span class="sig-name descname"><span class="pre">level</span></span><a class="headerlink" href="#ete4.Tree.level" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.level">
+<span class="sig-name descname"><span class="pre">level</span></span><a class="headerlink" href="#ete4.core.tree.Tree.level" title="Link to this definition">¶</a></dt>
 <dd><p>Return the number of nodes between this node and the root.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.lineage">
-<span class="sig-name descname"><span class="pre">lineage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.lineage" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.lineage">
+<span class="sig-name descname"><span class="pre">lineage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.lineage" title="Link to this definition">¶</a></dt>
 <dd><p>Yield all nodes in the lineage of this node (up to root if given).</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ete4.Tree.name">
-<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#ete4.Tree.name" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#ete4.core.tree.Tree.name" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.pop_child">
-<span class="sig-name descname"><span class="pre">pop_child</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">child_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.pop_child" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.pop_child">
+<span class="sig-name descname"><span class="pre">pop_child</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">child_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.pop_child" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.populate">
-<span class="sig-name descname"><span class="pre">populate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'yule'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">support_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.populate" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.populate">
+<span class="sig-name descname"><span class="pre">populate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'yule'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">support_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.populate" title="Link to this definition">¶</a></dt>
 <dd><p>Populate current node with a dichotomic random topology.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -678,14 +685,14 @@ distances between 0 and 1, and all valid supports set to 1:</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ete4.Tree.props">
-<span class="sig-name descname"><span class="pre">props</span></span><a class="headerlink" href="#ete4.Tree.props" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.props">
+<span class="sig-name descname"><span class="pre">props</span></span><a class="headerlink" href="#ete4.core.tree.Tree.props" title="Link to this definition">¶</a></dt>
 <dd><p>props: dict</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.prune">
-<span class="sig-name descname"><span class="pre">prune</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preserve_branch_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.prune" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.prune">
+<span class="sig-name descname"><span class="pre">prune</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preserve_branch_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.prune" title="Link to this definition">¶</a></dt>
 <dd><p>Prune the topology conserving only the given nodes.</p>
 <p>It will only retain the minimum number of nodes that conserve the
 topological relationships among the requested nodes. The root node is
@@ -749,22 +756,22 @@ parent’s branch, thus keeping original distances among nodes.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.remove_child">
-<span class="sig-name descname"><span class="pre">remove_child</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">child</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.remove_child" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.remove_child">
+<span class="sig-name descname"><span class="pre">remove_child</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">child</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.remove_child" title="Link to this definition">¶</a></dt>
 <dd><p>Remove child from this node and return it.</p>
 <p>After calling this function, parent and child nodes still exit,
 but are no longer connected.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.remove_children">
-<span class="sig-name descname"><span class="pre">remove_children</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.remove_children" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.remove_children">
+<span class="sig-name descname"><span class="pre">remove_children</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.remove_children" title="Link to this definition">¶</a></dt>
 <dd><p>Remove all children from this node and return a list with them.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.remove_sister">
-<span class="sig-name descname"><span class="pre">remove_sister</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sister</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.remove_sister" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.remove_sister">
+<span class="sig-name descname"><span class="pre">remove_sister</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sister</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.remove_sister" title="Link to this definition">¶</a></dt>
 <dd><p>Remove a sister node and return it.</p>
 <p>It has the same effect as self.up.remove_child(sister). If a sister
 node is not supplied, the first sister will be deleted.</p>
@@ -776,8 +783,8 @@ node is not supplied, the first sister will be deleted.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.render">
-<span class="sig-name descname"><span class="pre">render</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'px'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dpi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">90</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.render" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.render">
+<span class="sig-name descname"><span class="pre">render</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'px'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dpi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">90</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.render" title="Link to this definition">¶</a></dt>
 <dd><p>Render the tree as an image.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -798,14 +805,14 @@ properties.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.render_sm">
-<span class="sig-name descname"><span class="pre">render_sm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layouts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.render_sm" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.render_sm">
+<span class="sig-name descname"><span class="pre">render_sm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layouts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.render_sm" title="Link to this definition">¶</a></dt>
 <dd><p>Save an image with the contents of the tree.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.resolve_polytomy">
-<span class="sig-name descname"><span class="pre">resolve_polytomy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descendants</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.resolve_polytomy" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.resolve_polytomy">
+<span class="sig-name descname"><span class="pre">resolve_polytomy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descendants</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.resolve_polytomy" title="Link to this definition">¶</a></dt>
 <dd><p>Convert node to a series of dicotomies if it is a polytomy.</p>
 <p>A polytomy is a node that has more than 2 children. This
 function changes them to a ladderized series of dicotomic
@@ -820,14 +827,14 @@ node too. Otherwise, do it only for the current node.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.reverse_children">
-<span class="sig-name descname"><span class="pre">reverse_children</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.reverse_children" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.reverse_children">
+<span class="sig-name descname"><span class="pre">reverse_children</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.reverse_children" title="Link to this definition">¶</a></dt>
 <dd><p>Reverse current children order.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.robinson_foulds">
-<span class="sig-name descname"><span class="pre">robinson_foulds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prop_t1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'name'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prop_t2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'name'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unrooted_trees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expand_polytomies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polytomy_size_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_large_polytomies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">correct_by_polytomy_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_support_t1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_support_t2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.robinson_foulds" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.robinson_foulds">
+<span class="sig-name descname"><span class="pre">robinson_foulds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prop_t1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'name'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prop_t2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'name'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unrooted_trees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expand_polytomies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polytomy_size_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_large_polytomies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">correct_by_polytomy_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_support_t1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_support_t2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.robinson_foulds" title="Link to this definition">¶</a></dt>
 <dd><p>Return the Robinson-Foulds distance to the tree, and related info.</p>
 <p>The returned tuple contains the Robinson-Foulds symmetric
 distance (rf), but also more information:</p>
@@ -855,32 +862,32 @@ value will be returned. See also <code class="xref py py-func docutils literal n
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ete4.Tree.root">
-<span class="sig-name descname"><span class="pre">root</span></span><a class="headerlink" href="#ete4.Tree.root" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.root">
+<span class="sig-name descname"><span class="pre">root</span></span><a class="headerlink" href="#ete4.core.tree.Tree.root" title="Link to this definition">¶</a></dt>
 <dd><p>Return the absolute root node of the current tree structure.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.search_ancestors">
-<span class="sig-name descname"><span class="pre">search_ancestors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">conditions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.search_ancestors" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.search_ancestors">
+<span class="sig-name descname"><span class="pre">search_ancestors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">conditions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.search_ancestors" title="Link to this definition">¶</a></dt>
 <dd><p>Yield ancestor nodes matching the given conditions.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.search_descendants">
-<span class="sig-name descname"><span class="pre">search_descendants</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">conditions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.search_descendants" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.search_descendants">
+<span class="sig-name descname"><span class="pre">search_descendants</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">conditions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.search_descendants" title="Link to this definition">¶</a></dt>
 <dd><p>Yield descendant nodes matching the given conditions.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.search_leaves_by_name">
-<span class="sig-name descname"><span class="pre">search_leaves_by_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.search_leaves_by_name" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.search_leaves_by_name">
+<span class="sig-name descname"><span class="pre">search_leaves_by_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.search_leaves_by_name" title="Link to this definition">¶</a></dt>
 <dd><p>Yield leaf nodes matching the given name.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.search_nodes">
-<span class="sig-name descname"><span class="pre">search_nodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">conditions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.search_nodes" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.search_nodes">
+<span class="sig-name descname"><span class="pre">search_nodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">conditions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.search_nodes" title="Link to this definition">¶</a></dt>
 <dd><p>Yield nodes matching the given conditions.</p>
 <p>Example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">search_nodes</span><span class="p">(</span><span class="n">dist</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;human&#39;</span><span class="p">):</span>
@@ -890,8 +897,8 @@ value will be returned. See also <code class="xref py py-func docutils literal n
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.set_outgroup">
-<span class="sig-name descname"><span class="pre">set_outgroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bprops</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.set_outgroup" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.set_outgroup">
+<span class="sig-name descname"><span class="pre">set_outgroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bprops</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.set_outgroup" title="Link to this definition">¶</a></dt>
 <dd><p>Change tree so the given node is set as outgroup.</p>
 <p>The original root node will be used as the new root node, so any
 reference to it in the code will still be valid.</p>
@@ -907,31 +914,31 @@ reference to it in the code will still be valid.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.set_style">
-<span class="sig-name descname"><span class="pre">set_style</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.set_style" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.set_style">
+<span class="sig-name descname"><span class="pre">set_style</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.set_style" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.show">
-<span class="sig-name descname"><span class="pre">show</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ETE'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.show" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.show">
+<span class="sig-name descname"><span class="pre">show</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ETE'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.show" title="Link to this definition">¶</a></dt>
 <dd><p>Start an interactive session to visualize the current node.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ete4.Tree.size">
-<span class="sig-name descname"><span class="pre">size</span></span><a class="headerlink" href="#ete4.Tree.size" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.size">
+<span class="sig-name descname"><span class="pre">size</span></span><a class="headerlink" href="#ete4.core.tree.Tree.size" title="Link to this definition">¶</a></dt>
 <dd><p>size: ‘(double, double) ‘</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.sort_descendants">
-<span class="sig-name descname"><span class="pre">sort_descendants</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'name'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.sort_descendants" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.sort_descendants">
+<span class="sig-name descname"><span class="pre">sort_descendants</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'name'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.sort_descendants" title="Link to this definition">¶</a></dt>
 <dd><p>Sort branches by leaf node values (names or any other given prop).</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.standardize">
-<span class="sig-name descname"><span class="pre">standardize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delete_orphan</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preserve_branch_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.standardize" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.standardize">
+<span class="sig-name descname"><span class="pre">standardize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delete_orphan</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preserve_branch_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.standardize" title="Link to this definition">¶</a></dt>
 <dd><p>Resolve multifurcations and remove single-child nodes.</p>
 <p>This function changes the current tree structure to produce a
 standardized topology: nodes with only one child are removed
@@ -939,19 +946,19 @@ and multifurcations are automatically resolved.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ete4.Tree.support">
-<span class="sig-name descname"><span class="pre">support</span></span><a class="headerlink" href="#ete4.Tree.support" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.support">
+<span class="sig-name descname"><span class="pre">support</span></span><a class="headerlink" href="#ete4.core.tree.Tree.support" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.swap_children">
-<span class="sig-name descname"><span class="pre">swap_children</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.swap_children" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.swap_children">
+<span class="sig-name descname"><span class="pre">swap_children</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.swap_children" title="Link to this definition">¶</a></dt>
 <dd><p>Like reverse, but if there are only two children.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.to_str">
-<span class="sig-name descname"><span class="pre">to_str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_internal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">props</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">px</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">py</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">px0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cascade</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.to_str" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.to_str">
+<span class="sig-name descname"><span class="pre">to_str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_internal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">props</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">px</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">py</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">px0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cascade</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.to_str" title="Link to this definition">¶</a></dt>
 <dd><p>Return a string containing an ascii drawing of the tree.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -968,14 +975,14 @@ and multifurcations are automatically resolved.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.to_ultrametric">
-<span class="sig-name descname"><span class="pre">to_ultrametric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.to_ultrametric" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.to_ultrametric">
+<span class="sig-name descname"><span class="pre">to_ultrametric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.to_ultrametric" title="Link to this definition">¶</a></dt>
 <dd><p>Convert tree to ultrametric (all leaves equidistant from root).</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.traverse">
-<span class="sig-name descname"><span class="pre">traverse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'levelorder'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.traverse" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.traverse">
+<span class="sig-name descname"><span class="pre">traverse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'levelorder'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.traverse" title="Link to this definition">¶</a></dt>
 <dd><p>Traverse the tree structure under this node and yield the nodes.</p>
 <p>There are three possible strategies. There is a breadth-first
 search (BFS) named “levelorder”, and two depth-first searches
@@ -997,8 +1004,8 @@ collapsing internal nodes.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.unroot">
-<span class="sig-name descname"><span class="pre">unroot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bprops</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.unroot" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.unroot">
+<span class="sig-name descname"><span class="pre">unroot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bprops</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.unroot" title="Link to this definition">¶</a></dt>
 <dd><p>Unroot the tree, that is, make the root not have 2 children.</p>
 <p>The convention in phylogenetic trees is that if the root has 2
 children, it is a “rooted” tree (the root is a real ancestor).
@@ -1007,14 +1014,14 @@ an arbitrary place to hang the tree.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ete4.Tree.up">
-<span class="sig-name descname"><span class="pre">up</span></span><a class="headerlink" href="#ete4.Tree.up" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.up">
+<span class="sig-name descname"><span class="pre">up</span></span><a class="headerlink" href="#ete4.core.tree.Tree.up" title="Link to this definition">¶</a></dt>
 <dd><p>up: ete4.core.tree.Tree</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.Tree.write">
-<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">props</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parser</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format_root_node</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.Tree.write" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">props</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parser</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format_root_node</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.write" title="Link to this definition">¶</a></dt>
 <dd><p>Return or write to file the newick representation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1036,6 +1043,11 @@ too. For compatibility reasons, this is False by default.</p></li>
 </dd></dl>
 
 </dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="ete4.core.tree.TreeError">
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">TreeError</span></span><a class="headerlink" href="#ete4.core.tree.TreeError" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </section>
 
