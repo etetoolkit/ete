@@ -1,10 +1,14 @@
-from setuptools import setup
+from setuptools import setup, Extension
 
 from glob import glob
 from os.path import isfile
 
 from Cython.Build import cythonize
 
+
+def make_extension(path):  # to create cython extensions the way we want
+    name = path.replace('/', '.')[:-len('.pyx')]  # / -> .  and remove .pyx
+    return Extension(name, [path], extra_compile_args=['-O3'])
 
 setup(
     name='ete4',
@@ -23,9 +27,10 @@ setup(
               'ete4/smartview',
               'ete4/treeview'],
     ext_modules=cythonize(
-        glob('**/*.pyx', recursive=True),
-        language_level=3,  # so it compiles for python3 (and not python2)
-        compiler_directives={'embedsignature': True}),  # for call signatures
+        [make_extension(path) for path in glob('**/*.pyx', recursive=True)],
+        compiler_directives={
+            'language_level': '3',  # so it compiles for python3 (not python2)
+            'embedsignature': True}),  # for call signatures
     data_files=[
         ('share/ete4/static',
          [x for x in glob('ete4/smartview/static/**',

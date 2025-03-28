@@ -44,3 +44,10 @@ render_sm = ["selenium"]
 treediff = ["lap"]
 test = ["pytest>=6.0"]
 doc = ["sphinx"]
+
+[tool.setuptools]
+ext-modules = [
+  {name="ete4.core.tree",       sources=["ete4/core/tree.pyx"]},
+  {name="ete4.core.operations", sources=["ete4/core/operations.pyx"]},
+  {name="ete4.parser.newick",   sources=["ete4/parser/newick.pyx"]},
+]
