@@ -356,12 +356,11 @@ function legend2html(legend) {
     }
     else {  // variable continuous: use value range and color range
         const [vmin, vmax] = vrange.map(format_number);  // values
-        const [cmin, cmax] = crange;  // colors
         return header +
             `${vmax}
              <span style="display: block;
                  min-width: 20px; max-width: 50px; min-height: 100px;
-                 background-image:linear-gradient(${cmin}, ${cmax})">
+                 background-image:linear-gradient(${crange.join(",")})">
              </span>
              ${vmin}`;
     }
