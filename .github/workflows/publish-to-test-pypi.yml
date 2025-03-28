@@ -1,9 +1,6 @@
 name: Publish Python 🐍 distribution 📦 to PyPI and TestPyPI
 
-on:
-  push:
-    branches:
-      - ete4
+on: [push]
 
 jobs:
   build:
