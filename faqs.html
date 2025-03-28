@@ -139,45 +139,45 @@ internal node labeling:</p>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>0</p></td>
+<tr class="row-even"><td><p>0 (*)</p></td>
 <td><p>internal nodes with support (flexible)</p></td>
-<td><p>((D:0.7,F:0.5)1.0:0.6,(B:0.2,H:0.7)1.0:0.8);</p></td>
+<td><p>((D:2,E:5)1.0:9,(F:6,G):7);</p></td>
 </tr>
 <tr class="row-odd"><td><p>1</p></td>
 <td><p>internal nodes with names (flexible)</p></td>
-<td><p>((D:0.7,F:0.5)E:0.6,(B:0.2,H:0.7)B:0.8);</p></td>
+<td><p>((D:2,E:5)B:9,(F:6,G):7);</p></td>
 </tr>
 <tr class="row-even"><td><p>2</p></td>
-<td><p>internal w/ support, all lengths present</p></td>
-<td><p>((D:0.7,F:0.5)1.0:0.6,(B:0.2,H:0.7)1.0:0.8);</p></td>
+<td><p>internal w/ support, all values present</p></td>
+<td><p>((D:2,E:5)1.0:9,(F:6,G:3)1.0:7);</p></td>
 </tr>
 <tr class="row-odd"><td><p>3</p></td>
-<td><p>internal w/ names, all lengths present</p></td>
-<td><p>((D:0.7,F:0.5)E:0.6,(B:0.2,H:0.7)B:0.8);</p></td>
+<td><p>internal w/ names, all values present</p></td>
+<td><p>((D:2,E:5)B:9,(F:6,G:3)C:7);</p></td>
 </tr>
 <tr class="row-even"><td><p>4</p></td>
 <td><p>names and lengths for leaves only</p></td>
-<td><p>((D:0.7,F:0.5),(B:0.2,H:0.7));</p></td>
+<td><p>((D:2,E:5),(F:6,G:3));</p></td>
 </tr>
 <tr class="row-odd"><td><p>5</p></td>
 <td><p>leaf names and all lengths</p></td>
-<td><p>((D:0.7,F:0.5):0.6,(B:0.2,H:0.7):0.8);</p></td>
+<td><p>((D:2,E:5):9,(F:6,G:3):7);</p></td>
 </tr>
 <tr class="row-even"><td><p>6</p></td>
 <td><p>leaf names and internal lengths</p></td>
-<td><p>((D,F):0.6,(B,H):0.8);</p></td>
+<td><p>((D,F):6,(B,H):8);</p></td>
 </tr>
 <tr class="row-odd"><td><p>7</p></td>
 <td><p>all names and leaf lengths</p></td>
-<td><p>((D:0.7,F:0.5)E,(B:0.2,H:0.7)B);</p></td>
+<td><p>((D:2,E:5)B,(F:6,G:3)C);</p></td>
 </tr>
 <tr class="row-even"><td><p>8</p></td>
 <td><p>all names (leaves and internal nodes)</p></td>
-<td><p>((D,F)E,(B,H)B);</p></td>
+<td><p>((D,E)B,(F,G)C);</p></td>
 </tr>
 <tr class="row-odd"><td><p>9</p></td>
 <td><p>leaf names only</p></td>
-<td><p>((D,F),(B,H));</p></td>
+<td><p>((D,E),(F,G));</p></td>
 </tr>
 <tr class="row-even"><td><p>100</p></td>
 <td><p>topology only</p></td>
