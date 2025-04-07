@@ -100,3 +100,38 @@ The initial api calls come from the following places in the code:
       init_pixi  # /static/images/spritesheet.json /static/images/spritesheet.png
       update  # (in draw.js)
         draw_tree  # /trees/tree-1/draw?[...]
+
+
+Rotations
+---------
+
+The formulas that we use to find the font size :math:`\text{fs}` and
+space taken by a rotated text are:
+
+.. math::
+
+   d_y \sin r + d_x \cos r \le \Delta_x \\
+   d_x \sin r + d_y \cos r \le \Delta_y \\
+   \\
+   d_y = \text{fs} \times \text{nrows} \quad (\text{nrows} = \text{len(texts)}) \\
+   \\
+   d_x = \alpha d_y \\
+   \left( \alpha \approx \frac{\text{len_texts_max}}{1.5 \times \text{nrows}} \right) \\
+   \\
+   d_y \le \frac{\Delta_x}{\sin r + \alpha \cos r} \\
+   d_y \le \frac{\Delta_y}{\alpha \sin r + \cos r} \\
+   \\
+   \text{fs} \leftarrow \min(d_y) / \text{nrows}
+
+where :math:`r` is the rotation angle, :math:`\Delta_x, \Delta_y` is
+the total available size, and :math:`d_x, d_y` is the (resulting) size
+of the box that contains the text.
+
+::
+
+      ^  +--------+
+      |  | dy /   |
+      Δy |   /    |
+      |  |  / dx  |
+      v  +--------+
+         <-- Δx -->

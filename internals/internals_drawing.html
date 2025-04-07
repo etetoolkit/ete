@@ -12,6 +12,7 @@
     <script src="../_static/documentation_options.js?v=e6a937a4"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="icon" href="../_static/favicon.ico"/>
     <link rel="author" title="About these documents" href="../about.html" />
     <link rel="index" title="Index" href="../genindex.html" />
@@ -121,6 +122,35 @@ the tree in different ways.</p>
 </pre></div>
 </div>
 </section>
+</section>
+<section id="rotations">
+<h2>Rotations<a class="headerlink" href="#rotations" title="Link to this heading">¶</a></h2>
+<p>The formulas that we use to find the font size <span class="math notranslate nohighlight">\(\text{fs}\)</span> and
+space taken by a rotated text are:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}d_y \sin r + d_x \cos r \le \Delta_x \\
+d_x \sin r + d_y \cos r \le \Delta_y \\
+\\
+d_y = \text{fs} \times \text{nrows} \quad (\text{nrows} = \text{len(texts)}) \\
+\\
+d_x = \alpha d_y \\
+\left( \alpha \approx \frac{\text{len_texts_max}}{1.5 \times \text{nrows}} \right) \\
+\\
+d_y \le \frac{\Delta_x}{\sin r + \alpha \cos r} \\
+d_y \le \frac{\Delta_y}{\alpha \sin r + \cos r} \\
+\\
+\text{fs} \leftarrow \min(d_y) / \text{nrows}\end{split}\]</div>
+<p>where <span class="math notranslate nohighlight">\(r\)</span> is the rotation angle, <span class="math notranslate nohighlight">\(\Delta_x, \Delta_y\)</span> is
+the total available size, and <span class="math notranslate nohighlight">\(d_x, d_y\)</span> is the (resulting) size
+of the box that contains the text.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">^</span>  <span class="o">+--------+</span>
+<span class="o">|</span>  <span class="o">|</span> <span class="n">dy</span> <span class="o">/</span>   <span class="o">|</span>
+<span class="n">Δy</span> <span class="o">|</span>   <span class="o">/</span>    <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="o">/</span> <span class="n">dx</span>  <span class="o">|</span>
+<span class="n">v</span>  <span class="o">+--------+</span>
+   <span class="o">&lt;--</span> <span class="n">Δx</span> <span class="o">--&gt;</span>
+</pre></div>
+</div>
 </section>
 </section>
 
