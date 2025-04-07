@@ -949,23 +949,25 @@ function create_header(x, text, fs_max, rotation, tl, zx, zy, style="") {
     if (view.shape !== "rectangular")
         return null;  // we only put headers in rectangular mode
 
+    // Position where to put the header (in screen coordinates).
     const px = zx * (x - tl.x),
           py = Math.max(50, - zy * tl.y);
 
     const g = create_svg_element("g");
 
     // Put a white rectangle on the background of the header.
+    const padding = 10;  // 10 pixels
     g.appendChild(create_svg_element("rect", {
-        "x": px,
+        "x": px - padding,
         "y": 0,
-        "width": div_aligned.offsetWidth - px,
+        "width": div_aligned.offsetWidth - px + 2 * padding,
         "height": py + 15,
         "fill": "white",
     }));
 
     // Add a line separating the header from the content below.
     const line = create_svg_element("line", {
-        "x1": px, "y1": py + fs_max,
+        "x1": px,                      "y1": py + fs_max,
         "x2": div_aligned.offsetWidth, "y2": py + fs_max,
     });
     add_style(line, {
