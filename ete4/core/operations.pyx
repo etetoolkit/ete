@@ -467,7 +467,7 @@ def resolve_polytomy(tree, descendants=True):
 
 def farthest_descendant(tree, topological=False):
     """Return the farthest descendant and its distance."""
-    d = (lambda node: 1) if topological else (lambda node: node.dist)  # dist
+    d = get_distance_fn(topological)
 
     dist_root = {tree: 0}  # will contain all distances to the root
 
@@ -483,7 +483,7 @@ def farthest_descendant(tree, topological=False):
 
 def farthest(tree, topological=False):
     """Return the farthest nodes and the diameter of the tree."""
-    d = (lambda node: 1) if topological else (lambda node: node.dist)  # dist
+    d = get_distance_fn(topological)
 
     def last(x):
         return x[-1]  # return the last element (used later for comparison)
@@ -522,7 +522,7 @@ def farthest(tree, topological=False):
 
 def midpoint(tree, topological=False):
     """Return the node in the middle and its distance from the exact center."""
-    d = (lambda node: 1) if topological else (lambda node: node.dist)
+    d = get_distance_fn(topological)
 
     # Find the farthest node and diameter.
     node, _, diameter = farthest(tree, topological)

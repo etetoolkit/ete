@@ -765,7 +765,7 @@ cdef class Tree:
         :param topological: If True, distance will refer to the number of
             nodes between node1 and node2.
         """
-        d = (lambda node: 1) if topological else (lambda node: node.dist)
+        d = ops.get_distance_fn(topological)
 
         node1, node2 = self._translate_nodes([node1, node2])
 
