@@ -129,6 +129,24 @@ how to interpret nodes (see <code class="docutils literal notranslate"><span cla
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.average_distance">
+<span class="sig-name descname"><span class="pre">average_distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selector</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leaf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.average_distance" title="Link to this definition">¶</a></dt>
+<dd><p>Return average distance between a leaf and the selected leaves.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>selector</strong> – Function that returns True for the selected leaves.
+If None, all leaves will be selected.</p></li>
+<li><p><strong>leaf</strong> – Leaf for which to compute the average distance to the
+selected leaves. If None, an average for all selected leaves is made.</p></li>
+<li><p><strong>topological</strong> – If True, the distance between nodes will be the
+number of nodes between them (instead of the sum of branch lenghts).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ete4.core.tree.Tree.check_monophyly">
 <span class="sig-name descname"><span class="pre">check_monophyly</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'name'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unrooted</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.check_monophyly" title="Link to this definition">¶</a></dt>
 <dd><p>Return tuple (is_monophyletic, clade_type, leaves_extra).</p>
@@ -555,7 +573,7 @@ the node, and exclusively them, should be grouped.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.core.tree.Tree.get_sisters">
 <span class="sig-name descname"><span class="pre">get_sisters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.get_sisters" title="Link to this definition">¶</a></dt>
-<dd><p>Return an independent list of sister nodes.</p>
+<dd><p>Return a list of sister nodes (siblings).</p>
 </dd></dl>
 
 <dl class="py method">
@@ -922,6 +940,12 @@ reference to it in the code will still be valid.</p>
 <dt class="sig sig-object py" id="ete4.core.tree.Tree.show">
 <span class="sig-name descname"><span class="pre">show</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ETE'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.show" title="Link to this definition">¶</a></dt>
 <dd><p>Start an interactive session to visualize the current node.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.sisters">
+<span class="sig-name descname"><span class="pre">sisters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.sisters" title="Link to this definition">¶</a></dt>
+<dd><p>Yield sister nodes (siblings).</p>
 </dd></dl>
 
 <dl class="py attribute">
