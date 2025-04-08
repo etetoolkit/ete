@@ -548,11 +548,17 @@ cdef class Tree:
 
     def get_children(self):
         """Return an independent list of the node's children."""
+        # The returned list can be changed without affecting self.children.
         return self.children.copy()
 
+    def sisters(self):
+        """Yield sister nodes (siblings)."""
+        return ((n for n in self.up.children if n is not self)
+                if not self.is_root else ())
+
     def get_sisters(self):
-        """Return an independent list of sister nodes."""
-        return [n for n in self.up.children if n != self] if self.up else []
+        """Return a list of sister nodes (siblings)."""
+        return list(self.sisters())
 
     def leaves(self, is_leaf_fn=None):
         """Yield the terminal nodes (leaves) under this node."""
