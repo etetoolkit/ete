@@ -885,6 +885,18 @@ cdef class Tree:
 
         return current  # the midpoint was the root (we went back to it)
 
+    def average_distance(self, selector=None, leaf=None, topological=False):
+        """Return average distance between a leaf and the selected leaves.
+
+        :param selector: Function that returns True for the selected leaves.
+            If None, all leaves will be selected.
+        :param leaf: Leaf for which to compute the average distance to the
+            selected leaves. If None, an average for all selected leaves is made.
+        :param topological: If True, the distance between nodes will be the
+            number of nodes between them (instead of the sum of branch lenghts).
+        """
+        return ops.average_distance(self, selector, leaf, topological)
+
     def populate(self, size, names=None, model='yule',
                  dist_fn=None, support_fn=None):
         """Populate current node with a dichotomic random topology.

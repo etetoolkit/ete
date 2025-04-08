@@ -541,6 +541,79 @@ def set_midpoint_outgroup(tree, topological=False):
     set_outgroup(node, dist=dist)
 
 
+def average_distance(tree, selector=None, leaf=None, topological=False):
+    """Return average distance between a leaf and the selected leaves.
+
+    :param tree: Tree (starting node) for which to compute the average.
+    :param selector: Function that returns True for the selected leaves.
+        If None, all leaves will be selected.
+    :param leaf: Leaf for which to compute the average distance to the
+        selected leaves. If None, an average for all selected leaves is made.
+    :param topological: If True, the distance between nodes will be the
+        number of nodes between them (instead of the sum of branch lenghts).
+    """
+    # Get default functions to select leaves and compute distances.
+    selector = selector or (lambda node: True)  # select all by default
+    d = get_distance_fn(topological)
+
+    # Add info on descendants selected, and total distance to them.
+    nums = {}  # number of descendants (including self) selected
+    sums = {}  # sum of distances from node to descendants selected
+    for node in traverse(tree, order=+1):  # postorder (descendants first)
+        if node.is_leaf:
+            nums[node] = 1 if selector(node) else 0
+            sums[node] = 0
+        else:
+            children = node.children
+            nums[node] = sum(nums[x] for x in children)
+            sums[node] = sum(d(x) * nums[x] + sums[x] for x in children)
+
+    # Function to get the number of paths (distances), and total distance sum.
+    def nums_sums(leaf):
+        node = leaf  # current node
+        d_leaf = 0  # distance from leaf to current node
+        n = 0  # number of paths (distances)
+        s = 0  # sum of distances
+        while not node.is_root:  # will add values for all possible paths
+            d_leaf += d(node)  # add distance from parent to current node
+            sisters = node.get_sisters()  # or "siblings"
+            n += sum(nums[x] for x in sisters)
+            s += sum((d_leaf + d(x)) * nums[x] + sums[x] for x in sisters)
+            node = node.up
+        return n, s
+
+    # Return the average distance (from a single leaf, or averaged).
+    if leaf is not None:  # from a single leaf
+        n, s = nums_sums(leaf)  # number of distances, sum of distances
+        return s / n if n > 0 else 0  # average distance
+    else:  # averaged over all selected leaves
+        n_total = 0
+        s_total = 0
+        for leaf in tree.leaves():
+            if selector(leaf):
+                n, s = nums_sums(leaf)  # number of distances, sum of distances
+                n_total += n
+                s_total += s
+        return s_total / n_total if n_total > 0 else 0  # average of averages
+
+
+def get_distance_fn(topological, asserted=True):
+    """Return a function that returns node distances (branch lengths).
+
+    :param topological: If True, the distance of a node is just 1 (a step).
+    :param asserted: If True, raises AssertionError on undefined distances.
+    """
+    if topological:
+        return lambda node: 1
+    elif asserted:
+        def asserted_dist(node):
+            assert node.dist is not None, 'node without distance: %r' % node
+            return node.dist
+        return asserted_dist
+    else:
+        return lambda node: node.dist
+
+
 # Traversing the tree.
 
 def traverse(tree, order=-1, is_leaf_fn=None):
