@@ -19,7 +19,7 @@ import math
 from . import text_viz
 from . import operations as ops
 from .. import utils
-from ..parser import newick, ete_format, indent
+from ..parser import newick, ete_format, indent, nexus
 
 
 class TreeError(Exception):
@@ -82,11 +82,6 @@ cdef class Tree:
             guess_format = lambda x: 'newick'  # TODO
             parser = guess_format(data)
 
-        newick_parser = (parser == 'newick' or parser in newick.PARSERS or
-                         type(parser) is dict)
-        valid_parser = newick_parser or parser in ['ete', 'indent']
-        assert valid_parser, f'bad parser: {parser}'
-
         # Get data from file if appropriate.
         if hasattr(data, 'read'):  # it's a file-like object
             data = data.read()
@@ -95,17 +90,24 @@ cdef class Tree:
         elif force == 'data':  # it's just the data, not a path
             pass
         else:  # guess if it is a path to a file depending on data and format
-            if newick_parser:
+            if (parser == 'newick' or parser in newick.PARSERS or
+                type(parser) is dict):  # for newick format
                 if (not data.lstrip('\n').startswith('(') and
                     not data.rstrip().endswith(';')):
                     data = open(data).read()  # probably a file name - open it
-            # NOTE: We could try to guess for the other formats too.
+            elif parser == 'nexus':
+                if data.endswith(('.nexus', '.NEXUS')):
+                    data = open(data).read()  # probably a file name - open it
+            elif parser == 'ete':
+                if data.endswith(('.ete', '.ETE')):
+                    data = open(data).read()  # probably a file name - open it
+            # NOTE: We could try to guess more and/or better.
 
         # Clean commonly seen whitespace. Safe to do for all our formats.
         data = data.lstrip('\n').rstrip()
 
         # Initialize depending on what we are parsing.
-        if type(parser) == dict:
+        if type(parser) is dict:
             tree = newick.loads(data, parser, self.__class__)
         elif parser == 'newick':
             tree = newick.loads(data, None, self.__class__)
@@ -115,6 +117,12 @@ cdef class Tree:
             tree = ete_format.loads(data)
         elif parser == 'indent':
             tree = indent.loads(data)
+        elif parser == 'nexus':
+            trees = nexus.loads(data)  # NOTE: Using the default newick parser
+            assert len(trees) == 1, 'multiple trees - use nexus.load() instead?'
+            tree = trees.popitem()[1]  # take the only tree
+        else:
+            raise ValueError(f'bad parser: {parser}')
 
         self.props = tree.props
         self.children = tree.children
