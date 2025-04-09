@@ -20,6 +20,7 @@ from . import text_viz
 from . import operations as ops
 from .. import utils
 from ..parser import newick, ete_format, indent, nexus
+from ..parser.extract import extract_data_parser
 
 
 class TreeError(Exception):
@@ -74,37 +75,7 @@ cdef class Tree:
         # At this point we are going to parse data.
         assert not children, 'init from parsed content cannot have children'
 
-        force = None  # to allow to specify if data is a file name or just data
-        if type(parser) is str and parser.startswith(('file-', 'data-')):
-            force, parser = parser.split('-', 1)
-
-        if parser is None or parser == 'auto':
-            guess_format = lambda x: 'newick'  # TODO
-            parser = guess_format(data)
-
-        # Get data from file if appropriate.
-        if hasattr(data, 'read'):  # it's a file-like object
-            data = data.read()
-        elif force == 'file':  # it's a path to a file
-            data = open(data).read()
-        elif force == 'data':  # it's just the data, not a path
-            pass
-        else:  # guess if it is a path to a file depending on data and format
-            if (parser == 'newick' or parser in newick.PARSERS or
-                type(parser) is dict):  # for newick format
-                if (not data.lstrip('\n').startswith('(') and
-                    not data.rstrip().endswith(';')):
-                    data = open(data).read()  # probably a file name - open it
-            elif parser == 'nexus':
-                if data.endswith(('.nexus', '.NEXUS')):
-                    data = open(data).read()  # probably a file name - open it
-            elif parser == 'ete':
-                if data.endswith(('.ete', '.ETE')):
-                    data = open(data).read()  # probably a file name - open it
-            # NOTE: We could try to guess more and/or better.
-
-        # Clean commonly seen whitespace. Safe to do for all our formats.
-        data = data.lstrip('\n').rstrip()
+        data, parser = extract_data_parser(data, parser)
 
         # Initialize depending on what we are parsing.
         if type(parser) is dict:
