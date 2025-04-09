@@ -142,6 +142,9 @@ PARSERS = {  # predefined parsers
     'multisupport': {'leaf': [NAME, DIST], 'internal': [MULTISUPPORT, DIST]},
 }
 
+for num in [k for k in PARSERS if type(k) is int]:
+    PARSERS[str(num)] = PARSERS[num]  # accept '0' in addition to 0, etc
+
 def make_parser(parser=None, name='%s', dist='%g', support='%g'):
     """Return parser changing the format of properties name, dist or support."""
     # Auxiliary function to return modified property dicts.

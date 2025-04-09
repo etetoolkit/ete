@@ -60,39 +60,64 @@ cdef class Tree:
 
         self.size = (0, 0)
 
-        data = data.read() if hasattr(data, 'read') else data
-
+        # Initialize easy cases and return.
         if data is None:
+            assert parser is None, 'init from empty data should not use parser'
             self.props = {}
-        elif type(data) == dict:
+            return
+
+        if type(data) is dict:
+            assert parser is None, 'init from dict data should not use parser'
             self.props = data.copy()
-        else:  # from newick or ete format
-            assert not children, 'init from parsed content cannot have children'
+            return
 
-            valid_parser = (type(parser) is dict or
-                            parser in newick.PARSERS or
-                            parser in [None, 'auto', 'newick', 'ete', 'indent'])
-            assert valid_parser, f'bad parser: {parser}'
+        # At this point we are going to parse data.
+        assert not children, 'init from parsed content cannot have children'
 
-            data = data.lstrip('\n').rstrip()
+        force = None  # to allow to specify if data is a file name or just data
+        if type(parser) is str and parser.startswith(('file-', 'data-')):
+            force, parser = parser.split('-', 1)
 
-            if parser is None or parser == 'auto':
-                guess_format = lambda x: 'newick'  # TODO
-                parser = guess_format(data)
+        if parser is None or parser == 'auto':
+            guess_format = lambda x: 'newick'  # TODO
+            parser = guess_format(data)
 
-            if type(parser) == dict:
-                tree = newick.loads(data, parser, self.__class__)
-            elif parser == 'newick':
-                tree = newick.loads(data, None, self.__class__)
-            elif parser in newick.PARSERS:
-                tree = newick.loads(data, newick.PARSERS[parser], self.__class__)
-            elif parser == 'ete':
-                tree = ete_format.loads(data)
-            elif parser == 'indent':
-                tree = indent.loads(data)
+        newick_parser = (parser == 'newick' or parser in newick.PARSERS or
+                         type(parser) is dict)
+        valid_parser = newick_parser or parser in ['ete', 'indent']
+        assert valid_parser, f'bad parser: {parser}'
 
-            self.props = tree.props
-            self.children = tree.children
+        # Get data from file if appropriate.
+        if hasattr(data, 'read'):  # it's a file-like object
+            data = data.read()
+        elif force == 'file':  # it's a path to a file
+            data = open(data).read()
+        elif force == 'data':  # it's just the data, not a path
+            pass
+        else:  # guess if it is a path to a file depending on data and format
+            if newick_parser:
+                if (not data.lstrip('\n').startswith('(') and
+                    not data.rstrip().endswith(';')):
+                    data = open(data).read()  # probably a file name - open it
+            # NOTE: We could try to guess for the other formats too.
+
+        # Clean commonly seen whitespace. Safe to do for all our formats.
+        data = data.lstrip('\n').rstrip()
+
+        # Initialize depending on what we are parsing.
+        if type(parser) == dict:
+            tree = newick.loads(data, parser, self.__class__)
+        elif parser == 'newick':
+            tree = newick.loads(data, None, self.__class__)
+        elif parser in newick.PARSERS:
+            tree = newick.loads(data, newick.PARSERS[parser], self.__class__)
+        elif parser == 'ete':
+            tree = ete_format.loads(data)
+        elif parser == 'indent':
+            tree = indent.loads(data)
+
+        self.props = tree.props
+        self.children = tree.children
 
     @property
     def name(self):
