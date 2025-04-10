@@ -597,6 +597,59 @@ def average_distance(tree, selector=None, leaf=None, topological=False):
         return s_total / n_total if n_total > 0 else 0  # average of averages
 
 
+def distance_matrix(tree, selector=None, topological=False, squared=False):
+    """Return a matrix of paired distances between all the selected leaves.
+
+    :param tree: Tree (starting node) for which to compute the average.
+    :param selector: Function that returns True for the selected leaves.
+        If None, all leaves will be selected.
+    :param topological: If True, the distance between nodes will be the
+        number of nodes between them (instead of the sum of branch lenghts).
+    :param squared: If True, the output matrix will be squared and symmetrical.
+        Otherwise, only the upper triangle is returned (to save memory).
+    """
+    # Get default functions to select leaves and compute distances.
+    selector = selector or (lambda node: True)  # select all by default
+    d = get_distance_fn(topological)
+
+    # Store info on the distance to each node's leaves.
+    dists = {}  # {node: [dist0, ...]} (list of dists with leaves in preorder)
+    for node in traverse(tree, order=+1):  # postorder (descendants first)
+        if node.is_leaf:
+            dists[node] = [0] if selector(node) else []
+        else:
+            ds = []  # will have dists to selected descendant leaves, in order
+            for ch in node.children:
+                d_ch = d(ch)
+                ds += (d_ch + x for x in dists[ch])
+            dists[node] = ds
+
+    # Function to get the distances from leaf to all leaves after it, in order.
+    def dists_from(leaf):
+        node = leaf  # current node
+        d_leaf = 0  # distance from leaf to current node
+        ds = []  # will have dists to all selected leaves after it, in order
+        while not node.is_root:
+            d_leaf += d(node)  # add distance from parent to current node
+            found = False  # have we found node when traversing its siblings?
+            for ch in node.up.children:
+                if found:  # all leaves hanging on this node come after "leaf"
+                    d_ch = d_leaf + d(ch)
+                    ds += (d_ch + x for x in dists[ch])  # so we add their dists
+                elif ch is node:
+                    found = True
+            node = node.up
+        return ds
+
+    matrix = [dists_from(leaf) for leaf in tree.leaves() if selector(leaf)]
+
+    if squared:
+        for i in range(len(matrix)):
+            matrix[i] = [matrix[j][i] for j in range(i)] + [0] + matrix[i]
+
+    return matrix
+
+
 def get_distance_fn(topological, asserted=True):
     """Return a function that returns node distances (branch lengths).
 
