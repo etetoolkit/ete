@@ -556,7 +556,7 @@ def average_distance(tree, selector=None, leaf=None, topological=False):
     selector = selector or (lambda node: True)  # select all by default
     d = get_distance_fn(topological)
 
-    # Add info on descendants selected, and total distance to them.
+    # Store info on descendants selected, and total distance to them.
     nums = {}  # number of descendants (including self) selected
     sums = {}  # sum of distances from node to descendants selected
     for node in traverse(tree, order=+1):  # postorder (descendants first)
