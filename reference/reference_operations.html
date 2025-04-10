@@ -131,6 +131,25 @@ number of nodes between them (instead of the sum of branch lenghts).</p></li>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.distance_matrix">
+<span class="sig-name descname"><span class="pre">distance_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selector</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">squared</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.distance_matrix" title="Link to this definition">¶</a></dt>
+<dd><p>Return a matrix of paired distances between all the selected leaves.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tree</strong> – Tree (starting node) for which to compute the average.</p></li>
+<li><p><strong>selector</strong> – Function that returns True for the selected leaves.
+If None, all leaves will be selected.</p></li>
+<li><p><strong>topological</strong> – If True, the distance between nodes will be the
+number of nodes between them (instead of the sum of branch lenghts).</p></li>
+<li><p><strong>squared</strong> – If True, the output matrix will be squared and symmetrical.
+Otherwise, only the upper triangle is returned (to save memory).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="ete4.core.operations.farthest">
 <span class="sig-name descname"><span class="pre">farthest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.farthest" title="Link to this definition">¶</a></dt>
 <dd><p>Return the farthest nodes and the diameter of the tree.</p>
