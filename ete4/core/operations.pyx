@@ -600,7 +600,7 @@ def average_distance(tree, selector=None, leaf=None, topological=False):
 def distance_matrix(tree, selector=None, topological=False, squared=False):
     """Return a matrix of paired distances between all the selected leaves.
 
-    :param tree: Tree (starting node) for which to compute the average.
+    :param tree: Tree (starting node) for which to compute the matrix.
     :param selector: Function that returns True for the selected leaves.
         If None, all leaves will be selected.
     :param topological: If True, the distance between nodes will be the
