@@ -643,9 +643,12 @@ def distance_matrix(tree, selector=None, topological=False, squared=False):
 
     matrix = [dists_from(leaf) for leaf in tree.leaves() if selector(leaf)]
 
-    if squared:
+    if squared:  # convert matrix into an actual symmetric square matrix
         for i in range(len(matrix)):
-            matrix[i] = [matrix[j][i] for j in range(i)] + [0] + matrix[i]
+            row = [matrix[j][i] for j in range(i)]  # the missing distances
+            row.append(0)  # distance of node i to itself (= 0)
+            row += matrix[i]  # the distances that we already had
+            matrix[i] = row  # and this is our new row of the matrix
 
     return matrix
 
