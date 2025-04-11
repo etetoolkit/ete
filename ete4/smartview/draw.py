@@ -679,14 +679,14 @@ def get_col_data(rows, x_col, dx_col, nodes, pos_box, pos, bdy_dy, zoom,
 
 
 def get_position_box(content_box, bdy, position):
-    """Return the box corresponding to the given box and position."""
-    x, y, dx, dy = content_box
+    """Return the box corresponding to the given content box and position."""
+    x, y, dx, dy = content_box  # box with contents of the node, branch included
     p = position
-    if   p == 'top':     return Box(x     , y      , dx, bdy     )
-    elif p == 'bottom':  return Box(x     , y + bdy, dx, dy - bdy)
-    elif p == 'left':    return Box(x - dx, y      , dx, dy      )
-    elif p == 'right':   return Box(x + dx, y      , 0 , dy      )
-    elif p == 'aligned': return Box(0     , y      , 0 , dy      )
+    if   p == 'top':     return Box(x     , y      , dx, bdy     )  # above branch
+    elif p == 'bottom':  return Box(x     , y + bdy, dx, dy - bdy)  # below branch
+    elif p == 'left':    return Box(x - dx, y      , dx, dy      )  # to the left
+    elif p == 'right':   return Box(x + dx, y      , 0 , dy      )  # to the right
+    elif p == 'aligned': return Box(0     , y      , 0 , dy      )  # aligned panel
     else: raise ValueError(f'unknown position: {p}')
 
 

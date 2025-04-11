@@ -1,7 +1,7 @@
 Tree (main class)
 =================
 
-.. autoclass:: ete4.Tree
+.. automodule:: ete4.core.tree
    :members:
    :undoc-members:
    :special-members: __init__

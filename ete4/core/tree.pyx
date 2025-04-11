@@ -1,3 +1,14 @@
+"""
+This module provides the class Tree, which is the main one used in ete.
+
+The most common way to use it is::
+
+  t = Tree(open(file_with_newick), parser=parser_id)
+
+where ``parser_id`` is one of the values that can be seen in the
+:mod:`newick parser module <ete4.parser.newick>`.
+"""
+
 import copy
 import itertools
 from hashlib import md5
@@ -8,7 +19,8 @@ import math
 from . import text_viz
 from . import operations as ops
 from .. import utils
-from ..parser import newick, ete_format, indent
+from ..parser import newick, ete_format, indent, nexus
+from ..parser.extract import extract_data_parser
 
 
 class TreeError(Exception):
@@ -49,39 +61,42 @@ cdef class Tree:
 
         self.size = (0, 0)
 
-        data = data.read() if hasattr(data, 'read') else data
-
+        # Initialize easy cases and return.
         if data is None:
+            assert parser is None, 'init from empty data should not use parser'
             self.props = {}
-        elif type(data) == dict:
+            return
+
+        if type(data) is dict:
+            assert parser is None, 'init from dict data should not use parser'
             self.props = data.copy()
-        else:  # from newick or ete format
-            assert not children, 'init from parsed content cannot have children'
+            return
 
-            valid_parser = (type(parser) is dict or
-                            parser in newick.PARSERS or
-                            parser in [None, 'auto', 'newick', 'ete', 'indent'])
-            assert valid_parser, f'bad parser: {parser}'
+        # At this point we are going to parse data.
+        assert not children, 'init from parsed content cannot have children'
 
-            data = data.lstrip('\n').rstrip()
+        data, parser = extract_data_parser(data, parser)
 
-            if parser is None or parser == 'auto':
-                guess_format = lambda x: 'newick'  # TODO
-                parser = guess_format(data)
+        # Initialize depending on what we are parsing.
+        if type(parser) is dict:
+            tree = newick.loads(data, parser, self.__class__)
+        elif parser == 'newick':
+            tree = newick.loads(data, None, self.__class__)
+        elif parser in newick.PARSERS:
+            tree = newick.loads(data, newick.PARSERS[parser], self.__class__)
+        elif parser == 'ete':
+            tree = ete_format.loads(data)
+        elif parser == 'indent':
+            tree = indent.loads(data)
+        elif parser == 'nexus':
+            trees = nexus.loads(data)  # NOTE: Using the default newick parser
+            assert len(trees) == 1, 'multiple trees - use nexus.load() instead?'
+            tree = trees.popitem()[1]  # take the only tree
+        else:
+            raise ValueError(f'bad parser: {parser}')
 
-            if type(parser) == dict:
-                tree = newick.loads(data, parser, self.__class__)
-            elif parser == 'newick':
-                tree = newick.loads(data, None, self.__class__)
-            elif parser in newick.PARSERS:
-                tree = newick.loads(data, newick.PARSERS[parser], self.__class__)
-            elif parser == 'ete':
-                tree = ete_format.loads(data)
-            elif parser == 'indent':
-                tree = indent.loads(data)
-
-            self.props = tree.props
-            self.children = tree.children
+        self.props = tree.props
+        self.children = tree.children
 
     @property
     def name(self):
@@ -537,11 +552,17 @@ cdef class Tree:
 
     def get_children(self):
         """Return an independent list of the node's children."""
+        # The returned list can be changed without affecting self.children.
         return self.children.copy()
 
+    def sisters(self):
+        """Yield sister nodes (siblings)."""
+        return ((n for n in self.up.children if n is not self)
+                if not self.is_root else ())
+
     def get_sisters(self):
-        """Return an independent list of sister nodes."""
-        return [n for n in self.up.children if n != self] if self.up else []
+        """Return a list of sister nodes (siblings)."""
+        return list(self.sisters())
 
     def leaves(self, is_leaf_fn=None):
         """Yield the terminal nodes (leaves) under this node."""
@@ -748,7 +769,7 @@ cdef class Tree:
         :param topological: If True, distance will refer to the number of
             nodes between node1 and node2.
         """
-        d = (lambda node: 1) if topological else (lambda node: node.dist)
+        d = ops.get_distance_fn(topological)
 
         node1, node2 = self._translate_nodes([node1, node2])
 
@@ -867,6 +888,18 @@ cdef class Tree:
             current = current.up
 
         return current  # the midpoint was the root (we went back to it)
+
+    def average_distance(self, selector=None, leaf=None, topological=False):
+        """Return average distance between a leaf and the selected leaves.
+
+        :param selector: Function that returns True for the selected leaves.
+            If None, all leaves will be selected.
+        :param leaf: Leaf for which to compute the average distance to the
+            selected leaves. If None, an average for all selected leaves is made.
+        :param topological: If True, the distance between nodes will be the
+            number of nodes between them (instead of the sum of branch lenghts).
+        """
+        return ops.average_distance(self, selector, leaf, topological)
 
     def populate(self, size, names=None, model='yule',
                  dist_fn=None, support_fn=None):

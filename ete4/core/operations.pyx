@@ -467,7 +467,7 @@ def resolve_polytomy(tree, descendants=True):
 
 def farthest_descendant(tree, topological=False):
     """Return the farthest descendant and its distance."""
-    d = (lambda node: 1) if topological else (lambda node: node.dist)  # dist
+    d = get_distance_fn(topological)
 
     dist_root = {tree: 0}  # will contain all distances to the root
 
@@ -483,7 +483,7 @@ def farthest_descendant(tree, topological=False):
 
 def farthest(tree, topological=False):
     """Return the farthest nodes and the diameter of the tree."""
-    d = (lambda node: 1) if topological else (lambda node: node.dist)  # dist
+    d = get_distance_fn(topological)
 
     def last(x):
         return x[-1]  # return the last element (used later for comparison)
@@ -522,7 +522,7 @@ def farthest(tree, topological=False):
 
 def midpoint(tree, topological=False):
     """Return the node in the middle and its distance from the exact center."""
-    d = (lambda node: 1) if topological else (lambda node: node.dist)
+    d = get_distance_fn(topological)
 
     # Find the farthest node and diameter.
     node, _, diameter = farthest(tree, topological)
@@ -539,6 +539,135 @@ def midpoint(tree, topological=False):
 def set_midpoint_outgroup(tree, topological=False):
     node, dist = midpoint(tree, topological)
     set_outgroup(node, dist=dist)
+
+
+def average_distance(tree, selector=None, leaf=None, topological=False):
+    """Return average distance between a leaf and the selected leaves.
+
+    :param tree: Tree (starting node) for which to compute the average.
+    :param selector: Function that returns True for the selected leaves.
+        If None, all leaves will be selected.
+    :param leaf: Leaf for which to compute the average distance to the
+        selected leaves. If None, an average for all selected leaves is made.
+    :param topological: If True, the distance between nodes will be the
+        number of nodes between them (instead of the sum of branch lenghts).
+    """
+    # Get default functions to select leaves and compute distances.
+    selector = selector or (lambda node: True)  # select all by default
+    d = get_distance_fn(topological)
+
+    # Store info on descendants selected, and total distance to them.
+    nums = {}  # number of descendants (including self) selected
+    sums = {}  # sum of distances from node to descendants selected
+    for node in traverse(tree, order=+1):  # postorder (descendants first)
+        if node.is_leaf:
+            nums[node] = 1 if selector(node) else 0
+            sums[node] = 0
+        else:
+            children = node.children
+            nums[node] = sum(nums[x] for x in children)
+            sums[node] = sum(d(x) * nums[x] + sums[x] for x in children)
+
+    # Function to get the number of paths (distances), and total distance sum.
+    def nums_sums(leaf):
+        node = leaf  # current node
+        d_leaf = 0  # distance from leaf to current node
+        n = 0  # number of paths (distances)
+        s = 0  # sum of distances
+        while not node.is_root:  # will add values for all possible paths
+            d_leaf += d(node)  # add distance from parent to current node
+            sisters = node.get_sisters()  # or "siblings"
+            n += sum(nums[x] for x in sisters)
+            s += sum((d_leaf + d(x)) * nums[x] + sums[x] for x in sisters)
+            node = node.up
+        return n, s
+
+    # Return the average distance (from a single leaf, or averaged).
+    if leaf is not None:  # from a single leaf
+        n, s = nums_sums(leaf)  # number of distances, sum of distances
+        return s / n if n > 0 else 0  # average distance
+    else:  # averaged over all selected leaves
+        n_total = 0
+        s_total = 0
+        for leaf in tree.leaves():
+            if selector(leaf):
+                n, s = nums_sums(leaf)  # number of distances, sum of distances
+                n_total += n
+                s_total += s
+        return s_total / n_total if n_total > 0 else 0  # average of averages
+
+
+def distance_matrix(tree, selector=None, topological=False, squared=False):
+    """Return a matrix of paired distances between all the selected leaves.
+
+    :param tree: Tree (starting node) for which to compute the matrix.
+    :param selector: Function that returns True for the selected leaves.
+        If None, all leaves will be selected.
+    :param topological: If True, the distance between nodes will be the
+        number of nodes between them (instead of the sum of branch lenghts).
+    :param squared: If True, the output matrix will be squared and symmetrical.
+        Otherwise, only the upper triangle is returned (to save memory).
+    """
+    # Get default functions to select leaves and compute distances.
+    selector = selector or (lambda node: True)  # select all by default
+    d = get_distance_fn(topological)
+
+    # Store info on the distance to each node's leaves.
+    dists = {}  # {node: [dist0, ...]} (list of dists with leaves in preorder)
+    for node in traverse(tree, order=+1):  # postorder (descendants first)
+        if node.is_leaf:
+            dists[node] = [0] if selector(node) else []
+        else:
+            ds = []  # will have dists to selected descendant leaves, in order
+            for ch in node.children:
+                d_ch = d(ch)
+                ds += (d_ch + x for x in dists[ch])
+            dists[node] = ds
+
+    # Function to get the distances from leaf to all leaves after it, in order.
+    def dists_from(leaf):
+        node = leaf  # current node
+        d_leaf = 0  # distance from leaf to current node
+        ds = []  # will have dists to all selected leaves after it, in order
+        while not node.is_root:
+            d_leaf += d(node)  # add distance from parent to current node
+            found = False  # have we found node when traversing its siblings?
+            for ch in node.up.children:
+                if found:  # all leaves hanging on this node come after "leaf"
+                    d_ch = d_leaf + d(ch)
+                    ds += (d_ch + x for x in dists[ch])  # so we add their dists
+                elif ch is node:
+                    found = True
+            node = node.up
+        return ds
+
+    matrix = [dists_from(leaf) for leaf in tree.leaves() if selector(leaf)]
+
+    if squared:  # convert matrix into an actual symmetric square matrix
+        for i in range(len(matrix)):
+            row = [matrix[j][i] for j in range(i)]  # the missing distances
+            row.append(0)  # distance of node i to itself (= 0)
+            row += matrix[i]  # the distances that we already had
+            matrix[i] = row  # and this is our new row of the matrix
+
+    return matrix
+
+
+def get_distance_fn(topological, asserted=True):
+    """Return a function that returns node distances (branch lengths).
+
+    :param topological: If True, the distance of a node is just 1 (a step).
+    :param asserted: If True, raises AssertionError on undefined distances.
+    """
+    if topological:
+        return lambda node: 1
+    elif asserted:
+        def asserted_dist(node):
+            assert node.dist is not None, 'node without distance: %r' % node
+            return node.dist
+        return asserted_dist
+    else:
+        return lambda node: node.dist
 
 
 # Traversing the tree.

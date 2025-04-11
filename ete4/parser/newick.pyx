@@ -1,5 +1,64 @@
 """
 Parser for trees represented in newick format.
+
+The main functions are ``loads()`` and ``dumps()``, which read/write a tree
+from/to its newick text representation.
+
+When reading a newick file, the argument ``parser=...`` specifies
+which kind of parser to use.
+
+The classical ones in ete are the following:
+
+.. table::
+
+  ====== ======================================== =================================
+  Format Description                              Example
+  ====== ======================================== =================================
+  0 (*)  internal nodes with support (flexible)   ((D:2,E:5)1.0:9,(F:6,G):7);
+  1      internal nodes with names (flexible)     ((D:2,E:5)B:9,(F:6,G):7);
+  2      internal w/ support, all values present  ((D:2,E:5)1.0:9,(F:6,G:3)1.0:7);
+  3      internal w/ names, all values present    ((D:2,E:5)B:9,(F:6,G:3)C:7);
+  4      names and lengths for leaves only        ((D:2,E:5),(F:6,G:3));
+  5      leaf names and all lengths               ((D:2,E:5):9,(F:6,G:3):7);
+  6      leaf names and internal lengths          ((D,F):6,(B,H):8);
+  7      all names and leaf lengths               ((D:2,E:5)B,(F:6,G:3)C);
+  8      all names (leaves and internal nodes)    ((D,E)B,(F,G)C);
+  9      leaf names only                          ((D,E),(F,G));
+  100    topology only                            ((,),(,));
+  ====== ======================================== =================================
+
+where the example tree would look (more or less) like::
+
+         ╭╴D:2
+   ╭╴B:9╶┤
+   │     ╰╴E:5
+  ╶┤
+   │     ╭╴F:6
+   ╰╴C:7╶┤
+         ╰╴G:3
+
+There are other valid values for ``parser``:
+
+- ``'name'``, same as 1
+- ``'support'``, same as 0
+- ``'multisupport'``, internal nodes look like ``((X:5)80/100:7)...``, that is,
+  have multiple values of support separated by ``/``
+
+More generally, ``parser`` can be a dictionary that specifies in
+detail how to read/write each field. It must say, for leaf and internal
+nodes, what ``p0:p1`` means (which properties they are, including how
+to read and write them). For example, the default parser looks like::
+
+  PARSER_DEFAULT = {
+      'leaf':     [NAME,    DIST],  # ((name:dist)x:y);
+      'internal': [SUPPORT, DIST],  # ((x:y)support:dist);
+  }
+
+where ``NAME`` and ``DIST`` are "property dicts", that have all the
+information for a property (``pname``) to know which function to apply
+to read/write from/to a string. For example, ``DIST`` is::
+
+  DIST = {'pname': 'dist', 'read': float, 'write': lambda x: '%g' % float(x)}
 """
 
 # See https://en.wikipedia.org/wiki/Newick_format
@@ -82,6 +141,9 @@ PARSERS = {  # predefined parsers
     'support':      {'leaf': [NAME, DIST], 'internal': [SUPPORT,      DIST]},
     'multisupport': {'leaf': [NAME, DIST], 'internal': [MULTISUPPORT, DIST]},
 }
+
+for num in [k for k in PARSERS if type(k) is int]:
+    PARSERS[str(num)] = PARSERS[num]  # accept '0' in addition to 0, etc
 
 def make_parser(parser=None, name='%s', dist='%g', support='%g'):
     """Return parser changing the format of properties name, dist or support."""

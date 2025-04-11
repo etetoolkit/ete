@@ -77,21 +77,21 @@ internal node labeling:
 
 .. table::
 
-  ====== ========================================= =============================================
-  Format Description                               Example
-  ====== ========================================= =============================================
-  0      internal nodes with support (flexible)    ((D:0.7,F:0.5)1.0:0.6,(B:0.2,H:0.7)1.0:0.8);
-  1      internal nodes with names (flexible)      ((D:0.7,F:0.5)E:0.6,(B:0.2,H:0.7)B:0.8);
-  2      internal w/ support, all lengths present  ((D:0.7,F:0.5)1.0:0.6,(B:0.2,H:0.7)1.0:0.8);
-  3      internal w/ names, all lengths present    ((D:0.7,F:0.5)E:0.6,(B:0.2,H:0.7)B:0.8);
-  4      names and lengths for leaves only         ((D:0.7,F:0.5),(B:0.2,H:0.7));
-  5      leaf names and all lengths                ((D:0.7,F:0.5):0.6,(B:0.2,H:0.7):0.8);
-  6      leaf names and internal lengths           ((D,F):0.6,(B,H):0.8);
-  7      all names and leaf lengths                ((D:0.7,F:0.5)E,(B:0.2,H:0.7)B);
-  8      all names (leaves and internal nodes)     ((D,F)E,(B,H)B);
-  9      leaf names only                           ((D,F),(B,H));
-  100    topology only                             ((,),(,));
-  ====== ========================================= =============================================
+  ====== ======================================== =================================
+  Format Description                              Example
+  ====== ======================================== =================================
+  0 (*)  internal nodes with support (flexible)   ((D:2,E:5)1.0:9,(F:6,G):7);
+  1      internal nodes with names (flexible)     ((D:2,E:5)B:9,(F:6,G):7);
+  2      internal w/ support, all values present  ((D:2,E:5)1.0:9,(F:6,G:3)1.0:7);
+  3      internal w/ names, all values present    ((D:2,E:5)B:9,(F:6,G:3)C:7);
+  4      names and lengths for leaves only        ((D:2,E:5),(F:6,G:3));
+  5      leaf names and all lengths               ((D:2,E:5):9,(F:6,G:3):7);
+  6      leaf names and internal lengths          ((D,F):6,(B,H):8);
+  7      all names and leaf lengths               ((D:2,E:5)B,(F:6,G:3)C);
+  8      all names (leaves and internal nodes)    ((D,E)B,(F,G)C);
+  9      leaf names only                          ((D,E),(F,G));
+  100    topology only                            ((,),(,));
+  ====== ======================================== =================================
 
 In order to load (or write) a tree with internal node support, you can
 specify to use the parser for format 0::

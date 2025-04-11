@@ -13,9 +13,9 @@ import requests
 def ete_path(xdg_var, default):
     return os.environ.get(xdg_var, os.environ['HOME'] + default) + '/ete'
 
-ETE_DATA_HOME = ete_path('XDG_DATA_HOME', '/.local/share')
+ETE_DATA_HOME   = ete_path('XDG_DATA_HOME',   '/.local/share')
 ETE_CONFIG_HOME = ete_path('XDG_CONFIG_HOME', '/.config')
-ETE_CACHE_HOME = ete_path('XDG_CACHE_HOME', '/.cache')
+ETE_CACHE_HOME  = ete_path('XDG_CACHE_HOME',  '/.cache')
 
 
 def update_ete_data(path, url, overwrite=False):

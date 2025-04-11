@@ -67,8 +67,9 @@ If you want to use the `treeview` module (which depends on
 add `[treeview]` to the pip installation.
 
 For example with `pip install -e .[treeview]` for a local editable
-installation. Or `pip install -e .[treeview,test,doc]` to also include
-the modules for testing and generating the documentation.
+installation. Or `pip install -e .[treeview,test,doc,render_sm]` to
+also include the modules for testing, generating the documentation,
+and smartview file rendering.
 
 
 # Exploring a tree

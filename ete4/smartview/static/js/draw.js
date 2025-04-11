@@ -382,7 +382,6 @@ function legend2html(legend) {
                  background-image: linear-gradient(${gradientStops})">
              </span>
              ${vmin}`;
-
     }
 }
 
@@ -989,14 +988,15 @@ function create_polygon(center, r, shape, tl, zx, zy, rotation=0, style="", resi
 function create_text(box, anchor, text, fs_max, rotation,
                      tl, zx, zy, style="") {
     const [x, y, fs, text_anchor] = view.shape === "rectangular" ?
-        get_text_placement_rect(box, anchor, text, fs_max, tl, zx, zy, style) :
-        get_text_placement_circ(box, anchor, text, fs_max, tl, zx, style);
+        get_text_placement_rect(box, anchor, text, fs_max, rotation, tl, zx, zy, style) :
+        get_text_placement_circ(box, anchor, text, fs_max, rotation, tl, zx, style);
 
     const dx = (style === "name") ? view.name.padding.left * fs / 100 : 0;
 
     const t = create_svg_element("text", {
         "class": "text",
-        "x": x + dx, "y": y,
+        "x": x + dx,
+        "y": y,
         "font-size": `${fs}px`,
         "text-anchor": text_anchor,
     });
@@ -1021,23 +1021,25 @@ function create_header(x, text, fs_max, rotation, tl, zx, zy, style="") {
     if (view.shape !== "rectangular")
         return null;  // we only put headers in rectangular mode
 
+    // Position where to put the header (in screen coordinates).
     const px = zx * (x - tl.x),
           py = Math.max(50, - zy * tl.y);
 
     const g = create_svg_element("g");
 
     // Put a white rectangle on the background of the header.
+    const padding = 10;  // 10 pixels
     g.appendChild(create_svg_element("rect", {
-        "x": px,
+        "x": px - padding,
         "y": 0,
-        "width": div_aligned.offsetWidth - px,
+        "width": div_aligned.offsetWidth - px + 2 * padding,
         "height": py + 15,
         "fill": "white",
     }));
 
     // Add a line separating the header from the content below.
     const line = create_svg_element("line", {
-        "x1": px, "y1": py + fs_max,
+        "x1": px,                      "y1": py + fs_max,
         "x2": div_aligned.offsetWidth, "y2": py + fs_max,
     });
     add_style(line, {
@@ -1262,16 +1264,20 @@ function pop_style(style, prop) {
 
 
 // Return position, font size and text anchor to draw text when box is a rect.
-function get_text_placement_rect(box, anchor, text, fs_max, tl, zx, zy, type="") {
+function get_text_placement_rect(box, anchor, text, fs_max, rotation,
+                                 tl, zx, zy, type="") {
     if (text.length === 0)
         throw new Error("please do not try to place empty texts :)")
         // We could, but it's almost surely a bug upstream!
 
     const [x, y, dx, dy] = box;
 
-    const dx_char = dx / text.length;  // ~ width of 1 char (in tree units)
-    fs_max = Math.min(zx * dx_char * 1.6, zy * dy, fs_max);
-    const fs = font_adjust(fs_max, type);
+    const a = rotation * Math.PI / 180;
+    const [c, s] = [Math.abs(Math.cos(a)), Math.abs(Math.sin(a))];
+
+    const w_h = text.length / 1.5;  // text width over its height
+    const fs_box = dx * zx / (s + w_h * c);  // font size so it fits in box
+    const fs = font_adjust(Math.min(fs_box, fs_max), type);
 
     const scale = fs / (zy * dy);
     const [ax, ay] = anchor;
@@ -1290,7 +1296,7 @@ function get_text_placement_rect(box, anchor, text, fs_max, tl, zx, zy, type="")
 
 
 // Return position, font size and text anchor to draw text when box is an asec.
-function get_text_placement_circ(box, anchor, text, fs_max, tl, z, type="") {
+function get_text_placement_circ(box, anchor, text, fs_max, rotation, tl, z, type="") {
     if (text.length === 0)
         throw new Error("please do not try to place empty texts :)");
         // We could, but it's almost surely a bug upstream!

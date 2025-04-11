@@ -20,7 +20,7 @@ always that size multiplied by the zoom.
 
 import os
 from base64 import b64encode
-from math import pi
+from math import pi, cos, sin
 import re  # so it can be used when evaluating expressions
 
 from .coordinates import Size, Box, make_box
@@ -109,7 +109,8 @@ class EvalTextFace(Face):
 
         # Find the size that we will use to draw everything.
         shrink_x = size.dx > 0  # dx == 0 is a special value, "no shrink"
-        size_used = texts_size(texts, size, self.fs_max, zoom, shrink_x, r)
+        size_used = texts_size(texts, size, self.fs_max, self.rotation,
+                               zoom, shrink_x, r)
 
         # Only draw if  font size > fs_min.
         if not r * zoom[1] * size_used.dy > self.fs_min * len(texts):
@@ -178,7 +179,7 @@ def first_value(tree, code=None):
         return ''
 
 
-def texts_size(texts, size_max, fs_max, zoom, shrink_x=True, r=1):
+def texts_size(texts, size_max, fs_max, rotation, zoom, shrink_x=True, r=1):
     """Return the (dx, dy) dimensions of the texts so they fit in size_max."""
     zx, zy = zoom
     dx_max, dy_max = size_max
@@ -186,23 +187,25 @@ def texts_size(texts, size_max, fs_max, zoom, shrink_x=True, r=1):
     if r <= 0 or zx <= 0 or zy <= 0 or dy_max <= 0:
         return Size(0, 0)
 
-    # Find its dimensions so its font size on screen is fs_max.
+    # Find a font size that makes the text fit in size_max.
+    a = rotation * pi / 180  # rotation angle in radians
+    c, s = abs(cos(a)), abs(sin(a))
+    nrows = len(texts)  # number of rows of text (normally just 1)
     len_text_max = max((len(text) for text in texts), default=0)
-    dy_text = fs_max * len(texts) / (r * zy)
-    dx_text = fs_max * len_text_max / (1.5 * zx)
+    w_h = len_text_max / (1.5 * nrows)  # text width over its height
 
-    # Shrink its dimensions so it fits inside dx_max, dy_max.
-    if dy_text > dy_max:
-        sf = dy_max / dy_text  # shrink factor
-        dx_text *= sf
-        dy_text *= sf
+    fs_fit_in_dx = dx_max * zx     / (s + w_h * c)  # to fit in dx_max
+    fs_fit_in_dy = dy_max * zy * r / (c + w_h * s)  # to fit in dy_max
 
-    if shrink_x and dx_text > dx_max:
-        sf = dx_max / dx_text
-        dx_text *= sf
-        dy_text *= sf
+    # The font size has to be <= fs_max and has to fit in the given space.
+    fs = (min(fs_max, fs_fit_in_dy, fs_fit_in_dx) if shrink_x else
+          min(fs_max, fs_fit_in_dy))
 
-    return Size(dx_text, dy_text)
+    # The size used by (rotated) text with font size fs.
+    dx = fs * (s + w_h * c) / zx
+    dy = fs * (c + w_h * s) / zy
+
+    return Size(dx, dy)
 
 
 def text_repr(texts, all_have):
