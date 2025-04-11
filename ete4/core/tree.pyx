@@ -1785,6 +1785,8 @@ cdef class Tree:
                     output[i].append(leaf_distances[n][m])
         return output, allleaves
 
+    # TODO: The next two functions should really be parsers (which may
+    # be also used when calling __init__().
     @staticmethod
     def from_parent_child_table(parent_child_table):
         """Convert a parent-child table into an ETE Tree instance.
