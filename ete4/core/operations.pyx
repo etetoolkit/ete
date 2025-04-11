@@ -542,7 +542,7 @@ def set_midpoint_outgroup(tree, topological=False):
 
 
 def average_distance(tree, selector=None, leaf=None, topological=False):
-    """Return average distance between a leaf and the selected leaves.
+    """Return the average distance between the selected leaves, or from leaf.
 
     :param tree: Tree (starting node) for which to compute the average.
     :param selector: Function that returns True for the selected leaves.
