@@ -569,14 +569,14 @@ cdef class Tree:
 
     def leaf_names(self, is_leaf_fn=None):
         """Yield the leaf names under this node."""
-        for n in self.leaves(is_leaf_fn):
-            yield n.name
+        for leaf in self.leaves(is_leaf_fn):
+            yield leaf.name
 
     def descendants(self, strategy='levelorder', is_leaf_fn=None):
         """Yield all descendant nodes."""
-        for n in self.traverse(strategy, is_leaf_fn):
-            if n is not self:
-                yield n
+        for node in self.traverse(strategy, is_leaf_fn):
+            if node is not self:
+                yield node
 
     def traverse(self, strategy='levelorder', is_leaf_fn=None):
         """Traverse the tree structure under this node and yield the nodes.
