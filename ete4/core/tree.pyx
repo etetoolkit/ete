@@ -1140,7 +1140,7 @@ cdef class Tree:
             if container_type == set:
                 leaves[self].update(node_leaves[node])
             elif container_type == list:
-                leaves[self].extend(node_leaves[node])
+                leaves[self] += node_leaves[node]
 
         return leaves
 
