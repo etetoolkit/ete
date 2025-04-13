@@ -135,13 +135,13 @@ def swap_props(n1, n2, props):
 def insert_intermediate(node, intermediate, bprops=None, dist=None):
     """Insert, between node and its parent, an intermediate node."""
     # == up ======= node  ->  == up === intermediate === node
-    up = node.up
+    up = node.up  # original parent of node
 
     pos_in_parent = up.children.index(node)  # save its position in parent
-    up.children.pop(pos_in_parent)  # detach from parent
 
-    intermediate.add_child(node)
+    intermediate.add_child(node)  # == intermediate === node
 
+    # Update dist in intermediate (and in node), and branch properties.
     if 'dist' in node.props:  # split dist between the new and old nodes
         if dist is not None:
             node.dist, intermediate.dist = dist, node.dist - dist
@@ -152,7 +152,8 @@ def insert_intermediate(node, intermediate, bprops=None, dist=None):
         if prop in node.props:
             intermediate.props[prop] = node.props[prop]
 
-    up.children.insert(pos_in_parent, intermediate)  # put new where old was
+    # == up === intermediate  (and we already have  intermediate === node)
+    up.children[pos_in_parent] = intermediate  # put the new where old node was
     intermediate.up = up
 
 
@@ -172,9 +173,8 @@ def join_branch(node, bprops=None):
         child.dist = (child.dist or 0) + node.dist  # restore total dist
 
     up = node.up
-    pos_in_parent = up.children.index(node)  # save its position in parent
-    up.children.pop(pos_in_parent)  # detach from parent
-    up.children.insert(pos_in_parent, child)  # put child where the old node was
+    i = up.children.index(node)  # position that node had in its parent
+    up.children[i] = child  # put child where the old node was
     child.up = up
 
 
