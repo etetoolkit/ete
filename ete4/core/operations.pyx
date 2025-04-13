@@ -69,12 +69,10 @@ def interchange_references(node1, node2):
     pos2 = up2.children.index(node2) if up2 else None
 
     if up1 is not None:
-        up1.children.pop(pos1)
-        up1.children.insert(pos1, node2)
+        up1.children[pos1] = node2
 
     if up2 is not None:
-        up2.children.pop(pos2)
-        up2.children.insert(pos2, node1)
+        up2.children[pos2] = node1
 
     node1.up = up2
     node2.up = up1
