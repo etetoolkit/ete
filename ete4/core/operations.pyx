@@ -25,10 +25,10 @@ def root_at(node, bprops=None):
     :param node: Node to set as root. Its reference will be lost.
     :param bprops: List of branch properties (other than "dist" and "support").
     """
-    root = node.root
-
-    if root is node:
+    if node.is_root:
         return  # nothing to do!
+
+    root = node.root  # get the root of the tree
 
     assert_root_consistency(root, bprops)
 
