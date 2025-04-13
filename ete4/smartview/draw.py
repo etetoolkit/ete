@@ -836,7 +836,7 @@ def corner_points(x, y, dx, dy):
 
 def dist(node):
     """Return the distance of a node, with default values if not set."""
-    default = 0 if node.up is None else 1
+    default = 0 if node.is_root else 1
     return float(node.props.get('dist', default))
 
 
