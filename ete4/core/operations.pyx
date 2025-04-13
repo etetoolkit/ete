@@ -294,7 +294,8 @@ def populate_yule(root, size):
         node0 = leaf.add_child()
         node1 = leaf.add_child()
 
-        leaves.extend([node0, node1])
+        leaves.append(node0)
+        leaves.append(node1)
 
 
 def populate_uniform(root, size):
@@ -318,7 +319,8 @@ def populate_uniform(root, size):
         leaf = intermediate.add_child()          # ---up---inter===node,leaf
         random.shuffle(intermediate.children)  # [node,leaf] or [leaf,node]
 
-        nodes.extend([intermediate, leaf])
+        nodes.append(intermediate)
+        nodes.append(leaf)
 
 
 def add_branch_values(root, dist_fn, support_fn):
