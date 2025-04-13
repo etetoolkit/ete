@@ -623,7 +623,7 @@ def distance_matrix(tree, selector=None, topological=False, squared=False):
             ds = []  # will have dists to selected descendant leaves, in order
             for ch in node.children:
                 d_ch = d(ch)
-                ds += (d_ch + x for x in dists[ch])
+                ds += [d_ch + x for x in dists[ch]]
             dists[node] = ds
 
     # Function to get the distances from leaf to all leaves after it, in order.
@@ -637,7 +637,7 @@ def distance_matrix(tree, selector=None, topological=False, squared=False):
             for ch in node.up.children:
                 if found:  # all leaves hanging on this node come after "leaf"
                     d_ch = d_leaf + d(ch)
-                    ds += (d_ch + x for x in dists[ch])  # so we add their dists
+                    ds += [d_ch + x for x in dists[ch]]  # so we add their dists
                 elif ch is node:
                     found = True
             node = node.up
