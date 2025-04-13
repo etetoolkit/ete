@@ -288,14 +288,15 @@ def create_dichotomic_sister(tree):
 def populate_yule(root, size):
     """Populate with the Yule-Harding model a topology with size leaves."""
     leaves = [root]  # will contain the current leaves
-    for _ in range(size - 1):
-        leaf = leaves.pop( random.randrange(len(leaves)) )
+    for _ in range(size - 1):  # grow 2 leaves from a leaf in each iteration
+        i = random.randrange(len(leaves))  # pick one leaf index
+        node = leaves[i]  # take that leaf, which will be the parent node
 
-        node0 = leaf.add_child()
-        node1 = leaf.add_child()
+        leaf0 = node.add_child()  # grow leaves from that parent
+        leaf1 = node.add_child()
 
-        leaves.append(node0)
-        leaves.append(node1)
+        leaves[i] = leaf0  # put one of the leaves where the old one was
+        leaves.append(leaf1)  # and append the other leaf to our leaves list too
 
 
 def populate_uniform(root, size):
