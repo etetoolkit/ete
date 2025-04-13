@@ -697,7 +697,7 @@ def traverse_bfs(tree, is_leaf_fn=None):
         node = visiting.popleft()
         yield node
         if not is_leaf_fn or not is_leaf_fn(node):
-            visiting.extend(node.children)
+            visiting += node.children
 
 
 # Position on the tree: current node, number of visited children.
