@@ -555,14 +555,10 @@ cdef class Tree:
         # The returned list can be changed without affecting self.children.
         return self.children.copy()
 
-    def sisters(self):
-        """Yield sister nodes (siblings)."""
-        return ((n for n in self.up.children if n is not self)
-                if not self.is_root else ())
-
     def get_sisters(self):
         """Return a list of sister nodes (siblings)."""
-        return list(self.sisters())
+        return ([node for node in self.up.children if node is not self]
+                if not self.is_root else [])
 
     def leaves(self, is_leaf_fn=None):
         """Yield the terminal nodes (leaves) under this node."""
