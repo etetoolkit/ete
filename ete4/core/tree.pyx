@@ -885,17 +885,17 @@ cdef class Tree:
 
         return current  # the midpoint was the root (we went back to it)
 
-    def average_distance(self, selector=None, leaf=None, topological=False):
-        """Return average distance between a leaf and the selected leaves.
+    def average_distance(self, weight_fn=None, leaf=None, topological=False):
+        """Return the weighted average distance between leaves, or from leaf.
 
-        :param selector: Function that returns True for the selected leaves.
-            If None, all leaves will be selected.
-        :param leaf: Leaf for which to compute the average distance to the
-            selected leaves. If None, an average for all selected leaves is made.
+        :param weight_fn: Function that returns the weight of each leaf.
+            If None, all leaves will have weight 1.
+        :param leaf: Leaf for which to compute the weighted average distance to
+            leaves. If None, a weighted average for all leaves is made.
         :param topological: If True, the distance between nodes will be the
             number of nodes between them (instead of the sum of branch lenghts).
         """
-        return ops.average_distance(self, selector, leaf, topological)
+        return ops.average_distance(self, weight_fn, leaf, topological)
 
     def populate(self, size, names=None, model='yule',
                  dist_fn=None, support_fn=None):

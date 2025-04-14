@@ -542,34 +542,34 @@ def set_midpoint_outgroup(tree, topological=False):
     set_outgroup(node, dist=dist)
 
 
-def average_distance(tree, selector=None, leaf=None, topological=False):
-    """Return the average distance between the selected leaves, or from leaf.
+def average_distance(tree, weight_fn=None, leaf=None, topological=False):
+    """Return the weighted average distance between leaves, or from given leaf.
 
     :param tree: Tree (starting node) for which to compute the average.
-    :param selector: Function that returns True for the selected leaves.
-        If None, all leaves will be selected.
-    :param leaf: Leaf for which to compute the average distance to the
-        selected leaves. If None, an average for all selected leaves is made.
+    :param weight_fn: Function that returns the weight of each leaf.
+        If None, all leaves will have weight 1.
+    :param leaf: Leaf for which to compute the weighted average distance to
+        leaves. If None, a weighted average for all leaves is made.
     :param topological: If True, the distance between nodes will be the
         number of nodes between them (instead of the sum of branch lenghts).
     """
-    # Get default functions to select leaves and compute distances.
-    selector = selector or (lambda node: True)  # select all by default
+    # Get default functions to weight leaves and compute distances.
+    weight_fn = weight_fn or (lambda node: 1)  # weight of 1 by default
     d = get_distance_fn(topological)
 
-    # Store info on descendants selected, and total distance to them.
-    nums = {}  # number of descendants (including self) selected
-    sums = {}  # sum of distances from node to descendants selected
+    # Store info on descendant leaves, and total distance to them.
+    nums = {}  # weighted number of descendant leaves
+    sums = {}  # weighted sum of distances from node to descendant leaves
     for node in traverse(tree, order=+1):  # postorder (descendants first)
         if node.is_leaf:
-            nums[node] = 1 if selector(node) else 0
+            nums[node] = weight_fn(node)
             sums[node] = 0
         else:
             children = node.children
             nums[node] = sum(nums[x] for x in children)
             sums[node] = sum(d(x) * nums[x] + sums[x] for x in children)
 
-    # Function to get the number of paths (distances), and total distance sum.
+    # Function to get the weighted number of paths, and total distance sum.
     def nums_sums(leaf):
         node = leaf  # current node
         d_leaf = 0  # distance from leaf to current node
@@ -587,14 +587,14 @@ def average_distance(tree, selector=None, leaf=None, topological=False):
     if leaf is not None:  # from a single leaf
         n, s = nums_sums(leaf)  # number of distances, sum of distances
         return s / n if n > 0 else 0  # average distance
-    else:  # averaged over all selected leaves
+    else:  # weighted average over all leaves
         n_total = 0
         s_total = 0
         for leaf in tree.leaves():
-            if selector(leaf):
-                n, s = nums_sums(leaf)  # number of distances, sum of distances
-                n_total += n
-                s_total += s
+            w = weight_fn(leaf)
+            n, s = nums_sums(leaf)  # number of distances, sum of distances
+            n_total += w * n
+            s_total += w * s
         return s_total / n_total if n_total > 0 else 0  # average of averages
 
 
