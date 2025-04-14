@@ -29,7 +29,7 @@ from bottle import (
 DIR_BIN = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(DIR_BIN))  # so we can import ete w/o install
 
-from ete4 import newick, nexus, indent, operations as ops, treematcher as tm
+from ete4 import Tree, newick, nexus, operations as ops, treematcher as tm
 from . import draw
 from .layout import Layout, BASIC_LAYOUT, update_style
 
@@ -577,7 +577,7 @@ def add_trees_from_request():
 
         names = {}
         for tree in trees:
-            t = loads(tree['newick'], parser)
+            t = Tree(tree['newick'], parser=parser)
             ops.update_sizes_all(t)
             name = tree['name'].replace(',', '_')  # "," is used for subtrees
             names[name] = name  # tree ids are already equal to their names...
@@ -589,16 +589,6 @@ def add_trees_from_request():
         # we could remove the need to send back their "ids".
     except (newick.NewickError, ValueError) as e:
         abort(400, f'malformed tree - {e}')
-
-
-def loads(tree_text, parser):
-    """Return tree loaded from the text using the given parser."""
-    if parser in ['name', 'support']:
-        return newick.loads(tree_text, parser)
-    elif parser == 'nexus':
-        return nexus.loads(tree_text)
-    elif parser == 'indent':
-        return indent.loads(tree_text)
 
 
 def get_trees_from_form():
@@ -788,7 +778,7 @@ if __name__ == '__main__':
     try:
         # Read tree(s) and add them to g_trees.
         for tree in get_trees_from_file(args.FILE):
-            t = loads(tree['newick'], args.parser)
+            t = Tree(tree['newick'], parser=args.parser)
             ops.update_sizes_all(t)
             name = tree['name'].replace(',', '_')  # "," is used for subtrees
             g_trees[name] = t
