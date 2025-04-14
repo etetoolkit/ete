@@ -614,7 +614,7 @@ def distance_matrix(tree, selector=None, topological=False, squared=False):
     d = get_distance_fn(topological)
 
     # Store info on the distance to each node's leaves.
-    dists = {}  # {node: [dist0, ...]} (list of dists with leaves in preorder)
+    dists = {}  # {node: [dist0, ...]} (list of dists with leaves in order)
     for node in traverse(tree, order=+1):  # postorder (descendants first)
         if node.is_leaf:
             dists[node] = [0] if selector(node) else []
