@@ -321,6 +321,24 @@ def callback():
     response.status = 201
     return {'message': 'ok', 'ids': ids}
 
+@post('/load')
+def callback():
+    """Load a tree from a given path."""
+    try:
+        name, path, parser, layout_names = req_json()
+        t = Tree(open(path).read().strip(), parser=parser)
+        # FIXME? Taking layouts from all existing ones: kind of a hack!
+        layouts = {x.name: x for xs in g_layouts.values() for x in xs}
+        add_tree(t, name, [layouts[lname] for lname in layout_names])
+        response.status = 201
+        return {'message': 'ok'}
+    except FileNotFoundError as e:
+        abort(404, f'path {path} not found: {e}')
+    except (newick.NewickError, nexus.NexusError, AssertionError) as e:
+        abort(400, f'parsing error: {e}')
+    except KeyError as e:
+        abort(400, f'layout not found: {e}')
+
 @delete('/trees/<tree_id>')
 def callback(tree_id):
     """Remove a tree."""
