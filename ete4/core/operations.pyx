@@ -662,6 +662,46 @@ def distance_matrix(tree, selector=None, topological=False, squared=False):
     return matrix
 
 
+# The next two functions appear as defined in the Glossary of Terms in
+# doi 10.1016/j.cub.2014.03.011:
+#
+# - PD (phylogenetic diversity)
+#   - Sum of all lengths of all branches in a defined phylogenetic tree.
+#
+# - ED (evolutionary distinctness)
+#   - A species-level measure representing the weighted sum of the
+#     branch lengths along the path from the root of a tree to a given
+#     tip (species). Identical to and sometimes referred to as the fair
+#     proportion (FP) metric. Note that the ED of all species in a tree
+#     sums to PD.
+
+def phylogenetic_diversity(tree, topological=False):
+    """Return the phylogenetic diversity of the tree."""
+    d = get_distance_fn(topological)
+    return sum(d(node) for node in traverse(tree) if not node.is_root)
+
+
+def evolutionary_distinctness(tree, leaves, topological=False):
+    """Return the evolutionary distinctness for the given leaves."""
+    d = get_distance_fn(topological)
+
+    nleaves = {}  # will have for each node the number of descendant leaves
+    for node in traverse(tree, order=+1):
+        nleaves[node] = (1 if node.is_leaf else
+                         sum(nleaves[ch] for ch in node.children))
+
+    eds = []  # list of evolutionary distinctness for the given leaves
+    for leaf in leaves:
+        node = leaf
+        ed = 0  # evolutionary distinctness
+        while not node.is_root:
+            ed += d(node) / nleaves[node]
+            node = node.up
+        eds.append(ed)
+
+    return eds
+
+
 def get_distance_fn(topological, asserted=True):
     """Return a function that returns node distances (branch lengths).
 
