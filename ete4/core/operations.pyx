@@ -669,7 +669,7 @@ def get_distance_fn(topological, asserted=True):
     :param asserted: If True, raises AssertionError on undefined distances.
     """
     if topological:
-        return lambda node: 1
+        return lambda node: 1 if not node.is_root else 0
     elif asserted:
         def asserted_dist(node):
             assert node.dist is not None, 'node without distance: %r' % node
