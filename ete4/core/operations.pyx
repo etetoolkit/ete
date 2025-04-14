@@ -545,6 +545,14 @@ def set_midpoint_outgroup(tree, topological=False):
 def average_distance(tree, weight_fn=None, leaf=None, topological=False):
     """Return the weighted average distance between leaves, or from given leaf.
 
+    To "select" certain leaves, weight_fn can be used for example like::
+
+      weight_fn=lambda node: 1 if node.name in names else 0
+
+    But it can be used generally as relative leaf importance for averaging.
+
+    The algorithm is quite fast: for n leaves, it runs in O(n * log(n)).
+
     :param tree: Tree (starting node) for which to compute the average.
     :param weight_fn: Function that returns the weight of each leaf.
         If None, all leaves will have weight 1.
