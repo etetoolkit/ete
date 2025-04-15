@@ -885,8 +885,11 @@ cdef class Tree:
 
         return current  # the midpoint was the root (we went back to it)
 
-    def average_distance(self, weight_fn=None, leaf=None, topological=False):
-        """Return the weighted average distance between leaves, or from leaf.
+    def mean_distance(self, weight_fn=None, leaf=None, topological=False):
+        """Return the weighted mean distance between leaves, or from leaf.
+
+        This is also called the "Mean Phylogenetic Distance" (MPD) for
+        phylogenetic trees.
 
         To "select" certain leaves, weight_fn can be used for example like::
 
@@ -898,12 +901,12 @@ cdef class Tree:
 
         :param weight_fn: Function that returns the weight of each leaf.
             If None, all leaves will have weight 1.
-        :param leaf: Leaf for which to compute the weighted average distance to
-            leaves. If None, a weighted average for all leaves is made.
+        :param leaf: Leaf for which to compute the weighted mean distance to
+            leaves. If None, a weighted mean for all leaves is made.
         :param topological: If True, the distance between nodes will be the
             number of nodes between them (instead of the sum of branch lenghts).
         """
-        return ops.average_distance(self, weight_fn, leaf, topological)
+        return ops.mean_distance(self, weight_fn, leaf, topological)
 
     def populate(self, size, names=None, model='yule',
                  dist_fn=None, support_fn=None):

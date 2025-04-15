@@ -542,8 +542,11 @@ def set_midpoint_outgroup(tree, topological=False):
     set_outgroup(node, dist=dist)
 
 
-def average_distance(tree, weight_fn=None, leaf=None, topological=False):
-    """Return the weighted average distance between leaves, or from given leaf.
+def mean_distance(tree, weight_fn=None, leaf=None, topological=False):
+    """Return the weighted mean distance between leaves, or from given leaf.
+
+    This is also called the "Mean Phylogenetic Distance" (MPD) for
+    phylogenetic trees.
 
     To "select" certain leaves, weight_fn can be used for example like::
 
@@ -553,11 +556,11 @@ def average_distance(tree, weight_fn=None, leaf=None, topological=False):
 
     The algorithm is quite fast: for n leaves, it runs in O(n * log(n)).
 
-    :param tree: Tree (starting node) for which to compute the average.
+    :param tree: Tree (starting node) for which to compute the mean.
     :param weight_fn: Function that returns the weight of each leaf.
         If None, all leaves will have weight 1.
-    :param leaf: Leaf for which to compute the weighted average distance to
-        leaves. If None, a weighted average for all leaves is made.
+    :param leaf: Leaf for which to compute the weighted mean distance to
+        leaves. If None, a weighted mean for all leaves is made.
     :param topological: If True, the distance between nodes will be the
         number of nodes between them (instead of the sum of branch lenghts).
     """
@@ -591,11 +594,11 @@ def average_distance(tree, weight_fn=None, leaf=None, topological=False):
             node = node.up
         return n, s
 
-    # Return the average distance (from a single leaf, or averaged).
+    # Return the mean distance (from a single leaf, or averaged).
     if leaf is not None:  # from a single leaf
         n, s = nums_sums(leaf)  # number of distances, sum of distances
-        return s / n if n > 0 else 0  # average distance
-    else:  # weighted average over all leaves
+        return s / n if n > 0 else 0  # mean distance
+    else:  # weighted mean over all leaves
         n_total = 0
         s_total = 0
         for leaf in tree.leaves():
@@ -603,7 +606,7 @@ def average_distance(tree, weight_fn=None, leaf=None, topological=False):
             n, s = nums_sums(leaf)  # number of distances, sum of distances
             n_total += w * n
             s_total += w * s
-        return s_total / n_total if n_total > 0 else 0  # average of averages
+        return s_total / n_total if n_total > 0 else 0  # mean of means
 
 
 def distance_matrix(tree, selector=None, topological=False, squared=False):
