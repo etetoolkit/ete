@@ -94,31 +94,6 @@
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="ete4.core.operations.average_distance">
-<span class="sig-name descname"><span class="pre">average_distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leaf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.average_distance" title="Link to this definition">¶</a></dt>
-<dd><p>Return the weighted average distance between leaves, or from given leaf.</p>
-<p>To “select” certain leaves, weight_fn can be used for example like:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">weight_fn</span><span class="o">=</span><span class="k">lambda</span> <span class="n">node</span><span class="p">:</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">names</span> <span class="k">else</span> <span class="mi">0</span>
-</pre></div>
-</div>
-<p>But it can be used generally as relative leaf importance for averaging.</p>
-<p>The algorithm is quite fast: for n leaves, it runs in O(n * log(n)).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>tree</strong> – Tree (starting node) for which to compute the average.</p></li>
-<li><p><strong>weight_fn</strong> – Function that returns the weight of each leaf.
-If None, all leaves will have weight 1.</p></li>
-<li><p><strong>leaf</strong> – Leaf for which to compute the weighted average distance to
-leaves. If None, a weighted average for all leaves is made.</p></li>
-<li><p><strong>topological</strong> – If True, the distance between nodes will be the
-number of nodes between them (instead of the sum of branch lenghts).</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="ete4.core.operations.common_ancestor">
 <span class="sig-name descname"><span class="pre">common_ancestor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.common_ancestor" title="Link to this definition">¶</a></dt>
 <dd><p>Return the last node common to the lineages of the given nodes.</p>
@@ -245,6 +220,33 @@ number of nodes between them (instead of the sum of branch lenghts).</p></li>
 <dt class="sig sig-object py" id="ete4.core.operations.make_name">
 <span class="sig-name descname"><span class="pre">make_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'abcdefghijklmnopqrstuvwxyz'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.make_name" title="Link to this definition">¶</a></dt>
 <dd><p>Return a short name corresponding to the index i.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.mean_distance">
+<span class="sig-name descname"><span class="pre">mean_distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leaf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.mean_distance" title="Link to this definition">¶</a></dt>
+<dd><p>Return the weighted mean distance between leaves, or from given leaf.</p>
+<p>This is also called the “Mean Phylogenetic Distance” (MPD) for
+phylogenetic trees.</p>
+<p>To “select” certain leaves, weight_fn can be used for example like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">weight_fn</span><span class="o">=</span><span class="k">lambda</span> <span class="n">node</span><span class="p">:</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">names</span> <span class="k">else</span> <span class="mi">0</span>
+</pre></div>
+</div>
+<p>But it can be used generally as relative leaf importance for averaging.</p>
+<p>The algorithm is quite fast: for n leaves, it runs in O(n * log(n)).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tree</strong> – Tree (starting node) for which to compute the mean.</p></li>
+<li><p><strong>weight_fn</strong> – Function that returns the weight of each leaf.
+If None, all leaves will have weight 1.</p></li>
+<li><p><strong>leaf</strong> – Leaf for which to compute the weighted mean distance to
+leaves. If None, a weighted mean for all leaves is made.</p></li>
+<li><p><strong>topological</strong> – If True, the distance between nodes will be the
+number of nodes between them (instead of the sum of branch lenghts).</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
