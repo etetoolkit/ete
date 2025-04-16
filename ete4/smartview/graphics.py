@@ -49,10 +49,6 @@ def draw_outline(box):
 
 # Tree drawing commands.
 
-def draw_header(text, fs_max=None, rotation=0, style=''):
-    return ['header', 0, text, fs_max, rotation, style]
-# NOTE: the "0" is a x shift, so it can be translated in draw.js.
-
 def draw_legend(title, variable, colormap=None,
                 value_range=None, color_range=None):
     return ['legend', title, variable, colormap, value_range, color_range]

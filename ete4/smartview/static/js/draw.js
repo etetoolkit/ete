@@ -51,7 +51,8 @@ async function draw_tree() {
         clear_pixi();
 
         // Make sure we have the aligned panel if (and only if) necessary.
-        if (view.shape === "circular" || Object.keys(items).length === 1) {
+        if (view.shape === "circular" ||
+            (Object.keys(items).length === 1 && 0 in items)) {
             div_aligned.style.display = "none";  // hide aligned panel
         }
         else {
@@ -60,15 +61,28 @@ async function draw_tree() {
         }
 
         // Draw all the items, in the main div_tree and in the aligned panel.
-        let xmax = 0;
-        for (const panel of Object.keys(items).sort()) {
-            if (panel == 0)  // draw all received items for tree in div_tree
-                draw(div_tree, items[panel], view.tl, view.zoom);
-            else  // aligned panel items
-                draw_aligned(items[panel].map(item => translate(item, xmax)));
+        const panels = Object.keys(items).sort();
+        const panels_headers = panels.filter(x => x < 0);  // "negative" panels
+        const panels_aligned = panels.filter(x => x > 0);
 
-            if (view.shape === "circular" || panel > 0)
-                xmax += xmaxs[panel];
+        if (0 in items)  // panel 0 has the items for div_tree
+            draw(div_tree, items[0], view.tl, view.zoom);
+
+        let xmax = view.shape === "circular" && 0 in xmaxs ? xmaxs[0] : 0;
+
+        for (const panel of panels_aligned) {
+            draw_aligned(items[panel].map(item => translate(item, xmax)));
+            xmax += xmaxs[panel];
+        }
+
+        xmax = view.shape === "circular" && 0 in xmaxs ? xmaxs[0] : 0;  // reset
+
+        if (view.shape === "rectangular") {  // TODO: headers in circular too
+            for (const panel of panels_headers) {  // negative panels are headers
+                draw_header_background(xmax);
+                draw_header(items[panel].map(item => translate(item, xmax)));
+                xmax += xmaxs[-panel];  // the xmax of the *positive* panel
+            }
         }
 
         // Update variable that shows the number of visible nodes in the menu.
@@ -200,6 +214,59 @@ function draw_aligned(items) {
         draw(div_tree, items, view.tl, view.zoom, replace);
     }
 }
+
+
+// Draw a white box and a line to clean the space where the headers will go.
+function draw_header_background(xmax) {
+    // Position where to put the header (in screen coordinates).
+    const px = view.zoom.x * view.aligned.zoom * (xmax - view.aligned.origin),
+          py = Math.max(100, - view.zoom.y * view.tl.y);
+
+    const g = create_svg_element("g");
+
+    // Put a white rectangle on the background of the header.
+    const padding = 10;  // 10 pixels
+    g.appendChild(create_svg_element("rect", {
+        "x": px - padding,
+        "y": 0,
+        "width": div_aligned.offsetWidth - px + 2 * padding,
+        "height": py + 15,
+        "fill": "white",
+    }));
+
+    // Add a line separating the header from the content below.
+    const line = create_svg_element("line", {
+        "x1": px,                      "y1": py + 10,
+        "x2": div_aligned.offsetWidth, "y2": py + 10,
+    });
+    add_style(line, {
+        stroke: "#e0e0e0",
+        strokeWidth: "3px",
+    });
+
+    g.appendChild(line);
+
+    const svg = div_aligned.getElementsByTagName("svg")[0];
+    svg.appendChild(g);
+}
+
+
+// Draw items in the header position.
+function draw_header(items) {
+    if (view.shape === "rectangular") {
+        const zoom = {x: view.zoom.x * view.aligned.zoom, y: view.zoom.y};
+        const tl_y = Math.min(-100 / zoom.y, view.tl.y);
+        const tl = {x: view.aligned.origin, y: tl_y};
+
+        const replace = false;
+        draw(div_aligned, items, tl, zoom, replace);
+    }
+    else if (view.shape === "circular") {
+        const replace = false;
+        draw(div_tree, items, view.tl, view.zoom, replace);
+    }
+}
+
 
 // Translate the position of the given item.
 function translate(item, shift) {
@@ -561,12 +628,6 @@ function create_item(item, tl, zoom, wmax) {
 
         return create_seq(box, seq, seqtype, draw_text, fs_max, tl, zx, zy,
                           add_ns_prefix(style), render, wmax);
-    }
-    else if (item[0] === "header") {
-        const [ , x, text, fs_max, rotation, style] = item;
-
-        return create_header(x, text, fs_max, rotation, tl, zx, zy,
-                             add_ns_prefix(style));
     }
     else {
         console.log(`Unrecognized item: ${item}`);
@@ -942,58 +1003,6 @@ function create_text(box, anchor, text, fs_max, rotation,
     add_style(t, style);
 
     return t;
-}
-
-
-function create_header(x, text, fs_max, rotation, tl, zx, zy, style="") {
-    if (view.shape !== "rectangular")
-        return null;  // we only put headers in rectangular mode
-
-    // Position where to put the header (in screen coordinates).
-    const px = zx * (x - tl.x),
-          py = Math.max(50, - zy * tl.y);
-
-    const g = create_svg_element("g");
-
-    // Put a white rectangle on the background of the header.
-    const padding = 10;  // 10 pixels
-    g.appendChild(create_svg_element("rect", {
-        "x": px - padding,
-        "y": 0,
-        "width": div_aligned.offsetWidth - px + 2 * padding,
-        "height": py + 15,
-        "fill": "white",
-    }));
-
-    // Add a line separating the header from the content below.
-    const line = create_svg_element("line", {
-        "x1": px,                      "y1": py + fs_max,
-        "x2": div_aligned.offsetWidth, "y2": py + fs_max,
-    });
-    add_style(line, {
-        stroke: "#e0e0e0",
-        strokeWidth: "3px",
-    });
-
-    g.appendChild(line);
-
-    // Add the text (the header itself).
-    const t = create_svg_element("text", {
-        "x": px,
-        "y": py,
-        "font-size": `${fs_max}px`,  // NOTE: We set the font size to font max!
-    });
-
-    t.appendChild(document.createTextNode(text));
-
-    if (rotation != 0)
-        add_rotation(t, rotation, px + 15, py);  // shift px to avoid clipping
-
-    add_style(t, style);
-
-    g.appendChild(t);
-
-    return g;
 }
 
 

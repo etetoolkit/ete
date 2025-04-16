@@ -32,6 +32,7 @@ def draw(tree, layouts, overrides=None, labels=None,
     # Override tree style (with options that normally come from the gui).
     style.update(overrides)
 
+    # Get the appropriate drawer (for rectangular or circular), and draw!
     drawer_class = {'rectangular': DrawerRect,
                     'circular':    DrawerCirc}[style['shape']]
 
@@ -40,37 +41,33 @@ def draw(tree, layouts, overrides=None, labels=None,
     drawer_obj = drawer_class(tree, style, draw_node_fns, labels,
                               viewport, zoom, collapsed_ids, searches)
 
-    yield from drawer_obj.draw()
+    yield from drawer_obj.draw()  # yield graphic commands for all nodes
 
+    # Get the graphic commands, and xmaxs, from applying the tree faces.
+    xmin = 0
+    box = Box(0, 0, 0, 0)  # unlimited in all directions
+    bdy = 0
+    content_height_min = style.get('content-height-min', 5)
+    circular = (style['shape'] == 'circular')
+
+    commands, xmaxs = draw_faces(faces, [tree], xmin, box, bdy,
+                                 zoom, content_height_min,
+                                 collapsed=[],
+                                 circular=circular)
+
+    yield from commands  # yield graphics commands for the tree
+
+    # Now that we know all sizes, yield the "setting all xmax values" command.
+    for panel in set(xmaxs.keys()) | set(drawer_obj.xmaxs.keys()):
+        xmaxs[panel] = max(xmaxs.get(panel, 0), drawer_obj.xmaxs.get(panel, 0))
+
+    yield gr.set_xmaxs(xmaxs)
+
+    # And draw the legends too.
     for face in faces:
-        if face.position == 'header':  # face must be TextFace or similar
-            # TODO: Allow any kind of face, not only TextFace.
-
-            text = eval_as_str(face.code, tree)
-
-            # Go to the right panel.
-            panel = face.column + 1  # where the header should go to
-            yield gr.set_panel(panel)  # command to change to panel
-
-            # Update where we keep the "maximum x" arrived to for that panel.
-            width = (face.fs_max/1.6) * len(text) * cos(face.rotation * pi/180)
-            xmax = max(face.fs_max, width) / zoom[0]
-            drawer_obj.xmaxs[panel] = max(drawer_obj.xmaxs.get(panel, 0), xmax)
-
-            # Draw the header and go back to the main panel.
-            yield gr.draw_header(text, face.fs_max, face.rotation, face.style)
-            yield gr.set_panel(0)  # command to change to panel 0
-            # NOTE: We don't use the face.draw() function, which would
-            # draw inside a box. Instead we extract the data and draw by hand.
-        elif type(face) is LegendFace:
+        if type(face) is LegendFace:
             yield gr.draw_legend(face.title, face.variable, face.colormap,
                                  face.value_range, face.color_range)
-        else:
-            # TODO: Place things according to the position/column/anchor?
-            size = tree.size
-            r = size[0]
-            graphics, size = face.draw([tree], size, [], zoom, (0, 0), r)
-            yield from graphics
 
 
 class Drawer:
@@ -126,7 +123,8 @@ class Drawer:
         # Draw them now in preorder (so they stack nicely, small over big ones).
         yield from self.nodeboxes[::-1]
 
-        yield gr.set_xmaxs(self.xmaxs)
+        # NOTE: No need to do "yield gr.set_xmaxs(self.xmaxs)". The calling
+        # function will use our self.xmaxs and send the right command.
 
     def on_first_visit(self, point, it, graphics):
         """Update list of graphics to draw and return new position."""
@@ -567,7 +565,7 @@ def draw_faces(faces, nodes, xmin, content_box, bdy, zoom,
 
     for pos in positions:
         pos_box = get_position_box(content_box, bdy, pos)
-        bdy_dy = bdy / content_box.dy
+        bdy_dy = bdy / content_box.dy if bdy > 0 else 0
 
         # FIXME: This is a hack to add a little padding!
         # We should get the padding from the style instead.
@@ -584,16 +582,20 @@ def draw_faces(faces, nodes, xmin, content_box, bdy, zoom,
         for icol, col in enumerate(columns):
             if pos == 'aligned':  # here columns are "panels" (starting at 1)
                 commands.append(gr.set_panel(col + 1))
+            elif pos == 'header':
+                commands.append(gr.set_panel(- col - 1))
+                # NOTE: A negative panel number indicates that we will
+                # be drawing the *header* for that (positive) panel.
 
             rows = [f for f in faces_at_pos if f.column == col]
             dx_col = (pos_box.dx - (x_col - pos_box.x)) / (ncols - icol)
 
-            if (pos in ['left', 'right', 'aligned'] or  # in these, dx == 0
-                dx_col * zoom[0] > min_size):           # means no limits for dx
+            if (pos in ['left', 'right', 'aligned', 'header'] or  # unlimited dx
+                dx_col * zoom[0] > min_size):  # dx == 0 has no special meaning
                 elements, x_col = get_col_data(rows, x_col, dx_col, nodes,
                                                pos_box, pos, bdy_dy, zoom,
                                                min_size, collapsed, circular)
-                if pos == 'aligned':
+                if pos in ['aligned', 'header']:
                     xmaxs[col + 1] = max(xmaxs.get(col + 1, 0), x_col)
                     x_col = xmin
                 else:
@@ -601,7 +603,7 @@ def draw_faces(faces, nodes, xmin, content_box, bdy, zoom,
 
                 commands += elements
 
-        if pos == 'aligned':  # leaving the aligned panel
+        if pos in ['aligned', 'header']:  # leaving the aligned panel
             commands.append(gr.set_panel(0))  # command to change to panel 0
 
     return commands, xmaxs
@@ -631,7 +633,8 @@ def get_col_data(rows, x_col, dx_col, nodes, pos_box, pos, bdy_dy, zoom,
 
         dy_row = (dy_pos - dy_sum) / (nrows - irow)  # allocated dy for this row
 
-        is_small = (dy_row * zoom[1] < min_size if not circular else
+        is_small = (pos != 'header' and
+                    dy_row * zoom[1] < min_size if not circular else
                     (pos != 'aligned' and  # circular aligned items always drawn
                      circular_dy(x_col, dx_col, dy_row) * zoom[1] < min_size))
         if is_small:
@@ -666,6 +669,7 @@ def get_position_box(content_box, bdy, position):
     elif p == 'left':    return Box(x - dx, y      , dx, dy      )  # to the left
     elif p == 'right':   return Box(x + dx, y      , 0 , dy      )  # to the right
     elif p == 'aligned': return Box(0     , y      , 0 , dy      )  # aligned panel
+    elif p == 'header':  return Box(0     , y      , 0 , dy      )  # aligned panel
     else: raise ValueError(f'unknown position: {p}')
 
 
