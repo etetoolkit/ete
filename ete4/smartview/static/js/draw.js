@@ -202,10 +202,12 @@ function get_items_per_panel(commands) {
 
 
 // Draw items in the aligned position.
-function draw_aligned(items) {
+function draw_aligned(items, padding_x=15) {
     if (view.shape === "rectangular") {
-        const tl = {x: view.aligned.origin, y: view.tl.y};  // relative "top-left" point
-        const zoom = {x: view.zoom.x * view.aligned.zoom, y: view.zoom.y};
+        const zoom = {x: view.zoom.x * view.aligned.zoom,
+                      y: view.zoom.y};
+        const tl = {x: view.aligned.origin - padding_x / zoom.x,
+                    y: view.tl.y};  // relative "top-left" point
         const replace = false;
         draw(div_aligned, items, tl, zoom, replace);
     }
@@ -217,27 +219,30 @@ function draw_aligned(items) {
 
 
 // Draw a white box and a line to clean the space where the headers will go.
-function draw_header_background(xmax) {
+function draw_header_background(xmax, padding_x=15) {
+    const zoom = {x: view.zoom.x * view.aligned.zoom,
+                  y: view.zoom.y};
     // Position where to put the header (in screen coordinates).
-    const px = view.zoom.x * view.aligned.zoom * (xmax - view.aligned.origin),
-          py = Math.max(100, - view.zoom.y * view.tl.y);
+    const px = zoom.x * (xmax - view.aligned.origin) + padding_x,
+          py = Math.max(40, - view.zoom.y * view.tl.y - 20);
 
     const g = create_svg_element("g");
 
     // Put a white rectangle on the background of the header.
-    const padding = 10;  // 10 pixels
     g.appendChild(create_svg_element("rect", {
-        "x": px - padding,
+        "x": px - 10,
         "y": 0,
-        "width": div_aligned.offsetWidth - px + 2 * padding,
-        "height": py + 15,
+        "width": div_aligned.offsetWidth - px + 2 * 10,
+        "height": py + 20,
         "fill": "white",
     }));
 
     // Add a line separating the header from the content below.
     const line = create_svg_element("line", {
-        "x1": px,                      "y1": py + 10,
-        "x2": div_aligned.offsetWidth, "y2": py + 10,
+        "x1": px,
+        "y1": py + 15,
+        "x2": div_aligned.offsetWidth,
+        "y2": py + 15,
     });
     add_style(line, {
         stroke: "#e0e0e0",
@@ -252,11 +257,12 @@ function draw_header_background(xmax) {
 
 
 // Draw items in the header position.
-function draw_header(items) {
+function draw_header(items, padding_x=15) {
     if (view.shape === "rectangular") {
-        const zoom = {x: view.zoom.x * view.aligned.zoom, y: view.zoom.y};
-        const tl_y = Math.min(-100 / zoom.y, view.tl.y);
-        const tl = {x: view.aligned.origin, y: tl_y};
+        const zoom = {x: view.zoom.x * view.aligned.zoom,
+                      y: view.zoom.y};
+        const tl = {x: view.aligned.origin - padding_x / zoom.x,
+                    y: Math.min(-50 / zoom.y, view.tl.y + 10 / zoom.y)};
 
         const replace = false;
         draw(div_aligned, items, tl, zoom, replace);
