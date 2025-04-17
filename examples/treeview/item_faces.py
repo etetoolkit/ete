@@ -16,9 +16,8 @@ class InteractiveItem(QGraphicsRectItem):
         super().__init__(*arg, **karg)
         self.node = None
         self.label = None
-        self.setCursor(QtCore.Qt.PointingHandCursor)
-        self.setAcceptsHoverEvents(True)
-
+        self.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
+        self.setAcceptHoverEvents(True)
     def hoverEnterEvent(self, e):
         # There are many ways of adding interactive elements. With the
         # following code, I show/hide a text item over my custom
@@ -61,8 +60,8 @@ def ugly_name_face(node, *args, **kargs):
 
     # receive an arbitrary number of arguments, in this case width and
     # height of the faces
-    width = args[0][0]
-    height = args[0][1]
+    width = args[0]
+    height = args[1]
 
     ## Creates a main master Item that will contain all other elements
     ## Items can be standard QGraphicsItem
@@ -76,7 +75,7 @@ def ugly_name_face(node, *args, **kargs):
     masterItem.node = node
 
     # No border around the masterItem.
-    masterItem.setPen(QPen(QtCore.Qt.NoPen))
+    masterItem.setPen(QPen(QtCore.Qt.PenStyle.NoPen))
 
     # Add ellipse around text.
     ellipse = QGraphicsEllipseItem(masterItem.rect())
