@@ -1010,9 +1010,8 @@ collection of rules controlling how different nodes should be drawn.</p>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">arg</span><span class="p">,</span> <span class="o">**</span><span class="n">karg</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">node</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">setCursor</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">PointingHandCursor</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">setAcceptsHoverEvents</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
-
+        <span class="bp">self</span><span class="o">.</span><span class="n">setCursor</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">CursorShape</span><span class="o">.</span><span class="n">PointingHandCursor</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setAcceptHoverEvents</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">hoverEnterEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
         <span class="c1"># There are many ways of adding interactive elements. With the</span>
         <span class="c1"># following code, I show/hide a text item over my custom</span>
@@ -1055,8 +1054,8 @@ collection of rules controlling how different nodes should be drawn.</p>
 
     <span class="c1"># receive an arbitrary number of arguments, in this case width and</span>
     <span class="c1"># height of the faces</span>
-    <span class="n">width</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">height</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">height</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
     <span class="c1">## Creates a main master Item that will contain all other elements</span>
     <span class="c1">## Items can be standard QGraphicsItem</span>
@@ -1070,7 +1069,7 @@ collection of rules controlling how different nodes should be drawn.</p>
     <span class="n">masterItem</span><span class="o">.</span><span class="n">node</span> <span class="o">=</span> <span class="n">node</span>
 
     <span class="c1"># No border around the masterItem.</span>
-    <span class="n">masterItem</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="n">QPen</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">NoPen</span><span class="p">))</span>
+    <span class="n">masterItem</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="n">QPen</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">PenStyle</span><span class="o">.</span><span class="n">NoPen</span><span class="p">))</span>
 
     <span class="c1"># Add ellipse around text.</span>
     <span class="n">ellipse</span> <span class="o">=</span> <span class="n">QGraphicsEllipseItem</span><span class="p">(</span><span class="n">masterItem</span><span class="o">.</span><span class="n">rect</span><span class="p">())</span>
