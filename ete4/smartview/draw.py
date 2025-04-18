@@ -640,8 +640,8 @@ def get_col_data(rows, x_col, dx_col, nodes, pos_box, pos, bdy_dy, zoom,
         if is_small:
             continue  # skip if the available size is too small
 
-        # Finally draw the face.
-        r = x_pos if circular and pos != 'aligned' else 1  # "radius"
+        # Finally draw the face. r is for "radius" (in circular mode).
+        r = x_pos if circular and pos not in ['aligned', 'header'] else 1
         elements, size = face.draw(nodes, Size(dx_col, dy_row),
                                    collapsed, zoom, (ax, ay), r)
         blocks.append( (elements, size) )
