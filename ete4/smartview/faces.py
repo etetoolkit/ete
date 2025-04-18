@@ -262,7 +262,7 @@ class CircleFace(Face):
         zx, zy = zoom
 
         # Find the circle radius (cr) in pixels.
-        assert dx > 0 or dy > 0 or self.rmax is not None
+        assert dx > 0 or dy > 0 or self.rmax is not None, 'rmax needed'
         cr = self.rmax
         if dx > 0:
             cr_x = zx * dx / 2
@@ -295,7 +295,7 @@ class PolygonFace(Face):
         zx, zy = zoom
 
         # Find the (approx.) radius (cr) of circumscribing circle in pixels.
-        assert dx > 0 or dy > 0 or self.rmax is not None
+        assert dx > 0 or dy > 0 or self.rmax is not None, 'rmax needed'
         cr = self.rmax
         if dx > 0:
             cr_x = zx * dx / 2
@@ -427,7 +427,7 @@ class SeqFace(Face):
         if dx <= 0:  # no limit on dx? make it as big as possible
             dx = self.poswidth * len(self.seq) / zx
 
-        assert dy > 0 or self.hmax is not None
+        assert dy > 0 or self.hmax is not None, 'hmax needed'
         if dy <= 0:  # no limit on y? there better be hmax then
             dy = self.hmax / zy
         elif self.hmax is not None:  # if dy > 0, but hmax defined, take the min
@@ -462,7 +462,7 @@ class HeatmapFace(Face):
         if dx <= 0:  # no limit on dx? make it as big as possible
             dx = self.poswidth * len(self.values) / zx
 
-        assert dy > 0 or self.hmax is not None
+        assert dy > 0 or self.hmax is not None, 'hmax needed'
         if dy <= 0:  # no limit on y? there better be hmax then
             dy = self.hmax / zy
         elif self.hmax is not None:  # if dy > 0, but hmax defined, take the min
