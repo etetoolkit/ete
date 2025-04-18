@@ -137,7 +137,7 @@ const view = {
 
     share_view: () => share_view(),
 
-    fullscreen: () => document.documentElement.requestFullscreen(),
+    fullscreen: () => toggle_fullscreen(),
 
     show_help: () => show_help(),
 };
@@ -645,6 +645,15 @@ function share_view() {
             html: "Right-click on link to copy to the clipboard:<br><br>" +
                   `(<a href="${url}">current tree view</a>)`,
         });
+    }
+}
+
+
+function toggle_fullscreen() {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+    } else if (document.exitFullscreen) {
+        document.exitFullscreen();
     }
 }
 
