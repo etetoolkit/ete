@@ -27,13 +27,13 @@ from .coordinates import Size, Box, make_box
 from . import graphics as gr
 
 
+# Default anchors. The x, y go between -1 to +1, with 0 the center.
 default_anchors = {'top':     (-1, 1),   # left, bottom
                    'bottom':  (-1, -1),  # left, top
                    'right':   (-1, 0),   # left, middle
                    'left':    ( 1, 0),   # right, middle
                    'aligned': (-1, 0),   # left, middle
-                   'header':  (-1, 1),   # left, bottom
-                   'footer':  (-1, 1)}   # (unused for the moment)
+                   'header':  (-1, 1)}   # left, bottom
 
 
 class Face:
