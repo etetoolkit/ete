@@ -1296,9 +1296,9 @@ function get_text_placement_circ(box, anchor, text, fs_max, rotation, tl, z, typ
 
 
 // Return the x position and the svg text-anchor to place the text for a given
-// original in-tree x text position, dx width, and ax anchor.
-// This is useful to fine-tune the placement (since dx is just an approximation
-// to the exact width of the text).
+// original in-tree x text position, dx width, dx_rot extra width coming from
+// a rotation, and ax anchor. This is useful to fine-tune the placement (since
+// dx is just an approximation to the exact width of the text).
 function anchored_position(x, dx, dx_rot, ax) {
     if (ax < 0.3)
         return [x + dx_rot, "start"];
