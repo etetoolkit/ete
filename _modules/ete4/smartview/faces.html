@@ -62,13 +62,13 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">graphics</span> <span class="k">as</span> <span class="n">gr</span>
 
 
+<span class="c1"># Default anchors. The x, y go between -1 to +1, with 0 the center.</span>
 <span class="n">default_anchors</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;top&#39;</span><span class="p">:</span>     <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>   <span class="c1"># left, bottom</span>
                    <span class="s1">&#39;bottom&#39;</span><span class="p">:</span>  <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span>  <span class="c1"># left, top</span>
                    <span class="s1">&#39;right&#39;</span><span class="p">:</span>   <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>   <span class="c1"># left, middle</span>
                    <span class="s1">&#39;left&#39;</span><span class="p">:</span>    <span class="p">(</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>   <span class="c1"># right, middle</span>
                    <span class="s1">&#39;aligned&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>   <span class="c1"># left, middle</span>
-                   <span class="s1">&#39;header&#39;</span><span class="p">:</span>  <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>   <span class="c1"># left, bottom</span>
-                   <span class="s1">&#39;footer&#39;</span><span class="p">:</span>  <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)}</span>   <span class="c1"># (unused for the moment)</span>
+                   <span class="s1">&#39;header&#39;</span><span class="p">:</span>  <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)}</span>   <span class="c1"># left, bottom</span>
 
 
 <div class="viewcode-block" id="Face">
@@ -355,7 +355,7 @@
         <span class="n">zx</span><span class="p">,</span> <span class="n">zy</span> <span class="o">=</span> <span class="n">zoom</span>
 
         <span class="c1"># Find the circle radius (cr) in pixels.</span>
-        <span class="k">assert</span> <span class="n">dx</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">dy</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">rmax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="n">dx</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">dy</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">rmax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;rmax needed&#39;</span>
         <span class="n">cr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rmax</span>
         <span class="k">if</span> <span class="n">dx</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">cr_x</span> <span class="o">=</span> <span class="n">zx</span> <span class="o">*</span> <span class="n">dx</span> <span class="o">/</span> <span class="mi">2</span>
@@ -397,7 +397,7 @@
         <span class="n">zx</span><span class="p">,</span> <span class="n">zy</span> <span class="o">=</span> <span class="n">zoom</span>
 
         <span class="c1"># Find the (approx.) radius (cr) of circumscribing circle in pixels.</span>
-        <span class="k">assert</span> <span class="n">dx</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">dy</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">rmax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="n">dx</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">dy</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">rmax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;rmax needed&#39;</span>
         <span class="n">cr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rmax</span>
         <span class="k">if</span> <span class="n">dx</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">cr_x</span> <span class="o">=</span> <span class="n">zx</span> <span class="o">*</span> <span class="n">dx</span> <span class="o">/</span> <span class="mi">2</span>
@@ -565,7 +565,7 @@
         <span class="k">if</span> <span class="n">dx</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># no limit on dx? make it as big as possible</span>
             <span class="n">dx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">poswidth</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">seq</span><span class="p">)</span> <span class="o">/</span> <span class="n">zx</span>
 
-        <span class="k">assert</span> <span class="n">dy</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">hmax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="n">dy</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">hmax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;hmax needed&#39;</span>
         <span class="k">if</span> <span class="n">dy</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># no limit on y? there better be hmax then</span>
             <span class="n">dy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hmax</span> <span class="o">/</span> <span class="n">zy</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">hmax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># if dy &gt; 0, but hmax defined, take the min</span>
@@ -609,7 +609,7 @@
         <span class="k">if</span> <span class="n">dx</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># no limit on dx? make it as big as possible</span>
             <span class="n">dx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">poswidth</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="o">/</span> <span class="n">zx</span>
 
-        <span class="k">assert</span> <span class="n">dy</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">hmax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="n">dy</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">hmax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;hmax needed&#39;</span>
         <span class="k">if</span> <span class="n">dy</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># no limit on y? there better be hmax then</span>
             <span class="n">dy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hmax</span> <span class="o">/</span> <span class="n">zy</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">hmax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># if dy &gt; 0, but hmax defined, take the min</span>
@@ -619,6 +619,51 @@
         <span class="n">box</span> <span class="o">=</span> <span class="n">make_box</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">size</span><span class="p">)</span>
         <span class="n">graphics</span> <span class="o">=</span> <span class="p">[</span><span class="n">gr</span><span class="o">.</span><span class="n">draw_heatmap</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
                                     <span class="bp">self</span><span class="o">.</span><span class="n">value_range</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">color_range</span><span class="p">)]</span>
+
+        <span class="k">return</span> <span class="n">graphics</span><span class="p">,</span> <span class="n">size</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="TextArrayFace">
+<a class="viewcode-back" href="../../../reference/reference_smartview.html#ete4.smartview.faces.TextArrayFace">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TextArrayFace</span><span class="p">(</span><span class="n">Face</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;An array of texts.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TextArrayFace.__init__">
+<a class="viewcode-back" href="../../../reference/reference_smartview.html#ete4.smartview.faces.TextArrayFace.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">texts</span><span class="p">,</span> <span class="n">fs_max</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                 <span class="n">poswidth</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">hmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+                 <span class="n">position</span><span class="o">=</span><span class="s1">&#39;top&#39;</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">anchor</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="n">column</span><span class="p">,</span> <span class="n">anchor</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">texts</span> <span class="o">=</span> <span class="n">texts</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fs_max</span> <span class="o">=</span> <span class="n">fs_max</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rotation</span> <span class="o">=</span> <span class="n">rotation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">poswidth</span> <span class="o">=</span> <span class="n">poswidth</span>  <span class="c1"># width in pixels of each position</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hmax</span> <span class="o">=</span> <span class="n">hmax</span>  <span class="c1"># maximum height in pixels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">style</span> <span class="o">=</span> <span class="n">style</span></div>
+
+
+<div class="viewcode-block" id="TextArrayFace.draw">
+<a class="viewcode-back" href="../../../reference/reference_smartview.html#ete4.smartview.faces.TextArrayFace.draw">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">draw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nodes</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">collapsed</span><span class="p">,</span> <span class="n">zoom</span><span class="p">,</span> <span class="n">ax_ay</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span>
+        <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span> <span class="o">=</span> <span class="n">size</span>
+        <span class="n">zx</span><span class="p">,</span> <span class="n">zy</span> <span class="o">=</span> <span class="n">zoom</span>
+
+        <span class="k">if</span> <span class="n">dx</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># no limit on dx? make it as big as possible</span>
+            <span class="n">dx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">poswidth</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">texts</span><span class="p">)</span> <span class="o">/</span> <span class="n">zx</span>
+
+        <span class="k">assert</span> <span class="n">dy</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">hmax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;hmax needed&#39;</span>
+        <span class="k">if</span> <span class="n">dy</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># no limit on y? there better be hmax then</span>
+            <span class="n">dy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hmax</span> <span class="o">/</span> <span class="n">zy</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">hmax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># if dy &gt; 0, but hmax defined, take the min</span>
+            <span class="n">dy</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">dy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hmax</span> <span class="o">/</span> <span class="n">zy</span><span class="p">)</span>  <span class="c1"># make dy so pixel height &lt; hmax</span>
+
+        <span class="n">size</span> <span class="o">=</span> <span class="n">Size</span><span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">)</span>
+        <span class="n">box</span> <span class="o">=</span> <span class="n">make_box</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">size</span><span class="p">)</span>
+        <span class="n">graphics</span> <span class="o">=</span> <span class="p">[</span><span class="n">gr</span><span class="o">.</span><span class="n">draw_textarray</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="n">ax_ay</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">texts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs_max</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">rotation</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="p">)]</span>
 
         <span class="k">return</span> <span class="n">graphics</span><span class="p">,</span> <span class="n">size</span></div>
 </div>

@@ -156,6 +156,12 @@
 <span class="c1"># NOTE: We include  fs_max  in addition to just  box  because in circular mode</span>
 <span class="c1"># we translate the boxes for the aligned items, changing their pixel size.</span>
 
+<div class="viewcode-block" id="draw_textarray">
+<a class="viewcode-back" href="../../../reference/reference_smartview.html#ete4.smartview.graphics.draw_textarray">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">draw_textarray</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="n">anchor</span><span class="p">,</span> <span class="n">texts</span><span class="p">,</span> <span class="n">fs_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;textarray&#39;</span><span class="p">,</span> <span class="n">box</span><span class="p">,</span> <span class="n">anchor</span><span class="p">,</span> <span class="n">texts</span><span class="p">,</span> <span class="n">fs_max</span><span class="p">,</span> <span class="n">rotation</span><span class="p">,</span> <span class="n">style</span><span class="p">]</span></div>
+
+
 <div class="viewcode-block" id="draw_image">
 <a class="viewcode-back" href="../../../reference/reference_smartview.html#ete4.smartview.graphics.draw_image">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">draw_image</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="n">href</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
@@ -205,7 +211,7 @@
 
     <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">elements</span><span class="p">:</span>
         <span class="n">eid</span> <span class="o">=</span> <span class="n">element</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># &quot;element identifier&quot; (name of drawing element)</span>
-        <span class="k">if</span> <span class="n">eid</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;nodebox&#39;</span><span class="p">,</span> <span class="s1">&#39;array&#39;</span><span class="p">,</span> <span class="s1">&#39;seq&#39;</span><span class="p">,</span> <span class="s1">&#39;heatmap&#39;</span><span class="p">,</span> <span class="s1">&#39;text&#39;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">eid</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;nodebox&#39;</span><span class="p">,</span> <span class="s1">&#39;array&#39;</span><span class="p">,</span> <span class="s1">&#39;seq&#39;</span><span class="p">,</span> <span class="s1">&#39;heatmap&#39;</span><span class="p">,</span> <span class="s1">&#39;text&#39;</span><span class="p">,</span> <span class="s1">&#39;textarray&#39;</span><span class="p">]:</span>
             <span class="c1"># The position for these elements is given by a box.</span>
             <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span> <span class="o">=</span> <span class="n">element</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
             <span class="n">box</span> <span class="o">=</span> <span class="n">x0</span> <span class="o">+</span> <span class="n">x</span><span class="p">,</span> <span class="n">y0</span> <span class="o">+</span> <span class="n">y</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span>
