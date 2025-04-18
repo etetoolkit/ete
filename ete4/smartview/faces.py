@@ -476,6 +476,42 @@ class HeatmapFace(Face):
         return graphics, size
 
 
+class TextArrayFace(Face):
+    """An array of texts."""
+
+    def __init__(self, texts, fs_max=16, rotation=0,
+                 poswidth=15, hmax=None, style='',
+                 position='top', column=0, anchor=None):
+        super().__init__(position, column, anchor)
+
+        self.texts = texts
+        self.fs_max = fs_max
+        self.rotation = rotation
+        self.poswidth = poswidth  # width in pixels of each position
+        self.hmax = hmax  # maximum height in pixels
+        self.style = style
+
+    def draw(self, nodes, size, collapsed, zoom, ax_ay, r):
+        dx, dy = size
+        zx, zy = zoom
+
+        if dx <= 0:  # no limit on dx? make it as big as possible
+            dx = self.poswidth * len(self.texts) / zx
+
+        assert dy > 0 or self.hmax is not None, 'hmax needed'
+        if dy <= 0:  # no limit on y? there better be hmax then
+            dy = self.hmax / zy
+        elif self.hmax is not None:  # if dy > 0, but hmax defined, take the min
+            dy = min(dy, self.hmax / zy)  # make dy so pixel height < hmax
+
+        size = Size(dx, dy)
+        box = make_box((0, 0), size)
+        graphics = [gr.draw_textarray(box, ax_ay, self.texts, self.fs_max,
+                                      self.rotation, self.style)]
+
+        return graphics, size
+
+
 class LegendFace(Face):
     """A legend with information about the data we are visualizing."""
 

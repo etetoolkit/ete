@@ -79,6 +79,9 @@ def draw_text(box, anchor, text, fs_max=None, rotation=0, style=''):
 # NOTE: We include  fs_max  in addition to just  box  because in circular mode
 # we translate the boxes for the aligned items, changing their pixel size.
 
+def draw_textarray(box, anchor, texts, fs_max=None, rotation=0, style=''):
+    return ['textarray', box, anchor, texts, fs_max, rotation, style]
+
 def draw_image(box, href, style=''):
     return ['image', box, href, style]
 
@@ -111,7 +114,7 @@ def draw_group(elements, circular, shift):
 
     for element in elements:
         eid = element[0]  # "element identifier" (name of drawing element)
-        if eid in ['nodebox', 'array', 'seq', 'heatmap', 'text']:
+        if eid in ['nodebox', 'array', 'seq', 'heatmap', 'text', 'textarray']:
             # The position for these elements is given by a box.
             x, y, dx, dy = element[1]
             box = x0 + x, y0 + y, dx, dy

@@ -280,6 +280,10 @@ function translate(item, shift) {
         const [ , box,  anchor, text, fs_max, rotation, style] = item;
         return ["text", tbox(box, shift), anchor, text, fs_max, rotation, style];
     }
+    else if (item[0] == "textarray") {
+        const [ , box,  anchor, text, fs_max, rotation, style] = item;
+        return ["textarray", tbox(box, shift), anchor, text, fs_max, rotation, style];
+    }
     else if (item[0] === "circle") {
         const [ , [x, y], radius, style] = item;
         return ["circle", [x + shift, y], radius, style];
@@ -582,11 +586,30 @@ function create_item(item, tl, zoom, wmax) {
     else if (item[0] === "text") {
         const [ , box, anchor, text, fs_max, rotation, style] = item;
 
-        // TODO: Remove the next line if I'm sure it shouldn't be there.
-        //        const s = typeof style === "string" ? get_class_name(style) : style;
-
         return create_text(box, anchor, text, fs_max, rotation, tl, zx, zy,
                            add_ns_prefix(style));
+    }
+    else if (item[0] === "textarray") {
+        const [ , box, anchor, texts, fs_max, rotation, style] = item;
+
+        const [x0, y0, dx0, dy0] = box;
+        const dx = dx0 / texts.length;
+
+        const imin = Math.max(0, Math.floor((tl.x - x0) / dx));
+        const imax = view.shape === "rectangular" ?
+              Math.min(texts.length, (wmax / zx + tl.x - x0) / dx) :
+              texts.length;
+
+        const [y, dy] = pad(y0, dy0, view.array.padding);
+
+        const container = create_svg_element("g");
+        for (let i = imin, x = x0 + imin * dx; i < imax; i++, x+=dx) {
+            const text = create_text([x, y, dx, dy], anchor, texts[i], fs_max,
+                                     rotation, tl, zx, zy, add_ns_prefix(style));
+            container.appendChild(text);
+        }
+
+        return container;
     }
     else if (item[0] === "image") {
         const [ , box, href, style] = item;
@@ -1230,7 +1253,8 @@ function get_text_placement_rect(box, anchor, text, fs_max, rotation,
     // svgs. We go a bit up (0.9 instead of 1.0) because of the baseline.
 
     const dx_in_tree = scale * dx;
-    const [x_anchor, text_anchor] = anchored_position(x_in_tree, dx_in_tree, ax);
+    const [x_anchor, text_anchor] =
+          anchored_position(x_in_tree, c * dx_in_tree, s * fs / zx, ax);
 
     const corner = tree2rect([x_anchor, y_in_tree], tl, zx, zy);
 
@@ -1263,7 +1287,7 @@ function get_text_placement_circ(box, anchor, text, fs_max, rotation, tl, z, typ
 
     // Convert to in-screen values and return those.
     const dr_in_tree = scale * dr;
-    const [r_anchor, text_anchor] = anchored_position(r_in_tree, dr_in_tree, ar);
+    const [r_anchor, text_anchor] = anchored_position(r_in_tree, dr_in_tree, 0, ar);
 
     const corner = tree2circ([r_anchor, a_in_tree], tl, z);
 
@@ -1275,13 +1299,13 @@ function get_text_placement_circ(box, anchor, text, fs_max, rotation, tl, z, typ
 // original in-tree x text position, dx width, and ax anchor.
 // This is useful to fine-tune the placement (since dx is just an approximation
 // to the exact width of the text).
-function anchored_position(x, dx, ax) {
+function anchored_position(x, dx, dx_rot, ax) {
     if (ax < 0.3)
-        return [x, "start"];
+        return [x + dx_rot, "start"];
     else if (ax < 0.6)
         return [x + dx/2, "middle"];
     else
-        return [x + dx, "end"];
+        return [x + dx - dx_rot, "end"];
 }
 
 
