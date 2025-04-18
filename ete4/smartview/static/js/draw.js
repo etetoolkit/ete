@@ -61,8 +61,8 @@ async function draw_tree() {
         }
 
         // Draw all the items, in the main div_tree and in the aligned panel.
-        const panels = Object.keys(items).sort();
-        const panels_headers = panels.filter(x => x < 0);  // "negative" panels
+        const panels = Object.keys(items).sort((x, y) => Number(x) > Number(y));
+        const panels_headers = panels.filter(x => x < 0).reverse();
         const panels_aligned = panels.filter(x => x > 0);
 
         if (0 in items)  // panel 0 has the items for div_tree
