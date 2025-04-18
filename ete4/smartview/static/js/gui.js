@@ -137,6 +137,8 @@ const view = {
 
     share_view: () => share_view(),
 
+    fullscreen: () => document.documentElement.requestFullscreen(),
+
     show_help: () => show_help(),
 };
 
