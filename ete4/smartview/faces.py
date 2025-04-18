@@ -187,18 +187,19 @@ def texts_size(texts, size_max, fs_max, rotation, zoom, r=1):
     c, s = abs(cos(a)), abs(sin(a))
     nrows = len(texts)  # number of rows of text (normally just 1)
     len_text_max = max((len(text) for text in texts), default=0)
-    w_h = len_text_max / (1.5 * nrows)  # text width over its height
 
     # The font size has to be <= fs_max and has to fit in the given space.
     fs = fs_max
     if dx_max > 0:
-        fs = min(fs, dx_max * zx     / (s + w_h * c))  # to fit in dx_max
+        fs = min(fs, dx_max * zx / (c * len_text_max / 1.5 + s * nrows))
     if dy_max > 0:
-        fs = min(fs, dy_max * zy * r / (c + w_h * s))  # to fit in dy_max
+        fs = min(fs, dy_max * zy / (s * len_text_max / 1.5 + c * nrows))
 
     # The size used by (rotated) text with font size fs.
-    dx = fs * (s + w_h * c) / zx
-    dy = fs * (c + w_h * s) / zy
+    dx = fs * (c * len_text_max / 1.5 + s * nrows) / zx
+    dy = fs * (s * len_text_max / 1.5 + c * nrows) / zy
+
+    # TODO: Check how to use r to do it properly in circular mode.
 
     return Size(dx, dy)
 
