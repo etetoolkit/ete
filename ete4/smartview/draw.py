@@ -7,7 +7,7 @@ from math import sin, cos, pi, sqrt, atan2
 from ..core import operations as ops
 from .coordinates import Size, Box, make_box, get_xs, get_ys
 from .layout import Label, update_style
-from .faces import LegendFace, EvalTextFace, eval_as_str
+from .faces import LegendFace, EvalTextFace, default_anchors
 from . import graphics as gr
 
 
@@ -680,31 +680,19 @@ def get_anchor(anchor, pos, bdy_dy):
     ax, ay = anchor
 
     if ax is None or ay is None:  # not specified? use defaults for position
-        default_ax, default_ay = default_anchor(pos)
+        default_ax, default_ay = default_anchors[pos]
         ax = ax if ax is not None else default_ax
         ay = ay if ay is not None else default_ay
 
     # Transform anchor from [-1, -1] to [0, 1] (with 0 -> bdy / content_box.dy).
     ax = (ax + 1) * 0.5
-    if pos in ['left', 'right', 'aligned']:
+    if pos in ['left', 'right']:
         ax = 1 if pos == 'left' else 0  # x anchor does not make sense in these
         ay = (ay + 1) * bdy_dy if ay < 0 else bdy_dy + ay * (1 - bdy_dy)
     else:
         ay = (ay + 1) * 0.5  # for 'top' or 'bottom'
 
     return ax, ay
-
-
-def default_anchor(position):
-    """Return the default anchor point for the given position."""
-    # The x, y go between -1 to +1, with 0 the center.
-    p = position
-    if   p == 'top':     return ( 0,  1)  # x centered, y bottom (touching the branch)
-    elif p == 'bottom':  return ( 0, -1)  # x centered, y top (touching the branch)
-    elif p == 'left':    return ( 1,  0)  # x right, y centered (at branch y)
-    elif p == 'right':   return (-1,  0)  # x left, y centered (at branch y)
-    elif p == 'aligned': return (-1,  0)  # x left, y centered (at branch y)
-    else: raise ValueError(f'unknown position: {p}')
 
 
 def circular_dy(r, dr, da):
