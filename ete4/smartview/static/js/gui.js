@@ -381,6 +381,7 @@ async function populate_layouts() {
         menus.layouts.addBinding(view.layouts[name], "active", {label: name})
             .on("change", async () => {
                 await set_tree_style();
+                div_legend.innerHTML = "";  // since the legend may have changed
                 update();
             });
     }
@@ -426,6 +427,7 @@ async function on_tree_change() {
     reset_position();
     await populate_layouts();
     draw_minimap();
+    div_legend.innerHTML = "";  // since the legend may have changed
     update();
 
     const sample_trees = [];  // see main()
