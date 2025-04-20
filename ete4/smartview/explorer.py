@@ -698,6 +698,8 @@ def add_tree(tree, name=None, layouts=None, extra_style=None):
     """Add tree, layouts, etc to the global variables, and return its name."""
     name = name or make_name()  # in case we didn't receive one
 
+    assert ',' not in name, 'name cannot have ","'  # we use it for subtrees
+
     ops.update_sizes_all(tree)  # update all internal sizes (ready to draw!)
 
     g_trees[name] = tree  # add tree to the global dict of trees
