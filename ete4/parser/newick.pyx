@@ -205,7 +205,7 @@ def content_repr(node, props=None, parser=None):
             (f'[&&NHX:{pairs_str}]' if pairs_str else ''))  # [&&NHX:p2=x:p3=y]
 
 
-def read_props(str text, long pos, is_leaf, dict parser, check_req):
+def read_props(str text, long pos, is_leaf, dict parser, check_req=False):
     """Return the properties from the content of a node, and where it ends.
 
     Example (for the default format of a leaf node):

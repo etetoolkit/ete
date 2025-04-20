@@ -287,7 +287,8 @@ def callback(tree_id):
         t = load_tree(tree_id)
         node_id, content = req_json()
         node = t[node_id]
-        node.props = newick.get_props(content, is_leaf=True)
+        node.props = newick.read_props(content+';', pos=0, is_leaf=True,
+                                       parser=newick.PARSER_DEFAULT)[0]
         ops.update_sizes_all(t)
         return {'message': 'ok'}
     except (AssertionError, newick.NewickError) as e:
