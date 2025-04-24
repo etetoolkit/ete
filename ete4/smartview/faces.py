@@ -107,6 +107,10 @@ class EvalTextFace(Face):
         if not texts:  # no texts?
             return [], Size(0, 0)  # nothing to draw
 
+        # FIXME: Little hack to make all the texts appear with the same size.
+        len_max = max(len(text) for text in texts)
+        texts = [text + ' ' * (len_max - len(text)) for text in texts]
+
         # Find the size that we will use to draw everything.
         size_used = texts_size(texts, size, self.fs_max, self.rotation, zoom, r)
 
