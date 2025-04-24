@@ -158,6 +158,10 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">texts</span><span class="p">:</span>  <span class="c1"># no texts?</span>
             <span class="k">return</span> <span class="p">[],</span> <span class="n">Size</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1"># nothing to draw</span>
 
+        <span class="c1"># FIXME: Little hack to make all the texts appear with the same size.</span>
+        <span class="n">len_max</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="k">for</span> <span class="n">text</span> <span class="ow">in</span> <span class="n">texts</span><span class="p">)</span>
+        <span class="n">texts</span> <span class="o">=</span> <span class="p">[</span><span class="n">text</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">*</span> <span class="p">(</span><span class="n">len_max</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">))</span> <span class="k">for</span> <span class="n">text</span> <span class="ow">in</span> <span class="n">texts</span><span class="p">]</span>
+
         <span class="c1"># Find the size that we will use to draw everything.</span>
         <span class="n">size_used</span> <span class="o">=</span> <span class="n">texts_size</span><span class="p">(</span><span class="n">texts</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs_max</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotation</span><span class="p">,</span> <span class="n">zoom</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
 
