@@ -173,8 +173,9 @@ def join_branch(node, bprops=None):
         child.dist = (child.dist or 0) + node.dist  # restore total dist
 
     up = node.up
-    i = up.children.index(node)  # position that node had in its parent
-    up.children[i] = child  # put child where the old node was
+    if not node.is_root:
+        i = up.children.index(node)  # position that node had in its parent
+        up.children[i] = child  # put child where the old node was
     child.up = up
 
 
