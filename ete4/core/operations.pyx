@@ -467,23 +467,18 @@ def resolve_polytomy(tree, descendants=True):
             break
 
 
-def farthest_descendant(tree, topological=False):
+def farthest_descendant(tree, is_leaf_fn=None, topological=False):
     """Return the farthest descendant and its distance."""
-    d = get_distance_fn(topological)
-
-    dist_root = {tree: 0}  # will contain all distances to the root
-
     node_farthest, dist_farthest = tree, 0
-    for node in traverse(tree, order=-1):  # traverse in preorder
-        if node is not tree:
-            dist_root[node] = dist = dist_root[node.up] + d(node)
-            if dist > dist_farthest:
-                node_farthest, dist_farthest = node, dist
+    for node, _, dist in traverse_full(tree, order=-1, is_leaf_fn=is_leaf_fn,
+                                       topological=topological):
+        if dist > dist_farthest:
+            node_farthest, dist_farthest = node, dist
 
     return node_farthest, dist_farthest
 
 
-def farthest(tree, topological=False):
+def farthest_nodes(tree, topological=False):
     """Return the farthest nodes and the diameter of the tree."""
     d = get_distance_fn(topological)
 
@@ -527,7 +522,7 @@ def midpoint(tree, topological=False):
     d = get_distance_fn(topological)
 
     # Find the farthest node and diameter.
-    node, _, diameter = farthest(tree, topological)
+    node, _, diameter = farthest_nodes(tree, topological)
 
     # Go thru ancestor nodes until we cover more distance than the tree radius.
     dist = diameter / 2 - d(node)  # radius of the tree minus branch dist
