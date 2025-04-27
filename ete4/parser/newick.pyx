@@ -299,6 +299,9 @@ def read_node(str text, long pos, dict parser, tree_class=Tree, check_req=True):
     """Return a node and the position in the text where it ends."""
     pos = skip_spaces_and_comments(text, pos)
 
+    if pos >= len(text):
+        raise NewickError('newick ends prematurely (unbalanced parenthesis?)')
+
     if text[pos] == '(':  # node has children
         children, pos = read_nodes(text, pos, parser, tree_class)
     else:  # node is a leaf
