@@ -741,6 +741,46 @@ def traverse(tree, order=-1, is_leaf_fn=None):
             visiting += [(n, False) for n in node.children[::-1]]
 
 
+def traverse_full(tree, order=-1, is_leaf_fn=None,
+                  topological=False, descend=None):
+    """Traverse tree depth-first and yield (node, seen status, total distance).
+
+    Similar to traverse(), but more fully featured (and complex).
+
+    :param tree: Tree (starting node) to traverse.
+    :param order: When to yield (-1 preorder, +1 postorder, 0 prepostorder).
+    :param is_leaf_fn: Function that takes a node and returns True if it is
+        considered a leaf. If None, node.is_leaf is used.
+    :param topological: If True, the distance between nodes will be the
+        number of nodes between them (instead of the sum of branch lenghts).
+    :param descend: If not None, a list whose first element is always checked
+        before going deeper in the traversal. To dynamically cut/avoid branches.
+    """
+    d = get_distance_fn(topological)
+    descend = descend if descend is not None else [True]
+
+    dist_total = 0  # distance from tree (our root)
+    visiting = [(tree, False, 0)]  # nodes, if we saw them, and their distance
+    while visiting:
+        node, seen, ndist = visiting.pop()
+
+        is_leaf = is_leaf_fn(node) if is_leaf_fn else node.is_leaf
+
+        if not seen:
+            dist_total += ndist  # we are going forwards in the tree
+
+        if is_leaf or (order <= 0 and not seen) or (order >= 0 and seen):
+            yield node, seen, dist_total
+
+        if descend[0] and not seen and not is_leaf:
+            ndist = d(node) if node is not tree else 0  # node dist
+            visiting.append((node, True, ndist))  # add node back, as seen
+            visiting += [(n, False, d(n)) for n in node.children[::-1]]
+        else:
+            descend[0] = True  # in case it was changed in the caller
+            dist_total -= ndist  # we are going backwards in the tree
+
+
 def traverse_bfs(tree, is_leaf_fn=None):
     """Yield nodes with a breadth-first search (level order traversal)."""
     visiting = deque([tree])
