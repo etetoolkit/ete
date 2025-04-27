@@ -727,7 +727,7 @@ def get_distance_fn(topological, asserted=True):
 
 def traverse(tree, order=-1, is_leaf_fn=None):
     """Traverse the tree and yield nodes in pre (< 0) or post (> 0) order."""
-    visiting = [(tree, False)]
+    visiting = [(tree, False)]  # nodes we are visiting, and if we saw them
     while visiting:
         node, seen = visiting.pop()
 
