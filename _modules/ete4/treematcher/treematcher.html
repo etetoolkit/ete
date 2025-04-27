@@ -44,6 +44,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">ete4</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tree</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ete4.core.eval</span><span class="w"> </span><span class="kn">import</span> <span class="n">eval_on_node</span>
 
 
 <div class="viewcode-block" id="TreePattern">
@@ -108,32 +109,7 @@
     <span class="k">if</span> <span class="n">pattern</span><span class="o">.</span><span class="n">children</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">pattern</span><span class="o">.</span><span class="n">children</span><span class="p">):</span>
         <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># no match if there&#39;s not the same number of children</span>
 
-    <span class="n">context</span> <span class="o">=</span> <span class="n">context</span> <span class="ow">or</span> <span class="p">{}</span>
-    <span class="n">context_base</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s1">&#39;node&#39;</span><span class="p">:</span> <span class="n">node</span><span class="p">,</span>
-        <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">props</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>  <span class="c1"># node.name could be None</span>
-        <span class="s1">&#39;dist&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">dist</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">dist</span><span class="p">,</span>
-        <span class="s1">&#39;support&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">support</span><span class="p">,</span> <span class="s1">&#39;sup&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">support</span><span class="p">,</span>
-        <span class="s1">&#39;up&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">up</span><span class="p">,</span> <span class="s1">&#39;parent&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">up</span><span class="p">,</span>
-        <span class="s1">&#39;children&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">,</span> <span class="s1">&#39;ch&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">,</span>
-        <span class="s1">&#39;is_leaf&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">,</span> <span class="s1">&#39;is_root&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">is_root</span><span class="p">,</span>
-        <span class="s1">&#39;props&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">props</span><span class="p">,</span> <span class="s1">&#39;p&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">props</span><span class="p">,</span>
-        <span class="s1">&#39;species&#39;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s1">&#39;species&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>  <span class="c1"># for PhyloTree</span>
-        <span class="s1">&#39;get&#39;</span><span class="p">:</span> <span class="nb">dict</span><span class="o">.</span><span class="n">get</span><span class="p">,</span>
-        <span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="s1">&#39;dx&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;dy&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-        <span class="s1">&#39;regex&#39;</span><span class="p">:</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">,</span>
-        <span class="s1">&#39;startswith&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="o">.</span><span class="n">startswith</span><span class="p">,</span> <span class="s1">&#39;endswith&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="o">.</span><span class="n">endswith</span><span class="p">,</span>
-        <span class="s1">&#39;upper&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="o">.</span><span class="n">upper</span><span class="p">,</span> <span class="s1">&#39;lower&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="o">.</span><span class="n">lower</span><span class="p">,</span> <span class="s1">&#39;split&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="o">.</span><span class="n">split</span><span class="p">,</span>
-        <span class="s1">&#39;any&#39;</span><span class="p">:</span> <span class="nb">any</span><span class="p">,</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="nb">all</span><span class="p">,</span> <span class="s1">&#39;len&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">,</span>
-        <span class="s1">&#39;sum&#39;</span><span class="p">:</span> <span class="nb">sum</span><span class="p">,</span> <span class="s1">&#39;abs&#39;</span><span class="p">:</span> <span class="nb">abs</span><span class="p">,</span> <span class="s1">&#39;float&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">}</span>
-
-    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">context</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">context_base</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;colliding name: </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">&#39;</span>
-
-    <span class="n">eval_context</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">context_base</span><span class="p">,</span> <span class="o">**</span><span class="n">context</span><span class="p">)</span>  <span class="c1"># merge dicts</span>
-
-    <span class="n">evaluate</span> <span class="o">=</span> <span class="n">safer_eval</span> <span class="k">if</span> <span class="n">pattern</span><span class="o">.</span><span class="n">safer</span> <span class="k">else</span> <span class="nb">eval</span>  <span class="c1"># risky business</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">pattern</span><span class="o">.</span><span class="n">props</span><span class="p">[</span><span class="s1">&#39;code&#39;</span><span class="p">],</span> <span class="n">eval_context</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">eval_on_node</span><span class="p">(</span><span class="n">pattern</span><span class="o">.</span><span class="n">props</span><span class="p">[</span><span class="s1">&#39;code&#39;</span><span class="p">],</span> <span class="n">node</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">pattern</span><span class="o">.</span><span class="n">safer</span><span class="p">):</span>
         <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># no match if the condition for this node if false</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">pattern</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
@@ -156,19 +132,6 @@
     <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">traverse</span><span class="p">(</span><span class="n">strategy</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">match</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
             <span class="k">yield</span> <span class="n">node</span></div>
-
-
-
-<span class="c1"># Calling eval() directly in match() can be a security problem. Specially for</span>
-<span class="c1"># web services, we are better off using this following function:</span>
-<div class="viewcode-block" id="safer_eval">
-<a class="viewcode-back" href="../../../reference/reference_treematcher.html#ete4.treematcher.treematcher.safer_eval">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">safer_eval</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a safer version of eval(code, context).&quot;&quot;&quot;</span>
-    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">code</span><span class="o">.</span><span class="n">co_names</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">context</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;invalid use of </span><span class="si">%r</span><span class="s1"> during evaluation&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
-    <span class="k">return</span> <span class="nb">eval</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;__builtins__&#39;</span><span class="p">:</span> <span class="p">{}},</span> <span class="n">context</span><span class="p">)</span></div>
 
 </pre></div>
 

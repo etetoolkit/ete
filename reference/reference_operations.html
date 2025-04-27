@@ -94,6 +94,45 @@
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.closest_leaf">
+<span class="sig-name descname"><span class="pre">closest_leaf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selector</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.closest_leaf" title="Link to this definition">¶</a></dt>
+<dd><p>Return the closest descendant leaf from the tree.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tree</strong> – Tree (starting node) for which to find its closest leaf.</p></li>
+<li><p><strong>dist_max</strong> – If &gt; 0, do not consider nodes farther than this distance.</p></li>
+<li><p><strong>selector</strong> – Function that returns True for the selected leaves.
+If None, all leaves will be selected.</p></li>
+<li><p><strong>is_leaf_fn</strong> – Function that takes a node and returns True if it is
+considered a leaf. If None, node.is_leaf is used.</p></li>
+<li><p><strong>topological</strong> – If True, the distance between nodes will be the
+number of nodes between them (instead of the sum of branch lenghts).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.closest_relative">
+<span class="sig-name descname"><span class="pre">closest_relative</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">leaf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selector</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.closest_relative" title="Link to this definition">¶</a></dt>
+<dd><p>Return the closest relative leaf to the given leaf.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>leaf</strong> – Leaf for which to find its closest relative leaf.</p></li>
+<li><p><strong>selector</strong> – Function that returns True for the selected leaves.
+If None, all leaves will be selected.</p></li>
+<li><p><strong>is_leaf_fn</strong> – Function that takes a node and returns True if it is
+considered a leaf. If None, node.is_leaf is used.</p></li>
+<li><p><strong>topological</strong> – If True, the distance between nodes will be the
+number of nodes between them (instead of the sum of branch lenghts).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="ete4.core.operations.common_ancestor">
 <span class="sig-name descname"><span class="pre">common_ancestor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.common_ancestor" title="Link to this definition">¶</a></dt>
 <dd><p>Return the last node common to the lineages of the given nodes.</p>
@@ -137,15 +176,15 @@ Otherwise, only the upper triangle is returned (to save memory).</p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="ete4.core.operations.farthest">
-<span class="sig-name descname"><span class="pre">farthest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.farthest" title="Link to this definition">¶</a></dt>
-<dd><p>Return the farthest nodes and the diameter of the tree.</p>
+<dt class="sig sig-object py" id="ete4.core.operations.farthest_descendant">
+<span class="sig-name descname"><span class="pre">farthest_descendant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.farthest_descendant" title="Link to this definition">¶</a></dt>
+<dd><p>Return the farthest descendant and its distance.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="ete4.core.operations.farthest_descendant">
-<span class="sig-name descname"><span class="pre">farthest_descendant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.farthest_descendant" title="Link to this definition">¶</a></dt>
-<dd><p>Return the farthest descendant and its distance.</p>
+<dt class="sig sig-object py" id="ete4.core.operations.farthest_nodes">
+<span class="sig-name descname"><span class="pre">farthest_nodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.farthest_nodes" title="Link to this definition">¶</a></dt>
+<dd><p>Return the farthest nodes and the diameter of the tree.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -407,6 +446,27 @@ reference to it in the code will still be valid.</p>
 <dt class="sig sig-object py" id="ete4.core.operations.traverse_bfs">
 <span class="sig-name descname"><span class="pre">traverse_bfs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.traverse_bfs" title="Link to this definition">¶</a></dt>
 <dd><p>Yield nodes with a breadth-first search (level order traversal).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.traverse_full">
+<span class="sig-name descname"><span class="pre">traverse_full</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.traverse_full" title="Link to this definition">¶</a></dt>
+<dd><p>Traverse tree depth-first and yield (node, seen status, total distance).</p>
+<p>Similar to traverse(), but more fully featured (and complex).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tree</strong> – Tree (starting node) to traverse.</p></li>
+<li><p><strong>order</strong> – When to yield (-1 preorder, +1 postorder, 0 prepostorder).</p></li>
+<li><p><strong>is_leaf_fn</strong> – Function that takes a node and returns True if it is
+considered a leaf. If None, node.is_leaf is used.</p></li>
+<li><p><strong>topological</strong> – If True, the distance between nodes will be the
+number of nodes between them (instead of the sum of branch lenghts).</p></li>
+<li><p><strong>descend</strong> – If not None, a list whose first element is always checked
+before going deeper in the traversal. To dynamically cut/avoid branches.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
