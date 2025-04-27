@@ -30,6 +30,7 @@ DIR_BIN = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(DIR_BIN))  # so we can import ete w/o install
 
 from ete4 import Tree, newick, nexus, operations as ops, treematcher as tm
+from ete4.core.eval import eval_on_node
 from . import draw
 from .layout import Layout, BASIC_LAYOUT, update_style
 
@@ -398,18 +399,7 @@ def sort(tree_id, node_id, key_text, reverse):
     """Sort the (sub)tree corresponding to tree_id and node_id."""
     t = load_tree(tree_id)
 
-    try:
-        code = compile(key_text, '<string>', 'eval')
-    except SyntaxError as e:
-        abort(400, f'compiling expression: {e}')
-
-    def key(node):
-        return safer_eval(code, {
-            'node': node, 'name': node.name, 'is_leaf': node.is_leaf,
-            'length': node.dist, 'dist': node.dist, 'd': node.dist,
-            'size': node.size, 'dx': node.size[0], 'dy': node.size[1],
-            'children': node.children, 'ch': node.children,
-            'len': len, 'sum': sum, 'abs': abs})
+    key = get_eval_search(key_text)
 
     ops.sort(t[node_id], key, reverse)
 
@@ -553,20 +543,7 @@ def get_eval_search(expression):
     except SyntaxError as e:
         abort(400, f'compiling expression: {e}')
 
-    return lambda node: safer_eval(code, {
-        'node': node, 'parent': node.up, 'up': node.up,
-        'name': node.name, 'is_leaf': node.is_leaf,
-        'length': node.dist, 'dist': node.dist, 'd': node.dist,
-        'properties': node.props, 'props': node.props, 'p': node.props,
-        'get': dict.get,
-        'children': node.children, 'ch': node.children,
-        'size': node.size, 'dx': node.size[0], 'dy': node.size[1],
-        'regex': re.search,
-        'startswith': str.startswith, 'endswith': str.endswith,
-        'upper': str.upper, 'lower': str.lower, 'split': str.split,
-        'any': any, 'all': all, 'len': len,
-        'sum': sum, 'abs': abs, 'float': float, 'pi': pi})
-
+    return lambda node: eval_on_node(code, node, safer=True)
 
 def safer_eval(code, context):
     """Return a safer version of eval(code, context)."""

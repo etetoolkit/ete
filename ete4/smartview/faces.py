@@ -23,6 +23,7 @@ from base64 import b64encode
 from math import pi, cos, sin
 import re  # so it can be used when evaluating expressions
 
+from ete4.core.eval import eval_on_node
 from .coordinates import Size, Box, make_box
 from . import graphics as gr
 
@@ -231,25 +232,8 @@ def draw_texts(box, ax_ay, texts, fs_max, rotation, style):
 
 def eval_as_str(code, node):
     """Return the given code evaluated on values related to the given node."""
-    result = safer_eval(code, {
-        'node': node, 'name': node.name, 'is_leaf': node.is_leaf,
-        'length': node.dist, 'dist': node.dist, 'd': node.dist,
-        'size': node.size, 'dx': node.size[0], 'dy': node.size[1],
-        'support': node.support,
-        'properties': node.props, 'props': node.props, 'p': node.props,
-        'get': dict.get, 'split': str.split,
-        'children': node.children, 'ch': node.children,
-        'regex': re.search,
-        'len': len, 'sum': sum, 'abs': abs, 'float': float, 'pi': pi})
+    result = eval_on_node(code, node)
     return str(result) if result is not None else ''
-
-
-def safer_eval(code, context):
-    """Return a safer version of eval(code, context)."""
-    for name in code.co_names:
-        if name not in context:
-            raise SyntaxError('invalid use of %r during evaluation' % name)
-    return eval(code, {'__builtins__': {}}, context)
 
 
 class CircleFace(Face):
