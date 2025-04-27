@@ -467,6 +467,40 @@ def resolve_polytomy(tree, descendants=True):
             break
 
 
+def closest_leaf(tree, dist_max=-1, selector=None,
+                 is_leaf_fn=None, topological=False):
+    """Return the closest descendant leaf from the tree.
+
+    :param tree: Tree (starting node) for which to find its closest leaf.
+    :param dist_max: If > 0, do not consider nodes farther than this distance.
+    :param selector: Function that returns True for the selected leaves.
+        If None, all leaves will be selected.
+    :param is_leaf_fn: Function that takes a node and returns True if it is
+        considered a leaf. If None, node.is_leaf is used.
+    :param topological: If True, the distance between nodes will be the
+        number of nodes between them (instead of the sum of branch lenghts).
+    """
+    # Get default functions to select leaves and find if a node is a leaf.
+    selector = selector or (lambda node: True)  # select all by default
+    is_leaf = is_leaf_fn or (lambda node: node.is_leaf)
+
+    # Create a traversing generator that we can control while traversing.
+    descend = [True]  # to control if we want to stop descending
+    traversal = traverse_full(tree, order=-1, is_leaf_fn=is_leaf_fn,
+                              topological=topological, descend=descend)
+
+    leaf_closest, dist_closest = None, -1  # current closest leaf and distance
+    for node, _, dist in traversal:
+        if ((leaf_closest is not None and dist > dist_closest) or
+            (dist_max > 0             and dist > dist_max)):
+            descend[0] = False  # signal the generator not to descend
+        elif (is_leaf(node) and selector(node) and  # valid leaf
+              (leaf_closest is None or dist < dist_closest)):  # closer!
+            leaf_closest, dist_closest = node, dist
+
+    return leaf_closest, dist_closest
+
+
 def farthest_descendant(tree, is_leaf_fn=None, topological=False):
     """Return the farthest descendant and its distance."""
     node_farthest, dist_farthest = tree, 0
