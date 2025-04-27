@@ -228,8 +228,11 @@ def callback(tree_id):
 def callback(tree_id):
     """Sort the nodes in the tree according to the criteria in the request."""
     node_id, key_text, reverse = req_json()
-    sort(tree_id, node_id, key_text, reverse)
-    return {'message': 'ok'}
+    try:
+        sort(tree_id, node_id, key_text, reverse)
+        return {'message': 'ok'}
+    except Exception as e:
+        abort(400, f'evaluating expression: {e}')
 
 @put('/trees/<tree_id>/set_outgroup')
 def callback(tree_id):
