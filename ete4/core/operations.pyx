@@ -497,7 +497,7 @@ def farthest(tree, topological=False):
         if node.is_leaf:
             fd[node] = (node, d(node))
         else:
-            f_leaf, dist = max((fd[n] for n in node.children), key=last)
+            f_leaf, dist = max([fd[n] for n in node.children], key=last)
             fd[node] = (f_leaf, (d(node) if node is not tree else 0) + dist)
 
     # Part 2: Find the extremes and the diameter.
@@ -511,7 +511,7 @@ def farthest(tree, topological=False):
     curr = extreme1.up  # the current node we are visiting
     d_curr_e1 = d(extreme1)  # distance from current to the 1st extreme
     while curr is not tree.up:
-        leaf, dist = max((fd[n] for n in curr.children if n is not prev),
+        leaf, dist = max([fd[n] for n in curr.children if n is not prev],
                          default=(curr, 0), key=last)
         if dist + d_curr_e1 > diameter:
             extreme2, diameter = leaf, dist + d_curr_e1
