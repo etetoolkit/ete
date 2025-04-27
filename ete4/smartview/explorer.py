@@ -503,7 +503,8 @@ def store_search(tree_id, args):
         parents = set()  # all ancestors leading to the result nodes
         for node in results:
             current = node.up  # current node that we examine
-            while current is not tree and current not in parents:
+            while (current is not None and current is not tree and
+                   current not in parents):
                 parents.add(current)
                 current = current.up  # go to its parent
 
