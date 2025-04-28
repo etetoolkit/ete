@@ -24,11 +24,16 @@ def eval_on_node(code, node, context=None, safer=False):
     :param safer: If True, use a safer version of eval restricting keywords.
     """
     context = context or {}
+
+    # Default values that make it easier when checking all nodes, even the root.
+    name = node.props.get('name', '')  # node.name could be None
+    dist = node.props.get('dist', 0 if node.is_root else 1)  # and node.dist
+    support = node.props.get('support', 1)  # and node.support
+
     context_base = {
-        'node': node,
-        'name': node.props.get('name', ''),  # node.name could be None
-        'dist': node.dist, 'd': node.dist, 'length': node.dist,
-        'support': node.support, 'sup': node.support,
+        'node': node, 'name': name,
+        'dist': dist, 'd': dist, 'length': dist,
+        'support': support, 'sup': support,
         'up': node.up, 'parent': node.up,
         'children': node.children, 'ch': node.children,
         'is_leaf': node.is_leaf, 'is_root': node.is_root,
