@@ -369,9 +369,13 @@ def read_label(label):
     def to_num(a):
         return float(a) if a is not None else None
 
+    # Name the style similar to label.js with get_class_name(...).
+    valid = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-'
+    style = 'label_' + ''.join(x for x in expression if x in valid)
+
     return Label(
         code=compile(expression, '<string>', 'eval'),
-        style='label_'+expression,  # will be used to set its looks in css
+        style=style,  # will be used to set its looks in css
         node_type=node_type,  # type of nodes to apply this label to
         position=position,  # top, bottom, left, right, aligned
         column=int(column),  # to locate relative to others in the same position
