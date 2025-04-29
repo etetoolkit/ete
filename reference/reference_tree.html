@@ -5,11 +5,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Tree (main class) &#8212; ETE Toolkit 4.2.2 documentation</title>
+    <title>Tree (main class) &#8212; ETE Toolkit 4.3.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=b08954a9" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=27fed22d" />
-    <script src="../_static/documentation_options.js?v=432e6325"></script>
+    <script src="../_static/documentation_options.js?v=a17b270f"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="icon" href="../_static/favicon.ico"/>
@@ -148,6 +148,25 @@ or any custom feature present in the tree).</p></li>
 <dt class="sig sig-object py" id="ete4.core.tree.Tree.children">
 <span class="sig-name descname"><span class="pre">children</span></span><a class="headerlink" href="#ete4.core.tree.Tree.children" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.closest_relative">
+<span class="sig-name descname"><span class="pre">closest_relative</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leaf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selector</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.closest_relative" title="Link to this definition">¶</a></dt>
+<dd><p>Return the closest relative leaf to the given leaf.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>leaf</strong> – Leaf for which to find its closest relative leaf.</p></li>
+<li><p><strong>selector</strong> – Function that returns True for the selected leaves.
+If None, all leaves will be selected.</p></li>
+<li><p><strong>is_leaf_fn</strong> – Function that takes a node and returns True if it is
+considered a leaf. If None, node.is_leaf is used.</p></li>
+<li><p><strong>topological</strong> – If True, the distance between nodes will be the
+number of nodes between them (instead of the sum of branch lenghts).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.core.tree.Tree.common_ancestor">
@@ -338,6 +357,11 @@ function. This mechanism can be seen as a “cut and paste”.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ete4.core.tree.Tree.dist">
 <span class="sig-name descname"><span class="pre">dist</span></span><a class="headerlink" href="#ete4.core.tree.Tree.dist" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.down">
+<span class="sig-name descname"><span class="pre">down</span></span><a class="headerlink" href="#ete4.core.tree.Tree.down" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -670,6 +694,11 @@ number of nodes between them (instead of the sum of branch lenghts).</p></li>
 <span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#ete4.core.tree.Tree.name" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.parent">
+<span class="sig-name descname"><span class="pre">parent</span></span><a class="headerlink" href="#ete4.core.tree.Tree.parent" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.core.tree.Tree.pop_child">
 <span class="sig-name descname"><span class="pre">pop_child</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">child_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.pop_child" title="Link to this definition">¶</a></dt>
@@ -920,6 +949,23 @@ value will be returned. See also <code class="xref py py-func docutils literal n
     <span class="nb">print</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">prop</span><span class="p">[</span><span class="s1">&#39;support&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.set_midpoint_outgroup">
+<span class="sig-name descname"><span class="pre">set_midpoint_outgroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.set_midpoint_outgroup" title="Link to this definition">¶</a></dt>
+<dd><p>Use the midpoint to set as outgroup the first node from it.</p>
+<p>Similar (but with a more precise cutting point in the branch) to:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">midpoint</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">get_midpoint_outgroup</span><span class="p">()</span>
+<span class="n">t</span><span class="o">.</span><span class="n">set_outgroup</span><span class="p">(</span><span class="n">midpoint</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>topological</strong> – If True, the distance between nodes will be the
+number of nodes between them (instead of the sum of branch lenghts).</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
