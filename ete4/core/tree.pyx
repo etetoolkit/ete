@@ -983,6 +983,19 @@ cdef class Tree:
         node = self[node] if type(node) == str else node  # translates if needed
         ops.set_outgroup(node, bprops, dist)
 
+    def set_midpoint_outgroup(self, topological=False):
+        """Use the midpoint to set as outgroup the first node from it.
+
+        Similar (but with a more precise cutting point in the branch) to::
+
+          midpoint = t.get_midpoint_outgroup()
+          t.set_outgroup(midpoint)
+
+        :param topological: If True, the distance between nodes will be the
+            number of nodes between them (instead of the sum of branch lenghts).
+        """
+        ops.set_midpoint_outgroup(self, topological)
+
     def unroot(self, bprops=None):
         """Unroot the tree, that is, make the root not have 2 children.
 
