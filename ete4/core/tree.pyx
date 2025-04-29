@@ -98,6 +98,7 @@ cdef class Tree:
         self.props = tree.props
         self.children = tree.children
 
+    # Common property attributes (name, dist, support, children).
     @property
     def name(self):
         return str(self.props.get('name')) if 'name' in self.props else None
@@ -169,6 +170,7 @@ cdef class Tree:
         """Return True if the current node has no parent."""
         return self.up is None
 
+    # Property attributes that take some computation (root, id, level).
     @property
     def root(self):
         """Return the absolute root node of the current tree structure."""
@@ -197,47 +199,7 @@ cdef class Tree:
             node = node.up
         return n
 
-    def get_prop(self, prop, default=None):
-        """Return the node's property prop (an attribute or in self.props)."""
-        attr = getattr(self, prop, None)
-        return attr if attr is not None else self.props.get(prop, default)
-
-    def __bool__(self):
-        # If this is not defined, bool(t) will call len(t) (terribly slow!).
-        return True
-
-    def __len__(self):
-        """Return the number of leaves."""
-        return sum(1 for _ in self.leaves())
-
-    def __getitem__(self, node_id):
-        """Return the node that matches the given node_id."""
-        try:
-            if type(node_id) == str:    # node_id can be the name of a node
-                return next(n for n in self.traverse() if n.name == node_id)
-            elif type(node_id) == int:  # or the index of a child
-                return self.children[node_id]
-            else:                       # or a list/tuple of a descendant
-                node = self
-                for i in node_id:
-                    node = node.children[i]
-                return node
-        except StopIteration:
-            raise TreeError(f'No node found with name: {node_id}')
-        except (IndexError, TypeError) as e:
-            raise TreeError(f'Invalid node_id: {node_id}')
-
-    def __add__(self, value):
-        """Sum trees. t1 + t2 returns a new tree with children=[t1, t2]."""
-        # Should a make the sum with two copies of the original trees?
-        if type(value) == self.__class__:
-            new_root = self.__class__()
-            new_root.add_child(self)
-            new_root.add_child(value)
-            return new_root
-        else:
-            raise TreeError("Invalid node type")
-
+    # Special methods.
     def __repr__(self):
         name_str = (' ' + repr(self.name)) if self.name else ''
         return '<Tree%s at %s>' % (name_str, hex(self.__hash__()))
@@ -260,6 +222,23 @@ cdef class Tree:
         return text_viz.to_str(self, show_internal, compact, props,
                                px, py, px0, cascade)
 
+    def __getitem__(self, node_id):
+        """Return the node that matches the given node_id."""
+        try:
+            if type(node_id) == str:    # node_id can be the name of a node
+                return next(n for n in self.traverse() if n.name == node_id)
+            elif type(node_id) == int:  # or the index of a child
+                return self.children[node_id]
+            else:                       # or a list/tuple of a descendant
+                node = self
+                for i in node_id:
+                    node = node.children[i]
+                return node
+        except StopIteration:
+            raise TreeError(f'No node found with name: {node_id}')
+        except (IndexError, TypeError) as e:
+            raise TreeError(f'Invalid node_id: {node_id}')
+
     def __contains__(self, node):
         """Return True if the tree contains the given node.
 
@@ -275,6 +254,31 @@ cdef class Tree:
     def __iter__(self):
         """Yield all the terminal nodes (leaves)."""
         yield from self.leaves()
+
+    def __len__(self):
+        """Return the number of leaves."""
+        return sum(1 for _ in self.leaves())
+
+    def __bool__(self):
+        # If this is not defined, bool(t) will call len(t) (terribly slow!).
+        return True
+
+    def __add__(self, value):
+        """Sum trees. t1 + t2 returns a new tree with children=[t1, t2]."""
+        # Should a make the sum with two copies of the original trees?
+        if type(value) == self.__class__:
+            new_root = self.__class__()
+            new_root.add_child(self)
+            new_root.add_child(value)
+            return new_root
+        else:
+            raise TreeError("Invalid node type")
+
+    # Getting and setting properties. Though normally it's better to use props.
+    def get_prop(self, prop, default=None):
+        """Return the node's property prop (an attribute or in self.props)."""
+        attr = getattr(self, prop, None)
+        return attr if attr is not None else self.props.get(prop, default)
 
     def add_prop(self, name, value):
         """Add or update node's property to the given value."""
