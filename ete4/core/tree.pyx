@@ -1801,6 +1801,10 @@ cdef class Tree:
         in the order in which they appear in the matrix (i.e. the
         column and/or row headers).
         """
+        # TODO: Consider naming this distance_matrix(), and also writing it
+        #       more clearly (and much faster, and with more options) as:
+        #   return ops.distance_matrix(self, ...)
+
         leaves = list(self.leaves())
         paths = {x: set() for x in leaves}
 
