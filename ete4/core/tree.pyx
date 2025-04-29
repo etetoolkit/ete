@@ -871,6 +871,10 @@ cdef class Tree:
         :param topological: If True, the distance between nodes will be the
             number of nodes between them (instead of the sum of branch lenghts).
         """
+        # TODO: Consider naming it farthest_descendant(), and also writing it
+        #       more clearly (but same speed) as:
+        #   return ops.farthest_descendant(self, is_leaf, topological)
+
         min_node, min_dist, max_node, max_dist = \
             self._get_farthest_and_closest_leaves(topological=topological,
                                                   is_leaf_fn=is_leaf_fn)
@@ -882,6 +886,10 @@ cdef class Tree:
         :param topological: If True, the distance between nodes will be the
             number of nodes between them (instead of the sum of branch lenghts).
         """
+        # TODO: Consider naming this closest_leaf(), and also writing it
+        #       more clearly (and much faster, and with more options) as:
+        #   return ops.closest_leaf(self, ...)
+
         min_node, min_dist, max_node, max_dist = \
             self._get_farthest_and_closest_leaves(topological=topological,
                                                   is_leaf_fn=is_leaf_fn)
