@@ -409,7 +409,7 @@ class SeqFace(Face):
         self.style = style
         self.render = render
 
-    def draw(self, nodes, size, collapsed, zoom, ax_ay, r):
+    def draw(self, nodes, size, collapsed, zoom=(1, 1), ax_ay=(0, 0), r=1):
         dx, dy = size
         zx, zy = zoom
 
@@ -444,7 +444,7 @@ class HeatmapFace(Face):
         self.poswidth = poswidth  # width in pixels of each position (square)
         self.hmax = hmax  # maximum height in pixels
 
-    def draw(self, nodes, size, collapsed, zoom, ax_ay, r):
+    def draw(self, nodes, size, collapsed, zoom=(1, 1), ax_ay=(0, 0), r=1):
         dx, dy = size
         zx, zy = zoom
 
@@ -480,7 +480,7 @@ class TextArrayFace(Face):
         self.hmax = hmax  # maximum height in pixels
         self.style = style
 
-    def draw(self, nodes, size, collapsed, zoom, ax_ay, r):
+    def draw(self, nodes, size, collapsed, zoom=(1, 1), ax_ay=(0, 0), r=1):
         dx, dy = size
         zx, zy = zoom
 
@@ -492,6 +492,8 @@ class TextArrayFace(Face):
             dy = self.hmax / zy
         elif self.hmax is not None:  # if dy > 0, but hmax defined, take the min
             dy = min(dy, self.hmax / zy)  # make dy so pixel height < hmax
+        # FIXME: The dy that we get from hmax seems not to be used correctly
+        # later (probably related to draw.js:get_text_placement_rect()).
 
         size = Size(dx, dy)
         box = make_box((0, 0), size)
