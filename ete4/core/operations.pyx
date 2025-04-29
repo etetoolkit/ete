@@ -514,24 +514,23 @@ def closest_relative(leaf, selector=None, is_leaf_fn=None, topological=False):
     """
     d = get_distance_fn(topological)
 
-    closest = None
-    dist_from_leaf = 0
-    dist_closest = -1
-    node = leaf
-    while (not node.is_root and
-           (dist_closest < 0 or dist_from_leaf < dist_closest)):
+    closest, dist_closest = None, -1  # current closest relative and distance
+
+    node = leaf  # we'll go from the leaf towards the root
+    dist_from_leaf = 0  # and accumulate the distance from the leaf
+    while not node.is_root and (closest is None or dist_from_leaf < dist_closest):
         dist_from_leaf += d(node)
 
         for sis in node.get_sisters():
-            ndist = d(sis)
-            dist_max = dist_closest - dist_from_leaf - ndist
+            sdist = d(sis)  # sister dist (length of sister branch)
+            dist_max = dist_closest - (dist_from_leaf + sdist)
             if closest is None or dist_max > 0:
-                cs, ds = closest_leaf(sis, dist_max, selector,
-                                      is_leaf_fn, topological)
-                if cs is not None:
-                    if closest is None or ndist + ds < dist_closest:
-                        closest = cs
-                        dist_closest = dist_from_leaf + ndist + ds
+                closest_sis, dist = closest_leaf(sis, dist_max, selector,
+                                                 is_leaf_fn, topological)
+                if closest_sis is not None:  # found closest leaf from sis
+                    dist_total = dist_from_leaf + sdist + dist  # leaf to leaf
+                    if closest is None or dist_total < dist_closest:
+                        closest, dist_closest = closest_sis, dist_total
 
         node = node.up
 
