@@ -953,6 +953,8 @@ cdef class Tree:
         :param topological: If True, the distance between nodes will be the
             number of nodes between them (instead of the sum of branch lenghts).
         """
+        # TODO: Consider naming this function midpoint().
+
         # Start at the farthest leaf from the root.
         current, _ = self.root.get_farthest_leaf(topological=topological)
         _, diameter = current.get_farthest_node(topological=topological)
