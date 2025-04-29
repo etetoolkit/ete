@@ -140,6 +140,25 @@ cdef class Tree:
         self._children = []
         self.add_children(children)
 
+    # Property attributes for symmetry with 'up' (parent) and 'children' (down).
+    @property
+    def parent(self):
+        return self.up
+
+    @parent.setter
+    def parent(self, value):
+        self.up = value
+
+    @property
+    def down(self):
+        return self._children
+
+    @down.setter
+    def down(self, value):
+        self._children = []
+        self.add_children(value)
+
+    # Property attributes with simple convenient tests (is_leaf, is_root).
     @property
     def is_leaf(self):
         """Return True if the current node is a leaf."""
