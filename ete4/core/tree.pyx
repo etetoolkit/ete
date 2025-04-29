@@ -776,6 +776,35 @@ cdef class Tree:
         """Yield leaf nodes matching the given name."""
         return self.search_nodes(name=name, children=[])
 
+    def populate(self, size, names=None, model='yule',
+                 dist_fn=None, support_fn=None):
+        """Populate current node with a dichotomic random topology.
+
+        :param size: Number of leaves to add. The necessary
+            intermediate nodes will be created too.
+        :param names: Collection (list or set) of names to name the leaves.
+            If None, leaves will be named using short letter sequences.
+        :param model: Model used to generate the topology. It can be:
+
+            - "yule" or "yule-harding": Every step a randomly selected leaf
+              grows two new children.
+            - "uniform" or "pda": Every step a randomly selected node (leaf
+              or interior) grows a new sister leaf.
+
+        :param dist_fn: Function to produce values to set as distance
+            in newly created branches, or None for no distances.
+        :param support_fn: Function to produce values to set as support
+            in newly created internal branches, or None for no supports.
+
+        Example to create a tree with 100 leaves, uniformly random
+        distances between 0 and 1, and all valid supports set to 1::
+
+          t = Tree()
+          random.seed(42)  # set seed if we want a reproducible result
+          t.populate(100, dist_fn=random.random, support_fn=lambda: 1)
+        """
+        ops.populate(self, size, names, model, dist_fn, support_fn)
+
     # ###########################
     # Distance related functions
     # ###########################
@@ -917,35 +946,6 @@ cdef class Tree:
             number of nodes between them (instead of the sum of branch lenghts).
         """
         return ops.mean_distance(self, weight_fn, leaf, topological)
-
-    def populate(self, size, names=None, model='yule',
-                 dist_fn=None, support_fn=None):
-        """Populate current node with a dichotomic random topology.
-
-        :param size: Number of leaves to add. The necessary
-            intermediate nodes will be created too.
-        :param names: Collection (list or set) of names to name the leaves.
-            If None, leaves will be named using short letter sequences.
-        :param model: Model used to generate the topology. It can be:
-
-            - "yule" or "yule-harding": Every step a randomly selected leaf
-              grows two new children.
-            - "uniform" or "pda": Every step a randomly selected node (leaf
-              or interior) grows a new sister leaf.
-
-        :param dist_fn: Function to produce values to set as distance
-            in newly created branches, or None for no distances.
-        :param support_fn: Function to produce values to set as support
-            in newly created internal branches, or None for no supports.
-
-        Example to create a tree with 100 leaves, uniformly random
-        distances between 0 and 1, and all valid supports set to 1::
-
-          t = Tree()
-          random.seed(42)  # set seed if we want a reproducible result
-          t.populate(100, dist_fn=random.random, support_fn=lambda: 1)
-        """
-        ops.populate(self, size, names, model, dist_fn, support_fn)
 
     def get_midpoint_outgroup(self, topological=False):
         """Return the node dividing into two distance-balanced partitions.
