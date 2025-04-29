@@ -41,6 +41,8 @@ def dumps(t, encoder='pickle', pack=False):
             packed_content = json.dumps(n.props)
         elif encoder == 'pickle':
             packed_content = pickle_pack(n.props)
+        else:
+            raise ValueError(f'unknown encoder: {encoder}')
 
         print('p', n.props['__id'], packed_content, sep='\t', file=OUT)
 
