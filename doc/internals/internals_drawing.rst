@@ -105,33 +105,38 @@ The initial api calls come from the following places in the code:
 Rotations
 ---------
 
-The formulas that we use to find the font size :math:`\text{fs}` and
-space taken by a rotated text are:
+To find the font size :math:`\text{fs}` to use in the rotated texts,
+we first make sure that it is smaller than :math:`\text{fs}_\max`, and
+then, we take into account that the text is limited by the size of the
+box :math:`(dx_\max, dy_\max)`:
+
+.. image:: ../images/rotation.png
+
+where :math:`r` is the rotation angle, and the actual size of the box
+*in pixels* would be :math:`(dx_\max \, z_x, dy_\max \, z_y)`. From
+there, calling :math:`n_m` the number of characters in the longest
+line of the text, and :math:`n_r` the number of rows of text, we have
+that for the text to fit, its font size :math:`\text{fs}` must
+satisfy:
+
 
 .. math::
 
-   d_y \sin r + d_x \cos r \le \Delta_x \\
-   d_x \sin r + d_y \cos r \le \Delta_y \\
-   \\
-   d_y = \text{fs} \times \text{nrows} \quad (\text{nrows} = \text{len(texts)}) \\
-   \\
-   d_x = \alpha d_y \\
-   \left( \alpha \approx \frac{\text{len_texts_max}}{1.5 \times \text{nrows}} \right) \\
-   \\
-   d_y \le \frac{\Delta_x}{\sin r + \alpha \cos r} \\
-   d_y \le \frac{\Delta_y}{\alpha \sin r + \cos r} \\
-   \\
-   \text{fs} \leftarrow \min(d_y) / \text{nrows}
+   dx_\max \, z_x > \cos r \frac{\text{fs}}{1.5} n_m + \sin r \, \text{fs} \, n_r \\
+   dy_\max \, z_y > \sin r \frac{\text{fs}}{1.5} n_m + \cos r \, \text{fs} \, n_r
 
-where :math:`r` is the rotation angle, :math:`\Delta_x, \Delta_y` is
-the total available size, and :math:`d_x, d_y` is the (resulting) size
-of the box that contains the text.
 
-::
+and from there, we can find the font size that fits in both dimensions
+this way:
 
-      ^  +--------+
-      |  | dy /   |
-      Δy |   /    |
-      |  |  / dx  |
-      v  +--------+
-         <-- Δx -->
+.. math::
+
+   \text{fs} \leftarrow \min\{ && \frac{dx_\max \, z_x}{\cos r \frac{n_m}{1.5} + \sin r \, n_r}, \\
+                               && \frac{dy_\max \, z_y}{\sin r \frac{n_m}{1.5} + \cos r \, n_r} \}
+
+The resulting size used is then:
+
+.. math::
+
+   dx = \frac{\text{fs}}{z_x} \left( \cos r \frac{n_m}{1.5} + \sin r \, n_r \right) \\
+   dy = \frac{\text{fs}}{z_y} \left( \sin r \frac{n_m}{1.5} + \cos r \, n_r \right)
