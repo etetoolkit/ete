@@ -895,27 +895,6 @@ cdef class Tree:
                                                   is_leaf_fn=is_leaf_fn)
         return min_node, min_dist
 
-    def get_midpoint_outgroup(self, topological=False):
-        """Return the node dividing into two distance-balanced partitions.
-
-        :param topological: If True, the distance between nodes will be the
-            number of nodes between them (instead of the sum of branch lenghts).
-        """
-        # Start at the farthest leaf from the root.
-        current, _ = self.root.get_farthest_leaf(topological=topological)
-        _, diameter = current.get_farthest_node(topological=topological)
-
-        dist = 0
-        while current.up is not None:
-            dist += 1 if topological else current.dist
-
-            if dist > diameter / 2:
-                return current
-
-            current = current.up
-
-        return current  # the midpoint was the root (we went back to it)
-
     def mean_distance(self, weight_fn=None, leaf=None, topological=False):
         """Return the weighted mean distance between leaves, or from leaf.
 
@@ -967,6 +946,27 @@ cdef class Tree:
           t.populate(100, dist_fn=random.random, support_fn=lambda: 1)
         """
         ops.populate(self, size, names, model, dist_fn, support_fn)
+
+    def get_midpoint_outgroup(self, topological=False):
+        """Return the node dividing into two distance-balanced partitions.
+
+        :param topological: If True, the distance between nodes will be the
+            number of nodes between them (instead of the sum of branch lenghts).
+        """
+        # Start at the farthest leaf from the root.
+        current, _ = self.root.get_farthest_leaf(topological=topological)
+        _, diameter = current.get_farthest_node(topological=topological)
+
+        dist = 0
+        while current.up is not None:
+            dist += 1 if topological else current.dist
+
+            if dist > diameter / 2:
+                return current
+
+            current = current.up
+
+        return current  # the midpoint was the root (we went back to it)
 
     def set_outgroup(self, node, bprops=None, dist=None):
         """Change tree so the given node is set as outgroup.
