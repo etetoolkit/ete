@@ -1023,11 +1023,13 @@ class TreeNode(object):
             current = n
             while current != ancestor:
                 if topology_only:
-                    if  current!=target:
-                        dist += 1
+                    dist += 1
                 else:
                     dist += current.dist
                 current = current.up
+        if topology_only and target != target2:
+            # counted ancestor once more than needed in while loop
+            dist -= 1
         return dist
 
     def get_farthest_node(self, topology_only=False):
