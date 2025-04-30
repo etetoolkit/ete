@@ -893,7 +893,6 @@ cdef class Tree:
                     d += dist(n) if not topological else 1.0
         return min_node, min_dist, max_node, max_dist
 
-
     def get_farthest_leaf(self, topological=False, is_leaf_fn=None):
         """Return the node's farthest descendant (a leaf), and its distance.
 
