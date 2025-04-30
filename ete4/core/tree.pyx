@@ -925,16 +925,20 @@ cdef class Tree:
         return min_node, min_dist
 
     def closest_relative(self, leaf, selector=None,
-                         is_leaf_fn=None, topological=False):
+                         is_leaf_fn=None, topological=True):
         """Return the closest relative leaf to the given leaf.
+
+        Note that "relative" is a topological term. If you use
+        topological=False, the "relative" will be the one with the
+        shortest distance.
 
         :param leaf: Leaf for which to find its closest relative leaf.
         :param selector: Function that returns True for the selected leaves.
             If None, all leaves will be selected.
         :param is_leaf_fn: Function that takes a node and returns True if it is
             considered a leaf. If None, node.is_leaf is used.
-        :param topological: If True, the distance between nodes will be the
-            number of nodes between them (instead of the sum of branch lenghts).
+        :param topological: If False, the distance between nodes will be the sum
+            of the branch distances between them (instead of the number of steps).
         """
         [leaf] = self._translate_nodes([leaf])
         return ops.closest_relative(leaf, selector, is_leaf_fn, topological)
