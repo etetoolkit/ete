@@ -326,6 +326,7 @@ def callback():
     response.status = 201
     return {'message': 'ok', 'ids': ids}
 
+# TODO: Remove from here and add it as an example of how to use the explorer.
 @post('/load')
 def callback():
     """Load a tree from a given path."""
