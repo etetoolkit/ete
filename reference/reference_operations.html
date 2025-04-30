@@ -115,8 +115,11 @@ number of nodes between them (instead of the sum of branch lenghts).</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ete4.core.operations.closest_relative">
-<span class="sig-name descname"><span class="pre">closest_relative</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">leaf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selector</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.closest_relative" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">closest_relative</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">leaf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selector</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.closest_relative" title="Link to this definition">¶</a></dt>
 <dd><p>Return the closest relative leaf to the given leaf.</p>
+<p>Note that “relative” is a topological term. If you use
+topological=False, the “relative” will be the one with the
+shortest distance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -125,8 +128,8 @@ number of nodes between them (instead of the sum of branch lenghts).</p></li>
 If None, all leaves will be selected.</p></li>
 <li><p><strong>is_leaf_fn</strong> – Function that takes a node and returns True if it is
 considered a leaf. If None, node.is_leaf is used.</p></li>
-<li><p><strong>topological</strong> – If True, the distance between nodes will be the
-number of nodes between them (instead of the sum of branch lenghts).</p></li>
+<li><p><strong>topological</strong> – If False, the distance between nodes will be the sum
+of the branch distances between them (instead of the number of steps).</p></li>
 </ul>
 </dd>
 </dl>
