@@ -94,16 +94,16 @@
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="ete4.core.operations.closest_leaf">
-<span class="sig-name descname"><span class="pre">closest_leaf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selector</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.closest_leaf" title="Link to this definition">¶</a></dt>
-<dd><p>Return the closest descendant leaf from the tree.</p>
+<dt class="sig sig-object py" id="ete4.core.operations.closest_descendant_leaf">
+<span class="sig-name descname"><span class="pre">closest_descendant_leaf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selector</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.closest_descendant_leaf" title="Link to this definition">¶</a></dt>
+<dd><p>Return the closest descendant leaf from the tree and its distance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>tree</strong> – Tree (starting node) for which to find its closest leaf.</p></li>
+<li><p><strong>tree</strong> – Starting node for which to find its closest descendant leaf.</p></li>
 <li><p><strong>dist_max</strong> – If &gt; 0, do not consider nodes farther than this distance.</p></li>
 <li><p><strong>selector</strong> – Function that returns True for the selected leaves.
-If None, all leaves will be selected.</p></li>
+If None, all leaves will be selected as candidates to consider.</p></li>
 <li><p><strong>is_leaf_fn</strong> – Function that takes a node and returns True if it is
 considered a leaf. If None, node.is_leaf is used.</p></li>
 <li><p><strong>topological</strong> – If True, the distance between nodes will be the
@@ -114,25 +114,33 @@ number of nodes between them (instead of the sum of branch lenghts).</p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="ete4.core.operations.closest_relative">
-<span class="sig-name descname"><span class="pre">closest_relative</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">leaf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selector</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.closest_relative" title="Link to this definition">¶</a></dt>
-<dd><p>Return the closest relative leaf to the given leaf.</p>
-<p>Note that “relative” is a topological term. If you use
-topological=False, the “relative” will be the one with the
-shortest distance.</p>
+<dt class="sig sig-object py" id="ete4.core.operations.closest_leaf">
+<span class="sig-name descname"><span class="pre">closest_leaf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">leaf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selector</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">relative</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.closest_leaf" title="Link to this definition">¶</a></dt>
+<dd><p>Return the closest leaf to the given leaf, and their distance.</p>
+<p>Note that if you want to find the closest descendant leaf from a
+node, the appropriate function is closest_descentant_leaf(node).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>leaf</strong> – Leaf for which to find its closest relative leaf.</p></li>
+<li><p><strong>leaf</strong> – Leaf for which to find its closest leaf.</p></li>
 <li><p><strong>selector</strong> – Function that returns True for the selected leaves.
-If None, all leaves will be selected.</p></li>
+If None, all leaves will be selected as candidates to consider.</p></li>
 <li><p><strong>is_leaf_fn</strong> – Function that takes a node and returns True if it is
 considered a leaf. If None, node.is_leaf is used.</p></li>
-<li><p><strong>topological</strong> – If False, the distance between nodes will be the sum
-of the branch distances between them (instead of the number of steps).</p></li>
+<li><p><strong>topological</strong> – If True, the distance between nodes will be the
+number of nodes between them (instead of the sum of branch lenghts).</p></li>
+<li><p><strong>relative</strong> – If True, it will return the closest <em>relative</em> leaf, that
+is, the one in the smallest branch including the original leaf.</p></li>
 </ul>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.closest_relative_leaf">
+<span class="sig-name descname"><span class="pre">closest_relative_leaf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">leaf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selector</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.closest_relative_leaf" title="Link to this definition">¶</a></dt>
+<dd><p>Return the closest relative leaf to the given leaf, and their distance.</p>
+<p>Convenient common function, which calls closest_leaf() with relative=True.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -176,6 +184,9 @@ Otherwise, only the upper triangle is returned (to save memory).</p></li>
 <dt class="sig sig-object py" id="ete4.core.operations.evolutionary_distinctness">
 <span class="sig-name descname"><span class="pre">evolutionary_distinctness</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leaves</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.evolutionary_distinctness" title="Link to this definition">¶</a></dt>
 <dd><p>Return the evolutionary distinctness for the given leaves.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">leaves</span></code> argument is typically just a list with one leaf
+(for which we want to know its evolutionary distinctness). But the
+precomputations can be used to quickly find the value of many.</p>
 </dd></dl>
 
 <dl class="py function">

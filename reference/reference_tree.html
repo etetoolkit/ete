@@ -150,28 +150,6 @@ or any custom feature present in the tree).</p></li>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ete4.core.tree.Tree.closest_relative">
-<span class="sig-name descname"><span class="pre">closest_relative</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leaf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selector</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.closest_relative" title="Link to this definition">¶</a></dt>
-<dd><p>Return the closest relative leaf to the given leaf.</p>
-<p>Note that “relative” is a topological term. If you use
-topological=False, the “relative” will be the one with the
-shortest distance.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>leaf</strong> – Leaf for which to find its closest relative leaf.</p></li>
-<li><p><strong>selector</strong> – Function that returns True for the selected leaves.
-If None, all leaves will be selected.</p></li>
-<li><p><strong>is_leaf_fn</strong> – Function that takes a node and returns True if it is
-considered a leaf. If None, node.is_leaf is used.</p></li>
-<li><p><strong>topological</strong> – If False, the distance between nodes will be the sum
-of the branch distances between them (instead of the number of steps).</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="ete4.core.tree.Tree.common_ancestor">
 <span class="sig-name descname"><span class="pre">common_ancestor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">nodes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.common_ancestor" title="Link to this definition">¶</a></dt>
 <dd><p>Return the last node common to the lineages of the given nodes.</p>
@@ -196,59 +174,10 @@ items allowed.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ete4.core.tree.Tree.cophenetic_matrix">
 <span class="sig-name descname"><span class="pre">cophenetic_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.cophenetic_matrix" title="Link to this definition">¶</a></dt>
-<dd><p>Return a cophenetic distance matrix of the tree.</p>
-<p>The <a class="reference external" href="https://en.wikipedia.org/wiki/Cophenetic">cophenetic matrix</a> is a matrix
-representation of the distance between each node.</p>
-<p>If we have a tree like:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>       ╭╴A
-   ╭╴y╶┤
-   │   ╰╴B
-╴z╶┤
-   │   ╭╴C
-   ╰╴x╶┤
-       │   ╭╴D
-       ╰╴w╶┤
-           ╰╴E
-</pre></div>
-</div>
-<p>where w, x, y, z are internal nodes, then:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">)</span> <span class="o">=</span> <span class="n">d</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">A</span><span class="p">)</span> <span class="o">+</span> <span class="n">d</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">B</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>and:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">E</span><span class="p">)</span> <span class="o">=</span> <span class="n">d</span><span class="p">(</span><span class="n">z</span><span class="p">,</span><span class="n">A</span><span class="p">)</span> <span class="o">+</span> <span class="n">d</span><span class="p">(</span><span class="n">z</span><span class="p">,</span><span class="n">E</span><span class="p">)</span>
-       <span class="o">=</span> <span class="p">(</span><span class="n">d</span><span class="p">(</span><span class="n">z</span><span class="p">,</span><span class="n">y</span><span class="p">)</span> <span class="o">+</span> <span class="n">d</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">A</span><span class="p">))</span> <span class="o">+</span> <span class="p">(</span><span class="n">d</span><span class="p">(</span><span class="n">z</span><span class="p">,</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">d</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">w</span><span class="p">)</span> <span class="o">+</span> <span class="n">d</span><span class="p">(</span><span class="n">w</span><span class="p">,</span><span class="n">E</span><span class="p">))</span>
-</pre></div>
-</div>
-<p>To compute it, we use an idea from
-<a class="reference external" href="https://gist.github.com/jhcepas/279f9009f46bf675e3a890c19191158b">https://gist.github.com/jhcepas/279f9009f46bf675e3a890c19191158b</a></p>
-<p>First, for each node we find its path to the root. For example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">A</span> <span class="o">-&gt;</span> <span class="n">A</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span>
-<span class="n">E</span> <span class="o">-&gt;</span> <span class="n">E</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span>
-</pre></div>
-</div>
-<p>and make these orderless sets. Then we XOR the two sets to
-only find the elements that are in one or other sets but not
-both. In this case A, E, y, x, w.</p>
-<p>The distance between the two nodes is the sum of the distances
-from each of those nodes to the parent</p>
-<p>One more optimization: since the distances are symmetric, and
-distance to itself is zero we user itertools.combinations
-rather than itertools.permutations. This cuts our computes
-from theta(n^2) 1/2n^2 - n (= O(n^2), which is still not
-great, but in reality speeds things up for large trees).</p>
-<p>For this tree, we will return the two dimensional array:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>          <span class="n">A</span>                <span class="n">B</span>                <span class="n">C</span>                <span class="n">D</span>                <span class="n">E</span>
-<span class="n">A</span>         <span class="mi">0</span>         <span class="n">d</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">y</span><span class="p">)</span> <span class="o">+</span> <span class="n">d</span><span class="p">(</span><span class="n">B</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>  <span class="n">d</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">z</span><span class="p">)</span> <span class="o">+</span> <span class="n">d</span><span class="p">(</span><span class="n">C</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>  <span class="n">d</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">z</span><span class="p">)</span> <span class="o">+</span> <span class="n">d</span><span class="p">(</span><span class="n">D</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>  <span class="n">d</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">z</span><span class="p">)</span> <span class="o">+</span> <span class="n">d</span><span class="p">(</span><span class="n">E</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>
-<span class="n">B</span>  <span class="n">d</span><span class="p">(</span><span class="n">B</span><span class="p">,</span><span class="n">y</span><span class="p">)</span> <span class="o">+</span> <span class="n">d</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>         <span class="mi">0</span>         <span class="n">d</span><span class="p">(</span><span class="n">B</span><span class="p">,</span><span class="n">z</span><span class="p">)</span> <span class="o">+</span> <span class="n">d</span><span class="p">(</span><span class="n">C</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>  <span class="n">d</span><span class="p">(</span><span class="n">B</span><span class="p">,</span><span class="n">z</span><span class="p">)</span> <span class="o">+</span> <span class="n">d</span><span class="p">(</span><span class="n">D</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>  <span class="n">d</span><span class="p">(</span><span class="n">B</span><span class="p">,</span><span class="n">z</span><span class="p">)</span> <span class="o">+</span> <span class="n">d</span><span class="p">(</span><span class="n">E</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>
-<span class="n">C</span>  <span class="n">d</span><span class="p">(</span><span class="n">C</span><span class="p">,</span><span class="n">z</span><span class="p">)</span> <span class="o">+</span> <span class="n">d</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>  <span class="n">d</span><span class="p">(</span><span class="n">C</span><span class="p">,</span><span class="n">z</span><span class="p">)</span> <span class="o">+</span> <span class="n">d</span><span class="p">(</span><span class="n">B</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>         <span class="mi">0</span>         <span class="n">d</span><span class="p">(</span><span class="n">C</span><span class="p">,</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">d</span><span class="p">(</span><span class="n">D</span><span class="p">,</span><span class="n">x</span><span class="p">)</span>  <span class="n">d</span><span class="p">(</span><span class="n">C</span><span class="p">,</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">d</span><span class="p">(</span><span class="n">E</span><span class="p">,</span><span class="n">x</span><span class="p">)</span>
-<span class="n">D</span>  <span class="n">d</span><span class="p">(</span><span class="n">D</span><span class="p">,</span><span class="n">z</span><span class="p">)</span> <span class="o">+</span> <span class="n">d</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>  <span class="n">d</span><span class="p">(</span><span class="n">D</span><span class="p">,</span><span class="n">z</span><span class="p">)</span> <span class="o">+</span> <span class="n">d</span><span class="p">(</span><span class="n">B</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>  <span class="n">d</span><span class="p">(</span><span class="n">D</span><span class="p">,</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">d</span><span class="p">(</span><span class="n">C</span><span class="p">,</span><span class="n">x</span><span class="p">)</span>         <span class="mi">0</span>         <span class="n">d</span><span class="p">(</span><span class="n">D</span><span class="p">,</span><span class="n">w</span><span class="p">)</span> <span class="o">+</span> <span class="n">d</span><span class="p">(</span><span class="n">E</span><span class="p">,</span><span class="n">w</span><span class="p">)</span>
-<span class="n">E</span>  <span class="n">d</span><span class="p">(</span><span class="n">E</span><span class="p">,</span><span class="n">z</span><span class="p">)</span> <span class="o">+</span> <span class="n">d</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>  <span class="n">d</span><span class="p">(</span><span class="n">E</span><span class="p">,</span><span class="n">z</span><span class="p">)</span> <span class="o">+</span> <span class="n">d</span><span class="p">(</span><span class="n">B</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>  <span class="n">d</span><span class="p">(</span><span class="n">E</span><span class="p">,</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">d</span><span class="p">(</span><span class="n">C</span><span class="p">,</span><span class="n">x</span><span class="p">)</span>  <span class="n">d</span><span class="p">(</span><span class="n">E</span><span class="p">,</span><span class="n">w</span><span class="p">)</span> <span class="o">+</span> <span class="n">d</span><span class="p">(</span><span class="n">D</span><span class="p">,</span><span class="n">w</span><span class="p">)</span>         <span class="mi">0</span>
-</pre></div>
-</div>
-<p>We will also return the one dimensional array with the leaves
-in the order in which they appear in the matrix (i.e. the
-column and/or row headers).</p>
+<dd><p>Return a cophenetic matrix, and an array with the leaf names.</p>
+<p>The <a class="reference external" href="https://en.wikipedia.org/wiki/Cophenetic">cophenetic matrix</a> is
+a matrix where each element is the distance between two leaves.</p>
+<p>The matrix elements correspond to the order of the leaf names array.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -361,6 +290,24 @@ function. This mechanism can be seen as a “cut and paste”.</p>
 <dt class="sig sig-object py" id="ete4.core.tree.Tree.dist">
 <span class="sig-name descname"><span class="pre">dist</span></span><a class="headerlink" href="#ete4.core.tree.Tree.dist" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.core.tree.Tree.distance_matrix">
+<span class="sig-name descname"><span class="pre">distance_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selector</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">squared</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.tree.Tree.distance_matrix" title="Link to this definition">¶</a></dt>
+<dd><p>Return a matrix of paired distances between all the selected leaves.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>selector</strong> – Function that returns True for the selected leaves.
+If None, all leaves will be selected.</p></li>
+<li><p><strong>topological</strong> – If True, the distance between nodes will be the
+number of nodes between them (instead of the sum of branch lenghts).</p></li>
+<li><p><strong>squared</strong> – If True, the output matrix will be squared and symmetrical.
+Otherwise, only the upper triangle is returned (to save memory).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ete4.core.tree.Tree.down">
