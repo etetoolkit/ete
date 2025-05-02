@@ -914,33 +914,23 @@ cdef class Tree:
         :param topological: If True, the distance between nodes will be the
             number of nodes between them (instead of the sum of branch lenghts).
         """
-        # TODO: Consider naming this closest_leaf(), and also writing it
-        #       more clearly (and much faster, and with more options) as:
+        # NOTE: This returns the closest *descendant* leaf. Seems confusing.
+
+        # TODO: Consider naming this closest_descendant_leaf(), and also writing
+        #       it more clearly (and much faster, and with more options) as:
+        #   return ops.closest_descendant_leaf(self, ...)
+
+        # TODO: Also consider adding closest_leaf() which actually returns
+        #       the closest leaf, and implement it as:
         #   return ops.closest_leaf(self, ...)
+
+        # TODO: And also consider adding closest_relative_leaf(), as:
+        #   return ops.closest_relative_leaf(self, ...)
 
         min_node, min_dist, max_node, max_dist = \
             self._get_farthest_and_closest_leaves(topological=topological,
                                                   is_leaf_fn=is_leaf_fn)
         return min_node, min_dist
-
-    def closest_relative(self, leaf, selector=None,
-                         is_leaf_fn=None, topological=True):
-        """Return the closest relative leaf to the given leaf.
-
-        Note that "relative" is a topological term. If you use
-        topological=False, the "relative" will be the one with the
-        shortest distance.
-
-        :param leaf: Leaf for which to find its closest relative leaf.
-        :param selector: Function that returns True for the selected leaves.
-            If None, all leaves will be selected.
-        :param is_leaf_fn: Function that takes a node and returns True if it is
-            considered a leaf. If None, node.is_leaf is used.
-        :param topological: If False, the distance between nodes will be the sum
-            of the branch distances between them (instead of the number of steps).
-        """
-        [leaf] = self._translate_nodes([leaf])
-        return ops.closest_relative(leaf, selector, is_leaf_fn, topological)
 
     def mean_distance(self, weight_fn=None, leaf=None, topological=False):
         """Return the weighted mean distance between leaves, or from leaf.

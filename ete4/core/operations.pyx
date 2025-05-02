@@ -467,14 +467,14 @@ def resolve_polytomy(tree, descendants=True):
             break
 
 
-def closest_leaf(tree, dist_max=-1, selector=None,
-                 is_leaf_fn=None, topological=False):
-    """Return the closest descendant leaf from the tree.
+def closest_descendant_leaf(tree, dist_max=-1, selector=None,
+                            is_leaf_fn=None, topological=False):
+    """Return the closest descendant leaf from the tree and its distance.
 
-    :param tree: Tree (starting node) for which to find its closest leaf.
+    :param tree: Starting node for which to find its closest descendant leaf.
     :param dist_max: If > 0, do not consider nodes farther than this distance.
     :param selector: Function that returns True for the selected leaves.
-        If None, all leaves will be selected.
+        If None, all leaves will be selected as candidates to consider.
     :param is_leaf_fn: Function that takes a node and returns True if it is
         considered a leaf. If None, node.is_leaf is used.
     :param topological: If True, the distance between nodes will be the
@@ -501,36 +501,41 @@ def closest_leaf(tree, dist_max=-1, selector=None,
     return leaf_closest, dist_closest
 
 
-def closest_relative(leaf, selector=None, is_leaf_fn=None, topological=True):
-    """Return the closest relative leaf to the given leaf.
+def closest_leaf(leaf, selector=None, is_leaf_fn=None, topological=False,
+                 relative=False):
+    """Return the closest leaf to the given leaf, and their distance.
 
-    Note that "relative" is a topological term. If you use
-    topological=False, the "relative" will be the one with the
-    shortest distance.
+    Note that if you want to find the closest descendant leaf from a
+    node, the appropriate function is closest_descentant_leaf(node).
 
-    :param leaf: Leaf for which to find its closest relative leaf.
+    :param leaf: Leaf for which to find its closest leaf.
     :param selector: Function that returns True for the selected leaves.
-        If None, all leaves will be selected.
+        If None, all leaves will be selected as candidates to consider.
     :param is_leaf_fn: Function that takes a node and returns True if it is
         considered a leaf. If None, node.is_leaf is used.
-    :param topological: If False, the distance between nodes will be the sum
-        of the branch distances between them (instead of the number of steps).
+    :param topological: If True, the distance between nodes will be the
+        number of nodes between them (instead of the sum of branch lenghts).
+    :param relative: If True, it will return the closest *relative* leaf, that
+        is, the one in the smallest branch including the original leaf.
     """
     d = get_distance_fn(topological)
 
-    closest, dist_closest = None, -1  # current closest relative and distance
+    closest, dist_closest = None, -1  # current closest leaf and distance
 
     node = leaf  # we'll go from the leaf towards the root
     dist_from_leaf = 0  # and accumulate the distance from the leaf
     while not node.is_root and (closest is None or dist_from_leaf < dist_closest):
+        if relative and closest is not None:  # already found
+            break  # we are done, we should not check higher branches
+
         dist_from_leaf += d(node)
 
         for sis in node.get_sisters():
             sdist = d(sis)  # sister dist (length of sister branch)
             dist_max = dist_closest - (dist_from_leaf + sdist)
             if closest is None or dist_max > 0:
-                closest_sis, dist = closest_leaf(sis, dist_max, selector,
-                                                 is_leaf_fn, topological)
+                closest_sis, dist = closest_descendant_leaf(sis, dist_max, selector,
+                                                            is_leaf_fn, topological)
                 if closest_sis is not None:  # found closest leaf from sis
                     dist_total = dist_from_leaf + sdist + dist  # leaf to leaf
                     if closest is None or dist_total < dist_closest:
@@ -541,7 +546,16 @@ def closest_relative(leaf, selector=None, is_leaf_fn=None, topological=True):
     return closest, dist_closest
 
 
+def closest_relative_leaf(leaf, selector=None, is_leaf_fn=None, topological=False):
+     """Return the closest relative leaf to the given leaf, and their distance.
+
+     Convenient common function, which calls closest_leaf() with relative=True.
+     """
+     return closest_leaf(leaf, selector, is_leaf_fn, topological, relative=True)
+
+
 def farthest_descendant(tree, is_leaf_fn=None, topological=False):
+
     """Return the farthest descendant and its distance."""
     node_farthest, dist_farthest = tree, 0
     for node, _, dist in traverse_full(tree, is_leaf_fn=is_leaf_fn,
