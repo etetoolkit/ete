@@ -755,14 +755,21 @@ def phylogenetic_diversity(tree, topological=False):
 
 
 def evolutionary_distinctness(tree, leaves, topological=False):
-    """Return the evolutionary distinctness for the given leaves."""
+    """Return the evolutionary distinctness for the given leaves.
+
+    The ``leaves`` argument is typically just a list with one leaf
+    (for which we want to know its evolutionary distinctness). But the
+    precomputations can be used to quickly find the value of many.
+    """
     d = get_distance_fn(topological)
 
+    # Precompute the number of descendant leaves for every node.
     nleaves = {}  # will have for each node the number of descendant leaves
-    for node in traverse(tree, order=+1):
+    for node in traverse(tree, order=+1):  # traverse in postorder
         nleaves[node] = (1 if node.is_leaf else
                          sum(nleaves[ch] for ch in node.children))
 
+    # Use precomputations to quickly find the value for all the leaves.
     eds = []  # list of evolutionary distinctness for the given leaves
     for leaf in leaves:
         node = leaf
