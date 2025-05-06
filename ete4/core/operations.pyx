@@ -555,7 +555,6 @@ def closest_relative_leaf(leaf, selector=None, is_leaf_fn=None, topological=Fals
 
 
 def farthest_descendant(tree, is_leaf_fn=None, topological=False):
-
     """Return the farthest descendant and its distance."""
     node_farthest, dist_farthest = tree, 0
     for node, _, dist in traverse_full(tree, is_leaf_fn=is_leaf_fn,
