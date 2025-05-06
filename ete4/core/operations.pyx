@@ -813,6 +813,89 @@ def get_distance_fn(topological, asserted=True):
         return lambda node: node.dist
 
 
+# Robinson-Foulds distance between trees.
+#
+# See https://en.wikipedia.org/wiki/Robinson%E2%80%93Foulds_metric
+
+# TODO: Review the code and add tests. The next functions correspond
+#       to Jordi's implementation of Robinson-Foulds, which is
+#       different from the one currently in tree.pyx.
+
+def robinson_foulds(t1, t2, prop='name', normalized=False, strict=False):
+    """Return the Robinson-Foulds distance between trees t1 and t2.
+
+    The distance is A + B, where
+       A: number of partitions implied by the 1st tree but not the 2nd
+       B: number of partitions implied by the 2nd tree but not the 1st
+    """
+    common_vals = get_common_values(t1, t2, prop, strict)
+
+    parts1 = make_partitions(t1, common_vals, prop)
+    parts2 = make_partitions(t2, common_vals, prop)
+
+    dist = (sum(1 for p in parts1 if p not in parts2) +
+            sum(1 for p in parts2 if p not in parts1))
+
+    if not normalized:
+        return dist
+    else:
+        # Partitions with more than one leaf on both sides, for t1 and t2.
+        dist_max = (sum(1 for a, b in parts1 if len(a) > 1 and len(b) > 1) +
+                    sum(1 for a, b in parts2 if len(a) > 1 and len(b) > 1))
+        return dist / dist_max if dist_max > 0 else 0
+
+
+def get_common_values(t1, t2, prop='name', strict=False):
+    """Return the common leaf property prop values of trees t1 and t2.
+
+    If strict, raise AssertionError if t1 and t2 don't share leaves.
+    """
+    vals1 = set(leaf.props.get(prop) for leaf in t1)  # can be names
+    vals2 = set(leaf.props.get(prop) for leaf in t2)
+    common_vals = vals1 & vals2  # common leaf values of property prop
+
+    assert not strict or (
+        len(common_vals) == len(vals1) == len(vals2) == len(t1) == len(t2)), \
+        (f'all leaves should have a different {prop}, the same in both trees '
+         '(use strict=False otherwise)')
+
+    assert None not in common_vals, f'all leaves should have property {prop}'
+
+    return common_vals
+
+
+def make_partitions(tree, common_vals, prop='name'):
+    """Return a set of partitions of the given tree.
+
+    A "partition" is an id for each node, based on the leaves that it
+    has at each side. The id is unique no matter the topology.
+    """
+    partitions = set()
+    values = {}  # dict of leaf values for property prop under each node
+    for node in traverse(tree, order=+1):  # postorder
+        if node.is_leaf:
+            v = node.props.get(prop)
+            leaf_values = {v} if v in common_vals else set()
+        else:
+            leaf_values = set.union(*[values[n] for n in node.children])
+            # If we wanted to save some memory (and go ~5% slower), we could do:
+            #   for n in node.children:
+            #       values.pop(n)  # free memory, no need to keep all the values
+
+        values[node] = leaf_values  # saved for future use by its parent node
+
+        partitions.add(partition_id(leaf_values, common_vals - leaf_values))
+
+    return partitions
+
+
+def partition_id(values1, values2):
+    """Return a unique id based on the given sets of values."""
+    side1 = tuple(sorted(values1))  # id for one side
+    side2 = tuple(sorted(values2))  # id for the other side
+    return tuple(sorted([side1, side2]))  # joint id: the two ids sorted
+
+
 # Traversing the tree.
 
 def traverse(tree, order=-1, is_leaf_fn=None):
