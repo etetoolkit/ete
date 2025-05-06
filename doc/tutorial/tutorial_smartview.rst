@@ -60,8 +60,8 @@ The concepts that ETE uses to describe the visualization are:
   from previous layouts.
 
 
-Launching the explorer
-----------------------
+Using the explorer
+------------------
 
 To start the visualization of a tree, we can use the :func:`explore
 <ete4.Tree.explore>` method as shown above::
