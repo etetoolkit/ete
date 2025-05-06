@@ -102,6 +102,68 @@ example::
   input()
 
 
+Remote visualization
+~~~~~~~~~~~~~~~~~~~~
+
+It is possible to run ETE remotely and explore the tree from our
+computer's browser.
+
+Basically::
+
+  ssh -L 5000:localhost:5000 nice_big_machine
+
+and then, running ETE from there (with ipython for example)::
+
+  from ete4 import Tree
+  t = Tree(open('mytree.nw'))
+  t.explore(port=5000, open_browser=False)
+
+We should then be able to explore the tree by pointing our browser at
+http://localhost:5000 .
+
+
+Details about port forwarding
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When we do ``t.explore()``, ETE will launch a "backend server" (a
+program running in parallel) that serves the web pages with the GUI,
+and responds to the requests for drawing the tree. By default, that
+server will listen in port 5000, or if that port is taken, in port
+5001, or 5002 if not, etc. And it will try to open the browser to
+access the default web page. This is convenient when running locally.
+
+But if we want to run ETE in a different machine and visualize
+locally, we can redirect anything sent to that port 5000 where the
+server is. This can be convenient because the ``nice_big_machine``
+will do the heavy work of opening a big tree, and recompute fast, etc.
+And only the necessary graphics are sent to our computer. To `forward
+that port
+<https://help.ubuntu.com/community/SSH/OpenSSH/PortForwarding>`_, we
+just add the ``-L 5000:localhost:5000`` part to the ssh command.
+
+Some inconveniences are that, if we do ``t.explore()``, the port 5000
+may be already used, and then ETE starts in another port, and
+forwarding the 5000 doesn't help. To avoid that, we can launch it
+with::
+
+  t.explore(port=5000)
+
+Now, if port 5000 is busy, the explorer will just fail and tell us so
+(maybe we just closed another ETE explorer, and the operating system
+takes some seconds to free the port). In that case, we can wait 10
+seconds or so and retry. Or, if there is another ETE running (from us
+or from anyone else in that computer), we can redo everything (``ssh
+...``, ``t.explore(...)``) using another port (from 1024 to 49151).
+
+Finally, we add the ``open_browser=False`` argument so it doesn't try
+to open a web browser in the remote computer. And depending on how
+slow the connection to the remote computer is, we may want to have the
+ETE server use compression for the data, adding ``compress=True``. All
+together, it would look like::
+
+  t.explore(port=5000, open_browser=False, compress=True)
+
+
 Verbose mode
 ~~~~~~~~~~~~
 
