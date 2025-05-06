@@ -824,9 +824,16 @@ def get_distance_fn(topological, asserted=True):
 def robinson_foulds(t1, t2, prop='name', normalized=False, strict=False):
     """Return the Robinson-Foulds distance between trees t1 and t2.
 
-    The distance is A + B, where
-       A: number of partitions implied by the 1st tree but not the 2nd
-       B: number of partitions implied by the 2nd tree but not the 1st
+    The distance is A + B, where:
+
+    - A: number of partitions implied by t1 but not t2
+    - B: number of partitions implied by t2 but not t1
+
+    Every node implies a partition (the leaves that it has at each side).
+
+    :param prop: Property of the leaves used to identify them in partitions.
+    :param normalized: If True, divide by the maximum possible distance.
+    :param strict: If True, check that t1 and t2 have unique and same leaves.
     """
     common_vals = get_common_values(t1, t2, prop, strict)
 
@@ -850,8 +857,8 @@ def get_common_values(t1, t2, prop='name', strict=False):
 
     If strict, raise AssertionError if t1 and t2 don't share leaves.
     """
-    vals1 = set(leaf.props.get(prop) for leaf in t1)  # can be names
-    vals2 = set(leaf.props.get(prop) for leaf in t2)
+    vals1 = set(leaf.props.get(prop) for leaf in t1.leaves())  # can be names
+    vals2 = set(leaf.props.get(prop) for leaf in t2.leaves())
     common_vals = vals1 & vals2  # common leaf values of property prop
 
     assert not strict or (
