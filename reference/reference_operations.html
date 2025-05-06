@@ -413,9 +413,19 @@ including all root descendants. Otherwise, do it only for the root.</p>
 <dt class="sig sig-object py" id="ete4.core.operations.robinson_foulds">
 <span class="sig-name descname"><span class="pre">robinson_foulds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'name'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.robinson_foulds" title="Link to this definition">¶</a></dt>
 <dd><p>Return the Robinson-Foulds distance between trees t1 and t2.</p>
-<dl class="simple">
-<dt>The distance is A + B, where</dt><dd><p>A: number of partitions implied by the 1st tree but not the 2nd
-B: number of partitions implied by the 2nd tree but not the 1st</p>
+<p>The distance is A + B, where:</p>
+<ul class="simple">
+<li><p>A: number of partitions implied by t1 but not t2</p></li>
+<li><p>B: number of partitions implied by t2 but not t1</p></li>
+</ul>
+<p>Every node implies a partition (the leaves that it has at each side).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>prop</strong> – Property of the leaves used to identify them in partitions.</p></li>
+<li><p><strong>normalized</strong> – If True, divide by the maximum possible distance.</p></li>
+<li><p><strong>strict</strong> – If True, check that t1 and t2 have unique and same leaves.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
