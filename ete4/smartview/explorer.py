@@ -29,7 +29,8 @@ from bottle import (
 DIR_BIN = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(DIR_BIN))  # so we can import ete w/o install
 
-from ete4 import newick, nexus, indent, operations as ops, treematcher as tm
+from ete4 import Tree, newick, nexus, operations as ops, treematcher as tm
+from ete4.core.eval import eval_on_node
 from . import draw
 from .layout import Layout, BASIC_LAYOUT, update_style
 
@@ -228,8 +229,11 @@ def callback(tree_id):
 def callback(tree_id):
     """Sort the nodes in the tree according to the criteria in the request."""
     node_id, key_text, reverse = req_json()
-    sort(tree_id, node_id, key_text, reverse)
-    return {'message': 'ok'}
+    try:
+        sort(tree_id, node_id, key_text, reverse)
+        return {'message': 'ok'}
+    except Exception as e:
+        abort(400, f'evaluating expression: {e}')
 
 @put('/trees/<tree_id>/set_outgroup')
 def callback(tree_id):
@@ -287,7 +291,8 @@ def callback(tree_id):
         t = load_tree(tree_id)
         node_id, content = req_json()
         node = t[node_id]
-        node.props = newick.get_props(content, is_leaf=True)
+        node.props = newick.read_props(content+';', pos=0, is_leaf=True,
+                                       parser=newick.PARSER_DEFAULT)[0]
         ops.update_sizes_all(t)
         return {'message': 'ok'}
     except (AssertionError, newick.NewickError) as e:
@@ -320,6 +325,25 @@ def callback():
     ids = add_trees_from_request()
     response.status = 201
     return {'message': 'ok', 'ids': ids}
+
+# TODO: Remove from here and add it as an example of how to use the explorer.
+@post('/load')
+def callback():
+    """Load a tree from a given path."""
+    try:
+        name, path, parser, layout_names = req_json()
+        t = Tree(open(path).read().strip(), parser=parser)
+        # FIXME? Taking layouts from all existing ones: kind of a hack!
+        layouts = {x.name: x for xs in g_layouts.values() for x in xs}
+        add_tree(t, name, [layouts[lname] for lname in layout_names])
+        response.status = 201
+        return {'message': 'ok'}
+    except FileNotFoundError as e:
+        abort(404, f'path {path} not found: {e}')
+    except (newick.NewickError, nexus.NexusError, AssertionError) as e:
+        abort(400, f'parsing error: {e}')
+    except KeyError as e:
+        abort(400, f'layout not found: {e}')
 
 @delete('/trees/<tree_id>')
 def callback(tree_id):
@@ -376,18 +400,7 @@ def sort(tree_id, node_id, key_text, reverse):
     """Sort the (sub)tree corresponding to tree_id and node_id."""
     t = load_tree(tree_id)
 
-    try:
-        code = compile(key_text, '<string>', 'eval')
-    except SyntaxError as e:
-        abort(400, f'compiling expression: {e}')
-
-    def key(node):
-        return safer_eval(code, {
-            'node': node, 'name': node.name, 'is_leaf': node.is_leaf,
-            'length': node.dist, 'dist': node.dist, 'd': node.dist,
-            'size': node.size, 'dx': node.size[0], 'dy': node.size[1],
-            'children': node.children, 'ch': node.children,
-            'len': len, 'sum': sum, 'abs': abs})
+    key = get_eval_search(key_text)
 
     ops.sort(t[node_id], key, reverse)
 
@@ -481,7 +494,8 @@ def store_search(tree_id, args):
         parents = set()  # all ancestors leading to the result nodes
         for node in results:
             current = node.up  # current node that we examine
-            while current is not tree and current not in parents:
+            while (current is not None and current is not tree and
+                   current not in parents):
                 parents.add(current)
                 current = current.up  # go to its parent
 
@@ -530,20 +544,7 @@ def get_eval_search(expression):
     except SyntaxError as e:
         abort(400, f'compiling expression: {e}')
 
-    return lambda node: safer_eval(code, {
-        'node': node, 'parent': node.up, 'up': node.up,
-        'name': node.name, 'is_leaf': node.is_leaf,
-        'length': node.dist, 'dist': node.dist, 'd': node.dist,
-        'properties': node.props, 'props': node.props, 'p': node.props,
-        'get': dict.get,
-        'children': node.children, 'ch': node.children,
-        'size': node.size, 'dx': node.size[0], 'dy': node.size[1],
-        'regex': re.search,
-        'startswith': str.startswith, 'endswith': str.endswith,
-        'upper': str.upper, 'lower': str.lower, 'split': str.split,
-        'any': any, 'all': all, 'len': len,
-        'sum': sum, 'abs': abs, 'float': float, 'pi': pi})
-
+    return lambda node: eval_on_node(code, node, safer=True)
 
 def safer_eval(code, context):
     """Return a safer version of eval(code, context)."""
@@ -577,7 +578,7 @@ def add_trees_from_request():
 
         names = {}
         for tree in trees:
-            t = loads(tree['newick'], parser)
+            t = Tree(tree['newick'], parser=parser)
             ops.update_sizes_all(t)
             name = tree['name'].replace(',', '_')  # "," is used for subtrees
             names[name] = name  # tree ids are already equal to their names...
@@ -589,16 +590,6 @@ def add_trees_from_request():
         # we could remove the need to send back their "ids".
     except (newick.NewickError, ValueError) as e:
         abort(400, f'malformed tree - {e}')
-
-
-def loads(tree_text, parser):
-    """Return tree loaded from the text using the given parser."""
-    if parser in ['name', 'support']:
-        return newick.loads(tree_text, parser)
-    elif parser == 'nexus':
-        return nexus.loads(tree_text)
-    elif parser == 'indent':
-        return indent.loads(tree_text)
 
 
 def get_trees_from_form():
@@ -688,6 +679,8 @@ def explore(tree, name=None, layouts=None,
 def add_tree(tree, name=None, layouts=None, extra_style=None):
     """Add tree, layouts, etc to the global variables, and return its name."""
     name = name or make_name()  # in case we didn't receive one
+
+    assert ',' not in name, 'name cannot have ","'  # we use it for subtrees
 
     ops.update_sizes_all(tree)  # update all internal sizes (ready to draw!)
 
@@ -788,7 +781,7 @@ if __name__ == '__main__':
     try:
         # Read tree(s) and add them to g_trees.
         for tree in get_trees_from_file(args.FILE):
-            t = loads(tree['newick'], args.parser)
+            t = Tree(tree['newick'], parser=args.parser)
             ops.update_sizes_all(t)
             name = tree['name'].replace(',', '_')  # "," is used for subtrees
             g_trees[name] = t

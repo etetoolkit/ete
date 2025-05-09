@@ -61,7 +61,7 @@ def read(lines, parse_content=None, indent_chars=DEFAULT_INDENT_CHARS):
     indentations = [0]  # levels of indentation
     node_last = Tree()  # last node we processed
 
-    for line in lines:
+    for i, line in enumerate(lines):
         line = line.rstrip()  # helps disambiguating indentation of empty lines
 
         assert line, 'found an unexpected empty line'
@@ -77,6 +77,7 @@ def read(lines, parse_content=None, indent_chars=DEFAULT_INDENT_CHARS):
         else:
             parent = node_last.up  # we share parent, or...
             while indentations[-1] != indent:  # we find it at its indentation
+                assert indentations[-1] > indent, f'bad indentation at line {i}'
                 indentations.pop()
                 node_last = parent
                 parent = node_last.up

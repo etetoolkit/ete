@@ -98,6 +98,7 @@ cdef class Tree:
         self.props = tree.props
         self.children = tree.children
 
+    # Common property attributes (name, dist, support, children).
     @property
     def name(self):
         return str(self.props.get('name')) if 'name' in self.props else None
@@ -140,6 +141,25 @@ cdef class Tree:
         self._children = []
         self.add_children(children)
 
+    # Property attributes for symmetry with 'up' (parent) and 'children' (down).
+    @property
+    def parent(self):
+        return self.up
+
+    @parent.setter
+    def parent(self, value):
+        self.up = value
+
+    @property
+    def down(self):
+        return self._children
+
+    @down.setter
+    def down(self, value):
+        self._children = []
+        self.add_children(value)
+
+    # Property attributes with simple convenient tests (is_leaf, is_root).
     @property
     def is_leaf(self):
         """Return True if the current node is a leaf."""
@@ -150,6 +170,7 @@ cdef class Tree:
         """Return True if the current node has no parent."""
         return self.up is None
 
+    # Property attributes that take some computation (root, id, level).
     @property
     def root(self):
         """Return the absolute root node of the current tree structure."""
@@ -178,47 +199,7 @@ cdef class Tree:
             node = node.up
         return n
 
-    def get_prop(self, prop, default=None):
-        """Return the node's property prop (an attribute or in self.props)."""
-        attr = getattr(self, prop, None)
-        return attr if attr is not None else self.props.get(prop, default)
-
-    def __bool__(self):
-        # If this is not defined, bool(t) will call len(t) (terribly slow!).
-        return True
-
-    def __len__(self):
-        """Return the number of leaves."""
-        return sum(1 for _ in self.leaves())
-
-    def __getitem__(self, node_id):
-        """Return the node that matches the given node_id."""
-        try:
-            if type(node_id) == str:    # node_id can be the name of a node
-                return next(n for n in self.traverse() if n.name == node_id)
-            elif type(node_id) == int:  # or the index of a child
-                return self.children[node_id]
-            else:                       # or a list/tuple of a descendant
-                node = self
-                for i in node_id:
-                    node = node.children[i]
-                return node
-        except StopIteration:
-            raise TreeError(f'No node found with name: {node_id}')
-        except (IndexError, TypeError) as e:
-            raise TreeError(f'Invalid node_id: {node_id}')
-
-    def __add__(self, value):
-        """Sum trees. t1 + t2 returns a new tree with children=[t1, t2]."""
-        # Should a make the sum with two copies of the original trees?
-        if type(value) == self.__class__:
-            new_root = self.__class__()
-            new_root.add_child(self)
-            new_root.add_child(value)
-            return new_root
-        else:
-            raise TreeError("Invalid node type")
-
+    # Special methods.
     def __repr__(self):
         name_str = (' ' + repr(self.name)) if self.name else ''
         return '<Tree%s at %s>' % (name_str, hex(self.__hash__()))
@@ -241,6 +222,23 @@ cdef class Tree:
         return text_viz.to_str(self, show_internal, compact, props,
                                px, py, px0, cascade)
 
+    def __getitem__(self, node_id):
+        """Return the node that matches the given node_id."""
+        try:
+            if type(node_id) == str:    # node_id can be the name of a node
+                return next(n for n in self.traverse() if n.name == node_id)
+            elif type(node_id) == int:  # or the index of a child
+                return self.children[node_id]
+            else:                       # or a list/tuple of a descendant
+                node = self
+                for i in node_id:
+                    node = node.children[i]
+                return node
+        except StopIteration:
+            raise TreeError(f'No node found with name: {node_id}')
+        except (IndexError, TypeError) as e:
+            raise TreeError(f'Invalid node_id: {node_id}')
+
     def __contains__(self, node):
         """Return True if the tree contains the given node.
 
@@ -256,6 +254,31 @@ cdef class Tree:
     def __iter__(self):
         """Yield all the terminal nodes (leaves)."""
         yield from self.leaves()
+
+    def __len__(self):
+        """Return the number of leaves."""
+        return sum(1 for _ in self.leaves())
+
+    def __bool__(self):
+        # If this is not defined, bool(t) will call len(t) (terribly slow!).
+        return True
+
+    def __add__(self, value):
+        """Sum trees. t1 + t2 returns a new tree with children=[t1, t2]."""
+        # Should a make the sum with two copies of the original trees?
+        if type(value) == self.__class__:
+            new_root = self.__class__()
+            new_root.add_child(self)
+            new_root.add_child(value)
+            return new_root
+        else:
+            raise TreeError("Invalid node type")
+
+    # Getting and setting properties. Though normally it's better to use props.
+    def get_prop(self, prop, default=None):
+        """Return the node's property prop (an attribute or in self.props)."""
+        attr = getattr(self, prop, None)
+        return attr if attr is not None else self.props.get(prop, default)
 
     def add_prop(self, name, value):
         """Add or update node's property to the given value."""
@@ -555,14 +578,10 @@ cdef class Tree:
         # The returned list can be changed without affecting self.children.
         return self.children.copy()
 
-    def sisters(self):
-        """Yield sister nodes (siblings)."""
-        return ((n for n in self.up.children if n is not self)
-                if not self.is_root else ())
-
     def get_sisters(self):
         """Return a list of sister nodes (siblings)."""
-        return list(self.sisters())
+        return ([node for node in self.up.children if node is not self]
+                if not self.is_root else [])
 
     def leaves(self, is_leaf_fn=None):
         """Yield the terminal nodes (leaves) under this node."""
@@ -573,14 +592,14 @@ cdef class Tree:
 
     def leaf_names(self, is_leaf_fn=None):
         """Yield the leaf names under this node."""
-        for n in self.leaves(is_leaf_fn):
-            yield n.name
+        for leaf in self.leaves(is_leaf_fn):
+            yield leaf.name
 
     def descendants(self, strategy='levelorder', is_leaf_fn=None):
         """Yield all descendant nodes."""
-        for n in self.traverse(strategy, is_leaf_fn):
-            if n is not self:
-                yield n
+        for node in self.traverse(strategy, is_leaf_fn):
+            if node is not self:
+                yield node
 
     def traverse(self, strategy='levelorder', is_leaf_fn=None):
         """Traverse the tree structure under this node and yield the nodes.
@@ -757,6 +776,35 @@ cdef class Tree:
         """Yield leaf nodes matching the given name."""
         return self.search_nodes(name=name, children=[])
 
+    def populate(self, size, names=None, model='yule',
+                 dist_fn=None, support_fn=None):
+        """Populate current node with a dichotomic random topology.
+
+        :param size: Number of leaves to add. The necessary
+            intermediate nodes will be created too.
+        :param names: Collection (list or set) of names to name the leaves.
+            If None, leaves will be named using short letter sequences.
+        :param model: Model used to generate the topology. It can be:
+
+            - "yule" or "yule-harding": Every step a randomly selected leaf
+              grows two new children.
+            - "uniform" or "pda": Every step a randomly selected node (leaf
+              or interior) grows a new sister leaf.
+
+        :param dist_fn: Function to produce values to set as distance
+            in newly created branches, or None for no distances.
+        :param support_fn: Function to produce values to set as support
+            in newly created internal branches, or None for no supports.
+
+        Example to create a tree with 100 leaves, uniformly random
+        distances between 0 and 1, and all valid supports set to 1::
+
+          t = Tree()
+          random.seed(42)  # set seed if we want a reproducible result
+          t.populate(100, dist_fn=random.random, support_fn=lambda: 1)
+        """
+        ops.populate(self, size, names, model, dist_fn, support_fn)
+
     # ###########################
     # Distance related functions
     # ###########################
@@ -845,13 +893,16 @@ cdef class Tree:
                     d += dist(n) if not topological else 1.0
         return min_node, min_dist, max_node, max_dist
 
-
     def get_farthest_leaf(self, topological=False, is_leaf_fn=None):
         """Return the node's farthest descendant (a leaf), and its distance.
 
         :param topological: If True, the distance between nodes will be the
             number of nodes between them (instead of the sum of branch lenghts).
         """
+        # TODO: Consider naming it farthest_descendant(), and also writing it
+        #       more clearly (but same speed) as:
+        #   return ops.farthest_descendant(self, is_leaf, topological)
+
         min_node, min_dist, max_node, max_dist = \
             self._get_farthest_and_closest_leaves(topological=topological,
                                                   is_leaf_fn=is_leaf_fn)
@@ -863,10 +914,46 @@ cdef class Tree:
         :param topological: If True, the distance between nodes will be the
             number of nodes between them (instead of the sum of branch lenghts).
         """
+        # NOTE: This returns the closest *descendant* leaf. Seems confusing.
+
+        # TODO: Consider naming this closest_descendant_leaf(), and also writing
+        #       it more clearly (and much faster, and with more options) as:
+        #   return ops.closest_descendant_leaf(self, ...)
+
+        # TODO: Also consider adding closest_leaf() which actually returns
+        #       the closest leaf, and implement it as:
+        #   return ops.closest_leaf(self, ...)
+
+        # TODO: And also consider adding closest_relative_leaf(), as:
+        #   return ops.closest_relative_leaf(self, ...)
+
         min_node, min_dist, max_node, max_dist = \
             self._get_farthest_and_closest_leaves(topological=topological,
                                                   is_leaf_fn=is_leaf_fn)
         return min_node, min_dist
+
+    def mean_distance(self, weight_fn=None, leaf=None, topological=False):
+        """Return the weighted mean distance between leaves, or from leaf.
+
+        This is also called the "Mean Phylogenetic Distance" (MPD) for
+        phylogenetic trees.
+
+        To "select" certain leaves, weight_fn can be used for example like::
+
+          weight_fn=lambda node: 1 if node.name in names else 0
+
+        But it can be used generally as relative leaf importance for averaging.
+
+        The algorithm is quite fast: for n leaves, it runs in O(n * log(n)).
+
+        :param weight_fn: Function that returns the weight of each leaf.
+            If None, all leaves will have weight 1.
+        :param leaf: Leaf for which to compute the weighted mean distance to
+            leaves. If None, a weighted mean for all leaves is made.
+        :param topological: If True, the distance between nodes will be the
+            number of nodes between them (instead of the sum of branch lenghts).
+        """
+        return ops.mean_distance(self, weight_fn, leaf, topological)
 
     def get_midpoint_outgroup(self, topological=False):
         """Return the node dividing into two distance-balanced partitions.
@@ -874,6 +961,8 @@ cdef class Tree:
         :param topological: If True, the distance between nodes will be the
             number of nodes between them (instead of the sum of branch lenghts).
         """
+        # TODO: Consider naming this function midpoint().
+
         # Start at the farthest leaf from the root.
         current, _ = self.root.get_farthest_leaf(topological=topological)
         _, diameter = current.get_farthest_node(topological=topological)
@@ -889,47 +978,6 @@ cdef class Tree:
 
         return current  # the midpoint was the root (we went back to it)
 
-    def average_distance(self, selector=None, leaf=None, topological=False):
-        """Return average distance between a leaf and the selected leaves.
-
-        :param selector: Function that returns True for the selected leaves.
-            If None, all leaves will be selected.
-        :param leaf: Leaf for which to compute the average distance to the
-            selected leaves. If None, an average for all selected leaves is made.
-        :param topological: If True, the distance between nodes will be the
-            number of nodes between them (instead of the sum of branch lenghts).
-        """
-        return ops.average_distance(self, selector, leaf, topological)
-
-    def populate(self, size, names=None, model='yule',
-                 dist_fn=None, support_fn=None):
-        """Populate current node with a dichotomic random topology.
-
-        :param size: Number of leaves to add. The necessary
-            intermediate nodes will be created too.
-        :param names: Collection (list or set) of names to name the leaves.
-            If None, leaves will be named using short letter sequences.
-        :param model: Model used to generate the topology. It can be:
-
-            - "yule" or "yule-harding": Every step a randomly selected leaf
-              grows two new children.
-            - "uniform" or "pda": Every step a randomly selected node (leaf
-              or interior) grows a new sister leaf.
-
-        :param dist_fn: Function to produce values to set as distance
-            in newly created branches, or None for no distances.
-        :param support_fn: Function to produce values to set as support
-            in newly created internal branches, or None for no supports.
-
-        Example to create a tree with 100 leaves, uniformly random
-        distances between 0 and 1, and all valid supports set to 1::
-
-          t = Tree()
-          random.seed(42)  # set seed if we want a reproducible result
-          t.populate(100, dist_fn=random.random, support_fn=lambda: 1)
-        """
-        ops.populate(self, size, names, model, dist_fn, support_fn)
-
     def set_outgroup(self, node, bprops=None, dist=None):
         """Change tree so the given node is set as outgroup.
 
@@ -942,6 +990,19 @@ cdef class Tree:
         """
         node = self[node] if type(node) == str else node  # translates if needed
         ops.set_outgroup(node, bprops, dist)
+
+    def set_midpoint_outgroup(self, topological=False):
+        """Use the midpoint to set as outgroup the first node from it.
+
+        Similar (but with a more precise cutting point in the branch) to::
+
+          midpoint = t.get_midpoint_outgroup()
+          t.set_outgroup(midpoint)
+
+        :param topological: If True, the distance between nodes will be the
+            number of nodes between them (instead of the sum of branch lenghts).
+        """
+        ops.set_midpoint_outgroup(self, topological)
 
     def unroot(self, bprops=None):
         """Unroot the tree, that is, make the root not have 2 children.
@@ -1144,7 +1205,7 @@ cdef class Tree:
             if container_type == set:
                 leaves[self].update(node_leaves[node])
             elif container_type == list:
-                leaves[self].extend(node_leaves[node])
+                leaves[self] += node_leaves[node]
 
         return leaves
 
@@ -1686,105 +1747,35 @@ cdef class Tree:
         """
         ops.resolve_polytomy(self, descendants)
 
-    def cophenetic_matrix(self):
-        """Return a cophenetic distance matrix of the tree.
+    def distance_matrix(self, selector=None, topological=False, squared=False):
+        """Return a matrix of paired distances between all the selected leaves.
 
-        The `cophenetic matrix
-        <https://en.wikipedia.org/wiki/Cophenetic>`_ is a matrix
-        representation of the distance between each node.
-
-        If we have a tree like::
-
-                 ╭╴A
-             ╭╴y╶┤
-             │   ╰╴B
-          ╴z╶┤
-             │   ╭╴C
-             ╰╴x╶┤
-                 │   ╭╴D
-                 ╰╴w╶┤
-                     ╰╴E
-
-        where w, x, y, z are internal nodes, then::
-
-          d(A,B) = d(y,A) + d(y,B)
-
-        and::
-
-          d(A,E) = d(z,A) + d(z,E)
-                 = (d(z,y) + d(y,A)) + (d(z,x) + d(x,w) + d(w,E))
-
-        To compute it, we use an idea from
-        https://gist.github.com/jhcepas/279f9009f46bf675e3a890c19191158b
-
-        First, for each node we find its path to the root. For example::
-
-          A -> A, y, z
-          E -> E, w, x, z
-
-        and make these orderless sets. Then we XOR the two sets to
-        only find the elements that are in one or other sets but not
-        both. In this case A, E, y, x, w.
-
-        The distance between the two nodes is the sum of the distances
-        from each of those nodes to the parent
-
-        One more optimization: since the distances are symmetric, and
-        distance to itself is zero we user itertools.combinations
-        rather than itertools.permutations. This cuts our computes
-        from theta(n^2) 1/2n^2 - n (= O(n^2), which is still not
-        great, but in reality speeds things up for large trees).
-
-        For this tree, we will return the two dimensional array::
-
-                    A                B                C                D                E
-          A         0         d(A,y) + d(B,y)  d(A,z) + d(C,z)  d(A,z) + d(D,z)  d(A,z) + d(E,z)
-          B  d(B,y) + d(A,y)         0         d(B,z) + d(C,z)  d(B,z) + d(D,z)  d(B,z) + d(E,z)
-          C  d(C,z) + d(A,z)  d(C,z) + d(B,z)         0         d(C,x) + d(D,x)  d(C,x) + d(E,x)
-          D  d(D,z) + d(A,z)  d(D,z) + d(B,z)  d(D,x) + d(C,x)         0         d(D,w) + d(E,w)
-          E  d(E,z) + d(A,z)  d(E,z) + d(B,z)  d(E,x) + d(C,x)  d(E,w) + d(D,w)         0
-
-        We will also return the one dimensional array with the leaves
-        in the order in which they appear in the matrix (i.e. the
-        column and/or row headers).
+        :param selector: Function that returns True for the selected leaves.
+            If None, all leaves will be selected.
+        :param topological: If True, the distance between nodes will be the
+            number of nodes between them (instead of the sum of branch lenghts).
+        :param squared: If True, the output matrix will be squared and symmetrical.
+            Otherwise, only the upper triangle is returned (to save memory).
         """
-        leaves = list(self.leaves())
-        paths = {x: set() for x in leaves}
+        return ops.distance_matrix(self, selector, topological, squared)
 
-        # get the paths going up the tree
-        # we get all the nodes up to the last one and store them in a set
+    def cophenetic_matrix(self):
+        """Return a cophenetic matrix, and an array with the leaf names.
 
-        for n in leaves:
-            if n.is_root:
-                continue
-            movingnode = n
-            while not movingnode.is_root:
-                paths[n].add(movingnode)
-                movingnode = movingnode.up
+        The `cophenetic matrix <https://en.wikipedia.org/wiki/Cophenetic>`_ is
+        a matrix where each element is the distance between two leaves.
 
-        # now we want to get all pairs of nodes using itertools combinations. We need AB AC etc but don't need BA CA
+        The matrix elements correspond to the order of the leaf names array.
+        """
+        from warnings import warn
+        warn('Use distance_matrix() instead', DeprecationWarning)
 
-        leaf_distances = {x.name: {} for x in leaves}
+        matrix = ops.distance_matrix(self, squared=True)
+        names = [leaf.name for leaf in self.leaves()]
+        return matrix, names
 
-        for (leaf1, leaf2) in itertools.combinations(leaves, 2):
-            # figure out the unique nodes in the path
-            uniquenodes = paths[leaf1] ^ paths[leaf2]
-            distance = sum(x.dist for x in uniquenodes)
-            leaf_distances[leaf1.name][leaf2.name] = leaf_distances[leaf2.name][leaf1.name] = distance
-
-        allleaves = sorted(leaf_distances.keys()) # the leaves in order that we will return
-
-        output = [] # the two dimensional array that we will return
-
-        for i, n in enumerate(allleaves):
-            output.append([])
-            for m in allleaves:
-                if m == n:
-                    output[i].append(0) # distance to ourself = 0
-                else:
-                    output[i].append(leaf_distances[n][m])
-        return output, allleaves
-
+    # TODO: The next two functions should really be parsers (which may
+    # be also used when calling __init__().
     @staticmethod
     def from_parent_child_table(parent_child_table):
         """Convert a parent-child table into an ETE Tree instance.

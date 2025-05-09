@@ -23,17 +23,18 @@ from base64 import b64encode
 from math import pi, cos, sin
 import re  # so it can be used when evaluating expressions
 
+from ete4.core.eval import eval_on_node
 from .coordinates import Size, Box, make_box
 from . import graphics as gr
 
 
+# Default anchors. The x, y go between -1 to +1, with 0 the center.
 default_anchors = {'top':     (-1, 1),   # left, bottom
                    'bottom':  (-1, -1),  # left, top
                    'right':   (-1, 0),   # left, middle
                    'left':    ( 1, 0),   # right, middle
                    'aligned': (-1, 0),   # left, middle
-                   'header':  (-1, 1),   # left, bottom
-                   'footer':  (-1, 1)}   # (unused for the moment)
+                   'header':  (-1, 1)}   # left, bottom
 
 
 class Face:
@@ -56,9 +57,9 @@ class Face:
 
         The retuned graphic elements normally depend on the node(s).
         They have to fit inside the given size (dx, dy) in tree
-        coordinates (dx==0 means no limit for dx).
+        coordinates (dx==0 means no limit for dx, and same for dy==0).
 
-        If collapsed=[], nodes contain only one node (and is not collapsed).
+        If collapsed==[], nodes contains only one node (and is not collapsed).
         Otherwise, nodes (== collapsed) is a list of the collapsed nodes.
 
         The zoom is passed in case the face wants to represent
@@ -107,10 +108,12 @@ class EvalTextFace(Face):
         if not texts:  # no texts?
             return [], Size(0, 0)  # nothing to draw
 
+        # FIXME: Little hack to make all the texts appear with the same size.
+        len_max = max(len(text) for text in texts)
+        texts = [text + ' ' * (len_max - len(text)) for text in texts]
+
         # Find the size that we will use to draw everything.
-        shrink_x = size.dx > 0  # dx == 0 is a special value, "no shrink"
-        size_used = texts_size(texts, size, self.fs_max, self.rotation,
-                               zoom, shrink_x, r)
+        size_used = texts_size(texts, size, self.fs_max, self.rotation, zoom, r)
 
         # Only draw if  font size > fs_min.
         if not r * zoom[1] * size_used.dy > self.fs_min * len(texts):
@@ -179,31 +182,29 @@ def first_value(tree, code=None):
         return ''
 
 
-def texts_size(texts, size_max, fs_max, rotation, zoom, shrink_x=True, r=1):
+def texts_size(texts, size_max, fs_max, rotation, zoom, r=1):
     """Return the (dx, dy) dimensions of the texts so they fit in size_max."""
     zx, zy = zoom
-    dx_max, dy_max = size_max
-
-    if r <= 0 or zx <= 0 or zy <= 0 or dy_max <= 0:
-        return Size(0, 0)
+    dx_max, dy_max = size_max  # NOTE: "0" means "no limit"
 
     # Find a font size that makes the text fit in size_max.
     a = rotation * pi / 180  # rotation angle in radians
     c, s = abs(cos(a)), abs(sin(a))
     nrows = len(texts)  # number of rows of text (normally just 1)
     len_text_max = max((len(text) for text in texts), default=0)
-    w_h = len_text_max / (1.5 * nrows)  # text width over its height
-
-    fs_fit_in_dx = dx_max * zx     / (s + w_h * c)  # to fit in dx_max
-    fs_fit_in_dy = dy_max * zy * r / (c + w_h * s)  # to fit in dy_max
 
     # The font size has to be <= fs_max and has to fit in the given space.
-    fs = (min(fs_max, fs_fit_in_dy, fs_fit_in_dx) if shrink_x else
-          min(fs_max, fs_fit_in_dy))
+    fs = fs_max
+    if dx_max > 0:
+        fs = min(fs, dx_max * zx / (c * len_text_max / 1.5 + s * nrows))
+    if dy_max > 0:
+        fs = min(fs, dy_max * zy / (s * len_text_max / 1.5 + c * nrows))
 
     # The size used by (rotated) text with font size fs.
-    dx = fs * (s + w_h * c) / zx
-    dy = fs * (c + w_h * s) / zy
+    dx = fs * (c * len_text_max / 1.5 + s * nrows) / zx
+    dy = fs * (s * len_text_max / 1.5 + c * nrows) / zy
+
+    # TODO: Check how to use r to do it properly in circular mode.
 
     return Size(dx, dy)
 
@@ -231,25 +232,8 @@ def draw_texts(box, ax_ay, texts, fs_max, rotation, style):
 
 def eval_as_str(code, node):
     """Return the given code evaluated on values related to the given node."""
-    result = safer_eval(code, {
-        'node': node, 'name': node.name, 'is_leaf': node.is_leaf,
-        'length': node.dist, 'dist': node.dist, 'd': node.dist,
-        'size': node.size, 'dx': node.size[0], 'dy': node.size[1],
-        'support': node.support,
-        'properties': node.props, 'props': node.props, 'p': node.props,
-        'get': dict.get, 'split': str.split,
-        'children': node.children, 'ch': node.children,
-        'regex': re.search,
-        'len': len, 'sum': sum, 'abs': abs, 'float': float, 'pi': pi})
+    result = eval_on_node(code, node)
     return str(result) if result is not None else ''
-
-
-def safer_eval(code, context):
-    """Return a safer version of eval(code, context)."""
-    for name in code.co_names:
-        if name not in context:
-            raise SyntaxError('invalid use of %r during evaluation' % name)
-    return eval(code, {'__builtins__': {}}, context)
 
 
 class CircleFace(Face):
@@ -266,12 +250,15 @@ class CircleFace(Face):
         dx, dy = size
         zx, zy = zoom
 
-        # Find the circle radius in pixels.
-        cr = zy * r * dy / 2
+        # Find the circle radius (cr) in pixels.
+        assert dx > 0 or dy > 0 or self.rmax is not None, 'rmax needed'
+        cr = self.rmax
         if dx > 0:
-            cr = min(cr, zx * dx / 2)
-        if self.rmax:
-            cr = min(cr, self.rmax)
+            cr_x = zx * dx / 2
+            cr = min(cr, cr_x) if cr is not None else cr_x
+        if dy > 0:
+            cr_y = zy * r * dy / 2
+            cr = min(cr, cr_y) if cr is not None else cr_y
 
         # Return the circle graphic and its size.
         center = (cr / zx, cr / (r * zy))  # in tree coordinates
@@ -297,12 +284,15 @@ class PolygonFace(Face):
         dx, dy = size
         zx, zy = zoom
 
-        # Find the (approx.) radius of circumscribing circle in pixels.
-        cr = zy * r * dy / 2
+        # Find the (approx.) radius (cr) of circumscribing circle in pixels.
+        assert dx > 0 or dy > 0 or self.rmax is not None, 'rmax needed'
+        cr = self.rmax
         if dx > 0:
-            cr = min(cr, zx * dx / 2)
-        if self.rmax:
-            cr = min(cr, self.rmax)
+            cr_x = zx * dx / 2
+            cr = min(cr, cr_x) if cr is not None else cr_x
+        if dy > 0:
+            cr_y = zy * r * dy / 2
+            cr = min(cr, cr_y) if cr is not None else cr_y
 
         # Return the graphic and its size.
         center = (cr / zx, cr / (r * zy))  # in tree coordinates
@@ -316,7 +306,7 @@ class BoxedFace(Face):
     """A shape defined by a box (with optionally a text inside)."""
     # Base class for BoxFace and RectFace.
 
-    def __init__(self, wmax, hmax=None, text=None,
+    def __init__(self, wmax=None, hmax=None, text=None,
                  position='top', column=0, anchor=None):
         super().__init__(position, column, anchor)
 
@@ -331,9 +321,14 @@ class BoxedFace(Face):
         zx, zy = zoom
 
         # Find the width and height so they are never bigger than the max.
-        w = min(zx * dx, self.wmax) if dx > 0 else self.wmax
-        h = min(zy * r * dy, self.hmax) if self.hmax else (zy * r * dy)
-        
+        assert dx > 0 or self.wmax is not None, 'wmax needed'
+        assert dy > 0 or self.hmax is not None, 'hmax needed'
+        w, h = self.wmax, self.hmax
+        if dx > 0:
+            w = min(w, zx * dx)     if w is not None else zx * dx
+        if dy > 0:
+            h = min(h, zy * r * dy) if h is not None else zy * r * dy
+
         # Keep the ratio h/w if we had hmax in addition to wmax.
         if self.hmax:
             h_over_w = self.hmax / self.wmax
@@ -364,7 +359,7 @@ class BoxedFace(Face):
 class BoxFace(BoxedFace):
     """A box (with optionally a text inside)."""
 
-    def __init__(self, wmax, hmax=None, style='', text=None,
+    def __init__(self, wmax=None, hmax=None, style='', text=None,
                  position='top', column=0, anchor=None):
         super().__init__(wmax, hmax, text, position, column, anchor)
 
@@ -374,7 +369,7 @@ class BoxFace(BoxedFace):
 class RectFace(BoxedFace):
     """A rectangle (with optionally a text inside)."""
 
-    def __init__(self, wmax, hmax=None, style='', text=None,
+    def __init__(self, wmax=None, hmax=None, style='', text=None,
                  position='top', column=0, anchor=None):
         super().__init__(wmax, hmax, text, position, column, anchor)
 
@@ -384,7 +379,7 @@ class RectFace(BoxedFace):
 class ImageFace(BoxedFace):
     """An image (with optionally a text inside)."""
 
-    def __init__(self, path, wmax, hmax=None, style='', text=None,
+    def __init__(self, path, wmax=None, hmax=None, style='', text=None,
                  position='top', column=0, anchor=None):
         super().__init__(wmax, hmax, text, position, column, anchor)
 
@@ -415,15 +410,18 @@ class SeqFace(Face):
         self.style = style
         self.render = render
 
-    def draw(self, nodes, size, collapsed, zoom, ax_ay, r):
+    def draw(self, nodes, size, collapsed, zoom=(1, 1), ax_ay=(0, 0), r=1):
         dx, dy = size
         zx, zy = zoom
 
         if dx <= 0:  # no limit on dx? make it as big as possible
             dx = self.poswidth * len(self.seq) / zx
 
-        if self.hmax is not None:  # make dy so pixel height < hmax
-            dy = min(dy, self.hmax / zy)
+        assert dy > 0 or self.hmax is not None, 'hmax needed'
+        if dy <= 0:  # no limit on y? there better be hmax then
+            dy = self.hmax / zy
+        elif self.hmax is not None:  # if dy > 0, but hmax defined, take the min
+            dy = min(dy, self.hmax / zy)  # make dy so pixel height < hmax
 
         size = Size(dx, dy)
         box = make_box((0, 0), size)
@@ -447,20 +445,61 @@ class HeatmapFace(Face):
         self.poswidth = poswidth  # width in pixels of each position (square)
         self.hmax = hmax  # maximum height in pixels
 
-    def draw(self, nodes, size, collapsed, zoom, ax_ay, r):
+    def draw(self, nodes, size, collapsed, zoom=(1, 1), ax_ay=(0, 0), r=1):
         dx, dy = size
         zx, zy = zoom
 
         if dx <= 0:  # no limit on dx? make it as big as possible
             dx = self.poswidth * len(self.values) / zx
 
-        if self.hmax is not None:  # make dy so pixel height < hmax
-            dy = min(dy, self.hmax / zy)
+        assert dy > 0 or self.hmax is not None, 'hmax needed'
+        if dy <= 0:  # no limit on y? there better be hmax then
+            dy = self.hmax / zy
+        elif self.hmax is not None:  # if dy > 0, but hmax defined, take the min
+            dy = min(dy, self.hmax / zy)  # make dy so pixel height < hmax
 
         size = Size(dx, dy)
         box = make_box((0, 0), size)
         graphics = [gr.draw_heatmap(box, self.values,
                                     self.value_range, self.color_range)]
+
+        return graphics, size
+
+
+class TextArrayFace(Face):
+    """An array of texts."""
+
+    def __init__(self, texts, fs_max=16, rotation=0,
+                 poswidth=15, hmax=None, style='',
+                 position='top', column=0, anchor=None):
+        super().__init__(position, column, anchor)
+
+        self.texts = texts
+        self.fs_max = fs_max
+        self.rotation = rotation
+        self.poswidth = poswidth  # width in pixels of each position
+        self.hmax = hmax  # maximum height in pixels
+        self.style = style
+
+    def draw(self, nodes, size, collapsed, zoom=(1, 1), ax_ay=(0, 0), r=1):
+        dx, dy = size
+        zx, zy = zoom
+
+        if dx <= 0:  # no limit on dx? make it as big as possible
+            dx = self.poswidth * len(self.texts) / zx
+
+        assert dy > 0 or self.hmax is not None, 'hmax needed'
+        if dy <= 0:  # no limit on y? there better be hmax then
+            dy = self.hmax / zy
+        elif self.hmax is not None:  # if dy > 0, but hmax defined, take the min
+            dy = min(dy, self.hmax / zy)  # make dy so pixel height < hmax
+        # FIXME: The dy that we get from hmax seems not to be used correctly
+        # later (probably related to draw.js:get_text_placement_rect()).
+
+        size = Size(dx, dy)
+        box = make_box((0, 0), size)
+        graphics = [gr.draw_textarray(box, ax_ay, self.texts, self.fs_max,
+                                      self.rotation, self.style)]
 
         return graphics, size
 

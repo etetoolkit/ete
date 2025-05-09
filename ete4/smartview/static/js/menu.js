@@ -85,6 +85,7 @@ function add_tab_main(tab, trees) {
 
     tab.addBinding(view, "smart_zoom", {label: "smart zoom"});
     tab.addButton({title: "share view"}).on("click", view.share_view);
+    tab.addButton({title: "fullscreen"}).on("click", view.fullscreen);
     tab.addButton({title: "help"}).on("click", view.show_help);
 }
 

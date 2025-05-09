@@ -137,6 +137,8 @@ const view = {
 
     share_view: () => share_view(),
 
+    fullscreen: () => toggle_fullscreen(),
+
     show_help: () => show_help(),
 };
 
@@ -379,6 +381,7 @@ async function populate_layouts() {
         menus.layouts.addBinding(view.layouts[name], "active", {label: name})
             .on("change", async () => {
                 await set_tree_style();
+                div_legend.innerHTML = "";  // since the legend may have changed
                 update();
             });
     }
@@ -424,6 +427,7 @@ async function on_tree_change() {
     reset_position();
     await populate_layouts();
     draw_minimap();
+    div_legend.innerHTML = "";  // since the legend may have changed
     update();
 
     const sample_trees = [];  // see main()
@@ -643,6 +647,15 @@ function share_view() {
             html: "Right-click on link to copy to the clipboard:<br><br>" +
                   `(<a href="${url}">current tree view</a>)`,
         });
+    }
+}
+
+
+function toggle_fullscreen() {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+    } else if (document.exitFullscreen) {
+        document.exitFullscreen();
     }
 }
 

@@ -112,9 +112,9 @@ function default_anchor(position) {
            p === "right"   ? {x: -1, y: 0} :   // left, middle
            p === "left"    ? {x:  1, y: 0} :   // right, middle
            p === "aligned" ? {x: -1, y: 0} :   // left, middle
-                            {x: null, y: null};
+                             {x: null, y: null};
 }
-// See also default_anchors in layout.py for the defaults in a layout.
+// See also default_anchors in faces.py.
 
 function colorize_label(expression) {
     const label = view.labels.get(expression);

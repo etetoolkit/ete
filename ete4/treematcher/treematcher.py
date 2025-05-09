@@ -9,6 +9,7 @@ from itertools import permutations
 import re
 
 from ete4 import Tree
+from ete4.core.eval import eval_on_node
 
 
 class TreePattern(Tree):
@@ -59,32 +60,7 @@ def match(pattern, node, context=None):
     if pattern.children and len(node.children) != len(pattern.children):
         return False  # no match if there's not the same number of children
 
-    context = context or {}
-    context_base = {
-        'node': node,
-        'name': node.props.get('name', ''),  # node.name could be None
-        'dist': node.dist, 'd': node.dist,
-        'support': node.support, 'sup': node.support,
-        'up': node.up, 'parent': node.up,
-        'children': node.children, 'ch': node.children,
-        'is_leaf': node.is_leaf, 'is_root': node.is_root,
-        'props': node.props, 'p': node.props,
-        'species': getattr(node, 'species', ''),  # for PhyloTree
-        'get': dict.get,
-        'size': node.size, 'dx': node.size[0], 'dy': node.size[1],
-        'regex': re.search,
-        'startswith': str.startswith, 'endswith': str.endswith,
-        'upper': str.upper, 'lower': str.lower, 'split': str.split,
-        'any': any, 'all': all, 'len': len,
-        'sum': sum, 'abs': abs, 'float': float}
-
-    for k in context:
-        assert k not in context_base, f'colliding name: {k}'
-
-    eval_context = dict(context_base, **context)  # merge dicts
-
-    evaluate = safer_eval if pattern.safer else eval  # risky business
-    if not evaluate(pattern.props['code'], eval_context):
+    if not eval_on_node(pattern.props['code'], node, context, pattern.safer):
         return False  # no match if the condition for this node if false
 
     if not pattern.children:
@@ -104,13 +80,3 @@ def search(pattern, tree, context=None, strategy='levelorder'):
     for node in tree.traverse(strategy):
         if match(pattern, node, context):
             yield node
-
-
-# Calling eval() directly in match() can be a security problem. Specially for
-# web services, we are better off using this following function:
-def safer_eval(code, context):
-    """Return a safer version of eval(code, context)."""
-    for name in code.co_names:
-        if name not in context:
-            raise ValueError('invalid use of %r during evaluation' % name)
-    return eval(code, {'__builtins__': {}}, context)

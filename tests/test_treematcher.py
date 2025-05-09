@@ -75,5 +75,5 @@ def test_safer():
 
     tp_safer = tm.TreePattern('("node.get_species()=={\'c\'}",'
                               '  node.species=="b")', safer=True)
-    with pytest.raises(ValueError):
+    with pytest.raises(SyntaxError):
         list(tp_safer.search(t))  # asked for unknown function get_species()

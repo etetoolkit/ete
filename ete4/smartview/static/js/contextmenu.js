@@ -53,7 +53,11 @@ function add_node_options(box, name, props, node_id) {
         on_tree_change();
     }, "Explore the subtree starting at the current node.");
     add_button("❓ Show node id", () => {
-        Swal.fire({text: `${node_id}`, position: "bottom",
+        Swal.fire({input: "text",
+                   text: "node id",
+                   inputValue: `${node_id}`,
+                   inputAttributes: {disabled: true},
+                   position: "bottom",
                    showConfirmButton: false});
     });
     add_button("📥 Download branch as newick", () => download_newick(node_id),

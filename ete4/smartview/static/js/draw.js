@@ -51,7 +51,8 @@ async function draw_tree() {
         clear_pixi();
 
         // Make sure we have the aligned panel if (and only if) necessary.
-        if (view.shape === "circular" || Object.keys(items).length === 1) {
+        if (view.shape === "circular" ||
+            (Object.keys(items).length === 1 && 0 in items)) {
             div_aligned.style.display = "none";  // hide aligned panel
         }
         else {
@@ -60,15 +61,28 @@ async function draw_tree() {
         }
 
         // Draw all the items, in the main div_tree and in the aligned panel.
-        let xmax = 0;
-        for (const panel of Object.keys(items).sort()) {
-            if (panel == 0)  // draw all received items for tree in div_tree
-                draw(div_tree, items[panel], view.tl, view.zoom);
-            else  // aligned panel items
-                draw_aligned(items[panel].map(item => translate(item, xmax)));
+        const panels = Object.keys(items).sort((x, y) => Number(x) > Number(y));
+        const panels_headers = panels.filter(x => x < 0).reverse();
+        const panels_aligned = panels.filter(x => x > 0);
 
-            if (view.shape === "circular" || panel > 0)
-                xmax += xmaxs[panel];
+        if (0 in items)  // panel 0 has the items for div_tree
+            draw(div_tree, items[0], view.tl, view.zoom);
+
+        let xmax = view.shape === "circular" && 0 in xmaxs ? xmaxs[0] : 0;
+
+        for (const panel of panels_aligned) {
+            draw_aligned(items[panel].map(item => translate(item, xmax)));
+            xmax += xmaxs[panel];
+        }
+
+        xmax = view.shape === "circular" && 0 in xmaxs ? xmaxs[0] : 0;  // reset
+
+        if (view.shape === "rectangular") {  // TODO: headers in circular too
+            for (const panel of panels_headers) {  // negative panels are headers
+                draw_header_background(xmax);
+                draw_header(items[panel].map(item => translate(item, xmax)));
+                xmax += xmaxs[-panel];  // the xmax of the *positive* panel
+            }
         }
 
         // Update variable that shows the number of visible nodes in the menu.
@@ -188,10 +202,12 @@ function get_items_per_panel(commands) {
 
 
 // Draw items in the aligned position.
-function draw_aligned(items) {
+function draw_aligned(items, padding_x=15) {
     if (view.shape === "rectangular") {
-        const tl = {x: view.aligned.origin, y: view.tl.y};  // relative "top-left" point
-        const zoom = {x: view.zoom.x * view.aligned.zoom, y: view.zoom.y};
+        const zoom = {x: view.zoom.x * view.aligned.zoom,
+                      y: view.zoom.y};
+        const tl = {x: view.aligned.origin - padding_x / zoom.x,
+                    y: view.tl.y};  // relative "top-left" point
         const replace = false;
         draw(div_aligned, items, tl, zoom, replace);
     }
@@ -201,11 +217,72 @@ function draw_aligned(items) {
     }
 }
 
+
+// Draw a white box and a line to clean the space where the headers will go.
+function draw_header_background(xmax, padding_x=15) {
+    const zoom = {x: view.zoom.x * view.aligned.zoom,
+                  y: view.zoom.y};
+    // Position where to put the header (in screen coordinates).
+    const px = zoom.x * (xmax - view.aligned.origin) + padding_x,
+          py = Math.max(40, - view.zoom.y * view.tl.y - 20);
+
+    const g = create_svg_element("g");
+
+    // Put a white rectangle on the background of the header.
+    g.appendChild(create_svg_element("rect", {
+        "x": px - 10,
+        "y": 0,
+        "width": div_aligned.offsetWidth - px + 2 * 10,
+        "height": py + 20,
+        "fill": "white",
+    }));
+
+    // Add a line separating the header from the content below.
+    const line = create_svg_element("line", {
+        "x1": px,
+        "y1": py + 15,
+        "x2": div_aligned.offsetWidth,
+        "y2": py + 15,
+    });
+    add_style(line, {
+        stroke: "#e0e0e0",
+        strokeWidth: "3px",
+    });
+
+    g.appendChild(line);
+
+    const svg = div_aligned.getElementsByTagName("svg")[0];
+    svg.appendChild(g);
+}
+
+
+// Draw items in the header position.
+function draw_header(items, padding_x=15) {
+    if (view.shape === "rectangular") {
+        const zoom = {x: view.zoom.x * view.aligned.zoom,
+                      y: view.zoom.y};
+        const tl = {x: view.aligned.origin - padding_x / zoom.x,
+                    y: Math.min(-50 / zoom.y, view.tl.y + 10 / zoom.y)};
+
+        const replace = false;
+        draw(div_aligned, items, tl, zoom, replace);
+    }
+    else if (view.shape === "circular") {
+        const replace = false;
+        draw(div_tree, items, view.tl, view.zoom, replace);
+    }
+}
+
+
 // Translate the position of the given item.
 function translate(item, shift) {
     if (item[0] === "text") {
         const [ , box,  anchor, text, fs_max, rotation, style] = item;
         return ["text", tbox(box, shift), anchor, text, fs_max, rotation, style];
+    }
+    else if (item[0] == "textarray") {
+        const [ , box,  anchor, text, fs_max, rotation, style] = item;
+        return ["textarray", tbox(box, shift), anchor, text, fs_max, rotation, style];
     }
     else if (item[0] === "circle") {
         const [ , [x, y], radius, style] = item;
@@ -529,11 +606,30 @@ function create_item(item, tl, zoom, wmax) {
     else if (item[0] === "text") {
         const [ , box, anchor, text, fs_max, rotation, style] = item;
 
-        // TODO: Remove the next line if I'm sure it shouldn't be there.
-        //        const s = typeof style === "string" ? get_class_name(style) : style;
-
         return create_text(box, anchor, text, fs_max, rotation, tl, zx, zy,
                            add_ns_prefix(style));
+    }
+    else if (item[0] === "textarray") {
+        const [ , box, anchor, texts, fs_max, rotation, style] = item;
+
+        const [x0, y0, dx0, dy0] = box;
+        const dx = dx0 / texts.length;
+
+        const imin = Math.max(0, Math.floor((tl.x - x0) / dx));
+        const imax = view.shape === "rectangular" ?
+              Math.min(texts.length, (wmax / zx + tl.x - x0) / dx) :
+              texts.length;
+
+        const [y, dy] = pad(y0, dy0, view.array.padding);
+
+        const container = create_svg_element("g");
+        for (let i = imin, x = x0 + imin * dx; i < imax; i++, x+=dx) {
+            const text = create_text([x, y, dx, dy], anchor, texts[i], fs_max,
+                                     rotation, tl, zx, zy, add_ns_prefix(style));
+            container.appendChild(text);
+        }
+
+        return container;
     }
     else if (item[0] === "image") {
         const [ , box, href, style] = item;
@@ -581,12 +677,6 @@ function create_item(item, tl, zoom, wmax) {
 
         return create_seq(box, seq, seqtype, draw_text, fs_max, tl, zx, zy,
                           add_ns_prefix(style), render, wmax);
-    }
-    else if (item[0] === "header") {
-        const [ , x, text, fs_max, rotation, style] = item;
-
-        return create_header(x, text, fs_max, rotation, tl, zx, zy,
-                             add_ns_prefix(style));
     }
     else {
         console.log(`Unrecognized item: ${item}`);
@@ -1017,58 +1107,6 @@ function create_text(box, anchor, text, fs_max, rotation,
 }
 
 
-function create_header(x, text, fs_max, rotation, tl, zx, zy, style="") {
-    if (view.shape !== "rectangular")
-        return null;  // we only put headers in rectangular mode
-
-    // Position where to put the header (in screen coordinates).
-    const px = zx * (x - tl.x),
-          py = Math.max(50, - zy * tl.y);
-
-    const g = create_svg_element("g");
-
-    // Put a white rectangle on the background of the header.
-    const padding = 10;  // 10 pixels
-    g.appendChild(create_svg_element("rect", {
-        "x": px - padding,
-        "y": 0,
-        "width": div_aligned.offsetWidth - px + 2 * padding,
-        "height": py + 15,
-        "fill": "white",
-    }));
-
-    // Add a line separating the header from the content below.
-    const line = create_svg_element("line", {
-        "x1": px,                      "y1": py + fs_max,
-        "x2": div_aligned.offsetWidth, "y2": py + fs_max,
-    });
-    add_style(line, {
-        stroke: "#e0e0e0",
-        strokeWidth: "3px",
-    });
-
-    g.appendChild(line);
-
-    // Add the text (the header itself).
-    const t = create_svg_element("text", {
-        "x": px,
-        "y": py,
-        "font-size": `${fs_max}px`,  // NOTE: We set the font size to font max!
-    });
-
-    t.appendChild(document.createTextNode(text));
-
-    if (rotation != 0)
-        add_rotation(t, rotation, px + 15, py);  // shift px to avoid clipping
-
-    add_style(t, style);
-
-    g.appendChild(t);
-
-    return g;
-}
-
-
 function create_seq(box, seq, seqtype, draw_text, fs_max,
                     tl, zx, zy, style, render, wmax) {
     if (!["aa", "nt"].includes(seqtype))
@@ -1287,7 +1325,8 @@ function get_text_placement_rect(box, anchor, text, fs_max, rotation,
     // svgs. We go a bit up (0.9 instead of 1.0) because of the baseline.
 
     const dx_in_tree = scale * dx;
-    const [x_anchor, text_anchor] = anchored_position(x_in_tree, dx_in_tree, ax);
+    const [x_anchor, text_anchor] =
+          anchored_position(x_in_tree, c * dx_in_tree, s * fs / zx, ax);
 
     const corner = tree2rect([x_anchor, y_in_tree], tl, zx, zy);
 
@@ -1320,7 +1359,7 @@ function get_text_placement_circ(box, anchor, text, fs_max, rotation, tl, z, typ
 
     // Convert to in-screen values and return those.
     const dr_in_tree = scale * dr;
-    const [r_anchor, text_anchor] = anchored_position(r_in_tree, dr_in_tree, ar);
+    const [r_anchor, text_anchor] = anchored_position(r_in_tree, dr_in_tree, 0, ar);
 
     const corner = tree2circ([r_anchor, a_in_tree], tl, z);
 
@@ -1329,16 +1368,16 @@ function get_text_placement_circ(box, anchor, text, fs_max, rotation, tl, z, typ
 
 
 // Return the x position and the svg text-anchor to place the text for a given
-// original in-tree x text position, dx width, and ax anchor.
-// This is useful to fine-tune the placement (since dx is just an approximation
-// to the exact width of the text).
-function anchored_position(x, dx, ax) {
+// original in-tree x text position, dx width, dx_rot extra width coming from
+// a rotation, and ax anchor. This is useful to fine-tune the placement (since
+// dx is just an approximation to the exact width of the text).
+function anchored_position(x, dx, dx_rot, ax) {
     if (ax < 0.3)
-        return [x, "start"];
+        return [x + dx_rot, "start"];
     else if (ax < 0.6)
         return [x + dx/2, "middle"];
     else
-        return [x + dx, "end"];
+        return [x + dx - dx_rot, "end"];
 }
 
 

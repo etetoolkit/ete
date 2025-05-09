@@ -25,10 +25,10 @@ def root_at(node, bprops=None):
     :param node: Node to set as root. Its reference will be lost.
     :param bprops: List of branch properties (other than "dist" and "support").
     """
-    root = node.root
-
-    if root is node:
+    if node.is_root:
         return  # nothing to do!
+
+    root = node.root  # get the root of the tree
 
     assert_root_consistency(root, bprops)
 
@@ -69,12 +69,10 @@ def interchange_references(node1, node2):
     pos2 = up2.children.index(node2) if up2 else None
 
     if up1 is not None:
-        up1.children.pop(pos1)
-        up1.children.insert(pos1, node2)
+        up1.children[pos1] = node2
 
     if up2 is not None:
-        up2.children.pop(pos2)
-        up2.children.insert(pos2, node1)
+        up2.children[pos2] = node1
 
     node1.up = up2
     node2.up = up1
@@ -137,13 +135,13 @@ def swap_props(n1, n2, props):
 def insert_intermediate(node, intermediate, bprops=None, dist=None):
     """Insert, between node and its parent, an intermediate node."""
     # == up ======= node  ->  == up === intermediate === node
-    up = node.up
+    up = node.up  # original parent of node
 
     pos_in_parent = up.children.index(node)  # save its position in parent
-    up.children.pop(pos_in_parent)  # detach from parent
 
-    intermediate.add_child(node)
+    intermediate.add_child(node)  # == intermediate === node
 
+    # Update dist in intermediate (and in node), and branch properties.
     if 'dist' in node.props:  # split dist between the new and old nodes
         if dist is not None:
             node.dist, intermediate.dist = dist, node.dist - dist
@@ -154,7 +152,8 @@ def insert_intermediate(node, intermediate, bprops=None, dist=None):
         if prop in node.props:
             intermediate.props[prop] = node.props[prop]
 
-    up.children.insert(pos_in_parent, intermediate)  # put new where old was
+    # == up === intermediate  (and we already have  intermediate === node)
+    up.children[pos_in_parent] = intermediate  # put the new where old node was
     intermediate.up = up
 
 
@@ -174,9 +173,9 @@ def join_branch(node, bprops=None):
         child.dist = (child.dist or 0) + node.dist  # restore total dist
 
     up = node.up
-    pos_in_parent = up.children.index(node)  # save its position in parent
-    up.children.pop(pos_in_parent)  # detach from parent
-    up.children.insert(pos_in_parent, child)  # put child where the old node was
+    if not node.is_root:
+        i = up.children.index(node)  # position that node had in its parent
+        up.children[i] = child  # put child where the old node was
     child.up = up
 
 
@@ -288,13 +287,15 @@ def create_dichotomic_sister(tree):
 def populate_yule(root, size):
     """Populate with the Yule-Harding model a topology with size leaves."""
     leaves = [root]  # will contain the current leaves
-    for _ in range(size - 1):
-        leaf = leaves.pop( random.randrange(len(leaves)) )
+    for _ in range(size - 1):  # grow 2 leaves from a leaf in each iteration
+        i = random.randrange(len(leaves))  # pick one leaf index
+        node = leaves[i]  # take that leaf, which will be the parent node
 
-        node0 = leaf.add_child()
-        node1 = leaf.add_child()
+        leaf0 = node.add_child()  # grow leaves from that parent
+        leaf1 = node.add_child()
 
-        leaves.extend([node0, node1])
+        leaves[i] = leaf0  # put one of the leaves where the old one was
+        leaves.append(leaf1)  # and append the other leaf to our leaves list too
 
 
 def populate_uniform(root, size):
@@ -318,7 +319,8 @@ def populate_uniform(root, size):
         leaf = intermediate.add_child()          # ---up---inter===node,leaf
         random.shuffle(intermediate.children)  # [node,leaf] or [leaf,node]
 
-        nodes.extend([intermediate, leaf])
+        nodes.append(intermediate)
+        nodes.append(leaf)
 
 
 def add_branch_values(root, dist_fn, support_fn):
@@ -465,23 +467,105 @@ def resolve_polytomy(tree, descendants=True):
             break
 
 
-def farthest_descendant(tree, topological=False):
-    """Return the farthest descendant and its distance."""
+def closest_descendant_leaf(tree, dist_max=-1, selector=None,
+                            is_leaf_fn=None, topological=False):
+    """Return the closest descendant leaf from the tree and its distance.
+
+    :param tree: Starting node for which to find its closest descendant leaf.
+    :param dist_max: If > 0, do not consider nodes farther than this distance.
+    :param selector: Function that returns True for the selected leaves.
+        If None, all leaves will be selected as candidates to consider.
+    :param is_leaf_fn: Function that takes a node and returns True if it is
+        considered a leaf. If None, node.is_leaf is used.
+    :param topological: If True, the distance between nodes will be the
+        number of nodes between them (instead of the sum of branch lenghts).
+    """
+    # Get default functions to select leaves and find if a node is a leaf.
+    selector = selector or (lambda node: True)  # select all by default
+    is_leaf = is_leaf_fn or (lambda node: node.is_leaf)
+
+    # Create a traversing generator that we can control while traversing.
+    descend = [True]  # to control if we want to stop descending
+    traversal = traverse_full(tree, order=-1, is_leaf_fn=is_leaf_fn,
+                              topological=topological, descend=descend)
+
+    leaf_closest, dist_closest = None, -1  # current closest leaf and distance
+    for node, _, dist in traversal:
+        if ((leaf_closest is not None and dist > dist_closest) or
+            (dist_max > 0             and dist > dist_max)):
+            descend[0] = False  # signal the generator not to descend
+        elif (is_leaf(node) and selector(node) and  # valid leaf
+              (leaf_closest is None or dist < dist_closest)):  # closer!
+            leaf_closest, dist_closest = node, dist
+
+    return leaf_closest, dist_closest
+
+
+def closest_leaf(leaf, selector=None, is_leaf_fn=None, topological=False,
+                 relative=False):
+    """Return the closest leaf to the given leaf, and their distance.
+
+    Note that if you want to find the closest descendant leaf from a
+    node, the appropriate function is closest_descentant_leaf(node).
+
+    :param leaf: Leaf for which to find its closest leaf.
+    :param selector: Function that returns True for the selected leaves.
+        If None, all leaves will be selected as candidates to consider.
+    :param is_leaf_fn: Function that takes a node and returns True if it is
+        considered a leaf. If None, node.is_leaf is used.
+    :param topological: If True, the distance between nodes will be the
+        number of nodes between them (instead of the sum of branch lenghts).
+    :param relative: If True, it will return the closest *relative* leaf, that
+        is, the one in the smallest branch including the original leaf.
+    """
     d = get_distance_fn(topological)
 
-    dist_root = {tree: 0}  # will contain all distances to the root
+    closest, dist_closest = None, -1  # current closest leaf and distance
 
+    node = leaf  # we'll go from the leaf towards the root
+    dist_from_leaf = 0  # and accumulate the distance from the leaf
+    while not node.is_root and (closest is None or dist_from_leaf < dist_closest):
+        if relative and closest is not None:  # already found
+            break  # we are done, we should not check higher branches
+
+        dist_from_leaf += d(node)
+
+        for sis in node.get_sisters():
+            sdist = d(sis)  # sister dist (length of sister branch)
+            dist_max = dist_closest - (dist_from_leaf + sdist)
+            if closest is None or dist_max > 0:
+                closest_sis, dist = closest_descendant_leaf(sis, dist_max, selector,
+                                                            is_leaf_fn, topological)
+                if closest_sis is not None:  # found closest leaf from sis
+                    dist_total = dist_from_leaf + sdist + dist  # leaf to leaf
+                    if closest is None or dist_total < dist_closest:
+                        closest, dist_closest = closest_sis, dist_total
+
+        node = node.up
+
+    return closest, dist_closest
+
+
+def closest_relative_leaf(leaf, selector=None, is_leaf_fn=None, topological=False):
+     """Return the closest relative leaf to the given leaf, and their distance.
+
+     Convenient common function, which calls closest_leaf() with relative=True.
+     """
+     return closest_leaf(leaf, selector, is_leaf_fn, topological, relative=True)
+
+
+def farthest_descendant(tree, is_leaf_fn=None, topological=False):
+    """Return the farthest descendant and its distance."""
     node_farthest, dist_farthest = tree, 0
-    for node in traverse(tree, order=-1):  # traverse in preorder
-        if node is not tree:
-            dist_root[node] = dist = dist_root[node.up] + d(node)
-            if dist > dist_farthest:
-                node_farthest, dist_farthest = node, dist
+    for node, _, dist in traverse_full(tree, is_leaf_fn=is_leaf_fn,
+                                       topological=topological):
+        if dist > dist_farthest:
+            node_farthest, dist_farthest = node, dist
 
     return node_farthest, dist_farthest
 
 
-def farthest(tree, topological=False):
+def farthest_nodes(tree, topological=False):
     """Return the farthest nodes and the diameter of the tree."""
     d = get_distance_fn(topological)
 
@@ -495,7 +579,7 @@ def farthest(tree, topological=False):
         if node.is_leaf:
             fd[node] = (node, d(node))
         else:
-            f_leaf, dist = max((fd[n] for n in node.children), key=last)
+            f_leaf, dist = max([fd[n] for n in node.children], key=last)
             fd[node] = (f_leaf, (d(node) if node is not tree else 0) + dist)
 
     # Part 2: Find the extremes and the diameter.
@@ -509,7 +593,7 @@ def farthest(tree, topological=False):
     curr = extreme1.up  # the current node we are visiting
     d_curr_e1 = d(extreme1)  # distance from current to the 1st extreme
     while curr is not tree.up:
-        leaf, dist = max((fd[n] for n in curr.children if n is not prev),
+        leaf, dist = max([fd[n] for n in curr.children if n is not prev],
                          default=(curr, 0), key=last)
         if dist + d_curr_e1 > diameter:
             extreme2, diameter = leaf, dist + d_curr_e1
@@ -525,7 +609,7 @@ def midpoint(tree, topological=False):
     d = get_distance_fn(topological)
 
     # Find the farthest node and diameter.
-    node, _, diameter = farthest(tree, topological)
+    node, _, diameter = farthest_nodes(tree, topological)
 
     # Go thru ancestor nodes until we cover more distance than the tree radius.
     dist = diameter / 2 - d(node)  # radius of the tree minus branch dist
@@ -541,34 +625,45 @@ def set_midpoint_outgroup(tree, topological=False):
     set_outgroup(node, dist=dist)
 
 
-def average_distance(tree, selector=None, leaf=None, topological=False):
-    """Return average distance between a leaf and the selected leaves.
+def mean_distance(tree, weight_fn=None, leaf=None, topological=False):
+    """Return the weighted mean distance between leaves, or from given leaf.
 
-    :param tree: Tree (starting node) for which to compute the average.
-    :param selector: Function that returns True for the selected leaves.
-        If None, all leaves will be selected.
-    :param leaf: Leaf for which to compute the average distance to the
-        selected leaves. If None, an average for all selected leaves is made.
+    This is also called the "Mean Phylogenetic Distance" (MPD) for
+    phylogenetic trees.
+
+    To "select" certain leaves, weight_fn can be used for example like::
+
+      weight_fn=lambda node: 1 if node.name in names else 0
+
+    But it can be used generally as relative leaf importance for averaging.
+
+    The algorithm is quite fast: for n leaves, it runs in O(n * log(n)).
+
+    :param tree: Tree (starting node) for which to compute the mean.
+    :param weight_fn: Function that returns the weight of each leaf.
+        If None, all leaves will have weight 1.
+    :param leaf: Leaf for which to compute the weighted mean distance to
+        leaves. If None, a weighted mean for all leaves is made.
     :param topological: If True, the distance between nodes will be the
         number of nodes between them (instead of the sum of branch lenghts).
     """
-    # Get default functions to select leaves and compute distances.
-    selector = selector or (lambda node: True)  # select all by default
+    # Get default functions to weight leaves and compute distances.
+    weight_fn = weight_fn or (lambda node: 1)  # weight of 1 by default
     d = get_distance_fn(topological)
 
-    # Store info on descendants selected, and total distance to them.
-    nums = {}  # number of descendants (including self) selected
-    sums = {}  # sum of distances from node to descendants selected
+    # Store info on descendant leaves, and total distance to them.
+    nums = {}  # weighted number of descendant leaves
+    sums = {}  # weighted sum of distances from node to descendant leaves
     for node in traverse(tree, order=+1):  # postorder (descendants first)
         if node.is_leaf:
-            nums[node] = 1 if selector(node) else 0
+            nums[node] = weight_fn(node)
             sums[node] = 0
         else:
             children = node.children
             nums[node] = sum(nums[x] for x in children)
             sums[node] = sum(d(x) * nums[x] + sums[x] for x in children)
 
-    # Function to get the number of paths (distances), and total distance sum.
+    # Function to get the weighted number of paths, and total distance sum.
     def nums_sums(leaf):
         node = leaf  # current node
         d_leaf = 0  # distance from leaf to current node
@@ -582,19 +677,19 @@ def average_distance(tree, selector=None, leaf=None, topological=False):
             node = node.up
         return n, s
 
-    # Return the average distance (from a single leaf, or averaged).
+    # Return the mean distance (from a single leaf, or averaged).
     if leaf is not None:  # from a single leaf
         n, s = nums_sums(leaf)  # number of distances, sum of distances
-        return s / n if n > 0 else 0  # average distance
-    else:  # averaged over all selected leaves
+        return s / n if n > 0 else 0  # mean distance
+    else:  # weighted mean over all leaves
         n_total = 0
         s_total = 0
         for leaf in tree.leaves():
-            if selector(leaf):
-                n, s = nums_sums(leaf)  # number of distances, sum of distances
-                n_total += n
-                s_total += s
-        return s_total / n_total if n_total > 0 else 0  # average of averages
+            w = weight_fn(leaf)
+            n, s = nums_sums(leaf)  # number of distances, sum of distances
+            n_total += w * n
+            s_total += w * s
+        return s_total / n_total if n_total > 0 else 0  # mean of means
 
 
 def distance_matrix(tree, selector=None, topological=False, squared=False):
@@ -613,7 +708,7 @@ def distance_matrix(tree, selector=None, topological=False, squared=False):
     d = get_distance_fn(topological)
 
     # Store info on the distance to each node's leaves.
-    dists = {}  # {node: [dist0, ...]} (list of dists with leaves in preorder)
+    dists = {}  # {node: [dist0, ...]} (list of dists with leaves in order)
     for node in traverse(tree, order=+1):  # postorder (descendants first)
         if node.is_leaf:
             dists[node] = [0] if selector(node) else []
@@ -621,7 +716,7 @@ def distance_matrix(tree, selector=None, topological=False, squared=False):
             ds = []  # will have dists to selected descendant leaves, in order
             for ch in node.children:
                 d_ch = d(ch)
-                ds += (d_ch + x for x in dists[ch])
+                ds += [d_ch + x for x in dists[ch]]
             dists[node] = ds
 
     # Function to get the distances from leaf to all leaves after it, in order.
@@ -635,7 +730,7 @@ def distance_matrix(tree, selector=None, topological=False, squared=False):
             for ch in node.up.children:
                 if found:  # all leaves hanging on this node come after "leaf"
                     d_ch = d_leaf + d(ch)
-                    ds += (d_ch + x for x in dists[ch])  # so we add their dists
+                    ds += [d_ch + x for x in dists[ch]]  # so we add their dists
                 elif ch is node:
                     found = True
             node = node.up
@@ -653,6 +748,53 @@ def distance_matrix(tree, selector=None, topological=False, squared=False):
     return matrix
 
 
+# The next two functions appear as defined in the Glossary of Terms in
+# doi 10.1016/j.cub.2014.03.011:
+#
+# - PD (phylogenetic diversity)
+#   - Sum of all lengths of all branches in a defined phylogenetic tree.
+#
+# - ED (evolutionary distinctness)
+#   - A species-level measure representing the weighted sum of the
+#     branch lengths along the path from the root of a tree to a given
+#     tip (species). Identical to and sometimes referred to as the fair
+#     proportion (FP) metric. Note that the ED of all species in a tree
+#     sums to PD.
+
+def phylogenetic_diversity(tree, topological=False):
+    """Return the phylogenetic diversity of the tree."""
+    d = get_distance_fn(topological)
+    return sum(d(node) for node in traverse(tree) if not node.is_root)
+
+
+def evolutionary_distinctness(tree, leaves, topological=False):
+    """Return the evolutionary distinctness for the given leaves.
+
+    The ``leaves`` argument is typically just a list with one leaf
+    (for which we want to know its evolutionary distinctness). But the
+    precomputations can be used to quickly find the value of many.
+    """
+    d = get_distance_fn(topological)
+
+    # Precompute the number of descendant leaves for every node.
+    nleaves = {}  # will have for each node the number of descendant leaves
+    for node in traverse(tree, order=+1):  # traverse in postorder
+        nleaves[node] = (1 if node.is_leaf else
+                         sum(nleaves[ch] for ch in node.children))
+
+    # Use precomputations to quickly find the value for all the leaves.
+    eds = []  # list of evolutionary distinctness for the given leaves
+    for leaf in leaves:
+        node = leaf
+        ed = 0  # evolutionary distinctness
+        while not node.is_root:
+            ed += d(node) / nleaves[node]
+            node = node.up
+        eds.append(ed)
+
+    return eds
+
+
 def get_distance_fn(topological, asserted=True):
     """Return a function that returns node distances (branch lengths).
 
@@ -660,7 +802,7 @@ def get_distance_fn(topological, asserted=True):
     :param asserted: If True, raises AssertionError on undefined distances.
     """
     if topological:
-        return lambda node: 1
+        return lambda node: 1 if not node.is_root else 0
     elif asserted:
         def asserted_dist(node):
             assert node.dist is not None, 'node without distance: %r' % node
@@ -670,11 +812,101 @@ def get_distance_fn(topological, asserted=True):
         return lambda node: node.dist
 
 
+# Robinson-Foulds distance between trees.
+#
+# See https://en.wikipedia.org/wiki/Robinson%E2%80%93Foulds_metric
+
+# TODO: Review the code and add tests. The next functions correspond
+#       to Jordi's implementation of Robinson-Foulds, which is
+#       different from the one currently in tree.pyx.
+
+def robinson_foulds(t1, t2, prop='name', normalized=False, strict=False):
+    """Return the Robinson-Foulds distance between trees t1 and t2.
+
+    The distance is A + B, where:
+
+    - A: number of partitions implied by t1 but not t2
+    - B: number of partitions implied by t2 but not t1
+
+    Every node implies a partition (the leaves that it has at each side).
+
+    :param prop: Property of the leaves used to identify them in partitions.
+    :param normalized: If True, divide by the maximum possible distance.
+    :param strict: If True, check that t1 and t2 have unique and same leaves.
+    """
+    common_vals = get_common_values(t1, t2, prop, strict)
+
+    parts1 = make_partitions(t1, common_vals, prop)
+    parts2 = make_partitions(t2, common_vals, prop)
+
+    dist = (sum(1 for p in parts1 if p not in parts2) +
+            sum(1 for p in parts2 if p not in parts1))
+
+    if not normalized:
+        return dist
+    else:
+        # Partitions with more than one leaf on both sides, for t1 and t2.
+        dist_max = (sum(1 for a, b in parts1 if len(a) > 1 and len(b) > 1) +
+                    sum(1 for a, b in parts2 if len(a) > 1 and len(b) > 1))
+        return dist / dist_max if dist_max > 0 else 0
+
+
+def get_common_values(t1, t2, prop='name', strict=False):
+    """Return the common leaf property prop values of trees t1 and t2.
+
+    If strict, raise AssertionError if t1 and t2 don't share leaves.
+    """
+    vals1 = set(leaf.props.get(prop) for leaf in t1.leaves())  # can be names
+    vals2 = set(leaf.props.get(prop) for leaf in t2.leaves())
+    common_vals = vals1 & vals2  # common leaf values of property prop
+
+    assert not strict or (
+        len(common_vals) == len(vals1) == len(vals2) == len(t1) == len(t2)), \
+        (f'all leaves should have a different {prop}, the same in both trees '
+         '(use strict=False otherwise)')
+
+    assert None not in common_vals, f'all leaves should have property {prop}'
+
+    return common_vals
+
+
+def make_partitions(tree, common_vals, prop='name'):
+    """Return a set of partitions of the given tree.
+
+    A "partition" is an id for each node, based on the leaves that it
+    has at each side. The id is unique no matter the topology.
+    """
+    partitions = set()
+    values = {}  # dict of leaf values for property prop under each node
+    for node in traverse(tree, order=+1):  # postorder
+        if node.is_leaf:
+            v = node.props.get(prop)
+            leaf_values = {v} if v in common_vals else set()
+        else:
+            leaf_values = set.union(*[values[n] for n in node.children])
+            # If we wanted to save some memory (and go ~5% slower), we could do:
+            #   for n in node.children:
+            #       values.pop(n)  # free memory, no need to keep all the values
+
+        values[node] = leaf_values  # saved for future use by its parent node
+
+        partitions.add(partition_id(leaf_values, common_vals - leaf_values))
+
+    return partitions
+
+
+def partition_id(values1, values2):
+    """Return a unique id based on the given sets of values."""
+    side1 = tuple(sorted(values1))  # id for one side
+    side2 = tuple(sorted(values2))  # id for the other side
+    return tuple(sorted([side1, side2]))  # joint id: the two ids sorted
+
+
 # Traversing the tree.
 
 def traverse(tree, order=-1, is_leaf_fn=None):
     """Traverse the tree and yield nodes in pre (< 0) or post (> 0) order."""
-    visiting = [(tree, False)]
+    visiting = [(tree, False)]  # nodes we are visiting, and if we saw them
     while visiting:
         node, seen = visiting.pop()
 
@@ -688,6 +920,46 @@ def traverse(tree, order=-1, is_leaf_fn=None):
             visiting += [(n, False) for n in node.children[::-1]]
 
 
+def traverse_full(tree, order=-1, is_leaf_fn=None,
+                  topological=False, descend=None):
+    """Traverse tree depth-first and yield (node, seen status, total distance).
+
+    Similar to traverse(), but more fully featured (and complex).
+
+    :param tree: Tree (starting node) to traverse.
+    :param order: When to yield (-1 preorder, +1 postorder, 0 prepostorder).
+    :param is_leaf_fn: Function that takes a node and returns True if it is
+        considered a leaf. If None, node.is_leaf is used.
+    :param topological: If True, the distance between nodes will be the
+        number of nodes between them (instead of the sum of branch lenghts).
+    :param descend: If not None, a list whose first element is always checked
+        before going deeper in the traversal. To dynamically cut/avoid branches.
+    """
+    d = get_distance_fn(topological)
+    descend = descend if descend is not None else [True]
+
+    dist_total = 0  # distance from tree (our root)
+    visiting = [(tree, False, 0)]  # nodes, if we saw them, and their distance
+    while visiting:
+        node, seen, ndist = visiting.pop()
+
+        is_leaf = is_leaf_fn(node) if is_leaf_fn else node.is_leaf
+
+        if not seen:
+            dist_total += ndist  # we are going forwards in the tree
+
+        if is_leaf or (order <= 0 and not seen) or (order >= 0 and seen):
+            yield node, seen, dist_total
+
+        if descend[0] and not seen and not is_leaf:
+            ndist = d(node) if node is not tree else 0  # node dist
+            visiting.append((node, True, ndist))  # add node back, as seen
+            visiting += [(n, False, d(n)) for n in node.children[::-1]]
+        else:
+            descend[0] = True  # in case it was changed in the caller
+            dist_total -= ndist  # we are going backwards in the tree
+
+
 def traverse_bfs(tree, is_leaf_fn=None):
     """Yield nodes with a breadth-first search (level order traversal)."""
     visiting = deque([tree])
@@ -695,7 +967,7 @@ def traverse_bfs(tree, is_leaf_fn=None):
         node = visiting.popleft()
         yield node
         if not is_leaf_fn or not is_leaf_fn(node):
-            visiting.extend(node.children)
+            visiting += node.children
 
 
 # Position on the tree: current node, number of visited children.
