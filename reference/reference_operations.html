@@ -277,6 +277,26 @@ number of nodes between them (instead of the sum of branch lenghts).</p></li>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.leaves_vs_random">
+<span class="sig-name descname"><span class="pre">leaves_vs_random</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leaves</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.leaves_vs_random" title="Link to this definition">¶</a></dt>
+<dd><p>Helper function to compute NRI, NTI, and similar indices.</p>
+<p>It returns:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">E</span><span class="p">(</span><span class="n">metric</span><span class="p">(</span><span class="n">random_leaves</span><span class="p">))</span> <span class="o">-</span> <span class="n">metric</span><span class="p">(</span><span class="n">leaves</span><span class="p">))</span> <span class="o">/</span> <span class="n">SD</span><span class="p">(</span><span class="n">metric</span><span class="p">(</span><span class="n">random_leaves</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>where E is the expected value and SD the standard deviation (taken
+from a number &lt; nmax of random samples of leaves, all of the same
+size as the original list of leaves).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>metric</strong> – Function that takes a list of leaves and returns
+some value associated to them. For example, the mean pairwise
+distance for NRI, and the mean closest distance for NTI.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="ete4.core.operations.make_name">
 <span class="sig-name descname"><span class="pre">make_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'abcdefghijklmnopqrstuvwxyz'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.make_name" title="Link to this definition">¶</a></dt>
 <dd><p>Return a short name corresponding to the index i.</p>
@@ -327,6 +347,67 @@ number of nodes between them (instead of the sum of branch lenghts).</p></li>
 <dt class="sig sig-object py" id="ete4.core.operations.move">
 <span class="sig-name descname"><span class="pre">move</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shift</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.move" title="Link to this definition">¶</a></dt>
 <dd><p>Change the position of the current node with respect to its parent.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.nearest_taxon_index">
+<span class="sig-name descname"><span class="pre">nearest_taxon_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leaves</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.nearest_taxon_index" title="Link to this definition">¶</a></dt>
+<dd><p>Return the Nearest Taxon Index (NTI).</p>
+<p>The nearest taxon index (NTI) is a standardized measure of the
+phylogenetic distance to the nearest taxon for each taxon in the
+sample and quantifies the extent of terminal clustering,
+independent of deep level clustering:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">mnY</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">-</span> <span class="n">mn</span><span class="p">(</span><span class="n">Yobs</span><span class="p">))</span> <span class="o">/</span> <span class="n">sdY</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where Yobs is the phylogenetic distance to the nearest taxon in
+the phylogeny of the pool, mn(Yobs) is the mean of all n taxa, and mnY(n)
+and sdY(n) are the mean and standard deviation expected for n taxa
+randomly distributed on the phylogeny of the pool.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tree</strong> – Tree (starting node).</p></li>
+<li><p><strong>leaves</strong> – Observed taxa.</p></li>
+<li><p><strong>topological</strong> – If True, the distance between nodes will be the
+number of nodes between them (instead of the sum of branch lenghts).</p></li>
+<li><p><strong>tolerance</strong> – Maximum relative error on the result value (NTI).</p></li>
+<li><p><strong>nmin</strong> – Minimum iterations to estimate the mean of closest distances.</p></li>
+<li><p><strong>nmax</strong> – Maximum iterations to estimate the mean of closest distances.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.core.operations.net_relatedness_index">
+<span class="sig-name descname"><span class="pre">net_relatedness_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leaves</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topological</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.core.operations.net_relatedness_index" title="Link to this definition">¶</a></dt>
+<dd><p>Return the Net Relatedness Index (NRI).</p>
+<p>The net relatedness index (NRI) is a standardized measure of the
+mean pairwise phylogenetic distance of taxa in a sample, relative
+to a phylogeny of an appropriate species pool, and quantifies
+overall clustering of taxa on a tree:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">mnX</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">-</span> <span class="n">mn</span><span class="p">(</span><span class="n">Xobs</span><span class="p">))</span> <span class="o">/</span> <span class="n">sdX</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where Xobs is the phylogenetic distance between two taxa (the sum
+of all intervening branch lengths) in the phylogeny of the pool,
+mn(Xobs) is the mean of all possible pairs of n taxa, and mnX(n)
+and sdX(n) are the mean and standard deviation expected for n taxa
+randomly distributed on the phylogeny of the pool.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tree</strong> – Tree (starting node).</p></li>
+<li><p><strong>leaves</strong> – Observed taxa.</p></li>
+<li><p><strong>topological</strong> – If True, the distance between nodes will be the
+number of nodes between them (instead of the sum of branch lenghts).</p></li>
+<li><p><strong>tolerance</strong> – Maximum relative error on the result value (NRI).</p></li>
+<li><p><strong>nmin</strong> – Minimum iterations to estimate the mean of pairwise distances.</p></li>
+<li><p><strong>nmax</strong> – Maximum iterations to estimate the mean of pairwise distances.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
