@@ -5,7 +5,9 @@ Sorting, changing the root to a node, moving branches, removing (prunning)...
 """
 
 import random
+from math import sqrt
 from collections import namedtuple, deque
+from warnings import warn
 
 
 def sort(tree, key=None, reverse=False):
@@ -793,6 +795,136 @@ def evolutionary_distinctness(tree, leaves, topological=False):
         eds.append(ed)
 
     return eds
+
+
+# The next two functions are as defined in
+# doi: 10.1146/annurev.ecolsys.33.010802.150448:
+#
+# - NRI (net relatedness index)
+#   - Compares the phylogenetic distance among all members of a community.
+#
+# - NTI (nearest taxon index)
+#   - Examines only distances among nearest relatives.
+
+def net_relatedness_index(tree, leaves, topological=False,
+                          tolerance=0.05, nmin=5, nmax=1000):
+    """Return the Net Relatedness Index (NRI).
+
+    The net relatedness index (NRI) is a standardized measure of the
+    mean pairwise phylogenetic distance of taxa in a sample, relative
+    to a phylogeny of an appropriate species pool, and quantifies
+    overall clustering of taxa on a tree::
+
+      (mnX(n) - mn(Xobs)) / sdX(n)
+
+    where Xobs is the phylogenetic distance between two taxa (the sum
+    of all intervening branch lengths) in the phylogeny of the pool,
+    mn(Xobs) is the mean of all possible pairs of n taxa, and mnX(n)
+    and sdX(n) are the mean and standard deviation expected for n taxa
+    randomly distributed on the phylogeny of the pool.
+
+    :param tree: Tree (starting node).
+    :param leaves: Observed taxa.
+    :param topological: If True, the distance between nodes will be the
+        number of nodes between them (instead of the sum of branch lenghts).
+    :param tolerance: Maximum relative error on the result value (NRI).
+    :param nmin: Minimum iterations to estimate the mean of pairwise distances.
+    :param nmax: Maximum iterations to estimate the mean of pairwise distances.
+    """
+    # Mean of the pairwise distances for the given leaves.
+    def mean(leaves):
+        leaves = set(leaves)
+        weight_fn = lambda node: 1 if node in leaves else 0
+        return mean_distance(tree, weight_fn, topological=topological)
+
+    return leaves_vs_random(tree, leaves, mean, tolerance, nmin, nmax)
+
+
+def nearest_taxon_index(tree, leaves, topological=False,
+                        tolerance=0.05, nmin=5, nmax=1000):
+    """Return the Nearest Taxon Index (NTI).
+
+    The nearest taxon index (NTI) is a standardized measure of the
+    phylogenetic distance to the nearest taxon for each taxon in the
+    sample and quantifies the extent of terminal clustering,
+    independent of deep level clustering::
+
+      (mnY(n) - mn(Yobs)) / sdY(n)
+
+    where Yobs is the phylogenetic distance to the nearest taxon in
+    the phylogeny of the pool, mn(Yobs) is the mean of all n taxa, and mnY(n)
+    and sdY(n) are the mean and standard deviation expected for n taxa
+    randomly distributed on the phylogeny of the pool.
+
+    :param tree: Tree (starting node).
+    :param leaves: Observed taxa.
+    :param topological: If True, the distance between nodes will be the
+        number of nodes between them (instead of the sum of branch lenghts).
+    :param tolerance: Maximum relative error on the result value (NTI).
+    :param nmin: Minimum iterations to estimate the mean of closest distances.
+    :param nmax: Maximum iterations to estimate the mean of closest distances.
+    """
+    # Mean of the distance to the closest leaf (in leaves) for the given leaves.
+    def mean(leaves):
+        leaves = set(leaves)
+        selector = lambda node: node in leaves
+        s = 0
+        for leaf in leaves:
+            _, dist = closest_leaf(leaf, selector, topological=topological)
+            s += dist
+        return s / len(leaves)
+
+    return leaves_vs_random(tree, leaves, mean, tolerance, nmin, nmax)
+
+
+def leaves_vs_random(tree, leaves, metric, tolerance=0.05, nmin=5, nmax=1000):
+    """Helper function to compute NRI, NTI, and similar indices.
+
+    It returns::
+
+      (E(metric(random_leaves)) - metric(leaves)) / SD(metric(random_leaves))
+
+    where E is the expected value and SD the standard deviation (taken
+    from a number < nmax of random samples of leaves, all of the same
+    size as the original list of leaves).
+
+    :param metric: Function that takes a list of leaves and returns
+        some value associated to them. For example, the mean pairwise
+        distance for NRI, and the mean closest distance for NTI.
+    """
+    assert 2 <= nmin <= nmax
+
+    # Value of the metric for the given leaves (the "observed taxa").
+    x0 = metric(leaves)  # mn(Xobs) for NRI, mn(Yobs) for NTI
+
+    # Expected value and standard deviation for randomly distributed taxa.
+    all_leaves = list(tree.leaves())
+    s = 0  # sum of the values
+    s2 = 0  # sum of the squares (for the standard deviation)
+    for n in range(1, nmax+1):
+        random_leaves = random.sample(all_leaves, len(leaves))
+
+        x = metric(random_leaves)  # one of the mnX(n) for NRI, mnY(n) for NTI
+
+        s += x
+        s2 += x*x
+
+        # Estimate the mean, the standard deviation, and total relative error
+        # (assuming it comes mostly from the error on the mean, not from std).
+        mean = s / n                    # mean
+        std = sqrt(s2 / n - mean*mean)  # standard deviation
+
+        error_mean = std / sqrt(n)      # estimated absolute error of the mean
+        error = error_mean / max(abs(mean - x0), 1e-12)  # relative error
+        # FIXME: If  error(std) / std  is big, we should add it!
+
+        if n > nmin and error < tolerance:
+            break
+        elif n == nmax:
+            warn('after maximum iterations (%d), error=%.2g > tolerance=%g' %
+                 (nmax, error, tolerance))
+
+    return (mean - x0) / std if std > 0 else 0
 
 
 def get_distance_fn(topological, asserted=True):
