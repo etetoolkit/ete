@@ -669,7 +669,7 @@ def mean_distance(tree, weight_fn=None, leaf=None, topological=False):
         d_leaf = 0  # distance from leaf to current node
         n = 0  # number of paths (distances)
         s = 0  # sum of distances
-        while not node.is_root:  # will add values for all possible paths
+        while not node is tree:  # will add values for all possible paths
             d_leaf += d(node)  # add distance from parent to current node
             sisters = node.get_sisters()  # or "siblings"
             n += sum(nums[x] for x in sisters)
@@ -724,7 +724,7 @@ def distance_matrix(tree, selector=None, topological=False, squared=False):
         node = leaf  # current node
         d_leaf = 0  # distance from leaf to current node
         ds = []  # will have dists to all selected leaves after it, in order
-        while not node.is_root:
+        while node is not tree:
             d_leaf += d(node)  # add distance from parent to current node
             found = False  # have we found node when traversing its siblings?
             for ch in node.up.children:
