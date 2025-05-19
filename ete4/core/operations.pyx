@@ -901,6 +901,7 @@ def leaves_vs_random(tree, leaves, metric, tolerance=0.05, nmin=5, nmax=1000):
     all_leaves = list(tree.leaves())
     s = 0  # sum of the values
     s2 = 0  # sum of the squares (for the standard deviation)
+    last_stds = []  # to estimate the error on the std
     for n in range(1, nmax+1):
         random_leaves = random.sample(all_leaves, len(leaves))
 
@@ -909,14 +910,20 @@ def leaves_vs_random(tree, leaves, metric, tolerance=0.05, nmin=5, nmax=1000):
         s += x
         s2 += x*x
 
-        # Estimate the mean, the standard deviation, and total relative error
-        # (assuming it comes mostly from the error on the mean, not from std).
+        # Estimate the mean and the standard deviation.
         mean = s / n                    # mean
         std = sqrt(s2 / n - mean*mean)  # standard deviation
 
-        error_mean = std / sqrt(n)      # estimated absolute error of the mean
-        error = error_mean / max(abs(mean - x0), 1e-12)  # relative error
-        # FIXME: If  error(std) / std  is big, we should add it!
+        # Estimate the errors.
+        error_mean = std / sqrt(n)  # of the mean
+
+        last_stds.append(std)
+        error_std = max(last_stds) - min(last_stds)  # of the std (crude)
+        if len(last_stds) > nmin:
+            last_stds.pop(0)
+
+        error = (error_mean / max(abs(mean - x0), 1e-12) +  # relative error
+                 error_std / max(std, 1e-12))
 
         if n > nmin and error < tolerance:
             break
