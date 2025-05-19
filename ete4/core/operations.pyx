@@ -764,7 +764,7 @@ def distance_matrix(tree, selector=None, topological=False, squared=False):
 def phylogenetic_diversity(tree, topological=False):
     """Return the phylogenetic diversity of the tree."""
     d = get_distance_fn(topological)
-    return sum(d(node) for node in traverse(tree) if not node.is_root)
+    return sum(d(node) for node in traverse(tree) if node is not tree)
 
 
 def evolutionary_distinctness(tree, leaves, topological=False):
@@ -787,7 +787,7 @@ def evolutionary_distinctness(tree, leaves, topological=False):
     for leaf in leaves:
         node = leaf
         ed = 0  # evolutionary distinctness
-        while not node.is_root:
+        while node is not tree:
             ed += d(node) / nleaves[node]
             node = node.up
         eds.append(ed)
