@@ -569,7 +569,6 @@ function create_item(item, tl, zoom, wmax) {
         return create_circle(center, radius, tl, zx, zy, add_ns_prefix(style));
     }
     else if (item[0] === "polygon") {
-        console.log("polygon", item);
         const [ , center, radius, shape, rotation, style] = item;
         
         return create_polygon(center, radius, shape, tl, zx, zy,
@@ -1010,52 +1009,6 @@ function create_polygon(center, r, shape, tl, zx, zy, rotation=0, style="", resi
 
     return element;
 }
-// function create_polygon(center, r, shape, tl, zx, zy, rotation=0, style="", resize=false) {
-//     const n = typeof shape === "number" ? shape :
-//           {"triangle": 3,
-//            "square":   4,
-//            "pentagon": 5,
-//            "hexagon":  6,
-//            "heptagon": 7,
-//            "octogon":  8}[shape];
-
-//     if (n === undefined)
-//         throw new Error(`unknown dot shape ${shape}`);
-
-//     const c = view.shape === "rectangular" ?  // center point in screen coords
-//         tree2rect(center, tl, zx, zy) :
-//         tree2circ(center, tl, zx);
-
-//     // When we put a polygon as a nodedot we don't need the correction,
-//     // but when used as a face it would look bad without it.
-//     const correction = resize ? Math.atan(n - 2) * 2 / Math.PI : 1;
-
-//     const s = 2 * r * Math.tan(Math.PI / n) * correction; // side length
-//     let p = {x: c.x - s/2,  // starting point
-//              y: c.y + r};
-
-//     const ps = [p];  // polygon points, adding a rotated (s, 0)
-//     for (let i = 0; i < n - 1; i++) {
-//         p = {x: p.x + s * Math.cos(i * 2 * Math.PI / n),
-//              y: p.y - s * Math.sin(i * 2 * Math.PI / n)}
-//         ps.push(p);
-//     }
-
-//     const element = create_svg_element("polygon", {
-//         "points": ps.map(p => `${p.x},${p.y}`).join(" "),
-//     });
-
-//     if (view.shape === "circular") {
-//         const angle = 180 / Math.PI * Math.atan2(zy * tl.y + c.y,
-//                                                  zx * tl.x + c.x);
-//         add_rotation(element, angle, c.x, c.y);
-//     }
-
-//     add_style(element, style);
-
-//     return element;
-// }
-
 
 function create_text(box, anchor, text, fs_max, rotation,
                      tl, zx, zy, style="") {
