@@ -142,6 +142,7 @@ async function suggest_width_change(icon, message) {
 
 // Return a query string with all that we need to use the "draw" api call.
 function build_draw_query_string() {
+    const za = view.aligned.zoom;
     const [zx, zy] = [view.zoom.x, view.zoom.y];
     const [x, y] = [view.tl.x, view.tl.y];
     const [w, h] = [div_tree.offsetWidth / zx, div_tree.offsetHeight / zy];
@@ -158,7 +159,7 @@ function build_draw_query_string() {
         "shape": view.shape,
         "node_height_min": view.node_height_min,
         "content_height_min": view.content_height_min,
-        "zx": zx, "zy": zy, "x": x, "y": y, "w": w, "h": h,
+        "za": za, "zx": zx, "zy": zy, "x": x, "y": y, "w": w, "h": h,
         "collapsed_shape": view.collapsed.shape,
         "collapsed_ids": JSON.stringify(Object.keys(view.collapsed_ids)),
         "layouts": layouts,

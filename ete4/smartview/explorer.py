@@ -409,7 +409,7 @@ def sort(tree_id, node_id, key_text, reverse):
 
 def get_drawing_kwargs(tree_id, args):
     """Return the drawing arguments initialized as specified in the args."""
-    valid_keys = ['x', 'y', 'w', 'h', 'zx', 'zy',
+    valid_keys = ['x', 'y', 'w', 'h', 'zx', 'zy', 'za',
                   'layouts', 'labels', 'collapsed_shape', 'collapsed_ids',
                   'shape', 'node_height_min', 'content_height_min',
                   'rmin', 'amin', 'amax']
@@ -457,8 +457,8 @@ def get_drawing_kwargs(tree_id, args):
         assert viewport is None or (viewport[2] > 0 and viewport[3] > 0), \
             'invalid viewport'  # width and height must be > 0
 
-        zoom = (get('zx', 1), get('zy', 1))
-        assert zoom[0] > 0 and zoom[1] > 0, 'zoom must be > 0'
+        zoom = (get('zx', 1), get('zy', 1), get('za', 1))
+        assert all(z > 0 for z in zoom), 'zoom must be > 0'
 
         collapsed_ids = set(tuple(int(i) for i in node_id.split(',') if i != '')
             for node_id in json.loads(args.get('collapsed_ids', '[]')))

@@ -12,7 +12,7 @@ from . import graphics as gr
 
 
 def draw(tree, layouts, overrides=None, labels=None,
-         viewport=None, zoom=(1, 1), collapsed_ids=None, searches=None):
+         viewport=None, zoom=(1, 1, 1), collapsed_ids=None, searches=None):
     """Yield graphic commands to draw the tree."""
     style = {}  # tree style
     faces = []  # tree faces
@@ -74,7 +74,7 @@ class Drawer:
     """Base class (needs subclassing with extra functions to draw)."""
 
     def __init__(self, tree, tree_style=None, draw_node_fns=None, labels=None,
-                 viewport=None, zoom=(1, 1), collapsed_ids=None, searches=None):
+                 viewport=None, zoom=(1, 1, 1), collapsed_ids=None, searches=None):
         self.tree = tree
         self.tree_style = tree_style or {}
         self.draw_node_fns = draw_node_fns or []
@@ -292,7 +292,7 @@ class Drawer:
         """Yield collapsed nodes representation."""
         # This is the shape of the outline. It also updates self.bdy_dys.
         x, y, dx, dy = self.outline
-        _, zy = self.zoom
+        _, zy, _ = self.zoom
 
         shape = self.tree_style.get('collapsed-shape', 'skeleton')
 
@@ -387,7 +387,7 @@ class DrawerRect(Drawer):
     """Drawer for a rectangular representation."""
 
     def __init__(self, tree, tree_style=None, draw_node_fns=None, labels=None,
-                 viewport=None, zoom=(1, 1), collapsed_ids=None, searches=None):
+                 viewport=None, zoom=(1, 1, 1), collapsed_ids=None, searches=None):
         super().__init__(tree, tree_style, draw_node_fns, labels,
                          viewport, zoom, collapsed_ids, searches)
         # We don't really need to define this function, but we do it
@@ -420,7 +420,7 @@ class DrawerRect(Drawer):
         return Size(dist(node), node.size[1])
 
     def is_small(self, box):
-        zx, zy = self.zoom
+        _, zy, _ = self.zoom
         return box.dy * zy < self.node_height_min
 
     def draw_hz_line(self, p1, p2, parent_of, style):
@@ -448,7 +448,7 @@ class DrawerCirc(Drawer):
     """Drawer for a circular representation."""
 
     def __init__(self, tree, tree_style=None, draw_node_fns=None, labels=None,
-                 viewport=None, zoom=(1, 1), collapsed_ids=None, searches=None):
+                 viewport=None, zoom=(1, 1, 1), collapsed_ids=None, searches=None):
         super().__init__(tree, tree_style, draw_node_fns, labels,
                          viewport, zoom, collapsed_ids, searches)
 
@@ -626,6 +626,10 @@ def get_col_data(rows, x_col, dx_col, nodes, pos_box, pos, bdy_dy, zoom,
 
     blocks = []  # will contain the column data to send afterwards
 
+    aligned_panel = not circular and pos in ['aligned', 'header']
+    zx, zy, za = zoom
+    zoom_xy = (zx * (za if aligned_panel else 1), zy)
+
     # Iterate over the faces and get their graphics (none if
     # there's not enough space). We iterate reversed ([::-1]) so the
     # first faces are the ones with more space (dy) allocated.
@@ -647,7 +651,7 @@ def get_col_data(rows, x_col, dx_col, nodes, pos_box, pos, bdy_dy, zoom,
         # Finally draw the face. r is for "radius" (in circular mode).
         r = x_pos if circular and pos not in ['aligned', 'header'] else 1
         elements, size = face.draw(nodes, Size(dx_col, dy_row),
-                                   collapsed, zoom, (ax, ay), r)
+                                   collapsed, zoom_xy, (ax, ay), r)
         blocks.append( (elements, size) )
         dx_max = max(dx_max, size.dx)
         dy_sum += size.dy
