@@ -27,8 +27,8 @@ def eval_on_node(code, node, context=None, safer=False):
 
     # Default values that make it easier when checking all nodes, even the root.
     name = node.props.get('name', '')  # node.name could be None
-    dist = node.props.get('dist', 0 if node.is_root else 1)  # and node.dist
-    support = node.props.get('support', 1)  # and node.support
+    dist = float(node.props.get('dist', 0 if node.is_root else 1))  # same
+    support = float(node.props.get('support', 1))  # same
 
     context_base = {
         'node': node, 'name': name,
