@@ -402,7 +402,7 @@ class SeqFace(Face):
 
         self.seq = ''.join(x for x in seq)  # in case it was a list
         self.seqtype = seqtype
-        self.poswidth = poswidth  # width in pixels of each nucleotide/aa
+        self.poswidth = poswidth  # width (at zoom 1) of each nucleotide/aa
         self.draw_text = draw_text
         self.hmax = hmax  # maximum height in pixels
         self.fs_max = fs_max
@@ -441,7 +441,7 @@ class HeatmapFace(Face):
         self.values = values
         self.value_range = value_range  # (min, max)
         self.color_range = [gr.hex2rgba(x) for x in color_range]  # (min, max)
-        self.poswidth = poswidth  # width in pixels of each position (square)
+        self.poswidth = poswidth  # width (at zoom 1) of each position (square)
         self.hmax = hmax  # maximum height in pixels
 
     def draw(self, nodes, size, collapsed, zoom=(1, 1), ax_ay=(0, 0), r=1):
@@ -476,7 +476,7 @@ class TextArrayFace(Face):
         self.texts = texts
         self.fs_max = fs_max
         self.rotation = rotation
-        self.poswidth = poswidth  # width in pixels of each position
+        self.poswidth = poswidth  # width (at zoom 1) of each position
         self.hmax = hmax  # maximum height in pixels
         self.style = style
 
