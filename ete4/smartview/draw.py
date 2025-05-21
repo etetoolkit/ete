@@ -626,9 +626,9 @@ def get_col_data(rows, x_col, dx_col, nodes, pos_box, pos, bdy_dy, zoom,
 
     blocks = []  # will contain the column data to send afterwards
 
-    aligned_panel = not circular and pos in ['aligned', 'header']
+    in_aligned_panel = not circular and pos in ['aligned', 'header']
     zx, zy, za = zoom
-    zoom_xy = (zx * (za if aligned_panel else 1), zy)
+    zoom_xy = (zx if not in_aligned_panel else za, zy)
 
     # Iterate over the faces and get their graphics (none if
     # there's not enough space). We iterate reversed ([::-1]) so the

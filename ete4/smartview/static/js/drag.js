@@ -116,7 +116,7 @@ function get_drag_scale() {
     if (dragging.element === div_tree)
         return [-1 / view.zoom.x, -1 / view.zoom.y];
     else if (dragging.element === div_aligned)
-        return [-1 / view.aligned.zoom / view.zoom.x, 0];
+        return [-1 / view.aligned.zoom, 0];
     else // dragging.element === div_visible_rect
         return [1 / view.minimap.zoom.x, 1 / view.minimap.zoom.y];
 }

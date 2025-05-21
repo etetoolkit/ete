@@ -205,7 +205,7 @@ function get_items_per_panel(commands) {
 // Draw items in the aligned position.
 function draw_aligned(items, padding_x=15) {
     if (view.shape === "rectangular") {
-        const zoom = {x: view.zoom.x * view.aligned.zoom,
+        const zoom = {x: view.aligned.zoom,
                       y: view.zoom.y};
         const tl = {x: view.aligned.origin - padding_x / zoom.x,
                     y: view.tl.y};  // relative "top-left" point
@@ -221,7 +221,7 @@ function draw_aligned(items, padding_x=15) {
 
 // Draw a white box and a line to clean the space where the headers will go.
 function draw_header_background(xmax, padding_x=15) {
-    const zoom = {x: view.zoom.x * view.aligned.zoom,
+    const zoom = {x: view.aligned.zoom,
                   y: view.zoom.y};
     // Position where to put the header (in screen coordinates).
     const px = zoom.x * (xmax - view.aligned.origin) + padding_x,
@@ -260,7 +260,7 @@ function draw_header_background(xmax, padding_x=15) {
 // Draw items in the header position.
 function draw_header(items, padding_x=15) {
     if (view.shape === "rectangular") {
-        const zoom = {x: view.zoom.x * view.aligned.zoom,
+        const zoom = {x: view.aligned.zoom,
                       y: view.zoom.y};
         const tl = {x: view.aligned.origin - padding_x / zoom.x,
                     y: Math.min(-50 / zoom.y, view.tl.y + 10 / zoom.y)};

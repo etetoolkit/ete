@@ -94,7 +94,7 @@ function zoom_aligned(x, zoom_in, deltaY) {
     const { origin, zoom } = view.aligned;  // shortcut
 
     const zoom_new = qz * zoom;
-    const origin_new = origin + (1 / zoom - 1 / zoom_new) / view.zoom.x * x;
+    const origin_new = origin + (1 / zoom - 1 / zoom_new) * x;
 
     view.aligned.origin = Math.max(0, origin_new);
     view.aligned.zoom = zoom_new;

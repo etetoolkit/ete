@@ -414,7 +414,7 @@ class SeqFace(Face):
         zx, zy = zoom
 
         if dx <= 0:  # no limit on dx? make it as big as possible
-            dx = self.poswidth * len(self.seq) / zx
+            dx = self.poswidth * len(self.seq)
 
         assert dy > 0 or self.hmax is not None, 'hmax needed'
         if dy <= 0:  # no limit on y? there better be hmax then
@@ -449,7 +449,7 @@ class HeatmapFace(Face):
         zx, zy = zoom
 
         if dx <= 0:  # no limit on dx? make it as big as possible
-            dx = self.poswidth * len(self.values) / zx
+            dx = self.poswidth * len(self.values)
 
         assert dy > 0 or self.hmax is not None, 'hmax needed'
         if dy <= 0:  # no limit on y? there better be hmax then
@@ -485,7 +485,7 @@ class TextArrayFace(Face):
         zx, zy = zoom
 
         if dx <= 0:  # no limit on dx? make it as big as possible
-            dx = self.poswidth * len(self.texts) / zx
+            dx = self.poswidth * len(self.texts)
 
         assert dy > 0 or self.hmax is not None, 'hmax needed'
         if dy <= 0:  # no limit on y? there better be hmax then
