@@ -534,7 +534,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">seq</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">seq</span><span class="p">)</span>  <span class="c1"># in case it was a list</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">seqtype</span> <span class="o">=</span> <span class="n">seqtype</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">poswidth</span> <span class="o">=</span> <span class="n">poswidth</span>  <span class="c1"># width in pixels of each nucleotide/aa</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">poswidth</span> <span class="o">=</span> <span class="n">poswidth</span>  <span class="c1"># width (at zoom 1) of each nucleotide/aa</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">draw_text</span> <span class="o">=</span> <span class="n">draw_text</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hmax</span> <span class="o">=</span> <span class="n">hmax</span>  <span class="c1"># maximum height in pixels</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fs_max</span> <span class="o">=</span> <span class="n">fs_max</span>
@@ -582,7 +582,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="n">values</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">value_range</span> <span class="o">=</span> <span class="n">value_range</span>  <span class="c1"># (min, max)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">color_range</span> <span class="o">=</span> <span class="p">[</span><span class="n">gr</span><span class="o">.</span><span class="n">hex2rgba</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">color_range</span><span class="p">]</span>  <span class="c1"># (min, max)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">poswidth</span> <span class="o">=</span> <span class="n">poswidth</span>  <span class="c1"># width in pixels of each position (square)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">poswidth</span> <span class="o">=</span> <span class="n">poswidth</span>  <span class="c1"># width (at zoom 1) of each position (square)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hmax</span> <span class="o">=</span> <span class="n">hmax</span>  <span class="c1"># maximum height in pixels</span></div>
 
 
@@ -626,7 +626,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">texts</span> <span class="o">=</span> <span class="n">texts</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fs_max</span> <span class="o">=</span> <span class="n">fs_max</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rotation</span> <span class="o">=</span> <span class="n">rotation</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">poswidth</span> <span class="o">=</span> <span class="n">poswidth</span>  <span class="c1"># width in pixels of each position</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">poswidth</span> <span class="o">=</span> <span class="n">poswidth</span>  <span class="c1"># width (at zoom 1) of each position</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hmax</span> <span class="o">=</span> <span class="n">hmax</span>  <span class="c1"># maximum height in pixels</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">style</span> <span class="o">=</span> <span class="n">style</span></div>
 
