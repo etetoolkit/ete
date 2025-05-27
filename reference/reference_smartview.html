@@ -42,17 +42,32 @@
 <ul class="simple">
 <li><p><a class="reference internal" href="#smartview-web-graphics" id="id1">Smartview (web graphics)</a></p>
 <ul>
-<li><p><a class="reference internal" href="#module-ete4.smartview.explorer" id="id2">Explorer</a></p></li>
-<li><p><a class="reference internal" href="#module-ete4.smartview.layout" id="id3">Layout</a></p></li>
-<li><p><a class="reference internal" href="#module-ete4.smartview.faces" id="id4">Faces</a></p></li>
-<li><p><a class="reference internal" href="#module-ete4.smartview.graphics" id="id5">Graphics</a></p></li>
-<li><p><a class="reference internal" href="#module-ete4.smartview.coordinates" id="id6">Coordinates</a></p></li>
+<li><p><a class="reference internal" href="#module-ete4.smartview" id="id2">Smartview</a></p></li>
+<li><p><a class="reference internal" href="#module-ete4.smartview.explorer" id="id3">Explorer</a></p></li>
+<li><p><a class="reference internal" href="#module-ete4.smartview.layout" id="id4">Layout</a></p></li>
+<li><p><a class="reference internal" href="#module-ete4.smartview.faces" id="id5">Faces</a></p></li>
+<li><p><a class="reference internal" href="#module-ete4.smartview.graphics" id="id6">Graphics</a></p></li>
+<li><p><a class="reference internal" href="#module-ete4.smartview.coordinates" id="id7">Coordinates</a></p></li>
+<li><p><a class="reference internal" href="#module-ete4.smartview.draw" id="id8">Draw</a></p></li>
 </ul>
 </li>
 </ul>
 </nav>
+<section id="module-ete4.smartview">
+<span id="smartview"></span><h2><a class="toc-backref" href="#id2" role="doc-backlink">Smartview</a><a class="headerlink" href="#module-ete4.smartview" title="Link to this heading">¶</a></h2>
+<p>This module contains all the elements necessary to:</p>
+<ul class="simple">
+<li><p>Launch a backend server to receive drawing (and other) requests and
+send back the graphic commands and other information (<code class="docutils literal notranslate"><span class="pre">explorer</span></code>)</p></li>
+<li><p>Define how to visualize trees (<code class="docutils literal notranslate"><span class="pre">layout</span></code>)</p></li>
+<li><p>Use pieces of drawn information attached to the nodes (<code class="docutils literal notranslate"><span class="pre">faces</span></code>)</p></li>
+</ul>
+<p>The drawing logic exists in the <code class="docutils literal notranslate"><span class="pre">draw</span></code> submodule, the basic graphical
+elements that can be sent are defined in the <code class="docutils literal notranslate"><span class="pre">graphics</span></code> submodule,
+and the basic coordinate functions are defined in <code class="docutils literal notranslate"><span class="pre">coordinates</span></code>.</p>
+</section>
 <section id="module-ete4.smartview.explorer">
-<span id="explorer"></span><h2><a class="toc-backref" href="#id2" role="doc-backlink">Explorer</a><a class="headerlink" href="#module-ete4.smartview.explorer" title="Link to this heading">¶</a></h2>
+<span id="explorer"></span><h2><a class="toc-backref" href="#id3" role="doc-backlink">Explorer</a><a class="headerlink" href="#module-ete4.smartview.explorer" title="Link to this heading">¶</a></h2>
 <p>Web server to explore trees interactively.</p>
 <p>The main endpoints are for the static files to serve the frontend
 (that uses javascript), and for exposing an api to manipulate the
@@ -220,7 +235,7 @@ trees in the backend.</p>
 
 </section>
 <section id="module-ete4.smartview.layout">
-<span id="layout"></span><h2><a class="toc-backref" href="#id3" role="doc-backlink">Layout</a><a class="headerlink" href="#module-ete4.smartview.layout" title="Link to this heading">¶</a></h2>
+<span id="layout"></span><h2><a class="toc-backref" href="#id4" role="doc-backlink">Layout</a><a class="headerlink" href="#module-ete4.smartview.layout" title="Link to this heading">¶</a></h2>
 <p>Definition of the basic elements for a tree representation (Layout and
 Faces), extra labels (Label), and the default tree style.</p>
 <p>The valid keys for a tree style are:</p>
@@ -377,7 +392,7 @@ from previous layouts.</p>
 
 </section>
 <section id="module-ete4.smartview.faces">
-<span id="faces"></span><h2><a class="toc-backref" href="#id4" role="doc-backlink">Faces</a><a class="headerlink" href="#module-ete4.smartview.faces" title="Link to this heading">¶</a></h2>
+<span id="faces"></span><h2><a class="toc-backref" href="#id5" role="doc-backlink">Faces</a><a class="headerlink" href="#module-ete4.smartview.faces" title="Link to this heading">¶</a></h2>
 <p>A “face” is a piece of drawn information.</p>
 <p>Different faces can represent different kinds of information in
 different forms. Faces have a drawing function that returns the
@@ -737,7 +752,7 @@ border, whether we are in rectangular or circular mode.</p>
 
 </section>
 <section id="module-ete4.smartview.graphics">
-<span id="graphics"></span><h2><a class="toc-backref" href="#id5" role="doc-backlink">Graphics</a><a class="headerlink" href="#module-ete4.smartview.graphics" title="Link to this heading">¶</a></h2>
+<span id="graphics"></span><h2><a class="toc-backref" href="#id6" role="doc-backlink">Graphics</a><a class="headerlink" href="#module-ete4.smartview.graphics" title="Link to this heading">¶</a></h2>
 <p>Basic graphical commands.</p>
 <p>They are all lists whose first element is a string saying which kind
 of element it is (like “line”), and the rest are its parameters.</p>
@@ -864,7 +879,7 @@ multiplied by the zoom or the radius, so not in pixels).</p>
 
 </section>
 <section id="module-ete4.smartview.coordinates">
-<span id="coordinates"></span><h2><a class="toc-backref" href="#id6" role="doc-backlink">Coordinates</a><a class="headerlink" href="#module-ete4.smartview.coordinates" title="Link to this heading">¶</a></h2>
+<span id="coordinates"></span><h2><a class="toc-backref" href="#id7" role="doc-backlink">Coordinates</a><a class="headerlink" href="#module-ete4.smartview.coordinates" title="Link to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="ete4.smartview.coordinates.Box">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Box</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dy</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.smartview.coordinates.Box" title="Link to this definition">¶</a></dt>
@@ -925,6 +940,338 @@ multiplied by the zoom or the radius, so not in pixels).</p>
 <dt class="sig sig-object py" id="ete4.smartview.coordinates.make_box">
 <span class="sig-name descname"><span class="pre">make_box</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/coordinates.html#make_box"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.coordinates.make_box" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
+
+</section>
+<section id="module-ete4.smartview.draw">
+<span id="draw"></span><h2><a class="toc-backref" href="#id8" role="doc-backlink">Draw</a><a class="headerlink" href="#module-ete4.smartview.draw" title="Link to this heading">¶</a></h2>
+<p>Classes and functions for drawing a tree.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="ete4.smartview.draw.Drawer">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Drawer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">draw_node_fns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">viewport</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collapsed_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">searches</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#Drawer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.Drawer" title="Link to this definition">¶</a></dt>
+<dd><p>Base class (needs subclassing with extra functions to draw).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.smartview.draw.Drawer.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">draw_node_fns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">viewport</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collapsed_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">searches</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#Drawer.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.Drawer.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.smartview.draw.Drawer.draw">
+<span class="sig-name descname"><span class="pre">draw</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#Drawer.draw"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.Drawer.draw" title="Link to this definition">¶</a></dt>
+<dd><p>Yield commands to draw the tree.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.smartview.draw.Drawer.draw_collapsed">
+<span class="sig-name descname"><span class="pre">draw_collapsed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#Drawer.draw_collapsed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.Drawer.draw_collapsed" title="Link to this definition">¶</a></dt>
+<dd><p>Yield collapsed nodes representation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.smartview.draw.Drawer.draw_content">
+<span class="sig-name descname"><span class="pre">draw_content</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#Drawer.draw_content"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.Drawer.draw_content" title="Link to this definition">¶</a></dt>
+<dd><p>Return the node content’s style and graphic commands.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.smartview.draw.Drawer.draw_nodes">
+<span class="sig-name descname"><span class="pre">draw_nodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bdy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">circular</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#Drawer.draw_nodes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.Drawer.draw_nodes" title="Link to this definition">¶</a></dt>
+<dd><p>Return style and graphic commands for representing nodes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.smartview.draw.Drawer.flush_collapsed">
+<span class="sig-name descname"><span class="pre">flush_collapsed</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#Drawer.flush_collapsed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.Drawer.flush_collapsed" title="Link to this definition">¶</a></dt>
+<dd><p>Yield representation and graphics from collapsed nodes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.smartview.draw.Drawer.get_nodeprops">
+<span class="sig-name descname"><span class="pre">get_nodeprops</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#Drawer.get_nodeprops"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.Drawer.get_nodeprops" title="Link to this definition">¶</a></dt>
+<dd><p>Return the node properties that we want to show with the nodebox.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.smartview.draw.Drawer.on_first_visit">
+<span class="sig-name descname"><span class="pre">on_first_visit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">it</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graphics</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#Drawer.on_first_visit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.Drawer.on_first_visit" title="Link to this definition">¶</a></dt>
+<dd><p>Update list of graphics to draw and return new position.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.smartview.draw.Drawer.on_last_visit">
+<span class="sig-name descname"><span class="pre">on_last_visit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">it</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graphics</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#Drawer.on_last_visit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.Drawer.on_last_visit" title="Link to this definition">¶</a></dt>
+<dd><p>Update list of graphics to draw and return new position.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ete4.smartview.draw.DrawerCirc">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DrawerCirc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">draw_node_fns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">viewport</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collapsed_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">searches</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#DrawerCirc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.DrawerCirc" title="Link to this definition">¶</a></dt>
+<dd><p>Drawer for a circular representation.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.smartview.draw.DrawerCirc.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">draw_node_fns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">viewport</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collapsed_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">searches</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#DrawerCirc.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.DrawerCirc.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.smartview.draw.DrawerCirc.clip_outline">
+<span class="sig-name descname"><span class="pre">clip_outline</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#DrawerCirc.clip_outline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.DrawerCirc.clip_outline" title="Link to this definition">¶</a></dt>
+<dd><p>Clip borders of outline to make sure that its box is reasonable.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.smartview.draw.DrawerCirc.content_size">
+<span class="sig-name descname"><span class="pre">content_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#DrawerCirc.content_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.DrawerCirc.content_size" title="Link to this definition">¶</a></dt>
+<dd><p>Return the size of the node’s content.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.smartview.draw.DrawerCirc.draw_collapsed">
+<span class="sig-name descname"><span class="pre">draw_collapsed</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#DrawerCirc.draw_collapsed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.DrawerCirc.draw_collapsed" title="Link to this definition">¶</a></dt>
+<dd><p>Yield collapsed nodes representation with all the skeleton points.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.smartview.draw.DrawerCirc.draw_hz_line">
+<span class="sig-name descname"><span class="pre">draw_hz_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_of</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#DrawerCirc.draw_hz_line"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.DrawerCirc.draw_hz_line" title="Link to this definition">¶</a></dt>
+<dd><p>Yield a “horizontal line” representing a length.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.smartview.draw.DrawerCirc.draw_nodebox">
+<span class="sig-name descname"><span class="pre">draw_nodebox</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result_of</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#DrawerCirc.draw_nodebox"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.DrawerCirc.draw_nodebox" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.smartview.draw.DrawerCirc.draw_nodes">
+<span class="sig-name descname"><span class="pre">draw_nodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bda</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#DrawerCirc.draw_nodes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.DrawerCirc.draw_nodes" title="Link to this definition">¶</a></dt>
+<dd><p>Return style and graphic commands for the contents of nodes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.smartview.draw.DrawerCirc.draw_vt_line">
+<span class="sig-name descname"><span class="pre">draw_vt_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#DrawerCirc.draw_vt_line"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.DrawerCirc.draw_vt_line" title="Link to this definition">¶</a></dt>
+<dd><p>Yield a “vertical line” (arc) spanning children, from p1 to p2.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.smartview.draw.DrawerCirc.is_small">
+<span class="sig-name descname"><span class="pre">is_small</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">box</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#DrawerCirc.is_small"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.DrawerCirc.is_small" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.smartview.draw.DrawerCirc.is_visible">
+<span class="sig-name descname"><span class="pre">is_visible</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">box</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#DrawerCirc.is_visible"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.DrawerCirc.is_visible" title="Link to this definition">¶</a></dt>
+<dd><p>Return True if the node in box will produce something visible.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.smartview.draw.DrawerCirc.node_size">
+<span class="sig-name descname"><span class="pre">node_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#DrawerCirc.node_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.DrawerCirc.node_size" title="Link to this definition">¶</a></dt>
+<dd><p>Return the size of a node (its content and its children).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ete4.smartview.draw.DrawerRect">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DrawerRect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">draw_node_fns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">viewport</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collapsed_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">searches</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#DrawerRect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.DrawerRect" title="Link to this definition">¶</a></dt>
+<dd><p>Drawer for a rectangular representation.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.smartview.draw.DrawerRect.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">draw_node_fns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">viewport</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collapsed_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">searches</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#DrawerRect.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.DrawerRect.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.smartview.draw.DrawerRect.clip_outline">
+<span class="sig-name descname"><span class="pre">clip_outline</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#DrawerRect.clip_outline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.DrawerRect.clip_outline" title="Link to this definition">¶</a></dt>
+<dd><p>Clip borders of outline to make sure that its box is reasonable.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.smartview.draw.DrawerRect.content_size">
+<span class="sig-name descname"><span class="pre">content_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#DrawerRect.content_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.DrawerRect.content_size" title="Link to this definition">¶</a></dt>
+<dd><p>Return the size of the node’s content.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.smartview.draw.DrawerRect.draw_collapsed">
+<span class="sig-name descname"><span class="pre">draw_collapsed</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#DrawerRect.draw_collapsed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.DrawerRect.draw_collapsed" title="Link to this definition">¶</a></dt>
+<dd><p>Yield collapsed nodes representation with all the skeleton points.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.smartview.draw.DrawerRect.draw_hz_line">
+<span class="sig-name descname"><span class="pre">draw_hz_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_of</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#DrawerRect.draw_hz_line"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.DrawerRect.draw_hz_line" title="Link to this definition">¶</a></dt>
+<dd><p>Yield a “horizontal line” representing a length.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.smartview.draw.DrawerRect.draw_nodebox">
+<span class="sig-name descname"><span class="pre">draw_nodebox</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result_of</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#DrawerRect.draw_nodebox"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.DrawerRect.draw_nodebox" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.smartview.draw.DrawerRect.draw_nodes">
+<span class="sig-name descname"><span class="pre">draw_nodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bdy</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#DrawerRect.draw_nodes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.DrawerRect.draw_nodes" title="Link to this definition">¶</a></dt>
+<dd><p>Return style and graphic commands for the contents of nodes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.smartview.draw.DrawerRect.draw_vt_line">
+<span class="sig-name descname"><span class="pre">draw_vt_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#DrawerRect.draw_vt_line"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.DrawerRect.draw_vt_line" title="Link to this definition">¶</a></dt>
+<dd><p>Yield a “vertical line” spanning children, from p1 to p2.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.smartview.draw.DrawerRect.is_small">
+<span class="sig-name descname"><span class="pre">is_small</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">box</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#DrawerRect.is_small"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.DrawerRect.is_small" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.smartview.draw.DrawerRect.is_visible">
+<span class="sig-name descname"><span class="pre">is_visible</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">box</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#DrawerRect.is_visible"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.DrawerRect.is_visible" title="Link to this definition">¶</a></dt>
+<dd><p>Return True if the node in box will produce something visible.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ete4.smartview.draw.DrawerRect.node_size">
+<span class="sig-name descname"><span class="pre">node_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#DrawerRect.node_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.DrawerRect.node_size" title="Link to this definition">¶</a></dt>
+<dd><p>Return the size of a node (its content and its children).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.smartview.draw.cartesian">
+<span class="sig-name descname"><span class="pre">cartesian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#cartesian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.cartesian" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.smartview.draw.circular_dy">
+<span class="sig-name descname"><span class="pre">circular_dy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">da</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#circular_dy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.circular_dy" title="Link to this definition">¶</a></dt>
+<dd><p>Return the dy corresponding to the exterior part of an annular sector.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.smartview.draw.circumasec">
+<span class="sig-name descname"><span class="pre">circumasec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rect</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#circumasec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.circumasec" title="Link to this definition">¶</a></dt>
+<dd><p>Return the annular sector that circumscribes the given rectangle.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.smartview.draw.clip_angles">
+<span class="sig-name descname"><span class="pre">clip_angles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#clip_angles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.clip_angles" title="Link to this definition">¶</a></dt>
+<dd><p>Return the angles such that a1 to a2 extend at maximum from -pi to pi.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.smartview.draw.corner_points">
+<span class="sig-name descname"><span class="pre">corner_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dy</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#corner_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.corner_points" title="Link to this definition">¶</a></dt>
+<dd><p>Return the corner points of a box at (x, y) and dimensions (dx, dy).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.smartview.draw.dist">
+<span class="sig-name descname"><span class="pre">dist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#dist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.dist" title="Link to this definition">¶</a></dt>
+<dd><p>Return the distance of a node, with default values if not set.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.smartview.draw.draw">
+<span class="sig-name descname"><span class="pre">draw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layouts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overrides</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">viewport</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collapsed_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">searches</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#draw"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.draw" title="Link to this definition">¶</a></dt>
+<dd><p>Yield graphic commands to draw the tree.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.smartview.draw.draw_faces">
+<span class="sig-name descname"><span class="pre">draw_faces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">faces</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xmin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">content_box</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bdy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collapsed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">circular</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#draw_faces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.draw_faces" title="Link to this definition">¶</a></dt>
+<dd><p>Return the graphic commands from the faces, and xmaxs.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.smartview.draw.get_anchor">
+<span class="sig-name descname"><span class="pre">get_anchor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">anchor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bdy_dy</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#get_anchor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.get_anchor" title="Link to this definition">¶</a></dt>
+<dd><p>Return the anchor inside [0, 1] from the one inside [-1, 1] at pos.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.smartview.draw.get_col_data">
+<span class="sig-name descname"><span class="pre">get_col_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rows</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx_col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos_box</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bdy_dy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collapsed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">circular</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#get_col_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.get_col_data" title="Link to this definition">¶</a></dt>
+<dd><p>Return the graphic elements at the given rows, and the new x_col.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.smartview.draw.get_position_box">
+<span class="sig-name descname"><span class="pre">get_position_box</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">content_box</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bdy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#get_position_box"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.get_position_box" title="Link to this definition">¶</a></dt>
+<dd><p>Return the box corresponding to the given content box and position.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.smartview.draw.get_rect">
+<span class="sig-name descname"><span class="pre">get_rect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">element</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#get_rect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.get_rect" title="Link to this definition">¶</a></dt>
+<dd><p>Return the rectangle that contains the given graphic element.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.smartview.draw.intersects_angles">
+<span class="sig-name descname"><span class="pre">intersects_angles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rect</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">asec</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#intersects_angles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.intersects_angles" title="Link to this definition">¶</a></dt>
+<dd><p>Return True if any part of rect is contained within the asec angles.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.smartview.draw.intersects_box">
+<span class="sig-name descname"><span class="pre">intersects_box</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">b1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#intersects_box"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.intersects_box" title="Link to this definition">¶</a></dt>
+<dd><p>Return True if the boxes b1 and b2 (of the same kind) intersect.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.smartview.draw.intersects_segment">
+<span class="sig-name descname"><span class="pre">intersects_segment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#intersects_segment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.intersects_segment" title="Link to this definition">¶</a></dt>
+<dd><p>Return True if the segments s1 and s2 intersect.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.smartview.draw.is_valid_label">
+<span class="sig-name descname"><span class="pre">is_valid_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#is_valid_label"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.is_valid_label" title="Link to this definition">¶</a></dt>
+<dd><p>Return True if the given label would be drawn if it is/isn’t a leaf.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.smartview.draw.make_face">
+<span class="sig-name descname"><span class="pre">make_face</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#make_face"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.make_face" title="Link to this definition">¶</a></dt>
+<dd><p>Return a Face object from its description as a Label one.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.smartview.draw.points_from_node">
+<span class="sig-name descname"><span class="pre">points_from_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dy_min</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dy2da</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxdepth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#points_from_node"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.points_from_node" title="Link to this definition">¶</a></dt>
+<dd><p>Return the points sketching the given node, starting at point.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.smartview.draw.points_from_nodes">
+<span class="sig-name descname"><span class="pre">points_from_nodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dy_min</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dy2da</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxdepth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#points_from_nodes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.points_from_nodes" title="Link to this definition">¶</a></dt>
+<dd><p>Return the points sketching the given nodes, starting at point.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.smartview.draw.read_label">
+<span class="sig-name descname"><span class="pre">read_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#read_label"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.read_label" title="Link to this definition">¶</a></dt>
+<dd><p>Return a Label from the label description as a tuple.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.smartview.draw.split_thru_negative_xaxis">
+<span class="sig-name descname"><span class="pre">split_thru_negative_xaxis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rect</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#split_thru_negative_xaxis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.split_thru_negative_xaxis" title="Link to this definition">¶</a></dt>
+<dd><p>Return a list of rectangles resulting from cutting the given one.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.smartview.draw.stack">
+<span class="sig-name descname"><span class="pre">stack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">box1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/draw.html#stack"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.draw.stack" title="Link to this definition">¶</a></dt>
+<dd><p>Return the box resulting from stacking the given boxes.</p>
+</dd></dl>
 
 </section>
 </section>

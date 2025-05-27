@@ -40,14 +40,16 @@
 <h1>Drawing<a class="headerlink" href="#drawing" title="Link to this heading">¶</a></h1>
 <p>This document explains the internal details about how ETE draws trees
 on the browser.</p>
-<p>The <code class="xref py py-mod docutils literal notranslate"><span class="pre">smartview</span></code> module contains a <code class="xref py py-func docutils literal notranslate"><span class="pre">draw()</span></code> function that
+<p>The <a class="reference internal" href="../reference/reference_smartview.html#module-ete4.smartview" title="ete4.smartview"><code class="xref py py-mod docutils literal notranslate"><span class="pre">smartview</span></code></a> module contains a
+<a class="reference internal" href="../reference/reference_smartview.html#ete4.smartview.draw.draw" title="ete4.smartview.draw.draw"><code class="xref py py-func docutils literal notranslate"><span class="pre">draw</span></code></a> function that
 takes mainly a tree and a viewport, and can produce a list of
 graphical commands.</p>
 <section id="graphical-commands">
 <h2>Graphical Commands<a class="headerlink" href="#graphical-commands" title="Link to this heading">¶</a></h2>
-<p>The <code class="xref py py-func docutils literal notranslate"><span class="pre">draw()</span></code> function is a generator that yields graphical
-commands. They are mainly a description of basic graphic items, which
-are lists that look like:</p>
+<p>The <a class="reference internal" href="../reference/reference_smartview.html#ete4.smartview.draw.draw" title="ete4.smartview.draw.draw"><code class="xref py py-func docutils literal notranslate"><span class="pre">draw</span> <span class="pre">function</span></code></a> is a generator
+that yields <a class="reference internal" href="../reference/reference_smartview.html#module-ete4.smartview.graphics" title="ete4.smartview.graphics"><code class="xref py py-mod docutils literal notranslate"><span class="pre">graphical</span> <span class="pre">commands</span></code></a>. They
+are mainly a description of basic graphic items, which are lists that
+look like:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">&#39;hz-line&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span> <span class="p">[</span><span class="mf">8.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span> <span class="p">[],</span> <span class="s1">&#39;&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
@@ -123,9 +125,67 @@ the tree in different ways.</p>
 </div>
 </section>
 </section>
+<section id="faces">
+<h2>Faces<a class="headerlink" href="#faces" title="Link to this heading">¶</a></h2>
+<p>The <a class="reference internal" href="../reference/reference_smartview.html#module-ete4.smartview.faces" title="ete4.smartview.faces"><code class="xref py py-mod docutils literal notranslate"><span class="pre">faces</span> <span class="pre">submodule</span></code></a> provides several
+predefined faces. They all derive from the <a class="reference internal" href="../reference/reference_smartview.html#ete4.smartview.faces.Face" title="ete4.smartview.faces.Face"><code class="xref py py-class docutils literal notranslate"><span class="pre">Face</span></code></a> base class.</p>
+<p>To create a new face, we just need to create a class (normally derived
+from <a class="reference internal" href="../reference/reference_smartview.html#ete4.smartview.faces.Face" title="ete4.smartview.faces.Face"><code class="xref py py-class docutils literal notranslate"><span class="pre">Face</span></code></a>) with a constructor and
+a <code class="docutils literal notranslate"><span class="pre">draw</span></code> function:</p>
+<ul class="simple">
+<li><p>The constructor takes at least the arguments <code class="docutils literal notranslate"><span class="pre">position</span></code>,
+<code class="docutils literal notranslate"><span class="pre">column</span></code>, and <code class="docutils literal notranslate"><span class="pre">anchor</span></code></p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">draw</span></code> function takes a set of predefined arguments, and
+returns a list of graphic commands and the total size occupied by
+the drawing (in tree coordinates)</p></li>
+</ul>
+<p>Their behavior is well documented in the base class itself:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">Face</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class.</span>
+
+<span class="sd">    It contains a position (&quot;top&quot;, &quot;bottom&quot;, &quot;right&quot;, &quot;left&quot;,</span>
+<span class="sd">    &quot;aligned&quot;, &quot;header&quot;), a column (an integer used for relative order</span>
+<span class="sd">    with other faces in the same position), and an anchor point (to</span>
+<span class="sd">    fine-tune the position of things like texts within them).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;top&#39;</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">anchor</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Save all the parameters that we may want to use.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">position</span>  <span class="c1"># &#39;top&#39;, &#39;bottom&#39;, &#39;right&#39;, etc.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">column</span> <span class="o">=</span> <span class="n">column</span>  <span class="c1"># integer &gt;= 0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">anchor</span> <span class="o">=</span> <span class="n">anchor</span> <span class="ow">or</span> <span class="n">default_anchors</span><span class="p">[</span><span class="n">position</span><span class="p">]</span>  <span class="c1"># tuple</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">draw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nodes</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">collapsed</span><span class="p">,</span> <span class="n">zoom</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">ax_ay</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">r</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a list of graphic elements and the actual size they use.</span>
+
+<span class="sd">        The retuned graphic elements normally depend on the node(s).</span>
+<span class="sd">        They have to fit inside the given size (dx, dy) in tree</span>
+<span class="sd">        coordinates (dx==0 means no limit for dx, and same for dy==0).</span>
+
+<span class="sd">        If collapsed==[], nodes contains only one node (and is not collapsed).</span>
+<span class="sd">        Otherwise, nodes (== collapsed) is a list of the collapsed nodes.</span>
+
+<span class="sd">        The zoom is passed in case the face wants to represent</span>
+<span class="sd">        things differently according to its size on the screen.</span>
+
+<span class="sd">        ax_ay is the anchor point within the box of the given size</span>
+<span class="sd">        (from 0 for left/up, to 1 for right/down).</span>
+
+<span class="sd">        r * size[1] * zoom[1] is the size in pixels of the left</span>
+<span class="sd">        border, whether we are in rectangular or circular mode.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">graphic_elements</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># like [draw_text(...), draw_line(...), ...]</span>
+
+        <span class="n">size_used</span> <span class="o">=</span> <span class="n">Size</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">graphic_elements</span><span class="p">,</span> <span class="n">size_used</span>
+</pre></div>
+</div>
+</section>
 <section id="rotations">
 <h2>Rotations<a class="headerlink" href="#rotations" title="Link to this heading">¶</a></h2>
 <p>To find the font size <span class="math notranslate nohighlight">\(\text{fs}\)</span> to use in the rotated texts,
+which we use in <a class="reference internal" href="../reference/reference_smartview.html#ete4.smartview.faces.texts_size" title="ete4.smartview.faces.texts_size"><code class="xref py py-func docutils literal notranslate"><span class="pre">TextFace</span> <span class="pre">and</span> <span class="pre">related</span></code></a>,
 we first make sure that it is smaller than <span class="math notranslate nohighlight">\(\text{fs}_\max\)</span>, and
 then, we take into account that the text is limited by the size of the
 box <span class="math notranslate nohighlight">\((dx_\max, dy_\max)\)</span>:</p>

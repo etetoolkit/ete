@@ -4,6 +4,15 @@ Smartview (web graphics)
 .. contents::
 
 
+Smartview
+---------
+
+.. automodule:: ete4.smartview
+   :members:
+   :undoc-members:
+   :special-members: __init__
+
+
 Explorer
 --------
 
@@ -48,6 +57,14 @@ Coordinates
    :undoc-members:
    :special-members: __init__
 
+
+Draw
+----
+
+.. automodule:: ete4.smartview.draw
+   :members:
+   :undoc-members:
+   :special-members: __init__
 
 .. TODO: Maybe recreate and add old layouts: context, default, domain,
    eggnog6, compare, evocell, evol_events, ncbi_taxonomy,
