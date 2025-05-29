@@ -127,12 +127,9 @@ directory, and is available at https://etetoolkit.github.io/ete/ .
 ![](https://raw.githubusercontent.com/etetoolkit/ete/ete4/doc/images/gallery.png)
 
 There is also an [ETE
-Gallery](https://github.com/etetoolkit/ete-gallery) with a
-[tutorial](https://github.com/etetoolkit/ete-gallery/tree/main/tutorial),
-[examples](https://github.com/etetoolkit/ete-gallery/tree/main/examples),
-and [course
-material](https://github.com/etetoolkit/ete-gallery/tree/main/course)
-to learn about the graphical capabilities of ETE.
+Gallery](https://github.com/etetoolkit/ete-gallery) with a tutorial,
+examples and course material to learn about the graphical capabilities
+of ETE.
 
 
 # Getting support
