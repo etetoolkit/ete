@@ -89,7 +89,7 @@ Formats labeled as *flexible* allow for missing information. For
 instance, format 0 will be able to load a newick tree even if it does
 not contain branch support information. However, format 2 would raise
 an exception. In other words, if you want to control that your newick
-files strictly follow a given pattern you can use **strict** format
+files strictly follow a given pattern you can use *strict* format
 definitions.
 
 
@@ -106,7 +106,7 @@ calling :func:`Tree` without any arguments::
   t = Tree()
 
 Or you can call it with a dictionary specifying the properties of that
-single node. You can also use the :func:`populate <Tree.populate>`
+single node. You can also use the :func:`Tree.populate`
 method to populate a tree with a random topology::
 
   from ete4 import Tree
@@ -121,7 +121,7 @@ method to populate a tree with a random topology::
 first to use the :class:`Tree` class, as we did above. In the
 remaining examples we will assume that you have already imported it.)
 
-The properties of a node are stored in its :attr:`props <Tree.props>`
+The properties of a node are stored in its :attr:`props`
 dictionary. With the previous example, writing ``print(t.props)`` will
 show us a dictionary that should look familiar. And if you
 ``print(t)`` a tree, you will see a simple visualization. For our
@@ -215,8 +215,8 @@ Basic tree attributes
 ---------------------
 
 Each tree node has two basic attributes used to establish its position
-in the tree: :attr:`up <Tree.up>` and :attr:`children
-<Tree.children>`. The first is a pointer to its parent's node, while
+in the tree: :attr:`up` and :attr:`children`.
+The first is a pointer to its parent's node, while
 the latter is a list of children nodes. Although it is possible to
 modify the structure of a tree by changing these attributes, it is
 strongly recommend not to do it. Several methods are provided to
@@ -256,7 +256,8 @@ on tree node instances:
 
 This is an example on how to access such attributes::
 
-  # Create a random tree topology.
+  # Create a tree with random topology.
+  t = Tree()
   t.populate(15)
 
   print(t)  # text visualization of the tree
@@ -267,7 +268,7 @@ This is an example on how to access such attributes::
   for leaf in t:
       print(leaf.name)
 
-  n = next(iter(t))  # take the first leaf
+  n = next(iter(t))  # take the first leaf (same as next(t.leaves()))
   print('First leaf name:', n.name)
   print('First leaf distance:', n.dist)
   print('t.is_leaf = %s   n.is_leaf = %s' % (t.is_leaf, n.is_leaf))
@@ -488,8 +489,8 @@ For example::
 
   leaves = list(t.leaves())  # constructs a list with all the leaves
 
-The same is valid for :func:`traverse`, :func:`descendants`,
-:func:`ancestors` and so on.
+The same is valid for :func:`Tree.traverse`, :func:`Tree.descendants`,
+:func:`Tree.ancestors` and so on.
 
 
 Finding nodes by their properties
@@ -1562,7 +1563,7 @@ Working with branch distances
 -----------------------------
 
 The branch length between one node an its parent is encoded as the
-:attr:`Tree.dist` property. Together with tree topology, branch
+:attr:`dist` property. Together with tree topology, branch
 lengths define the relationships among nodes.
 
 
