@@ -1,4 +1,4 @@
-.. currentmodule:: ete4
+.. currentmodule:: ete4.core.tree
 
 The Tree structure
 ==================
