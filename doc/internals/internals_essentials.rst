@@ -76,7 +76,7 @@ function to get an iterator.
 
 The following code would visit the different nodes in preorder::
 
-  for node in tree.traverse():
+  for node in tree.traverse('preorder'):
       ... # do things with node
 
 .. image:: ../images/preorder.png
