@@ -1387,14 +1387,14 @@ Solving multifurcations
 -----------------------
 
 When a tree contains a polytomy (a node with more than 2 children),
-the method :func:`resolve_polytomy` can be used to convert the node
+the method :func:`Tree.resolve_polytomy` can be used to convert the node
 into an arbitrarily bifurcated structure. This is really not a solution
 for the polytomy but it allows to export the tree as a strictly
 bifurcated newick structure, which is a requirement for some external
 software.
 
 The method can be used on a very specific node while keeping the rest
-of the tree intact by disabling the :attr:`recursive` flag.
+of the tree intact by setting :attr:`descendants` to ``False``.
 
 Example::
 
