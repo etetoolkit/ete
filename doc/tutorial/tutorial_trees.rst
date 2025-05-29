@@ -473,12 +473,12 @@ length is defined and larger than one::
   #   efg
 
 
-Iterators or lists?
-~~~~~~~~~~~~~~~~~~~
+Generators or lists?
+~~~~~~~~~~~~~~~~~~~~
 
-The methods used to iterate over nodes are `python iterators
-<https://docs.python.org/3/library/stdtypes.html#typesseq>`_. The
-iterators produce only one element at a time, and thus are normally
+The methods used to iterate over nodes are `python generators
+<https://docs.python.org/3/library/stdtypes.html#generator-types>`_. The
+generators produce only one element at a time, and thus are normally
 faster and take less memory than lists.
 
 Sometimes you will need a list instead, for example if you want to
@@ -504,10 +504,10 @@ tree structure. Several methods are available:
   ========================================= =========================================================================
   Method                                    Description
   ========================================= =========================================================================
-  t.search_nodes(prop=value)                Iterator over nodes that have property prop equal to value, as name='A'
+  t.search_nodes(prop=value)                Generator over nodes that have property prop equal to value, as name='A'
   t.search_descendants(prop=value)          Same, but only on descendants (excludes the node t itself)
-  t.search_ancestors(prop=value)            Iterator over ancestor nodes
-  t.search_leaves_by_name(name)             Iterator over leaf nodes matching a given name
+  t.search_ancestors(prop=value)            Generator over ancestor nodes
+  t.search_leaves_by_name(name)             Generator over leaf nodes matching a given name
   t.common_ancestor([node1, node2, node3])  Return the first internal node grouping node1, node2 and node3
   t[name]                                   Return the first node named name, same as next(t.search_nodes(name=name))
   ========================================= =========================================================================
