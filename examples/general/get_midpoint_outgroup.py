@@ -1,71 +1,38 @@
-from ete3 import Tree
-# generates a random tree
-t = Tree();
-t.populate(15);
-print t
-#
-#
-#                    /-qogjl
-#          /--------|
-#         |          \-vxbgp
-#         |
-#         |          /-xyewk
-#---------|         |
-#         |         |                    /-opben
-#         |         |                   |
-#         |         |          /--------|                    /-xoryn
-#          \--------|         |         |          /--------|
-#                   |         |         |         |         |          /-wdima
-#                   |         |          \--------|          \--------|
-#                   |         |                   |                    \-qxovz
-#                   |         |                   |
-#                   |         |                    \-isngq
-#                    \--------|
-#                             |                    /-neqsc
-#                             |                   |
-#                             |                   |                              /-waxkv
-#                             |          /--------|                    /--------|
-#                             |         |         |          /--------|          \-djeoh
-#                             |         |         |         |         |
-#                             |         |          \--------|          \-exmsn
-#                              \--------|                   |
-#                                       |                   |          /-udspq
-#                                       |                    \--------|
-#                                       |                              \-buxpw
-#                                       |
-#                                        \-rkzwd
-# Calculate the midpoint node
+import random
+from ete4 import Tree
+
+random.seed(42)  # so we reproduce the same results
+
+# Generate a random tree.
+t = Tree()
+t.populate(10, dist_fn=random.random)
+
+print(t)
+#    ╭╴f
+#  ╭─┤ ╭─┬╴i
+#  │ ╰─┤ ╰╴e
+#  │   ╰╴g
+# ─┤     ╭─┬╴d
+#  │   ╭─┤ ╰─┬╴j
+#  │ ╭─┤ │   ╰╴c
+#  ╰─┤ │ ╰╴b
+#    │ ╰╴h
+#    ╰╴a
+
+# Find the midpoint node.
 R = t.get_midpoint_outgroup()
-# and set it as tree outgroup
+
+# and set it as tree outgroup.
 t.set_outgroup(R)
-print t
-#                              /-opben
-#                             |
-#                    /--------|                    /-xoryn
-#                   |         |          /--------|
-#                   |         |         |         |          /-wdima
-#                   |          \--------|          \--------|
-#          /--------|                   |                    \-qxovz
-#         |         |                   |
-#         |         |                    \-isngq
-#         |         |
-#         |         |          /-xyewk
-#         |          \--------|
-#         |                   |          /-qogjl
-#         |                    \--------|
-#---------|                              \-vxbgp
-#         |
-#         |                    /-neqsc
-#         |                   |
-#         |                   |                              /-waxkv
-#         |          /--------|                    /--------|
-#         |         |         |          /--------|          \-djeoh
-#         |         |         |         |         |
-#         |         |          \--------|          \-exmsn
-#          \--------|                   |
-#                   |                   |          /-udspq
-#                   |                    \--------|
-#                   |                              \-buxpw
-#                   |
-#                    \-rkzwd
-#
+
+print(t)
+#      ╭─┬╴d
+#    ╭─┤ ╰─┬╴j
+#  ╭─┤ │   ╰╴c
+#  │ │ ╰╴b
+# ─┤ ╰╴h
+#  │ ╭╴a
+#  ╰─┤ ╭╴f
+#    ╰─┤ ╭─┬╴i
+#      ╰─┤ ╰╴e
+#        ╰╴g
