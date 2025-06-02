@@ -265,8 +265,8 @@ cdef class Tree:
 
     def __add__(self, value):
         """Sum trees. t1 + t2 returns a new tree with children=[t1, t2]."""
-        # Should a make the sum with two copies of the original trees?
-        if type(value) == self.__class__:
+        # Should we make the sum with two copies of the original trees?
+        if type(value) is self.__class__:
             new_root = self.__class__()
             new_root.add_child(self)
             new_root.add_child(value)
@@ -988,7 +988,7 @@ cdef class Tree:
         :param bprops: List of branch properties (other than "dist" and "support").
         :param dist: Distance from the node, where we put the new root of the tree.
         """
-        node = self[node] if type(node) == str else node  # translates if needed
+        node = self[node] if type(node) is str else node  # translates if needed
         ops.set_outgroup(node, bprops, dist)
 
     def set_midpoint_outgroup(self, topological=False):
