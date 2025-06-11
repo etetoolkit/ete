@@ -211,7 +211,7 @@ through its <code class="xref py py-attr docutils literal notranslate"><span cla
 <span class="c1"># ─┤ ╰╴seqC</span>
 <span class="c1">#  ╰╴seqD</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;seqA sequence:&#39;</span><span class="p">,</span> <span class="n">t</span><span class="p">[</span><span class="s1">&#39;seqA&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sequence</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;seqA sequence:&#39;</span><span class="p">,</span> <span class="n">t</span><span class="p">[</span><span class="s1">&#39;seqA&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">props</span><span class="p">[</span><span class="s1">&#39;sequence&#39;</span><span class="p">])</span>
 <span class="c1"># seqA sequence: MAEIPDETIQQFMALT---HNIAVQYLSEFGDLNEALNSYYASQTDDIKDRREEAHQFMALTNVSHQFMALTNVSH</span>
 </pre></div>
 </div>
@@ -227,7 +227,8 @@ and evolutionary events labeling.</p>
 <figure class="align-default">
 <img alt="../_images/phylotree.png" src="../_images/phylotree.png" />
 </figure>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ete4</span><span class="w"> </span><span class="kn">import</span> <span class="n">PhyloTree</span><span class="p">,</span> <span class="n">TreeStyle</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ete4</span><span class="w"> </span><span class="kn">import</span> <span class="n">PhyloTree</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ete4.treeview</span><span class="w"> </span><span class="kn">import</span> <span class="n">TreeStyle</span>
 
 <span class="n">alg</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
 <span class="s2"> &gt;Dme_001</span>
@@ -258,8 +259,8 @@ and evolutionary events labeling.</p>
 <span class="n">gene_tree_nw</span> <span class="o">=</span> <span class="s1">&#39;((Dme_001,Dme_002),(((Cfa_001,Mms_001),((Hsa_001,Ptr_001),Mmu_001)),(Ptr_002,(Hsa_002,Mmu_002))));&#39;</span>
 <span class="n">species_tree_nw</span> <span class="o">=</span> <span class="s2">&quot;((((Hsa, Ptr), Mmu), (Mms, Cfa)), Dme);&quot;</span>
 
-<span class="n">genetree</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="n">gene_tree_nw</span><span class="p">)</span>
-<span class="n">sptree</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="n">species_tree_nw</span><span class="p">)</span>
+<span class="n">genetree</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="n">gene_tree_nw</span><span class="p">,</span> <span class="n">sp_naming_function</span><span class="o">=</span><span class="k">lambda</span> <span class="n">name</span><span class="p">:</span> <span class="n">name</span><span class="p">[:</span><span class="mi">3</span><span class="p">])</span>
+<span class="n">sptree</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="n">species_tree_nw</span><span class="p">,</span> <span class="n">sp_naming_function</span><span class="o">=</span><span class="k">lambda</span> <span class="n">name</span><span class="p">:</span> <span class="n">name</span><span class="p">[:</span><span class="mi">3</span><span class="p">])</span>
 
 <span class="n">recon_tree</span><span class="p">,</span> <span class="n">events</span> <span class="o">=</span> <span class="n">genetree</span><span class="o">.</span><span class="n">reconcile</span><span class="p">(</span><span class="n">sptree</span><span class="p">)</span>
 
@@ -533,8 +534,8 @@ present and labeled.</p>
 <span class="n">gene_tree_nw</span> <span class="o">=</span> <span class="s1">&#39;((Dme_001,Dme_002),(((Cfa_001,Mms_001),((Hsa_001,Ptr_001),Mmu_001)),(Ptr_002,(Hsa_002,Mmu_002))));&#39;</span>
 <span class="n">species_tree_nw</span> <span class="o">=</span> <span class="s1">&#39;((((Hsa,Ptr),Mmu),(Mms,Cfa)),Dme);&#39;</span>
 
-<span class="n">genetree</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="n">gene_tree_nw</span><span class="p">)</span>
-<span class="n">sptree</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="n">species_tree_nw</span><span class="p">)</span>
+<span class="n">genetree</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="n">gene_tree_nw</span><span class="p">,</span> <span class="n">sp_naming_function</span><span class="o">=</span><span class="k">lambda</span> <span class="n">name</span><span class="p">:</span> <span class="n">name</span><span class="p">[:</span><span class="mi">3</span><span class="p">])</span>
+<span class="n">sptree</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="n">species_tree_nw</span><span class="p">,</span> <span class="n">sp_naming_function</span><span class="o">=</span><span class="k">lambda</span> <span class="n">name</span><span class="p">:</span> <span class="n">name</span><span class="p">[:</span><span class="mi">3</span><span class="p">])</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">genetree</span><span class="p">)</span>
 <span class="c1">#  ╭─┬╴Dme_001</span>
@@ -605,6 +606,7 @@ present and labeled.</p>
 <span class="c1"># visualization layout.</span>
 <span class="n">genetree</span><span class="o">.</span><span class="n">explore</span><span class="p">()</span>
 <span class="n">recon_tree</span><span class="o">.</span><span class="n">explore</span><span class="p">()</span>
+<span class="nb">input</span><span class="p">(</span><span class="s1">&#39;Press enter to stop the explorer and finish the program.&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -709,11 +711,11 @@ and mouse). <code class="docutils literal notranslate"><span class="pre">Dup2.ge
 <span class="c1"># species code of leaves (three first lettes in the node name are</span>
 <span class="c1"># considered the species code).</span>
 <span class="n">nw</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">((Dme_001,Dme_002),(((Cfa_001,Mms_001),((((Hsa_001,Hsa_003),Ptr_001)</span>
-<span class="s2">,Mmu_001),((Hsa_004,Ptr_004),Mmu_004))),(Ptr_002,(Hsa_002,Mmu_002))));</span>
+<span class="s2">((Dme_001,Dme_002),(((Cfa_001,Mms_001),((((Hsa_001,Hsa_003),Ptr_001),</span>
+<span class="s2">Mmu_001),((Hsa_004,Ptr_004),Mmu_004))),(Ptr_002,(Hsa_002,Mmu_002))));</span>
 <span class="s2">&quot;&quot;&quot;</span>
 
-<span class="n">t</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="n">nw</span><span class="p">)</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">PhyloTree</span><span class="p">(</span><span class="n">nw</span><span class="p">,</span> <span class="n">sp_naming_function</span><span class="o">=</span><span class="k">lambda</span> <span class="n">name</span><span class="p">:</span> <span class="n">name</span><span class="p">[:</span><span class="mi">3</span><span class="p">])</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
 <span class="c1">#  ╭─┬╴Dme_001</span>
