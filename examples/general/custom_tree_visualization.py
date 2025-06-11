@@ -1,5 +1,6 @@
 # Import Tree instance and faces module
-from ete3 import Tree, faces
+from ete4 import Tree
+from ete4.treeview import faces
 
 # Loads an example tree
 nw = """
@@ -103,7 +104,7 @@ def mylayout(node):
     # images max.
     if len(node)>=4:
         col = 0
-        for i, name in enumerate(set(node.get_leaf_names())):
+        for i, name in enumerate(set(node.leaf_names())):
             if i>0 and i%2 == 0:
                 col += 1
             # Add the corresponding face to the node
