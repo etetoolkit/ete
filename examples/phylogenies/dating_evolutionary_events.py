@@ -5,11 +5,11 @@ from ete4 import PhyloTree
 # species code of leaves (three first lettes in the node name are
 # considered the species code).
 nw = """
-((Dme_001,Dme_002),(((Cfa_001,Mms_001),((((Hsa_001,Hsa_003),Ptr_001)
-,Mmu_001),((Hsa_004,Ptr_004),Mmu_004))),(Ptr_002,(Hsa_002,Mmu_002))));
+((Dme_001,Dme_002),(((Cfa_001,Mms_001),((((Hsa_001,Hsa_003),Ptr_001),
+Mmu_001),((Hsa_004,Ptr_004),Mmu_004))),(Ptr_002,(Hsa_002,Mmu_002))));
 """
 
-t = PhyloTree(nw)
+t = PhyloTree(nw, sp_naming_function=lambda name: name[:3])
 
 print(t)
 #  ╭─┬╴Dme_001

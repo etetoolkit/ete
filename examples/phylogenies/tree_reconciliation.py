@@ -6,8 +6,8 @@ from ete4 import PhyloTree
 gene_tree_nw = '((Dme_001,Dme_002),(((Cfa_001,Mms_001),((Hsa_001,Ptr_001),Mmu_001)),(Ptr_002,(Hsa_002,Mmu_002))));'
 species_tree_nw = '((((Hsa,Ptr),Mmu),(Mms,Cfa)),Dme);'
 
-genetree = PhyloTree(gene_tree_nw)
-sptree = PhyloTree(species_tree_nw)
+genetree = PhyloTree(gene_tree_nw, sp_naming_function=lambda name: name[:3])
+sptree = PhyloTree(species_tree_nw, sp_naming_function=lambda name: name[:3])
 
 print(genetree)
 #  ╭─┬╴Dme_001
@@ -78,3 +78,4 @@ print(recon_tree)
 # visualization layout.
 genetree.explore()
 recon_tree.explore()
+input('Press enter to stop the explorer and finish the program.')

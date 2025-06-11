@@ -64,5 +64,5 @@ print(sametree)  # recovered tree with sequences
 # ─┤ ╰╴seqC
 #  ╰╴seqD
 
-print('seqA sequence:', t['seqA'].sequence)
+print('seqA sequence:', t['seqA'].props['sequence'])
 # seqA sequence: MAEIPDETIQQFMALT---HNIAVQYLSEFGDLNEALNSYYASQTDDIKDRREEAHQFMALTNVSHQFMALTNVSH
