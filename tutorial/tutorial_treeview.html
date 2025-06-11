@@ -500,7 +500,9 @@ collection of rules controlling how different nodes should be drawn.</p>
 <p>Examples are probably the best way to show how ETE works:</p>
 <section id="fixed-node-styles">
 <h3><a class="toc-backref" href="#id19" role="doc-backlink">Fixed node styles</a><a class="headerlink" href="#fixed-node-styles" title="Link to this heading">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ete4</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tree</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ete4</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tree</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ete4.treeview</span><span class="w"> </span><span class="kn">import</span> <span class="n">faces</span><span class="p">,</span> <span class="n">AttrFace</span><span class="p">,</span> <span class="n">TreeStyle</span><span class="p">,</span> <span class="n">NodeStyle</span>
 
 
@@ -577,7 +579,9 @@ collection of rules controlling how different nodes should be drawn.</p>
 </section>
 <section id="node-backgrounds">
 <h3><a class="toc-backref" href="#id20" role="doc-backlink">Node backgrounds</a><a class="headerlink" href="#node-backgrounds" title="Link to this heading">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ete4</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tree</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ete4</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tree</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ete4.treeview</span><span class="w"> </span><span class="kn">import</span> <span class="n">faces</span><span class="p">,</span> <span class="n">AttrFace</span><span class="p">,</span> <span class="n">TreeStyle</span><span class="p">,</span> <span class="n">NodeStyle</span>
 
 
@@ -770,7 +774,9 @@ collection of rules controlling how different nodes should be drawn.</p>
 </section>
 <section id="bubble-tree-maps">
 <h3><a class="toc-backref" href="#id22" role="doc-backlink">Bubble tree maps</a><a class="headerlink" href="#bubble-tree-maps" title="Link to this heading">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">ete4</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tree</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ete4.treeview</span><span class="w"> </span><span class="kn">import</span> <span class="n">TreeStyle</span><span class="p">,</span> <span class="n">NodeStyle</span><span class="p">,</span> <span class="n">faces</span><span class="p">,</span> <span class="n">AttrFace</span><span class="p">,</span> <span class="n">CircleFace</span>
@@ -794,7 +800,7 @@ collection of rules controlling how different nodes should be drawn.</p>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_example_tree</span><span class="p">():</span>
     <span class="c1"># Make a random tree.</span>
     <span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">()</span>
-    <span class="n">t</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="n">random_branches</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="n">dist_fn</span><span class="o">=</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">,</span> <span class="n">support_fn</span><span class="o">=</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">)</span>
 
     <span class="c1"># Add some random weight to all nodes.</span>
     <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">traverse</span><span class="p">():</span>
@@ -831,7 +837,9 @@ collection of rules controlling how different nodes should be drawn.</p>
 </section>
 <section id="trees-within-trees">
 <h3><a class="toc-backref" href="#id23" role="doc-backlink">Trees within trees</a><a class="headerlink" href="#trees-within-trees" title="Link to this heading">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">ete4</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tree</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ete4.treeview</span><span class="w"> </span><span class="kn">import</span> <span class="n">TreeStyle</span><span class="p">,</span> <span class="n">NodeStyle</span><span class="p">,</span> <span class="n">faces</span><span class="p">,</span> <span class="n">AttrFace</span><span class="p">,</span> <span class="n">TreeFace</span>
@@ -864,7 +872,7 @@ collection of rules controlling how different nodes should be drawn.</p>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_example_tree</span><span class="p">():</span>
     <span class="c1"># Random tree.</span>
     <span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">()</span>
-    <span class="n">t</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="n">random_branches</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="n">dist_fn</span><span class="o">=</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">,</span> <span class="n">support_fn</span><span class="o">=</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">)</span>
 
     <span class="c1"># Some random features in all nodes</span>
     <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">traverse</span><span class="p">():</span>
@@ -901,7 +909,9 @@ collection of rules controlling how different nodes should be drawn.</p>
 </section>
 <section id="phylogenetic-trees-and-sequence-domains">
 <h3><a class="toc-backref" href="#id24" role="doc-backlink">Phylogenetic trees and sequence domains</a><a class="headerlink" href="#phylogenetic-trees-and-sequence-domains" title="Link to this heading">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ete4</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tree</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ete4</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tree</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ete4.treeview</span><span class="w"> </span><span class="kn">import</span> <span class="n">SeqMotifFace</span><span class="p">,</span> <span class="n">TreeStyle</span><span class="p">,</span> <span class="n">add_face_to_node</span>
 
 
@@ -992,7 +1002,9 @@ collection of rules controlling how different nodes should be drawn.</p>
 </section>
 <section id="creating-your-custom-interactive-faces">
 <h3><a class="toc-backref" href="#id25" role="doc-backlink">Creating your custom interactive faces</a><a class="headerlink" href="#creating-your-custom-interactive-faces" title="Link to this heading">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># To play with random colors.</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
+
+<span class="c1"># To play with random colors.</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">colorsys</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
 
