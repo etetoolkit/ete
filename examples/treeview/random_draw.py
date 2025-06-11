@@ -1,9 +1,12 @@
-import os
+#!/usr/bin/env python3
 
-from ete3 import Tree, faces
-from ete3.treeview.main import TreeStyle, NodeStyle, random_color
-import colorsys
+import os
 import random
+import colorsys
+
+from ete4 import Tree, random_color
+from ete4.treeview import faces
+from ete4.treeview.main import TreeStyle, NodeStyle
 
 # ::::::::::::::
 # Layout actions
@@ -28,7 +31,7 @@ def leaf_name(node):
 
 def aligned_faces(node):
     if node.is_leaf:
-        for i in xrange(3):
+        for i in range(3):
             F = faces.TextFace("ABCDEFGHIJK"[0:random.randint(1,11)])
             F.border.width = 1
             F.border.line_style = 1

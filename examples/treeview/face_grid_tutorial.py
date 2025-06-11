@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from ete4 import Tree
 from ete4.treeview import TextFace, NodeStyle, TreeStyle
 

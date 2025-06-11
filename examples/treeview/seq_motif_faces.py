@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from ete4 import Tree
 from ete4.treeview import SeqMotifFace, TreeStyle, add_face_to_node
 

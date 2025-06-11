@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # To play with random colors.
 import colorsys
 import random

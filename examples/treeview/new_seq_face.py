@@ -1,9 +1,12 @@
-# We will need to create Qt4 items
-from PyQt4       import QtCore
-from PyQt4.QtGui import QGraphicsRectItem, QColor, QPen, QBrush
-from PyQt4.QtGui import QGraphicsSimpleTextItem, QFont
+#!/usr/bin/env python3
 
-from ete3 import faces, TreeStyle, PhyloTree, TextFace
+# We will need to create Qt items
+from PyQt6 import QtCore
+from PyQt6.QtGui import QColor, QPen, QBrush, QFont
+from PyQt6.QtWidgets import QGraphicsRectItem, QGraphicsSimpleTextItem
+
+from ete4 import PhyloTree
+from ete4.treeview import faces, TreeStyle, TextFace
 from random import random
 
 _aafgcolors = {
@@ -288,7 +291,7 @@ if __name__ == "__main__":
                     "Orangutan": "GATGCACGCTGGATCAACGAAAAGTTAAGATGCGTATCGAGAACTCTGAAAAAATTGGGACTGGACGGCTACAAGGGAGTAAGTCAATACGTTAAAGGTCGTCCG"
                 }
     for l in nt_sequences:
-        (tree & l).nt_sequence = nt_sequences[l]
+        tree[l].props['nt_sequence'] = nt_sequences[l]
     tree.dist = 0
     ts = TreeStyle()
     ts.title.add_face(TextFace("Example for nucleotides...", fsize=15), column=0)
@@ -297,9 +300,10 @@ if __name__ == "__main__":
 
     # Show very large algs
     tree = PhyloTree('(Orangutan,Human,Chimp);')
-    tree.link_to_alignment(">Human\n"       + ''.join([_aabgcolors.keys()[int(random() * len (_aabgcolors))] for _ in xrange (5000)]) + \
-                           "\n>Chimp\n"     + ''.join([_aabgcolors.keys()[int(random() * len (_aabgcolors))] for _ in xrange (5000)]) + \
-                           "\n>Orangutan\n" + ''.join([_aabgcolors.keys()[int(random() * len (_aabgcolors))] for _ in xrange (5000)]))
+    aas = list(_aabgcolors.keys())  # amino acids
+    tree.link_to_alignment(">Human\n"       + ''.join(aas[int(random() * len (_aabgcolors))] for _ in range (5000)) +
+                           "\n>Chimp\n"     + ''.join(aas[int(random() * len (_aabgcolors))] for _ in range (5000)) +
+                           "\n>Orangutan\n" + ''.join(aas[int(random() * len (_aabgcolors))] for _ in range (5000)))
     tree.dist = 0
     ts = TreeStyle()
     ts.title.add_face(TextFace("better not set interactivity if alg is very large", fsize=15), column=0)

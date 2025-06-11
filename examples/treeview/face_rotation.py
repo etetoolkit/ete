@@ -1,6 +1,10 @@
-from ete3 import Tree, TreeStyle, add_face_to_node, TextFace
+#!/usr/bin/env python3
 
 from random import randint
+
+from ete4 import Tree
+from ete4.treeview import TreeStyle, add_face_to_node, TextFace
+
 
 def rotation_layout(node):
     if node.is_leaf:

@@ -1,4 +1,7 @@
-from ete3 import Tree, faces, TreeStyle, NodeStyle
+#!/usr/bin/env python3
+
+from ete4 import Tree
+from ete4.treeview import faces, TreeStyle, NodeStyle
 
 def get_example_tree():
     t = Tree()

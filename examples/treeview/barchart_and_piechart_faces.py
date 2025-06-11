@@ -1,8 +1,11 @@
+#!/usr/bin/env python3
+
 import sys
 import random
-from ete3 import Tree, faces, TreeStyle, COLOR_SCHEMES
+from ete4 import Tree
+from ete4.treeview import faces, TreeStyle, COLOR_SCHEMES
 
-schema_names = COLOR_SCHEMES.keys()
+schema_names = list(COLOR_SCHEMES.keys())
 
 def layout(node):
     if node.is_leaf:

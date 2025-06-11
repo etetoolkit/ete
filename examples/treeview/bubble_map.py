@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import random
 
 from ete4 import Tree
@@ -22,7 +24,7 @@ def layout(node):
 def get_example_tree():
     # Make a random tree.
     t = Tree()
-    t.populate(20, random_branches=True)
+    t.populate(20, dist_fn=random.random, support_fn=random.random)
 
     # Add some random weight to all nodes.
     for n in t.traverse():
