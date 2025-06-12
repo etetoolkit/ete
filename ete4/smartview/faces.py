@@ -21,7 +21,6 @@ always that size multiplied by the zoom.
 import os
 from base64 import b64encode
 from math import pi, cos, sin
-import re  # so it can be used when evaluating expressions
 
 from ete4.core.eval import eval_on_node
 from .coordinates import Size, Box, make_box
