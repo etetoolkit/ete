@@ -28,7 +28,7 @@ print(t.to_str(show_internal=True, props=['name']))
 #            ╰╴S
 
 # Get specific nodes.
-G = t['G']  # same as  next(t.search_nodes(name='G'))
+G = t['G']  # same as next(t.search_nodes(name='G'))
 J = t['J']
 C = t['C']
 
@@ -36,7 +36,7 @@ C = t['C']
 # be detached from the tree and it will be considered an independent
 # tree. We can do the same thing using two approaches: J.detach() or
 # C.remove_child(J).
-removed_node = J.detach() # same as C.remove_child(J)
+removed_node = J.detach()  # same as C.remove_child(J)
 
 # If we know print the original tree, we will see how J partition is
 # no longer there.
