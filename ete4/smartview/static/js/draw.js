@@ -306,8 +306,8 @@ function translate(item, shift) {
         return ["image", tbox(box, shift), href, style];
     }
     else if (item[0] === "seq") {
-        const [ , box, seq, seqtype, draw_text, fs_max, style, render] = item;
-        return ["seq", tbox(box, shift), seq, seqtype, draw_text, fs_max,
+        const [ , box, seq, seqtype, draw_text, fs_max, marks, style, render] = item;
+        return ["seq", tbox(box, shift), seq, seqtype, draw_text, fs_max, marks,
                 style, render];
     }
     else if (item[0] === "heatmap") {
@@ -654,10 +654,10 @@ function create_item(item, tl, zoom, wmax) {
         return container;
     }
     else if (item[0] === "seq") {
-        const [ , box, seq, seqtype, draw_text, fs_max, style, render] = item;
+        const [ , box, seq, seqtype, draw_text, fs_max, marks, style, render] = item;
 
-        return create_seq(box, seq, seqtype, draw_text, fs_max, tl, zx, zy,
-                          add_ns_prefix(style), render, wmax);
+        return create_seq(box, seq, seqtype, draw_text, fs_max, marks,
+                          tl, zx, zy, add_ns_prefix(style), render, wmax);
     }
     else {
         console.log(`Unrecognized item: ${item}`);
@@ -1036,17 +1036,17 @@ function create_text(box, anchor, text, fs_max, rotation,
 }
 
 
-function create_seq(box, seq, seqtype, draw_text, fs_max,
+function create_seq(box, seq, seqtype, draw_text, fs_max, marks,
                     tl, zx, zy, style, render, wmax) {
     if (!["aa", "nt"].includes(seqtype))
         throw new Error(`unknown sequence type ${seqtype}`);
 
     if (view.render === "force raster" ||
         view.render === "auto" && (render === "raster" || render === "auto"))
-        return create_seq_pixi(box, seq, seqtype, draw_text, fs_max,
+        return create_seq_pixi(box, seq, seqtype, draw_text, fs_max, marks,
                                tl, zx, zy, style, wmax);
     else if (view.render === "force svg" || render === "svg")
-        return create_seq_svg(box, seq, seqtype, draw_text, fs_max,
+        return create_seq_svg(box, seq, seqtype, draw_text, fs_max, marks,
                               tl, zx, zy, style, wmax);
     else
         throw new Error(`unknown render type ${render}`);
@@ -1055,7 +1055,7 @@ function create_seq(box, seq, seqtype, draw_text, fs_max,
 
 // With svg.
 // NOTE: Much of this code is similar to the one in pixi.js. Maybe merge?
-function create_seq_svg(box, seq, seqtype, draw_text, fs_max,
+function create_seq_svg(box, seq, seqtype, draw_text, fs_max, marks,
                         tl, zx, zy, style, wmax) {
     const colors = seqtype === "aa" ? aa_colors : nt_colors;
 
@@ -1075,7 +1075,7 @@ function create_seq_svg(box, seq, seqtype, draw_text, fs_max,
             create_rect([x, y, dx, dy], tl, zx, zy) :
             create_asec([x, y, dx, dy], tl, zx);
 
-        r.style.fill = colors[seq[i]];
+        r.style.fill = colors[seq[i].toUpperCase()];
 
         g.appendChild(r);
 
@@ -1083,6 +1083,20 @@ function create_seq_svg(box, seq, seqtype, draw_text, fs_max,
             if (dx * zx > 5)  // but only if there's space
                 g.appendChild(create_text([x, y, dx, dy], [0.5, 0.5],
                                           seq[i], fs_max, 0, tl, zx, zy));
+
+        if (marks.includes(i)) {  // draw rectangles around marked positions
+            const m = view.shape === "rectangular" ?
+                  create_rect([x+1/zx, y+1/zy, dx-2/zx, dy-2/zy], tl, zx, zy) :
+                  create_asec([x, y, dx, dy], tl, zx);
+
+            m.style.fillOpacity = "0";
+            m.style.stroke = "black";
+            m.style.strokeWidth = 2;
+            m.style.strokeLinejoin = "round";
+            m.style.strokeDasharray="5,5";
+
+            g.appendChild(m);
+        }
     }
 
     return g;

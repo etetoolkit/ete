@@ -48,7 +48,7 @@ async function init_pixi() {
 
 
 // Return a pixi container with an image for the sequence in box.
-function create_seq_pixi(box, seq, seqtype, draw_text, fs_max,
+function create_seq_pixi(box, seq, seqtype, draw_text, fs_max, marks,
                          tl, zx, zy, style, wmax) {
     const [x0, y0, dx0, dy0] = box;
     const dx = dx0 / seq.length;
@@ -69,10 +69,21 @@ function create_seq_pixi(box, seq, seqtype, draw_text, fs_max,
 
         // Fill the container with sprites for the characters between imin and imax.
         for (let i = imin, x = imin * dx; i < imax; i++, x+=dx) {
-            const sprite = new Sprite(view.pixi_sheet.textures[seq[i]]);
+            // Names starting with space identify sprites with only only colors
+            // (" A" is like "A", but no text, just the color for A).
+            const name = (draw_text ? "" : " ") + seq[i].toUpperCase();
+            const sprite = new Sprite(view.pixi_sheet.textures[name]);
+
             sprite.x = zx * x;
             sprite.setSize(zx * dx, zy * dy);
             container.addChild(sprite);
+
+            if (marks.includes(i)) {
+                const sprite_mark = new Sprite(view.pixi_sheet.textures["mark"]);
+                sprite_mark.x = zx * x;
+                sprite_mark.setSize(zx * dx, zy * dy);
+                container.addChild(sprite_mark);
+            }
         }
     }
     else {
@@ -93,10 +104,21 @@ function create_seq_pixi(box, seq, seqtype, draw_text, fs_max,
 
         // Fill the container with sprites for the characters between imin and imax.
         for (let i = 0, x = 0; i < seq.length; i++, x+=zx*dx) {
-            const sprite = new Sprite(view.pixi_sheet.textures[seq[i]]);
+            // Names starting with space identify sprites with only only colors
+            // (" A" is like "A", but no text, just the color for A).
+            const name = (draw_text ? "" : " ") + seq[i].toUpperCase();
+            const sprite = new Sprite(view.pixi_sheet.textures[name]);
+
             sprite.x = x;
             sprite.setSize(zx * dx, h);
             container.addChild(sprite);
+
+            if (marks.includes(i)) {
+                const sprite_mark = new Sprite(view.pixi_sheet.textures["mark"]);
+                sprite_mark.x = zx * x;
+                sprite_mark.setSize(zx * dx, h);
+                container.addChild(sprite_mark);
+            }
         }
     }
 

@@ -88,9 +88,9 @@ def draw_image(box, href, style=''):
 def draw_heatmap(box, values, value_range, color_range):
     return ['heatmap', box, values, value_range, color_range]
 
-def draw_seq(box, seq, seqtype='aa', draw_text=True, fs_max=None, style='',
-             render='auto'):
-    return ['seq', box, seq, seqtype, draw_text, fs_max, style, render]
+def draw_seq(box, seq, seqtype='aa', draw_text=True, fs_max=None, marks=None,
+             style='', render='auto'):
+    return ['seq', box, seq, seqtype, draw_text, fs_max, marks or [], style, render]
 
 
 # Other (non-drawing) commands.

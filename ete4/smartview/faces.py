@@ -395,7 +395,7 @@ class SeqFace(Face):
     """A sequence of nucleotides or amino acids."""
 
     def __init__(self, seq, seqtype='aa', poswidth=15, draw_text=True,
-                 hmax=None, fs_max=15, style='', render='auto',
+                 hmax=None, fs_max=15, marks=None, style='', render='auto',
                  position='top', column=0, anchor=None):
         super().__init__(position, column, anchor)
 
@@ -405,6 +405,7 @@ class SeqFace(Face):
         self.draw_text = draw_text
         self.hmax = hmax  # maximum height in pixels
         self.fs_max = fs_max
+        self.marks = marks
         self.style = style
         self.render = render
 
@@ -424,7 +425,7 @@ class SeqFace(Face):
         size = Size(dx, dy)
         box = make_box((0, 0), size)
         graphics = [gr.draw_seq(box, self.seq, self.seqtype, self.draw_text,
-                                self.fs_max, self.style, self.render)]
+                                self.fs_max, self.marks, self.style, self.render)]
 
         return graphics, size
 
