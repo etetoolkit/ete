@@ -1093,7 +1093,7 @@ function create_seq_svg(box, seq, seqtype, draw_text, fs_max, marks,
             m.style.stroke = "black";
             m.style.strokeWidth = 2;
             m.style.strokeLinejoin = "round";
-            m.style.strokeDasharray="5,5";
+            m.style.strokeDasharray = "5,5";
 
             g.appendChild(m);
         }

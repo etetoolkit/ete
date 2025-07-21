@@ -69,7 +69,7 @@ function create_seq_pixi(box, seq, seqtype, draw_text, fs_max, marks,
 
         // Fill the container with sprites for the characters between imin and imax.
         for (let i = imin, x = imin * dx; i < imax; i++, x+=dx) {
-            // Names starting with space identify sprites with only only colors
+            // Names starting with space identify sprites with only colors
             // (" A" is like "A", but no text, just the color for A).
             const name = (draw_text ? "" : " ") + seq[i].toUpperCase();
             const sprite = new Sprite(view.pixi_sheet.textures[name]);
@@ -104,7 +104,7 @@ function create_seq_pixi(box, seq, seqtype, draw_text, fs_max, marks,
 
         // Fill the container with sprites for the characters between imin and imax.
         for (let i = 0, x = 0; i < seq.length; i++, x+=zx*dx) {
-            // Names starting with space identify sprites with only only colors
+            // Names starting with space identify sprites with only colors
             // (" A" is like "A", but no text, just the color for A).
             const name = (draw_text ? "" : " ") + seq[i].toUpperCase();
             const sprite = new Sprite(view.pixi_sheet.textures[name]);
