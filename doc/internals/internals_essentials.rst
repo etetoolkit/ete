@@ -38,6 +38,13 @@ since there is only one branch per node linking to its parent), and
 there is no clear distinction between *node properties* and *branch
 properties*. Other representations may be more appropriate.)
 
+.. Horizontal transfer cannot be represented in a tree. If we wanted
+   to have a more flexible structure, we could use as concepts
+   `phylogenetic networks
+   <https://en.wikipedia.org/wiki/Phylogenetic_tree#Phylogenetic_network>`_
+   and/or `coral of life
+   <https://en.wikipedia.org/wiki/Coral_of_life>`_. And to represent
+   them, we could use for example `networkx <https://networkx.org/>`_.
 
 Size
 ----
