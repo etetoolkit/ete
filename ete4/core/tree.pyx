@@ -707,7 +707,7 @@ cdef class Tree:
         """Return or write to file the newick representation.
 
         :param str outfile: Name of the output file. If present, it will write
-            the newick to that file instad of returning it as a string.
+            the newick to that file instead of returning it as a string.
         :param list props: Properties to write for all nodes using the Extended
             Newick Format. If None, write all available properties.
         :param parser: Parser used to encode the tree in newick format.

@@ -23,3 +23,5 @@ from .phyloxml import Phyloxml, PhyloxmlTree
 from .utils import SVG_COLORS, COLOR_SCHEMES, random_color
 
 from .version import __version__
+
+from .py4egps_treeview import *
