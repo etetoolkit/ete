@@ -21,3 +21,9 @@ test.svg
 
 # MacOSX
 .DS_Store
+
+
+# IDEs and editors
+.idea/
+
+user_individual_proj/
