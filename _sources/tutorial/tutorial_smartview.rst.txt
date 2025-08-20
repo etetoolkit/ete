@@ -49,7 +49,7 @@ The concepts that ETE uses to describe the visualization are:
   for different kinds of representations (:class:`TextFace
   <faces.TextFace>`, :class:`ImageFace <faces.ImageFace>`, ...). Faces
   know how to return graphic elements showing the information
-  corresponding to a node, or to a group nodes collapsed together.
+  associated with a node (or with a group of collapsed nodes).
 - **Layouts**, full descriptions of how to represent a tree, using the
   class :class:`Layout <layout.Layout>`. They contain a
   :func:`draw_node()` function that produces the faces and
