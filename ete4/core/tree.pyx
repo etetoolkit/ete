@@ -1054,7 +1054,7 @@ cdef class Tree:
     def explore(self, name=None, layouts=None,
                 host='127.0.0.1', port=None, verbose=False,
                 compress=False, keep_server=False, open_browser=True,
-                **kwargs):
+                server_args=None, **kwargs):
         """Launch an interactive session to visualize the tree.
 
         :param str name: Name used to store and refer to the tree.
@@ -1067,7 +1067,7 @@ cdef class Tree:
         explorer.explore(self, name, layouts,
                          host, port, verbose,
                          compress, keep_server, open_browser,
-                         **kwargs)
+                         server_args, **kwargs)
 
     def render_sm(self, file_name, layouts=None, w=None, h=None):
         """Save an image with the contents of the tree."""
@@ -1100,7 +1100,7 @@ cdef class Tree:
 
         driver = webdriver.Chrome(options=options)
 
-        host, port = server.server_address
+        host, port = server.bind_addr
         driver.get(f'http://{host}:{port}/static/gui.html?tree={name}')
 
         time.sleep(2)  # wait, kind of a hack
@@ -1109,11 +1109,8 @@ cdef class Tree:
 
         driver.quit()
 
-        # Stop the server, close its thread, and remove the tree.
-        server.server_close()
-        server.shutdown()
-        thread.join()
-
+        # Stop the server (and close its thread), and remove the tree.
+        explorer.stop_server((thread, server), remove_trees=False)
         explorer.remove_tree(name)
 
     def copy(self, method="cpickle"):

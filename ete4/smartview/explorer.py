@@ -18,7 +18,11 @@ from math import pi
 import webbrowser
 from threading import Thread
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter as fmt
-from wsgiref.simple_server import make_server, WSGIRequestHandler
+
+import logging
+logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(message)s')
+
+from cheroot.wsgi import Server  # our async wsgi server
 
 import brotli
 
@@ -652,7 +656,7 @@ def get_trees_from_nexus_or_newick(btext, name_newick):
 def explore(tree, name=None, layouts=None,
             host='127.0.0.1', port=None, verbose=False,
             compress=None, keep_server=False, open_browser=True,
-            **kwargs):
+            server_args=None, **kwargs):
     """Run the web server, add tree and open a browser to visualize it."""
     add_tree(tree, name, layouts, kwargs)
 
@@ -661,18 +665,19 @@ def explore(tree, name=None, layouts=None,
 
     # Launch the thread with the http server (if not already running).
     if 'server' not in g_threads:
-        thread, server = start_server(host, port, verbose, keep_server)
+        thread, server = start_server(host, port, verbose, keep_server,
+                                      server_args)
         g_threads['server'] = (thread, server)
-        host, port = server.server_address  # port may have changed
+        host, port = server.bind_addr  # port may have changed
         print(f'Explorer now available at http://{host}:{port}')
     else:
         _, server = g_threads['server']
-        host, port = server.server_address
+        host, port = server.bind_addr
         print(f'Existing explorer available at http://{host}:{port}')
 
     if open_browser:
         _, server = g_threads['server']
-        host, port = server.server_address
+        host, port = server.bind_addr
         open_browser_window(host, port)
 
 
@@ -701,21 +706,23 @@ def remove_tree(name):
     g_layouts.pop(name)
 
 
-def start_server(host='127.0.0.1', port=None, verbose=False, keep_server=False):
+def start_server(host='127.0.0.1', port=None, verbose=False, keep_server=False,
+                 server_args=None):
     """Create a thread running the web server and return it and the server."""
+    server_args = server_args or {}  # extra server arguments
+    server_args.setdefault('numthreads', 100)
+
     port = port or get_next_available_port(host)
     assert port, 'could not find any port available'
 
-    # Override the function that logs requests, if we are not verbose.
-    if not verbose:
-        WSGIRequestHandler.log_request = lambda *args, **kwargs: None
+    if verbose:
+        default_app().install(log_requests)
 
-    # Create explicitly the web sever (uses internally WSGIRequestHandler).
-    server = make_server(host, port, default_app())
+    server = Server((host, port), default_app(), **server_args)
 
     thread = Thread(
         daemon=not keep_server,  # the server persists if it's not a daemon
-        target=server.serve_forever)
+        target=server.start)
 
     thread.start()
 
@@ -734,6 +741,25 @@ def get_next_available_port(host='127.0.0.1', port_min=5000, port_max=6000):
             pass
 
 
+def log_requests(fn):
+    """Bottle plugin to log requests and exceptions on responses."""
+    # It will wrap the endpoint callbacks if we do app.install(log_requests).
+    def wrapper(*args, **kwargs):
+        a = request.remote_addr  # shortcut
+        info = (('' if a in ['127.0.0.1', 'localhost'] else f'from {a}: ') +
+                request.method + ' ' + request.url)
+
+        logging.info(info)  # this is where we log the request
+
+        try:
+            return fn(*args, **kwargs)  # the actual processing by bottle
+        except Exception as e:  # log the errors
+            logging.error('%s -> %d %r' % (info, e.status_code, e.body))
+            raise  # and process them normally
+
+    return wrapper
+
+
 def make_name():
     """Return a unique tree name like 'tree-<number>'."""
     tnames = [name for name in g_trees
@@ -750,21 +776,19 @@ def open_browser_window(host='127.0.0.1', port=5000):
         pass  # it's ok if we don't succeed
 
 
-def stop_server():
-    """Stop the running server."""
-    if 'server' in g_threads:
-        # Without a server, we won't need to remember anything about the trees.
+def stop_server(thread_server=None, remove_trees=True):
+    """Stop the given server and its thread (from g_threads by default)."""
+    thread_server = thread_server or g_threads.pop('server', None)
+
+    if thread_server:
+        thread, server = thread_server
+        server.stop()
+        thread.join()
+
+    if remove_trees:  # with no server, we normally want to forget about trees
         names = list(g_trees.keys())  # copied so g_trees can be modified
         for name in names:
             remove_tree(name)
-
-        # Find the thread with the server and do a proper shutdown.
-        thread, server = g_threads.pop('server')
-
-        server.server_close()
-        server.shutdown()
-        thread.join()
-
 
 
 if __name__ == '__main__':
@@ -791,14 +815,8 @@ if __name__ == '__main__':
         g_config['compress'] = args.compress
 
         # Launch the http server in a thread and open the browser.
-        port = args.port or get_next_available_port()
-        assert port, 'could not find any port available'
-
-        if not args.verbose:
-            WSGIRequestHandler.log_request = lambda *args, **kwargs: None
-        server = make_server('127.0.0.1', port, default_app())
-        Thread(daemon=True, target=server.serve_forever).start()
-
+        _, server = start_server('127.0.0.1', args.port, args.verbose)
+        port = server.bind_addr[1]
         open_browser_window(port=port)
 
         print(f'Explorer available at http://127.0.0.1:{port}')
