@@ -574,24 +574,23 @@ def add_trees_from_request():
     """Add trees to the global var g_trees and return a dict of {name: id}."""
     try:
         if request.content_type.startswith('application/json'):  # a POST
-            trees = [req_json()]  # we have only one tree
+            trees_data = [req_json()]  # we have only one tree
             parser = 'name'
         else:  # the request comes from a form (e.g., from upload.html)
-            trees = get_trees_from_form()
+            trees_data = get_trees_from_form()
             parser = request.forms['parser']
 
-        names = {}
-        for tree in trees:
-            t = Tree(tree['newick'], parser=parser)
-            ops.update_sizes_all(t)
-            name = tree['name'].replace(',', '_')  # "," is used for subtrees
-            names[name] = name  # tree ids are already equal to their names...
-            g_trees[name] = t
-            g_layouts[name] = [BASIC_LAYOUT]
+        names = {}  # TODO: this should not be necessary (see below)
+        for data in trees_data:
+            name, nw = data['name'], data['newick']
+            add_tree(Tree(nw, parser=parser), name)
+            names[name] = name  # TODO: this should not be necessary (see below)
 
         return names
-        # TODO: tree ids are already equal to their names, so in the future
+        # TODO: tree ids are now already equal to their names, so in the future
         # we could remove the need to send back their "ids".
+    except KeyError as e:
+        abort(400, f'missing data in request: {e}')
     except (newick.NewickError, ValueError) as e:
         abort(400, f'malformed tree - {e}')
 
