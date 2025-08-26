@@ -53,7 +53,11 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">webbrowser</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">threading</span><span class="w"> </span><span class="kn">import</span> <span class="n">Thread</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">argparse</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArgumentParser</span><span class="p">,</span> <span class="n">ArgumentDefaultsHelpFormatter</span> <span class="k">as</span> <span class="n">fmt</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">wsgiref.simple_server</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_server</span><span class="p">,</span> <span class="n">WSGIRequestHandler</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;[</span><span class="si">%(asctime)s</span><span class="s1">] </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">cheroot.wsgi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Server</span>  <span class="c1"># our async wsgi server</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">brotli</span>
 
@@ -66,8 +70,8 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">ete4</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tree</span><span class="p">,</span> <span class="n">newick</span><span class="p">,</span> <span class="n">nexus</span><span class="p">,</span> <span class="n">operations</span> <span class="k">as</span> <span class="n">ops</span><span class="p">,</span> <span class="n">treematcher</span> <span class="k">as</span> <span class="n">tm</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ete4.core.eval</span><span class="w"> </span><span class="kn">import</span> <span class="n">eval_on_node</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">draw</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.layout</span><span class="w"> </span><span class="kn">import</span> <span class="n">Layout</span><span class="p">,</span> <span class="n">BASIC_LAYOUT</span><span class="p">,</span> <span class="n">update_style</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ete4.smartview</span><span class="w"> </span><span class="kn">import</span> <span class="n">draw</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ete4.smartview.layout</span><span class="w"> </span><span class="kn">import</span> <span class="n">Layout</span><span class="p">,</span> <span class="n">BASIC_LAYOUT</span><span class="p">,</span> <span class="n">update_style</span>
 
 <span class="n">DIR_LIB</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">draw</span><span class="o">.</span><span class="vm">__file__</span><span class="p">))</span>
 
@@ -652,24 +656,23 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Add trees to the global var g_trees and return a dict of {name: id}.&quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">content_type</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;application/json&#39;</span><span class="p">):</span>  <span class="c1"># a POST</span>
-            <span class="n">trees</span> <span class="o">=</span> <span class="p">[</span><span class="n">req_json</span><span class="p">()]</span>  <span class="c1"># we have only one tree</span>
+            <span class="n">trees_data</span> <span class="o">=</span> <span class="p">[</span><span class="n">req_json</span><span class="p">()]</span>  <span class="c1"># we have only one tree</span>
             <span class="n">parser</span> <span class="o">=</span> <span class="s1">&#39;name&#39;</span>
         <span class="k">else</span><span class="p">:</span>  <span class="c1"># the request comes from a form (e.g., from upload.html)</span>
-            <span class="n">trees</span> <span class="o">=</span> <span class="n">get_trees_from_form</span><span class="p">()</span>
+            <span class="n">trees_data</span> <span class="o">=</span> <span class="n">get_trees_from_form</span><span class="p">()</span>
             <span class="n">parser</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">forms</span><span class="p">[</span><span class="s1">&#39;parser&#39;</span><span class="p">]</span>
 
-        <span class="n">names</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">for</span> <span class="n">tree</span> <span class="ow">in</span> <span class="n">trees</span><span class="p">:</span>
-            <span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="n">tree</span><span class="p">[</span><span class="s1">&#39;newick&#39;</span><span class="p">],</span> <span class="n">parser</span><span class="o">=</span><span class="n">parser</span><span class="p">)</span>
-            <span class="n">ops</span><span class="o">.</span><span class="n">update_sizes_all</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
-            <span class="n">name</span> <span class="o">=</span> <span class="n">tree</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span>  <span class="c1"># &quot;,&quot; is used for subtrees</span>
-            <span class="n">names</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>  <span class="c1"># tree ids are already equal to their names...</span>
-            <span class="n">g_trees</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span>
-            <span class="n">g_layouts</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">BASIC_LAYOUT</span><span class="p">]</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># TODO: this should not be necessary (see below)</span>
+        <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">trees_data</span><span class="p">:</span>
+            <span class="n">name</span><span class="p">,</span> <span class="n">nw</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;newick&#39;</span><span class="p">]</span>
+            <span class="n">add_tree</span><span class="p">(</span><span class="n">Tree</span><span class="p">(</span><span class="n">nw</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="n">parser</span><span class="p">),</span> <span class="n">name</span><span class="p">)</span>
+            <span class="n">names</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>  <span class="c1"># TODO: this should not be necessary (see below)</span>
 
         <span class="k">return</span> <span class="n">names</span>
-        <span class="c1"># TODO: tree ids are already equal to their names, so in the future</span>
+        <span class="c1"># TODO: tree ids are now already equal to their names, so in the future</span>
         <span class="c1"># we could remove the need to send back their &quot;ids&quot;.</span>
+    <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">abort</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;missing data in request: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="k">except</span> <span class="p">(</span><span class="n">newick</span><span class="o">.</span><span class="n">NewickError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="n">abort</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;malformed tree - </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
 
@@ -746,7 +749,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">explore</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">layouts</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">host</span><span class="o">=</span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">compress</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">keep_server</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">open_browser</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-            <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="n">server_args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the web server, add tree and open a browser to visualize it.&quot;&quot;&quot;</span>
     <span class="n">add_tree</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">layouts</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
 
@@ -755,18 +758,19 @@
 
     <span class="c1"># Launch the thread with the http server (if not already running).</span>
     <span class="k">if</span> <span class="s1">&#39;server&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">g_threads</span><span class="p">:</span>
-        <span class="n">thread</span><span class="p">,</span> <span class="n">server</span> <span class="o">=</span> <span class="n">start_server</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">verbose</span><span class="p">,</span> <span class="n">keep_server</span><span class="p">)</span>
+        <span class="n">thread</span><span class="p">,</span> <span class="n">server</span> <span class="o">=</span> <span class="n">start_server</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">verbose</span><span class="p">,</span> <span class="n">keep_server</span><span class="p">,</span>
+                                      <span class="n">server_args</span><span class="p">)</span>
         <span class="n">g_threads</span><span class="p">[</span><span class="s1">&#39;server&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">thread</span><span class="p">,</span> <span class="n">server</span><span class="p">)</span>
-        <span class="n">host</span><span class="p">,</span> <span class="n">port</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">server_address</span>  <span class="c1"># port may have changed</span>
+        <span class="n">host</span><span class="p">,</span> <span class="n">port</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">bind_addr</span>  <span class="c1"># port may have changed</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Explorer now available at http://</span><span class="si">{</span><span class="n">host</span><span class="si">}</span><span class="s1">:</span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">_</span><span class="p">,</span> <span class="n">server</span> <span class="o">=</span> <span class="n">g_threads</span><span class="p">[</span><span class="s1">&#39;server&#39;</span><span class="p">]</span>
-        <span class="n">host</span><span class="p">,</span> <span class="n">port</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">server_address</span>
+        <span class="n">host</span><span class="p">,</span> <span class="n">port</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">bind_addr</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Existing explorer available at http://</span><span class="si">{</span><span class="n">host</span><span class="si">}</span><span class="s1">:</span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">open_browser</span><span class="p">:</span>
         <span class="n">_</span><span class="p">,</span> <span class="n">server</span> <span class="o">=</span> <span class="n">g_threads</span><span class="p">[</span><span class="s1">&#39;server&#39;</span><span class="p">]</span>
-        <span class="n">host</span><span class="p">,</span> <span class="n">port</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">server_address</span>
+        <span class="n">host</span><span class="p">,</span> <span class="n">port</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">bind_addr</span>
         <span class="n">open_browser_window</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span></div>
 
 
@@ -804,21 +808,23 @@
 
 <div class="viewcode-block" id="start_server">
 <a class="viewcode-back" href="../../../reference/reference_smartview.html#ete4.smartview.explorer.start_server">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">start_server</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">keep_server</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">start_server</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">keep_server</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">server_args</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a thread running the web server and return it and the server.&quot;&quot;&quot;</span>
+    <span class="n">server_args</span> <span class="o">=</span> <span class="n">server_args</span> <span class="ow">or</span> <span class="p">{}</span>  <span class="c1"># extra server arguments</span>
+    <span class="n">server_args</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;numthreads&#39;</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+
     <span class="n">port</span> <span class="o">=</span> <span class="n">port</span> <span class="ow">or</span> <span class="n">get_next_available_port</span><span class="p">(</span><span class="n">host</span><span class="p">)</span>
     <span class="k">assert</span> <span class="n">port</span><span class="p">,</span> <span class="s1">&#39;could not find any port available&#39;</span>
 
-    <span class="c1"># Override the function that logs requests, if we are not verbose.</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">verbose</span><span class="p">:</span>
-        <span class="n">WSGIRequestHandler</span><span class="o">.</span><span class="n">log_request</span> <span class="o">=</span> <span class="k">lambda</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="n">default_app</span><span class="p">()</span><span class="o">.</span><span class="n">install</span><span class="p">(</span><span class="n">log_requests</span><span class="p">)</span>
 
-    <span class="c1"># Create explicitly the web sever (uses internally WSGIRequestHandler).</span>
-    <span class="n">server</span> <span class="o">=</span> <span class="n">make_server</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">default_app</span><span class="p">())</span>
+    <span class="n">server</span> <span class="o">=</span> <span class="n">Server</span><span class="p">((</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">),</span> <span class="n">default_app</span><span class="p">(),</span> <span class="o">**</span><span class="n">server_args</span><span class="p">)</span>
 
     <span class="n">thread</span> <span class="o">=</span> <span class="n">Thread</span><span class="p">(</span>
         <span class="n">daemon</span><span class="o">=</span><span class="ow">not</span> <span class="n">keep_server</span><span class="p">,</span>  <span class="c1"># the server persists if it&#39;s not a daemon</span>
-        <span class="n">target</span><span class="o">=</span><span class="n">server</span><span class="o">.</span><span class="n">serve_forever</span><span class="p">)</span>
+        <span class="n">target</span><span class="o">=</span><span class="n">server</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
 
     <span class="n">thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 
@@ -838,6 +844,28 @@
             <span class="k">return</span> <span class="n">port</span>
         <span class="k">except</span> <span class="n">socket</span><span class="o">.</span><span class="n">error</span><span class="p">:</span>
             <span class="k">pass</span></div>
+
+
+
+<div class="viewcode-block" id="log_requests">
+<a class="viewcode-back" href="../../../reference/reference_smartview.html#ete4.smartview.explorer.log_requests">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">log_requests</span><span class="p">(</span><span class="n">fn</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Bottle plugin to log requests and exceptions on responses.&quot;&quot;&quot;</span>
+    <span class="c1"># It will wrap the endpoint callbacks if we do app.install(log_requests).</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">remote_addr</span>  <span class="c1"># shortcut</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="p">((</span><span class="s1">&#39;&#39;</span> <span class="k">if</span> <span class="n">a</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span> <span class="s1">&#39;localhost&#39;</span><span class="p">]</span> <span class="k">else</span> <span class="sa">f</span><span class="s1">&#39;from </span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s1">: &#39;</span><span class="p">)</span> <span class="o">+</span>
+                <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">request</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>  <span class="c1"># this is where we log the request</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">fn</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c1"># the actual processing by bottle</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>  <span class="c1"># log the errors</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> -&gt; </span><span class="si">%d</span><span class="s1"> </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">body</span><span class="p">))</span>
+            <span class="k">raise</span>  <span class="c1"># and process them normally</span>
+
+    <span class="k">return</span> <span class="n">wrapper</span></div>
 
 
 
@@ -865,21 +893,19 @@
 
 <div class="viewcode-block" id="stop_server">
 <a class="viewcode-back" href="../../../reference/reference_smartview.html#ete4.smartview.explorer.stop_server">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">stop_server</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Stop the running server.&quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="s1">&#39;server&#39;</span> <span class="ow">in</span> <span class="n">g_threads</span><span class="p">:</span>
-        <span class="c1"># Without a server, we won&#39;t need to remember anything about the trees.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">stop_server</span><span class="p">(</span><span class="n">thread_server</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">remove_trees</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Stop the given server and its thread (from g_threads by default).&quot;&quot;&quot;</span>
+    <span class="n">thread_server</span> <span class="o">=</span> <span class="n">thread_server</span> <span class="ow">or</span> <span class="n">g_threads</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;server&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">thread_server</span><span class="p">:</span>
+        <span class="n">thread</span><span class="p">,</span> <span class="n">server</span> <span class="o">=</span> <span class="n">thread_server</span>
+        <span class="n">server</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+        <span class="n">thread</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">remove_trees</span><span class="p">:</span>  <span class="c1"># with no server, we normally want to forget about trees</span>
         <span class="n">names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">g_trees</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>  <span class="c1"># copied so g_trees can be modified</span>
         <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
-            <span class="n">remove_tree</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-
-        <span class="c1"># Find the thread with the server and do a proper shutdown.</span>
-        <span class="n">thread</span><span class="p">,</span> <span class="n">server</span> <span class="o">=</span> <span class="n">g_threads</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;server&#39;</span><span class="p">)</span>
-
-        <span class="n">server</span><span class="o">.</span><span class="n">server_close</span><span class="p">()</span>
-        <span class="n">server</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
-        <span class="n">thread</span><span class="o">.</span><span class="n">join</span><span class="p">()</span></div>
-
+            <span class="n">remove_tree</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
 
 
 
@@ -907,14 +933,8 @@
         <span class="n">g_config</span><span class="p">[</span><span class="s1">&#39;compress&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">compress</span>
 
         <span class="c1"># Launch the http server in a thread and open the browser.</span>
-        <span class="n">port</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">port</span> <span class="ow">or</span> <span class="n">get_next_available_port</span><span class="p">()</span>
-        <span class="k">assert</span> <span class="n">port</span><span class="p">,</span> <span class="s1">&#39;could not find any port available&#39;</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-            <span class="n">WSGIRequestHandler</span><span class="o">.</span><span class="n">log_request</span> <span class="o">=</span> <span class="k">lambda</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="kc">None</span>
-        <span class="n">server</span> <span class="o">=</span> <span class="n">make_server</span><span class="p">(</span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">default_app</span><span class="p">())</span>
-        <span class="n">Thread</span><span class="p">(</span><span class="n">daemon</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">server</span><span class="o">.</span><span class="n">serve_forever</span><span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-
+        <span class="n">_</span><span class="p">,</span> <span class="n">server</span> <span class="o">=</span> <span class="n">start_server</span><span class="p">(</span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">port</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
+        <span class="n">port</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">bind_addr</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">open_browser_window</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">)</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Explorer available at http://127.0.0.1:</span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
