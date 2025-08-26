@@ -22,7 +22,7 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter as fmt
 import logging
 logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(message)s')
 
-from cheroot.wsgi import Server  # our async wsgi server
+from cheroot.wsgi import Server  # our multithreaded wsgi server
 
 import brotli
 
