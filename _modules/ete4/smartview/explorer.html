@@ -57,7 +57,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;[</span><span class="si">%(asctime)s</span><span class="s1">] </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">cheroot.wsgi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Server</span>  <span class="c1"># our async wsgi server</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cheroot.wsgi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Server</span>  <span class="c1"># our multithreaded wsgi server</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">brotli</span>
 
