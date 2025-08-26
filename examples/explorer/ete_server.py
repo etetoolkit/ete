@@ -10,7 +10,7 @@ from ete4.smartview import Layout, TextFace
 import ete4.smartview.explorer as ex  # to get all the server functions
 
 
-# Add NameLayout, a simple example of a layout, that we will use in /load_custom.
+# Add NameLayout, an example layout that we will use in /load_custom.
 
 def draw_node(node):
     yield TextFace(node.name)
@@ -45,9 +45,9 @@ def callback():
 
 # Run the server and show where it is.
 
-_, server = ex.start_server(verbose=True)  # just to show what is going on
+ex.start_server(verbose=True)  # just to show what is going on
 
-host, port = server.bind_addr
+host, port = ex.get_server_address()
 print(f'Explorer available at http://{host}:{port}')
 
 print('Press enter to stop the server and finish.')

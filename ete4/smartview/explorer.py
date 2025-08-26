@@ -659,25 +659,27 @@ def explore(tree, name=None, layouts=None,
     """Run the web server, add tree and open a browser to visualize it."""
     add_tree(tree, name, layouts, kwargs)
 
-    if compress is not None:
-        g_config['compress'] = compress  # global configuration
-
     # Launch the thread with the http server (if not already running).
     if 'server' not in g_threads:
-        thread, server = start_server(host, port, verbose, keep_server,
-                                      server_args)
-        g_threads['server'] = (thread, server)
-        host, port = server.bind_addr  # port may have changed
-        print(f'Explorer now available at http://{host}:{port}')
+        print('Creating new server.')
+        start_server(host, port, verbose, compress, keep_server, server_args)
     else:
-        _, server = g_threads['server']
-        host, port = server.bind_addr
-        print(f'Existing explorer available at http://{host}:{port}')
+        print('Using existing server.')
+
+    host, port = get_server_address()
+    print(f'Explorer available at http://{host}:{port}')
 
     if open_browser:
-        _, server = g_threads['server']
-        host, port = server.bind_addr
         open_browser_window(host, port)
+
+
+def get_server_address():
+    """Return (host, port) where the server is listening."""
+    if 'server' in g_threads:
+        _, server = g_threads['server']
+        return server.bind_addr  # (host, port)
+    else:
+        return None, None
 
 
 def add_tree(tree, name=None, layouts=None, extra_style=None):
@@ -705,17 +707,20 @@ def remove_tree(name):
     g_layouts.pop(name)
 
 
-def start_server(host='127.0.0.1', port=None, verbose=False, keep_server=False,
-                 server_args=None):
+def start_server(host='127.0.0.1', port=None, verbose=False, compress=None,
+                 keep_server=False, server_args=None, track=True):
     """Create a thread running the web server and return it and the server."""
-    server_args = server_args or {}  # extra server arguments
-    server_args.setdefault('numthreads', 100)
-
     port = port or get_next_available_port(host)
     assert port, 'could not find any port available'
 
     if verbose:
         default_app().install(log_requests)
+
+    if compress is not None:
+        g_config['compress'] = compress  # global configuration
+
+    server_args = server_args or {}  # extra server arguments
+    server_args.setdefault('numthreads', 100)
 
     server = Server((host, port), default_app(), **server_args)
 
@@ -724,6 +729,9 @@ def start_server(host='127.0.0.1', port=None, verbose=False, keep_server=False,
         target=server.start)
 
     thread.start()
+
+    if track:  # we normally want to keep track of the server in g_threads
+        g_threads['server'] = (thread, server)
 
     return thread, server
 
@@ -810,15 +818,12 @@ if __name__ == '__main__':
             g_trees[name] = t
             g_layouts[name] = [BASIC_LAYOUT]
 
-        # Set the global config options.
-        g_config['compress'] = args.compress
-
         # Launch the http server in a thread and open the browser.
-        _, server = start_server('127.0.0.1', args.port, args.verbose)
-        port = server.bind_addr[1]
-        open_browser_window(port=port)
+        start_server('127.0.0.1', args.port, args.verbose, args.compress)
+        host, port = get_server_address()
+        open_browser_window(host, port)
 
-        print(f'Explorer available at http://127.0.0.1:{port}')
+        print(f'Explorer available at http://{host}:{port}')
         input('Press enter to stop the server and finish.\n')
     except (FileNotFoundError, newick.NewickError, ValueError) as e:
         sys.exit(f'Error using tree from {args.FILE}: {e}')

@@ -1083,7 +1083,7 @@ cdef class Tree:
 
         # Add tree and start a server.
         name = explorer.add_tree(self, layouts=layouts)
-        thread, server = explorer.start_server()
+        thread_server = explorer.start_server(track=False)
 
         # Use selenium to make a screenshot.
         w = w or 2560  # width
@@ -1100,7 +1100,7 @@ cdef class Tree:
 
         driver = webdriver.Chrome(options=options)
 
-        host, port = server.bind_addr
+        host, port = explorer.get_server_address()
         driver.get(f'http://{host}:{port}/static/gui.html?tree={name}')
 
         time.sleep(2)  # wait, kind of a hack
@@ -1110,7 +1110,7 @@ cdef class Tree:
         driver.quit()
 
         # Stop the server (and close its thread), and remove the tree.
-        explorer.stop_server((thread, server), remove_trees=False)
+        explorer.stop_server(thread_server, remove_trees=False)
         explorer.remove_tree(name)
 
     def copy(self, method="cpickle"):
