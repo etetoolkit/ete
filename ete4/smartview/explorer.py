@@ -582,7 +582,8 @@ def add_trees_from_request():
 
         names = {}  # TODO: this should not be necessary (see below)
         for data in trees_data:
-            name, nw = data['name'], data['newick']
+            nw = data['newick']
+            name = data['name'].replace(',', '_')  # "," is used for subtrees
             add_tree(Tree(nw, parser=parser), name)
             names[name] = name  # TODO: this should not be necessary (see below)
 
@@ -811,12 +812,10 @@ if __name__ == '__main__':
 
     try:
         # Read tree(s) and add them to g_trees.
-        for tree in get_trees_from_file(args.FILE):
-            t = Tree(tree['newick'], parser=args.parser)
-            ops.update_sizes_all(t)
-            name = tree['name'].replace(',', '_')  # "," is used for subtrees
-            g_trees[name] = t
-            g_layouts[name] = [BASIC_LAYOUT]
+        for data in get_trees_from_file(args.FILE):
+            nw = data['newick']
+            name = data['name'].replace(',', '_')  # "," is used for subtrees
+            add_tree(Tree(nw, parser=args.parser), name)
 
         # Launch the http server in a thread and open the browser.
         start_server('127.0.0.1', args.port, args.verbose, args.compress)
@@ -824,7 +823,8 @@ if __name__ == '__main__':
         open_browser_window(host, port)
 
         print(f'Explorer available at http://{host}:{port}')
-        input('Press enter to stop the server and finish.\n')
+        print('Press enter to stop the server and finish.')
+        input()
     except (FileNotFoundError, newick.NewickError, ValueError) as e:
         sys.exit(f'Error using tree from {args.FILE}: {e}')
     except (OSError, OverflowError) as e:
