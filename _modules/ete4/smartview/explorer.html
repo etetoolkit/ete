@@ -753,25 +753,30 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the web server, add tree and open a browser to visualize it.&quot;&quot;&quot;</span>
     <span class="n">add_tree</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">layouts</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">compress</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">g_config</span><span class="p">[</span><span class="s1">&#39;compress&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">compress</span>  <span class="c1"># global configuration</span>
-
     <span class="c1"># Launch the thread with the http server (if not already running).</span>
     <span class="k">if</span> <span class="s1">&#39;server&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">g_threads</span><span class="p">:</span>
-        <span class="n">thread</span><span class="p">,</span> <span class="n">server</span> <span class="o">=</span> <span class="n">start_server</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">verbose</span><span class="p">,</span> <span class="n">keep_server</span><span class="p">,</span>
-                                      <span class="n">server_args</span><span class="p">)</span>
-        <span class="n">g_threads</span><span class="p">[</span><span class="s1">&#39;server&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">thread</span><span class="p">,</span> <span class="n">server</span><span class="p">)</span>
-        <span class="n">host</span><span class="p">,</span> <span class="n">port</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">bind_addr</span>  <span class="c1"># port may have changed</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Explorer now available at http://</span><span class="si">{</span><span class="n">host</span><span class="si">}</span><span class="s1">:</span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Creating new server.&#39;</span><span class="p">)</span>
+        <span class="n">start_server</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">verbose</span><span class="p">,</span> <span class="n">compress</span><span class="p">,</span> <span class="n">keep_server</span><span class="p">,</span> <span class="n">server_args</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">_</span><span class="p">,</span> <span class="n">server</span> <span class="o">=</span> <span class="n">g_threads</span><span class="p">[</span><span class="s1">&#39;server&#39;</span><span class="p">]</span>
-        <span class="n">host</span><span class="p">,</span> <span class="n">port</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">bind_addr</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Existing explorer available at http://</span><span class="si">{</span><span class="n">host</span><span class="si">}</span><span class="s1">:</span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Using existing server.&#39;</span><span class="p">)</span>
+
+    <span class="n">host</span><span class="p">,</span> <span class="n">port</span> <span class="o">=</span> <span class="n">get_server_address</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Explorer available at http://</span><span class="si">{</span><span class="n">host</span><span class="si">}</span><span class="s1">:</span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">open_browser</span><span class="p">:</span>
-        <span class="n">_</span><span class="p">,</span> <span class="n">server</span> <span class="o">=</span> <span class="n">g_threads</span><span class="p">[</span><span class="s1">&#39;server&#39;</span><span class="p">]</span>
-        <span class="n">host</span><span class="p">,</span> <span class="n">port</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">bind_addr</span>
         <span class="n">open_browser_window</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_server_address">
+<a class="viewcode-back" href="../../../reference/reference_smartview.html#ete4.smartview.explorer.get_server_address">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_server_address</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return (host, port) where the server is listening.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="s1">&#39;server&#39;</span> <span class="ow">in</span> <span class="n">g_threads</span><span class="p">:</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">server</span> <span class="o">=</span> <span class="n">g_threads</span><span class="p">[</span><span class="s1">&#39;server&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">server</span><span class="o">.</span><span class="n">bind_addr</span>  <span class="c1"># (host, port)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
 
 
 
@@ -808,17 +813,20 @@
 
 <div class="viewcode-block" id="start_server">
 <a class="viewcode-back" href="../../../reference/reference_smartview.html#ete4.smartview.explorer.start_server">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">start_server</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">keep_server</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                 <span class="n">server_args</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">start_server</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">compress</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">keep_server</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">server_args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">track</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a thread running the web server and return it and the server.&quot;&quot;&quot;</span>
-    <span class="n">server_args</span> <span class="o">=</span> <span class="n">server_args</span> <span class="ow">or</span> <span class="p">{}</span>  <span class="c1"># extra server arguments</span>
-    <span class="n">server_args</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;numthreads&#39;</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
-
     <span class="n">port</span> <span class="o">=</span> <span class="n">port</span> <span class="ow">or</span> <span class="n">get_next_available_port</span><span class="p">(</span><span class="n">host</span><span class="p">)</span>
     <span class="k">assert</span> <span class="n">port</span><span class="p">,</span> <span class="s1">&#39;could not find any port available&#39;</span>
 
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
         <span class="n">default_app</span><span class="p">()</span><span class="o">.</span><span class="n">install</span><span class="p">(</span><span class="n">log_requests</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">compress</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">g_config</span><span class="p">[</span><span class="s1">&#39;compress&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">compress</span>  <span class="c1"># global configuration</span>
+
+    <span class="n">server_args</span> <span class="o">=</span> <span class="n">server_args</span> <span class="ow">or</span> <span class="p">{}</span>  <span class="c1"># extra server arguments</span>
+    <span class="n">server_args</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;numthreads&#39;</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
 
     <span class="n">server</span> <span class="o">=</span> <span class="n">Server</span><span class="p">((</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">),</span> <span class="n">default_app</span><span class="p">(),</span> <span class="o">**</span><span class="n">server_args</span><span class="p">)</span>
 
@@ -827,6 +835,9 @@
         <span class="n">target</span><span class="o">=</span><span class="n">server</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
 
     <span class="n">thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">track</span><span class="p">:</span>  <span class="c1"># we normally want to keep track of the server in g_threads</span>
+        <span class="n">g_threads</span><span class="p">[</span><span class="s1">&#39;server&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">thread</span><span class="p">,</span> <span class="n">server</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">thread</span><span class="p">,</span> <span class="n">server</span></div>
 
@@ -929,15 +940,12 @@
             <span class="n">g_trees</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span>
             <span class="n">g_layouts</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">BASIC_LAYOUT</span><span class="p">]</span>
 
-        <span class="c1"># Set the global config options.</span>
-        <span class="n">g_config</span><span class="p">[</span><span class="s1">&#39;compress&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">compress</span>
-
         <span class="c1"># Launch the http server in a thread and open the browser.</span>
-        <span class="n">_</span><span class="p">,</span> <span class="n">server</span> <span class="o">=</span> <span class="n">start_server</span><span class="p">(</span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">port</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
-        <span class="n">port</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">bind_addr</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">open_browser_window</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">)</span>
+        <span class="n">start_server</span><span class="p">(</span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">port</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">verbose</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">compress</span><span class="p">)</span>
+        <span class="n">host</span><span class="p">,</span> <span class="n">port</span> <span class="o">=</span> <span class="n">get_server_address</span><span class="p">()</span>
+        <span class="n">open_browser_window</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Explorer available at http://127.0.0.1:</span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Explorer available at http://</span><span class="si">{</span><span class="n">host</span><span class="si">}</span><span class="s1">:</span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="nb">input</span><span class="p">(</span><span class="s1">&#39;Press enter to stop the server and finish.</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="k">except</span> <span class="p">(</span><span class="ne">FileNotFoundError</span><span class="p">,</span> <span class="n">newick</span><span class="o">.</span><span class="n">NewickError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Error using tree from </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">FILE</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
