@@ -1088,7 +1088,7 @@ cdef class Tree:
         # Use selenium to make a screenshot.
         w = w or 2560  # width
         if h is None:
-            h = max(200, 10 * self.size[1])  # 10 pixels per leaf
+            h = max(200, 10 * int(self.size[1]))  # 10 pixels per leaf
 
         options = Options()
         options.add_argument('--headless')  # do not display anything
