@@ -811,7 +811,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     try:
-        # Read tree(s) and add them to g_trees.
+        # Read tree(s) and add them to the server.
         for data in get_trees_from_file(args.FILE):
             nw = data['newick']
             name = data['name'].replace(',', '_')  # "," is used for subtrees
