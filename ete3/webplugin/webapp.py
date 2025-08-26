@@ -41,7 +41,7 @@ from __future__ import print_function
 import sys
 import os
 import time
-import cgi
+from urllib.parse import parse_qs
 from hashlib import md5
 import six.moves.cPickle
 from six.moves import map
@@ -259,9 +259,9 @@ class WebTreeApplication(object):
         path = environ['PATH_INFO'].split("/")
         start_response('202 OK', [('content-type', 'text/plain')])
         if environ['REQUEST_METHOD'].upper() == 'GET' and  environ['QUERY_STRING']:
-            self.queries = cgi.parse_qs(environ['QUERY_STRING'])
+            self.queries = parse_qs(environ['QUERY_STRING'])
         elif environ['REQUEST_METHOD'].upper() == 'POST' and environ['wsgi.input']:
-            self.queries = cgi.parse_qs(environ['wsgi.input'].read())
+            self.queries = parse_qs(environ['wsgi.input'].read())
         else:
             self.queries = {}
 
