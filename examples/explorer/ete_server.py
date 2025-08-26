@@ -4,7 +4,7 @@
 Example of an ete server with an extended api.
 """
 
-from ete4 import Tree
+from ete4 import Tree, newick
 from ete4.smartview import Layout, TextFace
 
 import ete4.smartview.explorer as ex  # to get all the server functions
