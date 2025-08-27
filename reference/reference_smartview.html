@@ -73,6 +73,12 @@ and the basic coordinate functions are defined in <code class="docutils literal 
 (that uses javascript), and for exposing an api to manipulate the
 trees in the backend.</p>
 <dl class="py function">
+<dt class="sig sig-object py" id="ete4.smartview.explorer.add_layouts">
+<span class="sig-name descname"><span class="pre">add_layouts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">layouts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/explorer.html#add_layouts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.explorer.add_layouts" title="Link to this definition">¶</a></dt>
+<dd><p>Add layouts to the given tree (None for generally available ones).</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="ete4.smartview.explorer.add_tree">
 <span class="sig-name descname"><span class="pre">add_tree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layouts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/explorer.html#add_tree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.explorer.add_tree" title="Link to this definition">¶</a></dt>
 <dd><p>Add tree, layouts, etc to the global variables, and return its name.</p>
@@ -81,7 +87,7 @@ trees in the backend.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="ete4.smartview.explorer.add_trees_from_request">
 <span class="sig-name descname"><span class="pre">add_trees_from_request</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/explorer.html#add_trees_from_request"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.explorer.add_trees_from_request" title="Link to this definition">¶</a></dt>
-<dd><p>Add trees to the global var g_trees and return a dict of {name: id}.</p>
+<dd><p>Add trees coming from a request to the server and return their names.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -112,6 +118,12 @@ trees in the backend.</p>
 <dt class="sig sig-object py" id="ete4.smartview.explorer.get_eval_search">
 <span class="sig-name descname"><span class="pre">get_eval_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expression</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/explorer.html#get_eval_search"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.explorer.get_eval_search" title="Link to this definition">¶</a></dt>
 <dd><p>Return a function of a node that evaluates the given expression.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ete4.smartview.explorer.get_layouts">
+<span class="sig-name descname"><span class="pre">get_layouts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_trees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/explorer.html#get_layouts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.explorer.get_layouts" title="Link to this definition">¶</a></dt>
+<dd><p>Return a list of layouts available for the given tree.</p>
 </dd></dl>
 
 <dl class="py function">
