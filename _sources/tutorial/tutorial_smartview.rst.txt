@@ -392,7 +392,7 @@ layout that appears with the name "I am a layout doing nothing".
 
 .. image:: ../images/layout_example.png
 
-It name is accurate, as we can see if we activate or desactivate it by
+Its name is accurate, as we can see if we activate or desactivate it by
 clicking its checkbox: nothing happens, no extra information is shown
 in the tree anyway.
 
@@ -512,7 +512,7 @@ A simple tree where we change the style for the leaves::
 
   t = Tree('((a,b),c);')
 
-  # Nodes will be represented as small red triangles of 5 pixels radius.
+  # Nodes will be represented as small red triangles of 10 pixels radius.
   style_dot = {'shape': 'triangle',
                'radius': 10,
                'fill': 'red'}
