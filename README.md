@@ -51,7 +51,7 @@ pip install ete4
 will get you the [latest release from PyPI](https://pypi.org/project/ete4/).
 
 
-### ... but with conda
+### ... or with conda
 
 ```sh
 conda install conda-forge::ete4
@@ -60,7 +60,7 @@ conda install conda-forge::ete4
 to get it [from conda-forge](https://anaconda.org/conda-forge/ete4).
 
 
-### ... but using the very latest from the repository
+### ... or using the very latest from the repository
 
 ```sh
 pip install --force-reinstall https://github.com/etetoolkit/ete/archive/ete4.zip
@@ -76,7 +76,7 @@ To install ETE in a local directory to help with the development, you can:
 - Clone this repository (`git clone https://github.com/etetoolkit/ete.git`)
 - Install dependecies
   - If you are using [conda](https://conda.io/):
-  `conda install -c conda-forge cython bottle brotli numpy scipy`
+  `conda install -c conda-forge cython bottle cheroot brotli numpy scipy`
   - Otherwise, you can install them with `pip install <dependencies>`
 - Build and install ete4 from the repository's root directory: `pip install -e .`
 
