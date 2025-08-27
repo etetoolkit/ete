@@ -54,7 +54,7 @@ class Face:
     def draw(self, nodes, size, collapsed, zoom=(1, 1), ax_ay=(0, 0), r=1):
         """Return a list of graphic elements and the actual size they use.
 
-        The retuned graphic elements normally depend on the node(s).
+        The returned graphic elements normally depend on the node(s).
         They have to fit inside the given size (dx, dy) in tree
         coordinates (dx==0 means no limit for dx, and same for dy==0).
 
