@@ -146,7 +146,7 @@ trees in the backend.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ete4.smartview.explorer.get_server_address">
-<span class="sig-name descname"><span class="pre">get_server_address</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/explorer.html#get_server_address"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.explorer.get_server_address" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_server_address</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">server</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/explorer.html#get_server_address"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.explorer.get_server_address" title="Link to this definition">¶</a></dt>
 <dd><p>Return (host, port) where the server is listening.</p>
 </dd></dl>
 
@@ -225,12 +225,6 @@ trees in the backend.</p>
 <dt class="sig sig-object py" id="ete4.smartview.explorer.req_json">
 <span class="sig-name descname"><span class="pre">req_json</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/explorer.html#req_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.explorer.req_json" title="Link to this definition">¶</a></dt>
 <dd><p>Return what request.json would return, but gracefully aborting.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ete4.smartview.explorer.safer_eval">
-<span class="sig-name descname"><span class="pre">safer_eval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/explorer.html#safer_eval"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.explorer.safer_eval" title="Link to this definition">¶</a></dt>
-<dd><p>Return a safer version of eval(code, context).</p>
 </dd></dl>
 
 <dl class="py function">
@@ -454,7 +448,7 @@ always that size multiplied by the zoom.</p>
 <dt class="sig sig-object py" id="ete4.smartview.faces.BoxedFace.draw">
 <span class="sig-name descname"><span class="pre">draw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collapsed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax_ay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/faces.html#BoxedFace.draw"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.faces.BoxedFace.draw" title="Link to this definition">¶</a></dt>
 <dd><p>Return a list of graphic elements and the actual size they use.</p>
-<p>The retuned graphic elements normally depend on the node(s).
+<p>The returned graphic elements normally depend on the node(s).
 They have to fit inside the given size (dx, dy) in tree
 coordinates (dx==0 means no limit for dx, and same for dy==0).</p>
 <p>If collapsed==[], nodes contains only one node (and is not collapsed).
@@ -483,7 +477,7 @@ border, whether we are in rectangular or circular mode.</p>
 <dt class="sig sig-object py" id="ete4.smartview.faces.CircleFace.draw">
 <span class="sig-name descname"><span class="pre">draw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collapsed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax_ay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/faces.html#CircleFace.draw"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.faces.CircleFace.draw" title="Link to this definition">¶</a></dt>
 <dd><p>Return a list of graphic elements and the actual size they use.</p>
-<p>The retuned graphic elements normally depend on the node(s).
+<p>The returned graphic elements normally depend on the node(s).
 They have to fit inside the given size (dx, dy) in tree
 coordinates (dx==0 means no limit for dx, and same for dy==0).</p>
 <p>If collapsed==[], nodes contains only one node (and is not collapsed).
@@ -514,7 +508,7 @@ going to assign it, or a dictionary with svg attributes for text.</p>
 <dt class="sig sig-object py" id="ete4.smartview.faces.EvalTextFace.draw">
 <span class="sig-name descname"><span class="pre">draw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collapsed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax_ay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/faces.html#EvalTextFace.draw"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.faces.EvalTextFace.draw" title="Link to this definition">¶</a></dt>
 <dd><p>Return a list of graphic elements and the actual size they use.</p>
-<p>The retuned graphic elements normally depend on the node(s).
+<p>The returned graphic elements normally depend on the node(s).
 They have to fit inside the given size (dx, dy) in tree
 coordinates (dx==0 means no limit for dx, and same for dy==0).</p>
 <p>If collapsed==[], nodes contains only one node (and is not collapsed).
@@ -547,7 +541,7 @@ fine-tune the position of things like texts within them).</p>
 <dt class="sig sig-object py" id="ete4.smartview.faces.Face.draw">
 <span class="sig-name descname"><span class="pre">draw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collapsed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax_ay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/faces.html#Face.draw"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.faces.Face.draw" title="Link to this definition">¶</a></dt>
 <dd><p>Return a list of graphic elements and the actual size they use.</p>
-<p>The retuned graphic elements normally depend on the node(s).
+<p>The returned graphic elements normally depend on the node(s).
 They have to fit inside the given size (dx, dy) in tree
 coordinates (dx==0 means no limit for dx, and same for dy==0).</p>
 <p>If collapsed==[], nodes contains only one node (and is not collapsed).
@@ -576,7 +570,7 @@ border, whether we are in rectangular or circular mode.</p>
 <dt class="sig sig-object py" id="ete4.smartview.faces.HeatmapFace.draw">
 <span class="sig-name descname"><span class="pre">draw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collapsed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax_ay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/faces.html#HeatmapFace.draw"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.faces.HeatmapFace.draw" title="Link to this definition">¶</a></dt>
 <dd><p>Return a list of graphic elements and the actual size they use.</p>
-<p>The retuned graphic elements normally depend on the node(s).
+<p>The returned graphic elements normally depend on the node(s).
 They have to fit inside the given size (dx, dy) in tree
 coordinates (dx==0 means no limit for dx, and same for dy==0).</p>
 <p>If collapsed==[], nodes contains only one node (and is not collapsed).
@@ -629,7 +623,7 @@ border, whether we are in rectangular or circular mode.</p>
 <dt class="sig sig-object py" id="ete4.smartview.faces.PolygonFace.draw">
 <span class="sig-name descname"><span class="pre">draw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collapsed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax_ay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/faces.html#PolygonFace.draw"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.faces.PolygonFace.draw" title="Link to this definition">¶</a></dt>
 <dd><p>Return a list of graphic elements and the actual size they use.</p>
-<p>The retuned graphic elements normally depend on the node(s).
+<p>The returned graphic elements normally depend on the node(s).
 They have to fit inside the given size (dx, dy) in tree
 coordinates (dx==0 means no limit for dx, and same for dy==0).</p>
 <p>If collapsed==[], nodes contains only one node (and is not collapsed).
@@ -682,7 +676,7 @@ border, whether we are in rectangular or circular mode.</p>
 <dt class="sig sig-object py" id="ete4.smartview.faces.SeqFace.draw">
 <span class="sig-name descname"><span class="pre">draw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collapsed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax_ay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/faces.html#SeqFace.draw"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.faces.SeqFace.draw" title="Link to this definition">¶</a></dt>
 <dd><p>Return a list of graphic elements and the actual size they use.</p>
-<p>The retuned graphic elements normally depend on the node(s).
+<p>The returned graphic elements normally depend on the node(s).
 They have to fit inside the given size (dx, dy) in tree
 coordinates (dx==0 means no limit for dx, and same for dy==0).</p>
 <p>If collapsed==[], nodes contains only one node (and is not collapsed).
@@ -711,7 +705,7 @@ border, whether we are in rectangular or circular mode.</p>
 <dt class="sig sig-object py" id="ete4.smartview.faces.TextArrayFace.draw">
 <span class="sig-name descname"><span class="pre">draw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collapsed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax_ay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/smartview/faces.html#TextArrayFace.draw"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.smartview.faces.TextArrayFace.draw" title="Link to this definition">¶</a></dt>
 <dd><p>Return a list of graphic elements and the actual size they use.</p>
-<p>The retuned graphic elements normally depend on the node(s).
+<p>The returned graphic elements normally depend on the node(s).
 They have to fit inside the given size (dx, dy) in tree
 coordinates (dx==0 means no limit for dx, and same for dy==0).</p>
 <p>If collapsed==[], nodes contains only one node (and is not collapsed).
