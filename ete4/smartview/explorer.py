@@ -14,7 +14,6 @@ import re
 import json
 import gzip, bz2, zipfile, tarfile
 import socket
-from math import pi
 import webbrowser
 from threading import Thread
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter as fmt
@@ -520,13 +519,6 @@ def get_eval_search(expression):
         abort(400, f'compiling expression: {e}')
 
     return lambda node: eval_on_node(code, node, safer=True)
-
-def safer_eval(code, context):
-    """Return a safer version of eval(code, context)."""
-    for name in code.co_names:
-        if name not in context:
-            abort(400, 'invalid use of %r during evaluation' % name)
-    return eval(code, {'__builtins__': {}}, context)
 
 
 def get_topological_search(pattern):
