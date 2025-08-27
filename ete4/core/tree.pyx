@@ -1083,24 +1083,41 @@ cdef class Tree:
 
         # Add tree and start a server.
         name = explorer.add_tree(self, layouts=layouts)
-        thread_server = explorer.start_server(track=False)
+        thread, server = explorer.start_server(track=False)
 
         # Use selenium to make a screenshot.
         w = w or 2560  # width
         if h is None:
-            h = max(200, 10 * int(self.size[1]))  # 10 pixels per leaf
+            h = max(200, 50 * int(self.size[1]))  # 50 pixels per leaf
 
         options = Options()
+
+        # Main arguments.
         options.add_argument('--headless')  # do not display anything
         options.add_argument(f'--window-size={w},{h}')  # set window size
 
-        options.add_argument('--disable-logging')         # try not to send
-        options.add_argument('--disable-breakpad')        # any report to the
-        options.add_argument('--metrics-recording-only')  # chrome website
+        # Add a bunch of other args to reduce annoyance, see for example:
+        # https://gist.github.com/rihardn/47b8e6170dc8f57a998c90b12a3e01bb
+        for arg in ['--disable-client-side-phishing-detection',
+                    '--disable-component-extensions-with-background-pages',
+                    '--disable-default-apps',
+                    '--disable-extensions',
+                    '--disable-features=InterestFeedContentSuggestions',
+                    '--disable-features=Translate',
+                    '--hide-scrollbars',
+                    '--mute-audio',
+                    '--no-default-browser-check',
+                    '--no-first-run',
+                    '--disable-breakpad',
+                    '--disable-component-update',
+                    '--disable-domain-reliability',
+                    '--disable-sync',
+                    '--metrics-recording-only']:
+            options.add_argument(arg)
 
         driver = webdriver.Chrome(options=options)
 
-        host, port = explorer.get_server_address()
+        host, port = explorer.get_server_address(server)
         driver.get(f'http://{host}:{port}/static/gui.html?tree={name}')
 
         time.sleep(2)  # wait, kind of a hack
@@ -1110,7 +1127,7 @@ cdef class Tree:
         driver.quit()
 
         # Stop the server (and close its thread), and remove the tree.
-        explorer.stop_server(thread_server, remove_trees=False)
+        explorer.stop_server((thread, server), remove_trees=False)
         explorer.remove_tree(name)
 
     def copy(self, method="cpickle"):

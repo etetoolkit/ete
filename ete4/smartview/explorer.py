@@ -635,11 +635,12 @@ def explore(tree, name=None, layouts=None,
         open_browser_window(host, port)
 
 
-def get_server_address():
+def get_server_address(server=None):
     """Return (host, port) where the server is listening."""
-    if 'server' in g_threads:
-        _, server = g_threads['server']
+    if server:
         return server.bind_addr  # (host, port)
+    elif 'server' in g_threads:
+        return g_threads['server'][1].bind_addr  # (host, port)
     else:
         return None, None
 
