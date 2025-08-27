@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", main);
 // Most will be shown on the menu.
 const view = {
     // tree
-    tree: null,  // string with the current tree name
+    tree: "",  // string with the current tree name
     tree_size: {width: 0, height: 0},
     node_properties: [],  // existing in the current tree
     subtree: "",  // node id of the current subtree; looks like "0,1,0,0,1"
@@ -152,7 +152,7 @@ const menus = {  // will contain the menus on the top
     searches: undefined,  // see search.js
 };
 
-const trees = {};  // will translate names to ids (trees[tree_name] = tree_id)
+const trees = [];  // trees available in the server
 
 
 async function main() {
@@ -165,7 +165,7 @@ async function main() {
 
         set_query_string_values();
 
-        init_menus(Object.keys(trees));
+        init_menus(trees);
 
         await populate_layouts();
 
@@ -216,22 +216,26 @@ function save_default_rules() {
 }
 
 
-// Fill global var trees, which translates tree names into their ids.
+// Fill global var trees, with the names of available trees in the server.
 async function init_trees() {
-    const trees_info = await api("/trees");
+    const names = await api("/trees");
 
-    trees_info.forEach(t => trees[t.name] = t.id);
-    // NOTE: It used to be associations like  trees["mytree"] = 7  where
-    // the 7 was the id in the database. Now they are more like
-    // tree["mytree"] = "mytree"  so we may want to get rid of them.
+    trees.splice(0, trees.length);  // empty array
+    trees.push(...names);  // fill array
+    // Not  trees = await api("/trees")  because we want to modify the array.
+
+    if (trees.length === 0)
+        location = "/";
+    else if (view.tree.length === 0)
+        view.tree = trees[0];
 }
 
 
 // Return current (sub)tree id (its id followed by its subtree id).
 // NOTE: view.tree (the tree name) should not contain "," for this to work.
 function get_tid() {
-    if (view.tree in trees) {
-        return trees[view.tree] + (view.subtree ? "," + view.subtree : "");
+    if (trees.includes(view.tree)) {
+        return view.tree + (view.subtree ? "," + view.subtree : "");
     }
     else {
         Swal.fire({
@@ -240,10 +244,10 @@ function get_tid() {
             icon: "error",
         });
 
-        view.tree = Object.keys(trees)[0];  // select a default tree
+        view.tree = trees[0];  // select a default tree
         on_tree_change();
 
-        return trees[view.tree];
+        return view.tree;
     }
 }
 
@@ -504,7 +508,7 @@ function set_query_string_values() {
 
 async function set_consistent_values() {
     if (view.tree === null)
-        view.tree = Object.keys(trees)[0];  // select default tree
+        view.tree = trees[0];  // select default tree
 
     view.tree_size = await api(`/trees/${get_tid()}/size`);
 
@@ -601,8 +605,6 @@ function get_url_view(x, y, w, h) {
 
 // Show an alert with information about the current tree and view.
 async function show_tree_info() {
-    const info = await api(`/trees/${get_tid()}`);
-
     const props = view.node_properties.map(p =>
         `<tt>${escape_html(p)}</tt>`).join("<br>");
 
@@ -613,8 +615,7 @@ async function show_tree_info() {
     const result = await Swal.fire({
         title: "Tree Information",
         icon: "info",
-        html: `<b>Name</b>: ${escape_html(info.name)}<br><br>` +
-            (info.description ? `${info.description}<br><br>` : "") +
+        html: `<b>Name</b>: ${escape_html(view.tree)}<br><br>` +
             `Node properties:<br>${props}<br><br>` +
             `(<a href="${url}">current view</a>)`,
         confirmButtonText: navigator.clipboard ? "Copy view to clipboard" : "Ok",

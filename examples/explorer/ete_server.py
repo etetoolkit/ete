@@ -4,50 +4,58 @@
 Example of an ete server with an extended api.
 """
 
-from ete4 import Tree, newick
-from ete4.smartview import Layout, TextFace
+from ete4 import Tree, newick, nexus
+from ete4.smartview import Layout, TextFace, BASIC_LAYOUT
 
-import ete4.smartview.explorer as ex  # to get all the server functions
+import ete4.smartview.explorer as exp  # to get all the server functions
 
 
-# Add NameLayout, an example layout that we will use in /load_custom.
+# Add the /load endpoint to the api.
+
+@exp.post('/load')
+def callback():
+    """Load a tree from a given path."""
+    try:
+        # We can get all the information we need, and create our tree.
+        info = exp.req_json()  # get the POST json (a dict in our case)
+
+        name = info['name']
+        path = info['path']
+        parser = info.get('parser', 'support')
+        extra_style = info.get('show_popup_props', None)
+        layout_names = [x.strip() for x in info.get('layouts', '').split(',')]
+
+        layouts = [x for x in exp.get_layouts() if x.name in layout_names]
+
+        t = Tree(open(path).read().strip(), parser=parser)
+        exp.add_tree(t, name, layouts, extra_style)
+
+        exp.response.status = 201  # http code for new resource created
+        return {'message': 'ok'}  # arbitrary, just what ete endpoints use
+    except FileNotFoundError as e:
+        exp.abort(404, f'path {path} not found: {e}')
+    except (newick.NewickError, nexus.NexusError, AssertionError) as e:
+        exp.abort(400, f'parsing error: {e}')
+    except KeyError as e:
+        exp.abort(400, f'missing data in request: {e}')
+
+
+# Create and add an example new layout, so we can use it when we /load a tree.
 
 def draw_node(node):
-    yield TextFace(node.name)
+    if node.name:
+        yield TextFace(node.name)
 
 NameLayout = Layout('name', draw_node=draw_node)
 
-
-# Add the /load_custom endpoint to the api.
-
-@ex.post('/load_custom')
-def callback():
-    """Load a tree in whatever way we want, like using databases."""
-    try:
-        # We can get all the information we need, and create our tree.
-        info = ex.req_json()  # get the POST json as a dict
-
-        #t = load_tree(info['cluname'])  # <-- or whatever
-        t = Tree(info['newick'])  # example key, with the newick
-
-        name = info['name']  # example key, with the name for the gui
-
-        ex.add_tree(t, name, layouts=[NameLayout],
-                    extra_style={'show_popup_props': None})
-
-        ex.response.status = 201  # http code for new resource created
-        return {'message': 'ok'}  # arbitrary, just what ete endpoints use
-    except KeyError as e:
-        ex.abort(400, f'missing data in request: {e}')
-    except (newick.NewickError, ValueError) as e:
-        ex.abort(400, f'malformed tree - {e}')
+exp.add_layouts([BASIC_LAYOUT, NameLayout])
 
 
 # Run the server and show where it is.
 
-ex.start_server(verbose=True)  # just to show what is going on
+exp.start_server(verbose=True)  # just to show what is going on
 
-host, port = ex.get_server_address()
+host, port = exp.get_server_address()
 print(f'Explorer available at http://{host}:{port}')
 
 print('Press enter to stop the server and finish.')

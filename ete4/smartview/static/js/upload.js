@@ -53,7 +53,7 @@ async function get_trees_file() {
 
 // Show the different added trees and allow to go explore them.
 function show_uploaded_trees(resp) {
-    const names = Object.keys(resp["ids"]);
+    const names = resp["ids"];
 
     const link = name => `<a href="gui.html?` +
         `tree=${encodeURIComponent(name)}">${escape_html(name)}</a>`;

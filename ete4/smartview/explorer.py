@@ -108,17 +108,7 @@ def callback():
 def callback():
     """Get information about all the loaded trees."""
     response.content_type = 'application/json'
-    return json.dumps([{'name': name, 'id': name} for name in g_trees])
-
-# TODO: In the future we should not need this, since now the only
-# property of a tree is its name, and we use it for its tree_id.
-@get('/trees/<tree_id>')
-def callback(tree_id):
-    """Get information about the requested tree."""
-    if tree_id in g_trees:
-        return {'name': tree_id}
-    else:
-        abort(404, f'unknown tree {tree_id}')
+    return json.dumps([name for name in g_trees])
 
 @get('/trees/<tree_id>/size')
 def callback(tree_id):
@@ -330,25 +320,6 @@ def callback():
     response.status = 201
     return {'message': 'ok', 'ids': ids}
 
-# TODO: Remove from here and add it as an example of how to use the explorer.
-@post('/load')
-def callback():
-    """Load a tree from a given path."""
-    try:
-        name, path, parser, layout_names = req_json()
-        t = Tree(open(path).read().strip(), parser=parser)
-        # FIXME? Taking layouts from all existing ones: kind of a hack!
-        layouts = {x.name: x for xs in g_layouts.values() for x in xs}
-        add_tree(t, name, [layouts[lname] for lname in layout_names])
-        response.status = 201
-        return {'message': 'ok'}
-    except FileNotFoundError as e:
-        abort(404, f'path {path} not found: {e}')
-    except (newick.NewickError, nexus.NexusError, AssertionError) as e:
-        abort(400, f'parsing error: {e}')
-    except KeyError as e:
-        abort(400, f'layout not found: {e}')
-
 @delete('/trees/<tree_id>')
 def callback(tree_id):
     """Remove a tree."""
@@ -364,7 +335,7 @@ def callback(tree_id):
 # Global variables.
 g_trees = {}  # 'name' -> Tree
 g_config = {'compress': False}  # global configuration
-g_layouts = {}  # 'name' -> list of available layouts
+g_layouts = {None: []}  # 'name' -> [available layouts] (None for preloaded)
 g_searches = {}  # 'searched_text' -> ({result nodes}, {parent nodes})
 g_threads = {}  # {'server': (thread, server)}
 
@@ -571,7 +542,7 @@ def get_topological_search(pattern):
 # Add trees.
 
 def add_trees_from_request():
-    """Add trees to the global var g_trees and return a dict of {name: id}."""
+    """Add trees coming from a request to the server and return their names."""
     try:
         if request.content_type.startswith('application/json'):  # a POST
             trees_data = [req_json()]  # we have only one tree
@@ -580,16 +551,14 @@ def add_trees_from_request():
             trees_data = get_trees_from_form()
             parser = request.forms['parser']
 
-        names = {}  # TODO: this should not be necessary (see below)
+        names = []
         for data in trees_data:
             nw = data['newick']
             name = data['name'].replace(',', '_')  # "," is used for subtrees
+            names.append(name)
             add_tree(Tree(nw, parser=parser), name)
-            names[name] = name  # TODO: this should not be necessary (see below)
 
         return names
-        # TODO: tree ids are now already equal to their names, so in the future
-        # we could remove the need to send back their "ids".
     except KeyError as e:
         abort(400, f'missing data in request: {e}')
     except (newick.NewickError, ValueError) as e:
@@ -681,6 +650,22 @@ def get_server_address():
         return server.bind_addr  # (host, port)
     else:
         return None, None
+
+
+def get_layouts(tree_name=None, all_trees=False):
+    """Return a list of layouts available for the given tree."""
+    if not all_trees:
+        return g_layouts.get(tree_name, [])
+    else:
+        return [x for xs in g_layouts.values() for x in xs]
+
+
+def add_layouts(layouts, tree_name=None):
+    """Add layouts to the given tree (None for generally available ones)."""
+    current_layouts = g_layouts.setdefault(tree_name, [])
+    for layout in layouts:
+        if layout not in current_layouts:
+            current_layouts.append(layout)
 
 
 def add_tree(tree, name=None, layouts=None, extra_style=None):
