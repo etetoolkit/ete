@@ -68,20 +68,21 @@ async function draw_tree() {
         if (0 in items)  // panel 0 has the items for div_tree
             draw(div_tree, items[0], view.tl, view.zoom);
 
-        let xmax = view.shape === "circular" && 0 in xmaxs ? xmaxs[0] : 0;
+        let xmin = view.shape === "circular" && 0 in xmaxs ? xmaxs[0] : 0;
 
         for (const panel of panels_aligned) {
-            draw_aligned(items[panel].map(item => translate(item, xmax)));
-            xmax += xmaxs[panel];
+            draw_aligned(items[panel].map(item => translate(item, xmin)));
+            xmin += xmaxs[panel];
         }
 
-        xmax = view.shape === "circular" && 0 in xmaxs ? xmaxs[0] : 0;  // reset
+        xmin = view.shape === "circular" && 0 in xmaxs ? xmaxs[0] : 0;  // reset
 
         if (view.shape === "rectangular") {  // TODO: headers in circular too
             for (const panel of panels_headers) {  // negative panels are headers
-                draw_header_background(xmax);
-                draw_header(items[panel].map(item => translate(item, xmax)));
-                xmax += xmaxs[-panel];  // the xmax of the *positive* panel
+                const xmax = xmin + xmaxs[-panel];  // -panel is the *positive* panel
+                draw_header_background(xmin, xmax);
+                draw_header(items[panel].map(item => translate(item, xmin)));
+                xmin = xmax;
             }
         }
 
@@ -220,29 +221,20 @@ function draw_aligned(items, padding_x=15) {
 
 
 // Draw a white box and a line to clean the space where the headers will go.
-function draw_header_background(xmax, padding_x=15) {
+function draw_header_background(xmin, xmax, padding_x=15) {
     const zoom = {x: view.aligned.zoom,
                   y: view.zoom.y};
     // Position where to put the header (in screen coordinates).
-    const px = zoom.x * (xmax - view.aligned.origin) + padding_x,
+    const px = zoom.x * (xmin - view.aligned.origin) + padding_x,
           py = Math.max(40, - view.zoom.y * view.tl.y - 20);
 
     const g = create_svg_element("g");
-
-    // Put a white rectangle on the background of the header.
-    g.appendChild(create_svg_element("rect", {
-        "x": px - 10,
-        "y": 0,
-        "width": div_aligned.offsetWidth - px + 2 * 10,
-        "height": py + 20,
-        "fill": "white",
-    }));
 
     // Add a line separating the header from the content below.
     const line = create_svg_element("line", {
         "x1": px,
         "y1": py + 15,
-        "x2": div_aligned.offsetWidth,
+        "x2": zoom.x * (xmax - view.aligned.origin) + padding_x,
         "y2": py + 15,
     });
     add_style(line, {
