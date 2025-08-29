@@ -230,6 +230,15 @@ function draw_header_background(xmin, xmax, padding_x=15) {
 
     const g = create_svg_element("g");
 
+    // Put a white rectangle on the background of the header.
+    g.appendChild(create_svg_element("rect", {
+        "x": px,
+        "y": 0,
+        "width": zoom.x * (xmax - xmin),
+        "height": py + 20,
+        "fill": "white",
+    }));
+
     // Add a line separating the header from the content below.
     const line = create_svg_element("line", {
         "x1": px,
