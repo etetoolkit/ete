@@ -9,3 +9,4 @@ Internals
    internals_api
    internals_detailed_layout
    internals_drawing
+   internals_development
