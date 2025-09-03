@@ -8,7 +8,6 @@ with the following endpoints (defined in ``explorer.py``)::
   GET:
   /api  # get info about the api endpoints
   /trees  # get info about all the existing trees
-  /trees/<name>  # get info about the given tree
   /trees/<name>/draw  # get graphical commands to draw the tree
   /trees/<name>/layouts  # get available layouts for the tree
   /trees/<name>/style  # get tree style
