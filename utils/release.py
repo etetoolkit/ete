@@ -1,3 +1,17 @@
+import sys
+
+sys.exit("""WARNING: This file is not updated.
+
+It is not clear how it was supposed to work, but in any case we are
+not using it for the releases of ete4.
+
+To see the process we follow for a release, check
+doc/internals/internals_development.rst
+""")
+
+# TODO: Check what this is supposed to do, and fix and document it if
+# appropriate, or delete it completely if not.
+
 import re
 import subprocess
 import os
