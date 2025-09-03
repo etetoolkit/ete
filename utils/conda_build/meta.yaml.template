@@ -1,11 +1,14 @@
+# TODO: Check if this is used anywhere, and in that case, if it works
+# correctly, and document it. Otherwise, please delete this file and directory.
+
 package:
-  name: ete3
+  name: ete4
   version: %VERSION%
 
 source:
-    fn: ete3-%VERSION%.tar.gz
-    url: https://github.com/jhcepas/ete/archive/%VERSION%.tar.gz
-    #git_url: https://github.com/jhcepas/ete.git
+    fn: ete4-%VERSION%.tar.gz
+    url: https://github.com/etetoolkit/ete/archive/refs/tags/%VERSION%.tar.gz
+    #git_url: https://github.com/etetoolkit/ete.git
 
 build:
     noarch: python
@@ -14,36 +17,25 @@ requirements:
   build:
     - python
     - cython
-    - flask
-    - flask-cors
-    - flask-restful 
-    - flask-compress 
-    - lxml
-    - numpy
-    - scipy
-    - pyqt
-    - qt
-    
+
   run:
     - python
-    - cython
-    - flask
-    - flask-cors
-    - flask-restful 
-    - flask-compress 
-    - lxml
+    - bottle
+    - cheroot
+    - brotli
     - numpy
     - scipy
-    - pyqt
-    - qt
-  
+    - requests
+    - pyqt6
+    - selenium
+    - pytest
+
   commands:
-    - ete3 version
-    #- ete3 build check
-    #- python -m 'ete3.test.test_all'
+    - ete4 version
+    - ./run_tests.py
+    #- ete4 build check
 
 about:
   home: http://etetoolkit.org
   license: GPL
   summary: "A Python framework for reconstructing, analysing and visualizing phylogenetic trees and multiple sequence alignments. Includes Python API and Phylogenomic tools"
-  
