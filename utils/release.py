@@ -76,7 +76,7 @@ SERVER_RELEASES_PATH = "/var/www/etetoolkit/static/releases/ete3"
 
 TEMP_PATH = "/tmp"
 CURRENT_VERSION = open('../VERSION').readline().strip()
-a, b, c, tag, ncom, hcom  = re.search("(\d+)\.(\d+)\.(\d+)(-?\w+\d+)?-?(\d+)?-?(\w+)?", CURRENT_VERSION).groups()
+a, b, c, tag, ncom, hcom  = re.search(r"(\d+)\.(\d+)\.(\d+)(-?\w+\d+)?-?(\d+)?-?(\w+)?", CURRENT_VERSION).groups()
 a, b, c = map(int, (a, b, c))
 SERIES_VERSION = "%s.%s" %(a, b)
 print('====================================================')
@@ -88,7 +88,7 @@ input('continue?')
 if not options.doconly:
     # commit changes in VERSION
     if tag:
-        tag1, tag2 = re.search('(.+?)(\d+)', tag).groups()
+        tag1, tag2 = re.search(r'(.+?)(\d+)', tag).groups()
         tag2 = int(tag2)
         NEW_VERSION = "%s.%s.%s%s%s" %(a, b, c, tag1, tag2+1)
     else:
@@ -139,6 +139,3 @@ if options.doconly:
 
 if ask('copy docs to ete server from %s?' % DOC_PATH, ['y', 'n']) == 'y':
     _ex("scp -r %s/* ete:web/static/docs/3.0/" % DOC_PATH)
-
-
-sys.exit(0)
