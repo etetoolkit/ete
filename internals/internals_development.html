@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Development &#8212; ETE Toolkit 4.4.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=27fed22d" />
+    <script src="../_static/documentation_options.js?v=2f20d6c1"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Frequently Asked Questions" href="../faqs.html" />
+    <link rel="prev" title="Drawing" href="internals_drawing.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="development">
+<h1>Development<a class="headerlink" href="#development" title="Link to this heading">¶</a></h1>
+<section id="repositories">
+<h2>Repositories<a class="headerlink" href="#repositories" title="Link to this heading">¶</a></h2>
+<p>We have several repositories for ETE, all in <a class="reference external" href="https://github.com/etetoolkit/">https://github.com/etetoolkit/</a>:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/etetoolkit/ete/">ete</a> - Our main repository.</p></li>
+<li><p><a class="reference external" href="https://github.com/etetoolkit/ete-data">ete-data</a> - Useful but
+big data files, like some example files and the GTDB taxonomy data
+among others.</p></li>
+<li><p><a class="reference external" href="https://github.com/etetoolkit/ete-gallery">ete-gallery</a> -
+Demonstrations of the graphical capabilities, including tutorials,
+example programs and course notes.</p></li>
+</ul>
+<p>In the future, we consider moving them to <a class="reference external" href="https://codeberg.org/">Codeberg</a>.</p>
+</section>
+<section id="releases">
+<h2>Releases<a class="headerlink" href="#releases" title="Link to this heading">¶</a></h2>
+<p>Before a new release, we make sure that all the tests pass
+(<code class="docutils literal notranslate"><span class="pre">./run_tests.py</span> <span class="pre">--include-interactive</span> <span class="pre">--include-slow</span></code>), decide on
+the appropriate version number, and update:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">VERSION</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ete4/version.py</span></code></p></li>
+</ul>
+<p>After this update, we make a last commit (“Change to version
+<code class="docutils literal notranslate"><span class="pre">$version</span></code>.”). And then we tag it:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>git<span class="w"> </span>tag<span class="w"> </span>-a<span class="w"> </span><span class="nv">$version</span><span class="w">  </span><span class="c1"># with the appropriate value of $version</span>
+$<span class="w"> </span>git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span><span class="nv">$version</span>
+</pre></div>
+</div>
+<p>We then make sure that the new version is available in <a class="reference external" href="https://pypi.org/project/ete4/">PyPI</a>, <a class="reference external" href="https://github.com/etetoolkit/ete/releases">GitHub</a>, and
+<a class="reference external" href="https://anaconda.org/conda-forge/ete4">Conda</a>.</p>
+<section id="id1">
+<h3>PyPI<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
+<p>The Python Package Index (PyPI) is the main repository of software for
+Python. ETE 4 has its releases at <a class="reference external" href="https://pypi.org/project/ete4/">https://pypi.org/project/ete4/</a>.</p>
+<p>The creation of a new release for PyPI is automatically triggered when
+we upload a new tag to the repository. This happens according to the
+<a class="reference external" href="https://docs.github.com/en/actions/concepts/workflows-and-actions/workflows">workflow</a>
+at <code class="docutils literal notranslate"><span class="pre">.github/workflows/publish-to-test-pypi.yml</span></code> (which we originally
+wrote following <a class="reference external" href="https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/">a publishing guide from python.org</a>).</p>
+<p>Once the latest release appears in PyPI, anyone can install it with:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>ete4
+</pre></div>
+</div>
+</section>
+<section id="id2">
+<h3>GitHub<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h3>
+<p>Our releases are at <a class="reference external" href="https://github.com/etetoolkit/ete/releases">https://github.com/etetoolkit/ete/releases</a>.</p>
+<p>To create a new release, we go to
+<a class="reference external" href="https://github.com/etetoolkit/ete/releases/new">https://github.com/etetoolkit/ete/releases/new</a> and select the tag we
+just created.</p>
+<p>The release title we use is simply the new version number, and a
+possible (lazy) description can be:</p>
+<div class="highlight-null notranslate"><div class="highlight"><pre><span></span>Also available in PyPI: https://pypi.org/project/ete4/
+
+The updated documentation can be found at https://etetoolkit.github.io/ete/
+
+**Full Changelog since previous release**: https://github.com/etetoolkit/ete/compare/$old_version...$version
+</pre></div>
+</div>
+</section>
+<section id="id3">
+<h3>Conda<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h3>
+<p>Anaconda.org/conda-forge is a community-led collection of packages and
+more, for the <a class="reference external" href="https://en.wikipedia.org/wiki/Conda_(package_manager)">conda package manager</a> .</p>
+<p>Our releases are at <a class="reference external" href="https://anaconda.org/conda-forge/ete4">https://anaconda.org/conda-forge/ete4</a>, but someone
+is making them for us, and we don’t know who but they seem to be
+quickly updated. Thank you!</p>
+<p>To use the release from conda-forge:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>conda<span class="w"> </span>install<span class="w"> </span>conda-forge::ete4
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">ETE Toolkit</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/index.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Internals</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="internals_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="internals_essentials.html">Essentials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="internals_api.html">API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="internals_detailed_layout.html">Detailed Layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="internals_drawing.html">Drawing</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Development</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs.html">Frequently Asked Questions</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Internals</a><ul>
+      <li>Previous: <a href="internals_drawing.html" title="previous chapter">Drawing</a></li>
+      <li>Next: <a href="../faqs.html" title="next chapter">Frequently Asked Questions</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2008 - 2025, The ETE Toolkit Team.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="../_sources/internals/internals_development.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

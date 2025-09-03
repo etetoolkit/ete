@@ -8,7 +8,6 @@ with the following endpoints (defined in ``explorer.py``)::
   GET:
   /api  # get info about the api endpoints
   /trees  # get info about all the existing trees
-  /trees/<name>  # get info about the given tree
   /trees/<name>/draw  # get graphical commands to draw the tree
   /trees/<name>/layouts  # get available layouts for the tree
   /trees/<name>/style  # get tree style
@@ -41,9 +40,82 @@ In addition to the api endpoints, the server has these other ones::
   /help  # gives some pointers for using ete
   /static/<path>  # all the static content, including javascript like gui.js
 
-The api can be directly queried with the browser (for some endpoints
-that accept a GET request), or with tools such as `curl
-<https://curl.se/>`_ or `httpie <https://httpie.io/>`_.
+The api can be directly queried with the browser, or with tools such
+as `curl <https://curl.se/>`_ or `httpie <https://httpie.io/>`_.
+
+For example:
+
+.. code:: bash
+
+  $ http :5000/trees  # same as "http http://localhost:5000/trees"
+  HTTP/1.1 200 OK
+  [
+      "my-test-tree"
+  ]
+
+  $ http POST :5000/trees name='my-new-tree' newick='(a,(b,c));'
+  HTTP/1.1 201 Created
+  {
+      "ids": [
+          "my-new-tree"
+      ],
+      "message": "ok"
+  }
+
+  $ http :5000/trees
+  HTTP/1.1 200 OK
+  [
+      "my-test-tree",
+      "my-new-tree"
+  ]
+
+  $ http :5000/trees/my-new-tree/size
+  HTTP/1.1 200 OK
+  {
+      "height": 3.0,
+      "width": 2.0
+  }
+
+
+Extending the api
+-----------------
+
+It is possible to use ETE's server in a program and extend its api. To
+do it, we can use the appropriate functions from the
+:mod:`explorer module <ete4.smartview.explorer>`.
+
+For example, to add a ``/load`` endpoint that expects a json with the
+keys ``name`` and ``path``, and will add the tree to the server, we
+could do::
+
+  from ete4 import Tree
+  import ete4.smartview.explorer as exp  # to get all the server functions
+
+  @exp.post('/load')  # will add the /load endpoint to the api
+  def callback():
+      """Load a tree from a given path."""
+      info = exp.req_json()  # get the POST json
+
+      name = info['name']
+      path = info['path']
+
+      t = Tree(open(path))
+      exp.add_tree(t, name)
+
+      exp.response.status = 201  # http code for new resource created
+      return {'message': 'ok'}  # arbitrary, just what ete endpoints use
+
+and run the extended server with::
+
+  exp.start_server()
+  input('Press enter to stop the server and finish.')
+
+There is a more complete example at :download:`ete_server.py
+<../../examples/explorer/ete_server.py>`.
+
+
+Developing alternative frontends
+--------------------------------
 
 The frontend uses those endpoints to draw and manipulate the trees. It
 works as a web application, which mainly translates the list of
