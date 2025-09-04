@@ -482,13 +482,9 @@ def _leaf(node):
 
 def add_face_to_node(face, node, column, aligned=False, position="branch-right"):
     """
-    .. currentmodule:: ete3.treeview.faces
-
     Adds a Face to a given node.
 
     :argument face: A :class:`Face` instance
-
-    .. currentmodule:: ete3
 
     :argument node: a tree node instance (:class:`Tree`, :class:`PhyloTree`, etc.)
     :argument column: An integer number starting from 0

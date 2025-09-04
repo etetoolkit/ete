@@ -195,8 +195,6 @@ class Face:
 class TextFace(Face):
     """Static text Face object
 
-    .. currentmodule:: ete3
-
     :param text:     Text to be drawn
     :param ftype:    Font type, e.g. Arial, Verdana, Courier
     :param fsize:    Font size, e.g. 10,12,6, (default=10)
