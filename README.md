@@ -13,7 +13,7 @@ phylogenetic trees.
 
 Its main features include:
 
-- Read and write support for trees in Newick format
+- Read and write support for trees in Newick and Nexus formats
 - Multiple functions for traversing, searching and manipulating tree topologies and node annotations
 - Integration with NCBI Taxonomic database
 - Integration with GTDB database
