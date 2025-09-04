@@ -25,10 +25,10 @@ Its main features include:
   - phylogenetic distance
 
 [//]: # (TODO: We used to claim these too, but they should be checked and possibly fixed:
-- Command line tools
-  - phylogenetic reconstruction protocols
-  - tree comparison
-  - tree diff
+Command line tools
+phylogenetic reconstruction protocols
+tree comparison
+tree diff
 )
 
 [//]: # (TODO: Remove, or put back this link once the website is updated:
