@@ -36,6 +36,6 @@ requirements:
     #- ete4 build check
 
 about:
-  home: http://etetoolkit.org
+  home: https://github.com/etetoolkit/ete
   license: GPL
   summary: "A Python framework for reconstructing, analysing and visualizing phylogenetic trees and multiple sequence alignments. Includes Python API and Phylogenomic tools"

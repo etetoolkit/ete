@@ -88,7 +88,7 @@ def callback():
     return nice_html("""<h1>Help</h1>
 You can go to the <a href="/static/upload.html">upload page</a>, see
 a <a href="/">list of loaded trees</a>, or
-<a href="https://etetoolkit.org/">consult the documentation</a>.""")
+<a href="https://etetoolkit.github.io/ete/">consult the documentation</a>.""")
 
 @get('/static/<path:path>')
 def callback(path):

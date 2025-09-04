@@ -33,7 +33,7 @@ classifiers = [
 dependencies = [ "bottle", "cheroot", "brotli", "numpy", "scipy", "requests" ]
 
 [project.urls]
-"Homepage" = "http://etetoolkit.org"
+"Homepage" = "https://github.com/etetoolkit/ete"
 
 [project.scripts]
 ete4 = "ete4.tools.ete:main"

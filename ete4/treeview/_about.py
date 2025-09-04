@@ -32,8 +32,8 @@ class Ui_About:
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'DejaVu Sans\'; font-size:10pt; font-weight:400; font-style:normal;\">\n"
 "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><img src=\":/ete icons/ete_logo.png\" /></p>\n"
-                                                        "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-weight:600;\"><span style=\" font-size:11pt;\">ETE3: Reconstruction and Analysis Phylogenomics Data</span></p>\n"
-"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:11pt; font-weight:600;\"><a href=\"http://etetoolkit.org\"><span style=\" text-decoration: underline; color:#0057ae;\">http://etetoolkit.org</span></a></p>\n"
+                                                        "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-weight:600;\"><span style=\" font-size:11pt;\">ETE4: Reconstruction and Analysis Phylogenomics Data</span></p>\n"
+"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:11pt; font-weight:600;\"><a href=\"https://github.com/etetoolkit/ete\"><span style=\" text-decoration: underline; color:#0057ae;\">https://github.com/etetoolkit/ete</span></a></p>\n"
 "<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"></p></body></html>", None))
         self.version.setText(QApplication.translate("About", "VERSION", None))
 

@@ -23,19 +23,26 @@ Its main features include:
 - Phylogenetic functions
   - orthology detection
   - phylogenetic distance
+
+[//]: # (TODO: We used to claim these too, but they should be checked and possibly fixed:
 - Command line tools
   - phylogenetic reconstruction protocols
   - tree comparison
   - tree diff
+)
 
+[//]: # (TODO: Remove, or put back this link once the website is updated:
 The official website of ETE is http://etetoolkit.org. You can find
 downloading instructions and further documentation there.
+)
 
 If you use ETE, please cite:
 
     Jaime Huerta-Cepas, François Serra and Peer Bork. "ETE 3: Reconstruction,
     analysis and visualization of phylogenomic data."  Mol Biol Evol (2016) doi:
     10.1093/molbev/msw046
+
+[//]: # (TODO: Publish a paper for ete4 and update the citation.)
 
 
 # Installation

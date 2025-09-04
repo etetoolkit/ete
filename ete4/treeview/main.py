@@ -576,8 +576,8 @@ def save(scene, imgName, w=None, h=None, dpi=90,\
         targetRect = QRectF(0, 0, w, h)
         svg.setSize(QSize(int(w), int(h)))
         svg.setViewBox(targetRect)
-        svg.setTitle("Generated with ETE http://etetoolkit.org")
-        svg.setDescription("Generated with ETE http://etetoolkit.org")
+        svg.setTitle("Generated with ETE https://github.com/etetoolkit/ete")
+        svg.setDescription("Generated with ETE https://github.com/etetoolkit/ete")
 
         if imgName == '%%return':
             ba = QByteArray()
