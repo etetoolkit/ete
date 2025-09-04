@@ -54,6 +54,8 @@ Highlighted Tools Using ETE
 Related Links and Resources
 ---------------------------
 
+[//]: # (TODO: Clean up, since most are outdated and refer to ete3)
+
 - `A brief introduction to ETE
   <https://www.youtube.com/watch?v=7yfMwmaptf0&index=64&list=PLYx7XA2nY5Gcpabmu61kKcToLz0FapmHu>`_
   and its programmatic tree visualization features at the `SciPy
