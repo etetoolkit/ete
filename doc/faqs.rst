@@ -142,64 +142,38 @@ image::
 How do I visualize internal node names?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You will need to change the default tree layout. By creating your
-custom layout functions, you will be able to add, remove or modify
-almost any element of the tree image.
+You will need to change the tree layout. By creating your custom
+layout, you will be able to add, remove or modify almost any element
+of the tree image.
 
 A basic example::
 
-  from ete4 import Tree, faces, AttrFace, TreeStyle
-
-  def my_layout(node):
-      if node.is_leaf:
-           name_face = AttrFace("name")  # draw name for leaves
-      else:  # internal node
-           name_face = AttrFace("name", fsize=10)  # draw label with small font
-
-      # Add the name face to the image at the preferred position
-      faces.add_face_to_node(name_face, node, column=0, position="branch-right")
-
-  ts = TreeStyle()
-  ts.show_leaf_name = False  # do not add leaf names again
-  ts.layout_fn = my_layout  # use custom layout
+  from ete4 import Tree
+  from ete4.smartview import Layout, PropFace
 
   t = Tree("((B,(E,(A,G)M1_t1)M_1_t2)M2_t3,(C,D)M2_t1)M2_t2;", parser=8)
 
-  t.show(tree_style=ts)  # visualize with custom tree style
+  def draw_node(node):
+      yield PropFace('name')
+
+  layout = Layout('all names', draw_node=draw_node)
+
+  t.explore(layouts=[layout])  # visualize with custom layout
 
 
 Can the visualization of trees with very unbalanced tree branches be improved?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Yes, the experience of visualizing trees with extreme differences in
-branch lengths can be improved in several ways.
+branch lengths can be improved by converting your tree to ultrametric.
+This will modify all branches in your tree to make all nodes end at
+the same length.
 
-1) Convert your tree to ultrametric. This will modify all branches in
-your tree to make all nodes end at the same length.
-
-::
+For example::
 
   from ete4 import Tree
 
   t = Tree()
-  t.populate(50, random_branches=True)
+  t.populate(50)
   t.to_ultrametric()
   t.explore()
-
-
-2) You can enable the :attr:`force_topology` option in
-:class:`TreeStyle`, so all branches will be seen as the same length by
-the tree drawing engine (note that in this case, actual tree branches
-are not modified)
-
-::
-
-  from ete4 import Tree, TreeStyle
-
-  t = Tree()
-  t.populate(50, random_branches=True)
-
-  ts = TreeStyle()
-  ts.force_topology = True
-
-  t.show(tree_style=ts)
