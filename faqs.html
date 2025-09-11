@@ -16,6 +16,7 @@
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Migrating from ETE 3" href="3to4.html" />
     <link rel="prev" title="Development" href="internals/internals_development.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -229,58 +230,37 @@ image:</p>
 </section>
 <section id="how-do-i-visualize-internal-node-names">
 <h3><a class="toc-backref" href="#id14" role="doc-backlink">How do I visualize internal node names?</a><a class="headerlink" href="#how-do-i-visualize-internal-node-names" title="Link to this heading">¶</a></h3>
-<p>You will need to change the default tree layout. By creating your
-custom layout functions, you will be able to add, remove or modify
-almost any element of the tree image.</p>
+<p>You will need to change the tree layout. By creating your custom
+layout, you will be able to add, remove or modify almost any element
+of the tree image.</p>
 <p>A basic example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ete4</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tree</span><span class="p">,</span> <span class="n">faces</span><span class="p">,</span> <span class="n">AttrFace</span><span class="p">,</span> <span class="n">TreeStyle</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">my_layout</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">:</span>
-         <span class="n">name_face</span> <span class="o">=</span> <span class="n">AttrFace</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>  <span class="c1"># draw name for leaves</span>
-    <span class="k">else</span><span class="p">:</span>  <span class="c1"># internal node</span>
-         <span class="n">name_face</span> <span class="o">=</span> <span class="n">AttrFace</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">fsize</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>  <span class="c1"># draw label with small font</span>
-
-    <span class="c1"># Add the name face to the image at the preferred position</span>
-    <span class="n">faces</span><span class="o">.</span><span class="n">add_face_to_node</span><span class="p">(</span><span class="n">name_face</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s2">&quot;branch-right&quot;</span><span class="p">)</span>
-
-<span class="n">ts</span> <span class="o">=</span> <span class="n">TreeStyle</span><span class="p">()</span>
-<span class="n">ts</span><span class="o">.</span><span class="n">show_leaf_name</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># do not add leaf names again</span>
-<span class="n">ts</span><span class="o">.</span><span class="n">layout_fn</span> <span class="o">=</span> <span class="n">my_layout</span>  <span class="c1"># use custom layout</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ete4</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tree</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ete4.smartview</span><span class="w"> </span><span class="kn">import</span> <span class="n">Layout</span><span class="p">,</span> <span class="n">PropFace</span>
 
 <span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s2">&quot;((B,(E,(A,G)M1_t1)M_1_t2)M2_t3,(C,D)M2_t1)M2_t2;&quot;</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
 
-<span class="n">t</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">tree_style</span><span class="o">=</span><span class="n">ts</span><span class="p">)</span>  <span class="c1"># visualize with custom tree style</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">draw_node</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+    <span class="k">yield</span> <span class="n">PropFace</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+
+<span class="n">layout</span> <span class="o">=</span> <span class="n">Layout</span><span class="p">(</span><span class="s1">&#39;all names&#39;</span><span class="p">,</span> <span class="n">draw_node</span><span class="o">=</span><span class="n">draw_node</span><span class="p">)</span>
+
+<span class="n">t</span><span class="o">.</span><span class="n">explore</span><span class="p">(</span><span class="n">layouts</span><span class="o">=</span><span class="p">[</span><span class="n">layout</span><span class="p">])</span>  <span class="c1"># visualize with custom layout</span>
 </pre></div>
 </div>
 </section>
 <section id="can-the-visualization-of-trees-with-very-unbalanced-tree-branches-be-improved">
 <h3><a class="toc-backref" href="#id15" role="doc-backlink">Can the visualization of trees with very unbalanced tree branches be improved?</a><a class="headerlink" href="#can-the-visualization-of-trees-with-very-unbalanced-tree-branches-be-improved" title="Link to this heading">¶</a></h3>
 <p>Yes, the experience of visualizing trees with extreme differences in
-branch lengths can be improved in several ways.</p>
-<p>1) Convert your tree to ultrametric. This will modify all branches in
-your tree to make all nodes end at the same length.</p>
+branch lengths can be improved by converting your tree to ultrametric.
+This will modify all branches in your tree to make all nodes end at
+the same length.</p>
+<p>For example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ete4</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tree</span>
 
 <span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">()</span>
-<span class="n">t</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="n">random_branches</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">t</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span>
 <span class="n">t</span><span class="o">.</span><span class="n">to_ultrametric</span><span class="p">()</span>
 <span class="n">t</span><span class="o">.</span><span class="n">explore</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>2) You can enable the <code class="xref py py-attr docutils literal notranslate"><span class="pre">force_topology</span></code> option in
-<code class="xref py py-class docutils literal notranslate"><span class="pre">TreeStyle</span></code>, so all branches will be seen as the same length by
-the tree drawing engine (note that in this case, actual tree branches
-are not modified)</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ete4</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tree</span><span class="p">,</span> <span class="n">TreeStyle</span>
-
-<span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">()</span>
-<span class="n">t</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="n">random_branches</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-<span class="n">ts</span> <span class="o">=</span> <span class="n">TreeStyle</span><span class="p">()</span>
-<span class="n">ts</span><span class="o">.</span><span class="n">force_topology</span> <span class="o">=</span> <span class="kc">True</span>
-
-<span class="n">t</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">tree_style</span><span class="o">=</span><span class="n">ts</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -326,6 +306,7 @@ are not modified)</p>
 <li class="toctree-l2"><a class="reference internal" href="#tree-visualization">Tree visualization</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="3to4.html">Migrating from ETE 3</a></li>
 </ul>
 
 <div class="relations">
@@ -333,6 +314,7 @@ are not modified)</p>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
       <li>Previous: <a href="internals/internals_development.html" title="previous chapter">Development</a></li>
+      <li>Next: <a href="3to4.html" title="next chapter">Migrating from ETE 3</a></li>
   </ul></li>
 </ul>
 </div>

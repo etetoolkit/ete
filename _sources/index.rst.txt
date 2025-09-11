@@ -15,6 +15,7 @@ Welcome to ETE's documentation!
    reference/index
    internals/index
    faqs
+   3to4
 
 
 Indices and tables
