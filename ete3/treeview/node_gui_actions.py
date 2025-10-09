@@ -151,6 +151,8 @@ class _NodeActions(object):
 
     def showActionPopup(self):
         contextMenu = QMenu()
+        contextMenu.addAction( "Ladderize top to bottom", self.ladderize_top)
+        contextMenu.addAction( "Ladderize bottom to top", self.ladderize_bottom)
         contextMenu.addAction( "Set as outgroup", self.set_as_outgroup)
         contextMenu.addAction( "Copy partition", self.copy_partition)
         contextMenu.addAction( "Cut partition", self.cut_partition)
@@ -262,6 +264,14 @@ class _NodeActions(object):
 
     def toggle_collapse(self):
         self.node.img_style["draw_descendants"] ^= True
+        self.scene().GUI.redraw()
+
+    def ladderize_top(self):
+        self.node.ladderize(1)
+        self.scene().GUI.redraw()
+
+    def ladderize_bottom(self):
+        self.node.ladderize(0)
         self.scene().GUI.redraw()
 
     def cut_partition(self):
