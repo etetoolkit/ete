@@ -265,9 +265,9 @@ includes among other things:
 
 This tab contains the searches and selected nodes.
 
-We can make a search with clicking *new search* button (also the "/"
-shortcut), then input the query in the search box. There are different
-ways to search for nodes.
+We can make a search by clicking the *new search* button (or by using
+the "/" shortcut), and then input the query in the search box. There
+are different ways to search for nodes.
 
 
 Simple search
