@@ -101,7 +101,7 @@ DIST    = {'pname': 'dist',    'read': float,   'write': lambda x: '%g' % float(
 SUPPORT = {'pname': 'support', 'read': float,   'write': lambda x: '%g' % float(x)}
 
 MULTISUPPORT = {  # to parse multiple values of support written as v1/v2[/...]
-    'pname': 'multisupport',
+    'pname': 'support',
     'read': lambda field: [float(x) for x in field.split('/')],
     'write': lambda xs: '/'.join('%g' % float(x) for x in xs),
 }
