@@ -123,7 +123,7 @@ cdef class Tree:
 
     @property
     def support(self):
-        return float(self.props['support']) if 'support' in self.props else None
+        return self.props['support'] if 'support' in self.props else None
 
     @support.setter
     def support(self, value):
