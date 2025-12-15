@@ -170,12 +170,13 @@ You can launch some tests by running:
 ./run_tests.py
 ```
 
+To see all the available options for running the tests, use:
+
+```sh
+./run_tests.py -h
+```
+
 
 # Contributing and bug reporting
 
 https://github.com/etetoolkit/ete/wiki/Contributing
-
-
-# Roadmap
-
-https://github.com/etetoolkit/ete/wiki/ROADMAP
