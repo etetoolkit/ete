@@ -47,6 +47,9 @@ If you use ETE, please cite:
 
 # Installation
 
+There are several ways to install ETE.
+
+
 ## Quick way
 
 ```sh
