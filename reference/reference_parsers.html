@@ -10,8 +10,8 @@
     <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=b08954a9" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=27fed22d" />
     <script src="../_static/documentation_options.js?v=2f20d6c1"></script>
-    <script src="../_static/doctools.js?v=9bcbadda"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="icon" href="../_static/favicon.ico"/>
     <link rel="author" title="About these documents" href="../about.html" />
     <link rel="index" title="Index" href="../genindex.html" />
@@ -134,7 +134,7 @@ to read/write from/to a string. For example, <code class="docutils literal notra
 </div>
 <dl class="py exception">
 <dt class="sig sig-object py" id="ete4.parser.newick.NewickError">
-<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">NewickError</span></span><a class="headerlink" href="#ete4.parser.newick.NewickError" title="Link to this definition">¶</a></dt>
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">NewickError</span></span><a class="headerlink" href="#ete4.parser.newick.NewickError" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -173,7 +173,7 @@ to read/write from/to a string. For example, <code class="docutils literal notra
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ete4.parser.newick.loads">
-<span class="sig-name descname"><span class="pre">loads</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">str</span> <span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parser=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree_class=Tree</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.parser.newick.loads" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">loads</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">str</span> <span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parser</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree_class</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Tree</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.parser.newick.loads" title="Link to this definition">¶</a></dt>
 <dd><p>Return tree from its newick representation.</p>
 </dd></dl>
 
@@ -197,25 +197,25 @@ to read/write from/to a string. For example, <code class="docutils literal notra
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ete4.parser.newick.read_content">
-<span class="sig-name descname"><span class="pre">read_content</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">str</span> <span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">long</span> <span class="pre">pos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endings='</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">);'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.parser.newick.read_content" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">read_content</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">str</span> <span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">long</span> <span class="pre">pos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">);'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.parser.newick.read_content" title="Link to this definition">¶</a></dt>
 <dd><p>Return content starting at position pos in text, and where it ends.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ete4.parser.newick.read_node">
-<span class="sig-name descname"><span class="pre">read_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">str</span> <span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">long</span> <span class="pre">pos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict</span> <span class="pre">parser</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree_class=Tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_req=True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.parser.newick.read_node" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">read_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">str</span> <span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">long</span> <span class="pre">pos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict</span> <span class="pre">parser</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree_class</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_req</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.parser.newick.read_node" title="Link to this definition">¶</a></dt>
 <dd><p>Return a node and the position in the text where it ends.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ete4.parser.newick.read_nodes">
-<span class="sig-name descname"><span class="pre">read_nodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">str</span> <span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">long</span> <span class="pre">pos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict</span> <span class="pre">parser</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree_class=Tree</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.parser.newick.read_nodes" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">read_nodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">str</span> <span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">long</span> <span class="pre">pos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict</span> <span class="pre">parser</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree_class</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Tree</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.parser.newick.read_nodes" title="Link to this definition">¶</a></dt>
 <dd><p>Return a list of nodes and the position in the text where they end.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ete4.parser.newick.read_props">
-<span class="sig-name descname"><span class="pre">read_props</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">str</span> <span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">long</span> <span class="pre">pos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict</span> <span class="pre">parser</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_req=False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.parser.newick.read_props" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">read_props</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">str</span> <span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">long</span> <span class="pre">pos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict</span> <span class="pre">parser</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_req</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.parser.newick.read_props" title="Link to this definition">¶</a></dt>
 <dd><p>Return the properties from the content of a node, and where it ends.</p>
 <dl class="simple">
 <dt>Example (for the default format of a leaf node):</dt><dd><p>‘abc:123[&amp;&amp;NHX:x=foo]’  -&gt;  {‘name’: ‘abc’, ‘dist’: 123, ‘x’: ‘foo’}</p>
@@ -231,7 +231,7 @@ to read/write from/to a string. For example, <code class="docutils literal notra
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ete4.parser.newick.skip_content">
-<span class="sig-name descname"><span class="pre">skip_content</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">str</span> <span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">long</span> <span class="pre">pos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endings='</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">);'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.parser.newick.skip_content" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">skip_content</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">str</span> <span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">long</span> <span class="pre">pos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">);'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ete4.parser.newick.skip_content" title="Link to this definition">¶</a></dt>
 <dd><p>Return the position where the content ends.</p>
 </dd></dl>
 
@@ -259,7 +259,7 @@ to read/write from/to a string. For example, <code class="docutils literal notra
 <p>Read trees from a file in nexus format.</p>
 <dl class="py exception">
 <dt class="sig sig-object py" id="ete4.parser.nexus.NexusError">
-<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">NexusError</span></span><a class="reference internal" href="../_modules/ete4/parser/nexus.html#NexusError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.parser.nexus.NexusError" title="Link to this definition">¶</a></dt>
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">NexusError</span></span><a class="reference internal" href="../_modules/ete4/parser/nexus.html#NexusError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.parser.nexus.NexusError" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -379,7 +379,7 @@ to read/write from/to a string. For example, <code class="docutils literal notra
       &#169;2008 - 2025, The ETE Toolkit Team.
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
       
       |

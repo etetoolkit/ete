@@ -10,8 +10,8 @@
     <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=b08954a9" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=27fed22d" />
     <script src="../_static/documentation_options.js?v=2f20d6c1"></script>
-    <script src="../_static/doctools.js?v=9bcbadda"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="icon" href="../_static/favicon.ico"/>
     <link rel="author" title="About these documents" href="../about.html" />
     <link rel="index" title="Index" href="../genindex.html" />
@@ -41,7 +41,7 @@
 <h2>PhyloTree<a class="headerlink" href="#phylotree" title="Link to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="ete4.PhyloTree">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PhyloTree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">newick</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">children</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alignment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alg_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fasta'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sp_naming_function</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parser</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/phylo/phylotree.html#PhyloTree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.PhyloTree" title="Link to this definition">¶</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">PhyloTree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">newick</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">children</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alignment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alg_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fasta'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sp_naming_function</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parser</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ete4/phylo/phylotree.html#PhyloTree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.PhyloTree" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="reference_tree.html#ete4.core.tree.Tree" title="ete4.core.tree.Tree"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tree</span></code></a></p>
 <p>Class to store a phylogenetic tree.</p>
 <p>Extends the standard <code class="xref py py-class docutils literal notranslate"><span class="pre">Tree</span></code> instance by adding
@@ -90,7 +90,7 @@ common lineage of the grouped species.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>taxid_attr</strong> (<em>name</em>) – the name of the feature that should be used to access the taxid number associated to each node.</p></li>
+<li><p><strong>taxid_attr</strong> (<a class="reference internal" href="reference_tree.html#ete4.core.tree.Tree.name" title="ete4.core.tree.Tree.name"><em>name</em></a>) – the name of the feature that should be used to access the taxid number associated to each node.</p></li>
 <li><p><strong>tax2name</strong> (<em>None</em>) – A dictionary where keys are taxid
 numbers and values are their translation into NCBI
 scientific name. Its use is optional and allows to avoid
@@ -289,7 +289,7 @@ reconciliation.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ete4.PhyloTree.species">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">species</span></span><a class="headerlink" href="#ete4.PhyloTree.species" title="Link to this definition">¶</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">species</span></span><a class="headerlink" href="#ete4.PhyloTree.species" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -338,7 +338,7 @@ too. For compatibility reasons, this is False by default.</p></li>
 <h2>EvolEvent<a class="headerlink" href="#evolevent" title="Link to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="ete4.phylo.EvolEvent">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">EvolEvent</span></span><a class="reference internal" href="../_modules/ete4/phylo/evolevents.html#EvolEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.phylo.EvolEvent" title="Link to this definition">¶</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">EvolEvent</span></span><a class="reference internal" href="../_modules/ete4/phylo/evolevents.html#EvolEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ete4.phylo.EvolEvent" title="Link to this definition">¶</a></dt>
 <dd><p>Basic evolutionary event. It stores all the information about an
 event(node) ocurred in a phylogenetic tree.</p>
 <p><code class="xref py py-attr docutils literal notranslate"><span class="pre">etype</span></code> : <code class="docutils literal notranslate"><span class="pre">D</span></code> (Duplication), <code class="docutils literal notranslate"><span class="pre">S</span></code> (Speciation), <code class="docutils literal notranslate"><span class="pre">L</span></code> (gene loss),</p>
@@ -424,7 +424,7 @@ event(node) ocurred in a phylogenetic tree.</p>
       &#169;2008 - 2025, The ETE Toolkit Team.
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
       
       |
