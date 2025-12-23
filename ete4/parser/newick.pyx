@@ -59,6 +59,17 @@ information for a property (``pname``) to know which function to apply
 to read/write from/to a string. For example, ``DIST`` is::
 
   DIST = {'pname': 'dist', 'read': float, 'write': lambda x: '%g' % float(x)}
+
+Finally, instead of creating a custom parser, it is often easier to
+read the tree as if the internal nodes had a name, and then change them like::
+
+  t = Tree(newick_text, parser='name')  # ((X:5)80/100:7)...
+
+  for node in t.traverse():
+      if not node.is_leaf:
+          supports = node.name.split('/')
+          node.support = float(support[0])  # or whatever makes sense
+          node.del_prop('name')
 """
 
 # See https://en.wikipedia.org/wiki/Newick_format
