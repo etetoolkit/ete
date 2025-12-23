@@ -259,7 +259,7 @@ def run(args):
             dup_rate = numpy.mean(refnode2dups[node]) if has_dup_data else "NA"
             dup_dev = numpy.std(refnode2dups[node]) if has_dup_data else "NA"
 
-            node.add_properties(
+            node.add_props(
                 maptrees_total = total,
                 maptrees_observerd = observed,
                 maptrees_support = avg_observed,

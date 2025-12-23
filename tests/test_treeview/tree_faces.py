@@ -28,7 +28,7 @@ def get_example_tree():
 
     # Some random properties in all nodes
     for n in t.traverse():
-        n.add_properties(weight=random.randint(0, 50))
+        n.add_props(weight=random.randint(0, 50))
 
     # Create an empty TreeStyle
     ts = TreeStyle()
