@@ -132,6 +132,17 @@ to read/write from/to a string. For example, <code class="docutils literal notra
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">DIST</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;pname&#39;</span><span class="p">:</span> <span class="s1">&#39;dist&#39;</span><span class="p">,</span> <span class="s1">&#39;read&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="s1">&#39;write&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s1">&#39;</span><span class="si">%g</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)}</span>
 </pre></div>
 </div>
+<p>Finally, instead of creating a custom parser, it is often easier to
+read the tree as if the internal nodes had a name, and then change them like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="n">newick_text</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>  <span class="c1"># ((X:5)80/100:7)...</span>
+
+<span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">traverse</span><span class="p">():</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">node</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">:</span>
+        <span class="n">supports</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">support</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">support</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># or whatever makes sense</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">del_prop</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 <dl class="py exception">
 <dt class="sig sig-object py" id="ete4.parser.newick.NewickError">
 <span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">NewickError</span></span><a class="headerlink" href="#ete4.parser.newick.NewickError" title="Link to this definition">¶</a></dt>

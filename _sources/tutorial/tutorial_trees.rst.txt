@@ -92,6 +92,41 @@ an exception. In other words, if you want to control that your newick
 files strictly follow a given pattern you can use *strict* format
 definitions.
 
+There are other valid values for ``parser``:
+
+- ``'name'``, same as 1
+- ``'support'``, same as 0
+- ``'multisupport'``, internal nodes look like ``((X:5)80/100:7)...``, that is,
+  have multiple values of support separated by ``/``
+
+More generally, ``parser`` can be a dictionary that specifies in
+detail how to read/write each field. It must say, for leaf and internal
+nodes, what ``p0:p1`` means (which properties they are, including how
+to read and write them). For example, the default parser looks like::
+
+  PARSER_DEFAULT = {
+      'leaf':     [NAME,    DIST],  # ((name:dist)x:y);
+      'internal': [SUPPORT, DIST],  # ((x:y)support:dist);
+  }
+
+where ``NAME`` and ``DIST`` are "property dicts", that have all the
+information for a property (``pname``) to know which function to apply
+to read/write from/to a string. For example, ``DIST`` is::
+
+  DIST = {'pname': 'dist', 'read': float, 'write': lambda x: '%g' % float(x)}
+
+Finally, instead of creating a custom parser, it is often easier to
+read the tree as if the internal nodes had a name, and then change
+them like::
+
+  t = Tree(newick_text, parser='name')  # ((X:5)80/100:7)...
+
+  for node in t.traverse():
+      if not node.is_leaf:
+          supports = node.name.split('/')
+          node.support = float(support[0])  # or whatever makes sense
+          node.del_prop('name')
+
 
 Creating a tree
 ~~~~~~~~~~~~~~~

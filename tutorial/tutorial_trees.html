@@ -217,6 +217,41 @@ not contain branch support information. However, format 2 would raise
 an exception. In other words, if you want to control that your newick
 files strictly follow a given pattern you can use <em>strict</em> format
 definitions.</p>
+<p>There are other valid values for <code class="docutils literal notranslate"><span class="pre">parser</span></code>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">'name'</span></code>, same as 1</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'support'</span></code>, same as 0</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'multisupport'</span></code>, internal nodes look like <code class="docutils literal notranslate"><span class="pre">((X:5)80/100:7)...</span></code>, that is,
+have multiple values of support separated by <code class="docutils literal notranslate"><span class="pre">/</span></code></p></li>
+</ul>
+<p>More generally, <code class="docutils literal notranslate"><span class="pre">parser</span></code> can be a dictionary that specifies in
+detail how to read/write each field. It must say, for leaf and internal
+nodes, what <code class="docutils literal notranslate"><span class="pre">p0:p1</span></code> means (which properties they are, including how
+to read and write them). For example, the default parser looks like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PARSER_DEFAULT</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;leaf&#39;</span><span class="p">:</span>     <span class="p">[</span><span class="n">NAME</span><span class="p">,</span>    <span class="n">DIST</span><span class="p">],</span>  <span class="c1"># ((name:dist)x:y);</span>
+    <span class="s1">&#39;internal&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">SUPPORT</span><span class="p">,</span> <span class="n">DIST</span><span class="p">],</span>  <span class="c1"># ((x:y)support:dist);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">NAME</span></code> and <code class="docutils literal notranslate"><span class="pre">DIST</span></code> are “property dicts”, that have all the
+information for a property (<code class="docutils literal notranslate"><span class="pre">pname</span></code>) to know which function to apply
+to read/write from/to a string. For example, <code class="docutils literal notranslate"><span class="pre">DIST</span></code> is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">DIST</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;pname&#39;</span><span class="p">:</span> <span class="s1">&#39;dist&#39;</span><span class="p">,</span> <span class="s1">&#39;read&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="s1">&#39;write&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s1">&#39;</span><span class="si">%g</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)}</span>
+</pre></div>
+</div>
+<p>Finally, instead of creating a custom parser, it is often easier to
+read the tree as if the internal nodes had a name, and then change
+them like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="n">newick_text</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>  <span class="c1"># ((X:5)80/100:7)...</span>
+
+<span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">traverse</span><span class="p">():</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">node</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">:</span>
+        <span class="n">supports</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">support</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">support</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># or whatever makes sense</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">del_prop</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 <section id="creating-a-tree">
 <h3><a class="toc-backref" href="#id4" role="doc-backlink">Creating a tree</a><a class="headerlink" href="#creating-a-tree" title="Link to this heading">¶</a></h3>
 <p>ETE’s class <a class="reference internal" href="../reference/reference_tree.html#ete4.core.tree.Tree" title="ete4.core.tree.Tree"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tree</span></code></a>, provided by the main module <code class="xref py py-mod docutils literal notranslate"><span class="pre">ete4</span></code>,
