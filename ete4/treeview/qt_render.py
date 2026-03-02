@@ -268,7 +268,7 @@ def render(root_node, img, hide_root=False):
         full_circle_area = (tree_radius * 2) ** 2
         cropped_area = (max_x - min_x) * (max_y - min_y)
 
-        if arc_span < 359 and (cropped_area / full_circle_area) < 0.75:
+        if arc_span < 359 and (cropped_area / full_circle_area) < 0.75 and img.pack_leaves:
             mainRect.adjust(min_x, min_y, max_x, max_y)
         else:
             mainRect.adjust(-tree_radius, -tree_radius, tree_radius, tree_radius)
