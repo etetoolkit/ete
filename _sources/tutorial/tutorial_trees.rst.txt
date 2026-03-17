@@ -8,7 +8,7 @@ The Tree structure
 Trees
 -----
 
-A **tree** is a widely-used data structures that emulates a tree shape
+A **tree** is a widely-used data structure that emulates a tree shape
 with a set of linked **nodes**. Each node in a tree has zero or more
 child nodes, and one parent node (except the **root node**, which has
 no parent).
