@@ -642,9 +642,9 @@ def get_col_data(rows, x_col, dx_col, nodes, pos_box, pos, bdy_dy, zoom,
         dy_row = (dy_pos - dy_sum) / (nrows - irow)  # allocated dy for this row
 
         is_small = (pos != 'header' and
-                    dy_row * zoom[1] < min_size if not circular else
+                    dy_row * zoom[1] < face.hmin if not circular else
                     (pos != 'aligned' and  # circular aligned items always drawn
-                     circular_dy(x_col, dx_col, dy_row) * zoom[1] < min_size))
+                     circular_dy(x_col, dx_col, dy_row) * zoom[1] < face.hmin))
         if is_small:
             continue  # skip if the available size is too small
 

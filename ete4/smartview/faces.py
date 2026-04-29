@@ -45,11 +45,12 @@ class Face:
     fine-tune the position of things like texts within them).
     """
 
-    def __init__(self, position='top', column=0, anchor=None):
+    def __init__(self, position='top', column=0, anchor=None, hmin=4.0):
         """Save all the parameters that we may want to use."""
         self.position = position  # 'top', 'bottom', 'right', etc.
         self.column = column  # integer >= 0
         self.anchor = anchor or default_anchors[position]  # tuple
+        self.hmin = hmin  # minimum rendered height in pixels before skipping
 
     def draw(self, nodes, size, collapsed, zoom=(1, 1), ax_ay=(0, 0), r=1):
         """Return a list of graphic elements and the actual size they use.
@@ -396,8 +397,8 @@ class SeqFace(Face):
 
     def __init__(self, seq, seqtype='aa', poswidth=15, draw_text=True,
                  hmax=None, fs_max=15, marks=None, style='', render='auto',
-                 position='top', column=0, anchor=None):
-        super().__init__(position, column, anchor)
+                 position='top', column=0, anchor=None, hmin=0.1):
+        super().__init__(position, column, anchor, hmin=hmin)
 
         self.seq = ''.join(x for x in seq)  # in case it was a list
         self.seqtype = seqtype
@@ -435,8 +436,8 @@ class HeatmapFace(Face):
 
     def __init__(self, values, value_range, color_range,
                  poswidth=15, hmax=None,
-                 position='top', column=0, anchor=None):
-        super().__init__(position, column, anchor)
+                 position='top', column=0, anchor=None, hmin=0.1):
+        super().__init__(position, column, anchor, hmin=hmin)
 
         self.values = values
         self.value_range = value_range  # (min, max)
