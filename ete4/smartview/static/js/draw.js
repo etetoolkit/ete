@@ -765,6 +765,7 @@ function create_image(box, href, tl, zx, zy, style="") {
             "href": href,
             "x": p.x, "y": p.y,
             "width": zx * w, "height": zy * h,
+            "preserveAspectRatio": "none",
         });
     }
     else {  // circular
@@ -777,6 +778,7 @@ function create_image(box, href, tl, zx, zy, style="") {
             "href": href,
             "x": p.x, "y": p.y,
             "width": z * dr, "height": zy * r * da,
+            "preserveAspectRatio": "none",
         });
 
         const angle = (a + da/2) * 180 / Math.PI;
