@@ -193,7 +193,7 @@ def callback(tree_id):
         response.content_type = 'application/json'
         if g_config['compress']:
             response.add_header('Content-Encoding', 'br')
-            return brotli.compress(graphics)
+            return brotli.compress(graphics, quality=4)  # q=4: ~60ms/6MB vs 17s at q=11
         else:
             return graphics
     except (AssertionError, SyntaxError) as e:
