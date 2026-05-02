@@ -41,13 +41,11 @@ def draw(tree, layouts, overrides=None, labels=None,
     drawer_obj = drawer_class(tree, style, draw_node_fns, labels,
                               viewport, zoom, collapsed_ids, searches)
 
-    # If the tree is backed by a store (etestore LazyTree), preload visible
-    # node properties before drawing to avoid N individual SQL queries per frame.
-    if hasattr(tree, '_store') and tree._store is not None:
-        needed = []
-        for layout in layouts:
-            needed.extend(getattr(layout, 'preload_props', []))
-        tree._store._preload_for_draw(viewport, needed or None)
+    # If the tree implements _preload_for_draw (e.g. LazyTree), bulk-load
+    # visible node properties before drawing to avoid N individual SQL queries.
+    if hasattr(tree, '_preload_for_draw'):
+        needed = [p for layout in layouts for p in getattr(layout, 'preload_props', [])]
+        tree._preload_for_draw(viewport, needed or None)
 
     yield from drawer_obj.draw()  # yield graphic commands for all nodes
 
