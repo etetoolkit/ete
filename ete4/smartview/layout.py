@@ -79,6 +79,10 @@ class Layout:
     from previous layouts.
     """
 
+    # Optional: list of prop names this layout will access during draw_node().
+    # Used by SmartView to preload lazy props before rendering.
+    preload_props: list = []
+
     def __init__(self, name, draw_tree=None, draw_node=None, cache_size=None,
                  active=True):
         """

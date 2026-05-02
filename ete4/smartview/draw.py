@@ -41,6 +41,14 @@ def draw(tree, layouts, overrides=None, labels=None,
     drawer_obj = drawer_class(tree, style, draw_node_fns, labels,
                               viewport, zoom, collapsed_ids, searches)
 
+    # If the tree is backed by a store (etestore LazyTree), preload visible
+    # node properties before drawing to avoid N individual SQL queries per frame.
+    if hasattr(tree, '_store') and tree._store is not None:
+        needed = []
+        for layout in layouts:
+            needed.extend(getattr(layout, 'preload_props', []))
+        tree._store._preload_for_draw(viewport, needed or None)
+
     yield from drawer_obj.draw()  # yield graphic commands for all nodes
 
     # Get the graphic commands, and xmaxs, from applying the tree faces.
@@ -81,6 +89,7 @@ class Drawer:
         self.labels = [read_label(label) for label in (labels or [])]
         self.viewport = Box(*viewport) if viewport else None
         self.zoom = zoom
+        self._zy = zoom[1]  # cached: avoids tuple unpack in is_small (called per node)
         self.collapsed_ids = collapsed_ids or set()  # manually collapsed
         self.searches = searches or {}  # looks like {text: (results, parents)}
 
@@ -121,7 +130,7 @@ class Drawer:
 
         # We have been collecting in postorder the boxes surrounding the nodes.
         # Draw them now in preorder (so they stack nicely, small over big ones).
-        yield from self.nodeboxes[::-1]
+        yield from reversed(self.nodeboxes)
 
         # NOTE: No need to do "yield gr.set_xmaxs(self.xmaxs)". The calling
         # function will use our self.xmaxs and send the right command.
@@ -292,7 +301,7 @@ class Drawer:
         """Yield collapsed nodes representation."""
         # This is the shape of the outline. It also updates self.bdy_dys.
         x, y, dx, dy = self.outline
-        _, zy, _ = self.zoom
+        zy = self._zy
 
         shape = self.tree_style.get('collapsed-shape', 'skeleton')
 
@@ -420,8 +429,7 @@ class DrawerRect(Drawer):
         return Size(dist(node), node.size[1])
 
     def is_small(self, box):
-        _, zy, _ = self.zoom
-        return box.dy * zy < self.node_height_min
+        return box.dy * self._zy < self.node_height_min
 
     def draw_hz_line(self, p1, p2, parent_of, style):
         """Yield a "horizontal line" representing a length."""
@@ -503,9 +511,8 @@ class DrawerCirc(Drawer):
         return Size(dist(node), node.size[1] * self.dy2da)
 
     def is_small(self, box):
-        z = self.zoom[0]  # zx == zy in this drawer
         r, a, dr, da = box
-        return (r + dr) * da * z < self.node_height_min
+        return (r + dr) * da * self._zy < self.node_height_min
 
     def draw_hz_line(self, p1, p2, parent_of, style):
         """Yield a "horizontal line" representing a length."""
@@ -631,20 +638,19 @@ def get_col_data(rows, x_col, dx_col, nodes, pos_box, pos, bdy_dy, zoom,
     zoom_xy = (zx if not in_aligned_panel else za, zy)
 
     # Iterate over the faces and get their graphics (none if
-    # there's not enough space). We iterate reversed ([::-1]) so the
+    # there's not enough space). We iterate reversed so the
     # first faces are the ones with more space (dy) allocated.
     dy_sum = 0
-    ax, ay = None, None  # so we set the anchor only once per column
-    for irow, face in enumerate(rows[::-1]):  # iterate over all faces
-        if ax is None:  # anchor already set? then no more for this column!
-            ax, ay = get_anchor(face.anchor, pos, bdy_dy)
-
+    # Hoist per-column constants out of the face loop.
+    ax, ay = get_anchor(rows[0].anchor, pos, bdy_dy)
+    not_header = pos != 'header'
+    not_aligned = pos != 'aligned'
+    for irow, face in enumerate(reversed(rows)):  # iterate over all faces
         dy_row = (dy_pos - dy_sum) / (nrows - irow)  # allocated dy for this row
 
-        is_small = (pos != 'header' and
-                    dy_row * zoom[1] < face.hmin if not circular else
-                    (pos != 'aligned' and  # circular aligned items always drawn
-                     circular_dy(x_col, dx_col, dy_row) * zoom[1] < face.hmin))
+        is_small = (not_header and dy_row * zy < face.hmin if not circular else
+                    (not_aligned and  # circular aligned items always drawn
+                     circular_dy(x_col, dx_col, dy_row) * zy < face.hmin))
         if is_small:
             continue  # skip if the available size is too small
 
