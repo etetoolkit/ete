@@ -13,7 +13,7 @@ from unittest.mock import MagicMock
 import pytest
 
 import ete4
-from ete4.lazy_backend import BackendContext, LazyPropsDict, _force_set_props
+from ete4.lazytree import BackendContext, LazyPropsDict, _force_set_props
 
 # ---------------------------------------------------------------------------
 # helpers

@@ -25,6 +25,6 @@ from .utils import SVG_COLORS, COLOR_SCHEMES, random_color
 from .version import __version__
 
 try:
-    from .lazy_tree import LazyTree
+    from .lazytree import LazyTree
 except ImportError:
     pass

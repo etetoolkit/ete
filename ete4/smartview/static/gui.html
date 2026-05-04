@@ -43,5 +43,14 @@
     <!-- Minimap and currenlty visible rectangle -->
     <div id="div_minimap"><svg></svg></div>
     <div id="div_visible_rect"></div>
+
+    <!-- Per-frame performance debug overlay (toggle with Shift+D) -->
+    <div id="div_debug">
+      <div class="dbg-title">
+        <span>&#9881; Debug</span>
+        <button class="dbg-close" title="Hide (Shift+D to restore)">&times;</button>
+      </div>
+      <table class="dbg-body"></table>
+    </div>
   </body>
 </html>

@@ -15,10 +15,23 @@ from __future__ import annotations
 import ctypes
 from typing import TYPE_CHECKING, Any, Literal
 
+_Py_IncRef = ctypes.pythonapi.Py_IncRef
+_Py_IncRef.argtypes = [ctypes.py_object]
+_Py_IncRef.restype = None
+
+_Py_DecRef = ctypes.pythonapi.Py_DecRef
+_Py_DecRef.argtypes = [ctypes.py_object]
+_Py_DecRef.restype = None
+
+# Cache the from_address classmethod at module level: avoids one attribute
+# lookup per call and is 4× faster than ctypes.cast for the pointer write
+# in _force_set_props.
+_c_long_from_addr = ctypes.c_long.from_address
+
 from etestore.exceptions import ReadOnlyStoreError, StoreClosedError
 
 if TYPE_CHECKING:
-    from ete4.lazy_tree import LazyTree
+    from ete4.lazytree.tree import LazyTree
     from etestore.api import TreeStore
 
 
@@ -49,10 +62,7 @@ def _find_props_offset() -> int:
     sentinel_addr = id(sentinel)
     for offset in range(0, 300, 8):
         try:
-            val = ctypes.cast(
-                node_addr + offset, ctypes.POINTER(ctypes.c_long)
-            )[0]
-            if val == sentinel_addr:
+            if _c_long_from_addr(node_addr + offset).value == sentinel_addr:
                 return offset
         except Exception:
             pass
@@ -66,7 +76,7 @@ def _force_set_props(node: Any, new_dict: dict[str, Any]) -> None:
 
     Cython declares ``props`` as ``cdef public dict``, which enforces
     ``type(value) is dict``.  We use ctypes to write directly to the C-level
-    struct slot, correctly maintaining reference counts.
+    struct slot, correctly maintaining reference counts via the CPython API.
 
     Args:
         node: An ete4 ``Tree`` instance.
@@ -75,17 +85,10 @@ def _force_set_props(node: Any, new_dict: dict[str, Any]) -> None:
     global _PROPS_OFFSET
     if _PROPS_OFFSET is None:
         _PROPS_OFFSET = _find_props_offset()
-    old_addr = ctypes.cast(
-        id(node) + _PROPS_OFFSET, ctypes.POINTER(ctypes.c_long)
-    )[0]
-    new_addr = id(new_dict)
-    # Py_INCREF new_dict before writing the pointer.
-    ctypes.cast(new_addr, ctypes.POINTER(ctypes.c_long))[0] += 1
-    # Write new pointer into the slot.
-    ctypes.cast(id(node) + _PROPS_OFFSET, ctypes.POINTER(ctypes.c_long))[0] = new_addr
-    # Py_DECREF old dict.
-    old_rc = ctypes.cast(old_addr, ctypes.POINTER(ctypes.c_long))[0]
-    ctypes.cast(old_addr, ctypes.POINTER(ctypes.c_long))[0] = old_rc - 1
+    old_dict = node.props  # Python-level read — safe, keeps a reference alive
+    _Py_IncRef(new_dict)   # bump before writing pointer — prevent GC window
+    _c_long_from_addr(id(node) + _PROPS_OFFSET).value = id(new_dict)
+    _Py_DecRef(old_dict)   # drop old ref via typed API — no raw address math
 
 
 # ---------------------------------------------------------------------------
@@ -141,6 +144,7 @@ class BackendContext:
         "deleted_props",
         "new_prop_samples",
         "node_index",
+        "preload_done",
     )
 
     def __init__(
@@ -159,6 +163,9 @@ class BackendContext:
         self.deleted_props: dict[int, set[str]] = {}
         self.new_prop_samples: dict[str, Any] = {}
         self.node_index = node_index
+        # Props that have been fully bulk-loaded (sparse nodes may still lack
+        # the value, but re-querying them would return None again).
+        self.preload_done: set[str] = set()
 
     # ------------------------------------------------------------------
     # dirty tracking
@@ -349,7 +356,7 @@ class LazyPropsDict(dict[str, Any]):
         initial: Initial dict contents (eager props already loaded).
     """
 
-    __slots__ = ("_node_id", "_ctx")
+    __slots__ = ("_node_id", "_ctx", "_missing")
 
     def __init__(
         self,
@@ -360,6 +367,9 @@ class LazyPropsDict(dict[str, Any]):
         super().__init__(initial or {})
         self._node_id = node_id
         self._ctx = ctx
+        # Keys confirmed absent from the store for this node — avoids re-querying
+        # sparse props (e.g. leaf-only arrays) on internal nodes every frame.
+        self._missing: set[str] = set()
 
     # ------------------------------------------------------------------
     # dict protocol overrides
@@ -382,13 +392,16 @@ class LazyPropsDict(dict[str, Any]):
             return dict.__getitem__(self, key)
         if self._ctx is None:
             raise StoreClosedError("store is closed")
+        if key in self._missing:
+            raise KeyError(key)
         if key not in self._ctx.lazy_props:
             raise KeyError(key)
         # Fetch from store.
         try:
             val = self._ctx.store.get(self._node_id, key)
         except KeyError:
-            # Sparse node: this prop is absent for this node.
+            # Sparse node: record absence so subsequent frames skip the SQL query.
+            self._missing.add(key)
             raise KeyError(key) from None
         # Cache in dict.
         dict.__setitem__(self, key, val)
@@ -410,6 +423,7 @@ class LazyPropsDict(dict[str, Any]):
             )
         is_new = key not in self._ctx.lazy_props and key not in self._ctx.eager_props
         dict.__setitem__(self, key, value)
+        self._missing.discard(key)
         self._ctx.mark_dirty(self._node_id, key)
         if is_new:
             self._ctx.register_new_prop(key, value)
@@ -449,6 +463,8 @@ class LazyPropsDict(dict[str, Any]):
         if dict.__contains__(self, key):
             return True
         if not isinstance(key, str):
+            return False
+        if key in self._missing:
             return False
         return key in self._ctx.lazy_props or key in self._ctx.eager_props
 

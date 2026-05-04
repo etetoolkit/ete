@@ -9,6 +9,7 @@ import { on_box_contextmenu } from "./contextmenu.js";
 import { colorize_tags } from "./tag.js";
 import { colorize_labels } from "./label.js";
 import { api } from "./api.js";
+import { update_debug } from "./debug.js";
 
 export { update, draw_tree, draw, get_class_name, get_items_per_panel,
          tree2rect, tree2circ, pad };
@@ -41,11 +42,14 @@ async function draw_tree() {
     try {
         const qs = build_draw_query_string();
 
-        // Get the drawing commands.
+        // Get the drawing commands (timed for the debug overlay).
+        const t_fetch_start = performance.now();
         const commands = await api(`/trees/${get_tid()}/draw?${qs}`);
+        const rtt_ms = performance.now() - t_fetch_start;
 
         // Separate them per panel (xmaxs is the farthest x drawn per panel).
-        const [items, xmaxs] = get_items_per_panel(commands);
+        const [items, xmaxs, debug_stats] = get_items_per_panel(commands);
+        update_debug(debug_stats || {}, rtt_ms);
 
         // Clear any graphics from pixi that there may be first.
         clear_pixi();
@@ -178,11 +182,11 @@ function build_draw_query_string() {
 }
 
 
-// Return two objects whose keys are panel numbers (0, 1, ...) and their
-// values are a list of graphics to draw on them, and their maximum x value.
+// Return panel items, xmaxs, and debug stats extracted from the command stream.
 function get_items_per_panel(commands) {
     const items = {};
     let xmaxs = {};
+    let debug_stats = null;
 
     let current_panel = 0;
     commands.forEach(c => {
@@ -192,6 +196,9 @@ function get_items_per_panel(commands) {
         else if (c[0] === "xmaxs") {  // we got a "set xmaxs" command
             xmaxs = c[1];
         }
+        else if (c[0] === "debug") {  // per-frame perf stats — never drawn
+            debug_stats = c[1];
+        }
         else {  // we got a normal drawing command
             if (!(current_panel in items))
                 items[current_panel] = [];
@@ -199,7 +206,7 @@ function get_items_per_panel(commands) {
         }
     });
 
-    return [items, xmaxs];
+    return [items, xmaxs, debug_stats];
 }
 
 

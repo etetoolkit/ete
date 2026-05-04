@@ -11,7 +11,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from ete4.lazy_backend import BackendContext, LazyPropsDict
+from ete4.lazytree import BackendContext, LazyPropsDict
 from etestore.exceptions import ReadOnlyStoreError
 
 

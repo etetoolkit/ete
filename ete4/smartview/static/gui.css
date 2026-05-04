@@ -252,6 +252,63 @@ kbd {  /* from https://developer.mozilla.org/en-US/docs/Web/HTML/Element/kbd */
 }
 
 
+/* Debug overlay */
+
+#div_debug {
+    position: absolute;
+    bottom: 35px;
+    left: 15px;
+    z-index: 5;
+    background: rgba(20, 20, 30, 0.82);
+    color: #d4d4d8;
+    font-family: monospace;
+    font-size: 11px;
+    border-radius: 6px;
+    padding: 5px 8px 6px;
+    min-width: 148px;
+    user-select: none;
+    pointer-events: auto;
+    backdrop-filter: blur(3px);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+.dbg-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #7dd3fc;
+    font-weight: bold;
+    margin-bottom: 4px;
+    padding-bottom: 3px;
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+}
+
+.dbg-close {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1;
+    padding: 0 1px;
+}
+
+.dbg-close:hover { color: #fff; }
+
+.dbg-body { border-collapse: collapse; width: 100%; }
+
+.dbg-body td:first-child {
+    color: #6b7280;
+    padding-right: 12px;
+    white-space: nowrap;
+}
+
+.dbg-body td:last-child {
+    text-align: right;
+    color: #f4f4f5;
+}
+
+
 /*
  * Theming for tweakpane. Based on the "light" preset at
  * https://cocopon.github.io/tweakpane/theming/

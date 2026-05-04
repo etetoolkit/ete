@@ -10,7 +10,7 @@ from unittest.mock import MagicMock, call, patch
 
 import pytest
 
-from ete4.lazy_backend import BackendContext, LazyPropsDict, _force_set_props
+from ete4.lazytree import BackendContext, LazyPropsDict, _force_set_props
 
 
 # ---------------------------------------------------------------------------
@@ -147,8 +147,8 @@ def test_set_eager_no_op_when_no_loaded_nodes() -> None:
 
 def test_flush_all_calls_set_many_once_for_all_dirty_nodes() -> None:
     """flush_all issues a single set_many() for all dirty props across nodes."""
-    from ete4.lazy_backend import _force_set_props
-    from ete4.lazy_tree import LazyTree
+    from ete4.lazytree import _force_set_props
+    from ete4.lazytree import LazyTree
 
     node1 = LazyTree()
     node1._store_id = 1
@@ -184,8 +184,8 @@ def test_flush_all_calls_set_many_once_for_all_dirty_nodes() -> None:
 
 def test_flush_all_clears_dirty_after_flush() -> None:
     """After flush_all, ctx.dirty is empty."""
-    from ete4.lazy_backend import _force_set_props
-    from ete4.lazy_tree import LazyTree
+    from ete4.lazytree import _force_set_props
+    from ete4.lazytree import LazyTree
 
     node = LazyTree()
     node._store_id = 1

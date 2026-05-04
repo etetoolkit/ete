@@ -43,9 +43,15 @@ def draw(tree, layouts, overrides=None, labels=None,
 
     # If the tree implements _preload_for_draw (e.g. LazyTree), bulk-load
     # visible node properties before drawing to avoid N individual SQL queries.
+    # Pass zoom and node_height_min so the preload skips collapsed subtrees.
     if hasattr(tree, '_preload_for_draw'):
         needed = [p for layout in layouts for p in getattr(layout, 'preload_props', [])]
-        tree._preload_for_draw(viewport, needed or None)
+        tree._preload_for_draw(
+            viewport,
+            needed or None,
+            zoom=zoom,
+            node_height_min=drawer_obj.node_height_min,
+        )
 
     yield from drawer_obj.draw()  # yield graphic commands for all nodes
 

@@ -14,8 +14,8 @@ import pytest
 ete4 = pytest.importorskip("ete4")
 np = pytest.importorskip("numpy")
 
-from ete4.lazy_backend import LazyPropsDict  # noqa: E402
-from ete4.lazy_tree import LazyTree  # noqa: E402
+from ete4.lazytree import LazyPropsDict  # noqa: E402
+from ete4.lazytree import LazyTree  # noqa: E402
 from etestore import ReadOnlyStoreError, TreeStore  # noqa: E402
 from etestore.io.ete4 import from_ete4, to_ete4  # noqa: E402
 
@@ -74,7 +74,7 @@ def test_open_loads_topology(tmp_path: Path) -> None:
 
 
 def test_open_loads_eager_props(tmp_path: Path) -> None:
-    """Scalar (eager) props are pre-loaded at open time."""
+    """Scalar/text props (real, text) are pre-loaded at open; blobs stay lazy."""
     src = _build_test_tree()
     store = from_ete4(src, tmp_path / "t.ete")
     store.close()
@@ -82,15 +82,17 @@ def test_open_loads_eager_props(tmp_path: Path) -> None:
     lt = LazyTree.open(tmp_path / "t.ete")
     try:
         a = _leaf(lt, "A")
-        # score is a scalar (real) → eager → pre-loaded in the dict.
+        # score (real) and label (text) are eager — in the dict cache at open.
         assert dict.__contains__(a.props, "score")
+        assert dict.__contains__(a.props, "label")
         assert abs(a.props["score"] - 2.5) < 1e-9
+        assert a.props["label"] == "alpha"
     finally:
         lt.store.close()
 
 
 def test_open_does_not_preload_lazy_props(tmp_path: Path) -> None:
-    """Blob (lazy) props are NOT pre-loaded at open time."""
+    """All props (including blobs) are lazy and not in the dict until accessed."""
     src = _build_test_tree(with_arrays=True)
     store = from_ete4(src, tmp_path / "t.ete")
     store.close()
@@ -98,9 +100,9 @@ def test_open_does_not_preload_lazy_props(tmp_path: Path) -> None:
     lt = LazyTree.open(tmp_path / "t.ete")
     try:
         a = _leaf(lt, "A")
-        # embed is array_float → lazy → not in dict yet.
+        # embed is array_float → not in dict until accessed.
         assert not dict.__contains__(a.props, "embed")
-        # But __contains__ reports True because ctx.lazy_props knows about it.
+        # __contains__ returns True because ctx.lazy_props knows about it.
         assert "embed" in a.props
     finally:
         lt.store.close()

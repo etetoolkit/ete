@@ -17,7 +17,7 @@ import pytest
 
 ete4 = pytest.importorskip("ete4")
 
-from ete4.lazy_tree import LazyTree  # noqa: E402
+from ete4.lazytree import LazyTree  # noqa: E402
 from ete4.smartview.draw import draw as smartview_draw  # noqa: E402
 from ete4.smartview.layout import Layout  # noqa: E402
 

@@ -17,7 +17,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Literal
 
-from ete4.lazy_backend import (
+
+from ete4.lazytree.backend import (
     EAGER_DTYPES,
     LAZY_DTYPES,
     BackendContext,
@@ -47,7 +48,7 @@ class LazyTree(_ETE4_TREE):  # type: ignore[misc, valid-type]
         (no public constructor — use ``LazyTree.open()``)
     """
 
-    __slots__ = ("_store", "_store_id")
+    __slots__ = ("_store", "_store_id", "_draw_debug")
 
     # ------------------------------------------------------------------
     # constructor
@@ -58,6 +59,7 @@ class LazyTree(_ETE4_TREE):  # type: ignore[misc, valid-type]
         # Will be assigned by LazyTree.open(); None until then.
         self._store: Any = None
         self._store_id: int = -1
+        self._draw_debug: dict = {}
 
     # ------------------------------------------------------------------
     # factory
@@ -128,11 +130,13 @@ class LazyTree(_ETE4_TREE):  # type: ignore[misc, valid-type]
         """
         from etestore.io.ete4 import from_ete4
 
-        # Make sure all dirty writes are in the source store first.
-        if self._store is not None:
-            ctx = _get_ctx(self)
-            if ctx is not None and ctx.mode == "rw":
+        ctx = _get_ctx(self)
+        if ctx is not None:
+            if ctx.mode == "rw":
                 ctx.flush_all()
+            # Load all lazy props into the dict so from_ete4 can serialise them.
+            # save() is a one-shot operation; full memory load is acceptable here.
+            _preload_nodes(ctx, list(ctx.node_index.keys()), list(ctx.lazy_props))
         from_ete4(self, path, overwrite=overwrite).close()
 
     def flush(self) -> int:
@@ -290,36 +294,71 @@ class LazyTree(_ETE4_TREE):  # type: ignore[misc, valid-type]
         self,
         viewport: Any,
         needed_props: list[str] | None = None,
+        zoom: tuple[float, float, float] | None = None,
+        node_height_min: float = 0.0,
     ) -> None:
-        """Best-effort preload called by SmartView before drawing a frame.
+        """Bulk-load lazy props for visible nodes before a SmartView frame.
 
-        Uses MPTT to identify likely-visible nodes within the viewport
-        depth range, then bulk-loads ``needed_props`` for those nodes.
-        When ``viewport`` is ``None``, preloads all loaded nodes.
+        Uses ``node.size[1]`` (leaf count) and the viewport y-range to
+        traverse only the subtrees whose y-span overlaps the current viewport,
+        then issues one ``get_many()`` call for those nodes.  Nodes already in
+        the dict cache are skipped; the ``_missing`` set prevents re-querying
+        absent props.
+
+        The ``zoom`` / ``node_height_min`` pair mirrors the SmartView collapse
+        rule: a node is collapsed (and its children skipped) when
+        ``node.size[1] * zy < node_height_min``.  Passing these avoids
+        preloading the interiors of collapsed subtrees, which can reduce the
+        preload set from thousands of nodes to tens.
 
         Args:
-            viewport: Viewport hint (may be ``None`` to preload all).
-            needed_props: Prop names to load.  Defaults to all lazy props.
+            viewport: Spatial viewport from SmartView (``[x, y, w, h]`` in
+                tree coordinate units where y is in leaf-count space) or
+                ``None`` for unrestricted view.
+            needed_props: Prop names declared by layouts via ``preload_props``.
+                When ``None``, this is a no-op.
+            zoom: SmartView zoom tuple ``(zx, zy, za)``.  Only ``zy`` is used.
+            node_height_min: Minimum node height in pixels below which a node
+                is collapsed.  ``0`` disables the collapse-aware pruning.
         """
+        import time as _time
+        self._draw_debug: dict = {}
         ctx = _get_ctx(self)
-        if ctx is None:
+        if ctx is None or not needed_props:
             return
-        if viewport is None:
-            _preload_nodes(ctx, list(ctx.node_index.keys()), needed_props)
+        props = [p for p in needed_props if p in ctx.lazy_props]
+        if not props:
             return
-        try:
-            min_depth = int(viewport.get("min_depth", 0))
-            max_depth = int(viewport.get("max_depth", 9999))
-        except (AttributeError, TypeError, ValueError):
-            _preload_nodes(ctx, list(ctx.node_index.keys()), needed_props)
+        t0 = _time.perf_counter()
+        zy = zoom[1] if zoom else 0.0
+        visible_nids = _collect_visible_nids(self, viewport, zy, node_height_min)
+        if not visible_nids:
             return
-        conn = ctx.store._require_conn()
-        rows = conn.execute(
-            "SELECT id FROM node WHERE depth BETWEEN ? AND ?",
-            (min_depth, max_depth),
-        ).fetchall()
-        ids_in_view = [int(r[0]) for r in rows if int(r[0]) in ctx.node_index]
-        _preload_nodes(ctx, ids_in_view, needed_props)
+
+        # Skip nodes that already have all needed props cached or confirmed absent.
+        # After the first preload frame, _missing is populated for nodes without
+        # data, so subsequent frames skip re-querying them immediately.
+        props_set = frozenset(props)
+        to_fetch: list[int] = []
+        for nid in visible_nids:
+            node = ctx.node_index.get(nid)
+            if node is None:
+                continue
+            lpd = node.props
+            if not isinstance(lpd, LazyPropsDict):
+                continue
+            for p in props_set:
+                if not dict.__contains__(lpd, p) and p not in lpd._missing:
+                    to_fetch.append(nid)
+                    break
+        if to_fetch:
+            _preload_nodes(ctx, to_fetch, props)
+        self._draw_debug = {
+            'n_visible': len(visible_nids),
+            'n_cached': len(visible_nids) - len(to_fetch),
+            'n_fetched': len(to_fetch),
+            't_preload_ms': round((_time.perf_counter() - t0) * 1000, 1),
+        }
 
     # ------------------------------------------------------------------
     # internal builder
@@ -333,7 +372,12 @@ class LazyTree(_ETE4_TREE):  # type: ignore[misc, valid-type]
         eager_props_override: list[str] | None,
         lazy_props_override: list[str] | None,
     ) -> LazyTree:
-        """Build a LazyTree from an open TreeStore.
+        """Build a LazyTree from an open TreeStore in a single pass.
+
+        Processes raw SQL rows directly — no intermediate TopologyNode or
+        TreeTopology objects.  Creates each node, sets its attributes, wires
+        the parent-child link, and installs its LazyPropsDict all in one loop,
+        reducing allocation pressure and eliminating two full iterations over N.
 
         Args:
             store: Open ``TreeStore``.
@@ -344,13 +388,16 @@ class LazyTree(_ETE4_TREE):  # type: ignore[misc, valid-type]
         Returns:
             Root ``LazyTree`` node.
         """
+        import gc
+
         prop_infos = store.list_properties()
         eager_set, lazy_set = _partition_props(
             prop_infos, eager_props_override, lazy_props_override
         )
-        topology = store.topology()
-        _, ete_nodes = _build_lazy_topology_with_index(topology, cls)
-        node_index = _link_nodes_to_store(ete_nodes, store)
+
+        # Create the context with an empty node_index before the build loop;
+        # LazyPropsDict references ctx, and node_index is filled in-place.
+        node_index: dict[int, LazyTree] = {}
         ctx = BackendContext(
             store=store,
             lazy_props=lazy_set,
@@ -359,9 +406,45 @@ class LazyTree(_ETE4_TREE):  # type: ignore[misc, valid-type]
             node_index=node_index,
         )
         store._ctx = ctx
-        _install_lazy_dicts(node_index, ctx)
+
+        rows = store.topology_rows()
+        if not rows:
+            raise RuntimeError("topology is empty")
+
+        # nodes is a local dict for parent lookups; node_index is the ctx copy.
+        nodes: dict[int, Any] = {}
+        root: LazyTree | None = None
+
+        was_enabled = gc.isenabled()
+        gc.disable()
+        try:
+            for r in rows:
+                nid = int(r[0])
+                pid = r[1]
+                node: LazyTree = cls()
+                if r[4] is not None:   # name
+                    node.name = r[4]
+                if r[3] is not None:   # dist
+                    node.dist = r[3]
+                node._store = store
+                node._store_id = nid
+                lpd = LazyPropsDict(nid, ctx, node.props)
+                _force_set_props(node, lpd)
+                nodes[nid] = node
+                node_index[nid] = node
+                if pid is None:
+                    root = node
+                else:
+                    nodes[int(pid)].add_child(node)
+        finally:
+            if was_enabled:
+                gc.enable()
+
+        if root is None:
+            raise RuntimeError("topology has no root")
+
         _prefetch_eager_props(store, node_index, eager_set)
-        return node_index[topology.root.id]
+        return root
 
 
 # ---------------------------------------------------------------------------
@@ -383,12 +466,88 @@ def _get_ctx(root: LazyTree) -> BackendContext | None:
     return None
 
 
+_MAX_PRELOAD_PER_FRAME: int = 5_000
+
+
+def _collect_visible_nids(
+    root: Any,
+    viewport: Any,
+    zy: float = 0.0,
+    node_height_min: float = 0.0,
+) -> list[int]:
+    """Return store IDs of nodes whose y-span overlaps the viewport.
+
+    Traverses the tree using ``node.size[1]`` (leaf count in subtree) as the
+    y-extent of each node.  Prunes entire subtrees that fall outside the
+    viewport, making this O(V log N) where V is the number of visible leaves.
+
+    When ``zy`` and ``node_height_min`` are provided the traversal also stops
+    descending into subtrees that would be collapsed by the SmartView renderer
+    (``node.size[1] * zy < node_height_min``).  This mirrors the exact collapse
+    rule used in :class:`~ete4.smartview.draw.Drawer` and avoids preloading
+    the interiors of collapsed subtrees.
+
+    Args:
+        root: Root ``LazyTree`` node.
+        viewport: ``[x, y, dx, dy]`` box in tree coordinates where y is in
+            leaf-count units, or ``None`` for unrestricted view.
+        zy: Vertical zoom factor (pixels per leaf unit).  ``0`` disables
+            collapse-aware pruning.
+        node_height_min: Minimum node height in pixels.  A node whose
+            ``size[1] * zy < node_height_min`` is treated as collapsed and its
+            children are not visited.  ``0`` disables this pruning.
+
+    Returns:
+        List of store IDs (at most ``_MAX_PRELOAD_PER_FRAME``).
+    """
+    result: list[int] = []
+    collapse_threshold: float = (node_height_min / zy) if zy > 0 and node_height_min > 0 else 0.0
+
+    if viewport is None:
+        for node in root.traverse():
+            if len(result) >= _MAX_PRELOAD_PER_FRAME:
+                break
+            props = node.props
+            if isinstance(props, LazyPropsDict):
+                result.append(props._node_id)
+        return result
+
+    vp_y: float = viewport[1]
+    vp_y_end: float = viewport[1] + viewport[3]
+
+    def _visit(node: Any, y: float) -> None:
+        if len(result) >= _MAX_PRELOAD_PER_FRAME:
+            return
+        dy: float = node.size[1]
+        if dy == 0:
+            dy = 1.0
+        if y + dy <= vp_y or y >= vp_y_end:
+            return  # outside viewport — prune
+        props = node.props
+        if isinstance(props, LazyPropsDict):
+            result.append(props._node_id)
+        # Stop descending into subtrees the renderer will collapse.
+        if collapse_threshold > 0 and dy < collapse_threshold:
+            return
+        child_y = y
+        for child in node.children:
+            _visit(child, child_y)
+            child_y += child.size[1] or 1.0
+
+    _visit(root, 0.0)
+    return result
+
+
 def _preload_nodes(
     ctx: BackendContext,
     node_ids: list[int],
     props: list[str] | None = None,
 ) -> None:
     """Bulk-load props into LazyPropsDicts for the given node IDs.
+
+    For each queried (node, prop) pair that returns no data, the prop name is
+    added to that node's ``_missing`` set.  This prevents ``_preload_for_draw``
+    from re-querying the same absent (node, prop) pairs on subsequent frames.
 
     Args:
         ctx: Active ``BackendContext``.
@@ -403,45 +562,15 @@ def _preload_nodes(
         node = ctx.node_index.get(nid)
         if node is None:
             continue
-        for name, val in prop_vals.items():
+        lpd = node.props
+        if not isinstance(lpd, LazyPropsDict):
+            continue
+        for name in prop_names:
+            val = prop_vals.get(name)
             if val is not None:
-                dict.__setitem__(node.props, name, val)
-
-
-def _link_nodes_to_store(
-    ete_nodes: dict[int, Any],
-    store: Any,
-) -> dict[int, LazyTree]:
-    """Assign store IDs to nodes and build the node_index mapping.
-
-    Args:
-        ete_nodes: Node ID → LazyTree node from topology building.
-        store: The open TreeStore instance.
-
-    Returns:
-        Dict mapping store_id → LazyTree node.
-    """
-    node_index: dict[int, LazyTree] = {}
-    for nid, node in ete_nodes.items():
-        node._store = store
-        node._store_id = nid
-        node_index[nid] = node
-    return node_index
-
-
-def _install_lazy_dicts(
-    node_index: dict[int, LazyTree],
-    ctx: BackendContext,
-) -> None:
-    """Install a LazyPropsDict on every node via ctypes bypass.
-
-    Args:
-        node_index: All nodes to instrument.
-        ctx: Shared BackendContext for this session.
-    """
-    for nid, node in node_index.items():
-        lpd = LazyPropsDict(nid, ctx, dict(node.props))
-        _force_set_props(node, lpd)
+                dict.__setitem__(lpd, name, val)
+            else:
+                lpd._missing.add(name)
 
 
 def _prefetch_eager_props(
@@ -449,9 +578,11 @@ def _prefetch_eager_props(
     node_index: dict[int, LazyTree],
     eager_set: frozenset[str],
 ) -> None:
-    """Bulk-load all eager props into node LazyPropsDicts.
+    """Bulk-load explicitly eager props at open time.
 
-    Issues a single get_many() call for all nodes and all eager props.
+    By default ``eager_set`` is empty (all props are lazy) so this is a
+    no-op unless the caller passed ``eager_props_override`` to
+    :meth:`LazyTree.open`.
 
     Args:
         store: Open TreeStore to fetch from.
@@ -497,40 +628,12 @@ def _partition_props(
             i.name for i in prop_infos if i.name not in lazy_set
         )
         return eager_set, lazy_set
-    # Default: dtype-based split.
+    # Default: classify by dtype stored in the catalog — no runtime scanning.
+    # Scalar/text dtypes are eager (loaded at open time); blob/array dtypes
+    # are lazy (fetched per-frame as nodes become visible).
     eager_set = frozenset(i.name for i in prop_infos if i.dtype in EAGER_DTYPES)
-    lazy_set = frozenset(i.name for i in prop_infos if i.dtype in LAZY_DTYPES)
+    lazy_set = frozenset(i.name for i in prop_infos if i.dtype not in EAGER_DTYPES)
     return eager_set, lazy_set
-
-
-def _build_lazy_topology_with_index(
-    topology: Any,
-    tree_cls: type,
-) -> tuple[LazyTree, dict[int, LazyTree]]:
-    """Build LazyTree nodes from a ``TreeTopology``, returning root and index.
-
-    Args:
-        topology: ``TreeTopology`` from the store.
-        tree_cls: Node class to instantiate (a ``LazyTree`` subclass).
-
-    Returns:
-        ``(root_node, {nid: node})`` mapping.
-    """
-    nodes: dict[int, Any] = {}
-    for nid, ts_node in topology.node_index.items():
-        ete_node = tree_cls()
-        if ts_node.name is not None:
-            ete_node.name = ts_node.name
-        if ts_node.dist is not None:
-            ete_node.dist = ts_node.dist
-        if ts_node.support is not None:
-            ete_node.support = ts_node.support
-        nodes[nid] = ete_node
-    for nid, ts_node in topology.node_index.items():
-        for child in ts_node.children:
-            nodes[nid].add_child(nodes[child.id])
-    root = nodes[topology.root.id]
-    return root, nodes
 
 
 def _find_root(node_index: dict[int, Any]) -> Any | None:

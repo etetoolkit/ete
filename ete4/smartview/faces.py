@@ -172,14 +172,23 @@ def make_nodes_summary(nodes, code=None):
 
 def first_value(tree, code=None):
     """Return value of evaluating the given code, on the first possible node."""
-    if code is None:  # special (and common!) case: get the first name
-        return next((node.name for node in tree.traverse() if node.name), '')
-    else:
-        for node in tree.traverse():
-            value = eval_as_str(code, node)
-            if value:
-                return value
-        return ''
+    # Walk the leftmost path to the first leaf — O(depth) not O(subtree).
+    # Collapsed subtrees can be large (>10k leaves), so traverse() is
+    # prohibitively slow.  The leftmost leaf is a suitable representative.
+    node = tree
+    while node.children:
+        node = node.children[0]
+    if code is None:
+        return node.name or ''
+    value = eval_as_str(code, node)
+    if value:
+        return value
+    # Rare fallback: leftmost leaf had no value — search broader subtree.
+    for node in tree.traverse():
+        value = eval_as_str(code, node)
+        if value:
+            return value
+    return ''
 
 
 def texts_size(texts, size_max, fs_max, rotation, zoom, r=1):

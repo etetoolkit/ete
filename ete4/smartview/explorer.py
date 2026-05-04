@@ -12,6 +12,7 @@ import sys
 import os
 import re
 import json
+import time
 import gzip, bz2, zipfile, tarfile
 import socket
 import webbrowser
@@ -188,7 +189,17 @@ def callback(tree_id):
     try:
         kwargs = get_drawing_kwargs(tree_id, request.query)
 
-        graphics = json.dumps(list(draw.draw(**kwargs))).encode('utf8')
+        t0 = time.perf_counter()
+        commands = list(draw.draw(**kwargs))
+        t_draw_ms = round((time.perf_counter() - t0) * 1000, 1)
+
+        # Append a debug command with per-frame stats (filtered out by the frontend).
+        tree = kwargs['tree']
+        debug = {'t_draw_ms': t_draw_ms, 'n_commands': len(commands)}
+        debug.update(getattr(tree, '_draw_debug', {}))
+        commands.append(['debug', debug])
+
+        graphics = json.dumps(commands).encode('utf8')
 
         response.content_type = 'application/json'
         if g_config['compress']:

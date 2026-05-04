@@ -12,6 +12,7 @@ import { api, api_put, escape_html } from "./api.js";
 import { remove_tags } from "./tag.js";
 import { remove_collapsed } from "./collapse.js";
 import { label_expression, label_property } from "./label.js";
+import { init_debug } from "./debug.js";
 
 export { view, menus, on_tree_change, on_shape_change, show_minimap,
          tree_command, get_tid, on_box_click, on_box_wheel, coordinates,
@@ -181,6 +182,8 @@ async function main() {
 
         draw_minimap();
         show_minimap(false);  // set to true to have a minimap at startup
+
+        init_debug();
 
         await init_pixi();
 
