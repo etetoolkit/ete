@@ -362,7 +362,7 @@ class TreeNode(object):
             return self.up.remove_child(sister)
 
     def delete(self, prevent_nondicotomic=True, preserve_branch_length=False):
-        """
+        r"""
         Deletes node from the tree structure. Notice that this method
         makes 'disappear' the node from the tree structure. This means
         that children from the deleted node are transferred to the
@@ -433,7 +433,7 @@ class TreeNode(object):
 
 
     def prune(self, nodes, preserve_branch_length=False):
-        """Prunes the topology of a node to conserve only the selected list of leaf
+        r"""Prunes the topology of a node to conserve only the selected list of leaf
         internal nodes. The minimum number of nodes that conserve the
         topological relationships among the requested nodes will be
         retained. Root node is always conserved.
@@ -1487,7 +1487,7 @@ class TreeNode(object):
                                       units=units, dpi=dpi)
 
     def copy(self, method="cpickle"):
-        """.. versionadded: 2.1
+        r""".. versionadded: 2.1
 
         Returns a copy of the current node.
 

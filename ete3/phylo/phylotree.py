@@ -129,7 +129,7 @@ def _get_subtrees(tree, full_copy=False, features=None, newick_only=False):
         return ''.join([pre, node.name, fstring, post])
 
     if newick_only:
-        id_match = re.compile("([^0-9])?(\d+)([^0-9])?")
+        id_match = re.compile(r"([^0-9])?(\d+)([^0-9])?")
         for nw in sp_trees:
             yield re.sub(id_match, _nodereplacer, str(nw)+";")
     else:
@@ -185,7 +185,7 @@ def iter_sptrees(sptrees, nid2node, features=None, newick_only=False):
         return ''.join([pre, node.name, fstring, post])
 
     if newick_only:
-        id_match = re.compile("([^0-9])(\d+)([^0-9])")
+        id_match = re.compile(r"([^0-9])(\d+)([^0-9])")
         for nw in sptrees:
             yield re.sub(id_match, _nodereplacer, str(nw)+";")
     else:

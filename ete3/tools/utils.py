@@ -25,7 +25,7 @@ def colorify(string, color):
     return "%s%s%s" %(COLORS[color], string, COLORS[None])
 
 def clear_color(string):
-    return re.sub("\\033\[[^m]+m", "", string)
+    return re.sub(r"\033\[[^m]+m", "", string)
 
 def which(program):
     def is_exe(fpath):
