@@ -79,7 +79,7 @@ def color(string, color):
     return "%s%s%s" %(SHELL_COLORS[color], string, SHELL_COLORS[None])
 
 def clear_color(string):
-    return re.sub("\\033\[[^m]+m", "", string)
+    return re.sub(r"\033\[[^m]+m", "", string)
 
 def print_table(items, header=None, wrap=True, max_col_width=20,
                 wrap_style="wrap", row_line=False, fix_col_width=False, title=None):

@@ -48,11 +48,11 @@ __all__ = ["read_newick", "write_newick", "print_supported_formats"]
 ITERABLE_TYPES = set([list, set, tuple, frozenset])
 
 # Regular expressions used for reading newick format
-_ILEGAL_NEWICK_CHARS = ":;(),\[\]\t\n\r="
+_ILEGAL_NEWICK_CHARS = ":;(),\\[\\]\t\n\r="
 _NON_PRINTABLE_CHARS_RE = "[\x00-\x1f]+"
 
-_NHX_RE = "\[&&NHX:[^\]]*\]"
-_FLOAT_RE = "\s*[+-]?\d+\.?\d*(?:[eE][-+]?\d+)?\s*"
+_NHX_RE = r"\[&&NHX:[^\]]*\]"
+_FLOAT_RE = r"\s*[+-]?\d+\.?\d*(?:[eE][-+]?\d+)?\s*"
 #_FLOAT_RE = "[+-]?\d+\.?\d*"
 #_NAME_RE = "[^():,;\[\]]+"
 _NAME_RE = "[^():,;]+?"
@@ -399,7 +399,7 @@ def compile_matchers(formatcode):
             SECOND_MATCH += "?"
 
 
-        matcher_str= '^\s*%s\s*%s\s*(%s)?\s*$' % (FIRST_MATCH, SECOND_MATCH, _NHX_RE)
+        matcher_str= r'^\s*%s\s*%s\s*(%s)?\s*$' % (FIRST_MATCH, SECOND_MATCH, _NHX_RE)
         compiled_matcher = re.compile(matcher_str)
         matchers[node_type] = [container1, container2, converterFn1, converterFn2, compiled_matcher]
 

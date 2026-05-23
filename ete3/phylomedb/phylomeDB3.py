@@ -72,7 +72,7 @@ from six.moves import map
 def extract_species_name(name):
   return name.split("_")[1]
 
-ID_PATTERN = re.compile("^[Pp][Hh][Yy]\w{7}(_\w{2,7})?$")
+ID_PATTERN = re.compile(r"^[Pp][Hh][Yy]\w{7}(_\w{2,7})?$")
 ITERABLE_TYPES = set([list, set, tuple, frozenset])
 
 __all__ = ["PhylomeDB3Connector"]
@@ -150,7 +150,7 @@ class Phylome(object):
     """
     def clean_name(name):
       quote = lambda x: '"%s"' %x
-      m = re.search("Phy(\w{7})_[\w\d]+", name)
+      m = re.search(r"Phy(\w{7})_[\w\d]+", name)
       if m:
         return quote(m.groups()[0])
 
@@ -497,7 +497,7 @@ class PhylomeDB3Connector(object):
     """
 
     # Check whether the input code is a valid former phylomeDB id or not
-    QUERY_OLD_REGEXP_FILTER = "^\w{3}\d{1,}$"
+    QUERY_OLD_REGEXP_FILTER = r"^\w{3}\d{1,}$"
     if not re.match(QUERY_OLD_REGEXP_FILTER, old_id):
       return None
 
@@ -753,9 +753,9 @@ class PhylomeDB3Connector(object):
     query = id.strip()
 
     # To avoid weird queries which creates slow or invalid MYSQL queries
-    QUERY_GEN_REGEXP_FILTER = "^[\w\d\-_,;:.|#@\/\\\()'<>!]+$"
-    QUERY_OLD_REGEXP_FILTER = "^\w{3}\d{1,}$"
-    QUERY_INT_REGEXP_FILTER = "^[Pp][Hh][Yy]\w{7}(_\w{2,7})?$"
+    QUERY_GEN_REGEXP_FILTER = r"^[\w\d\-_,;:.|#@/\\()'<>!]+$"
+    QUERY_OLD_REGEXP_FILTER = r"^\w{3}\d{1,}$"
+    QUERY_INT_REGEXP_FILTER = r"^[Pp][Hh][Yy]\w{7}(_\w{2,7})?$"
 
     phylomeDB_matches = {}
     # First, check if it is a current phylomeDB ID

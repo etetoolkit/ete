@@ -156,7 +156,7 @@ __all__ = ["Face", "TextFace", "AttrFace", "ImgFace",
            "RectFace", "StackedBarFace", "SVGFace", "DiamondFace"]
 
 class Face(object):
-    """Base Face object. All Face types (i.e. TextFace, SeqMotifFace,
+    r"""Base Face object. All Face types (i.e. TextFace, SeqMotifFace,
     etc.) inherit the following options:
 
     :param 0 margin_left: in pixels
