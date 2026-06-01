@@ -243,6 +243,13 @@
     <span class="k">except</span> <span class="p">(</span><span class="ne">AssertionError</span><span class="p">,</span> <span class="ne">SyntaxError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="n">abort</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;when drawing: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
+<span class="nd">@get</span><span class="p">(</span><span class="s1">&#39;/trees/&lt;tree_id&gt;/last_drawing_args&#39;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">callback</span><span class="p">(</span><span class="n">tree_id</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">g_last_drawing_args</span><span class="p">[</span><span class="n">tree_id</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">abort</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;no previous drawing command for tree </span><span class="si">{</span><span class="n">tree_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
 <span class="nd">@get</span><span class="p">(</span><span class="s1">&#39;/trees/&lt;tree_id&gt;/search&#39;</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">callback</span><span class="p">(</span><span class="n">tree_id</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Store a search, saving matching nodes so they can be later drawn.&quot;&quot;&quot;</span>
@@ -382,6 +389,7 @@
 <span class="n">g_trees</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># &#39;name&#39; -&gt; Tree</span>
 <span class="n">g_config</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;compress&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>  <span class="c1"># global configuration</span>
 <span class="n">g_layouts</span> <span class="o">=</span> <span class="p">{</span><span class="kc">None</span><span class="p">:</span> <span class="p">[]}</span>  <span class="c1"># &#39;name&#39; -&gt; [available layouts] (None for preloaded)</span>
+<span class="n">g_last_drawing_args</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># &#39;name&#39; -&gt; kwargs used in the last drawing request</span>
 <span class="n">g_searches</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># &#39;searched_text&#39; -&gt; ({result nodes}, {parent nodes})</span>
 <span class="n">g_threads</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># {&#39;server&#39;: (thread, server)}</span>
 
@@ -450,6 +458,8 @@
                   <span class="s1">&#39;rmin&#39;</span><span class="p">,</span> <span class="s1">&#39;amin&#39;</span><span class="p">,</span> <span class="s1">&#39;amax&#39;</span><span class="p">]</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">k</span> <span class="ow">in</span> <span class="n">valid_keys</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span> <span class="s1">&#39;invalid keys&#39;</span>
+
+        <span class="n">g_last_drawing_args</span><span class="p">[</span><span class="n">tree_id</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>  <span class="c1"># save for /last_drawing_args</span>
 
         <span class="n">get</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">default</span><span class="p">))</span>  <span class="c1"># shortcut</span>
 
