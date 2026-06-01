@@ -199,6 +199,13 @@ def callback(tree_id):
     except (AssertionError, SyntaxError) as e:
         abort(400, f'when drawing: {e}')
 
+@get('/trees/<tree_id>/last_drawing_args')
+def callback(tree_id):
+    try:
+        return g_last_drawing_args[tree_id]
+    except KeyError as e:
+        abort(400, f'no previous drawing command for tree {tree_id}')
+
 @get('/trees/<tree_id>/search')
 def callback(tree_id):
     """Store a search, saving matching nodes so they can be later drawn."""
@@ -335,6 +342,7 @@ def callback(tree_id):
 g_trees = {}  # 'name' -> Tree
 g_config = {'compress': False}  # global configuration
 g_layouts = {None: []}  # 'name' -> [available layouts] (None for preloaded)
+g_last_drawing_args = {}  # 'name' -> kwargs used in the last drawing request
 g_searches = {}  # 'searched_text' -> ({result nodes}, {parent nodes})
 g_threads = {}  # {'server': (thread, server)}
 
@@ -389,6 +397,8 @@ def get_drawing_kwargs(tree_id, args):
                   'rmin', 'amin', 'amax']
     try:
         assert all(k in valid_keys for k in args.keys()), 'invalid keys'
+
+        g_last_drawing_args[tree_id] = dict(args)  # save for /last_drawing_args
 
         get = lambda x, default: float(args.get(x, default))  # shortcut
 
