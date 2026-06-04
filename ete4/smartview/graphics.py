@@ -65,8 +65,8 @@ def draw_arc(p1, p2, style=''):
 def draw_circle(center, radius=1, style=''):
     return ['circle', center, radius, style]
 
-def draw_polygon(center, radius, shape=3, style=''):
-    return ['polygon', center, radius, shape, style]
+def draw_polygon(center, radius, shape=3, rotation=0, style=''):
+    return ['polygon', center, radius, shape, rotation, style]
 
 def draw_box(box, style=''):
     return ['box', box, style]

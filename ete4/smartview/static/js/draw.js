@@ -291,8 +291,8 @@ function translate(item, shift) {
         return ["circle", [x + shift, y], radius, style];
     }
     else if (item[0] === "polygon") {
-        const [ , [x, y], radius, shape, style] = item;
-        return ["polygon", [x + shift, y], radius, shape, style];
+        const [ , [x, y], radius, shape, rotation, style] = item;
+        return ["polygon", [x + shift, y], radius, shape, rotation, style];
     }
     else if (item[0] === "box") {
         const [ , box, style] = item;
@@ -435,6 +435,7 @@ function legend2html(legend) {
     }
     else {  // variable continuous: use value range and color range
         const [vmin, vmax] = vrange.map(format_number);  // values
+
         return header +
             `${vmax}
              <span style="display: block;
@@ -570,10 +571,10 @@ function create_item(item, tl, zoom, wmax) {
         return create_circle(center, radius, tl, zx, zy, add_ns_prefix(style));
     }
     else if (item[0] === "polygon") {
-        const [ , center, radius, shape, style] = item;
-
+        const [ , center, radius, shape, rotation, style] = item;
+        
         return create_polygon(center, radius, shape, tl, zx, zy,
-                              add_ns_prefix(style), true);
+             rotation, add_ns_prefix(style), true);
     }
     else if (item[0] === "box") {
         const [ , box, style] = item;
@@ -798,11 +799,12 @@ function create_dot(point, dy_max, tl, zx, zy, styles) {
     // Radius of the dot in pixels.
     const r_max = zy * dy_max * (view.shape === "circular" ? point[0] : 1);
     const r = Math.min(r_max, pop_style(styles, "radius") || view.node.dot.radius);
+    const rotation = pop_style(styles, "rotation") || 0;
 
     if (shape === "circle")
         return create_circle(point, r, tl, zx, zy, styles);
     else
-        return create_polygon(point, r, shape, tl, zx, zy, styles);
+        return create_polygon(point, r, shape, tl, zx, zy, rotation, styles);
 }
 
 
@@ -958,7 +960,8 @@ function create_circle(center, radius, tl, zx, zy, style="") {
 
 
 // Create a polygon.
-function create_polygon(center, r, shape, tl, zx, zy, style="", resize=false) {
+function create_polygon(center, r, shape, tl, zx, zy, rotation=0, style="", resize=false) {
+
     const n = typeof shape === "number" ? shape :
           {"triangle": 3,
            "square":   4,
@@ -999,11 +1002,15 @@ function create_polygon(center, r, shape, tl, zx, zy, style="", resize=false) {
         add_rotation(element, angle, c.x, c.y);
     }
 
+    // Apply custom rotation
+    if (rotation !== 0) {
+        add_rotation(element, rotation, c.x, c.y);
+    }
+
     add_style(element, style);
 
     return element;
 }
-
 
 function create_text(box, anchor, text, fs_max, rotation,
                      tl, zx, zy, style="") {
