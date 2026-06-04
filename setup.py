@@ -1,13 +1,13 @@
 from setuptools import setup, Extension
 
 from glob import glob
-from os.path import isfile
+from os.path import isfile, sep
 
 from Cython.Build import cythonize
 
 
 def make_extension(path):  # to create cython extensions the way we want
-    name = path.replace('/', '.')[:-len('.pyx')]  # / -> .  and remove .pyx
+    name = path.replace(sep, '.')[:-len('.pyx')]  # / -> .  and remove .pyx
     return Extension(name, [path], extra_compile_args=['-O3'])
 
 setup(

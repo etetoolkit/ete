@@ -11,7 +11,7 @@ import requests
 
 # Helper function to define global ETE_* variables.
 def ete_path(xdg_var, default):
-    return os.environ.get(xdg_var, os.environ['HOME'] + default) + '/ete'
+    return os.environ.get(xdg_var, os.path.expanduser('~') + default) + '/ete'
 
 ETE_DATA_HOME   = ete_path('XDG_DATA_HOME',   '/.local/share')
 ETE_CONFIG_HOME = ete_path('XDG_CONFIG_HOME', '/.config')
