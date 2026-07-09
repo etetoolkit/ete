@@ -2,7 +2,10 @@
 Test the functionality of ncbiquery.py. To run with pytest.
 """
 
+import io
 import os
+import tarfile
+
 import pytest
 
 from ete4 import PhyloTree, NCBITaxa, ETE_DATA_HOME, update_ete_data
@@ -164,6 +167,43 @@ def test_merged_id():
 
     t2 = ncbi.get_lineage("649756")
     assert t2 == [1, 131567, 2, 1783272, 1239, 186801, 3085636, 186803, 207244, 649756]
+
+
+def _make_taxdump_tar(path, prefix=''):
+    """Write a minimal taxdump tarball, prefixing member names with `prefix`.
+
+    GNU tar creates members named like `./names.dmp` when archiving a
+    directory with `tar -c -C dir .`, so we emulate that with prefix='./'.
+    """
+    names = ('1\t|\troot\t|\t\t|\tscientific name\t|\n'
+             '2\t|\tBacteria\t|\t\t|\tscientific name\t|\n')
+    nodes = ('1\t|\t1\t|\tno rank\t|\n'
+             '2\t|\t1\t|\tsuperkingdom\t|\n')
+    merged = '3\t|\t2\t|\n'
+
+    with tarfile.open(path, 'w:gz') as tar:
+        for fname, content in [('names.dmp', names),
+                               ('nodes.dmp', nodes),
+                               ('merged.dmp', merged)]:
+            data = content.encode()
+            info = tarfile.TarInfo(name=prefix + fname)
+            info.size = len(data)
+            tar.addfile(info, io.BytesIO(data))
+
+
+@pytest.mark.parametrize('prefix', ['', './'])
+def test_extract_dmp_with_leading_dotslash(tmp_path, prefix):
+    # Members named like `./names.dmp` (as produced by GNU tar) must be
+    # found just like plain `names.dmp`. See
+    # https://github.com/etetoolkit/ete/issues/810
+    taxdump = str(tmp_path / 'taxdump.tar.gz')
+    _make_taxdump_tar(taxdump, prefix=prefix)
+
+    dbfile = str(tmp_path / 'taxa.sqlite')
+    ncbiquery.update_db(dbfile, taxdump)  # should not raise
+
+    ncbi = NCBITaxa(dbfile=dbfile)
+    assert ncbi.get_taxid_translator(['2'])[2] == 'Bacteria'
 
 
 def test_ignore_unclassified():

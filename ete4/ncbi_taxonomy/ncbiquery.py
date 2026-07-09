@@ -585,6 +585,19 @@ class NCBITaxa:
         return broken_branches, broken_clades, broken_clade_sizes
 
 
+def extractfile_dmp(tar, name):
+    """Return the tar member `name`, tolerating a leading './' in its name.
+
+    Tarballs made with GNU tar (e.g. `tar -c -C dir .`) name their members
+    like './names.dmp', so a lookup for the bare 'names.dmp' fails. Try both.
+    See https://github.com/etetoolkit/ete/issues/810
+    """
+    try:
+        return tar.extractfile(name)
+    except KeyError:
+        return tar.extractfile('./' + name)
+
+
 def load_ncbi_tree_from_dump(tar):
     from .. import Tree
     parent2child = {}
@@ -595,7 +608,7 @@ def load_ncbi_tree_from_dump(tar):
     node2common = {}
     print("Loading node names...")
     unique_nocase_synonyms = set()
-    for line in tar.extractfile("names.dmp"):
+    for line in extractfile_dmp(tar, "names.dmp"):
         line = str(line.decode())
         fields =  [_f.strip() for _f in line.split("|")]
         nodename = fields[0]
@@ -622,7 +635,7 @@ def load_ncbi_tree_from_dump(tar):
     print(len(synonyms), "synonyms loaded.")
 
     print("Loading nodes...")
-    for line in tar.extractfile("nodes.dmp"):
+    for line in extractfile_dmp(tar, "nodes.dmp"):
         line = str(line.decode())
         fields =  line.split("|")
         nodename = fields[0].strip()
@@ -689,7 +702,7 @@ def update_db(dbfile, targz_file=None):
         SYN.write('\n'.join(["%s\t%s" %(v[0],v[1]) for v in synonyms]))
 
     with open("merged.tab", "w") as merged:
-        for line in tar.extractfile("merged.dmp"):
+        for line in extractfile_dmp(tar, "merged.dmp"):
             line = str(line.decode())
             out_line = '\t'.join([_f.strip() for _f in line.split('|')[:2]])
             merged.write(out_line+'\n')
