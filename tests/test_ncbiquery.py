@@ -122,7 +122,7 @@ def test_ncbiquery():
     assert set(out) == {63221, 741158, 2665953, 1425170, 2813599}
 
     out = ncbi.get_descendant_taxa('9596', intermediate_nodes=False, rank_limit='species')
-    assert set(out) == {9597, 9598}
+    assert set(out) == {9597, 9598, 3612878}
 
 
 def test_get_topology():
