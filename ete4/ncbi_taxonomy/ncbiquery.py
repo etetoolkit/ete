@@ -674,8 +674,8 @@ def update_db(dbfile, targz_file=None):
         os.makedirs(basepath)
 
     if not targz_file:
-        update_local_taxdump(DEFAULT_TAXDUMP)
         targz_file = DEFAULT_TAXDUMP
+    update_local_taxdump(targz_file)
 
     tar = tarfile.open(targz_file, 'r')
     t, synonyms = load_ncbi_tree_from_dump(tar)
