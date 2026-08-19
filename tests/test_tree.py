@@ -345,6 +345,12 @@ class Test_Core_Tree(unittest.TestCase):
         # unsupported newick stream
         self.assertRaises(Exception, Tree, [1,2,3])
 
+    def test_newick_missing_required_value(self):
+        # A strict parser with a required second field (dist/support) must
+        # raise a clean NewickError when that value is missing, not crash with
+        # UnboundLocalError from the error handler (issue #799).
+        self.assertRaises(NewickError, Tree, '(A);', parser=3)
+
     def test_newick_multisupport(self):
         nw = '((a,b)2/3:4,(c,d)5/6:7);'
         t = Tree(nw, parser='multisupport')

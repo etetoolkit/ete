@@ -239,6 +239,7 @@ def read_props(str text, long pos, is_leaf, dict parser, check_req=False):
     except (AssertionError, ValueError) as e:
         raise NewickError('parsing %r: %s' % (p0_str, e))
 
+    p1_str = ''  # always defined (like p0_str) so error messages don't fail
     try:
         if pos < len(text) and text[pos] == ':':
             pos = skip_spaces_and_comments(text, pos+1)
