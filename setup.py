@@ -27,7 +27,7 @@ setup(
               'ete4/smartview',
               'ete4/treeview'],
     ext_modules=cythonize(
-        [make_extension(path) for path in glob('**/*.pyx', recursive=True)],
+        [make_extension(path) for path in glob('ete4/**/*.pyx', recursive=True)],
         compiler_directives={
             'language_level': '3',  # so it compiles for python3 (not python2)
             'embedsignature': True}),  # for call signatures
