@@ -1295,14 +1295,6 @@ cdef class Tree:
             target_trees = [target_t]
 
         polytomy_correction = 0
-        if correct_by_polytomy_size:
-            corr1 = sum(len(n.children) - 2 for n in origin_t.traverse() if len(n.children) > 2)
-            corr2 = sum(len(n.children) - 2 for n in target_t.traverse() if len(n.children) > 2)
-
-            if corr1 > 0 and corr2 > 0:
-                raise TreeError('Both trees contain polytomies! Try expand_polytomies=True instead.')
-
-            polytomy_correction = max(corr1, corr2)
 
         def from_common(nodes, prop):  # helper function
             """Yield values (if existing in both trees) for property prop."""
@@ -1311,6 +1303,28 @@ cdef class Tree:
                     value = node.get_prop(prop)
                     if value in common:
                         yield value
+
+        if correct_by_polytomy_size:
+            def unresolved_parts(tree, prop):
+                # Missing resolutions of the induced tree on common labels.
+                # Sets suppress unary paths and the two halves of an unrooted
+                # degree-two master root, so its representation is immaterial.
+                parts = set()
+                for leaves in tree.get_cached_content().values():
+                    clade = frozenset(from_common(leaves, prop))
+                    if unrooted_trees:
+                        if 1 < len(clade) < len(common) - 1:
+                            parts.add(frozenset((clade, frozenset(common - clade))))
+                    elif 1 < len(clade) < len(common):
+                        parts.add(clade)
+                maximum = max(0, len(common) - (3 if unrooted_trees else 2))
+                return maximum - len(parts)
+
+            corr1 = unresolved_parts(origin_t, prop_t1)
+            corr2 = unresolved_parts(target_t, prop_t2)
+            if corr1 > 0 and corr2 > 0:
+                raise TreeError('Both trees contain polytomies! Try expand_polytomies=True instead.')
+            polytomy_correction = max(corr1, corr2)
 
         min_comparison = None
         for t1 in origin_trees:

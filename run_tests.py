@@ -12,7 +12,7 @@ from argparse import ArgumentParser
 # Test files to run.
 tests = {
     'fast': [
-        'test_tree.py',
+        'test_tree.py', 'test_rf_polytomy_correction.py',
         'test_ncbiquery.py', 'test_gtdbquery.py',
         'test_interop.py', 'test_phylotree.py',
         'test_nexus.py', 'test_indent.py',
