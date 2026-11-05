@@ -44,6 +44,13 @@ def is_taxadb_up_to_date(dbfile=DEFAULT_TAXADB):
     return version == DB_VERSION
 
 
+def _filesystem_path(path):
+    """Return a string path. A pathlib Path cannot be concatenated."""
+    if path is None:
+        return None
+    return os.fspath(path)
+
+
 class NCBITaxa:
     """
     A local transparent connector to the NCBI taxonomy database.
@@ -57,6 +64,8 @@ class NCBITaxa:
         database from the NCBI site first, and convert it to ete's
         format.
         """
+        dbfile = _filesystem_path(dbfile)
+        taxdump_file = _filesystem_path(taxdump_file)
         self.dbfile = dbfile or DEFAULT_TAXADB
 
         if taxdump_file:
@@ -669,6 +678,8 @@ def generate_table(t):
             print(row, file=out)
 
 def update_db(dbfile, targz_file=None):
+    dbfile = _filesystem_path(dbfile)
+    targz_file = _filesystem_path(targz_file)
     basepath = os.path.split(dbfile)[0]
     if basepath and not os.path.exists(basepath):
         os.makedirs(basepath)

@@ -45,12 +45,21 @@ def is_taxadb_up_to_date(dbfile=DEFAULT_GTDBTAXADB):
     return version == DB_VERSION
 
 
+def _filesystem_path(path):
+    """Return a string path. A pathlib Path cannot be concatenated."""
+    if path is None:
+        return None
+    return os.fspath(path)
+
+
 class GTDBTaxa:
     """
     Local transparent connector to the GTDB taxonomy database.
     """
 
     def __init__(self, dbfile=None, taxdump_file=None, memory=False):
+        dbfile = _filesystem_path(dbfile)
+        taxdump_file = _filesystem_path(taxdump_file)
 
         if not dbfile:
             self.dbfile = DEFAULT_GTDBTAXADB
@@ -775,6 +784,8 @@ def generate_table(t):
 
 
 def update_db(dbfile, targz_file=None):
+    dbfile = _filesystem_path(dbfile)
+    targz_file = _filesystem_path(targz_file)
     basepath = os.path.split(dbfile)[0]
     if basepath and not os.path.exists(basepath):
         os.mkdir(basepath)

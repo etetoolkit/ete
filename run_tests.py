@@ -13,7 +13,7 @@ from argparse import ArgumentParser
 tests = {
     'fast': [
         'test_tree.py',
-        'test_ncbiquery.py', 'test_gtdbquery.py',
+        'test_ncbiquery.py', 'test_ncbi_path.py', 'test_gtdbquery.py',
         'test_interop.py', 'test_phylotree.py',
         'test_nexus.py', 'test_indent.py',
         'test_treematcher.py',
