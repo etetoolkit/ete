@@ -36,8 +36,9 @@ def extract_data_parser(data, parser):
     elif force == 'data':  # data is just raw data, not a path
         pass
     else:  # guess if it is a path to a file depending on data and format
-        if (parser == 'newick' or parser in newick.PARSERS or
-            type(parser) is dict):  # for newick format
+        # A custom parser is a dict and cannot be used as a PARSERS key.
+        if (type(parser) is dict or parser == 'newick' or
+            parser in newick.PARSERS):  # for newick format
             if (not data.lstrip('\n').startswith('(') and
                 not data.rstrip().endswith(';')):
                 data = open(data).read()  # probably a file name - open it
