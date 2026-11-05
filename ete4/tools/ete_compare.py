@@ -90,7 +90,7 @@ def run(args):
         tree_class = Tree
 
     for stree_name in src_tree_iterator(args):
-        stree = tree_class(stree_name, format=args.src_newick_format)
+        stree = tree_class(stree_name, parser=args.src_newick_format)
 
         # Parses attrs if necessary
         src_tree_attr = args.src_tree_attr
@@ -101,7 +101,7 @@ def run(args):
             src_tree_attr = 'tempattr'
 
         for rtree_name in ref_tree_iterator(args):
-            rtree = tree_class(rtree_name, format=args.ref_newick_format)
+            rtree = tree_class(rtree_name, parser=args.ref_newick_format)
 
             # Parses attrs if necessary
             ref_tree_attr = args.ref_tree_attr
