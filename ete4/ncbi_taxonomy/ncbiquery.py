@@ -27,6 +27,23 @@ def as_csv(xs):
     return ','.join("'%s'" % str(x).replace("'", "''") for x in xs)
 
 
+def _taxid_list(taxids):
+    """Return integer taxids. A string is one id, not a sequence of digits."""
+    if isinstance(taxids, str):
+        items = [taxids]
+    else:
+        try:
+            items = list(taxids)
+        except TypeError:
+            items = [taxids]
+    parsed = []
+    for item in items:
+        if item is None or item == "":
+            continue
+        parsed.append(int(item))
+    return parsed
+
+
 def is_taxadb_up_to_date(dbfile=DEFAULT_TAXADB):
     """Return True if a valid and up-to-date taxa.sqlite database exists.
 
@@ -161,18 +178,31 @@ class NCBITaxa:
         return taxid, spname, norm_score
 
     def get_rank(self, taxids):
-        """Return dict with NCBI taxonomy ranks for each list of taxids."""
-        all_ids = set(taxids)
-        all_ids.discard(None)
-        all_ids.discard("")
+        """Return the NCBI rank for each taxid.
 
-        cmd = 'SELECT taxid, rank FROM species WHERE taxid IN (%s);' % as_csv(all_ids)
-        result = self.db.execute(cmd)
+        A string is one taxid. An id that only exists in the merged table
+        keeps the caller's id and uses the current taxon's rank.
+        """
+        requested = _taxid_list(taxids)
+        if not requested:
+            return {}
 
-        id2rank = {}
-        for tax, spname in result.fetchall():
-            id2rank[tax] = spname
+        unique = set(requested)
+        cmd = 'SELECT taxid, rank FROM species WHERE taxid IN (%s);' % as_csv(unique)
+        id2rank = {int(tax): rank for tax, rank in self.db.execute(cmd)}
 
+        missing = unique - set(id2rank)
+        if not missing:
+            return id2rank
+        _, old2new = self._translate_merged(missing)
+        if not old2new:
+            return id2rank
+        cmd = ('SELECT taxid, rank FROM species WHERE taxid IN (%s);'
+               % as_csv(set(old2new.values())))
+        new2rank = {int(tax): rank for tax, rank in self.db.execute(cmd)}
+        for old, new in old2new.items():
+            if int(new) in new2rank:
+                id2rank[int(old)] = new2rank[int(new)]
         return id2rank
 
     def get_lineage_translator(self, taxids):
