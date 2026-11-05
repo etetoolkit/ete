@@ -63,6 +63,11 @@ def _parse_species(name):
     return name[:3]  # just to return specie name from fasta description
 
 
+def _is_node_list(value):
+    """Return True when value is the child list built by the newick reader."""
+    return isinstance(value, list) and all(isinstance(item, PhyloTree) for item in value)
+
+
 class EvolNode(PhyloTree):
     """Re-implementation of the standart Tree instance. It adds
     attributes and methods to work with phylogentic trees.
@@ -90,6 +95,18 @@ class EvolNode(PhyloTree):
         self.execpath = binpath
         self._models = {}
         self.__gui_mark_mode = False
+
+        # The newick reader builds each node as Class(props, children).
+        # props is a dict, and children arrives as the second positional
+        # argument. Tree rejects a dict when parser is set, and this
+        # class defaults parser to 0, so that call used to fail.
+        if isinstance(newick, dict):
+            node_children = kwargs.pop("children", None)
+            if node_children is None and _is_node_list(alignment):
+                node_children = alignment
+            PhyloTree.__init__(self, newick=newick, children=node_children,
+                               parser=None, sp_naming_function=None)
+            return
 
         PhyloTree.__init__(self, newick=newick, parser=parser,
                            sp_naming_function=sp_naming_function, **kwargs)

@@ -6,6 +6,7 @@ A simple program to coordinate which tests to run.
 
 import sys
 import os
+import subprocess
 from argparse import ArgumentParser
 
 
@@ -14,7 +15,7 @@ tests = {
     'fast': [
         'test_tree.py',
         'test_ncbiquery.py', 'test_gtdbquery.py',
-        'test_interop.py', 'test_phylotree.py',
+        'test_interop.py', 'test_phylotree.py', 'test_evoltree.py',
         'test_nexus.py', 'test_indent.py',
         'test_treematcher.py',
         'test_seqgroup.py', 'test_treediff.py',
@@ -45,8 +46,15 @@ def main():
 
 
 def run_pytest(tfiles, verbose):
-    os.system('cd tests; ' +
-              'pytest ' + ('-v ' if verbose else '') + ' '.join(tfiles))
+    # The previous shell line was `cd tests; pytest ...`. Windows cmd
+    # treats ";" as part of the path, so the documented command never
+    # started pytest there. Call pytest in the tests directory instead.
+    command = [sys.executable, "-m", "pytest"]
+    if verbose:
+        command.append("-v")
+    command.extend(tfiles)
+    tests_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tests")
+    subprocess.run(command, cwd=tests_dir)
 
 
 def get_args():
