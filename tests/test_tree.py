@@ -2,12 +2,13 @@ import sys
 import random
 import itertools
 import json
-from tempfile import NamedTemporaryFile
+import os
+from tempfile import NamedTemporaryFile, TemporaryDirectory
 import unittest
 
 from ete4 import Tree, PhyloTree
 from ete4.core.tree import TreeError
-from ete4.parser.newick import NewickError
+from ete4.parser.newick import NAME, DIST, PARSER_DEFAULT, NewickError
 from ete4.parser import newick
 
 from . import datasets as ds
@@ -344,6 +345,31 @@ class Test_Core_Tree(unittest.TestCase):
         self.assertRaises(NewickError, Tree, "(((A, B), C)[&&NHX:nameI]);")
         # unsupported newick stream
         self.assertRaises(Exception, Tree, [1,2,3])
+
+    def test_custom_parser_dict(self):
+        """A parser dictionary is applied, not used as a PARSERS key."""
+        leaf = Tree('(a);', parser=PARSER_DEFAULT)
+        self.assertEqual([n.name for n in leaf], ['a'])
+
+        text = '((A:1,B:2)ancestor:3);'
+        # Format 0 reads the internal label as support.
+        self.assertRaises(NewickError, Tree, text, parser=0)
+
+        custom = {'leaf': [NAME, DIST], 'internal': [NAME, DIST]}
+        parsed = Tree(text, parser=custom)
+        self.assertEqual(parsed.children[0].name, 'ancestor')
+        self.assertEqual(parsed.children[0].dist, 3)
+        self.assertEqual(sorted(n.name for n in parsed), ['A', 'B'])
+        self.assertEqual([n.dist for n in parsed], [1, 2])
+        self.assertEqual(parsed.write(parser=custom), text)
+
+        with TemporaryDirectory() as directory:
+            path = os.path.join(directory, 'tree.nw')
+            with open(path, 'w', encoding='utf-8') as handle:
+                handle.write(text)
+            from_path = Tree(path, parser=custom)
+        self.assertEqual(from_path.children[0].name, 'ancestor')
+        self.assertEqual(sorted(n.name for n in from_path), ['A', 'B'])
 
     def test_newick_multisupport(self):
         nw = '((a,b)2/3:4,(c,d)5/6:7);'
