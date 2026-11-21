@@ -22,7 +22,7 @@ except ImportError:
 
 from . import common
 from .common import log
-from .utils import colorify, which
+from .utils import colorify
 
 from subprocess import Popen, PIPE
 
@@ -92,24 +92,6 @@ def _main(arguments):
 
             _version += " Tools path: %s" %(TOOLSPATH)
             print(_version)
-            return
-        elif subcommand == "upgrade-external-tools":
-            from . import ete_upgrade_tools
-            del arguments[1]
-            status = ete_upgrade_tools._main()
-            sys.exit(status)
-
-        elif subcommand == "build":
-            from . import ete_build
-            del arguments[1]
-
-            builtin_apps_path = None
-            ete_path = which("ete4")
-
-            if ete_path:
-                builtin_apps_path = os.path.join(os.path.split(ete_path)[0], "ete4_apps/bin")
-            ete_build._main(arguments, builtin_apps_path)
-
             return
 
     # CREATE REUSABLE PARSER OPTIONS
@@ -209,9 +191,6 @@ def _main(arguments):
     diff_args_p.set_defaults(func=ete_diff.run)
     ete_diff.populate_args(diff_args_p)
 
-    # - build -
-    generate_args_p = subparser.add_parser("build")
-
     # - explore -
     explore_args_p = subparser.add_parser("explore", parents=[source_args_p, main_args_p],
                                         description=ete_explore.DESC,
@@ -222,7 +201,6 @@ def _main(arguments):
     # - helpers -
 
     generate_args_p = subparser.add_parser("version")
-    generate_args_p = subparser.add_parser("upgrade-external-tools")
 
     # ===================
     #  EXECUTE PROGRAM

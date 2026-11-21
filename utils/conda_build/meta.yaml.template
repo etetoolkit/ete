@@ -33,7 +33,6 @@ requirements:
   commands:
     - ete4 version
     - ./run_tests.py
-    #- ete4 build check
 
 about:
   home: https://github.com/etetoolkit/ete
