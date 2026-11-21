@@ -43,13 +43,17 @@ async function draw_tree() {
         return;
     }
 
-    div_tree.style.cursor = "wait";  // so the user knows we are drawing
-
     const scale = 100 / view.zoom.x;  // the line is 100 pixels (see gui.html)
     text_scale.textContent = format_float(scale);  // show scale
 
     try {
         const qs = build_draw_query_string();
+
+        div_tree.style.cursor = "wait";  // so the user knows we are drawing
+        // NOTE: Changing the cursor restyles all the elements in div_tree,
+        // which is slow for big drawings. So we do it after reading sizes
+        // (which would force the restyle right away), and we set it back
+        // before anything forces the styling of the newly drawn elements.
 
         // Get the drawing commands.
         let commands;
@@ -88,6 +92,9 @@ async function draw_tree() {
 
         if (0 in items)  // panel 0 has the items for div_tree
             draw(div_tree, items[0], view.tl, view.zoom);
+
+        if (!drawing.busy)
+            div_tree.style.cursor = "auto";  // show that we finished drawing
 
         let xmin = view.shape === "circular" && 0 in xmaxs ? xmaxs[0] : 0;
 
