@@ -8,7 +8,7 @@ import unittest
 from ete4 import Tree, PhyloTree
 from ete4.core.tree import TreeError
 from ete4.parser.newick import NewickError
-from ete4.parser import newick
+from ete4.parser import newick, ete_format
 
 from . import datasets as ds
 
@@ -359,6 +359,22 @@ class Test_Core_Tree(unittest.TestCase):
 
         t = Tree('((A,B)90[comment]:1,C:2);')
         self.assertEqual(t.write(), '((A,B)90:1,C:2);')
+
+    def test_ete_format(self):
+        t = Tree('((a:1,b:2)90:3,c);')
+        t['a'].add_prop('x', [1, 'x', {2, 3}])
+        t2 = ete_format.loads(ete_format.dumps(t))
+        self.assertEqual(t2['a'].props['x'], [1, 'x', {2, 3}])
+        self.assertEqual(t2.common_ancestor(['a', 'b']).support, 90)
+
+        # Loading must not run code (pickle can call any function).
+        import pickle, base64
+        class Evil:
+            def __reduce__(self):
+                return (print, ('this should not be printed',))
+        data = ('p\t0\t' + base64.b64encode(pickle.dumps(Evil())).decode() +
+                '\nt\t0\t\n')
+        self.assertRaises(pickle.UnpicklingError, ete_format.loads, data)
 
     def test_quoted_names(self):
         complex_name = "((A:0.0001[&&NHX:hello=true],B:0.011)90:0.01[&&NHX:hello=true],(C:0.01, D:0.001)hello:0.01);"

@@ -15,7 +15,14 @@ def pickle_pack(data):
     return base64.b64encode(pickle.dumps(data)).decode()
 
 def pickle_unpack(data):
-    return pickle.loads(base64.b64decode(data))
+    # Do not use pickle.loads() directly, because it can run any code
+    # from the file. We only accept plain python types (dicts, lists...).
+    return SaferUnpickler(io.BytesIO(base64.b64decode(data))).load()
+
+class SaferUnpickler(pickle.Unpickler):
+    """Unpickler that refuses to load any class or function."""
+    def find_class(self, module, name):
+        raise pickle.UnpicklingError(f'forbidden object: {module}.{name}')
 
 def b64gzip_pack(data):
     return base64.b64encode(gzip.compress(bytes(data, 'utf-8'))).decode()
