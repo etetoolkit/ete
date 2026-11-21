@@ -48,3 +48,36 @@ def test_labels_with_builtins():
     face = draw.make_face(label)
     with pytest.raises(SyntaxError):
         faces.eval_as_str(face.code, node, face.safer)
+
+
+def test_upload_does_not_read_files(tmp_path):
+    # The newick text in a request must never be taken as the path of a
+    # file in the server, and the client cannot choose parsers like "ete".
+    import io, json, bottle
+    from urllib.parse import urlencode
+    from ete4.smartview import explorer
+
+    def post(body, content_type):
+        body = body.encode()
+        bottle.request.bind({'REQUEST_METHOD': 'POST',
+                             'CONTENT_TYPE': content_type,
+                             'CONTENT_LENGTH': str(len(body)),
+                             'wsgi.input': io.BytesIO(body)})
+        return explorer.add_trees_from_request()
+
+    path = str(tmp_path / 'tree.nw')  # a newick file in the server
+    with open(path, 'w') as f:
+        f.write('(a,b);')
+
+    with pytest.raises(bottle.HTTPError):
+        post(json.dumps({'name': 'x', 'newick': path}), 'application/json')
+
+    for parser in ['ete', 'nexus', 'auto', 'file-name']:
+        with pytest.raises(bottle.HTTPError):
+            post(urlencode({'name': 'x', 'parser': parser, 'newick': path}),
+                 'application/x-www-form-urlencoded')
+
+    assert post(urlencode({'name': 'test_upload', 'parser': 'support',
+                           'newick': '((a,b)90,c);'}),
+                'application/x-www-form-urlencoded') == ['test_upload']
+    explorer.g_trees.pop('test_upload')

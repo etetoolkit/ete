@@ -553,12 +553,17 @@ def add_trees_from_request():
             trees_data = get_trees_from_form()
             parser = request.forms['parser']
 
+        # Only parsers that read the given text (as in upload.html).
+        if parser not in newick.PARSERS and parser != 'indent':
+            abort(400, f'invalid parser: {parser}')
+
         names = []
         for data in trees_data:
             nw = data['newick']
             name = data['name'].replace(',', '_')  # "," is used for subtrees
             names.append(name)
-            add_tree(Tree(nw, parser=parser), name)
+            # With "data-", nw is never taken as the path of a file to read.
+            add_tree(Tree(nw, parser='data-' + parser), name)
 
         return names
     except KeyError as e:
