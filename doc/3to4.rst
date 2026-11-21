@@ -22,6 +22,11 @@ A node contains all its properties in a dictionary called ``props``.
 In particular, reading special properties like ``name`` (which can be
 done with ``node.name``) is equivalent to ``node.props.get('name')``.
 
+The ``ete3 build`` and ``ete3 evol`` command line tools, the ``evol``
+module (``EvolTree``, codeml/PAML) and the external tools installer
+(``ete3 upgrade-external-tools``) are not part of ETE 4. They are still
+available in ETE 3.
+
 
 Changes in syntax
 -----------------
