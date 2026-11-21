@@ -350,6 +350,16 @@ class Test_Core_Tree(unittest.TestCase):
         t = Tree(nw, parser='multisupport')
         self.assertEqual(t.write(parser='multisupport'), nw)
 
+    def test_newick_spaces_and_comments(self):
+        # Spaces, newlines and comments in places where newick allows them.
+        for nw in ['(A:1,B:2) ;', '( A : 1 , B : 2 ) ;', '(A:1,B:2\n) ;',
+                   '(A[comment]:1,B:2);', '(A:1[comment],B:2)[comment];']:
+            t = Tree(nw)
+            self.assertEqual(t.write(), '(A:1,B:2);')
+
+        t = Tree('((A,B)90[comment]:1,C:2);')
+        self.assertEqual(t.write(), '((A,B)90:1,C:2);')
+
     def test_quoted_names(self):
         complex_name = "((A:0.0001[&&NHX:hello=true],B:0.011)90:0.01[&&NHX:hello=true],(C:0.01, D:0.001)hello:0.01);"
         # A quoted tree within a tree
