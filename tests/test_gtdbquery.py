@@ -147,6 +147,13 @@ class Test_gtdbquery(unittest.TestCase):
 
         self.assertEqual(set(out), set(['s__MP8T-1 sp002825535', 's__MP8T-1 sp003345545', 's__MP8T-1 sp002825465', 's__MP8T-1 sp004524565', 's__MP8T-1 sp004524595', 's__SMTZ1-83 sp011364985', 's__SMTZ1-83 sp011365025', 's__SMTZ1-83 sp001563325', 's__TEKIR-14 sp004524445', 's__SHMX01 sp008080745', 's__OWC5 sp003345595', 's__OWC5 sp003345555', 's__JACAEL01 sp013388835', 's__B65-G9 sp003662765', 's__SMTZ1-45 sp001563335', 's__SMTZ1-45 sp011364905', 's__SMTZ1-45 sp001940705', 's__SMTZ1-45 sp004376265', 's__SMTZ1-45 sp002825515', 's__WTCK01 sp013138615', 's__TEKIR-12S sp004524435']))
 
+    def test_descendant_taxa_of_leaf(self):
+        gtdb = GTDBTaxa(dbfile=DATABASE_PATH)
+        # A genome has no descendants, so we get itself (as a name, like
+        # for any other taxa, not the internal numeric taxid).
+        self.assertEqual(gtdb.get_descendant_taxa('GB_GCA_003662765.1'),
+                         ['GB_GCA_003662765.1'])
+
     def test_get_topology(self):
         gtdb = GTDBTaxa(dbfile=DATABASE_PATH)
         tree = gtdb.get_topology(['p__Huberarchaeota', 'o__Peptococcales', 'f__Korarchaeaceae', 's__Korarchaeum'],
