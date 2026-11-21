@@ -553,12 +553,17 @@ def add_trees_from_request():
             trees_data = get_trees_from_form()
             parser = request.forms['parser']
 
+        # Only parsers that read the given text (as in upload.html).
+        if parser not in newick.PARSERS and parser != 'indent':
+            abort(400, f'invalid parser: {parser}')
+
         names = []
         for data in trees_data:
             nw = data['newick']
             name = data['name'].replace(',', '_')  # "," is used for subtrees
             names.append(name)
-            add_tree(Tree(nw, parser=parser), name)
+            # With "data-", nw is never taken as the path of a file to read.
+            add_tree(Tree(nw, parser='data-' + parser), name)
 
         return names
     except KeyError as e:
@@ -572,41 +577,49 @@ def get_trees_from_form():
     if 'trees' in request.files:
         try:
             fu = request.files['trees']  # bottle FileUpload object
-            return get_trees_from_file(fu.filename, fu.file)
-        except (gzip.BadGzipFile, UnicodeDecodeError) as e:
-            abort(400, f'when reading {fupload.filename}: {e}')
+            return get_trees_from_file(fu.filename, fu.file, MAX_UPLOAD_SIZE)
+        except (OSError, zipfile.BadZipFile, tarfile.TarError, ValueError) as e:
+            abort(400, f'when reading {fu.filename}: {e}')  # bad or too big
     else:
         return [{'name': request.forms['name'],
                  'newick': request.forms['newick']}]
 
 
-def get_trees_from_file(filename, fileobject=None):
+MAX_UPLOAD_SIZE = 100 * 1024**2  # max bytes of (uncompressed) uploaded trees
+
+def get_trees_from_file(filename, fileobject=None, max_size=None):
     """Return list of {'name': ..., 'newick': ...} extracted from file."""
     fileobject = fileobject or open(filename, 'rb')
 
     trees = []
-    def extend(btext, fname):
+    size = 0  # total bytes read (uncompressed), to stop if bigger than max_size
+    def extend(f, fname):
+        nonlocal size
+        btext = f.read() if max_size is None else f.read(max_size - size + 1)
+        size += len(btext)
+        if max_size is not None and size > max_size:
+            raise ValueError(f'more than {max_size} bytes of uncompressed data')
         name = os.path.splitext(os.path.basename(fname))[0]  # /d/n.e -> n
         trees.extend(get_trees_from_nexus_or_newick(btext, name))
 
     if filename.endswith('.zip'):
         zf = zipfile.ZipFile(fileobject)
         for fname in zf.namelist():
-            extend(zf.read(fname), fname)
+            extend(zf.open(fname), fname)
     elif filename.endswith('.tar'):
         tf = tarfile.TarFile(fileobj=fileobject)
         for fname in tf.getnames():
-            extend(tf.extractfile(fname).read(), fname)
+            extend(tf.extractfile(fname), fname)
     elif filename.endswith('.tar.gz') or filename.endswith('.tgz'):
         tf = tarfile.TarFile(fileobj=gzip.GzipFile(fileobj=fileobject))
         for fname in tf.getnames():
-            extend(tf.extractfile(fname).read(), fname)
+            extend(tf.extractfile(fname), fname)
     elif filename.endswith('.gz'):
-        extend(gzip.GzipFile(fileobj=fileobject).read(), filename)
+        extend(gzip.GzipFile(fileobj=fileobject), filename)
     elif filename.endswith('.bz2'):
-        extend(bz2.BZ2File(fileobject).read(), filename)
+        extend(bz2.BZ2File(fileobject), filename)
     else:
-        extend(fileobject.read(), filename)
+        extend(fileobject, filename)
 
     return trees
 

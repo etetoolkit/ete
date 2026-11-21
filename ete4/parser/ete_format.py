@@ -20,9 +20,20 @@ def pickle_unpack(data):
     return SaferUnpickler(io.BytesIO(base64.b64decode(data))).load()
 
 class SaferUnpickler(pickle.Unpickler):
-    """Unpickler that refuses to load any class or function."""
+    """Unpickler that refuses to load any class or function not in ALLOWED."""
     def find_class(self, module, name):
-        raise pickle.UnpicklingError(f'forbidden object: {module}.{name}')
+        if (module, name) not in ALLOWED:
+            raise pickle.UnpicklingError(f'forbidden object: {module}.{name}')
+        return super().find_class(module, name)
+
+# Classes and functions that pickle needs to rebuild the plain values
+# that we may write (with any protocol, or older python and numpy).
+ALLOWED = {(m, name) for m in ['builtins', '__builtin__']
+           for name in ['set', 'frozenset', 'complex', 'bytes', 'bytearray']}
+ALLOWED |= {('_codecs', 'encode'), ('codecs', 'encode'),  # for bytes
+            ('numpy', 'dtype'),
+            ('numpy.core.multiarray', 'scalar'),
+            ('numpy._core.multiarray', 'scalar')}
 
 def b64gzip_pack(data):
     return base64.b64encode(gzip.compress(bytes(data, 'utf-8'))).decode()

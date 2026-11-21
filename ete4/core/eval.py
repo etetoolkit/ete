@@ -13,6 +13,7 @@ compare like the one used in sorted(key=...)).
 
 from math import pi
 import re
+from functools import lru_cache
 
 
 def eval_on_node(code, node, context=None, safer=False):
@@ -45,7 +46,9 @@ def eval_on_node(code, node, context=None, safer=False):
         'startswith': str.startswith, 'endswith': str.endswith,
         'upper': str.upper, 'lower': str.lower, 'split': str.split,
         'any': any, 'all': all, 'len': len,
-        'sum': sum, 'abs': abs, 'float': float}
+        'sum': sum, 'abs': abs, 'float': float,
+        'int': int, 'str': str, 'round': round,
+        'max': max, 'min': min, 'sorted': sorted}
     # NOTE: If we wanted to make it convenient for PhyloTrees we could add:
     #    'species': getattr(node, 'species', ''),
     # and so on (get_species, etc.).
@@ -64,11 +67,22 @@ def eval_on_node(code, node, context=None, safer=False):
 # web services, we are better off using this following function:
 def safer_eval(code, context):
     """Return a safer version of eval(code, context)."""
-    codes = [code]  # we also check the code of comprehensions, lambdas, etc.
+    for name in get_names(code):
+        if name not in context:
+            raise SyntaxError('invalid use of %r during evaluation' % name)
+    # The context goes as globals so comprehensions and lambdas can see it
+    # (and like eval() itself, we add __builtins__ to it, but empty).
+    context['__builtins__'] = {}
+    return eval(code, context)
+
+
+@lru_cache(maxsize=1000)  # so we do not inspect the code again for every node
+def get_names(code):
+    """Return the names used in code, including its comprehensions, lambdas..."""
+    names = set()
+    codes = [code]
     while codes:
         c = codes.pop()
-        for name in c.co_names:
-            if name not in context:
-                raise SyntaxError('invalid use of %r during evaluation' % name)
+        names.update(c.co_names)
         codes.extend(x for x in c.co_consts if type(x) == type(code))
-    return eval(code, {'__builtins__': {}}, context)
+    return names

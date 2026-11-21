@@ -156,9 +156,16 @@ class Test_Treediff(unittest.TestCase):
             cd1 = (t1.common_ancestor(['C', 'D']), {'C', 'D'})
             cd2 = (t2.common_ancestor(['C', 'D']), {'C', 'D'})
             self.assertEqual(dist_fn(cd1, cd1, False, 'name', 'name'), 0)
+            self.assertGreater(dist_fn(cd1, cd2, False, 'name', 'name'), 0)
 
+        # Mean leaf length 1 vs 2 -> |1 - 2| / 2
+        self.assertEqual(ediff.EUCL_DIST_B(cd1, cd2, False, 'name', 'name'),
+                         0.5)
         self.assertEqual(ediff.EUCL_DIST_B_ALL(cd1, cd2, False, 'name', 'name'),
                          0.5)
+        # Mean path to the root of D goes from 1 to 2 -> mean 1.5 vs 1
+        self.assertEqual(ediff.EUCL_DIST_B_FULL(cd1, cd2, False, 'name', 'name'),
+                         0.25)
 
     def test_treediff_reports_output(self):
         """Test the reports from the difftable (as used in ete4 diff)."""

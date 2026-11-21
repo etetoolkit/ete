@@ -376,6 +376,27 @@ class Test_Core_Tree(unittest.TestCase):
                 '\nt\t0\t\n')
         self.assertRaises(pickle.UnpicklingError, ete_format.loads, data)
 
+    def test_ete_format_types(self):
+        # Values that ete can write and that need some class to load.
+        import pickle, base64
+        import numpy as np
+        values = {'f32': np.float32(1.5), 'i64': np.int64(7),
+                  'complex': 1+2j, 'set': {1, 2}, 'frozenset': frozenset('ab'),
+                  'bytes': b'\x00ab\xff', 'bytearray': bytearray(b'xy'),
+                  'nested': {'a': [1, {'b': (2, 3)}], 'c': [b'x', {4}]}}
+
+        t = Tree('((a:1,b:2)90:3,c);')
+        t['a'].props.update(values)
+        t2 = ete_format.loads(ete_format.dumps(t))
+        for k, v in values.items():
+            self.assertEqual(t2['a'].props[k], v)
+            self.assertEqual(type(t2['a'].props[k]), type(v))
+
+        # Older pickle protocols (like the ones from older pythons).
+        for protocol in [0, 2, 3]:
+            data = base64.b64encode(pickle.dumps(values, protocol)).decode()
+            self.assertEqual(ete_format.pickle_unpack(data), values)
+
     def test_quoted_names(self):
         complex_name = "((A:0.0001[&&NHX:hello=true],B:0.011)90:0.01[&&NHX:hello=true],(C:0.01, D:0.001)hello:0.01);"
         # A quoted tree within a tree
@@ -1267,15 +1288,21 @@ class Test_Core_Tree(unittest.TestCase):
         t1 = Tree('(((A,B)90,(C,D)80)1,E);')
         t2 = Tree('(((A,C)70,(B,D)60)1,E);')
         self.assertEqual(t1.robinson_foulds(t2)[:2], [4, 6])
-        # Ignoring the branch (C,D) in t1 and both (A,B), (C,D).
-        self.assertEqual(t1.robinson_foulds(t2, min_support_t1=85)[:2], [3, 3])
-        self.assertEqual(t1.robinson_foulds(t2, min_support_t1=95)[:2], [2, 2])
-        self.assertEqual(t1.robinson_foulds(t2, min_support_t2=65)[:2], [3, 3])
+        # Ignoring the branches of t1 (C,D) and (A,B,C,D), and then also (A,B).
+        # Leaves and the root have no support, so they are never ignored.
+        self.assertEqual(t1.robinson_foulds(t2, min_support_t1=85)[:2], [3, 4])
+        self.assertEqual(t1.robinson_foulds(t2, min_support_t1=95)[:2], [2, 3])
+        self.assertEqual(t1.robinson_foulds(t2, min_support_t2=65)[:2], [3, 4])
+        rf, max_rf, common, edges1, edges2, discard1, discard2 = \
+            t1.robinson_foulds(t2, min_support_t1=85)
+        self.assertEqual(discard1, {('C', 'D'), ('A', 'B', 'C', 'D')})
 
         t1 = Tree('((A,B)90,(C,D)80,E);')
         t2 = Tree('((A,C)70,(B,D)60,E);')
         self.assertEqual(t1.robinson_foulds(t2, unrooted_trees=True,
                                             min_support_t1=85)[:2], [3, 3])
+        self.assertEqual(t1.robinson_foulds(t2, unrooted_trees=True,
+                                            min_support_t2=65)[:2], [3, 3])
 
     # TODO: Merge this function with the previous one? (test_tree_compare())
     def test_robinson_foulds_and_more(self):
