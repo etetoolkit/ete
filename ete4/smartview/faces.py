@@ -139,6 +139,11 @@ class TextFace(EvalTextFace):
         super().__init__(expression, fs_min, fs_max, rotation, style,
                          position, column, anchor)
 
+    def draw(self, nodes, size, collapsed, zoom=(1, 1), ax_ay=(0, 0), r=1):
+        # The text is the same for all nodes: no need to summarize them
+        # (that evaluates the expression on every collapsed node).
+        return super().draw(nodes[:1], size, [], zoom, ax_ay, r)
+
 
 class PropFace(EvalTextFace):
     """A text showing the given property, and optionally a special format."""
