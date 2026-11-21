@@ -1621,8 +1621,8 @@ cdef class Tree:
         """
         edge_keys = []
         for s1, s2 in self.edges():
-            k1 = sorted(e.props.get(prop, getattr(e, prop)) for e in s1)
-            k2 = sorted(e.props.get(prop, getattr(e, prop)) for e in s2)
+            k1 = sorted(e.get_prop(prop) for e in s1)
+            k2 = sorted(e.get_prop(prop) for e in s2)
 
             edge_keys.append(sorted([k1, k2]))
 
@@ -1648,7 +1648,7 @@ cdef class Tree:
         values = set(values)  # in case it is not a set (so we check faster)
 
         nodes = set(n for n in self.leaves()
-                        if n.props.get(prop, getattr(n, prop)) in values)
+                        if n.get_prop(prop) in values)
 
         if not unrooted:
             leaves_from_ancestor = set(n for n in self.common_ancestor(nodes).leaves())

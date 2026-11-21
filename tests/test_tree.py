@@ -1079,6 +1079,22 @@ class Test_Core_Tree(unittest.TestCase):
                 n.reverse_children()
                 self.assertEqual(t.get_topology_id(), orig_id)
 
+    def test_custom_prop_monophyly_and_treeid(self):
+        # Using a custom property (not an attribute of the nodes).
+        t = Tree('((a,b),c);')
+        for n in t.leaves():
+            n.add_prop('sp', n.name.upper())
+
+        self.assertEqual(t.check_monophyly(['A', 'B'], prop='sp')[0], True)
+        self.assertEqual(t.check_monophyly(['A', 'C'], prop='sp')[0], False)
+
+        t2 = Tree('((b,a),c);')
+        for n in t2.leaves():
+            n.add_prop('sp', n.name.upper())
+
+        self.assertEqual(t.get_topology_id(prop='sp'),
+                         t2.get_topology_id(prop='sp'))
+
     def test_node_id(self):
         """Test the node_id corresponding to a node inside a tree."""
         t = Tree('((a,b)x,(c,d)y);', parser=1)
