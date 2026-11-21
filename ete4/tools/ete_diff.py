@@ -101,8 +101,11 @@ def EUCL_DIST_B(a,b,support,attr1,attr2):
     '''
 
 
-    dist_a = sum([descendant.dist for descendant in a[0].leaves() if descendant.props[attr1] in(a[1] - b[1])]) / len([i for i in a[0].leaves()])
-    dist_b = sum([descendant.dist for descendant in b[0].leaves() if descendant.props[attr2] in(b[1] - a[1])]) / len([i for i in b[0].leaves()])
+    shared = a[1] & b[1]
+    dists_a = [descendant.dist for descendant in a[0].leaves() if descendant.props[attr1] in shared]
+    dists_b = [descendant.dist for descendant in b[0].leaves() if descendant.props[attr2] in shared]
+    dist_a = sum(dists_a) / len(dists_a) if dists_a else 0
+    dist_b = sum(dists_b) / len(dists_b) if dists_b else 0
 
     return ((1 - float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)) / 2
 
@@ -169,8 +172,11 @@ def EUCL_DIST_B_FULL(a,b,support,attr1,attr2):
 
         return leave_branches
 
-    dist_a = sum([descendant[1] for descendant in _get_leaves_paths(a[0],attr1,support) if descendant[0] in(a[1] - b[1])]) / len([i for i in a[0].leaves()])
-    dist_b = sum([descendant[1] for descendant in _get_leaves_paths(b[0],attr2,support) if descendant[0] in(b[1] - a[1])]) / len([i for i in b[0].leaves()])
+    shared = a[1] & b[1]
+    dists_a = [descendant[1] for descendant in _get_leaves_paths(a[0],attr1,support) if descendant[0] in shared]
+    dists_b = [descendant[1] for descendant in _get_leaves_paths(b[0],attr2,support) if descendant[0] in shared]
+    dist_a = sum(dists_a) / len(dists_a) if dists_a else 0
+    dist_b = sum(dists_b) / len(dists_b) if dists_b else 0
 
     return ((1 - float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)) / 2
 
@@ -1033,7 +1039,7 @@ def populate_args(diff_args_p):
     diff_args.add_argument("--dist", dest="distance",
                            type=str, choices= ['e', 'rf', 'eb','eb-all','eb-full'], default='e',
                            help=('Distance measure (e by default): e = Euclidean distance, rf = Robinson-Foulds symetric distance'
-                                 ' eb = Euclidean distance + branch length difference between disjoint leaves'
+                                 ' eb = Euclidean distance + branch length difference between shared leaves'
                                  ' eb-all = Euclidean distance + branch length difference between all leaves'
                                  ' eb-full = Euclidean distance + branch length difference between all nodes'))
 
