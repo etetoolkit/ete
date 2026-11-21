@@ -161,6 +161,14 @@ class Test_gtdbquery(unittest.TestCase):
         tree = gtdb.get_topology(['p__Huberarchaeota', 'o__Peptococcales', 'f__Korarchaeaceae', 's__Korarchaeum','RS_GCF_006228565.1', 'GB_GCA_001515945.1'],
                                   intermediate_nodes=True, collapse_subspecies=True, annotate=True)
 
+    def test_get_topology_single_taxon(self):
+        gtdb = GTDBTaxa(dbfile=DATABASE_PATH)
+        tree = gtdb.get_topology(['s__B65-G9 sp003662765'])
+        self.assertTrue(tree.is_root)  # no hidden parent above it
+        self.assertEqual(tree.name, 's__B65-G9 sp003662765')
+        self.assertEqual(sorted(tree.leaf_names()),
+                         ['GB_GCA_003662765.1', 'GB_GCA_003662805.1'])
+
     def test_name_lineages(self):
         gtdb = GTDBTaxa(dbfile=DATABASE_PATH)
 

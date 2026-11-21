@@ -155,6 +155,10 @@ def test_get_topology():
 
         assert diffs1['rf'] == diffs2['rf'] == diffs3['rf'] == 0.0
 
+    # A single taxid with several children must give a proper root.
+    t = ncbi.get_topology([9606])
+    assert t.is_root and t.name == '9606' and len(t.children) > 1
+
 
 def test_merged_id():
     ncbi = NCBITaxa(dbfile=DATABASE_PATH)
