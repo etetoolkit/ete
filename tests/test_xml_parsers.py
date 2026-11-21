@@ -20,6 +20,15 @@ class Test_PhyloXML(unittest.TestCase):
                 print("%0.1f secs" %(etime))
                 p.export(outfile = W)
 
+    def test_phyloxml_tree(self):
+        fpath = os.path.join(ETEPATH, "examples/phyloxml/apaf.xml")
+        p = phyloxml.Phyloxml()
+        p.build_from_file(fpath)
+        t = p.get_phylogeny()[0]
+        self.assertEqual(len(t), 31)
+        self.assertEqual(list(t.leaf_names())[:2], ['22_MOUSE', 'Apaf-1_HUMAN'])
+        self.assertAlmostEqual(t['22_MOUSE'].dist, 0.05998)
+
     def test_examples(self):
         path = os.path.join(ETEPATH, "examples/phyloxml/")
         for ex in os.listdir(path):

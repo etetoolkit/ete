@@ -235,7 +235,7 @@ def find_attr_value_(attr_name, node):
     value = attrs.get(attr_name)
     if value is None:
         # Now try the other possible namespaces.
-        namespaces = node.nsmap.values()
+        namespaces = getattr(node, 'nsmap', {}).values()  # only in lxml
         for namespace in namespaces:
             value = attrs.get('{%s}%s' % (namespace, attr_name, ))
             if value is not None:
