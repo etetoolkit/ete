@@ -55,8 +55,8 @@ def _get_subtrees(tree, full_copy=False, properties=None, newick_only=False):
                     subtrees.extend(n2subtrees[n2nid[ch]])
             else:
                 subtrees = tuple([val for val in
-                                  itertools.product(n2subtrees[n2nid[n.children[0]]],
-                                                    n2subtrees[n2nid[n.children[1]]])])
+                                  itertools.product(*[n2subtrees[n2nid[ch]]
+                                                      for ch in n.children])])
         else:
             subtrees = tuple([n2nid[n]])
 
@@ -115,7 +115,9 @@ def calc_subtrees(tree):
                 for ch in n.children:
                     subtrees += n2subtrees[ch]
             else:
-                subtrees = n2subtrees[n.children[0]] * n2subtrees[n.children[1]]
+                subtrees = 1
+                for ch in n.children:
+                    subtrees *= n2subtrees[ch]
         else:
             subtrees = 1
         n2subtrees[n] = subtrees
