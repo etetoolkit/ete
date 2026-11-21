@@ -94,6 +94,25 @@ def test_safer_nested_code():
         list(tp_escape.search(t))
 
 
+def test_safer_eval_checks_names_once():
+    # The names in the code are found only once (not for every node), but
+    # they are still checked against the context of every call.
+    from ete4.core.eval import safer_eval, get_names, eval_on_node
+
+    code = compile('x + 1', '<string>', 'eval')
+    assert safer_eval(code, {'x': 1}) == 2
+    with pytest.raises(SyntaxError):
+        safer_eval(code, {'y': 1})
+    assert safer_eval(code, {'x': 2}) == 3
+
+    t = Tree('((a,b),(c,(d,e)));')
+    code = compile('any(n.name == "e" for n in ch)', '<string>', 'eval')
+    misses = get_names.cache_info().misses
+    results = [eval_on_node(code, node, safer=True) for node in t.traverse()]
+    assert results.count(True) == 1
+    assert get_names.cache_info().misses == misses + 1
+
+
 def test_explorer_topological_search_is_safer():
     # The explorer evaluates patterns that come from the web ("/t" searches),
     # so they must not be able to run arbitrary code.
