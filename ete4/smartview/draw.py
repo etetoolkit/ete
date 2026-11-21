@@ -139,8 +139,10 @@ class Drawer:
 
         # Deal with collapsed nodes.
         is_leaf_fn = self.tree_style.get('is-leaf-fn')
-        is_collapsed = (it.node_id in self.collapsed_ids or
+        is_collapsed = ((self.collapsed_ids and it.node_id in self.collapsed_ids) or
                         is_leaf_fn and is_leaf_fn(it.node))
+        # NOTE: it.node_id builds a tuple with the path from the root (slow),
+        # so we only compute it if there are manually collapsed nodes.
 
         if self.collapsed and (is_collapsed or not self.is_small(self.outline)):
             graphics += self.flush_collapsed()  # don't stack more collapsed
