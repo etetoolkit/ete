@@ -422,8 +422,10 @@ cdef class Tree:
             return  # nothing to do, we cannot actually delete the root
 
         if preserve_branch_length and 'dist' in self.props:
-            if len(self.children) == 1 and 'dist' in self.children[0].props:
-                self.children[0].dist += self.dist
+            if self.children:
+                for ch in self.children:
+                    if 'dist' in ch.props:
+                        ch.dist += self.dist
             elif len(parent.children) == 1 and 'dist' in parent.props:
                 parent.dist += self.dist
 
@@ -1330,7 +1332,7 @@ cdef class Tree:
                 edges1.discard(())
 
             if min_support_t1:
-                support_t1 = {tuple(sorted(from_common(leaves, prop_t1) for n in leaves)): branch.support or 0
+                support_t1 = {tuple(sorted(from_common(leaves, prop_t1))): branch.support or 0
                               for branch, leaves in t1_leaves.items()}
 
             for t2 in target_trees:
@@ -1350,7 +1352,7 @@ cdef class Tree:
                     edges2.discard(())
 
                 if min_support_t2:
-                    support_t2 = {tuple(sorted(from_common(leaves, prop_t2) for n in leaves)): branch.support or 0
+                    support_t2 = {tuple(sorted(from_common(leaves, prop_t2))): branch.support or 0
                                   for branch, leaves in t2_leaves.items()}
 
                 # if a support value is passed as a constraint, discard lowly supported branches from the analysis
@@ -1619,8 +1621,8 @@ cdef class Tree:
         """
         edge_keys = []
         for s1, s2 in self.edges():
-            k1 = sorted(e.props.get(prop, getattr(e, prop)) for e in s1)
-            k2 = sorted(e.props.get(prop, getattr(e, prop)) for e in s2)
+            k1 = sorted(e.get_prop(prop) for e in s1)
+            k2 = sorted(e.get_prop(prop) for e in s2)
 
             edge_keys.append(sorted([k1, k2]))
 
@@ -1646,7 +1648,7 @@ cdef class Tree:
         values = set(values)  # in case it is not a set (so we check faster)
 
         nodes = set(n for n in self.leaves()
-                        if n.props.get(prop, getattr(n, prop)) in values)
+                        if n.get_prop(prop) in values)
 
         if not unrooted:
             leaves_from_ancestor = set(n for n in self.common_ancestor(nodes).leaves())

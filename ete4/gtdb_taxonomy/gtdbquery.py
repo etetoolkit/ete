@@ -342,7 +342,7 @@ class GTDBTaxa:
         if not found:
             raise ValueError("taxid not found:%s" %taxid)
         elif found == 1:
-            return [taxid]
+            return self._translate_to_names([taxid])
         if rank_limit or collapse_subspecies or return_tree:
             descendants_spnames = self._get_taxid_translator(list(descendants.keys()))
             #tree = self.get_topology(list(descendants.keys()), intermediate_nodes=intermediate_nodes, collapse_subspecies=collapse_subspecies, rank_limit=rank_limit)
@@ -411,7 +411,7 @@ class GTDBTaxa:
                     current_parent.add_child(nodes[tid])
                     if tid not in leaves:
                         current_parent = nodes[tid]
-            root = nodes[root_taxid]
+            root = nodes[root_taxid].detach()  # from the auxiliary parent
         else:
             taxids = set(map(int, taxids))
             sp2track = {}
@@ -494,19 +494,14 @@ class GTDBTaxa:
             track lineages and ranks.
         """
         taxids = set()
-        if taxid_attr == "taxid":
-            for n in t.leaves():
-                if taxid_attr in n.props:
-                    taxids.add(n.props[taxid_attr])
-        else:
-            for n in t.leaves():
-                try:
-                    # translate gtdb name -> id
-                    taxaname = getattr(n, taxid_attr, n.props.get(taxid_attr))
-                    tid = self._get_name_translator([taxaname])[taxaname][0]
-                    taxids.add(tid)
-                except (KeyError, ValueError, AttributeError):
-                    pass
+        for n in t.leaves():
+            try:
+                # translate gtdb name -> id
+                taxaname = getattr(n, taxid_attr, n.props.get(taxid_attr))
+                tid = self._get_name_translator([taxaname])[taxaname][0]
+                taxids.add(tid)
+            except (KeyError, ValueError, AttributeError):
+                pass
         merged_conversion = {}
 
         taxids, merged_conversion = self._translate_merged(taxids)

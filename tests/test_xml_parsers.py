@@ -1,4 +1,5 @@
 import unittest
+import io
 import os
 import time
 from ete4 import phyloxml
@@ -19,6 +20,30 @@ class Test_PhyloXML(unittest.TestCase):
                 etime = time.time()-t1
                 print("%0.1f secs" %(etime))
                 p.export(outfile = W)
+
+    def test_phyloxml_tree(self):
+        fpath = os.path.join(ETEPATH, "examples/phyloxml/apaf.xml")
+        p = phyloxml.Phyloxml()
+        p.build_from_file(fpath)
+        t = p.get_phylogeny()[0]
+        self.assertEqual(len(t), 31)
+        self.assertEqual(list(t.leaf_names())[:2], ['22_MOUSE', 'Apaf-1_HUMAN'])
+        self.assertAlmostEqual(t['22_MOUSE'].dist, 0.05998)
+
+    def test_phyloxml_write_read(self):
+        fpath = os.path.join(ETEPATH, "examples/phyloxml/apaf.xml")
+        p = phyloxml.Phyloxml()
+        p.build_from_file(fpath)
+        out = io.StringIO()
+        p.export(outfile=out)
+        self.assertNotIn("b'", out.getvalue())  # no python bytes repr
+
+        p2 = phyloxml.Phyloxml()
+        p2.build_from_file(io.StringIO(out.getvalue()))
+        t1, t2 = p.get_phylogeny()[0], p2.get_phylogeny()[0]
+        self.assertEqual(list(t1.leaf_names()), list(t2.leaf_names()))
+        self.assertEqual([n.dist for n in t1.traverse()],
+                         [n.dist for n in t2.traverse()])
 
     def test_examples(self):
         path = os.path.join(ETEPATH, "examples/phyloxml/")

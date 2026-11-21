@@ -534,7 +534,7 @@ def get_eval_search(expression):
 def get_topological_search(pattern):
     """Return a function of a node that sees if it matches the given pattern."""
     try:
-        tree_pattern = tm.TreePattern(pattern)
+        tree_pattern = tm.TreePattern(pattern, safer=True)
     except newick.NewickError as e:
         abort(400, 'invalid pattern %r: %s' % (pattern, e))
 

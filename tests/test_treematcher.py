@@ -77,3 +77,33 @@ def test_safer():
                               '  node.species=="b")', safer=True)
     with pytest.raises(SyntaxError):
         list(tp_safer.search(t))  # asked for unknown function get_species()
+
+
+def test_safer_nested_code():
+    # The names used inside comprehensions (which are compiled as nested
+    # code objects) must be checked too, or safer=True can be bypassed.
+    t = Tree('(a,(b,c));')
+
+    tp_ok = tm.TreePattern('"any(n.name == \'b\' for n in ch)"', safer=True)
+    assert list(tp_ok.search(t)) == [t.common_ancestor(['b', 'c'])]
+
+    tp_escape = tm.TreePattern(
+        '"[x for x in ch for x in ().__class__.__base__.__subclasses__()]"',
+        safer=True)
+    with pytest.raises(SyntaxError):
+        list(tp_escape.search(t))
+
+
+def test_explorer_topological_search_is_safer():
+    # The explorer evaluates patterns that come from the web ("/t" searches),
+    # so they must not be able to run arbitrary code.
+    from ete4.smartview import explorer
+
+    t = Tree('(a,(b,c));')
+
+    func = explorer.get_topological_search('(,)')
+    assert func(t)
+
+    func = explorer.get_topological_search('"__import__(\'os\').getpid() > 0"')
+    with pytest.raises(SyntaxError):
+        func(t)

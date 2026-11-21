@@ -396,7 +396,7 @@ class NCBITaxa:
                     current_parent.add_child(nodes[tid])
                     if tid not in leaves:
                         current_parent = nodes[tid]
-            root = nodes[root_taxid]
+            root = nodes[root_taxid].detach()  # from the auxiliary parent
         else:
             taxids = set(map(int, taxids))
             sp2track = {}

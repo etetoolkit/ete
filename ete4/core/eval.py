@@ -64,7 +64,11 @@ def eval_on_node(code, node, context=None, safer=False):
 # web services, we are better off using this following function:
 def safer_eval(code, context):
     """Return a safer version of eval(code, context)."""
-    for name in code.co_names:
-        if name not in context:
-            raise SyntaxError('invalid use of %r during evaluation' % name)
+    codes = [code]  # we also check the code of comprehensions, lambdas, etc.
+    while codes:
+        c = codes.pop()
+        for name in c.co_names:
+            if name not in context:
+                raise SyntaxError('invalid use of %r during evaluation' % name)
+        codes.extend(x for x in c.co_consts if type(x) == type(code))
     return eval(code, {'__builtins__': {}}, context)

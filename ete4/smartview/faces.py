@@ -85,7 +85,7 @@ class EvalTextFace(Face):
     """
 
     def __init__(self, expression, fs_min=2, fs_max=16, rotation=0, style='',
-                 position='top', column=0, anchor=None):
+                 position='top', column=0, anchor=None, safer=False):
         super().__init__(position, column, anchor)
 
         self.code = (expression if type(expression) != str else
@@ -94,14 +94,16 @@ class EvalTextFace(Face):
         self.fs_min = fs_min
         self.fs_max = fs_max
         self.rotation = rotation
+        self.safer = safer  # if True, use safer_eval (for untrusted code)
 
     def draw(self, nodes, size, collapsed, zoom=(1, 1), ax_ay=(0, 0), r=1):
         # Get text(s) from applying expression to nodes.
         if collapsed:
-            texts_dirty, all_accounted = make_nodes_summary(nodes, self.code)
+            texts_dirty, all_accounted = make_nodes_summary(nodes, self.code,
+                                                            self.safer)
             texts = text_repr([a for a in texts_dirty if a], all_accounted)
         else:
-            text = eval_as_str(self.code, nodes[0])
+            text = eval_as_str(self.code, nodes[0], self.safer)
             texts = [text] if text else []
 
         if not texts:  # no texts?
@@ -156,16 +158,16 @@ class PropFace(EvalTextFace):
                          position, column, anchor)
 
 
-def make_nodes_summary(nodes, code=None):
+def make_nodes_summary(nodes, code=None, safer=False):
     """Return values summarizing the nodes, and if all are accounted for."""
     all_accounted = True  # did we get the value from all the given nodes?
     values = []  # will have the (summary of the) values
     for node in nodes:
-        value = node.name if code is None else eval_as_str(code, node)
+        value = node.name if code is None else eval_as_str(code, node, safer)
         if value:
             values.append(value)
         else:
-            value_in_descendant = first_value(node, code)
+            value_in_descendant = first_value(node, code, safer)
             if value_in_descendant:
                 values.append(value_in_descendant)
                 # There could be more values to add, that we ignore:
@@ -174,13 +176,13 @@ def make_nodes_summary(nodes, code=None):
     return values, all_accounted
 
 
-def first_value(tree, code=None):
+def first_value(tree, code=None, safer=False):
     """Return value of evaluating the given code, on the first possible node."""
     if code is None:  # special (and common!) case: get the first name
         return next((node.name for node in tree.traverse() if node.name), '')
     else:
         for node in tree.traverse():
-            value = eval_as_str(code, node)
+            value = eval_as_str(code, node, safer)
             if value:
                 return value
         return ''
@@ -234,9 +236,9 @@ def draw_texts(box, ax_ay, texts, fs_max, rotation, style):
         y += dy
 
 
-def eval_as_str(code, node):
+def eval_as_str(code, node, safer=False):
     """Return the given code evaluated on values related to the given node."""
-    result = eval_on_node(code, node)
+    result = eval_on_node(code, node, safer=safer)
     return str(result) if result is not None else ''
 
 

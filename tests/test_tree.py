@@ -8,7 +8,7 @@ import unittest
 from ete4 import Tree, PhyloTree
 from ete4.core.tree import TreeError
 from ete4.parser.newick import NewickError
-from ete4.parser import newick
+from ete4.parser import newick, ete_format
 
 from . import datasets as ds
 
@@ -350,6 +350,32 @@ class Test_Core_Tree(unittest.TestCase):
         t = Tree(nw, parser='multisupport')
         self.assertEqual(t.write(parser='multisupport'), nw)
 
+    def test_newick_spaces_and_comments(self):
+        # Spaces, newlines and comments in places where newick allows them.
+        for nw in ['(A:1,B:2) ;', '( A : 1 , B : 2 ) ;', '(A:1,B:2\n) ;',
+                   '(A[comment]:1,B:2);', '(A:1[comment],B:2)[comment];']:
+            t = Tree(nw)
+            self.assertEqual(t.write(), '(A:1,B:2);')
+
+        t = Tree('((A,B)90[comment]:1,C:2);')
+        self.assertEqual(t.write(), '((A,B)90:1,C:2);')
+
+    def test_ete_format(self):
+        t = Tree('((a:1,b:2)90:3,c);')
+        t['a'].add_prop('x', [1, 'x', {2, 3}])
+        t2 = ete_format.loads(ete_format.dumps(t))
+        self.assertEqual(t2['a'].props['x'], [1, 'x', {2, 3}])
+        self.assertEqual(t2.common_ancestor(['a', 'b']).support, 90)
+
+        # Loading must not run code (pickle can call any function).
+        import pickle, base64
+        class Evil:
+            def __reduce__(self):
+                return (print, ('this should not be printed',))
+        data = ('p\t0\t' + base64.b64encode(pickle.dumps(Evil())).decode() +
+                '\nt\t0\t\n')
+        self.assertRaises(pickle.UnpicklingError, ete_format.loads, data)
+
     def test_quoted_names(self):
         complex_name = "((A:0.0001[&&NHX:hello=true],B:0.011)90:0.01[&&NHX:hello=true],(C:0.01, D:0.001)hello:0.01);"
         # A quoted tree within a tree
@@ -451,6 +477,12 @@ class Test_Core_Tree(unittest.TestCase):
         C = t['C']
         C.delete(preserve_branch_length=False)
         self.assertEqual(orig_dist, t.get_distance(t, 'A')+1)
+
+        # Delete an internal node with several children.
+        t = Tree('((A:1,B:1)C:5,D:1);', parser=1)
+        t['C'].delete(preserve_branch_length=True)
+        self.assertEqual(t.get_distance('A', 'D'), 7)
+        self.assertEqual(t.get_distance('B', 'D'), 7)
 
         t = Tree('((((A:1,B:1):1,C:1):1,D:1):1,E:1):0;')
         orig_dist = t.get_distance(t, 'A')
@@ -631,6 +663,12 @@ class Test_Core_Tree(unittest.TestCase):
         t = Tree('((((a,a,a,a))),(b,b,b,(c,c,c)));')
         t.standardize()  # calls resolve_polytomy() internally too
         self.assertEqual(t.write(parser=9), '((((b,b),b),((c,c),c)),(((a,a),a),a));')
+
+        # The supports of the original nodes are kept (new nodes have 0).
+        t = Tree('(A:1,(B:1,C:1)90:1,(D:1,E:1)80:1,F:1);')
+        t.resolve_polytomy()
+        self.assertEqual(t.write(),
+                         '(((A:1,(B:1,C:1)90:1)0:0,(D:1,E:1)80:1)0:0,F:1);')
 
     def test_common_ancestors(self):
         # getting nodes, get_childs, get_sisters, root,
@@ -1057,6 +1095,22 @@ class Test_Core_Tree(unittest.TestCase):
                 n.reverse_children()
                 self.assertEqual(t.get_topology_id(), orig_id)
 
+    def test_custom_prop_monophyly_and_treeid(self):
+        # Using a custom property (not an attribute of the nodes).
+        t = Tree('((a,b),c);')
+        for n in t.leaves():
+            n.add_prop('sp', n.name.upper())
+
+        self.assertEqual(t.check_monophyly(['A', 'B'], prop='sp')[0], True)
+        self.assertEqual(t.check_monophyly(['A', 'C'], prop='sp')[0], False)
+
+        t2 = Tree('((b,a),c);')
+        for n in t2.leaves():
+            n.add_prop('sp', n.name.upper())
+
+        self.assertEqual(t.get_topology_id(prop='sp'),
+                         t2.get_topology_id(prop='sp'))
+
     def test_node_id(self):
         """Test the node_id corresponding to a node inside a tree."""
         t = Tree('((a,b)x,(c,d)y);', parser=1)
@@ -1208,6 +1262,20 @@ class Test_Core_Tree(unittest.TestCase):
     #     s3 = Tree('(((A, C)0.9, (E, D))0.98, (B,F)0.95);')
     #     self.assertEqual(_astuple(s3.compare(ref1)),
     #                      (1.0, 8, 8, 0.0, 0.0, 6, 1, "NA"))
+
+    def test_robinson_foulds_min_support(self):
+        t1 = Tree('(((A,B)90,(C,D)80)1,E);')
+        t2 = Tree('(((A,C)70,(B,D)60)1,E);')
+        self.assertEqual(t1.robinson_foulds(t2)[:2], [4, 6])
+        # Ignoring the branch (C,D) in t1 and both (A,B), (C,D).
+        self.assertEqual(t1.robinson_foulds(t2, min_support_t1=85)[:2], [3, 3])
+        self.assertEqual(t1.robinson_foulds(t2, min_support_t1=95)[:2], [2, 2])
+        self.assertEqual(t1.robinson_foulds(t2, min_support_t2=65)[:2], [3, 3])
+
+        t1 = Tree('((A,B)90,(C,D)80,E);')
+        t2 = Tree('((A,C)70,(B,D)60,E);')
+        self.assertEqual(t1.robinson_foulds(t2, unrooted_trees=True,
+                                            min_support_t1=85)[:2], [3, 3])
 
     # TODO: Merge this function with the previous one? (test_tree_compare())
     def test_robinson_foulds_and_more(self):

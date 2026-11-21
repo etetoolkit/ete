@@ -104,7 +104,7 @@ def EUCL_DIST_B(a,b,support,attr1,attr2):
     dist_a = sum([descendant.dist for descendant in a[0].leaves() if descendant.props[attr1] in(a[1] - b[1])]) / len([i for i in a[0].leaves()])
     dist_b = sum([descendant.dist for descendant in b[0].leaves() if descendant.props[attr2] in(b[1] - a[1])]) / len([i for i in b[0].leaves()])
 
-    return 1 - ((float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)) / 2
+    return ((1 - float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)) / 2
 
 def EUCL_DIST_B_ALL(a,b,support,attr1,attr2):
     '''
@@ -126,7 +126,7 @@ def EUCL_DIST_B_ALL(a,b,support,attr1,attr2):
     dist_a = sum([descendant.dist for descendant in a[0].leaves()]) / len([i for i in a[0].leaves()])
     dist_b = sum([descendant.dist for descendant in b[0].leaves()]) / len([i for i in b[0].leaves()])
 
-    return 1 - ((float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)) / 2
+    return ((1 - float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)) / 2
 
 
 def EUCL_DIST_B_FULL(a,b,support,attr1,attr2):
@@ -172,7 +172,7 @@ def EUCL_DIST_B_FULL(a,b,support,attr1,attr2):
     dist_a = sum([descendant[1] for descendant in _get_leaves_paths(a[0],attr1,support) if descendant[0] in(a[1] - b[1])]) / len([i for i in a[0].leaves()])
     dist_b = sum([descendant[1] for descendant in _get_leaves_paths(b[0],attr2,support) if descendant[0] in(b[1] - a[1])]) / len([i for i in b[0].leaves()])
 
-    return 1 - ((float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)) / 2
+    return ((1 - float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)) / 2
 
 def RF_DIST(a,b,support,attr1,attr2):
     '''
@@ -628,12 +628,12 @@ def treediff(t1, t2, prop1='name', prop2='name', dist_fn=EUCL_DIST,
             if np.percentile(matrix,5) >= matrix[r][c]:
 
                 if extended:
-                    b_dist = extended(parts1[r][0], parts2[c][0],prop1,prop2,support)
+                    b_dist = extended(parts1[r][0], parts2[c][0],support,prop1,prop2)
                 else:
                     pass
 
                 dist, side1, side2, diff, n1, n2 = (matrix[r][c],
-                                                    [l.name for l in parts1[r][0].leaves()], [l.name for l in parts2[r][0].leaves()],
+                                                    [l.name for l in parts1[r][0].leaves()], [l.name for l in parts2[c][0].leaves()],
                                                     parts1[r][1].symmetric_difference(parts2[c][1]),
                                                     parts1[r][0], parts2[c][0])
                 difftable.append([dist, b_dist, side1, side2, diff, n1, n2])
@@ -673,7 +673,7 @@ def get_difftable_summary(difftable, rf=-1, rf_max=-1, extended=False):
             '%0.6f\t%0.6f\t%10d\t%d\t%d' % (total_dist, total_bdist, len(difftable), rf, rf_max)])
     else:
         return '\n'.join([
-            '\t'.join(['Distance', 'Mismatches', 'RF', 'maxRF']) +
+            '\t'.join(['Distance', 'Mismatches', 'RF', 'maxRF']),
             '%0.6f\t%10d\t%d\t%d' % (total_dist, len(difftable), rf, rf_max)])
 
 # TODO: Fix the other show_difftable*() functions. As they are, they lie on
@@ -796,8 +796,8 @@ def show_difftable_topo(difftable, attr1, attr2, usecolor=False, extended=None):
                 if usecolor:
                     leaf.name = color(leaf.name, "red")
 
-        topo1 = n1.get_ascii(show_internal=False, compact=False)
-        topo2 = n2.get_ascii(show_internal=False, compact=False)
+        topo1 = n1.to_str(show_internal=False, compact=False, props=['name'])
+        topo2 = n2.to_str(show_internal=False, compact=False, props=['name'])
 
         # This truncates too large topology strings pretending to be
         # scrolled to the right margin
@@ -967,8 +967,8 @@ def show_difftable_topo_SCA(difftable, attr1, attr2, usecolor=False, extended=No
         n1.ladderize()
         n2.ladderize()
 
-        topo1 = n1.get_ascii(show_internal=False, compact=False)
-        topo2 = n2.get_ascii(show_internal=False, compact=False)
+        topo1 = n1.to_str(show_internal=False, compact=False, props=['name'])
+        topo2 = n2.to_str(show_internal=False, compact=False, props=['name'])
 
         # This truncates too large topology strings pretending to be
         # scrolled to the right margin
@@ -1126,8 +1126,8 @@ def run(args):
             maxjobs = args.maxjobs
 
         if args.ncbi:
-            from common import ncbi
-            ncbi.connect_database()
+            from ete4 import NCBITaxa
+            ncbi = NCBITaxa()
 
         rattr, tattr = args.ref_attr, args.target_attr
 
@@ -1175,11 +1175,11 @@ def run(args):
 
             for leaf in t1.leaves():
                 # we can't pass dicts or lists due to an incompatibility with get_cached_content so we give a string and then parse it
-                leaf.pearson=json.dumps(pearson)
+                leaf.props['pearson'] = json.dumps(pearson)
 
             for leaf in t2.leaves():
                 # we can't pass dicts or lists due to an incompatibility with get_cached_content so we give a string and then parse it
-                leaf.pearson=json.dumps(pearson)
+                leaf.props['pearson'] = json.dumps(pearson)
 
             rattr, tattr = 'pearson', 'pearson'
             dist_fn = SINGLECELL
@@ -1211,7 +1211,7 @@ def run(args):
                 elif args.report == "diffs_tab":
                     show_difftable_tab(difftable, extended=extend)
                 elif args.report == 'summary':
-                    rf, rf_max, _, _, _, _, _ = t1.robinson_foulds(t2, attr_t1=rattr, attr_t2=tattr)
+                    rf, rf_max, _, _, _, _, _ = t1.robinson_foulds(t2, prop_t1=rattr, prop_t2=tattr)
                     show_difftable_summary(difftable, rf, rf_max, extended=extend)
 
             elif dist_fn == SINGLECELL:
@@ -1222,7 +1222,7 @@ def run(args):
                 elif args.report == "diffs_tab":
                     show_difftable_tab_SCA(difftable, extended=extend)
                 elif args.report == 'summary':
-                    rf, rf_max, _, _, _, _, _ = t1.robinson_foulds(t2, attr_t1='name', attr_t2='name')
+                    rf, rf_max, _, _, _, _, _ = t1.robinson_foulds(t2, prop_t1='name', prop_t2='name')
                     show_difftable_summary_SCA(difftable, rf, rf_max, extended=extend)
 
         else:

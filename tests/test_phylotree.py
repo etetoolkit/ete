@@ -348,6 +348,23 @@ class Test_phylo_module(unittest.TestCase):
         self.assertEqual(t.get_species(), set(sp2age.keys()))
         self.assertEqual(set([sp for sp in t.iter_species()]), set(sp2age.keys()))
 
+    def test_speciation_trees_polytomy(self):
+        t = PhyloTree('((Hsa_1,Ptr_1,Mms_1),(Hsa_2,Ptr_2));',
+                      sp_naming_function=lambda name: name[:3])
+        ntrees, ndups, sptrees = t.get_speciation_trees()
+        self.assertEqual((ntrees, ndups), (2, 1))
+        self.assertEqual(sorted(st.write() for st in sptrees),
+                         ['(Hsa_1,Ptr_1,Mms_1);', '(Hsa_2,Ptr_2);'])
+
+    def test_speciation_trees_map_properties(self):
+        t = PhyloTree('((Hsa_1,Ptr_1),(Hsa_2,Ptr_2));',
+                      sp_naming_function=lambda name: name[:3])
+        for leaf in t.leaves():
+            leaf.add_prop('taxid', 9606)
+        sptrees = t.get_speciation_trees(map_properties=['taxid'])[2]
+        for st in sptrees:
+            self.assertEqual([l.props.get('taxid') for l in st], [9606, 9606])
+
     def test_collapse(self):
         t = PhyloTree('((Dme_001,Dme_002),(((Cfa_001,Mms_001),((((Hsa_001,Hsa_001),Ptr_001),Mmu_001),((Hsa_004,Ptr_004),Mmu_004))),(Ptr_002,(Hsa_002,Mmu_002))));',
                       sp_naming_function=lambda name: name[:3])

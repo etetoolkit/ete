@@ -5,14 +5,19 @@ from ete4 import PhyloTree, GTDBTaxa, ETE_DATA_HOME
 from ete4.gtdb_taxonomy import gtdbquery
 import requests
 
-DATABASE_PATH = ETE_DATA_HOME + '/gtdbtaxa.sqlite'
-DEFAULT_GTDBTAXADUMP = ETE_DATA_HOME + '/gtdbdump.tar.gz'
+# The tests use their own database (from GTDB release 202), so they do not
+# overwrite the one that the user has in ETE_DATA_HOME.
+DATABASE_PATH = ETE_DATA_HOME + '/tests/test_gtdbquery.gtdbtaxa.sqlite'
+DEFAULT_GTDBTAXADUMP = ETE_DATA_HOME + '/tests/gtdb202dump.tar.gz'
 
 
 class Test_gtdbquery(unittest.TestCase):
 
     def test_00_update_database(self):
-        gtdb = GTDBTaxa()
+        if os.path.exists(DATABASE_PATH):
+            return
+
+        os.makedirs(os.path.dirname(DATABASE_PATH), exist_ok=True)
 
         url = ('https://github.com/etetoolkit/ete-data/raw/main'
                    '/gtdb_taxonomy/gtdb202/gtdb202dump.tar.gz')
@@ -22,10 +27,7 @@ class Test_gtdbquery(unittest.TestCase):
         with open(DEFAULT_GTDBTAXADUMP, 'wb') as f:
             f.write(requests.get(url).content)
 
-        gtdb.update_taxonomy_database(DEFAULT_GTDBTAXADUMP)
-
-        if not os.path.exists(DATABASE_PATH):
-            gtdbquery.update_db(DATABASE_PATH)
+        gtdbquery.update_db(DATABASE_PATH, DEFAULT_GTDBTAXADUMP)
 
     def test_01tree_annotation(self):
         tree = PhyloTree('((c__Alicyclobacillia, c__Bacilli), s__Caballeronia udeis);',
@@ -78,7 +80,7 @@ class Test_gtdbquery(unittest.TestCase):
         # assign species attribute via sp_naming_function
         tree = PhyloTree('((GB_GCA_011358815.1|protA,RS_GCF_003948265.1|protB),(GB_GCA_003344655.1|protC),(GB_GCA_011056255.1|protD));',
                          sp_naming_function=lambda name: name.split('|')[0])
-        tree.annotate_gtdb_taxa(taxid_attr='species')
+        tree.annotate_gtdb_taxa(dbfile=DATABASE_PATH, taxid_attr='species')
 
         self.assertEqual(tree.props.get('sci_name'), 'g__Korarchaeum')
 
@@ -111,7 +113,7 @@ class Test_gtdbquery(unittest.TestCase):
         for key, value in annotate_dict.items():
             tree[key].add_prop('gtdb_spcode', value)
 
-        tree.annotate_gtdb_taxa(taxid_attr="gtdb_spcode")
+        tree.annotate_gtdb_taxa(dbfile=DATABASE_PATH, taxid_attr="gtdb_spcode")
 
         self.assertEqual(tree.props.get('sci_name'), 'g__Korarchaeum')
 
@@ -132,6 +134,17 @@ class Test_gtdbquery(unittest.TestCase):
                             'o__Korarchaeales', 'f__Korarchaeaceae', 'g__Korarchaeum',
                             's__Korarchaeum sp003344655', 'GB_GCA_003344655.1'])
 
+    def test_05tree_annotation(self):
+        # Using the "taxid" property (with gtdb names, as everywhere in gtdb)
+        tree = PhyloTree('(protA:1,protB:1);')
+        tree['protA'].add_prop('taxid', 'GB_GCA_003662765.1')
+        tree['protB'].add_prop('taxid', 'GB_GCA_003662805.1')
+
+        tree.annotate_gtdb_taxa(dbfile=DATABASE_PATH, taxid_attr='taxid')
+
+        self.assertEqual(tree.props.get('sci_name'), 's__B65-G9 sp003662765')
+        self.assertEqual(tree['protA'].props.get('rank'), 'subspecies')
+
     def test_gtdbquery(self):
         gtdb = GTDBTaxa(dbfile=DATABASE_PATH)
 
@@ -147,6 +160,13 @@ class Test_gtdbquery(unittest.TestCase):
 
         self.assertEqual(set(out), set(['s__MP8T-1 sp002825535', 's__MP8T-1 sp003345545', 's__MP8T-1 sp002825465', 's__MP8T-1 sp004524565', 's__MP8T-1 sp004524595', 's__SMTZ1-83 sp011364985', 's__SMTZ1-83 sp011365025', 's__SMTZ1-83 sp001563325', 's__TEKIR-14 sp004524445', 's__SHMX01 sp008080745', 's__OWC5 sp003345595', 's__OWC5 sp003345555', 's__JACAEL01 sp013388835', 's__B65-G9 sp003662765', 's__SMTZ1-45 sp001563335', 's__SMTZ1-45 sp011364905', 's__SMTZ1-45 sp001940705', 's__SMTZ1-45 sp004376265', 's__SMTZ1-45 sp002825515', 's__WTCK01 sp013138615', 's__TEKIR-12S sp004524435']))
 
+    def test_descendant_taxa_of_leaf(self):
+        gtdb = GTDBTaxa(dbfile=DATABASE_PATH)
+        # A genome has no descendants, so we get itself (as a name, like
+        # for any other taxa, not the internal numeric taxid).
+        self.assertEqual(gtdb.get_descendant_taxa('GB_GCA_003662765.1'),
+                         ['GB_GCA_003662765.1'])
+
     def test_get_topology(self):
         gtdb = GTDBTaxa(dbfile=DATABASE_PATH)
         tree = gtdb.get_topology(['p__Huberarchaeota', 'o__Peptococcales', 'f__Korarchaeaceae', 's__Korarchaeum'],
@@ -160,6 +180,14 @@ class Test_gtdbquery(unittest.TestCase):
         # normal case with collapse_subspecies
         tree = gtdb.get_topology(['p__Huberarchaeota', 'o__Peptococcales', 'f__Korarchaeaceae', 's__Korarchaeum','RS_GCF_006228565.1', 'GB_GCA_001515945.1'],
                                   intermediate_nodes=True, collapse_subspecies=True, annotate=True)
+
+    def test_get_topology_single_taxon(self):
+        gtdb = GTDBTaxa(dbfile=DATABASE_PATH)
+        tree = gtdb.get_topology(['s__B65-G9 sp003662765'])
+        self.assertTrue(tree.is_root)  # no hidden parent above it
+        self.assertEqual(tree.name, 's__B65-G9 sp003662765')
+        self.assertEqual(sorted(tree.leaf_names()),
+                         ['GB_GCA_003662765.1', 'GB_GCA_003662805.1'])
 
     def test_name_lineages(self):
         gtdb = GTDBTaxa(dbfile=DATABASE_PATH)
@@ -187,7 +215,7 @@ class Test_gtdbquery(unittest.TestCase):
         gtdb = GTDBTaxa(dbfile=DATABASE_PATH)
         c__Thorarchaeia = "(((((((GB_GCA_002825535.1),(GB_GCA_003345545.1),(GB_GCA_002825465.1),(GB_GCA_004524565.1),(GB_GCA_004524595.1)),((GB_GCA_011364985.1),(GB_GCA_011365025.1),(GB_GCA_001563325.1)),((GB_GCA_004524445.1)),((GB_GCA_008080745.1)),((GB_GCA_003345595.1),(GB_GCA_003345555.1)),((GB_GCA_013388835.1)),((GB_GCA_003662765.1,GB_GCA_003662805.1)),((GB_GCA_011364905.1),(GB_GCA_001563335.1),(GB_GCA_001940705.1),(GB_GCA_004376265.1),(GB_GCA_002825515.1)),((GB_GCA_013138615.1)),((GB_GCA_004524435.1)))))));"
         t = PhyloTree(c__Thorarchaeia)
-        _, _, _= t.annotate_gtdb_taxa(taxid_attr='name', ignore_unclassified=False)
+        _, _, _= t.annotate_gtdb_taxa(dbfile=DATABASE_PATH, taxid_attr='name', ignore_unclassified=False)
 
         # case0
         t0 = t['GB_GCA_011364985.1']
@@ -227,7 +255,7 @@ class Test_gtdbquery(unittest.TestCase):
         c__Thorarchaeia = '(((((((GB_GCA_002825535.1),(GB_GCA_003345545.1),(GB_GCA_002825465.1),(GB_GCA_004524565.1),(GB_GCA_004524595.1)),((GB_GCA_011364985.1),(GB_GCA_011365025.1),(GB_GCA_001563325.1)),((GB_GCA_004524445.1)),((GB_GCA_008080745.1)),((GB_GCA_003345595.1),(GB_GCA_003345555.1)),((GB_GCA_013388835.1)),((GB_GCA_003662765.1,GB_GCA_003662805.1)),((GB_GCA_011364905.1),(GB_GCA_001563335.1),(GB_GCA_001940705.1),(GB_GCA_004376265.1),(GB_GCA_002825515.1)),((GB_GCA_013138615.1)),((GB_GCA_004524435.1)))))));'
         t = PhyloTree(c__Thorarchaeia)
         t['GB_GCA_001563325.1'].name = 'sample1'
-        _, _, _= t.annotate_gtdb_taxa(taxid_attr='name', ignore_unclassified=False)
+        _, _, _= t.annotate_gtdb_taxa(dbfile=DATABASE_PATH, taxid_attr='name', ignore_unclassified=False)
 
         # check nomarl leaf
         self.assertEqual(t['GB_GCA_011364985.1'].props.get("taxid"), 'GB_GCA_011364985.1')
@@ -256,7 +284,7 @@ class Test_gtdbquery(unittest.TestCase):
         c__Thorarchaeia = '(((((((GB_GCA_002825535.1),(GB_GCA_003345545.1),(GB_GCA_002825465.1),(GB_GCA_004524565.1),(GB_GCA_004524595.1)),((GB_GCA_011364985.1),(GB_GCA_011365025.1),(GB_GCA_001563325.1)),((GB_GCA_004524445.1)),((GB_GCA_008080745.1)),((GB_GCA_003345595.1),(GB_GCA_003345555.1)),((GB_GCA_013388835.1)),((GB_GCA_003662765.1,GB_GCA_003662805.1)),((GB_GCA_011364905.1),(GB_GCA_001563335.1),(GB_GCA_001940705.1),(GB_GCA_004376265.1),(GB_GCA_002825515.1)),((GB_GCA_013138615.1)),((GB_GCA_004524435.1)))))));'
         t = PhyloTree(c__Thorarchaeia)
         t['GB_GCA_001563325.1'].name = 'sample1'
-        _, _, _= t.annotate_gtdb_taxa(taxid_attr='name', ignore_unclassified=True)
+        _, _, _= t.annotate_gtdb_taxa(dbfile=DATABASE_PATH, taxid_attr='name', ignore_unclassified=True)
 
         # check nomarl leaf
         self.assertEqual(t['GB_GCA_011364985.1'].props.get("taxid"), 'GB_GCA_011364985.1')

@@ -56,7 +56,6 @@ class PhyloxmlTree(PhyloTree):
 
     dist = property(fget=_get_dist, fset=_set_dist)
     support = property(fget=_get_support, fset=_set_support)
-    children = property(fget=_get_children)
     name = property(fget=_get_name, fset=_set_name)
 
     def __init__(self, phyloxml_clade=None, phyloxml_phylogeny=None, **kargs):

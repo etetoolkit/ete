@@ -231,6 +231,7 @@ def read_props(str text, long pos, is_leaf, dict parser, check_req=False):
     props = {}  # will contain the properties extracted from the content string
 
     p0_str, pos = read_content(text, pos, endings=':[,);')
+    pos = skip_spaces_and_comments(text, pos)  # in case of "name[comment]:"
 
     try:
         assert not check_req or not p0_req or p0_str, 'missing required value'
@@ -373,7 +374,7 @@ def read_content(str text, long pos, endings=',);'):
     """Return content starting at position pos in text, and where it ends."""
     # text = '...(node_1:0.5[&&NHX:p=a],...'  ->  'node_1:0.5[&&NHX:p=a]'
     #             ^-- pos              ^-- pos (returned)
-    start = pos
+    start = pos = skip_spaces_and_comments(text, pos)
     pos = skip_content(text, pos, endings)
     return text[start:pos], pos
 
