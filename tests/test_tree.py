@@ -1288,15 +1288,21 @@ class Test_Core_Tree(unittest.TestCase):
         t1 = Tree('(((A,B)90,(C,D)80)1,E);')
         t2 = Tree('(((A,C)70,(B,D)60)1,E);')
         self.assertEqual(t1.robinson_foulds(t2)[:2], [4, 6])
-        # Ignoring the branch (C,D) in t1 and both (A,B), (C,D).
-        self.assertEqual(t1.robinson_foulds(t2, min_support_t1=85)[:2], [3, 3])
-        self.assertEqual(t1.robinson_foulds(t2, min_support_t1=95)[:2], [2, 2])
-        self.assertEqual(t1.robinson_foulds(t2, min_support_t2=65)[:2], [3, 3])
+        # Ignoring the branches of t1 (C,D) and (A,B,C,D), and then also (A,B).
+        # Leaves and the root have no support, so they are never ignored.
+        self.assertEqual(t1.robinson_foulds(t2, min_support_t1=85)[:2], [3, 4])
+        self.assertEqual(t1.robinson_foulds(t2, min_support_t1=95)[:2], [2, 3])
+        self.assertEqual(t1.robinson_foulds(t2, min_support_t2=65)[:2], [3, 4])
+        rf, max_rf, common, edges1, edges2, discard1, discard2 = \
+            t1.robinson_foulds(t2, min_support_t1=85)
+        self.assertEqual(discard1, {('C', 'D'), ('A', 'B', 'C', 'D')})
 
         t1 = Tree('((A,B)90,(C,D)80,E);')
         t2 = Tree('((A,C)70,(B,D)60,E);')
         self.assertEqual(t1.robinson_foulds(t2, unrooted_trees=True,
                                             min_support_t1=85)[:2], [3, 3])
+        self.assertEqual(t1.robinson_foulds(t2, unrooted_trees=True,
+                                            min_support_t2=65)[:2], [3, 3])
 
     # TODO: Merge this function with the previous one? (test_tree_compare())
     def test_robinson_foulds_and_more(self):

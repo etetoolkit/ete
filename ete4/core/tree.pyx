@@ -14,7 +14,6 @@ import itertools
 from hashlib import md5
 from functools import cmp_to_key
 import pickle
-import math
 
 from . import text_viz
 from . import operations as ops
@@ -1314,6 +1313,9 @@ cdef class Tree:
                     if value in common:
                         yield value
 
+        def is_low(support, min_support):  # helper function
+            return support is not None and support < min_support
+
         min_comparison = None
         for t1 in origin_trees:
             t1_leaves = t1.get_cached_content()
@@ -1332,7 +1334,7 @@ cdef class Tree:
                 edges1.discard(())
 
             if min_support_t1:
-                support_t1 = {tuple(sorted(from_common(leaves, prop_t1))): branch.support or 0
+                support_t1 = {tuple(sorted(from_common(leaves, prop_t1))): branch.support
                               for branch, leaves in t1_leaves.items()}
 
             for t2 in target_trees:
@@ -1352,20 +1354,20 @@ cdef class Tree:
                     edges2.discard(())
 
                 if min_support_t2:
-                    support_t2 = {tuple(sorted(from_common(leaves, prop_t2))): branch.support or 0
+                    support_t2 = {tuple(sorted(from_common(leaves, prop_t2))): branch.support
                                   for branch, leaves in t2_leaves.items()}
 
                 # if a support value is passed as a constraint, discard lowly supported branches from the analysis
                 discard_t1, discard_t2 = set(), set()
                 if min_support_t1 and unrooted_trees:
-                    discard_t1 = {p for p in edges1 if support_t1.get(p[0], support_t1.get(p[1], math.inf)) < min_support_t1}
+                    discard_t1 = {p for p in edges1 if is_low(support_t1.get(p[0], support_t1.get(p[1])), min_support_t1)}
                 elif min_support_t1:
-                    discard_t1 = {p for p in edges1 if support_t1[p] is not None and support_t1[p] < min_support_t1}
+                    discard_t1 = {p for p in edges1 if is_low(support_t1[p], min_support_t1)}
 
                 if min_support_t2 and unrooted_trees:
-                    discard_t2 = {p for p in edges2 if support_t2.get(p[0], support_t2.get(p[1], math.inf)) < min_support_t2}
+                    discard_t2 = {p for p in edges2 if is_low(support_t2.get(p[0], support_t2.get(p[1])), min_support_t2)}
                 elif min_support_t2:
-                    discard_t2 = {p for p in edges2 if support_t2[p] is not None and support_t2[p] < min_support_t2}
+                    discard_t2 = {p for p in edges2 if is_low(support_t2[p], min_support_t2)}
 
                 # the two root edges are never counted here, as they are always
                 # present in both trees because of the common property filters
