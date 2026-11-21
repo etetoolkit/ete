@@ -2,7 +2,8 @@
 Classes and functions for drawing a tree.
 """
 
-from math import sin, cos, pi, sqrt, atan2
+from math import sin, cos, pi, sqrt, atan2, inf
+from itertools import accumulate
 
 from ..core import operations as ops
 from .coordinates import Size, Box, make_box, get_xs, get_ys
@@ -153,7 +154,7 @@ class Drawer:
             self.outline = stack(self.outline, box_node)
             self.clip_outline()  # make sure self.outline has a reasonable box
             it.descend = False  # skip children
-            return x, y + box_node.dy
+            return self.collapse_next_siblings(it, x, y + box_node.dy)
 
         # If we arrive here, the node will be fully drawn (eventually).
 
@@ -168,6 +169,10 @@ class Drawer:
         else:
             self.nodes_dx.append(0)  # keep track of the extra dx from children
             return x + dx, y
+
+    def collapse_next_siblings(self, it, x, y):
+        """Collapse the next siblings that would be collapsed too, and skip them."""
+        return x, y  # only done for the moment in DrawerRect
 
     def on_last_visit(self, point, it, graphics):
         """Update list of graphics to draw and return new position."""
@@ -392,8 +397,52 @@ class DrawerRect(Drawer):
                  viewport=None, zoom=(1, 1, 1), collapsed_ids=None, searches=None):
         super().__init__(tree, tree_style, draw_node_fns, labels,
                          viewport, zoom, collapsed_ids, searches)
-        # We don't really need to define this function, but we do it
-        # for symmetry, because in DrawerCirc it needs to do more things.
+        self.ys = {}  # cumulative dys of the children of a node (see below)
+
+    def collapse_next_siblings(self, it, x, y):
+        """Collapse the next siblings that would be collapsed too, and skip them."""
+        # Same as if the walker visited them (see on_first_visit()), but much
+        # faster for the many small children of huge polytomies: we find the
+        # last one with a binary search on the cumulative dys of the siblings
+        # (computations are exact, since dys are numbers of leaves).
+        if len(it.visiting) < 2 or self.collapsed_ids or self.tree_style.get('is-leaf-fn'):
+            return x, y
+
+        parent, nch = it.visiting[-2]  # it.node is parent.children[nch]
+        children = parent.children
+        if parent not in self.ys:
+            self.ys[parent] = list(accumulate(node.size[1] for node in children))
+        ys = self.ys[parent]  # ys[i] == sum of dys of children[0] ... children[i]
+
+        _, zy, _ = self.zoom
+        y_max = get_ys(self.viewport)[1] if self.viewport else inf
+        dy0, y0 = self.outline.dy - ys[nch], y - ys[nch]
+
+        def fits(i):  # would children[i] be collapsed (if it is small)?
+            return ((dy0 + ys[i-1]) * zy < self.node_height_min and
+                    y0 + ys[i-1] <= y_max)
+
+        last, end = nch, len(children)  # find last that fits (binary search)
+        while end - last > 1:
+            mid = (last + end) // 2
+            if fits(mid):
+                last = mid
+            else:
+                end = mid
+
+        if last > nch and (ys[last] - ys[last-1]) * zy >= self.node_height_min:
+            last -= 1  # it is not small, so it will not be collapsed
+
+        if last > nch:
+            nodes = children[nch+1:last+1]
+            dx = max(node.size[0] for node in nodes)
+            self.nodes_dx[-1] = max(self.nodes_dx[-1], dx)
+            self.collapsed += nodes
+            x0, y1, dx1, _ = self.outline
+            self.outline = Box(x0, y1, max(dx1, dx), dy0 + ys[last])
+            it.visiting[-2] = it.visiting[-2]._replace(nch=last)  # skip them
+
+        return x, y0 + ys[last]
 
     def is_visible(self, box):
         """Return True if the node in box will produce something visible."""
