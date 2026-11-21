@@ -191,9 +191,9 @@ def callback(tree_id):
         graphics = json.dumps(list(draw.draw(**kwargs))).encode('utf8')
 
         response.content_type = 'application/json'
-        if g_config['compress']:
+        if g_config['compress'] and 'br' in request.get_header('Accept-Encoding', ''):
             response.add_header('Content-Encoding', 'br')
-            return brotli.compress(graphics)
+            return brotli.compress(graphics, quality=4)  # fast (11 is too slow)
         else:
             return graphics
     except (AssertionError, SyntaxError) as e:
