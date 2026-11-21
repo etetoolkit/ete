@@ -25,8 +25,18 @@ function update() {
 }
 
 
+// Only one drawing request is in flight at a time. Calls made meanwhile are
+// merged into a single new request with the latest view, sent as soon as the
+// current one returns (so stale requests don't pile up in the server).
+const drawing = {busy: false, again: false};
+
 // Ask the server for a tree in the new defined region, and draw it.
 async function draw_tree() {
+    if (drawing.busy) {
+        drawing.again = true;  // draw again when the current request returns
+        return;
+    }
+
     if (div_tree.offsetWidth <= 0 || view.zoom.x === Infinity) {
         const w = div_tree.offsetWidth / view.zoom.x;
         suggest_width_change("error", `Cannot draw tree with width ${w}`);
@@ -42,7 +52,18 @@ async function draw_tree() {
         const qs = build_draw_query_string();
 
         // Get the drawing commands.
-        const commands = await api(`/trees/${get_tid()}/draw?${qs}`);
+        let commands;
+        drawing.busy = true;
+        try {
+            commands = await api(`/trees/${get_tid()}/draw?${qs}`);
+        }
+        finally {
+            drawing.busy = false;
+            if (drawing.again) {  // the view changed meanwhile: ask for it now
+                drawing.again = false;
+                draw_tree();  // (not awaited: we draw these commands meanwhile)
+            }
+        }
 
         // Separate them per panel (xmaxs is the farthest x drawn per panel).
         const [items, xmaxs] = get_items_per_panel(commands);
@@ -107,7 +128,8 @@ async function draw_tree() {
         });
     }
 
-    div_tree.style.cursor = "auto";  // show that we finished drawing
+    if (!drawing.busy)
+        div_tree.style.cursor = "auto";  // show that we finished drawing
 }
 
 // Return float x as a nice string (with approximately n precision digits).
