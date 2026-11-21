@@ -81,3 +81,29 @@ def test_upload_does_not_read_files(tmp_path):
                            'newick': '((a,b)90,c);'}),
                 'application/x-www-form-urlencoded') == ['test_upload']
     explorer.g_trees.pop('test_upload')
+
+
+def test_upload_bad_or_big_files():
+    import io, gzip, bottle
+    from ete4.smartview import explorer
+
+    # Stop reading (uncompressed) files that are too big.
+    data = gzip.compress(b'((a,b),c);' + b' ' * 1000)
+    assert (explorer.get_trees_from_file('t.nw.gz', io.BytesIO(data), 2000) ==
+            [{'name': 't.nw', 'newick': '((a,b),c);'}])
+    with pytest.raises(ValueError):
+        explorer.get_trees_from_file('t.nw.gz', io.BytesIO(data), 100)
+
+    # A bad file gives an error 400 (and not 500).
+    body = ('--XX\r\n'
+            'Content-Disposition: form-data; name="trees"; filename="t.nw.gz"\r\n'
+            'Content-Type: application/octet-stream\r\n\r\n'
+            'not a gzip file\r\n'
+            '--XX--\r\n').encode()
+    bottle.request.bind({'REQUEST_METHOD': 'POST',
+                         'CONTENT_TYPE': 'multipart/form-data; boundary=XX',
+                         'CONTENT_LENGTH': str(len(body)),
+                         'wsgi.input': io.BytesIO(body)})
+    with pytest.raises(bottle.HTTPError) as e:
+        explorer.get_trees_from_form()
+    assert e.value.status_code == 400

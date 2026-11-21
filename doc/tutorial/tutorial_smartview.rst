@@ -164,6 +164,24 @@ together, it would look like::
   t.explore(port=5000, open_browser=False, compress=True)
 
 
+Security
+~~~~~~~~
+
+The explorer is meant for local use, or for people we trust. It has no
+authentication: anyone who can reach the server can add, change or
+remove trees. Also, the searches and labels written in the explorer
+run Python expressions and regular expressions in the server. They are
+restricted so they cannot run arbitrary code, but an expensive one
+(like ``10**10**9``, or a regular expression with catastrophic
+backtracking) can keep the server busy for a long time.
+
+By default the server only listens on 127.0.0.1 (``host='127.0.0.1'``
+in ``t.explore()``), so it can only be reached from the same computer
+(and, as above, through ssh port forwarding). If we make it listen on
+other addresses (for example with ``host='0.0.0.0'``), anyone in the
+network can use it.
+
+
 Verbose mode
 ~~~~~~~~~~~~
 
