@@ -1231,6 +1231,20 @@ class Test_Core_Tree(unittest.TestCase):
     #     self.assertEqual(_astuple(s3.compare(ref1)),
     #                      (1.0, 8, 8, 0.0, 0.0, 6, 1, "NA"))
 
+    def test_robinson_foulds_min_support(self):
+        t1 = Tree('(((A,B)90,(C,D)80)1,E);')
+        t2 = Tree('(((A,C)70,(B,D)60)1,E);')
+        self.assertEqual(t1.robinson_foulds(t2)[:2], [4, 6])
+        # Ignoring the branch (C,D) in t1 and both (A,B), (C,D).
+        self.assertEqual(t1.robinson_foulds(t2, min_support_t1=85)[:2], [3, 3])
+        self.assertEqual(t1.robinson_foulds(t2, min_support_t1=95)[:2], [2, 2])
+        self.assertEqual(t1.robinson_foulds(t2, min_support_t2=65)[:2], [3, 3])
+
+        t1 = Tree('((A,B)90,(C,D)80,E);')
+        t2 = Tree('((A,C)70,(B,D)60,E);')
+        self.assertEqual(t1.robinson_foulds(t2, unrooted_trees=True,
+                                            min_support_t1=85)[:2], [3, 3])
+
     # TODO: Merge this function with the previous one? (test_tree_compare())
     def test_robinson_foulds_and_more(self):
         # this is the result of 100 Ktreedist runs on random trees, using rooted

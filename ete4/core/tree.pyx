@@ -1332,7 +1332,7 @@ cdef class Tree:
                 edges1.discard(())
 
             if min_support_t1:
-                support_t1 = {tuple(sorted(from_common(leaves, prop_t1) for n in leaves)): branch.support or 0
+                support_t1 = {tuple(sorted(from_common(leaves, prop_t1))): branch.support or 0
                               for branch, leaves in t1_leaves.items()}
 
             for t2 in target_trees:
@@ -1352,7 +1352,7 @@ cdef class Tree:
                     edges2.discard(())
 
                 if min_support_t2:
-                    support_t2 = {tuple(sorted(from_common(leaves, prop_t2) for n in leaves)): branch.support or 0
+                    support_t2 = {tuple(sorted(from_common(leaves, prop_t2))): branch.support or 0
                                   for branch, leaves in t2_leaves.items()}
 
                 # if a support value is passed as a constraint, discard lowly supported branches from the analysis
