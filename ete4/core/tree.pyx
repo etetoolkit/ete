@@ -422,8 +422,10 @@ cdef class Tree:
             return  # nothing to do, we cannot actually delete the root
 
         if preserve_branch_length and 'dist' in self.props:
-            if len(self.children) == 1 and 'dist' in self.children[0].props:
-                self.children[0].dist += self.dist
+            if self.children:
+                for ch in self.children:
+                    if 'dist' in ch.props:
+                        ch.dist += self.dist
             elif len(parent.children) == 1 and 'dist' in parent.props:
                 parent.dist += self.dist
 

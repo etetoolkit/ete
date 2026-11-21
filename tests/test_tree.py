@@ -462,6 +462,12 @@ class Test_Core_Tree(unittest.TestCase):
         C.delete(preserve_branch_length=False)
         self.assertEqual(orig_dist, t.get_distance(t, 'A')+1)
 
+        # Delete an internal node with several children.
+        t = Tree('((A:1,B:1)C:5,D:1);', parser=1)
+        t['C'].delete(preserve_branch_length=True)
+        self.assertEqual(t.get_distance('A', 'D'), 7)
+        self.assertEqual(t.get_distance('B', 'D'), 7)
+
         t = Tree('((((A:1,B:1):1,C:1):1,D:1):1,E:1):0;')
         orig_dist = t.get_distance(t, 'A')
         C = t['C']
