@@ -376,6 +376,27 @@ class Test_Core_Tree(unittest.TestCase):
                 '\nt\t0\t\n')
         self.assertRaises(pickle.UnpicklingError, ete_format.loads, data)
 
+    def test_ete_format_types(self):
+        # Values that ete can write and that need some class to load.
+        import pickle, base64
+        import numpy as np
+        values = {'f32': np.float32(1.5), 'i64': np.int64(7),
+                  'complex': 1+2j, 'set': {1, 2}, 'frozenset': frozenset('ab'),
+                  'bytes': b'\x00ab\xff', 'bytearray': bytearray(b'xy'),
+                  'nested': {'a': [1, {'b': (2, 3)}], 'c': [b'x', {4}]}}
+
+        t = Tree('((a:1,b:2)90:3,c);')
+        t['a'].props.update(values)
+        t2 = ete_format.loads(ete_format.dumps(t))
+        for k, v in values.items():
+            self.assertEqual(t2['a'].props[k], v)
+            self.assertEqual(type(t2['a'].props[k]), type(v))
+
+        # Older pickle protocols (like the ones from older pythons).
+        for protocol in [0, 2, 3]:
+            data = base64.b64encode(pickle.dumps(values, protocol)).decode()
+            self.assertEqual(ete_format.pickle_unpack(data), values)
+
     def test_quoted_names(self):
         complex_name = "((A:0.0001[&&NHX:hello=true],B:0.011)90:0.01[&&NHX:hello=true],(C:0.01, D:0.001)hello:0.01);"
         # A quoted tree within a tree
