@@ -46,7 +46,9 @@ def eval_on_node(code, node, context=None, safer=False):
         'startswith': str.startswith, 'endswith': str.endswith,
         'upper': str.upper, 'lower': str.lower, 'split': str.split,
         'any': any, 'all': all, 'len': len,
-        'sum': sum, 'abs': abs, 'float': float}
+        'sum': sum, 'abs': abs, 'float': float,
+        'int': int, 'str': str, 'round': round,
+        'max': max, 'min': min, 'sorted': sorted}
     # NOTE: If we wanted to make it convenient for PhyloTrees we could add:
     #    'species': getattr(node, 'species', ''),
     # and so on (get_species, etc.).
@@ -68,7 +70,10 @@ def safer_eval(code, context):
     for name in get_names(code):
         if name not in context:
             raise SyntaxError('invalid use of %r during evaluation' % name)
-    return eval(code, {'__builtins__': {}}, context)
+    # The context goes as globals so comprehensions and lambdas can see it
+    # (and like eval() itself, we add __builtins__ to it, but empty).
+    context['__builtins__'] = {}
+    return eval(code, context)
 
 
 @lru_cache(maxsize=1000)  # so we do not inspect the code again for every node
