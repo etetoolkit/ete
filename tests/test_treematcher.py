@@ -92,3 +92,18 @@ def test_safer_nested_code():
         safer=True)
     with pytest.raises(SyntaxError):
         list(tp_escape.search(t))
+
+
+def test_explorer_topological_search_is_safer():
+    # The explorer evaluates patterns that come from the web ("/t" searches),
+    # so they must not be able to run arbitrary code.
+    from ete4.smartview import explorer
+
+    t = Tree('(a,(b,c));')
+
+    func = explorer.get_topological_search('(,)')
+    assert func(t)
+
+    func = explorer.get_topological_search('"__import__(\'os\').getpid() > 0"')
+    with pytest.raises(SyntaxError):
+        func(t)
