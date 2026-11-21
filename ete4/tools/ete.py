@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
 
 import sys
-import os
 import errno
-
-TOOLSPATH = os.path.realpath(os.path.split(os.path.realpath(__file__))[0])
 
 import argparse
 from . import (ete_split, ete_expand, ete_annotate, ete_ncbiquery,
@@ -90,7 +87,6 @@ def _main(arguments):
                     if p.returncode == 0:
                         _version += " (git-{})".format(bytes.decode(out).rstrip())
 
-            _version += " Tools path: %s" %(TOOLSPATH)
             print(_version)
             return
 

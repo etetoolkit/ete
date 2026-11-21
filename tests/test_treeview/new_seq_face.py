@@ -90,7 +90,7 @@ _ntbgcolors = {
 
 def test_layout_evol(node):
     '''
-    layout for CodemlTree
+    layout for trees with sequences
     '''
     if hasattr(node, "collapsed"):
         if node.collapsed == 1:
@@ -104,7 +104,7 @@ def test_layout_evol(node):
 
 def test_layout_phylo_aa(node):
     '''
-    layout for CodemlTree
+    layout for trees with sequences
     '''
     if hasattr(node, "collapsed"):
         if node.collapsed == 1:
@@ -119,7 +119,7 @@ def test_layout_phylo_aa(node):
 
 def test_layout_phylo_aa_motif(node):
     '''
-    layout for CodemlTree
+    layout for trees with sequences
     '''
     if hasattr(node, "collapsed"):
         if node.collapsed == 1:
@@ -136,7 +136,7 @@ def test_layout_phylo_aa_motif(node):
 
 def test_layout_phylo_nt(node):
     '''
-    layout for CodemlTree
+    layout for trees with sequences
     '''
     if hasattr(node, "collapsed"):
         if node.collapsed == 1:
