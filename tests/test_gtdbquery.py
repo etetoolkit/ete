@@ -132,6 +132,17 @@ class Test_gtdbquery(unittest.TestCase):
                             'o__Korarchaeales', 'f__Korarchaeaceae', 'g__Korarchaeum',
                             's__Korarchaeum sp003344655', 'GB_GCA_003344655.1'])
 
+    def test_05tree_annotation(self):
+        # Using the "taxid" property (with gtdb names, as everywhere in gtdb)
+        tree = PhyloTree('(protA:1,protB:1);')
+        tree['protA'].add_prop('taxid', 'GB_GCA_003662765.1')
+        tree['protB'].add_prop('taxid', 'GB_GCA_003662805.1')
+
+        tree.annotate_gtdb_taxa(dbfile=DATABASE_PATH, taxid_attr='taxid')
+
+        self.assertEqual(tree.props.get('sci_name'), 's__B65-G9 sp003662765')
+        self.assertEqual(tree['protA'].props.get('rank'), 'subspecies')
+
     def test_gtdbquery(self):
         gtdb = GTDBTaxa(dbfile=DATABASE_PATH)
 

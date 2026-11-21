@@ -494,19 +494,14 @@ class GTDBTaxa:
             track lineages and ranks.
         """
         taxids = set()
-        if taxid_attr == "taxid":
-            for n in t.leaves():
-                if taxid_attr in n.props:
-                    taxids.add(n.props[taxid_attr])
-        else:
-            for n in t.leaves():
-                try:
-                    # translate gtdb name -> id
-                    taxaname = getattr(n, taxid_attr, n.props.get(taxid_attr))
-                    tid = self._get_name_translator([taxaname])[taxaname][0]
-                    taxids.add(tid)
-                except (KeyError, ValueError, AttributeError):
-                    pass
+        for n in t.leaves():
+            try:
+                # translate gtdb name -> id
+                taxaname = getattr(n, taxid_attr, n.props.get(taxid_attr))
+                tid = self._get_name_translator([taxaname])[taxaname][0]
+                taxids.add(tid)
+            except (KeyError, ValueError, AttributeError):
+                pass
         merged_conversion = {}
 
         taxids, merged_conversion = self._translate_merged(taxids)
