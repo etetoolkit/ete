@@ -97,7 +97,7 @@ def _get_subtrees(tree, full_copy=False, properties=None, newick_only=False):
             for leaf in t.leaves():
                 _nid = int(leaf.name)
                 for p in properties:
-                    leaf.add_prop(p, getattr(nid2node[_nid], p))
+                    leaf.add_prop(p, nid2node[_nid].get_prop(p))
             yield t
 
 def calc_subtrees(tree):
@@ -154,7 +154,7 @@ def iter_sptrees(sptrees, nid2node, properties=None, newick_only=False):
             for leaf in t.leaves():
                 _nid = int(leaf.name)
                 for p in properties:
-                    leaf.add_prop(p, getattr(nid2node[_nid], p))
+                    leaf.add_prop(p, nid2node[_nid].get_prop(p))
             yield t
 
 def _get_subtrees_recursive(node, full_copy=True):
