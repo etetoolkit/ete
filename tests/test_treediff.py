@@ -141,6 +141,24 @@ class Test_Treediff(unittest.TestCase):
         # ediff.show_difftable_tab(difftable, extended=ediff.cc_distance)
         # ediff.show_difftable_topo(difftable, 'name', 'name', usecolor=False, extended=ediff.cc_distance)
 
+    def test_treediff_reports_output(self):
+        """Test the reports from the difftable (as used in ete4 diff)."""
+        t1 = Tree('((A:1,B:1):1,(C:1,D:1):1);')
+        t2 = Tree('((A:1,C:1):1,(B:1,D:1):1);')
+
+        difftable = ediff.treediff(t1, t2, prop1='name', prop2='name',
+                                   dist_fn=ediff.EUCL_DIST, support=False,
+                                   reduce_matrix=False, extended=None,
+                                   jobs=1, parallel=None)
+
+        ediff.show_difftable_topo(difftable, 'name', 'name')  # does not crash
+
+        rf, rf_max, *_ = t1.robinson_foulds(t2, prop_t1='name', prop_t2='name')
+        summary = ediff.get_difftable_summary(difftable, rf, rf_max)
+        self.assertEqual(summary.split('\n'),
+                         ['Distance\tMismatches\tRF\tmaxRF',
+                          '1.000000\t         7\t4\t4'])
+
 
 
 DIFFS = [

@@ -673,7 +673,7 @@ def get_difftable_summary(difftable, rf=-1, rf_max=-1, extended=False):
             '%0.6f\t%0.6f\t%10d\t%d\t%d' % (total_dist, total_bdist, len(difftable), rf, rf_max)])
     else:
         return '\n'.join([
-            '\t'.join(['Distance', 'Mismatches', 'RF', 'maxRF']) +
+            '\t'.join(['Distance', 'Mismatches', 'RF', 'maxRF']),
             '%0.6f\t%10d\t%d\t%d' % (total_dist, len(difftable), rf, rf_max)])
 
 # TODO: Fix the other show_difftable*() functions. As they are, they lie on
@@ -796,8 +796,8 @@ def show_difftable_topo(difftable, attr1, attr2, usecolor=False, extended=None):
                 if usecolor:
                     leaf.name = color(leaf.name, "red")
 
-        topo1 = n1.get_ascii(show_internal=False, compact=False)
-        topo2 = n2.get_ascii(show_internal=False, compact=False)
+        topo1 = n1.to_str(show_internal=False, compact=False, props=['name'])
+        topo2 = n2.to_str(show_internal=False, compact=False, props=['name'])
 
         # This truncates too large topology strings pretending to be
         # scrolled to the right margin
@@ -967,8 +967,8 @@ def show_difftable_topo_SCA(difftable, attr1, attr2, usecolor=False, extended=No
         n1.ladderize()
         n2.ladderize()
 
-        topo1 = n1.get_ascii(show_internal=False, compact=False)
-        topo2 = n2.get_ascii(show_internal=False, compact=False)
+        topo1 = n1.to_str(show_internal=False, compact=False, props=['name'])
+        topo2 = n2.to_str(show_internal=False, compact=False, props=['name'])
 
         # This truncates too large topology strings pretending to be
         # scrolled to the right margin
@@ -1211,7 +1211,7 @@ def run(args):
                 elif args.report == "diffs_tab":
                     show_difftable_tab(difftable, extended=extend)
                 elif args.report == 'summary':
-                    rf, rf_max, _, _, _, _, _ = t1.robinson_foulds(t2, attr_t1=rattr, attr_t2=tattr)
+                    rf, rf_max, _, _, _, _, _ = t1.robinson_foulds(t2, prop_t1=rattr, prop_t2=tattr)
                     show_difftable_summary(difftable, rf, rf_max, extended=extend)
 
             elif dist_fn == SINGLECELL:
@@ -1222,7 +1222,7 @@ def run(args):
                 elif args.report == "diffs_tab":
                     show_difftable_tab_SCA(difftable, extended=extend)
                 elif args.report == 'summary':
-                    rf, rf_max, _, _, _, _, _ = t1.robinson_foulds(t2, attr_t1='name', attr_t2='name')
+                    rf, rf_max, _, _, _, _, _ = t1.robinson_foulds(t2, prop_t1='name', prop_t2='name')
                     show_difftable_summary_SCA(difftable, rf, rf_max, extended=extend)
 
         else:
