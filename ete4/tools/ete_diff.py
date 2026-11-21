@@ -628,12 +628,12 @@ def treediff(t1, t2, prop1='name', prop2='name', dist_fn=EUCL_DIST,
             if np.percentile(matrix,5) >= matrix[r][c]:
 
                 if extended:
-                    b_dist = extended(parts1[r][0], parts2[c][0],prop1,prop2,support)
+                    b_dist = extended(parts1[r][0], parts2[c][0],support,prop1,prop2)
                 else:
                     pass
 
                 dist, side1, side2, diff, n1, n2 = (matrix[r][c],
-                                                    [l.name for l in parts1[r][0].leaves()], [l.name for l in parts2[r][0].leaves()],
+                                                    [l.name for l in parts1[r][0].leaves()], [l.name for l in parts2[c][0].leaves()],
                                                     parts1[r][1].symmetric_difference(parts2[c][1]),
                                                     parts1[r][0], parts2[c][0])
                 difftable.append([dist, b_dist, side1, side2, diff, n1, n2])
@@ -1175,11 +1175,11 @@ def run(args):
 
             for leaf in t1.leaves():
                 # we can't pass dicts or lists due to an incompatibility with get_cached_content so we give a string and then parse it
-                leaf.pearson=json.dumps(pearson)
+                leaf.props['pearson'] = json.dumps(pearson)
 
             for leaf in t2.leaves():
                 # we can't pass dicts or lists due to an incompatibility with get_cached_content so we give a string and then parse it
-                leaf.pearson=json.dumps(pearson)
+                leaf.props['pearson'] = json.dumps(pearson)
 
             rattr, tattr = 'pearson', 'pearson'
             dist_fn = SINGLECELL
