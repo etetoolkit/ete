@@ -642,6 +642,12 @@ class Test_Core_Tree(unittest.TestCase):
         t.standardize()  # calls resolve_polytomy() internally too
         self.assertEqual(t.write(parser=9), '((((b,b),b),((c,c),c)),(((a,a),a),a));')
 
+        # The supports of the original nodes are kept (new nodes have 0).
+        t = Tree('(A:1,(B:1,C:1)90:1,(D:1,E:1)80:1,F:1);')
+        t.resolve_polytomy()
+        self.assertEqual(t.write(),
+                         '(((A:1,(B:1,C:1)90:1)0:0,(D:1,E:1)80:1)0:0,F:1);')
+
     def test_common_ancestors(self):
         # getting nodes, get_childs, get_sisters, root,
         # get_common_ancestor, get_nodes_by_name

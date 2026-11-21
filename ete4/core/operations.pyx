@@ -462,7 +462,7 @@ def resolve_polytomy(tree, descendants=True):
             # Add children in order:  x === d,* === c,* === b,a
             node.add_child(children[0])  # first:  x --- * --- * --- a
             for i in range(1, len(children)):
-                node.add_child(children[i], support=0)
+                node.add_child(children[i])
                 node = node.up
 
         if not descendants:
