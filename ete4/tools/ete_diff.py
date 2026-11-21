@@ -104,7 +104,7 @@ def EUCL_DIST_B(a,b,support,attr1,attr2):
     dist_a = sum([descendant.dist for descendant in a[0].leaves() if descendant.props[attr1] in(a[1] - b[1])]) / len([i for i in a[0].leaves()])
     dist_b = sum([descendant.dist for descendant in b[0].leaves() if descendant.props[attr2] in(b[1] - a[1])]) / len([i for i in b[0].leaves()])
 
-    return 1 - ((float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)) / 2
+    return ((1 - float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)) / 2
 
 def EUCL_DIST_B_ALL(a,b,support,attr1,attr2):
     '''
@@ -126,7 +126,7 @@ def EUCL_DIST_B_ALL(a,b,support,attr1,attr2):
     dist_a = sum([descendant.dist for descendant in a[0].leaves()]) / len([i for i in a[0].leaves()])
     dist_b = sum([descendant.dist for descendant in b[0].leaves()]) / len([i for i in b[0].leaves()])
 
-    return 1 - ((float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)) / 2
+    return ((1 - float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)) / 2
 
 
 def EUCL_DIST_B_FULL(a,b,support,attr1,attr2):
@@ -172,7 +172,7 @@ def EUCL_DIST_B_FULL(a,b,support,attr1,attr2):
     dist_a = sum([descendant[1] for descendant in _get_leaves_paths(a[0],attr1,support) if descendant[0] in(a[1] - b[1])]) / len([i for i in a[0].leaves()])
     dist_b = sum([descendant[1] for descendant in _get_leaves_paths(b[0],attr2,support) if descendant[0] in(b[1] - a[1])]) / len([i for i in b[0].leaves()])
 
-    return 1 - ((float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)) / 2
+    return ((1 - float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) + abs(dist_a - dist_b)) / 2
 
 def RF_DIST(a,b,support,attr1,attr2):
     '''

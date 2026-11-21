@@ -141,6 +141,25 @@ class Test_Treediff(unittest.TestCase):
         # ediff.show_difftable_tab(difftable, extended=ediff.cc_distance)
         # ediff.show_difftable_topo(difftable, 'name', 'name', usecolor=False, extended=ediff.cc_distance)
 
+    def test_treediff_EUCL_DIST_B(self):
+        """Test the distances that also use branch lengths."""
+        t1 = Tree('((A:1,B:1):1,(C:1,D:1):1);')
+        t2 = Tree('((A:1,B:1):1,(C:1,D:3):1);')
+
+        for dist_fn in [ediff.EUCL_DIST_B, ediff.EUCL_DIST_B_ALL,
+                        ediff.EUCL_DIST_B_FULL]:
+            ab1 = (t1.common_ancestor(['A', 'B']), {'A', 'B'})
+            ab2 = (t2.common_ancestor(['A', 'B']), {'A', 'B'})
+            self.assertEqual(dist_fn(ab1, ab2, False, 'name', 'name'), 0)
+
+            # Same leaves, but different branch lengths: bigger distance.
+            cd1 = (t1.common_ancestor(['C', 'D']), {'C', 'D'})
+            cd2 = (t2.common_ancestor(['C', 'D']), {'C', 'D'})
+            self.assertEqual(dist_fn(cd1, cd1, False, 'name', 'name'), 0)
+
+        self.assertEqual(ediff.EUCL_DIST_B_ALL(cd1, cd2, False, 'name', 'name'),
+                         0.5)
+
     def test_treediff_reports_output(self):
         """Test the reports from the difftable (as used in ete4 diff)."""
         t1 = Tree('((A:1,B:1):1,(C:1,D:1):1);')
