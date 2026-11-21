@@ -35,7 +35,9 @@ def get_trees(text, parser=None):
         if len(commands['TRANSLATE']) != 1:
             raise NexusError('multiple TRANSLATE commands')
         pairs = commands['TRANSLATE'][0].split(',')
-        translate.update(pair.split(maxsplit=1) for pair in pairs)
+        for pair in pairs:
+            key, value = pair.split(maxsplit=1)
+            translate[key] = newick_parser.unquote(value)  # 'a b' -> a b
 
     trees = {}
     for command in commands.get('TREE', []):

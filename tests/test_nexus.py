@@ -42,6 +42,18 @@ END;
                 'tree3': '((Scarabaeus,Drosophila),Aranaeus);'}
 
 
+    def test_translate_quoted_names(self):
+        text = """#NEXUS
+BEGIN TREES;
+    Translate 1 'Homo sapiens', 2 Pan, 3 'Gorilla''s';
+    Tree t1 = ((1,2),3);
+END;
+"""
+        t = nexus.loads(text)['t1']
+        self.assertEqual(list(t.leaf_names()),
+                         ['Homo sapiens', 'Pan', "Gorilla's"])
+
+
     def test_loads_bad_file(self):
         def read_bad_file():
             with TemporaryFile(mode='w+t') as fp:
