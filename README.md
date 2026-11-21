@@ -24,6 +24,11 @@ Its main features include:
   - orthology detection
   - phylogenetic distance
 
+Note: the `ete4 build` and `ete4 evol` command line tools, the
+`ete4.evol` module (`EvolTree`, codeml/PAML) and the external tools
+installer (`ete4 upgrade-external-tools`) were removed in ETE 4. They
+are available in ETE 3.
+
 [//]: # (TODO: We used to claim these too, but they should be checked and possibly fixed:
 Command line tools
 phylogenetic reconstruction protocols

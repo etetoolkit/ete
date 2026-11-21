@@ -15,8 +15,6 @@ from .ncbi_taxonomy import *
 from .gtdb_taxonomy import *
 
 from .phylo.phylotree import *
-from .evol.evoltree import *
-from .evol import EvolTree
 
 from .phyloxml import Phyloxml, PhyloxmlTree
 

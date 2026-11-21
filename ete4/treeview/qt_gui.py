@@ -434,48 +434,6 @@ class _PropertiesDialog(QWidget):
         self._mode = 0
         self.layout =  QVBoxLayout()
 
-        # Display an estimated bL, w, dN and dS for a given evolutionary model
-        if hasattr(self.scene.tree, '_models'):
-            from ..evol.control import AVAIL
-            global AVAIL
-
-            self.model_lbl = QLabel('Showing model: ', self)
-            self.layout.addWidget(self.model_lbl)
-            self.combo = QComboBox()
-            self.layout.addWidget(self.combo)
-            try:
-                models = sorted(list(self.scene.tree._models.keys()))
-            except AttributeError:
-                return
-            models = []
-            for model in sorted(list(self.scene.tree._models.keys())):
-                models.append(self.tr(model))
-            self.combo.clear()
-            if models:
-                self.combo.addItems(models)
-            else:
-                self.combo.addItems([self.tr('None')])
-
-
-            #self.connect(self.combo, SIGNAL(
-            #    "currentIndexChanged(const QString&)"), self.handleModelButton)
-
-            self.combo.currentIndexChanged.connect(self.handleModelButton)
-
-            self.model_lbl = QLabel('Available models: ', self)
-            self.layout.addWidget(self.model_lbl)
-
-            if hasattr(next(self.scene.tree.leaves()), 'nt_sequence'):
-                self.combo_run = QComboBox()
-                self.layout.addWidget(self.combo_run)
-                avail_models = sorted(list(AVAIL.keys()))
-                self.combo_run.clear()
-                self.combo_run.addItems(['%s (%s)' % (m, AVAIL[m]['typ'])
-                                         for m in avail_models])
-                self.modelButton = QPushButton('Run', self)
-                self.modelButton.clicked.connect(self.runModelButton)
-                self.layout.addWidget(self.modelButton)
-
         self.tableView = QTableView()
         self.tableView.move(5,60)
         self.tableView.verticalHeader().setVisible(False)
@@ -484,41 +442,6 @@ class _PropertiesDialog(QWidget):
         self.layout.addWidget(self.tableView)
         self.setLayout(self.layout)
         self.tableView.setGeometry (0, 0, 200,200)
-
-    def handleModelButton(self):
-        model = sorted(list(self.scene.tree._models.keys()))[self.combo.currentIndex()]
-        self.scene.tree.change_dist_to_evol(
-            'bL', self.scene.tree._models[model], fill=True)
-        self.scene.GUI.redraw()
-
-    def runModelButton(self):
-        model = sorted(list(AVAIL.keys()))[self.combo_run.currentIndex()]
-        print('Running model %s from GUI...' % model)
-        if AVAIL[model]['allow_mark']:
-            # TODO if allow mark model and no mark => popup window
-            marks = [str(n.node_id) for n in self.scene.tree.descendants()
-                     if n.mark]
-            if not marks:
-                QMessageBox.information(
-                    self, "ERROR",
-                    "This model requires tree to be marked\nUse right click on "
-                    "nodes to mark branches")
-                return
-            model += '.' + '_'.join(marks)
-        self.scene.tree.run_model(model)
-        print('Done.')
-        try:
-            models = sorted(list(self.scene.tree._models.keys()))
-        except AttributeError:
-            return
-        models = []
-        for model in sorted(list(self.scene.tree._models.keys())):
-            models.append(self.tr(model))
-        self.combo.clear()
-        if models:
-            self.combo.addItems(models)
-        else:
-            self.combo.addItems([self.tr('None')])
 
     def update_properties(self, node):
         self.node = node

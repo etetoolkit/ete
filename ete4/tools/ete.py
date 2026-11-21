@@ -11,7 +11,7 @@ from . import (ete_split, ete_expand, ete_annotate, ete_ncbiquery,
                ete_generate, ete_mod, ete_extract, ete_compare,
                ete_maptrees, ete_diff, ete_explore)
 try:
-    from . import ete_view, ete_evol
+    from . import ete_view
 except ImportError:
     class DummyNamespace:
         pass
@@ -19,14 +19,10 @@ except ImportError:
     ete_view.DESC = "Treeview module not available. It requires Qt."
     ete_view.populate_args = lambda args: None
     ete_view.run = lambda args: None
-    ete_evol = DummyNamespace()
-    ete_evol.DESC = "ete_evol module not available. It requires Qt."
-    ete_evol.populate_args = lambda args: None
-    ete_evol.run = lambda args: None
 
 from . import common
 from .common import log
-from .utils import colorify, which
+from .utils import colorify
 
 from subprocess import Popen, PIPE
 
@@ -44,7 +40,6 @@ def ete_reconcile(args):
 def ete_consense(args):
     # all observed splits
 def ete_fetch(args):
-def ete_evol(args):
 
 """
 
@@ -97,24 +92,6 @@ def _main(arguments):
 
             _version += " Tools path: %s" %(TOOLSPATH)
             print(_version)
-            return
-        elif subcommand == "upgrade-external-tools":
-            from . import ete_upgrade_tools
-            del arguments[1]
-            status = ete_upgrade_tools._main()
-            sys.exit(status)
-
-        elif subcommand == "build":
-            from . import ete_build
-            del arguments[1]
-
-            builtin_apps_path = None
-            ete_path = which("ete4")
-
-            if ete_path:
-                builtin_apps_path = os.path.join(os.path.split(ete_path)[0], "ete4_apps/bin")
-            ete_build._main(arguments, builtin_apps_path)
-
             return
 
     # CREATE REUSABLE PARSER OPTIONS
@@ -201,12 +178,6 @@ def _main(arguments):
     generate_args_p.set_defaults(func=ete_generate.run)
     ete_generate.populate_args(generate_args_p)
 
-    # - EVOL -
-    evol_args_p = subparser.add_parser("evol", parents=[source_args_p, main_args_p],
-                                       description=ete_evol.DESC)
-    evol_args_p.set_defaults(func=ete_evol.run)
-    ete_evol.populate_args(evol_args_p)
-
     # - MAPTREES -
     maptrees_args_p = subparser.add_parser("maptrees", parents=[source_args_p, ref_args_p, main_args_p],
                                        description=ete_maptrees.DESC)
@@ -220,9 +191,6 @@ def _main(arguments):
     diff_args_p.set_defaults(func=ete_diff.run)
     ete_diff.populate_args(diff_args_p)
 
-    # - build -
-    generate_args_p = subparser.add_parser("build")
-
     # - explore -
     explore_args_p = subparser.add_parser("explore", parents=[source_args_p, main_args_p],
                                         description=ete_explore.DESC,
@@ -233,7 +201,6 @@ def _main(arguments):
     # - helpers -
 
     generate_args_p = subparser.add_parser("version")
-    generate_args_p = subparser.add_parser("upgrade-external-tools")
 
     # ===================
     #  EXECUTE PROGRAM
