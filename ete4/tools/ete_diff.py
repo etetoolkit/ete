@@ -1126,8 +1126,8 @@ def run(args):
             maxjobs = args.maxjobs
 
         if args.ncbi:
-            from common import ncbi
-            ncbi.connect_database()
+            from ete4 import NCBITaxa
+            ncbi = NCBITaxa()
 
         rattr, tattr = args.ref_attr, args.target_attr
 
