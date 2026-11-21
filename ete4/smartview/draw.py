@@ -556,7 +556,8 @@ def make_face(label):
     """Return a Face object from its description as a Label one."""
     a = label  # shortcut
     return EvalTextFace(a.code, fs_max=a.fs_max, style=a.style,
-                        position=a.position, column=a.column, anchor=a.anchor)
+                        position=a.position, column=a.column, anchor=a.anchor,
+                        safer=True)  # labels come from the gui, do not trust
 
 
 def draw_faces(faces, nodes, xmin, content_box, bdy, zoom,
