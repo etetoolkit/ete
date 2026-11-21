@@ -53,6 +53,19 @@ END;
         self.assertEqual(list(t.leaf_names()),
                          ['Homo sapiens', 'Pan', "Gorilla's"])
 
+    def test_translate_keeps_precision(self):
+        text = """#NEXUS
+BEGIN TREES;
+    Translate 1 A, 2 B, 3 C;
+    Tree t1 = ((1:0.123456789,2:1e-10)0.987654321:1234567,3);
+END;
+"""
+        t = nexus.loads(text)['t1']
+        self.assertEqual(t['A'].dist, 0.123456789)
+        self.assertEqual(t['B'].dist, 1e-10)
+        self.assertEqual(t['A'].up.dist, 1234567)
+        self.assertEqual(t['A'].up.support, 0.987654321)
+
 
     def test_loads_bad_file(self):
         def read_bad_file():

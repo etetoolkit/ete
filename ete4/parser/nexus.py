@@ -65,7 +65,9 @@ def apply_translations(translate, newick, parser=None):
         if node.name in translate:
             node.name = translate[node.name]
 
-    return newick_parser.dumps(t, parser=parser)
+    # Write numbers with full precision (not the default %g), to not lose any.
+    parser_full = newick_parser.make_parser(parser, dist='%r', support='%r')
+    return newick_parser.dumps(t, parser=parser_full)
 
 
 def get_section(text, section_name):
