@@ -21,8 +21,6 @@ setup(
               'ete4/gtdb_taxonomy',
               'ete4/ncbi_taxonomy',
               'ete4/tools',
-              'ete4/evol',
-              'ete4/evol/parser',
               'ete4/orthoxml',
               'ete4/smartview',
               'ete4/treeview'],

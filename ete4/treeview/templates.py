@@ -1,4 +1,4 @@
-from .. import PhyloTree, EvolTree, EvolNode
+from .. import PhyloTree
 from . import layouts
 
 def apply_template(tree_style, template):
@@ -11,14 +11,6 @@ phylogeny = {
     "draw_guiding_lines":False
 }
 
-evol = {
-    "layout_fn": layouts.evol_layout,
-    "show_leaf_name":True,
-    "draw_guiding_lines":False
-}
-
 _DEFAULT_STYLE= {
     PhyloTree: phylogeny,
-    EvolTree: evol,
-    EvolNode: evol,
 }

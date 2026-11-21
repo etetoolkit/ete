@@ -11,7 +11,7 @@ from . import (ete_split, ete_expand, ete_annotate, ete_ncbiquery,
                ete_generate, ete_mod, ete_extract, ete_compare,
                ete_maptrees, ete_diff, ete_explore)
 try:
-    from . import ete_view, ete_evol
+    from . import ete_view
 except ImportError:
     class DummyNamespace:
         pass
@@ -19,10 +19,6 @@ except ImportError:
     ete_view.DESC = "Treeview module not available. It requires Qt."
     ete_view.populate_args = lambda args: None
     ete_view.run = lambda args: None
-    ete_evol = DummyNamespace()
-    ete_evol.DESC = "ete_evol module not available. It requires Qt."
-    ete_evol.populate_args = lambda args: None
-    ete_evol.run = lambda args: None
 
 from . import common
 from .common import log
@@ -44,7 +40,6 @@ def ete_reconcile(args):
 def ete_consense(args):
     # all observed splits
 def ete_fetch(args):
-def ete_evol(args):
 
 """
 
@@ -200,12 +195,6 @@ def _main(arguments):
 
     generate_args_p.set_defaults(func=ete_generate.run)
     ete_generate.populate_args(generate_args_p)
-
-    # - EVOL -
-    evol_args_p = subparser.add_parser("evol", parents=[source_args_p, main_args_p],
-                                       description=ete_evol.DESC)
-    evol_args_p.set_defaults(func=ete_evol.run)
-    ete_evol.populate_args(evol_args_p)
 
     # - MAPTREES -
     maptrees_args_p = subparser.add_parser("maptrees", parents=[source_args_p, ref_args_p, main_args_p],
