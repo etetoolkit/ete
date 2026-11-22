@@ -136,6 +136,11 @@ function zoom_towards_box(box, point, deltaY, do_zoom) {
               qa = towards((r + dr) * da * view.zoom.x),  // angular
               qp = Math.exp(amount);  // plain zoom
         const q = amount > 0 ? Math.max(qa, qp) : Math.min(qa, qp);  // not slower
+        const span = view.angle.max - view.angle.min;
+        if (amount < 0 && span > 360 && do_zoom.y) {  // zooming out: first undo the
+            zoom_angular(point, {x: 1, y: Math.max(q, 360 / span)});  // angular zoom,
+            return;  // so the tree never wraps around more than once
+        }
         if (do_zoom.y)  // first, so the radial zoom below sets the final update
             zoom_angular(point, {x: 1, y: do_zoom.x ? q / qr : q});
         if (do_zoom.x)
