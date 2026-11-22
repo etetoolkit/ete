@@ -10,17 +10,13 @@ General
 How do I use ETE?
 ~~~~~~~~~~~~~~~~~
 
-ETE includes a basic standalone program that can be used to quickly
-visualize your trees. Type ``ete4 explore -t <file>`` in a terminal to
-run the program. For instance::
+The main goal of ETE is to provide a Python programming library, so
+you can create your own scripts to manipulate and visualize
+phylogenetic trees. To quickly explore a tree, load it and call
+``explore()``::
 
-  ete4 explore -t mytreefile.nw
-
-The ``ete4`` script is a very simple implementation and does not allow
-for fancy customization. However, ETE is more than a standalone
-program. The main goal of ETE is to provide a Python programming
-library, so you can create your own scripts to manipulate and
-visualize phylogenetic trees.
+  from ete4 import Tree
+  Tree(open('mytreefile.nw')).explore()
 
 For example, in a python shell or script, you could::
 

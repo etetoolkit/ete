@@ -104,7 +104,7 @@ New in ETE 4:
 Changes in the ete4 tool
 ------------------------
 
-When using ``ete4 explore -t [...]``:
+In the searches of the tree explorer (``t.explore()``):
 
 - Instead of ``~=`` we use ``=~``
 - Instead of ``<-`` we use ``<=``

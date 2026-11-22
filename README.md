@@ -103,14 +103,8 @@ and smartview file rendering.
 
 # Exploring a tree
 
-To simply load a tree from a file (`my_tree.nw`) and start exploring
-it interactively, you can use the `ete4` utility and run:
-
-```sh
-ete4 explore -t my_tree.nw
-```
-
-Or start a python session and write:
+To load a tree from a file (`my_tree.nw`) and start exploring it
+interactively, start a python session and write:
 
 ```py
 from ete4 import Tree

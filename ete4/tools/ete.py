@@ -9,7 +9,7 @@ TOOLSPATH = os.path.realpath(os.path.split(os.path.realpath(__file__))[0])
 import argparse
 from . import (ete_split, ete_expand, ete_annotate, ete_ncbiquery,
                ete_generate, ete_mod, ete_extract, ete_compare,
-               ete_maptrees, ete_diff, ete_explore)
+               ete_maptrees, ete_diff)
 try:
     from . import ete_view, ete_evol
 except ImportError:
@@ -222,13 +222,6 @@ def _main(arguments):
 
     # - build -
     generate_args_p = subparser.add_parser("build")
-
-    # - explore -
-    explore_args_p = subparser.add_parser("explore", parents=[source_args_p, main_args_p],
-                                        description=ete_explore.DESC,
-                                       formatter_class=argparse.RawDescriptionHelpFormatter)
-    explore_args_p.set_defaults(func=ete_explore.run)
-    ete_explore.populate_args(explore_args_p)
 
     # - helpers -
 
