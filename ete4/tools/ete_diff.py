@@ -183,7 +183,10 @@ def EUCL_DIST_B_FULL(a,b,support,attr1,attr2):
 def RF_DIST(a,b,support,attr1,attr2):
     '''
     Calculates the distance between two nodes using the formula:
-        Robinson-Foulds distance / Maximum possible Robinson-Foulds distance
+        (1 - (Shared attributes / maximum length of the two nodes) +
+         Robinson-Foulds distance / Maximum possible Robinson-Foulds distance) / 2
+        The Robinson-Foulds distance only sees the shared attributes, so the
+        first term is needed to tell apart nodes with different contents.
 
     Parameters:
         a:  (reference node as tree object, observed attributes as set), as tuple
@@ -200,7 +203,8 @@ def RF_DIST(a,b,support,attr1,attr2):
         return 1.0
     (a, b) = (b, a) if len(b[1]) > len(a[1]) else (a,b)
     rf, rfmax, names, side1, side2, d1, d2 = a[0].robinson_foulds(b[0])
-    return (rf/rfmax if rfmax else 0.0)
+    eucl = 1 - float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))
+    return (eucl + (rf/rfmax if rfmax > 0 else 0.0)) / 2
 
 
 

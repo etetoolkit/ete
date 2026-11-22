@@ -93,7 +93,27 @@ class Test_Treediff(unittest.TestCase):
                                    reduce_matrix=False, extended=None,
                                    jobs=1, parallel=None)
 
-        self.assertEqual(sum([i[0] for i in difftable]), 10.0)
+        self.assertAlmostEqual(sum([i[0] for i in difftable]), 14.810715, places=5)
+
+    def test_treediff_RF_DIST_different_leaves(self):
+        """Nodes with different leaves are never at RF_DIST 0."""
+        def node(nw):
+            t = Tree(nw)
+            return t, set(t.leaf_names())
+
+        for nw1, nw2 in [('(A,B);', '(A,C);'), ('A;', '(A,B);'),
+                         ('(A,B);', '((A,B),(C,D));')]:
+            self.assertGreater(ediff.RF_DIST(node(nw1), node(nw2), False,
+                                             'name', 'name'), 0)
+
+        t1 = Tree(example1_nw)
+        t2 = Tree(example3_nw)
+        difftable = ediff.treediff(t1, t2, prop1='name', prop2='name',
+                                   dist_fn=ediff.RF_DIST, support=False,
+                                   reduce_matrix=False, extended=None,
+                                   jobs=1, parallel=None)
+        self.assertFalse([row for row in difftable
+                          if row[0] == 0 and row[2] != row[3]])
 
     def test_treediff_extendend_cc(self):
         """ Tests tree-diff Extended distance. Cophenetic Compared"""
@@ -106,7 +126,7 @@ class Test_Treediff(unittest.TestCase):
                                    extended=ediff.cc_distance,
                                    jobs=1, parallel=None)
 
-        self.assertEqual(sum([i[1] for i in difftable]), 863.9737020175473)
+        self.assertAlmostEqual(sum([i[1] for i in difftable]), 607.8035488415586)
 
     def test_treediff_extendend_be(self):
         """ Tests tree-diff  Extended distance. Branch Extended"""
@@ -119,7 +139,7 @@ class Test_Treediff(unittest.TestCase):
                                    extended=ediff.be_distance,
                                    jobs=1, parallel=None)
 
-        self.assertEqual(sum([i[1] for i in difftable]), 616.0)
+        self.assertEqual(sum([i[1] for i in difftable]), 18.0)
 
     def test_treediff_reports(self):
         """ Tests tree-diff Reports"""
