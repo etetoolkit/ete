@@ -1,3 +1,5 @@
+import os
+
 from .common import dump, src_tree_iterator
 
 DESC = ""
@@ -12,7 +14,7 @@ def populate_args(mod_args_p):
                                  " all of them will be selected as outgroup."))
 
     mod_args.add_argument("--ultrametric", dest="ultrametric",
-                          type=float, nargs= "*", default="-1",
+                          type=float, nargs="?", const=0,
                            help=("Convert tree into ultrametric (all leaves have the same distance"
                                  " to root). If an argument is provided, it will be used as the"
                                  " expected tree length."))
@@ -53,8 +55,9 @@ def populate_args(mod_args_p):
 def run(args):
     from .. import Tree
 
-    for ftree in src_tree_iterator(args):
-        t = Tree(open(ftree))
+    for ftree in src_tree_iterator(args):  # a file name, or a newick read from stdin
+        t = Tree(open(ftree) if os.path.isfile(ftree) else ftree,
+                 parser=args.src_newick_format)
         mod_tree(t, args)
         dump(t)
 
@@ -69,9 +72,9 @@ def mod_tree(t, args):
         raise ValueError("--ourgroup and --unroot options are mutually exclusive")
     elif args.outgroup:
         if len(args.outgroup) > 1:
-            outgroup = t.get_common_ancestor(args.outgroup)
+            outgroup = t.common_ancestor(args.outgroup)
         else:
-            outgroup = t & args.outgroup[0]
+            outgroup = t[args.outgroup[0]]
         t.set_outgroup(outgroup)
     elif args.unroot:
         t.unroot()
@@ -87,8 +90,12 @@ def mod_tree(t, args):
     if args.sort:
         t.sort_descendants()
 
-    if args.ultrametric:
+    if args.ultrametric is not None:
         t.to_ultrametric()
+        if args.ultrametric > 0:  # scale to the requested root-to-leaf distance
+            height = t.get_distance(t, next(t.leaves()))
+            for node in t.descendants():
+                node.dist *= args.ultrametric / height
 
     # remove, prune branches
     # ncbi_root
