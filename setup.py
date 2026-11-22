@@ -143,11 +143,9 @@ try:
 
         entry_points = {"console_scripts":
                         ["ete3 = %s.tools.ete:main" %MOD_NAME]},
-        requires = ["six"],
-
-        # Project uses reStructuredText, so ensure that the docutils get
-        # installed or upgraded on the target machine
         install_requires = [
+            "numpy",
+            "six",
             ],
         package_data = {
 
