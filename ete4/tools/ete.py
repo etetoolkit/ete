@@ -7,18 +7,14 @@ import errno
 TOOLSPATH = os.path.realpath(os.path.split(os.path.realpath(__file__))[0])
 
 import argparse
-from . import (ete_split, ete_expand, ete_annotate, ete_ncbiquery,
-               ete_generate, ete_mod, ete_extract, ete_compare,
-               ete_maptrees, ete_diff, ete_explore)
+from . import (ete_split, ete_expand, ete_ncbiquery,
+               ete_generate, ete_mod, ete_compare,
+               ete_diff, ete_explore)
 try:
-    from . import ete_view, ete_evol
+    from . import ete_evol
 except ImportError:
     class DummyNamespace:
         pass
-    ete_view = DummyNamespace()
-    ete_view.DESC = "Treeview module not available. It requires Qt."
-    ete_view.populate_args = lambda args: None
-    ete_view.run = lambda args: None
     ete_evol = DummyNamespace()
     ete_evol.DESC = "ete_evol module not available. It requires Qt."
     ete_evol.populate_args = lambda args: None
@@ -134,9 +130,6 @@ def _main(arguments):
     # expand
     expand_args_p = argparse.ArgumentParser(add_help=False)
     ete_expand.populate_args(expand_args_p)
-    # extract
-    extract_args_p = argparse.ArgumentParser(add_help=False)
-    ete_extract.populate_args(extract_args_p)
     # split
     split_args_p = argparse.ArgumentParser(add_help=False)
     ete_split.populate_args(split_args_p)
@@ -157,35 +150,12 @@ def _main(arguments):
                                        formatter_class=argparse.RawDescriptionHelpFormatter)
     mod_args_pp.set_defaults(func=ete_mod.run)
 
-    # - EXTRACT -
-    extract_args_pp = subparser.add_parser("extract", parents=[source_args_p, main_args_p, extract_args_p],
-                                       description=ete_extract.DESC,
-                                       formatter_class=argparse.RawDescriptionHelpFormatter)
-    extract_args_pp.set_defaults(func=ete_extract.run)
-
-
-    # - ANNOTATE -
-    annotate_args_p = subparser.add_parser("annotate", parents=[source_args_p, main_args_p],
-                                       description=ete_annotate.DESC,
-                                       formatter_class=argparse.RawDescriptionHelpFormatter)
-    annotate_args_p.set_defaults(func=ete_annotate.run)
-    ete_annotate.populate_args(annotate_args_p)
-
-
     # - COMPARE -
     compare_args_p = subparser.add_parser("compare", parents=[source_args_p, ref_args_p, main_args_p],
                                            description=ete_compare.DESC,
                                           formatter_class=argparse.RawDescriptionHelpFormatter)
     compare_args_p.set_defaults(func=ete_compare.run)
     ete_compare.populate_args(compare_args_p)
-
-    # - VIEW -
-    view_args_p = subparser.add_parser("view", parents=[source_args_p, main_args_p],
-                                        description=ete_view.DESC,
-                                       formatter_class=argparse.RawDescriptionHelpFormatter)
-    view_args_p.set_defaults(func=ete_view.run)
-    ete_view.populate_args(view_args_p)
-
 
     # - NCBIQUERY -
     ncbi_args_p = subparser.add_parser("ncbiquery", parents=[main_args_p],
@@ -206,12 +176,6 @@ def _main(arguments):
                                        description=ete_evol.DESC)
     evol_args_p.set_defaults(func=ete_evol.run)
     ete_evol.populate_args(evol_args_p)
-
-    # - MAPTREES -
-    maptrees_args_p = subparser.add_parser("maptrees", parents=[source_args_p, ref_args_p, main_args_p],
-                                       description=ete_maptrees.DESC)
-    maptrees_args_p.set_defaults(func=ete_maptrees.run)
-    ete_maptrees.populate_args(maptrees_args_p)
 
     # - DIFF -
     diff_args_p = subparser.add_parser("diff", parents=[source_args_p, ref_args_p, main_args_p],
