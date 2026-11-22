@@ -1,5 +1,6 @@
 from .common import as_str, shorten_str, src_tree_iterator, ref_tree_iterator
 
+import os
 import re
 
 DESC = """
@@ -89,26 +90,29 @@ def run(args):
     else:
         tree_class = Tree
 
+    def load(name, parser):  # a file name, or a newick read from stdin
+        return tree_class(open(name) if os.path.isfile(name) else name, parser=parser)
+
     for stree_name in src_tree_iterator(args):
-        stree = tree_class(stree_name, format=args.src_newick_format)
+        stree = load(stree_name, args.src_newick_format)
 
         # Parses attrs if necessary
         src_tree_attr = args.src_tree_attr
         if args.src_attr_parser:
             for leaf in stree:
-                leaf.add_property('tempattr', re.search(
-                    args.src_attr_parser, getattr(leaf, args.src_tree_attr)).groups()[0])
+                leaf.add_prop('tempattr', re.search(
+                    args.src_attr_parser, leaf.props.get(args.src_tree_attr)).groups()[0])
             src_tree_attr = 'tempattr'
 
         for rtree_name in ref_tree_iterator(args):
-            rtree = tree_class(rtree_name, format=args.ref_newick_format)
+            rtree = load(rtree_name, args.ref_newick_format)
 
             # Parses attrs if necessary
             ref_tree_attr = args.ref_tree_attr
             if args.ref_attr_parser:
                 for leaf in rtree:
-                    leaf.add_property('tempattr', re.search(
-                        args.ref_attr_parser, getattr(leaf, args.ref_tree_attr)).groups()[0])
+                    leaf.add_prop('tempattr', re.search(
+                        args.ref_attr_parser, leaf.props.get(args.ref_tree_attr)).groups()[0])
                 ref_tree_attr = 'tempattr'
 
             r = stree.compare(rtree,
