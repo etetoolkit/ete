@@ -7,7 +7,7 @@ import errno
 TOOLSPATH = os.path.realpath(os.path.split(os.path.realpath(__file__))[0])
 
 import argparse
-from . import (ete_split, ete_expand, ete_annotate, ete_ncbiquery,
+from . import (ete_split, ete_expand, ete_annotate, ete_ncbiquery, ete_gtdbquery,
                ete_generate, ete_mod, ete_extract, ete_compare,
                ete_maptrees, ete_diff, ete_explore)
 try:
@@ -192,6 +192,12 @@ def _main(arguments):
                                        description=ete_ncbiquery.DESC)
     ncbi_args_p.set_defaults(func=ete_ncbiquery.run)
     ete_ncbiquery.populate_args(ncbi_args_p)
+
+    # - GTDBQUERY -
+    gtdb_args_p = subparser.add_parser("gtdbquery", parents=[main_args_p],
+                                       description=ete_gtdbquery.DESC)
+    gtdb_args_p.set_defaults(func=ete_gtdbquery.run)
+    ete_gtdbquery.populate_args(gtdb_args_p)
 
     # - GENERATE -
     generate_args_p = subparser.add_parser("generate", parents=[source_args_p, main_args_p],
