@@ -5,7 +5,7 @@ import errno
 
 import argparse
 from . import (ete_split, ete_expand, ete_ncbiquery, ete_gtdbquery,
-               ete_generate, ete_mod, ete_compare, ete_diff)
+               ete_mod, ete_compare, ete_diff)
 
 from . import common
 from .common import log
@@ -135,14 +135,6 @@ def _main(arguments):
                                        description=ete_gtdbquery.DESC)
     gtdb_args_p.set_defaults(func=ete_gtdbquery.run)
     ete_gtdbquery.populate_args(gtdb_args_p)
-
-    # - GENERATE -
-    generate_args_p = subparser.add_parser("generate", parents=[source_args_p, main_args_p],
-                                           description=ete_generate.DESC,
-                                           formatter_class=argparse.RawDescriptionHelpFormatter)
-
-    generate_args_p.set_defaults(func=ete_generate.run)
-    ete_generate.populate_args(generate_args_p)
 
     # - DIFF -
     diff_args_p = subparser.add_parser("diff", parents=[source_args_p, ref_args_p, main_args_p],
