@@ -4,7 +4,7 @@ import sys
 import errno
 
 import argparse
-from . import (ete_split, ete_expand, ete_ncbiquery, ete_gtdbquery,
+from . import (ete_ncbiquery, ete_gtdbquery,
                ete_mod, ete_compare, ete_diff)
 
 from . import common
@@ -94,12 +94,6 @@ def _main(arguments):
     # mod
     mod_args_p = argparse.ArgumentParser(add_help=False)
     ete_mod.populate_args(mod_args_p)
-    # expand
-    expand_args_p = argparse.ArgumentParser(add_help=False)
-    ete_expand.populate_args(expand_args_p)
-    # split
-    split_args_p = argparse.ArgumentParser(add_help=False)
-    ete_split.populate_args(split_args_p)
 
     # diff
     diff_args_p = argparse.ArgumentParser(add_help=False)
