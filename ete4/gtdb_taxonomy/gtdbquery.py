@@ -9,7 +9,6 @@ from collections import defaultdict, Counter
 from hashlib import md5
 
 import sqlite3
-import math
 import tarfile
 import warnings
 import requests
@@ -108,46 +107,6 @@ class GTDBTaxa:
             conversion[int(old)] = int(new)
         return conv_all_taxids, conversion
 
-
-    # def get_fuzzy_name_translation(self, name, sim=0.9):
-    #     '''
-    #     Given an inexact species name, returns the best match in the NCBI database of taxa names.
-    #     :argument 0.9 sim: Min word similarity to report a match (from 0 to 1).
-    #     :return: taxid, species-name-match, match-score
-    #     '''
-
-
-    #     import sqlite3.dbapi2 as dbapi2
-    #     _db = dbapi2.connect(self.dbfile)
-    #     _db.enable_load_extension(True)
-    #     module_path = os.path.split(os.path.realpath(__file__))[0]
-    #     _db.execute("select load_extension('%s')" % os.path.join(module_path,
-    #                                                              "SQLite-Levenshtein/levenshtein.sqlext"))
-
-    #     print("Trying fuzzy search for %s" % name)
-    #     maxdiffs = math.ceil(len(name) * (1-sim))
-    #     cmd = 'SELECT taxid, spname, LEVENSHTEIN(spname, "%s") AS sim  FROM species WHERE sim<=%s ORDER BY sim LIMIT 1;' % (name, maxdiffs)
-    #     taxid, spname, score = None, None, len(name)
-    #     result = _db.execute(cmd)
-    #     try:
-    #         taxid, spname, score = result.fetchone()
-    #     except TypeError:
-    #         cmd = 'SELECT taxid, spname, LEVENSHTEIN(spname, "%s") AS sim  FROM synonym WHERE sim<=%s ORDER BY sim LIMIT 1;' % (name, maxdiffs)
-    #         result = _db.execute(cmd)
-    #         try:
-    #             taxid, spname, score = result.fetchone()
-    #         except:
-    #             pass
-    #         else:
-    #             taxid = int(taxid)
-    #     else:
-    #         taxid = int(taxid)
-
-    #     norm_score = 1 - (float(score)/len(name))
-    #     if taxid:
-    #         print("FOUND!    %s taxid:%s score:%s (%s)" %(spname, taxid, score, norm_score))
-
-    #     return taxid, spname, norm_score
 
     def _get_id2rank(self, internal_taxids):
         """Given a list of numeric ids (each one representing a taxa in GTDB), return a dictionary with their corresponding ranks.

@@ -8,7 +8,6 @@ import requests
 from hashlib import md5
 
 import sqlite3
-import math
 import tarfile
 import warnings
 
@@ -113,52 +112,6 @@ class NCBITaxa:
             conversion[int(old)] = int(new)
 
         return conv_all_taxids, conversion
-
-    def get_fuzzy_name_translation(self, name, sim=0.9):
-        """Return taxid, species name and match score from the NCBI database.
-
-        The results are for the best match for name in the NCBI
-        database of taxa names, with a word similarity >= `sim`.
-
-        :param name: Species name (does not need to be exact).
-        :param 0.9 sim: Min word similarity to report a match (from 0 to 1).
-        """
-        import sqlite3.dbapi2 as dbapi2
-
-        _db = dbapi2.connect(self.dbfile)
-        _db.enable_load_extension(True)
-        module_path = os.path.split(os.path.realpath(__file__))[0]
-        _db.execute("SELECT load_extension('%s/%s')" %
-                    (module_path, "SQLite-Levenshtein/levenshtein.sqlext"))
-
-        print("Trying fuzzy search for %s" % name)
-        maxdiffs = math.ceil(len(name) * (1-sim))
-        cmd = (f'SELECT taxid, spname, LEVENSHTEIN(spname, \'{name}\') AS sim '
-               f'FROM species WHERE sim <= {maxdiffs} ORDER BY sim LIMIT 1;')
-
-        taxid, spname, score = None, None, len(name)
-        result = _db.execute(cmd)
-        try:
-            taxid, spname, score = result.fetchone()
-        except TypeError:
-            cmd = (
-                f'SELECT taxid, spname, LEVENSHTEIN(spname, \'{name}\') AS sim '
-                f'FROM synonym WHERE sim <= {maxdiffs} ORDER BY sim LIMIT 1;')
-            result = _db.execute(cmd)
-            try:
-                taxid, spname, score = result.fetchone()
-            except:
-                pass
-            else:
-                taxid = int(taxid)
-        else:
-            taxid = int(taxid)
-
-        norm_score = 1 - (float(score) / len(name))
-        if taxid:
-            print(f'FOUND! {spname} taxid:{taxid} score:{score} ({norm_score})')
-
-        return taxid, spname, norm_score
 
     def get_rank(self, taxids):
         """Return dict with NCBI taxonomy ranks for each list of taxids."""

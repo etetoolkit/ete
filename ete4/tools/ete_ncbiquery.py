@@ -22,13 +22,6 @@ def populate_args(ncbi_args_p):
                         default=False,
                         help="""Create taxdump file and exit.""")
 
-    ncbi_args.add_argument("--fuzzy", dest="fuzzy", type=float,
-                        help=("EXPERIMENTAL: Tries a fuzzy (and SLOW) search for those"
-                              " species names that could not be translated"
-                              " into taxids. A float number must be provided"
-                              " indicating the minimum string similarity."
-                              " Special sqlite compilation is necessary."))
-
     output_args = ncbi_args_p.add_argument_group('NCBI OUTPUT OPTIONS')
 
     output_args.add_argument("--tree", dest="tree",
@@ -98,17 +91,6 @@ def run(args):
             all_taxids[tid] = None
 
     not_found_names = all_names - set(name2tax.keys())
-    if args.fuzzy and not_found_names:
-        log.warn("%s unknown names", len(not_found_names))
-        for name in not_found_names:
-            # enable extension loading
-            tax, realname, sim = ncbi.get_fuzzy_name_translation(name, args.fuzzy)
-            if tax:
-                all_taxids[tax] = None
-                name2tax[name] = [tax]
-                name2realname[name] = realname
-                name2score[name] = "Fuzzy:%0.2f" %sim
-
     if not_found_names:
         log.warn("[%s] could not be translated into taxids!" %','.join(not_found_names))
 
