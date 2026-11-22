@@ -127,7 +127,7 @@ async function draw_tree() {
             fix_text_orientations();
 
             if (view.angle.min < -180 || view.angle.max > 180)
-                draw_negative_xaxis();
+                draw_negative_xaxis(tl, zoom);
         }
     }
     catch (ex) {
@@ -368,7 +368,7 @@ function tbox(box, shift) {
 
 // Add a line to the svg in div_tree marking the -x axis.
 // Useful when we represent circular trees with angles < -180 or > 180.
-function draw_negative_xaxis() {
+function draw_negative_xaxis(tl=view.tl, zoom=view.zoom) {
     // x position where the line should end (a bit left of the tree size)
     const x = -view.rmin - view.tree_size.width * 1.2;
 
@@ -381,7 +381,7 @@ function draw_negative_xaxis() {
     const line2 = ["line", [0, 0], [x, 0], ""];  // thin black line
 
     const replace = false;
-    draw(div_tree, [line1, line2], view.tl, view.zoom, replace);
+    draw(div_tree, [line1, line2], tl, zoom, replace);
 }
 
 
