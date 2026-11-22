@@ -127,14 +127,19 @@ function zoom_angular(point, qz) {
 // Zoom adaptatively so the given box tends to occupy the screen.
 function zoom_towards_box(box, point, deltaY, do_zoom) {
     if (view.shape === "circular") {
+        // Radial zoom towards the box (so branches stop growing), angular beyond.
         const [r, a, dr, da] = box;
-        const size = Math.max(dr, (r + dr) * da) * view.zoom.x;  // in pixels
-        const ss = Math.min(div_tree.offsetWidth, div_tree.offsetHeight) / size;
         const amount = zoom_amount(deltaY);
-        const qs = Math.max(0.5, Math.min(1.5, sigmoid(amount, ss))),
+        const side = Math.min(div_tree.offsetWidth, div_tree.offsetHeight);
+        const towards = size => Math.max(0.5, Math.min(1.5, sigmoid(amount, side / size)));
+        const qr = towards(dr * view.zoom.x),  // radial
+              qa = towards((r + dr) * da * view.zoom.x),  // angular
               qp = Math.exp(amount);  // plain zoom
-        const q = amount > 0 ? Math.max(qs, qp) : Math.min(qs, qp);  // not slower
-        zoom_around(point, deltaY, do_zoom, {x: q, y: q});
+        const q = amount > 0 ? Math.max(qa, qp) : Math.min(qa, qp);  // not slower
+        if (do_zoom.y)  // first, so the radial zoom below sets the final update
+            zoom_angular(point, {x: 1, y: do_zoom.x ? q / qr : q});
+        if (do_zoom.x)
+            zoom_around(point, deltaY, {x: true, y: true}, {x: qr, y: qr});
         return;
     }
 
