@@ -50,6 +50,8 @@ async function draw_tree() {
 
     try {
         const qs = build_draw_query_string();
+        // The view this drawing is for (it may change while we wait for it).
+        const tl = {...view.tl}, zoom = {...view.zoom};
 
         // Get the drawing commands.
         let commands;
@@ -87,12 +89,12 @@ async function draw_tree() {
         const panels_aligned = panels.filter(x => x > 0);
 
         if (0 in items)  // panel 0 has the items for div_tree
-            draw(div_tree, items[0], view.tl, view.zoom);
+            draw(div_tree, items[0], tl, zoom);
 
         let xmin = view.shape === "circular" && 0 in xmaxs ? xmaxs[0] : 0;
 
         for (const panel of panels_aligned) {
-            draw_aligned(items[panel].map(item => translate(item, xmin)));
+            draw_aligned(items[panel].map(item => translate(item, xmin)), tl, zoom);
             xmin += xmaxs[panel];
         }
 
@@ -226,18 +228,18 @@ function get_items_per_panel(commands) {
 
 
 // Draw items in the aligned position.
-function draw_aligned(items, padding_x=15) {
+function draw_aligned(items, tl_tree=view.tl, zoom_tree=view.zoom, padding_x=15) {
     if (view.shape === "rectangular") {
         const zoom = {x: view.aligned.zoom,
-                      y: view.zoom.y};
+                      y: zoom_tree.y};
         const tl = {x: view.aligned.origin - padding_x / zoom.x,
-                    y: view.tl.y};  // relative "top-left" point
+                    y: tl_tree.y};  // relative "top-left" point
         const replace = false;
         draw(div_aligned, items, tl, zoom, replace);
     }
     else if (view.shape === "circular") {
         const replace = false;
-        draw(div_tree, items, view.tl, view.zoom, replace);
+        draw(div_tree, items, tl_tree, zoom_tree, replace);
     }
 }
 
