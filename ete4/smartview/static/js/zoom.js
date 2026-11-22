@@ -126,6 +126,15 @@ function zoom_angular(point, qz) {
 
 // Zoom adaptatively so the given box tends to occupy the screen.
 function zoom_towards_box(box, point, deltaY, do_zoom) {
+    if (view.shape === "circular") {
+        const [r, a, dr, da] = box;
+        const size = Math.max(dr, (r + dr) * da) * view.zoom.x;  // in pixels
+        const ss = Math.min(div_tree.offsetWidth, div_tree.offsetHeight) / size;
+        const q = Math.max(0.5, Math.min(1.5, sigmoid(zoom_amount(deltaY), ss)));
+        zoom_around(point, deltaY, do_zoom, {x: q, y: q});
+        return;
+    }
+
     const [dx, dy] = [box[2], box[3]];
 
     // Screen size in terms of dx, dy (how many times bigger it is).
