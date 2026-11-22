@@ -56,7 +56,11 @@ function zoom_around(point, deltaY, do_zoom={x:true, y:true}, qz=undefined) {
         zoom_xy(point, qz, do_zoom);
     }
     else if (view.shape === "circular") {
-        if (do_zoom.x) {
+        const span = view.angle.max - view.angle.min;
+        if (qz.x < 1 && span > 360 && do_zoom.x) {  // zooming out: first undo the
+            zoom_angular(point, {x: 1, y: Math.max(qz.x, 360 / span)});  // angular
+        }  // zoom, so the tree never wraps around more than once
+        else if (do_zoom.x) {
             do_zoom.y = true;  // both dimensions zoom together in circular
             zoom_xy(point, qz, do_zoom);
         }
@@ -136,12 +140,8 @@ function zoom_towards_box(box, point, deltaY, do_zoom) {
               qa = towards((r + dr) * da * view.zoom.x),  // angular
               qp = Math.exp(amount);  // plain zoom
         const q = amount > 0 ? Math.max(qa, qp) : Math.min(qa, qp);  // not slower
-        const span = view.angle.max - view.angle.min;
-        if (amount < 0) {  // zooming out: first undo the angular zoom (so the tree
-            if (span > 360 && do_zoom.y)  // never wraps around more than once)
-                zoom_angular(point, {x: 1, y: Math.max(q, 360 / span)});
-            else
-                zoom_around(point, deltaY, do_zoom);  // then plain zoom
+        if (amount < 0) {  // zooming out
+            zoom_around(point, deltaY, do_zoom, {x: q, y: q});
             return;
         }
         if (do_zoom.y)  // first, so the radial zoom below sets the final update
