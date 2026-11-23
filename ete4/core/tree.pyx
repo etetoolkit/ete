@@ -522,7 +522,7 @@ cdef class Tree:
 
         to_keep = set(self._translate_nodes(nodes))
         start = self.common_ancestor(to_keep)
-        node2path = {n: n.lineage() for n in to_keep}
+        node2path = {n: list(n.lineage()) for n in to_keep}
         to_keep.add(self)
 
         # Calculate which kept nodes are visiting the same nodes in
@@ -530,11 +530,9 @@ cdef class Tree:
         n2count = {}
         n2depth = {}
         for seed, path in node2path.items():
-            for visited_node in path:
-                if visited_node not in n2depth:
-                    depth = visited_node.get_distance(visited_node, start,
-                                                      topological=True)
-                    n2depth[visited_node] = depth
+            for i, visited_node in enumerate(path):
+                if visited_node not in n2depth:  # depth from the root
+                    n2depth[visited_node] = len(path) - 1 - i
                 if visited_node is not seed:
                     n2count.setdefault(visited_node, set()).add(seed)
 
