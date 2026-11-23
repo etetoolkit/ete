@@ -74,6 +74,7 @@ read the tree as if the internal nodes had a name, and then change them like::
 
 # See https://en.wikipedia.org/wiki/Newick_format
 
+import gc
 from ..core.tree import Tree
 
 
@@ -295,9 +296,15 @@ def loads(str text, parser=None, tree_class=Tree):
 
         parser = parser if type(parser) is dict else PARSERS[parser]
 
-        tree, pos = read_node(text, 0, parser, tree_class, check_req=False)
-        # We set check_req=False because the formats requiring certain
-        # fields mean it for all nodes but the root.
+        gc_was_enabled = gc.isenabled()
+        gc.disable()  # no garbage is made here, and gc passes slow node creation a lot
+        try:
+            tree, pos = read_node(text, 0, parser, tree_class, check_req=False)
+            # We set check_req=False because the formats requiring certain
+            # fields mean it for all nodes but the root.
+        finally:
+            if gc_was_enabled:
+                gc.enable()
 
         assert pos == len(text) - 1, f'root node ends prematurely at {pos}'
 
