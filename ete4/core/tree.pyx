@@ -550,7 +550,14 @@ cdef class Tree:
                 sorted_nodes = sorted(nodes, key=cmp_to_key(cmp_nodes))
                 to_keep.add(sorted_nodes[0])
 
-        for n in self.descendants('postorder'):
+        # Rebuild each node's children in one postorder pass. It gives the same
+        # tree as calling n.delete() on every removed node (kept children
+        # first, then the children of the removed ones, in order), without
+        # removing them one by one from long lists of children.
+        for n in itertools.chain(self.descendants('postorder'), [self]):
+            n.children = ([ch for ch in n.children if ch in to_keep] +
+                          [x for ch in n.children if ch not in to_keep
+                               for x in ch.children])
             if n not in to_keep:
                 if preserve_branch_length and n.dist is not None:
                     if len(n.children) == 1:
@@ -559,7 +566,7 @@ cdef class Tree:
                     elif len(n.children) > 1 and n.up and n.up.dist is not None:
                         n.up.dist += n.dist
 
-                n.delete(prevent_nondicotomic=False)
+                n.up = None  # as n.delete() does
 
     def reverse_children(self):
         """Reverse current children order."""
