@@ -5,7 +5,9 @@ Test the functionality of ncbiquery.py. To run with pytest.
 from ete4 import ETE_DATA_HOME
 from ete4.ncbi_taxonomy import ncbiquery
 
-DATABASE_PATH = ETE_DATA_HOME + '/tests/test_ncbiquery.taxa.sqlite'
+# Its own file: the other tests use test_ncbiquery.taxa.sqlite, built from the
+# fixed taxdump_tests.tar.gz, and their expected values depend on that dump.
+DATABASE_PATH = ETE_DATA_HOME + '/tests/test_ncbiquery_force_download.taxa.sqlite'
 
 
 def test_update_database():
