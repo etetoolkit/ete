@@ -92,6 +92,9 @@ class GTDBTaxa:
         """
         update_db(self.dbfile, targz_file=taxdump_file)
 
+        if getattr(self, 'db', None) is not None:  # the file was replaced
+            self._connect()
+
     def _connect(self):
         self.db = sqlite3.connect(self.dbfile)
 
@@ -745,7 +748,14 @@ def upload_data(dbfile):
     if basepath and not os.path.exists(basepath):
         os.mkdir(basepath)
 
-    db = sqlite3.connect(dbfile)
+    # Build it in a temporary file and replace dbfile at the end, so nobody
+    # reads a half-built database, and an old one is never modified in place
+    # (dropping its big tables failed with "database disk image is
+    # malformed" on some network file systems, like BeeGFS).
+    tmpfile = dbfile + '.tmp'
+    if os.path.exists(tmpfile):
+        os.remove(tmpfile)
+    db = sqlite3.connect(tmpfile)
 
     create_cmd = """
     DROP TABLE IF EXISTS stats;
@@ -793,6 +803,8 @@ def upload_data(dbfile):
                         'VALUES (?, ?, ?, ?, ?, ?)'), (taxid, parentid, spname, common, rank, lineage))
     print()
     db.commit()
+    db.close()
+    os.replace(tmpfile, dbfile)
 
 if __name__ == "__main__":
     #from .. import PhyloTree
