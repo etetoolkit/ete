@@ -277,7 +277,9 @@ cdef class Tree:
     def get_prop(self, prop, default=None):
         """Return the node's property prop (an attribute or in self.props)."""
         attr = getattr(self, prop, None)
-        return attr if attr is not None else self.props.get(prop, default)
+        if attr is not None and not callable(attr):  # not a method, like lineage
+            return attr
+        return self.props.get(prop, default)
 
     def add_prop(self, name, value):
         """Add or update node's property to the given value."""

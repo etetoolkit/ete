@@ -397,6 +397,13 @@ class Test_Core_Tree(unittest.TestCase):
             data = base64.b64encode(pickle.dumps(values, protocol)).decode()
             self.assertEqual(ete_format.pickle_unpack(data), values)
 
+    def test_get_prop_named_like_a_method(self):
+        t = Tree('(a,b);')
+        t['a'].props['lineage'] = ['x', 'y']  # as annotated by NCBITaxa
+        self.assertEqual(t['a'].get_prop('lineage'), ['x', 'y'])
+        self.assertEqual(t['b'].get_prop('lineage', 'none'), 'none')
+        self.assertEqual(t['a'].get_prop('name'), 'a')
+
     def test_quoted_names(self):
         complex_name = "((A:0.0001[&&NHX:hello=true],B:0.011)90:0.01[&&NHX:hello=true],(C:0.01, D:0.001)hello:0.01);"
         # A quoted tree within a tree
