@@ -1602,6 +1602,27 @@ class Test_Core_Tree(unittest.TestCase):
         self.assertEqual(is_mono, False)
         self.assertEqual(monotype, 'paraphyletic')
 
+        # All groups at once, same results as one by one.
+        for n in t:
+            n.props['group'] = {'a': 'x', 'e': 'x', 'i': 'y', 'o': 'y',
+                                'h': 'z', 'u': 'x', 'f': 'w', 'g': 'w'}.get(n.name)
+            n.props['lineage'] = ['all', 'vowel' if n.name in 'aeiou' else 'other', n.name]
+        for prop in ['name', 'group', 'lineage']:
+            results = t.check_monophyly_all(prop)
+            values = set(v for n in t for v in (n.props[prop] if prop == 'lineage' else
+                                                 [n.get_prop(prop)]) if v is not None)
+            self.assertEqual(set(results), values)
+            for v in values:
+                if prop == 'lineage':  # check_monophyly() needs one value per leaf
+                    for n in t:
+                        n.props['has_v'] = v in n.props['lineage']
+                    expected = t.check_monophyly([True], prop='has_v')
+                else:
+                    expected = t.check_monophyly([v], prop=prop)
+                self.assertEqual(results[v], expected)
+        self.assertEqual(t.check_monophyly_all('lineage')['vowel'][:2], (False, 'paraphyletic'))
+        self.assertEqual(t.check_monophyly_all('group')['x'][:2], (False, 'polyphyletic'))
+
         # Now with unrooted trees, and using species instead of names.
         t = PhyloTree('(aaa1, (aaa3, (aaa4, (bbb1, bbb2))));',
                       sp_naming_function=lambda name: name[:3])
