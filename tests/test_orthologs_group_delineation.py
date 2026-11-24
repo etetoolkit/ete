@@ -91,5 +91,26 @@ def test_orthologs_group_delineation():
     annot_tree_nw = tree.write(props=annot_props, parser=5,
                                format_root_node=True)
 
-    with open(P53_ANNOT_PATH) as f:
-        assert len(annot_tree_nw) == len(f.read())
+    # Compare with the expected result. The taxonomic annotations depend on the
+    # NCBI release used to make annot_tree.nw (newer than taxdump_tests.tar.gz),
+    # so for them we check that they agree with the database we used instead.
+    tree_new = PhyloTree(annot_tree_nw, parser=5)
+    tree_ref = PhyloTree(open(P53_ANNOT_PATH).read(), parser=5)
+
+    assert tree_new.write(parser=9) == tree_ref.write(parser=9)  # same topology
+
+    taxonomic = {'taxid', 'sci_name', 'common_name', 'rank', 'lineage', 'named_lineage'}
+    nodes_new, nodes_ref = list(tree_new.traverse()), list(tree_ref.traverse())
+    assert len(nodes_new) == len(nodes_ref)
+    for n_new, n_ref in zip(nodes_new, nodes_ref):
+        assert n_new.name == n_ref.name
+        assert set(n_new.props) == set(n_ref.props)
+        for p in set(n_new.props) - taxonomic:
+            assert n_new.props[p] == n_ref.props[p], (n_new.name, p)
+
+    for node in tree_new.traverse():
+        taxid = int(node.props['taxid'])
+        lineage = tax_db.get_lineage(taxid)
+        assert node.props['lineage'] == '|'.join(str(x) for x in lineage)
+        assert node.props['sci_name'] == tax_db.get_taxid_translator([taxid])[taxid]
+        assert node.props['rank'] == tax_db.get_rank([taxid])[taxid]

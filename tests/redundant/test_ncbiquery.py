@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from ete4 import PhyloTree, NCBITaxa, ETE_DATA_HOME
+from ete4 import PhyloTree, NCBITaxa, ETE_DATA_HOME, update_ete_data
 from ete4.ncbi_taxonomy import ncbiquery
 
 DATABASE_PATH = ETE_DATA_HOME + '/tests/test_ncbiquery.taxa.sqlite'
@@ -10,8 +10,12 @@ class Test_ncbiquery(unittest.TestCase):
 
   def test_00_update_database(self):
 
+    # Same database as tests/test_ncbiquery.py, built from the fixed test dump
+    # (the full current NCBI taxonomy would change the expected values).
     if not os.path.exists(DATABASE_PATH):
-      ncbiquery.update_db(DATABASE_PATH)
+      taxdump = ETE_DATA_HOME + '/tests/taxdump_tests.tar.gz'
+      update_ete_data(taxdump, url='tests/ncbiquery/taxdump_tests.tar.gz')
+      ncbiquery.update_db(DATABASE_PATH, taxdump)
 
 
   def test_01tree_annotation(self):
@@ -131,10 +135,11 @@ class Test_ncbiquery(unittest.TestCase):
 
   def test_merged_id(self):
     ncbi = NCBITaxa(dbfile=DATABASE_PATH)
+    # Clostridiales (186802) is now Eubacteriales (3085636) in the test dump.
     t1 = ncbi.get_lineage(649756)
-    self.assertEqual(t1, [1, 131567, 2, 1783272, 1239, 186801, 186802, 186803, 207244, 649756])
+    self.assertEqual(t1, [1, 131567, 2, 1783272, 1239, 186801, 3085636, 186803, 207244, 649756])
     t2 = ncbi.get_lineage("649756")
-    self.assertEqual(t2, [1, 131567, 2, 1783272, 1239, 186801, 186802, 186803, 207244, 649756])
+    self.assertEqual(t2, [1, 131567, 2, 1783272, 1239, 186801, 3085636, 186803, 207244, 649756])
 
 if __name__ == '__main__':
   unittest.main()
