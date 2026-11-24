@@ -502,40 +502,6 @@ class NCBITaxa:
             sorted_lineage = sorted(common, key=lambda x: min(pos[x]))
             return sorted_lineage
 
-    def get_broken_branches(self, t, taxa_lineages, n2content=None):
-        """Returns a list of NCBI lineage names that are not monophyletic in the
-        provided tree, as well as the list of affected branches and their size.
-
-        CURRENTLY EXPERIMENTAL
-        """
-        if not n2content:
-            n2content = t.get_cached_content()
-
-        tax2node = defaultdict(set)
-
-        unknown = set()
-        for leaf in t.iter_leaves():
-            if leaf.sci_name.lower() != "unknown":
-                lineage = taxa_lineages[leaf.taxid]
-                for index, tax in enumerate(lineage):
-                    tax2node[tax].add(leaf)
-            else:
-                unknown.add(leaf)
-
-        broken_branches = defaultdict(set)
-        broken_clades = set()
-        for tax, leaves in tax2node.items():
-            if len(leaves) > 1:
-                common = t.get_common_ancestor(leaves)
-            else:
-                common = list(leaves)[0]
-            if (leaves ^ set(n2content[common])) - unknown:
-                broken_branches[common].add(tax)
-                broken_clades.add(tax)
-
-        broken_clade_sizes = [len(tax2node[tax]) for tax in broken_clades]
-
-        return broken_branches, broken_clades, broken_clade_sizes
 
 
 def load_ncbi_tree_from_dump(tar):
