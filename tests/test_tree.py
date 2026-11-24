@@ -704,11 +704,19 @@ class Test_Core_Tree(unittest.TestCase):
         t.standardize()  # calls resolve_polytomy() internally too
         self.assertEqual(t.write(parser=9), '((((b,b),b),((c,c),c)),(((a,a),a),a));')
 
-        # The supports of the original nodes are kept (new nodes have 0).
+        # The supports of the original nodes are kept (new nodes have 0,
+        # except a new child of the root, which shares the branch, and so
+        # the support, of its sister).
         t = Tree('(A:1,(B:1,C:1)90:1,(D:1,E:1)80:1,F:1);')
         t.resolve_polytomy()
         self.assertEqual(t.write(),
-                         '(((A:1,(B:1,C:1)90:1)0:0,(D:1,E:1)80:1)0:0,F:1);')
+                         '(((A:1,(B:1,C:1)90:1)0:0,(D:1,E:1)80:1):0,F:1);')
+        t.set_outgroup(t['A'])  # the root is consistent: this does not raise
+
+        t = Tree('(A:1,B:1,(C:1,D:1)70:1);')
+        t.resolve_polytomy()
+        self.assertEqual(t.write(), '((A:1,B:1)70:0,(C:1,D:1)70:1);')
+        t.set_outgroup(t['A'])
 
     def test_common_ancestors(self):
         # getting nodes, get_childs, get_sisters, root,

@@ -453,6 +453,7 @@ def resolve_polytomy(tree, descendants=True):
     """
     for node in tree.traverse():
         if len(node.children) > 2:
+            polytomy = node
             children = node.remove_children()  #  x ::: a,b,c,d,e
 
             # Create "backbone" nodes:  x --- * --- * ---
@@ -464,6 +465,9 @@ def resolve_polytomy(tree, descendants=True):
             for i in range(1, len(children)):
                 node.add_child(children[i])
                 node = node.up
+
+            if polytomy.is_root:  # its two children are now the same branch
+                polytomy.children[0].support = polytomy.children[1].support
 
         if not descendants:
             break
