@@ -397,6 +397,13 @@ class Test_Core_Tree(unittest.TestCase):
             data = base64.b64encode(pickle.dumps(values, protocol)).decode()
             self.assertEqual(ete_format.pickle_unpack(data), values)
 
+    def test_get_prop_named_like_a_method(self):
+        t = Tree('(a,b);')
+        t['a'].props['lineage'] = ['x', 'y']  # as annotated by NCBITaxa
+        self.assertEqual(t['a'].get_prop('lineage'), ['x', 'y'])
+        self.assertEqual(t['b'].get_prop('lineage', 'none'), 'none')
+        self.assertEqual(t['a'].get_prop('name'), 'a')
+
     def test_quoted_names(self):
         complex_name = "((A:0.0001[&&NHX:hello=true],B:0.011)90:0.01[&&NHX:hello=true],(C:0.01, D:0.001)hello:0.01);"
         # A quoted tree within a tree
@@ -1606,6 +1613,27 @@ class Test_Core_Tree(unittest.TestCase):
         is_mono, monotype, extra =  t.check_monophyly(values=['i', 'o'])
         self.assertEqual(is_mono, False)
         self.assertEqual(monotype, 'paraphyletic')
+
+        # All groups at once, same results as one by one.
+        for n in t:
+            n.props['group'] = {'a': 'x', 'e': 'x', 'i': 'y', 'o': 'y',
+                                'h': 'z', 'u': 'x', 'f': 'w', 'g': 'w'}.get(n.name)
+            n.props['lineage'] = ['all', 'vowel' if n.name in 'aeiou' else 'other', n.name]
+        for prop in ['name', 'group', 'lineage']:
+            results = t.check_monophyly_all(prop)
+            values = set(v for n in t for v in (n.props[prop] if prop == 'lineage' else
+                                                 [n.get_prop(prop)]) if v is not None)
+            self.assertEqual(set(results), values)
+            for v in values:
+                if prop == 'lineage':  # check_monophyly() needs one value per leaf
+                    for n in t:
+                        n.props['has_v'] = v in n.props['lineage']
+                    expected = t.check_monophyly([True], prop='has_v')
+                else:
+                    expected = t.check_monophyly([v], prop=prop)
+                self.assertEqual(results[v], expected)
+        self.assertEqual(t.check_monophyly_all('lineage')['vowel'][:2], (False, 'paraphyletic'))
+        self.assertEqual(t.check_monophyly_all('group')['x'][:2], (False, 'polyphyletic'))
 
         # Now with unrooted trees, and using species instead of names.
         t = PhyloTree('(aaa1, (aaa3, (aaa4, (bbb1, bbb2))));',

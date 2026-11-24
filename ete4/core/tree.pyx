@@ -277,7 +277,9 @@ cdef class Tree:
     def get_prop(self, prop, default=None):
         """Return the node's property prop (an attribute or in self.props)."""
         attr = getattr(self, prop, None)
-        return attr if attr is not None else self.props.get(prop, default)
+        if attr is not None and not callable(attr):  # not a method, like lineage
+            return attr
+        return self.props.get(prop, default)
 
     def add_prop(self, name, value):
         """Add or update node's property to the given value."""
@@ -1674,12 +1676,69 @@ cdef class Tree:
 
             leaves_extra = smallest - nodes
 
+        return self._monophyly(leaves_extra)
+
+    def _monophyly(self, leaves_extra):
+        """Return (is_monophyletic, clade_type, leaves_extra) for a group.
+
+        leaves_extra are the leaves under the group's common ancestor
+        that are not in the group.
+        """
         if not leaves_extra:  # nodes account for all leaves from common ancestor
             return True, 'monophyletic', leaves_extra
         elif self.is_monophyletic(leaves_extra):  # we leave out a monophyly
             return False, 'paraphyletic', leaves_extra
         else:  # a funny mixture
             return False, 'polyphyletic', leaves_extra
+
+    def check_monophyly_all(self, prop='name'):
+        """Return a dict {value: (is_monophyletic, clade_type, leaves_extra)}.
+
+        For every value of the property prop found in the leaves, the
+        result is the same as check_monophyly([value], prop) (rooted),
+        but the tree is traversed once instead of once per value.
+
+        If the property of a leaf is a list, tuple or set (like the
+        'lineage' that NCBITaxa and GTDBTaxa annotate), the leaf belongs
+        to each of its values. Leaves without the property are ignored.
+
+        :param prop: Node property being used to check monophyly.
+        """
+        # Leaves in tree order, so the leaves of a node are a slice of them.
+        leaves = []
+        first = {}  # node -> position of its first leaf in leaves
+        size = {}  # node -> number of leaves under it
+        for node in self.traverse('postorder'):
+            if node.is_leaf:
+                first[node] = len(leaves)
+                leaves.append(node)
+            else:
+                first[node] = first[node.children[0]]
+            size[node] = len(leaves) - first[node]
+
+        groups = {}  # value -> its leaves, in tree order
+        for leaf in leaves:
+            value = leaf.get_prop(prop)
+            if value is None:
+                continue
+            if type(value) not in [list, tuple, set, frozenset]:
+                value = [value]
+            for v in value:
+                groups.setdefault(v, []).append(leaf)
+
+        results = {}
+        for value, group in groups.items():
+            # The common ancestor of leaves in tree order is the one of the
+            # first and the last.
+            ancestor = ops.common_ancestor([group[0], group[-1]])
+            if size[ancestor] == len(group):
+                results[value] = True, 'monophyletic', set()
+            else:
+                i = first[ancestor]
+                extra = set(leaves[i:i + size[ancestor]]) - set(group)
+                results[value] = self._monophyly(extra)
+
+        return results
 
     def get_monophyletic(self, values, prop='name'):
         """Yield nodes matching the provided monophyly criteria.
