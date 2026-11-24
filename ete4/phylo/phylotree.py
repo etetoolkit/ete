@@ -701,20 +701,3 @@ class PhyloTree(Tree):
     def annotate_gtdb_taxa(self, taxid_attr='species', tax2name=None, tax2track=None, tax2rank=None, dbfile=None, ignore_unclassified=False):
         gtdb = GTDBTaxa(dbfile=dbfile)
         return gtdb.annotate_tree(self, taxid_attr=taxid_attr, tax2name=tax2name, tax2track=tax2track, tax2rank=tax2rank, ignore_unclassified=ignore_unclassified)
-
-    def ncbi_compare(self, autodetect_duplications=True, cached_content=None):
-        if not cached_content:
-            cached_content = self.get_cached_content()
-        cached_species = set([n.props.get('species') for n in cached_content[self]])
-
-        if len(cached_species) != len(cached_content[self]):
-            ntrees, ndups, target_trees = self.get_speciation_trees(
-                    autodetect_duplications=autodetect_duplications,
-                    map_properties=["taxid"])
-        else:
-            target_trees = [self]
-
-
-        ncbi = NCBITaxa()
-        for t in target_trees:
-            ncbi.get_broken_branches(t, cached_content)
