@@ -416,6 +416,18 @@ class Test_Core_Tree(unittest.TestCase):
             self.assertEqual(nw_normalized, nw_back)
             self.assertEqual(nw_normalized, nw_back2)
 
+    def test_quoted_support_and_name(self):
+        # Internal labels like the ones in the GTDB reference trees.
+        nw = "((A:1,B:2)'95.0:g__X':0.5,(C:1,D:1)'100':0.2,E:3)'100:d__Bacteria';"
+        t = Tree(nw)  # default parser: internal labels are supports
+        n1, n2 = t.children[0], t.children[1]
+        self.assertEqual((n1.name, n1.support, n1.dist), ('g__X', 95.0, 0.5))
+        self.assertEqual((n2.name, n2.support, n2.dist), (None, 100.0, 0.2))
+        self.assertEqual((t.name, t.support), ('d__Bacteria', 100.0))
+        self.assertEqual(Tree(nw, parser=1).children[0].name, '95.0:g__X')
+        for bad in ["((A,B)'x:g__X');", "((A,B)'95.0 g__X');"]:  # not support[:name]
+            self.assertRaises(NewickError, Tree, bad)
+
     def test_custom_formatting_formats(self):
         """Test change dist, name and support formatters."""
         t = Tree('((A:1.1111,B:2.2222)C:3.3333[&&NHX:support=1],D:4.4444);',
