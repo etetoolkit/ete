@@ -236,7 +236,9 @@ def read_props(str text, long pos, is_leaf, dict parser, check_req=False):
 
     try:
         assert not check_req or not p0_req or p0_str, 'missing required value'
-        if p0_str:
+        if p0_str and p0_name == 'support' and p0_str[0] in '\'"':
+            props.update(read_quoted_support(p0_str))
+        elif p0_str:
             props[p0_name] = p0_read(p0_str)
     except (AssertionError, ValueError) as e:
         raise NewickError('parsing %r: %s' % (p0_str, e))
@@ -261,6 +263,18 @@ def read_props(str text, long pos, is_leaf, dict parser, check_req=False):
         pos = skip_spaces_and_comments(text, pos + 1)  # after the "]"
 
     return props, pos
+
+
+def read_quoted_support(str text):
+    """Return the properties in a quoted label where a support is expected.
+
+    Some trees, like the GTDB reference trees, label internal nodes with
+    the support and the taxon name together: '95.0:g__Pseudomonas_E'.
+
+    Example: "'95.0:g__X'"  ->  {'support': 95.0, 'name': 'g__X'}
+    """
+    support, colon, name = unquote(text).partition(':')
+    return {'support': float(support), 'name': name} if colon else {'support': float(support)}
 
 
 def get_extended_props(str text):
